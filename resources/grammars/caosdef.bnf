@@ -1,0 +1,151 @@
+{
+	parserClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParser"
+	implements="com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+	extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes"
+	elementTypePrefix="CaosDef_"
+	elementTypeClass="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTokenType"
+	psiClassPrefix="CaosDef"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.openc2e.plugins.intellij.caos.def.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
+	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
+
+	tokens = [
+		DOC_COMMENT = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
+		LINE_COMMENT = "regexp://[^\n]*"
+		VAR_KEYWORD = "regexp:[vV][aA][rR]";
+		ARGS_KEYWORD = "regexp:[aA][rR][gG][sS]";
+		COMMAND_KEYWORD = "regexp:[cC][oO][mM][mM][aA][nN][dD]"
+		TYPE_KEYWORD = "regexp:[tT][yY][pP][eE]";
+		COLON = ':';
+		OPEN_PAREN = '(';
+		CLOSE_PAREN = ")";
+		space = "regexp:[ ]";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		NEWLINE = "regexp:\n";
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
+		EQ = "=";
+		COMMA = ',';
+		SEMI = ';'
+		SINGLE_QUO = "'";
+		DOUBLE_QUO = '"';
+		LINK = 'regexp:\[[^\]]*\]';
+		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
+		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
+		TEXT = "__TEXT__IN__DOUBLE__QUO__"
+	]
+
+}
+
+def	::= (!<<eof>> def_element)*
+	;
+
+
+def_element
+	::= var_def_element
+	| command_def_element
+	| type_def_element
+	| comment
+	| NEWLINE
+	| ';'
+	;
+
+type_def_element
+	::= TYPE_KEYWORD type_name '=' string line_terminator?
+	;
+
+var_def_element
+	::= VAR_KEYWORD namespace? parameter_name '(' type_name  ')' ('=' inline_doc_comment)? line_terminator
+	{
+		pin = 2;
+	}
+	;
+
+command_def_element
+	::= COMMAND_KEYWORD command ARGS_KEYWORD '=' '[' args ']' ('=' inline_doc_comment)? line_terminator
+	{
+		pin = 2
+	}
+	;
+
+args
+	::= arg (',' arg)*
+	{
+		pin=1;
+		recoverWhile=args_recover
+	}
+	;
+
+private args_recover
+	::= !(NEWLINE|']')
+	;
+
+arg ::= parameter_name ':' type_name ('=' string)?
+	{
+		pin = 1;
+	}
+	;
+
+parameter_name ::= ID;
+type_name ::= ID;
+private command
+	::= namespace? command_name '(' return_type ('=' string)? ')'
+	{
+		pin = 2;
+	}
+	;
+
+return_type ::= ID;
+namespace
+	::= (namespace_name ':')
+	{
+		pin(".*")=2
+	}
+	;
+namespace_name
+	::= ID
+	;
+
+command_name
+	::= ID
+	;
+
+inline_doc_comment
+	::= string
+	;
+
+comment
+	::= DOC_COMMENT
+	| 	LINE_COMMENT
+	;
+
+private line_terminator
+	::= NEWLINE ';'?
+	|	';'?<<eof>>
+	;
+
+string
+	::= SINGLE_QUO <<enterMode "single_qou">> string_body SINGLE_QUO <<exitMode "single_qou">>
+	| 	DOUBLE_QUO <<enterMode "double_qou">> string_body <<enterMode "double_qou">>DOUBLE_QUO
+	;
+
+string_body
+	::= string_body_parts+
+	{
+		pin=1;
+	}
+	;
+
+private string_body_recover
+	::= !(<<inMode "single_qou">>SINGLE_QUO)
+	|	!(<<inMode "double_qou">>DOUBLE_QUO)
+	;
+
+private string_body_parts
+	::= TEXT | link;
+
+private link ::= '['  ']'

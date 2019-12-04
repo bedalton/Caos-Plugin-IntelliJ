@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PLUGIN_MODULE" version="4">
+  <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/resources/META-INF/plugin.xml" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/ajgl/breakpoint-twig-extension" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/aptoma/twig-markdown" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/asm89/twig-cache-extension" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/aura/intl" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/bake" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/cakephp" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/cakephp-codesniffer" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/chronos" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/debug_kit" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/migrations" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/cakephp/plugin-installer" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/dnoegel/php-xdg-base-dir" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/doctrine/instantiator" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/google/protobuf" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/jakub-onderka/php-console-color" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/jakub-onderka/php-console-highlighter" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/jasny/twig-extensions" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/jdorn/sql-formatter" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/josegonzalez/dotenv" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/justinrainbow/json-schema" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/m1/env" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/mobiledetect/mobiledetectlib" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/myclabs/deep-copy" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/nikic/php-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phar-io/manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phar-io/version" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpdocumentor/reflection-common" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpdocumentor/reflection-docblock" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpdocumentor/type-resolver" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpspec/prophecy" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/php-code-coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/php-file-iterator" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/php-text-template" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/php-timer" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/php-token-stream" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/phpunit" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/phpunit/phpunit-mock-objects" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/psr/container" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/psr/http-message" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/psr/simple-cache" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/psy/psysh" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/robmorgan/phinx" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/code-unit-reverse-lookup" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/comparator" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/diff" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/environment" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/exporter" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/global-state" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/object-enumerator" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/object-reflector" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/recursion-context" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/resource-operations" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/sebastian/version" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/seld/jsonlint" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/seld/phar-utils" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/squizlabs/php_codesniffer" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/config" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/console" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/finder" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/polyfill-ctype" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/polyfill-mbstring" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/polyfill-php72" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/polyfill-php73" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/process" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/service-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/var-dumper" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/symfony/yaml" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/theseer/tokenizer" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/twig/twig" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/umpirsky/twig-php-function" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/webmozart/assert" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/wyrihaximus/twig-view" />
+      <excludeFolder url="file://$MODULE_DIR$/Web/vendor/zendframework/zend-diactoros" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Bundled Protobuf Distribution" level="application" />
+  </component>
+</module>
