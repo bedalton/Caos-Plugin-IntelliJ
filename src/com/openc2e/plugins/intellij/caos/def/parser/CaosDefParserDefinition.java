@@ -1,10 +1,5 @@
 package com.openc2e.plugins.intellij.caos.def.parser;
 
-import brightscript.intellij.lexer.BrsLexerAdapter;
-import brightscript.intellij.lang.BrsFile;
-import brightscript.intellij.psi.types.BrsTokenSets;
-import brightscript.intellij.psi.types.BrsTypes;
-import brightscript.intellij.stubs.types.BrsStubTypes;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
@@ -16,28 +11,33 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
+import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile;
+import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefLexerAdapter;
+import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes;
+import com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefTokenSets;
+import com.openc2e.plugins.intellij.caos.def.stubs.types.CaosDefStubTypes;
 import org.jetbrains.annotations.NotNull;
 
 public class CaosDefParserDefinition implements ParserDefinition {
 
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-    private static final TokenSet COMMENTS = BrsTokenSets.INSTANCE.getCOMMENTS();
-    private static final TokenSet STRINGS = TokenSet.create(BrsTypes.BRS_STRING);
+    private static final TokenSet COMMENTS = CaosDefTokenSets.getCOMMENTS();
+    private static final TokenSet STRINGS = TokenSet.create(CaosDefTypes.CaosDef_STRING);
 
     @NotNull
     @Override
     public Lexer createLexer(Project project) {
-        return new BrsLexerAdapter();
+        return new CaosDefLexerAdapter();
     }
 
     @Override
     public PsiParser createParser(Project project) {
-        return new BrsParser(false);
+        return new CaosDefParser();
     }
 
     @Override
     public IFileElementType getFileNodeType() {
-        return BrsStubTypes.FILE;
+        return CaosDefStubTypes.getFILE();
     }
 
     @NotNull
@@ -60,12 +60,12 @@ public class CaosDefParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public PsiElement createElement(ASTNode astNode) {
-        return BrsTypes.Factory.createElement(astNode);
+        return CaosDefTypes.Factory.createElement(astNode);
     }
 
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
-        return new BrsFile(fileViewProvider);
+        return new CaosDefFile(fileViewProvider);
     }
 
     @SuppressWarnings("deprecation")

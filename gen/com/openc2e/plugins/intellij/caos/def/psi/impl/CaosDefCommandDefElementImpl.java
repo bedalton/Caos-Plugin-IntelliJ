@@ -33,9 +33,9 @@ public class CaosDefCommandDefElementImpl extends CaosDefCompositeElementImpl im
   }
 
   @Override
-  @NotNull
+  @Nullable
   public CaosDefCommandName getCommandName() {
-    return findNotNullChildByClass(CaosDefCommandName.class);
+    return findChildByClass(CaosDefCommandName.class);
   }
 
   @Override

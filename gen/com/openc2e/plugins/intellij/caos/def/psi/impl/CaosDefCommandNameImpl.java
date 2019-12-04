@@ -28,8 +28,8 @@ public class CaosDefCommandNameImpl extends CaosDefCompositeElementImpl implemen
 
   @Override
   @NotNull
-  public PsiElement getCmnd() {
-    return findNotNullChildByType(CaosDef_CMND);
+  public PsiElement getId() {
+    return findNotNullChildByType(CaosDef_ID);
   }
 
 }

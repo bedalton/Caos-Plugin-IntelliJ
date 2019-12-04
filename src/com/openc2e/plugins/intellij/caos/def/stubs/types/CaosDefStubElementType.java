@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.def.stubs.types;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.stubs.*;
+import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService;
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage;
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement;
 import org.jetbrains.annotations.NotNull;
@@ -15,8 +16,8 @@ public abstract class CaosDefStubElementType<StubT extends StubElement<PsiT>, Ps
     }
 
     @NotNull
-    protected StubIndexService getService() {
-        return ServiceManager.getService(StubIndexService.class);
+    protected CaosDefStubIndexService getService() {
+        return ServiceManager.getService(CaosDefStubIndexService.class);
     }
 
     @NotNull

@@ -56,7 +56,8 @@
     <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.BrsStubTypes" />
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.StubIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.indices.BrsIndexService" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNamespaceIndex" />
 
 
     <!-- Formatting -->

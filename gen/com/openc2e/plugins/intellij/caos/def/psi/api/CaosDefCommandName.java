@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface CaosDefCommandName extends CaosDefCompositeElement {
 
   @NotNull
-  PsiElement getCmnd();
+  PsiElement getId();
 
 }

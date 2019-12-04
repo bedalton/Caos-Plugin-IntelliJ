@@ -10,7 +10,7 @@ public interface CaosDefCommandDefElement extends CaosDefCompositeElement {
   @Nullable
   CaosDefArgs getArgs();
 
-  @NotNull
+  @Nullable
   CaosDefCommandName getCommandName();
 
   @Nullable

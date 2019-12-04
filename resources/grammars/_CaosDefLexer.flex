@@ -23,8 +23,6 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 %unicode
 
 EOL=\R
-WHITE_SPACE=\s+
-
 LINE_COMMENT="//"[^\n]*
 VAR_KEYWORD=[vV][aA][rR]
 ARGS_KEYWORD=[aA][rR][gG][sS]

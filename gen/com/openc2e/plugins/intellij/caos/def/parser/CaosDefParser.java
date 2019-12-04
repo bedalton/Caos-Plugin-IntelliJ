@@ -130,7 +130,7 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   // namespace? command_name '(' return_type ('=' string)? ')'
   static boolean command(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "command")) return false;
-    if (!nextTokenIs(b, "", CaosDef_CMND, CaosDef_ID)) return false;
+    if (!nextTokenIs(b, CaosDef_ID)) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_);
     r = command_0(b, l + 1);
@@ -177,9 +177,9 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, CaosDef_COMMAND_DEF_ELEMENT, null);
     r = consumeToken(b, CaosDef_COMMAND_KEYWORD);
-    r = r && command(b, l + 1);
-    p = r; // pin = 2
-    r = r && report_error_(b, consumeTokens(b, -1, CaosDef_ARGS_KEYWORD, CaosDef_EQ, CaosDef_OPEN_BRACKET));
+    p = r; // pin = 1
+    r = r && report_error_(b, command(b, l + 1));
+    r = p && report_error_(b, consumeTokens(b, -1, CaosDef_ARGS_KEYWORD, CaosDef_EQ, CaosDef_OPEN_BRACKET)) && r;
     r = p && report_error_(b, args(b, l + 1)) && r;
     r = p && report_error_(b, consumeToken(b, CaosDef_CLOSE_BRACKET)) && r;
     r = p && report_error_(b, command_def_element_7(b, l + 1)) && r;
@@ -207,13 +207,13 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // CMND
+  // ID
   public static boolean command_name(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "command_name")) return false;
-    if (!nextTokenIs(b, CaosDef_CMND)) return false;
+    if (!nextTokenIs(b, CaosDef_ID)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, CaosDef_CMND);
+    r = consumeToken(b, CaosDef_ID);
     exit_section_(b, m, CaosDef_COMMAND_NAME, r);
     return r;
   }
@@ -299,58 +299,66 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // NEWLINE ';'?
+  // <<eol>>
+  // 	|	NEWLINE ';'?
   // 	|	';'?<<eof>>
   static boolean line_terminator(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "line_terminator")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = line_terminator_0(b, l + 1);
+    r = eol(b, l + 1);
     if (!r) r = line_terminator_1(b, l + 1);
+    if (!r) r = line_terminator_2(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // NEWLINE ';'?
-  private static boolean line_terminator_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "line_terminator_0")) return false;
+  private static boolean line_terminator_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "line_terminator_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, CaosDef_NEWLINE);
-    r = r && line_terminator_0_1(b, l + 1);
+    r = r && line_terminator_1_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // ';'?
-  private static boolean line_terminator_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "line_terminator_0_1")) return false;
+  private static boolean line_terminator_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "line_terminator_1_1")) return false;
     consumeToken(b, CaosDef_SEMI);
     return true;
   }
 
   // ';'?<<eof>>
-  private static boolean line_terminator_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "line_terminator_1")) return false;
+  private static boolean line_terminator_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "line_terminator_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = line_terminator_1_0(b, l + 1);
+    r = line_terminator_2_0(b, l + 1);
     r = r && eof(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // ';'?
-  private static boolean line_terminator_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "line_terminator_1_0")) return false;
+  private static boolean line_terminator_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "line_terminator_2_0")) return false;
     consumeToken(b, CaosDef_SEMI);
     return true;
   }
 
   /* ********************************************************** */
-  // LINK_TOKEN
+  // '['  ']'
   static boolean link(PsiBuilder b, int l) {
-    return consumeToken(b, CaosDef_LINK_TOKEN);
+    if (!recursion_guard_(b, l, "link")) return false;
+    if (!nextTokenIs(b, CaosDef_OPEN_BRACKET)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, CaosDef_OPEN_BRACKET, CaosDef_CLOSE_BRACKET);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -403,8 +411,8 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // SINGLE_QUO <<enterMode "single_qou">>string_body SINGLE_QUO <<exitMode "single_qou">>
-  // 	| 	DOUBLE_QUO <<enterMode "double_qou">>string_body <<enterMode "double_qou">>DOUBLE_QUO
+  // SINGLE_QUO <<enterMode "single_qou">> string_body SINGLE_QUO <<exitMode "single_qou">>
+  // 	| 	DOUBLE_QUO <<enterMode "double_qou">> string_body <<enterMode "double_qou">>DOUBLE_QUO
   public static boolean string(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string")) return false;
     if (!nextTokenIs(b, "<string>", CaosDef_DOUBLE_QUO, CaosDef_SINGLE_QUO)) return false;
@@ -416,7 +424,7 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // SINGLE_QUO <<enterMode "single_qou">>string_body SINGLE_QUO <<exitMode "single_qou">>
+  // SINGLE_QUO <<enterMode "single_qou">> string_body SINGLE_QUO <<exitMode "single_qou">>
   private static boolean string_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_0")) return false;
     boolean r;
@@ -430,7 +438,7 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // DOUBLE_QUO <<enterMode "double_qou">>string_body <<enterMode "double_qou">>DOUBLE_QUO
+  // DOUBLE_QUO <<enterMode "double_qou">> string_body <<enterMode "double_qou">>DOUBLE_QUO
   private static boolean string_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_1")) return false;
     boolean r;
@@ -448,7 +456,6 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   // string_body_parts+
   public static boolean string_body(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_body")) return false;
-    if (!nextTokenIs(b, "<string body>", CaosDef_LINK_TOKEN, CaosDef_TEXT)) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, CaosDef_STRING_BODY, "<string body>");
     r = string_body_parts(b, l + 1);
@@ -457,7 +464,7 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
       if (!string_body_parts(b, l + 1)) break;
       if (!empty_element_parsed_guard_(b, "string_body", c)) break;
     }
-    exit_section_(b, l, m, r, false, null);
+    exit_section_(b, l, m, r, false, string_body_recover_parser_);
     return r;
   }
 
@@ -465,7 +472,7 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   // TEXT | link
   static boolean string_body_parts(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_body_parts")) return false;
-    if (!nextTokenIs(b, "", CaosDef_LINK_TOKEN, CaosDef_TEXT)) return false;
+    if (!nextTokenIs(b, "", CaosDef_OPEN_BRACKET, CaosDef_TEXT)) return false;
     boolean r;
     r = consumeToken(b, CaosDef_TEXT);
     if (!r) r = link(b, l + 1);
@@ -570,9 +577,9 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, CaosDef_VAR_DEF_ELEMENT, null);
     r = consumeToken(b, CaosDef_VAR_KEYWORD);
-    r = r && var_def_element_1(b, l + 1);
-    p = r; // pin = 2
-    r = r && report_error_(b, parameter_name(b, l + 1));
+    p = r; // pin = 1
+    r = r && report_error_(b, var_def_element_1(b, l + 1));
+    r = p && report_error_(b, parameter_name(b, l + 1)) && r;
     r = p && report_error_(b, consumeToken(b, CaosDef_OPEN_PAREN)) && r;
     r = p && report_error_(b, type_name(b, l + 1)) && r;
     r = p && report_error_(b, consumeToken(b, CaosDef_CLOSE_PAREN)) && r;
@@ -610,6 +617,11 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   static final Parser args_recover_parser_ = new Parser() {
     public boolean parse(PsiBuilder b, int l) {
       return args_recover(b, l + 1);
+    }
+  };
+  static final Parser string_body_recover_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return string_body_recover(b, l + 1);
     }
   };
 }

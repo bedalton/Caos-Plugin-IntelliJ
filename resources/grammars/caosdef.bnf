@@ -12,7 +12,7 @@
 	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
 	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
-
+	elemen
 	tokens = [
 		DOC_COMMENT = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
 		LINE_COMMENT = "regexp://[^\n]*"
@@ -61,14 +61,14 @@ type_def_element
 var_def_element
 	::= VAR_KEYWORD namespace? parameter_name '(' type_name  ')' ('=' inline_doc_comment)? line_terminator
 	{
-		pin = 2;
+		pin = 1;
 	}
 	;
 
 command_def_element
 	::= COMMAND_KEYWORD command ARGS_KEYWORD '=' '[' args ']' ('=' inline_doc_comment)? line_terminator
 	{
-		pin = 2
+		pin = 1
 	}
 	;
 
@@ -124,7 +124,8 @@ comment
 	;
 
 private line_terminator
-	::= NEWLINE ';'?
+	::= <<eol>>
+	|	NEWLINE ';'?
 	|	';'?<<eof>>
 	;
 
@@ -137,6 +138,7 @@ string_body
 	::= string_body_parts+
 	{
 		pin=1;
+		recoverWhile=string_body_recover
 	}
 	;
 
