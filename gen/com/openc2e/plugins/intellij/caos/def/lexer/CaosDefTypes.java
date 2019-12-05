@@ -29,6 +29,7 @@ public interface CaosDefTypes {
 
   IElementType CaosDef_ARGS_KEYWORD = new CaosDefTokenType("ARGS_KEYWORD");
   IElementType CaosDef_CLOSE_BRACKET = new CaosDefTokenType("]");
+  IElementType CaosDef_CLOSE_LINK = new CaosDefTokenType(">>");
   IElementType CaosDef_CLOSE_PAREN = new CaosDefTokenType(")");
   IElementType CaosDef_COLON = new CaosDefTokenType(":");
   IElementType CaosDef_COMMA = new CaosDefTokenType(",");
@@ -42,6 +43,7 @@ public interface CaosDefTypes {
   IElementType CaosDef_LINK = new CaosDefTokenType("LINK");
   IElementType CaosDef_NEWLINE = new CaosDefTokenType("NEWLINE");
   IElementType CaosDef_OPEN_BRACKET = new CaosDefTokenType("[");
+  IElementType CaosDef_OPEN_LINK = new CaosDefTokenType("<<");
   IElementType CaosDef_OPEN_PAREN = new CaosDefTokenType("(");
   IElementType CaosDef_SEMI = new CaosDefTokenType(";");
   IElementType CaosDef_SINGLE_QUO = new CaosDefTokenType("'");

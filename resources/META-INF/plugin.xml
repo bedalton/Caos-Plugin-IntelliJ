@@ -1,6 +1,6 @@
 <idea-plugin>
   <id>com.openc2e.plugins.intellij.caos</id>
-  <name>Caos Script Plugin</name>
+  <name>Caos</name>
   <version>0.01</version>
 
   <description><![CDATA[
@@ -29,17 +29,17 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- LANG -->
-    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.parser.CaosParserDefinition"
-                           language="Caos" />
+    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserDefinition"
+                           language="CaosDef" />
     <fileTypeFactory implementation="com.openc2e.plugins.intellij.caos.lang.CaosFileTypeFactory" />
     <completion.contributor language="CaosDef"
                             implementationClass="com.openc2e.plugins.intellij.caos.def.contributor.CaosDefCompletionContributor" />
-    <completion.contributor language="Caos"
-                            implementationClass="com.openc2e.plugins.intellij.caos.contributor.CaosCompletionContributor" />
+    <!--completion.contributor language="Caos"
+                            implementationClass="com.openc2e.plugins.intellij.caos.contributor.CaosCompletionContributor" /-->
 
 
     <!-- Bundled Definitions -->
-    <library.type implementation="com.openc2e.plugins.intellij.caos.project.BrsLibraryType" id="CaosLibrary" />
+    <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLi" id="CaosLibrary" />
 
     <!-- Highlighting -->
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.annotators.CaosDefSyntaxHighlighter" key="CaosDef" />

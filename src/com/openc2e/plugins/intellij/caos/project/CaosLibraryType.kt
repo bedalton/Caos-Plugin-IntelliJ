@@ -1,6 +1,5 @@
 package brightscript.intellij.project
 
-import brightscript.intellij.lang.BrsBundle
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.libraries.*
 import com.intellij.openapi.roots.libraries.ui.LibraryEditorComponent
@@ -10,7 +9,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.JComponent
 import javax.swing.Icon
 import com.intellij.openapi.roots.libraries.LibraryType
-import icons.BrsIcons
+import com.openc2e.plugins.intellij.caos.lang.CaosBundle
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
 
 /**
  * Libarary type for an objective-j frameworkName
@@ -32,15 +32,15 @@ class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
     }
 
     override fun getCreateActionName(): String? {
-        return BrsBundle.message("brs.sources.library.action-name")
+        return CaosBundle.message("brs.sources.library.action-name")
     }
 
     override fun getIcon(properties: DummyLibraryProperties?): Icon? {
-        return BrsIcons.SDK_ICON
+        return CaosScriptIcons.SDK_ICON
     }
 
     companion object {
-        val LIBRARY: PersistentLibraryKind<DummyLibraryProperties> = object : PersistentLibraryKind<DummyLibraryProperties>(BrsBundle.message("brs.sources.library.library-name")) {
+        val LIBRARY: PersistentLibraryKind<DummyLibraryProperties> = object : PersistentLibraryKind<DummyLibraryProperties>(CaosBundle.message("brs.sources.library.library-name")) {
             override fun createDefaultProperties(): DummyLibraryProperties {
                 return DummyLibraryProperties()
             }

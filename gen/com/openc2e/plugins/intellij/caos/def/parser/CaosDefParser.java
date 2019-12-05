@@ -350,15 +350,36 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '['  ']'
+  // '<<' (namespace ':'?) command_name  '>>'
   static boolean link(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "link")) return false;
-    if (!nextTokenIs(b, CaosDef_OPEN_BRACKET)) return false;
+    if (!nextTokenIs(b, CaosDef_OPEN_LINK)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, CaosDef_OPEN_BRACKET, CaosDef_CLOSE_BRACKET);
+    r = consumeToken(b, CaosDef_OPEN_LINK);
+    r = r && link_1(b, l + 1);
+    r = r && command_name(b, l + 1);
+    r = r && consumeToken(b, CaosDef_CLOSE_LINK);
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  // namespace ':'?
+  private static boolean link_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "link_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = namespace(b, l + 1);
+    r = r && link_1_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // ':'?
+  private static boolean link_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "link_1_1")) return false;
+    consumeToken(b, CaosDef_COLON);
+    return true;
   }
 
   /* ********************************************************** */
@@ -472,7 +493,7 @@ public class CaosDefParser implements PsiParser, LightPsiParser {
   // TEXT | link
   static boolean string_body_parts(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_body_parts")) return false;
-    if (!nextTokenIs(b, "", CaosDef_OPEN_BRACKET, CaosDef_TEXT)) return false;
+    if (!nextTokenIs(b, "", CaosDef_OPEN_LINK, CaosDef_TEXT)) return false;
     boolean r;
     r = consumeToken(b, CaosDef_TEXT);
     if (!r) r = link(b, l + 1);

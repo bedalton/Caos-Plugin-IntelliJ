@@ -7,4 +7,10 @@ import com.intellij.psi.PsiElement;
 
 public interface CaosDefStringBody extends CaosDefCompositeElement {
 
+  @NotNull
+  List<CaosDefCommandName> getCommandNameList();
+
+  @NotNull
+  List<CaosDefNamespace> getNamespaceList();
+
 }

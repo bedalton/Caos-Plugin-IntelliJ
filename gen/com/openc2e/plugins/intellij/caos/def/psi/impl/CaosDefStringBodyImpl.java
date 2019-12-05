@@ -26,4 +26,16 @@ public class CaosDefStringBodyImpl extends CaosDefCompositeElementImpl implement
     else super.accept(visitor);
   }
 
+  @Override
+  @NotNull
+  public List<CaosDefCommandName> getCommandNameList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CaosDefCommandName.class);
+  }
+
+  @Override
+  @NotNull
+  public List<CaosDefNamespace> getNamespaceList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CaosDefNamespace.class);
+  }
+
 }
