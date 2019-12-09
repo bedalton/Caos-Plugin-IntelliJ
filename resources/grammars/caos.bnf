@@ -13,132 +13,51 @@
 	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
 	tokens = [
-		DOC_COMMENT = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
-		LINE_COMMENT = "regexp://[^\n]*"
-		VAR_KEYWORD = "regexp:[vV][aA][rR]";
-		ARGS_KEYWORD = "regexp:[aA][rR][gG][sS]";
-		COMMAND_KEYWORD = "regexp:[cC][oO][mM][mM][aA][nN][dD]"
-		TYPE_KEYWORD = "regexp:[tT][yY][pP][eE]";
-		COMMENT = 'regexp:[cC][oO][mM][mM][eE][nN][tT]';
-		NONE = "regexp:[nN][oO][nN][eE]";
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
-		OPEN_PAREN = '(';
-		CLOSE_PAREN = ")";
+		PLUS = "+";
 		space = "regexp:[ ]";
 		OPEN_BRACKET = '[';
 		CLOSE_BRACKET = ']';
-		OPEN_LINK = '<<';
-		CLOSE_LINK = '>>';
 		NEWLINE = "regexp:\n";
-		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
-		EQ = "=";
+		ENDM = "regexp:[eE][nN][dD][mM]"
+		SUBR = "regexp:[sS][uU][bB][rR]"
+		GSUB = "regexp:[gG][sS][uU][bB]"
+		REPS = "regexp:[rR][eE][pP][sS]"
+		REPE = "regexp:[rR][eE][pP][eE]"
+		LOOP = "regexp:[lL][oO][oO][pP]"
+		UNTL = "regexp:[uU][nN][tT][lL]"
+		EVER = "regexp:[eE][vV][eE][rR]"
+		ENUM = "regexp:[eE][nN][uU][mM]"
+		NEXT = "regexp:[nN][eE][xX][tT]"
+		DOIF = "regexp:[dD][oO][iI][fF]"
+		ELSE = "regexp:[eE][lL][sS][eE]"
+		ENDI = "regexp:[eE][nN][dD][iI]"
 		COMMA = ',';
-		SEMI = ';'
-		SINGLE_QUO = "'";
-		DOUBLE_QUO = '"';
-		LINK = 'regexp:\[[^\]]*\]';
-		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
-		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
-		TEXT = "__TEXT__IN__DOUBLE__QUO__"
+		TEXT = 'regexp:\[[^\]]*\]';
 	]
 }
 
-def	::= (!<<eof>> def_element)*
+def	::= (!<<eof>> coas_element)*
 	;
 
 
-def_element
-	::= var_def_element
-	| command_def_element
-	| type_def_element
-	| comment
-	| NEWLINE
-	| ';'
+caos_element
+	::= control_statement
+	|   command
 	;
 
-type_def_element
-	::= TYPE_KEYWORD type_name '=' string line_terminator?
-	;
 
-var_def_element
-	::= VAR_KEYWORD '[' namespace? parameter_name ']' '=' '[' type_name  ']' ('=' doc_comment)? line_terminator
-	{
-		pin = 1;
-	}
-	;
 
-command_def_element
-	::= COMMAND_KEYWORD '[' command ']' ARGS_KEYWORD '=' '[' args|NONE ']' ( COMMENT_KEYWORD '=' inline_doc_comment)? line_terminator
-	{
-		pin = 1
-	}
-	;
-
-args
-	::= arg (',' arg)*
-	{
-		pin=1;
-		recoverWhile=args_recover
-	}
-	;
-
-private args_recover
-	::= !(NEWLINE|']')
-	;
-
-arg ::= parameter_name ':' type_name ('=' string)?
-	{
-		pin = 1;
-	}
-	;
-
-parameter_name ::= ID;
-type_name ::= ID;
-private command
-	::= namespace? command_name '(' return_type ('=' string)? ')'
-	{
-		pin = 2;
-	}
-	;
-
-return_type ::= ID;
-namespace
-	::= (namespace_name ':')
-	{
-		pin(".*")=2
-	}
-	;
-namespace_name
-	::= ID
-	;
-
-command_name
-	::= ID
-	;
-
-doc_comment
-	::= '[' doc_comment_body? ']'
-	;
-
-comment
-	::= LINE_COMMENT
-	;
-
-private line_terminator
-	::= <<eol>>
-	|	NEWLINE ';'?
-	|	';'?<<eof>>
-	;
-
-doc_comment_body
-	::= (TEXT | link)+
-	{
-	    recoverWhile=doc_comment_body_recover
-	}
-	;
-
-doc_comment_body_recover
-    ::= !(']')
+control_statement
+    ::=
+    ;
+command
+    ::= (namespace ':') com expr* lineTerminator
     ;
 
-private link ::= '<<' (namespace ':'?) command_name  '>>'
+lineTerminator
+    ::= <<eol>>
+    |   ","
+    |   NEWLINE
+    ;
