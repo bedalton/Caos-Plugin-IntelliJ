@@ -273,3 +273,185 @@
  * {winw} - Max allowed view window width (world coords)
  */
 -WINW(command) winw(int)
+
+/** Fetcha  script from scriptorium and send it (used by editor for reading out existing scripts */
+-DDE: SCRP(command) family(int) genus(int) species(int) event(int)
+
+/** Sends an integer {RValue} */
+-DDE: PUTV(command) RValue(int)
+
+/**
+ * Send a string - useful for debugging macros,
+ * or for returning the results of macro commands to test the truth of some conditions
+ */
+-DDE: PUTS(command) literal(string)
+
+/**
+ * Get buffer
+ * gets string and writes to dde buffer
+ * eg. {dde: getb monk}
+ */
+-DDE: GETB option(option)
+
+/** Get all creatures data */
+-DDE: GETB(command) option=data
+
+/** Get creatures name */
+-DDE: GETB(command) option=cname
+
+/** Get creature's moniker */
+-DDE: GETB(command) option=monk
+
+/**
+ * Returns the following fields separated by a '|' symbol
+ * -{name}
+ * -{moniker}
+ * -{sex} 1=male, 2=female
+ * -{Age} as "hours:min"
+ * -{pregnancy} either "N/A", "No" or <number>
+ * -{Life-Force} either <number> terminated in "%" or "Dead"
+ * -{Medical} either "Healthy", "Sick", or "Dead"
+ * -{Room} number of the room they're in
+ * -{xPos}
+ * -{yPos}
+ */
+
+ /** Write from string to location set by option token
+-DDE: PUTB(command) literal(string) option(option)
+
+/** Write all creature details */
+-DDE: PUTB(command) literal(string) option=data
+
+/** Set the creatures name from string */
+-DDE: PUTB(command) literal(string) option=cnam
+
+/** Take a snapshort of the current subject, create a standard windows bmp and pass the file back to client
+-DDE: PICT(command)
+
+/** Update number of natural eggs in the world */
+-DDE: NEGG(command)
+
+/** Update number of norns in world if egg hatches voluntarily */
+-DDE: HATC(command)
+
+/** Update number of norns in world if egg hatches voluntarily */
+-DDE: LIVE(command)
+
+/** Update number of norns in world if egg hatches voluntarily */
+-DDE: DIED(command)
+
+/** Alima simple macro to pan camera to creature before the owners kit takes a photo */
+-DDE: PANC(command)
+
+/**
+ * Output the locationos of the braiin lobes of the subject
+ * The macro format is " 'x_start'y_start'width'height' "
+ * after a leading count of the number of lobes based on the 64x48 grid of neurones
+ */
+-DDE: LOBE(command)
+
+/** Output the number sof each of the 12 gene types */
+-DDE: GENE(command)
+
+/**
+ * Read a word/idea from the targ BLACKBOARD's list.
+ * Sends "###|text|" where ### is the vocabulary slot (WD_xxx) for the idea
+ * represented by the bbd picture who's index is Index, and 'text' is the word associated with that pucture used
+ * by blackboard editor tools to fetch words for editing see "WORD command for writing words into objects
+ */
+-DDE: WORD(command) index(int)
+
+-DDE: CELL(command) lobe(int) cell(int) dentype(int)
+
+-QUIT(command)
+
+-ABRT(command)
+
+-WRLD(command) fileName(filename.viv)
+
+-CMND(command) id(int)
+
+-WPOS(command) x(int) y(int) width(int) height(int)
+
+-SYS: WTOP(command)
+
+-SYS: EDIT(command) left(int) top(int) right(int) bottom(int)
+
+-SYS: CMRA(command) x(int) y(int)
+
+-SYSL CAMT(command)
+
+-SYS: GRND(command) x(int) y(int)
+
+
+/* === NEW Constructors === */
+
+-NEW: SCEN(command) imageFile(literal) numImages(int) imageNumber(int) plane(int)
+
+-NEW: SIMP(command) imageFile(literal) numImages(int) imageNumber(int) plane(int) clone(int)
+
+-NEW: CBTN(command) imageFile(literal) numImages(int) imageNumber(int) plane(int)
+
+-NEW: COMP(command) imageFile(literal) numImages(int) imageNumber(int) clone(int)
+
+-NEW: PART(command) part(int) relX(int) relY(int) imageOffset(int) plane(int)
+
+-NEW CREA(command) moniker(int) sex(int)
+
+-NEW: GENE(command) mum(int) data(int) child(LValue)
+
+/* === Carry out 'bbd:' commands (related to blackboard objects) === */
+-BBD: WORD(command) index(int) text(literal)
+
+-BBD: SHOW(command) n(int)
+
+-BBD: EMIT(command)
+
+-BBD: EDIT(command) n(int)
+
+
+/* === Execution-Flow Commands == */
+
+-STOP(command)
+
+-ENDM(command)
+
+-SUBR(command) label(literal)
+
+-GSUB(command) label(literal)
+
+-RETN(command)
+
+-REPS(command) count(int)
+
+-REPE(command)
+
+-LOOP(command)
+
+-UNTL val1(any) op(#ComparisonOperator) val2(any)
+
+-EVER(command)
+
+-ENUM(command) family(int) genus(int) species(int)
+
+-NEXT(command)
+
+-RTAR(command) family(int) genus(int) species(int)
+
+-RNDV(command) var(var) min(int) max(int)
+
+-SETV(command) var value(any)
+
+-DO
+
+#ComparionOperator {
+	EQ,
+	NE,
+	GT,
+	LT,
+	GE,
+	LE,
+	BT,
+	BF
+}
+
