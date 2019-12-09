@@ -1,0 +1,275 @@
+/** retn curr targ object* as integer */
+-TARG(pointer)
+
+/** default object (owner of script, or pet if DDE) */
+-OWNR(pointer)
+
+/** obj who caused event leading to this script */
+-FROM(pointer)
+
+/** current pet creature */
+-NORN(pointer)
+
+/** mouse pointer object */
+-PNTR(pointer)
+
+/**
+ * IT - obj that OWNR creature is attending to (may be NULL)
+ * NOTE: only OWNR's IT can be determined, not TARG's
+ */
+-ATTN(pointer)
+
+/** object that's carrying OWNR (may be NULL) */
+-CARR(pointer)
+
+/**
+ * object who EXECuted the tool who owns this
+ * return (int)Exec; dde macro. NOTE: only valid for DDE
+ * tools who *know* that they were executed by an object
+ */
+-EXEC(pointer)
+
+/** obj that Owner creature was attending to */
+-_IT_(pointer)
+
+/**
+ * the contents of the EditObject variable (addr of object being
+ * placed/repositioned/deleted; EditObject is set by the EDIT macro or by shift-clicking an object. Use this rvalue to delete selected objects, etc.
+ */
+-EDIT(pointer)
+
+/** a pointer to objects that will survive */
+-OBJP(pointer)
+
+/*
+ * convert 4 characters into an integer
+ * eg. {TOKN 1234} = integer '4321'
+ */
+-TOKN(int) XXXX(string)
+
+/*
+ * Sound Status
+ * Bit 0 = Sound on/off
+ * Bit 1 = Sound Mode (foreground only, continuous)
+ */
+-SNDS(bit)
+
+/** Max allowed view window width (World Coordinates)
+-WINW(int)
+
+/** Max allowed view window height (World Coordinates)
+-WINH(int)
+
+/**
+ *	Objects attributes (INVISIBLE, CARRYABLE, etc)
+ */
+-ATTR(int)
+
+/** objects left coordinates */
+-POSL(int)
+/** objects right coordinates */
+-POSR(int)
+/** objects top coordinates */
+-POST(int)
+/** objects bottom coordinates */
+-POSB(int)
+
+/** family+genus+specie (Classifier) */
+-CLAS(classifier)
+/** Family (in range 0-255) */
+-FMLY(int)
+/** Genus (in range 0-255) */
+-GNUS(int)
+/** Species (in range 0-255) */
+-SPCS(int)
+
+/** Movement status (FLOATING, MOUSEDRIVEN, etc) */
+-MOVS(MovementStatus)
+
+/** Objects active flag (INACTIVE=0, ACTIVE1, ACTIVE2) */
+-ACTV(int)
+
+/** objects neural Id 0-39 */
+-NEID(int)
+
+/** [TARG] object's (and current part's) current pose
+-POSE(pose)
+
+/* === [TARG] Compound Object, Vehicle, Lift and Aircraft Operands === */
+
+/** Vehicle's x movement vector in 1/256ths pixels */
+-XVEC(number)
+
+/** Vehicle's y movement vector in 1/256ths pixels */
+-YVEC(number)
+
+/**
+ * Vehicle collision data
+ * b0=Hit Left, b1=hit right, b2=hit top, b3=hit bottom
+ */
+-BUMP(bitflags)
+
+/** === [TARG] Creature Operands === */
+
+/**
+ * State of creature's Drive# {n} (hunger etc)
+ */
+-DRIV(int) n:(int)
+
+/**
+ * Creatures most pressing drive#, returns 0 (pain) if no drives are pressing
+ * can use in {DOIF DRIV DRV! GT 128}
+ */
+-DRIV!(int)
+
+/**
+ * Concentration of chemical {n}
+ */
+-CHEM(int) n(int)
+
+/**
+ * Return score stored in score.cpp -- Alima
+ */
+-SCOR(int)
+
+/**
+ * Hours elapsed since game started
+ */
+-HOUR(int)
+/**
+ * Minutes elapsed since game started
+ */
+-MINS(int)
+
+/**
+ * Moniker of child genore if [TARG] is pregnant
+ */
+-BABY(moniker)
+
+/**
+ * return 1 if creature is asleep
+ */
+-ASLP(int)
+/**
+ * Creature age in minutes (abus)
+ */
+-CAMN(int)
+/**
+ * Creatures age (0-7)
+ */
+-CAGE(int)
+
+/**
+ * Creature is dead
+ */
+-DEAD(int)
+
+/** === Environmental Operands === */
+
+/**
+ * Wind speed/dir newat [TARG] object (-3 to +3)
+ */
+-WIND(number)
+/**
+ * Air temperature near [TARG] object (-3 to +3)
+ */
+-TEMP(number)
+
+/**
+ * Return world left, top, right, bottom or Type of given room
+ * where {edge} = 0=left,1=right,2=top,3=bottom, 4=Type of room (indoors, etc)
+ * Returns 0 if no such room
+ */
+-ROOM(int) roomNumber(int) edge(int)
+
+/**
+ * number of rooms on map
+ */
+-RMS#(int)
+/**
+ * Number of ground level data on map
+ */
+-GND#(int)
+
+/**
+ * Number of pixels per ground datum
+ */
+-GNDW(int)
+
+/**
+ * Ground level at position x (worldx/GROUNDW)
+ */
+-GRND(?) x(int)
+
+/**
+ * Total number of objects in the world who fit this description
+ * {family}, {genus} or {species} can be {0} to act as wild cards
+ */
+-TOTL(int) family(int) genus(int) species(int)
+
+/** === Truth test operands (Returns 1 if true, 0 if false) === */
+
+/*
+ * Returns whether two objects are in contact
+ * eg. {DOIF TOUC TARG OWNR GT 0}, means do if [OWNR] and [TARG] are touching
+ */
+-TOUC(int) objPtr1(pointer) objPtr2(pointer)
+
+/** === [TARG] Object Operands === */
+
+/**
+ * Movement status (FLOATING, MOUSEDRIVE, etc)
+ */
+-MOVS movementStatus(movementStatus)
+
+-CLAS(command) family(int)+genus(int)+(species)+0
+
+-ATTR(command) attr(bits)
+
+-OBJP(command) pointer(pointer)
+
+/* === [TARG] Compound Object, Vehicle, Lift and Aircraft Operands === */
+
+/**
+ * {xVect} - x movement vector in 1/256ths pixel
+ */
+-XVEC(command) xVect(number)
+
+/**
+ * {yVect} - x movement vector in 1/256ths pixel
+ */
+-YVEC(command) yVect(number)
+
+
+/* === SET ACTIVITY STATE === */
+
+/**
+ * {actv} - object's active flag (INACTIVE=0, ACTIVE1, ACTIVE2)
+ */
+-ACTV(command) actv(number)
+
+
+/* === System Operands === */
+
+/**
+ * {moniker} - Set 0 to abort pregnancy, or to moniker to make pregnant
+ */
+-BABY(command) moniker(moniker)
+
+/* === System Operands === */
+
+/**
+ * {winw} - Max allowed view window width (world coords)
+ */
+-WINW(command) winw(int)
+
+/**
+ * {windowHeight} - Max allowed view window height (world coords)
+ */
+-WINH(command) windowHeight(int)
+
+
+/**
+ * {winw} - Max allowed view window width (world coords)
+ */
+-WINW(command) winw(int)
