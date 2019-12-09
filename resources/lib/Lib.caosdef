@@ -284,7 +284,7 @@
  * Send a string - useful for debugging macros,
  * or for returning the results of macro commands to test the truth of some conditions
  */
--DDE: PUTS(command) literal(string)
+-DDE: PUTS(command) [literal string]
 
 /**
  * Get buffer
@@ -323,7 +323,7 @@
 -DDE: PUTB(command) literal(string) option=data
 
 /** Set the creatures name from string */
--DDE: PUTB(command) literal(string) option=cnam
+-DDE: PUTB(command) [literal string] option=cnam
 
 /** Take a snapshort of the current subject, create a standard windows bmp and pass the file back to client
 -DDE: PICT(command)
@@ -363,15 +363,15 @@
 
 -DDE: CELL(command) lobe(int) cell(int) dentype(int)
 
--QUIT(command)
+-SYS: QUIT(command)
 
--ABRT(command)
+-SYS: ABRT(command)
 
--WRLD(command) fileName(filename.viv)
+-SYS: WRLD(command) fileName(filename.viv)
 
--CMND(command) id(int)
+-SYS: CMND(command) id(int)
 
--WPOS(command) x(int) y(int) width(int) height(int)
+-SYS: WPOS(command) x(int) y(int) width(int) height(int)
 
 -SYS: WTOP(command)
 
@@ -396,12 +396,19 @@
 
 -NEW: PART(command) part(int) relX(int) relY(int) imageOffset(int) plane(int)
 
--NEW CREA(command) moniker(int) sex(int)
+-NEW: VHCL(command) imageFile(literal) numImages(int) imageNumber(int)
+
+-NEW: LIFT(command) imageFile(literal) numImages(int) imageNumber(int)
+
+-NEW: BKBD(command) imageFile(literal) numImages(int) imageNumber(int) bgColor(int)
+	chalkColor(int) aliasColor(int) textX(int) textY(int)
+
+-NEW: CREA(command) moniker(int) sex(int)
 
 -NEW: GENE(command) mum(int) data(int) child(LValue)
 
 /* === Carry out 'bbd:' commands (related to blackboard objects) === */
--BBD: WORD(command) index(int) text(literal)
+-BBD: WORD(command) index(int) id(int) [text]
 
 -BBD: SHOW(command) n(int)
 
@@ -422,13 +429,13 @@
 
 -RETN(command)
 
--REPS(command) count(int)
+-REPS(command) repetitions(int)
 
 -REPE(command)
 
 -LOOP(command)
 
--UNTL val1(any) op(#ComparisonOperator) val2(any)
+-UNTL val1(any) eq(#ComparisonOperator) val2(any)
 
 -EVER(command)
 
@@ -440,9 +447,73 @@
 
 -RNDV(command) var(var) min(int) max(int)
 
--SETV(command) var value(any)
+-SETV(command) var value(value)
 
--DO
+-DOIF(command) val1(value) eq(#ComparisonOperator) val2(value)
+
+-ELSE(command)
+
+-ENDI(command)
+
+-WAIT(command) ticks(int)
+
+-ADDV(command) lvalue(value) rvalue(value)
+
+-SUBV(command) lvalue(value) rvalue(value)
+
+-MULV(command) lvalue(value) rvalue(value)
+
+-DIVV(command) lvalue(value) rvalue(value)
+
+-MODV(command) lvalue(value) rvalue(value)
+
+-NEGV(command) lvalue(value) rvalue(value)
+
+-ANDV(command) lvalue(value) rvalue(value)
+
+-ORRV(command) lvalue(value) rvalue(value)
+
+-DBUG(command) rvalue(value)
+
+-BDGM(command) string(string)
+
+-INST(command)
+
+
+/* === Application, Tool and System Commands === */
+
+-SCRP(command) family(int) genus(int) species(int) event(int)
+
+-SCRX(command) family(int) genus(int) species(int) event(int)
+
+-TOOL(command) [fsp exe] [menu text] [help text] glyph(int)
+
+-EXEC(command) [fsp.exe] [params...]
+
+-ROOM(command) roomNumber(int) left(int) top(int) right(int) bottom(int) type(int)
+
+/* === Sound Effects === */
+-SNDF(command) function(#SoundFunction)
+
+
+#SoundFunction {
+	ON__ - Sound On,
+	OFF_ - Sound Off,
+	FORE - Sound Only plays in foreground,
+	CONS - Sound plays all the time
+}
+
+-SNDV(command) [filename without .wav suffix]
+
+-SNDE(command) fileName(token)
+
+-SNDQ(command) fileName(token) delay(int)
+
+-SNDC(command) fileName(token)
+
+-SNDL(command) fileName(token)
+
+-
 
 #ComparionOperator {
 	EQ,
