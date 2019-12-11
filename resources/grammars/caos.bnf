@@ -13,12 +13,6 @@
 	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
 	tokens = [
-		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
-		COLON = ':';
-		PLUS = "+";
-		space = "regexp:[ ]";
-		OPEN_BRACKET = '[';
-		CLOSE_BRACKET = ']';
 		NEWLINE = "regexp:\n";
 		ENDM = "regexp:[eE][nN][dD][mM]"
 		SUBR = "regexp:[sS][uU][bB][rR]"
@@ -33,31 +27,206 @@
 		DOIF = "regexp:[dD][oO][iI][fF]"
 		ELSE = "regexp:[eE][lL][sS][eE]"
 		ENDI = "regexp:[eE][nN][dD][iI]"
-		COMMA = ',';
+		COMMENT_LITERAL = "regexp:\*[^\n]*"
+		DECIMAL = "regexp:[0-9]+\.[0-9]+"
+		INT = "regexp:[0-9]+"
 		TEXT = 'regexp:\[[^\]]*\]';
+		QUOTE_STRING = 'regexp:"[^\n|"]*"'
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
+		COLON = ':';
+		PLUS = "+";
+		SPACE = "regexp:[ \t]";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		COMMA = ',';
+		ANIM_R = "R"
+
+
 	]
 }
 
-def	::= (!<<eof>> coas_element)*
+def	::= (!<<eof>> caos_element)*
 	;
 
 
 caos_element
-	::= control_statement
-	|   command
+	::= comment lineTerminator
+	|   SPACE* control_statement lineTerminator
+	|   SPACE* command lineTerminator
 	;
 
 
 
-control_statement
-    ::=
+private control_statement
+    ::= loop
+    |   repeat
+    |   enumNext
     ;
+
+
+loop
+    ::= LOOP SPACE loop_body? (UNTL|EVER)
+    {
+        pin=1;
+    }
+    ;
+
+
+private loop_body
+    ::= caos_element+
+    {
+        recoverWhile=loop_body_recover
+    }
+    ;
+
+private loop_body_recover
+    ::= !(UNTL|EVER|ENDM)
+    ;
+
+repeat
+    ::= REPS SPACE expression lineTerminator repeat_body? REPE
+    {
+        pin=1
+    }
+    ;
+
+repeat_body
+    ::= caos_element+
+    {
+        recoverWhile=repeat_body_recover
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
+    }
+    ;
+
+
+enumNext
+    ::= ENUM SPACE enum_header NEWLINE enum_body? NEXT
+    {
+        pin=1;
+    }
+    ;
+
+enum_header
+    ::= expression SPACE expression SPACE expression
+    {
+        methods = [
+            family="expression[0]"
+            genus="expression[1]"
+            species="expression[2]"
+        ]
+    }
+    ;
+
+enum_body
+    ::= caos_element+
+    {
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
+        recoverWhile=enum_body_recover
+    }
+    ;
+
+private enum_body_recover
+    ::= !(NEXT|<<eof>>)
+    ;
+
+private repeat_body_recover
+    ::= !(REPE|ENDM)
+    ;
+
 command
-    ::= (namespace ':') com expr* lineTerminator
+    ::= (namespaceToken ':' SPACE)? commandToken (SPACE expression)*
+    {
+        recoverWhile=command_recover
+    }
+    ;
+
+private command_recover
+    ::= !(<<eof>>|","|NEWLINE)
+    ;
+
+expression
+    ::= comparisonExpression
+    |   animationString
+    |   expressionPrime
+    ;
+
+
+private expressionPrime
+    ::= command
+    |   literal
+    |   token
+    ;
+
+comparisonExpression
+    ::= expressionPrime eqOp expression
+    ;
+
+eqOp ::= ID;
+
+
+literal
+    ::= stringLiteral
+    |   number
+    {
+        methods = [
+            intValue
+            isInt
+            floatValue
+            isFloat
+            isNumeric
+            stringValue
+            isString
+        ]
+    }
+    ;
+
+number ::=INT|DECIMAL
+    ;
+
+stringLiteral
+    ::= QUOTE_STRING
+    |   TEXT
+    {
+        methods = [
+            stringValue
+        ]
+    }
+    ;
+
+token
+    ::= ID
+    ;
+
+commandToken
+    ::= ID
+    ;
+
+namespaceToken
+    ::= ID
+    ;
+
+comment
+    ::= COMMENT_LITERAL
+    {
+        methods = [
+            getCommentText
+        ]
+    }
+    ;
+
+animationString
+    ::= '[' INT+ ANIM_R ']'
     ;
 
 lineTerminator
-    ::= <<eol>>
+    ::= <<eof>>
     |   ","
     |   NEWLINE
     ;
+
