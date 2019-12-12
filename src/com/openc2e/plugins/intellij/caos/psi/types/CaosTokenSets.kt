@@ -11,5 +11,20 @@ class CaosTokenSets {
                 CaosTypes.Caos_COMMENT,
                 CaosTypes.Caos_COMMENT_LITERAL
         )
+
+        @JvmStatic
+        val WHITE_SPACE_LIK = TokenSet.create(
+                CaosTypes.Caos_SPACE,
+                CaosTypes.Caos_WHITE_SPACE,
+                CaosTypes.Caos_COMMENT,
+                CaosTypes.Caos_COMMENT_LITERAL,
+                CaosTypes.Caos_TAB
+        )
+
+        @JvmStatic
+        val ScriptTerminators = TokenSet.create(
+                CaosTypes.Caos_SCRP,
+                CaosTypes.Caos_ISCR
+        )
     }
 }

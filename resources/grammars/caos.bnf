@@ -30,6 +30,14 @@
 		DOIF = "regexp:[dD][oO][iI][fF]"
 		ENDI = "regexp:[eE][nN][dD][iI]"
 		SCRP = "regexp:[sS][cC][rR][pP]"
+		RTAR = "regexp:[rR][tT][aA][rR]"
+		ESCN = "regexp:[eE][sS][cC][nN]"
+		NSCN = "regexp:[nN][sS][cC][nN]"
+		ETCH = "regexp:[eE][tT][cC][hH]"
+		ESEE = "regexp:[eE][sS][eE][eE]"
+		ISCR = "regexp:[iI][sS][cC][rR]"
+		VARR = "regexp:VA[R0-9][0-9]"
+		OBVAR = "regexp:OB[0-9]{2}"
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
 		DECIMAL = "regexp:[0-9]+\.[0-9]+"
 		INT = "regexp:[0-9]+"
@@ -86,7 +94,7 @@ caos_element
 
 
 event_script
-	::= SCRP SPACE classifier SPACE event_number line_terminator event_script_body? whiteSpace* script_terminator
+	::= (SCRP|ISCR) SPACE classifier SPACE event_number line_terminator event_script_body? whiteSpace* script_terminator
 	{
 		pin=1
 	}
@@ -112,14 +120,15 @@ classifier
 	;
 
 private control_statement
-    ::= loopStatement
-    |   repeatStatement
-    |   enumNextStatement
-    |	doIfStatement
+    ::= loop_statement
+    |   repeat_statement
+    |   enum_next_statement
+    |   enum_scenery_statement
+    |	doif_statement
     ;
 
 
-loopStatement
+loop_statement
     ::= LOOP SPACE loop_body? line_terminator whiteSpace* loop_terminator
     {
         pin=1;
@@ -155,7 +164,7 @@ private loop_body_recover
     ::= !(UNTL|EVER|ENDM)
     ;
 
-repeatStatement
+repeat_statement
     ::= REPS SPACE expression line_terminator repeat_body? whiteSpace* REPE
     {
         pin=1
@@ -177,8 +186,8 @@ private repeat_body_recover
     ::= !(REPE|ENDM)
     ;
 
-enumNextStatement
-    ::= ENUM SPACE enum_header line_terminator enum_body? whiteSpace* NEXT
+enum_next_statement
+    ::= (ENUM|ESEE|ETCH) SPACE classifier line_terminator enum_body? whiteSpace* NEXT
     {
         pin=1;
         implements = [
@@ -188,13 +197,13 @@ enumNextStatement
     }
     ;
 
-enum_header
-    ::= expression SPACE expression SPACE expression
+enum_scenery_statement
+    ::= ESCN SPACE classifier line_terminator enum_body? whiteSpace* NSCN
     {
-        methods = [
-            family="expression[0]"
-            genus="expression[1]"
-            species="expression[2]"
+        pin=1;
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
         ]
     }
     ;
@@ -233,21 +242,13 @@ private command_recover
 	::= !(ENDM|NEWLINE)
 	;
 
-doIfStatement
+doif_statement
 	::= DOIF SPACE equality_expression line_terminator do_if_body? line_terminator (whiteSpace* else_statement)? whiteSpace* ENDI
 	{
 		pin=1
 	}
 	;
 
-/*
-else_if_statement
-	::= ELIF SPACE comparisonExpression SPACE else_if_block
-	{
-		pin=1;
-	}
-	;
-*/
 else_statement
 	::= ELSE line_terminator else_block
 	{
@@ -277,6 +278,7 @@ private expressionPrime
     ::= command
     |   literal
     |   token
+    |   varToken
     ;
 
 equality_expression
@@ -285,6 +287,7 @@ equality_expression
 
 eqOp ::= ID;
 
+varToken::= VARR | OBVAR;
 
 literal
     ::= stringLiteral
@@ -351,8 +354,8 @@ private line_feed
 	|	NEWLINE
 	;
 script_terminator
-	::= <<eos>>
-	|	ENDM
+	::= ENDM
+	|   <<eos>>
 	|	<<eof>>
 	;
 
