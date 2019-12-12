@@ -1,17 +1,17 @@
 {
-	parserClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParser"
-	implements="com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
-	extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefCompositeElementImpl"
-	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes"
-	elementTypePrefix="CaosDef_"
-	elementTypeClass="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementType"
-	tokenTypeClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTokenType"
-	psiClassPrefix="CaosDef"
+	parserClass="com.openc2e.plugins.intellij.caos.parser.CaosParser"
+	implements="com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.lexer.CaosTypes"
+	elementTypePrefix="Caos_"
+	elementTypeClass="com.openc2e.plugins.intellij.caos.psi.types.CaosElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.caos.lexer.CaosTokenType"
+	psiClassPrefix="Caos"
 	psiImplClassSuffix="Impl"
-	psiPackage="com.openc2e.plugins.intellij.caos.def.psi.api"
-	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
-	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
+	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
+	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.psi.CaosElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosParserUtil"
 	tokens = [
 		NEWLINE = "regexp:\n";
 		ENDM = "regexp:[eE][nN][dD][mM]"
@@ -27,6 +27,9 @@
 		DOIF = "regexp:[dD][oO][iI][fF]"
 		ELSE = "regexp:[eE][lL][sS][eE]"
 		ENDI = "regexp:[eE][nN][dD][iI]"
+		DOIF = "regexp:[dD][oO][iI][fF]"
+		ENDI = "regexp:[eE][nN][dD][iI]"
+		SCRP = "regexp:[sS][cC][rR][pP]"
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
 		DECIMAL = "regexp:[0-9]+\.[0-9]+"
 		INT = "regexp:[0-9]+"
@@ -35,7 +38,8 @@
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
 		PLUS = "+";
-		SPACE = "regexp:[ \t]";
+		SPACE = "regexp:[ ]";
+		TAB = "regexp:[\t]"
 		OPEN_BRACKET = '[';
 		CLOSE_BRACKET = ']';
 		COMMA = ',';
@@ -45,35 +49,103 @@
 	]
 }
 
-def	::= (!<<eof>> caos_element)*
+def	::= (!<<eof>> script_body_element)*
 	;
 
+script_body_element
+	::= event_script
+	|	caos_block
+	{
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
+	}
+	;
+
+caos_block
+	::= caos_statement+
+	{
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
+	}
+	;
+
+private caos_statement
+	::= whiteSpace* caos_element line_terminator
+	|	whiteSpace* NEWLINE
+	;
 
 caos_element
-	::= comment lineTerminator
-	|   SPACE* control_statement lineTerminator
-	|   SPACE* command lineTerminator
+	::= comment
+	|   control_statement
+	|   command
 	;
 
 
+event_script
+	::= SCRP SPACE classifier SPACE event_number line_terminator event_script_body? whiteSpace* script_terminator
+	{
+		pin=1
+	}
+	;
+
+private event_script_body
+	::= caos_block
+	{
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
+        recoverWhile=event_script_body_recover
+	}
+	;
+
+private event_script_body_recover
+	::= !(ENDM|SCRP|<<eof>>|<<eos>>)
+	;
+
+classifier
+	::= family SPACE genus SPACE species
+	;
 
 private control_statement
-    ::= loop
-    |   repeat
-    |   enumNext
+    ::= loopStatement
+    |   repeatStatement
+    |   enumNextStatement
+    |	doIfStatement
     ;
 
 
-loop
-    ::= LOOP SPACE loop_body? (UNTL|EVER)
+loopStatement
+    ::= LOOP SPACE loop_body? line_terminator whiteSpace* loop_terminator
     {
         pin=1;
+        methods = [
+        	isEver
+        	isUntil
+        ]
     }
     ;
 
+loop_terminator
+	::= ever_terminator
+	|	untl_terminator
+	;
+
+private ever_terminator
+	::= EVER
+	;
+
+private untl_terminator
+	::= UNTL equality_expression
+	;
+
 
 private loop_body
-    ::= caos_element+
+    ::= caos_block
     {
         recoverWhile=loop_body_recover
     }
@@ -83,15 +155,15 @@ private loop_body_recover
     ::= !(UNTL|EVER|ENDM)
     ;
 
-repeat
-    ::= REPS SPACE expression lineTerminator repeat_body? REPE
+repeatStatement
+    ::= REPS SPACE expression line_terminator repeat_body? whiteSpace* REPE
     {
         pin=1
     }
     ;
 
 repeat_body
-    ::= caos_element+
+    ::= caos_statement+
     {
         recoverWhile=repeat_body_recover
         implements = [
@@ -101,11 +173,18 @@ repeat_body
     }
     ;
 
+private repeat_body_recover
+    ::= !(REPE|ENDM)
+    ;
 
-enumNext
-    ::= ENUM SPACE enum_header NEWLINE enum_body? NEXT
+enumNextStatement
+    ::= ENUM SPACE enum_header line_terminator enum_body? whiteSpace* NEXT
     {
         pin=1;
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
     }
     ;
 
@@ -121,7 +200,7 @@ enum_header
     ;
 
 enum_body
-    ::= caos_element+
+    ::= caos_block
     {
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
@@ -135,23 +214,60 @@ private enum_body_recover
     ::= !(NEXT|<<eof>>)
     ;
 
-private repeat_body_recover
-    ::= !(REPE|ENDM)
-    ;
 
 command
-    ::= (namespaceToken ':' SPACE)? commandToken (SPACE expression)*
+    ::= (namespaceToken ':' SPACE)? commandToken expressionList?
     {
-        recoverWhile=command_recover
+        pin=2
     }
     ;
 
+private expressionList
+	::= (SPACE expression)+
+	{
+        recoverWhile=command_recover
+	}
+	;
+
 private command_recover
-    ::= !(<<eof>>|","|NEWLINE)
-    ;
+	::= !(ENDM|NEWLINE)
+	;
+
+doIfStatement
+	::= DOIF SPACE equality_expression line_terminator do_if_body? line_terminator (whiteSpace* else_statement)? whiteSpace* ENDI
+	{
+		pin=1
+	}
+	;
+
+/*
+else_if_statement
+	::= ELIF SPACE comparisonExpression SPACE else_if_block
+	{
+		pin=1;
+	}
+	;
+*/
+else_statement
+	::= ELSE line_terminator else_block
+	{
+		pin=1;
+	}
+	;
+
+private else_block
+	::= caos_block
+	;
+
+private do_if_body
+	::= caos_block
+	{
+		//recoverWhile=do_if_body_recover
+	}
+	;
 
 expression
-    ::= comparisonExpression
+    ::= equality_expression
     |   animationString
     |   expressionPrime
     ;
@@ -163,7 +279,7 @@ private expressionPrime
     |   token
     ;
 
-comparisonExpression
+equality_expression
     ::= expressionPrime eqOp expression
     ;
 
@@ -224,9 +340,32 @@ animationString
     ::= '[' INT+ ANIM_R ']'
     ;
 
-lineTerminator
+line_terminator
     ::= <<eof>>
     |   ","
-    |   NEWLINE
+    |   line_feed+
     ;
 
+private line_feed
+	::= comment
+	|	NEWLINE
+	;
+script_terminator
+	::= <<eos>>
+	|	ENDM
+	|	<<eof>>
+	;
+
+family ::= INT;
+genus ::= INT;
+species ::= INT;
+
+whiteSpace
+	::= NEWLINE
+	|	TAB
+	|	SPACE
+	;
+
+event_number
+	::= INT
+	;
