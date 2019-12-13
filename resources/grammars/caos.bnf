@@ -225,11 +225,16 @@ private enum_body_recover
 
 
 command
-    ::= (namespaceToken ':' SPACE)? commandToken expressionList?
+    ::= command_head expressionList?
     {
         pin=2
     }
     ;
+
+private command_head
+	::= (namespaceToken ':' SPACE)? commandToken
+	|	commandToken  ':'
+	;
 
 private expressionList
 	::= (SPACE expression)+
