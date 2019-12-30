@@ -13,7 +13,7 @@ class CaosTokenSets {
         )
 
         @JvmStatic
-        val WHITE_SPACE_LIK = TokenSet.create(
+        val WHITE_SPACE_LIKE = TokenSet.create(
                 CaosTypes.Caos_SPACE,
                 CaosTypes.Caos_WHITE_SPACE,
                 CaosTypes.Caos_COMMENT,

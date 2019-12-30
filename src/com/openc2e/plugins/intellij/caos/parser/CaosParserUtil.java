@@ -66,8 +66,8 @@ public class CaosParserUtil extends GeneratedParserUtilBase {
         int offset = 0;
         do {
             type = builder_.lookAhead(offset++);
-        } while (type != null && CaosTokenSets.getWHITE_SPACE_LIK().contains(type));
-        return type == null || CaosTokenSets.getScriptTerminators().contains(type);
+        } while (type != null && CaosTokenSets.getWHITE_SPACE_LIKE().contains(type));
+        return type == null || CaosTokenSets.getScriptTerminators().contains(type) || eof(builder_, level);
     }
 
 }

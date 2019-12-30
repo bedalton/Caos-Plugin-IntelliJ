@@ -1,5 +1,6 @@
 {
 	parserClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParser"
+	parserUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
 	implements="com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
 	extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefCompositeElementImpl"
 	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes"
@@ -43,7 +44,6 @@
 		AT_RETURNS = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
 
 		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
-		LINK = 'regexp:\[[^]]*]';
 		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
 		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
 		STRING_LITERAL_TYPE
@@ -65,7 +65,7 @@ def_element
 
 
 command_def_element
-	::= doc_comment? command_name return_type arguments_list?
+	::= doc_comment? command return_type arguments_list? <<eos>>
 	{
 		pin = 2;
 		methods = [
@@ -108,12 +108,11 @@ private type_definition_list_recover
 	;
 
 variable
-	::= variable_name '(' variable_type ')'
+	::= variable_name variable_type
 	{
 		pin = 2;
 	}
 	;
-
 
   variable_name
 	::= ID
@@ -121,19 +120,34 @@ variable
 	;
 
 return_type
-	::= '(' variable_type ')'
+	::= variable_type
 	{
 		pin = 1
 	}
 	;
 
 variable_type
-	::= ID
-	|	WORD
-	|	STRING_LITERAL_TYPE
+	::= '(' type_literal ')'
+	|	bracket_string
 	;
 
-command_name
+type_literal
+	::= ID
+	|	WORD
+	;
+bracket_string
+	::= '[' string_label ']'
+	;
+
+string_label
+	::= (ID|WORD)+
+	;
+
+command
+	::= command_word+
+	;
+
+command_word
 	::= WORD
 	;
 
@@ -201,7 +215,8 @@ doc_comment_param_text
 	;
 
 doc_comment_variable_type
-	::= '(' variable_type type_def_name ')'
+	::= '(' type_literal type_def_name ')'
+	|	bracket_string
 	;
 
 comment

@@ -29,11 +29,11 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 %unicode
 
 WHITE_SPACE=\s+
-TEXT=[^ ]+
+TEXT=([^ *]|[*][^/])+
 DOC_COMMENT_OPEN="/"[*]+
 DOC_COMMENT_CLOSE=[*]+"/"
 LINE_COMMENT="//"[^\n]*
-WORD=[a-zA-Z_][a-zA-Z0-9#!$_]{3}
+WORD=[a-zA-Z_][a-zA-Z0-9#!$_:]{3}
 TYPE_LINK=[@]\{[^}]\}
 ID=[_a-zA-Z][_a-zA-Z0-9]*
 SPACE=[ \t\n\x0B\f\r]+
@@ -47,7 +47,6 @@ AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]
 TYPE_DEF_KEY=[^=]+
 TYPE_DEF_VALUE = [^-\n,]+
 DEF_TEXT=[^\n]+
-STRING_LITERAL_TYPE=\[[^\]]+\]
 
 %state IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_TYPEDEF IN_COMMENT_AFTER_VAR
 
@@ -73,7 +72,6 @@ STRING_LITERAL_TYPE=\[[^\]]+\]
 }
 
 <IN_PARAM_COMMENT> {
-	{STRING_LITERAL_TYPE}		{ yybegin(IN_COMMENT); return CaosDef_STRING_LITERAL_TYPE; }
     "{"							{ return CaosDef_OPEN_BRACE;  }
     "}"							{ yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_CLOSE_BRACE; }
     {ID}						{ return CaosDef_ID; }
@@ -82,6 +80,9 @@ STRING_LITERAL_TYPE=\[[^\]]+\]
 
 <IN_COMMENT_AFTER_VAR> {
     {ID}						{ yybegin(IN_COMMENT); return CaosDef_ID; }
+    {AT_ID}						{ return CaosDef_AT_ID; }
+    "("							{ return CaosDef_OPEN_PAREN; }
+	")"						 	{ yybegin(YYINITIAL); return CaosDef_CLOSE_PAREN; }
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1);}
 }
 
@@ -91,9 +92,9 @@ STRING_LITERAL_TYPE=\[[^\]]+\]
 
 <IN_COMMENT> {
 	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK; }
-	{WORD_LINK}				 	{ return CaosDef_LINK; }
+	{WORD_LINK}				 	{ return CaosDef_WORD_LINK; }
 	{CODE_BLOCK_LITERAL}       	{ return CaosDef_CODE_BLOCK_LITERAL; }
-	{TEXT}					 	{ return CaosDef_TEXT; }
+	{TEXT}						{ return CaosDef_TEXT; }
 }
 
 <IN_TYPEDEF> {
@@ -102,7 +103,6 @@ STRING_LITERAL_TYPE=\[[^\]]+\]
 	"}"						 	{ return CaosDef_CLOSE_BRACE; }
 	"{"						 	{ return CaosDef_OPEN_BRACE; }
 	","                        	{ return CaosDef_COMMA; }
-	")"						 	{ yybegin(YYINITIAL); return CaosDef_CLOSE_PAREN; }
 	{TYPE_DEF_KEY}			 	{ return CaosDef_TYPE_DEF_KEY; }
 	{TYPE_DEF_VALUE}			{ return CaosDef_TYPE_DEF_VALUE; }
 	{DEF_TEXT}				 	{ return CaosDef_TEXT; }
@@ -115,6 +115,8 @@ STRING_LITERAL_TYPE=\[[^\]]+\]
 	":"                        	{ return CaosDef_COLON; }
 	"("                        	{ return CaosDef_OPEN_PAREN; }
 	")"                        	{ return CaosDef_CLOSE_PAREN; }
+ 	"["							{ return CaosDef_OPEN_BRACKET; }
+ 	"]"							{ return CaosDef_CLOSE_BRACKET; }
 
 	{DOC_COMMENT_OPEN}         	{ return CaosDef_DOC_COMMENT_OPEN; }
 	{DOC_COMMENT_CLOSE}        	{ return CaosDef_DOC_COMMENT_CLOSE; }
