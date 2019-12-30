@@ -1,7 +1,7 @@
 package com.openc2e.plugins.intellij.caos.lexer;
 
 import com.intellij.lexer.FlexAdapter;
-import om.openc2e.plugins.intellij.caos.lexer._CaosLexer;
+import com.openc2e.plugins.intellij.caos.lexer._CaosLexer;
 
 public class CaosLexerAdapter extends FlexAdapter {
     public CaosLexerAdapter() {

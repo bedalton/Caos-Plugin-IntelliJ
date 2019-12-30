@@ -1,4 +1,4 @@
-package om.openc2e.plugins.intellij.caos.lexer;
+package com.openc2e.plugins.intellij.caos.lexer;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
