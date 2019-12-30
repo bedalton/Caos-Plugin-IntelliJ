@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class CaosDefParserDefinition implements ParserDefinition {
 
-    public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
+    public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE, CaosDefTypes.CaosDef_LEADING_ASTRISK);
     private static final TokenSet COMMENTS = CaosDefTokenSets.getCOMMENTS();
     private static final TokenSet STRINGS = TokenSet.create();
 
