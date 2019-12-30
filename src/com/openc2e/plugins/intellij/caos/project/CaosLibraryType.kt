@@ -1,4 +1,4 @@
-package brightscript.intellij.project
+package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.libraries.*
@@ -32,7 +32,7 @@ class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
     }
 
     override fun getCreateActionName(): String? {
-        return CaosBundle.message("brs.sources.library.action-name")
+        return CaosBundle.message("caos.sources.library.action-name")
     }
 
     override fun getIcon(properties: DummyLibraryProperties?): Icon? {
@@ -40,7 +40,7 @@ class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
     }
 
     companion object {
-        val LIBRARY: PersistentLibraryKind<DummyLibraryProperties> = object : PersistentLibraryKind<DummyLibraryProperties>(CaosBundle.message("brs.sources.library.library-name")) {
+        val LIBRARY: PersistentLibraryKind<DummyLibraryProperties> = object : PersistentLibraryKind<DummyLibraryProperties>(CaosBundle.message("caos.sources.library.library-name")) {
             override fun createDefaultProperties(): DummyLibraryProperties {
                 return DummyLibraryProperties()
             }

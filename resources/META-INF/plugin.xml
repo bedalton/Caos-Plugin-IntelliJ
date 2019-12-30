@@ -6,6 +6,7 @@
   <description><![CDATA[
       This plugin aims to provide a simple, proof-of-concept, editor for Caos scripts
     ]]></description>
+  <vendor></vendor>
 
   <change-notes><![CDATA[
       <ul>
@@ -13,6 +14,9 @@
           <b>0.01</b>
           <ul>
             <li>initial implementation</li>
+            <li>Syntax Highlighting</li>
+            <li>Basic completion</li>
+            <li>Definition reference</li>
           </ul>
         </li>
       </ul>
@@ -39,30 +43,28 @@
 
 
     <!-- Bundled Definitions -->
-    <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLi" id="CaosLibrary" />
+    <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.annotators.CaosDefSyntaxHighlighter" key="CaosDef" />
-    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.annotators.BrsHighlighterFactory"
+    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.lang.CaosDefSyntaxHighlighter" key="CaosDef" />
+    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.lang.CaosDefSyntaxHighlighterFactory"
                                    language="CaosDef" />
 
     <!-- Annotators -->
     <annotator language="Caos"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosUnknownCommandErrorAnnotator" />
-    <annotator language="CaosDef"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosUnknownCommandErrorAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosCommandAnnotator" />
 
     <!-- Indices -->
-    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.BrsStubTypes" />
-    <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.StubIndexService"
-                        serviceImplementation="com.openc2e.plugins.intellij.caos.indices.BrsIndexService" />
+    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosStubTypes" />
+    <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosIndexService"
+                        serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosIndexServiceImpl" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNamespaceIndex" />
 
 
     <!-- Formatting -->
-    <lang.braceMatcher language="BrightScript" implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefBraceMatcher" />
-    <enterBetweenBracesDelegate language="BrightScript"
+    <lang.braceMatcher language="CaosDef" implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefBraceMatcher" />
+    <enterBetweenBracesDelegate language="CaosDef"
                                 implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
     <!-- Add your extensions here -->

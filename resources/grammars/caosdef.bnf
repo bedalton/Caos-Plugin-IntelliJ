@@ -10,7 +10,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.def.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
-	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
+	//elementTypeFactory("")="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
 	tokens = [
 		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
@@ -34,16 +34,16 @@
 		CLOSE_BRACE = '}';
 		LEADING_ASTRISK = '*';
 		DASH = '-';
-		CODE_BLOCK_LITERAL = 'regexp:#\{[^}]*\}';
+		CODE_BLOCK_LITERAL = 'regexp:#\{[^}]*}';
 		WORD_LINK = 'regexp:\[[a-zA-Z_0-9#$!]+]'
-		TYPE_LINK = 'regexp:\@\{[a-zA-Z_0-9#$!]+\}'
+		TYPE_LINK = 'regexp:@\{[a-zA-Z_0-9#$!]+}'
 		AT_RVALUE = "regexp:[@][rR][vV][aA][lL][uU][eE]";
 		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
 		AT_PARAM = "regexp:[@][pP][aA][rR][aA][mM]"
 		AT_RETURNS = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
 
 		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
-		LINK = 'regexp:\[[^\]]*\]';
+		LINK = 'regexp:\[[^]]*]';
 		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
 		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
 		STRING_LITERAL_TYPE
@@ -115,7 +115,7 @@ variable
 	;
 
 
-variable_name
+  variable_name
 	::= ID
 	|	WORD
 	;

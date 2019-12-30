@@ -1,4 +1,4 @@
-package grammars;
+package om.openc2e.plugins.intellij.caos.lexer;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
@@ -85,7 +85,7 @@ TAB=[\t]
   {COMMENT_LITERAL}      { return Caos_COMMENT_LITERAL; }
   {DECIMAL}              { return Caos_DECIMAL; }
   {INT}                  { return Caos_INT; }
-  {TEXT}                 { return Caos_TEXT; }
+  {TEXT}                 { return Caos_TEXT_LITERAL; }
   {QUOTE_STRING}         { return Caos_QUOTE_STRING; }
   {ID}                   { return Caos_ID; }
   {SPACE}                { return Caos_SPACE; }

@@ -18,7 +18,7 @@
  * Modified for plugin By: Daniel Badal
  *
  */
-package brightscript.intellij.project
+package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.ProjectBundle

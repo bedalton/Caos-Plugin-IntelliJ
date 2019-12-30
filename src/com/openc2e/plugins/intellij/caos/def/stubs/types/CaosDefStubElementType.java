@@ -23,6 +23,6 @@ public abstract class CaosDefStubElementType<StubT extends StubElement<PsiT>, Ps
     @NotNull
     @Override
     public String getExternalId() {
-        return "brs."+super.toString();
+        return "caos."+super.toString();
     }
 }

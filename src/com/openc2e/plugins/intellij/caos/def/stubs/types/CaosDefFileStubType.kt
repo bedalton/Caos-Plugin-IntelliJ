@@ -39,7 +39,7 @@ class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefL
     }
 
     override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {
-        //ServiceManager.getService(StubIndexService::class.java).indexFile(stub as? BrsFileStub, sink)
+        //ServiceManager.getService(StubIndexService::class.java).indexFile(stub as? CaosFileStub, sink)
     }
 
     companion object {

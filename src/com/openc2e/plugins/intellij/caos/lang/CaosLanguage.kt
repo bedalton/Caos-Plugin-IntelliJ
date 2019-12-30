@@ -5,6 +5,7 @@ import com.intellij.lang.Language
 class CaosLanguage private constructor() : Language(NAME) {
     companion object {
         private const val NAME = "Caos"
+        @JvmStatic
         val instance = CaosLanguage()
     }
 }

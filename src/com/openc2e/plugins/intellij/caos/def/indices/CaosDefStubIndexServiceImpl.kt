@@ -1,6 +1,6 @@
 package com.openc2e.plugins.intellij.caos.def.indices
 
-import brightscript.intellij.utils.isNotNullOrBlank
+import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 import com.intellij.psi.stubs.IndexSink
 import com.openc2e.plugins.intellij.caos.def.stubs.interfaces.CaosDefCommandElementStub
 

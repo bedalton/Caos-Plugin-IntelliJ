@@ -9,7 +9,7 @@ class CaosDefTokenSets {
         @JvmStatic
         val COMMENTS = TokenSet.create(
                 CaosDefTypes.CaosDef_DOC_COMMENT,
-                CaosDefTypes.CaosDef_INLINE_DOC_COMMENT
+                CaosDefTypes.CaosDef_LINE_COMMENT
         )
     }
 }

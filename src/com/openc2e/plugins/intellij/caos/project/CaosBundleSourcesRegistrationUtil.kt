@@ -1,7 +1,5 @@
 package com.openc2e.plugins.intellij.caos.project
 
-import brightscript.intellij.project.BUNDLE_DEFINITIONS_FOLDER
-import brightscript.intellij.project.CaosLibraryType
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbService
@@ -34,7 +32,7 @@ object CaosBundleSourcesRegistrationUtil {
 
         val moduleScope = module.moduleContentWithDependenciesScope
         if (FilenameIndex.getAllFilesByExt(module.project, "cos", moduleScope).isEmpty()) {
-            LOGGER.info("No brs files in project")
+            LOGGER.info("No CAOS files in project")
             return
         }
         runWriteAction {
@@ -65,9 +63,9 @@ object CaosBundleSourcesRegistrationUtil {
         if (libraryPath == null) {
             val pluginRoot = CaosFileUtil.PLUGIN_HOME_DIRECTORY
             if (pluginRoot == null || !pluginRoot.exists()) {
-                LOGGER.severe("Failed to locate bundled brightscript files: Plugin root is invalid")
+                LOGGER.severe("Failed to locate bundled caos definition files: Plugin root is invalid")
             } else {
-                LOGGER.severe("Failed to locate bundled brightscript files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
+                LOGGER.severe("Failed to locate bundled caos definition files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
             }
             return false
         }

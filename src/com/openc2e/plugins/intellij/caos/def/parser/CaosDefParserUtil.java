@@ -9,7 +9,6 @@ import gnu.trove.TObjectLongHashMap;
 
 public class CaosDefParserUtil extends GeneratedParserUtilBase {
 
-    static final Key<Boolean> IS_DEFINITIONS_FILE_USERDATA_KEY = new Key<Boolean>("brs.userdata.isdefinitionsfile");
     static final String LOOP = "loop";
     static final String INTERFACE = "interface";
 
@@ -63,5 +62,15 @@ public class CaosDefParserUtil extends GeneratedParserUtilBase {
     public static boolean eol(PsiBuilder builder_, int level) {
         final String text = builder_.getTokenText();
         return (text != null && text.contains("\n")) || eof(builder_, level);
+    }
+
+    public static boolean eos(PsiBuilder builder_, int level)
+    {
+        int index = 1;
+        while (builder_.lookAhead(index) == TokenType.WHITE_SPACE)
+            index++;
+        return builder_.lookAhead(index) == CaosDefTypes.CaosDef_DOC_COMMENT_OPEN ||
+                builder_.lookAhead(index) == CaosDefTypes.CaosDef_SEMI ||
+                eof(builder_, level);
     }
 }

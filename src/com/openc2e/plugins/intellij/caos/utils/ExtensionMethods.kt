@@ -1,4 +1,4 @@
-package brightscript.intellij.utils
+package com.openc2e.plugins.intellij.caos.utils
 
 import com.intellij.psi.PsiElement
 import java.util.*

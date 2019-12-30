@@ -1,5 +1,6 @@
 {
 	parserClass="com.openc2e.plugins.intellij.caos.parser.CaosParser"
+	parserUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosParserUtil"
 	implements="com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
 	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosCompositeElementImpl"
 	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.lexer.CaosTypes"
@@ -10,8 +11,8 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.psi.CaosElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosParserUtil"
+	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.psi.types.CaosElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosParserPsiUtil"
 	tokens = [
 		NEWLINE = "regexp:\n";
 		ENDM = "regexp:[eE][nN][dD][mM]"
@@ -41,7 +42,7 @@
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
 		DECIMAL = "regexp:[0-9]+\.[0-9]+"
 		INT = "regexp:[0-9]+"
-		TEXT = 'regexp:\[[^\]]*\]';
+		TEXT_LITERAL = 'regexp:\[[^\]]*\]';
 		QUOTE_STRING = 'regexp:"[^\n|"]*"'
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
@@ -62,21 +63,23 @@ def	::= (!<<eof>> script_body_element)*
 
 script_body_element
 	::= event_script
-	|	caos_block
+	|	code_block
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
 	}
 	;
 
-caos_block
+code_block
 	::= caos_statement+
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+        ]
+        methods = [
+        	getCodeBlock
         ]
 	}
 	;
@@ -101,11 +104,11 @@ event_script
 	;
 
 private event_script_body
-	::= caos_block
+	::= code_block
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
         recoverWhile=event_script_body_recover
 	}
@@ -154,7 +157,7 @@ private untl_terminator
 
 
 private loop_body
-    ::= caos_block
+    ::= code_block
     {
         recoverWhile=loop_body_recover
     }
@@ -168,17 +171,21 @@ repeat_statement
     ::= REPS SPACE expression line_terminator repeat_body? whiteSpace* REPE
     {
         pin=1
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+        ]
+
+        methods = [
+        ]
+
     }
     ;
 
-repeat_body
-    ::= caos_statement+
+private repeat_body
+    ::= code_block
     {
         recoverWhile=repeat_body_recover
-        implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
-        ]
     }
     ;
 
@@ -192,7 +199,10 @@ enum_next_statement
         pin=1;
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+        ]
+        methods = [
+        	getCodeBlock
         ]
     }
     ;
@@ -203,17 +213,20 @@ enum_scenery_statement
         pin=1;
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+        ]
+        methods = [
+        	getCodeBlock
         ]
     }
     ;
 
-enum_body
-    ::= caos_block
+private enum_body
+    ::= code_block
     {
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
         recoverWhile=enum_body_recover
     }
@@ -262,11 +275,11 @@ else_statement
 	;
 
 private else_block
-	::= caos_block
+	::= code_block
 	;
 
 private do_if_body
-	::= caos_block
+	::= code_block
 	{
 		//recoverWhile=do_if_body_recover
 	}
@@ -315,7 +328,7 @@ number ::=INT|DECIMAL
 
 stringLiteral
     ::= QUOTE_STRING
-    |   TEXT
+    |   TEXT_LITERAL
     {
         methods = [
             stringValue

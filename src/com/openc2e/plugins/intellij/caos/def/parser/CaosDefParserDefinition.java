@@ -22,7 +22,7 @@ public class CaosDefParserDefinition implements ParserDefinition {
 
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
     private static final TokenSet COMMENTS = CaosDefTokenSets.getCOMMENTS();
-    private static final TokenSet STRINGS = TokenSet.create(CaosDefTypes.CaosDef_STRING);
+    private static final TokenSet STRINGS = TokenSet.create();
 
     @NotNull
     @Override

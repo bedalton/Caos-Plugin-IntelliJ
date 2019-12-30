@@ -1,4 +1,4 @@
-package brightscript.intellij.indices
+package com.openc2e.plugins.intellij.caos.indices
 
 import com.openc2e.plugins.intellij.caos.utils.startsAndEndsWith
 import com.intellij.openapi.project.Project

@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.project
+package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -7,7 +7,7 @@ import java.util.logging.Logger
 
 object CaosSdkProjectRootsChangeListener : ModuleRootListener {
 
-    val LOGGER = Logger.getLogger("#"+CaosSdkProjectRootsChangeListener::class.java)
+    val LOGGER = Logger.getLogger("#"+ CaosSdkProjectRootsChangeListener::class.java)
 
     override fun beforeRootsChange(event: ModuleRootEvent) {
         super.beforeRootsChange(event)

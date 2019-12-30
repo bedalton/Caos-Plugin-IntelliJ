@@ -6,6 +6,6 @@ import com.intellij.patterns.ElementPattern
 
 class CaosDefCompletionContributor : CompletionContributor() {
     init {
-        extend(CompletionType.BASIC, ElementPattern)
+        //extend(CompletionType.BASIC, ElementPattern)
     }
 }

@@ -24,6 +24,7 @@ class CaosDefBraceMatcher : PairedBraceMatcher {
         val PAIRS = listOf(
                 BracePair(CaosDef_OPEN_BRACKET, CaosDef_CLOSE_BRACKET, true),
                 BracePair(CaosDef_OPEN_PAREN, CaosDef_CLOSE_PAREN, true),
+                BracePair(CaosDef_OPEN_BRACE, CaosDef_CLOSE_BRACE, true)
         ).toTypedArray()
     }
 

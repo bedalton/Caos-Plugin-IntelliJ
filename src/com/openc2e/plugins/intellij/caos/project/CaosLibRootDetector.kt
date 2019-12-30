@@ -18,7 +18,7 @@
  * modified by Daniel Badal - 2019
  */
 
-package brightscript.intellij.project
+package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.roots.OrderRootType

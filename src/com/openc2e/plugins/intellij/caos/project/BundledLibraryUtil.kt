@@ -1,6 +1,6 @@
-package brightscript.intellij.project
+package com.openc2e.plugins.intellij.caos.project
 
-import brightscript.intellij.utils.BrsFileUtil
+import com.openc2e.plugins.intellij.caos.utils.orFalse
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
@@ -8,18 +8,19 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScopes
+import com.openc2e.plugins.intellij.caos.utils.CaosFileUtil
 import java.util.logging.Logger
 
 internal const val BUNDLE_DEFINITIONS_FOLDER = "builtins"
 private val LOGGER:Logger = Logger.getLogger("#BundledLibraryUtil")
 
 internal fun canRegisterSourcesAsLibrary(module:Module, directories: List<String>) : Boolean {
-    if (!BrsFileUtil.PLUGIN_HOME_DIRECTORY?.exists().orFalse()) {
+    if (!CaosFileUtil.PLUGIN_HOME_DIRECTORY?.exists().orFalse()) {
         LOGGER.severe("Failed to find plugin home directory")
         return false
     }
     return directories.all {directory ->
-        BrsFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")?.exists().orFalse()
+        CaosFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")?.exists().orFalse()
     }
 }
 
@@ -29,9 +30,9 @@ internal fun registerSourcesAsLibrary(module: Module, libraryName:String, direct
     val library = getCreateLibrary(libraryName, modifiableModel)
     val libModel = library.modifiableModel
     directories.forEach {directory ->
-        val libraryPath = BrsFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")
+        val libraryPath = CaosFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")
         if (libraryPath == null) {
-            val pluginRoot = BrsFileUtil.PLUGIN_HOME_DIRECTORY
+            val pluginRoot = CaosFileUtil.PLUGIN_HOME_DIRECTORY
             if (pluginRoot == null || !pluginRoot.exists()) {
                 LOGGER.severe("Failed to locate bundled files: Plugin root is invalid")
                 //throw Exception("Failed to locate bundled files: Plugin root is invalid")
