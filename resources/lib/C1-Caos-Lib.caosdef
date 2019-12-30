@@ -1,0 +1,1855 @@
+/*
+ * Object that [OWNR] creature was attending to
+ * @RValue
+ * @return (agent)
+ */
+_IT_ (agent);
+
+/*
+ * Abandons changes to world & closes Vivarium
+ * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
+ */
+ABRT (command);
+
+/*
+ * Object's Active flag (INACTIVE=0 ACTIVE=1)
+ * @LValue
+ * @RValue
+ * @return (integer@ActiveFlag)
+ */
+ACTV (integer);
+
+/*
+ * Sets the lvalue to the sum of the lvalue plus the rvalue
+ * {lvalue} = {lvalue} + {rvalue}
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+ADDV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * Set the target point on the [_IT_] object for subsequent [APPR] and/or [TOUC] commands
+ * VALUES FOR ACT 0: act1 1: act2 2: deac
+ * @param {action} (integer@Action)
+ */
+AIM: (command) action (integer);
+
+/*
+ * Sets the lvalue to the bitwise AND(&) of lvalue and rvalue
+ * lvalue = {lvalue} & {rvalue}
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+ANDV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * Start animation of DEST object/part using these poses
+ * CREATURE: poses refer to entries in the pose table; anims are TWO-digit numbers for creatures
+ * @param {anim} [creature_anim] [01020304R] 'R' ending denotes loop
+ */
+ANIM (command) anim [creature_anim];
+
+/*
+ * Start animation of DEST object/part using these poses
+ * @param {anim} [object_anim] [1234R] 'R' ending denotes repeat
+ */
+ANIM (command) anim [object_anim];
+
+/*
+ * Approach [_IT_]
+ * Choose a walking gait according to chemo-receptors, then start walking towards _IT_.
+ * Continue with next instruction when you are WITHIN REACH
+ */
+APPR (command);
+
+/*
+ * Return 1 if creature is asleep
+ * @RValue
+ * @return (integer@bool)
+ */
+ASLP (integer);
+
+/*
+ * Go to sleep (close eyes, become insensible to some stimuli) or wake up.
+ * Instruction doesn't change pose - macro must do this after ASLP instr.
+ * Any change of action will automatically wake creature up again.
+ * @param {value} (integer@bool)
+ */
+ASLP (command) value (integer);
+
+/*
+ * [_IT_] object that [OWNR] creature is attending to (may be NULL)
+ * @RValue
+ * @return (agent)
+ */
+ATTN (agent);
+
+/*
+ * Object's attributes (INVISIBLE, CARRYABLE, etc)
+ * @LValue
+ * @RValue
+ * @return (sum@Attributes) Sum of attributes
+ */
+ATTR (integer);
+
+/*
+ * Moniker of child genome if [TARG] is pregnant
+ * Useful to modify scripts for pregnant norns.
+ * Set to 0 to abort a pregnancy (or set to child moniker to make her pregnant)
+ * @LValue
+ * @RValue
+ * @return (integer) genome moniker as int
+ */
+BABY (integer);
+
+/*
+ * Specify the base image number for this object/part.
+ * Can be used to allow anims from large tables of images, by moving base sprite# around table.
+ * Value is an ABSOLUTE index into this object's image
+ * gallery. CARE: no error checks!
+ * Because the [ANIM] command for objects uses a single digit for image numbers [BASE] is needed if you are using a sprite file with a lot of entries.
+ * The example below is from the Cloud Butterfly COB and shows the use of the [BASE] command – in all other ways the two subroutines below are identical.
+ * #{
+ * 	subr left
+ * 	  base 0 anim [0123] over anim [450]
+ * 	  mvby -3 0
+ * 	  retn
+ * 	  subr rite
+ * 	  base 6 anim [0123] over anim [450]
+ * 	  mvby 3 0
+ * 	retn
+ * }#
+ * @param {n} (integer) new base image
+ */
+BASE (command) n (integer);
+
+/*
+ * Allow user to edit the current word (n=1) Prevent further editing and relinquish kbd (n=0)
+ * @param {n} (integer)
+ */
+BBD: EDIT (command) n (integer);
+
+/*
+ * 'speak' the current word so that nearby norns can read it and learn the association between text and concept.
+ * {n} determines the type of output:
+ * If n=0, word will be broadcast as if it had been read,
+ * i.e. to those creatures looking at bbd, with no visible consequences.
+ * If n > 0, word will be broadcast as if it were a sound,
+ * i.e. it is sent to all creatures in EARSHOT, and the word appears in a speech bubble above the bbd.
+ * Use n=0 in timer ticks for posters etc.
+ * and n=1 when eg. a norn presses a button on a language computer to change the picture.
+ * @param {n} (integer)
+ */
+BBD: EMIT (command) n (integer);
+
+/*
+ * draws the current text string text[Obv[0]] onto part0 (if n=1) or wipes text from bbd (if n=0)
+ * @param {n} (integer) (0-1) 0=Wipe Text, 1=Write text onto part0
+ */
+BBD: SHOW (command) n (integer);
+
+/*
+ * Install a word/idea into [TARG] Blackboard's list.
+ * Used by blackboard editor tools to store edited results, and by Object editor when constructing blackboards.
+ * @See "[DDE: WORD]" cmd for reading words
+ * @param {index} (value)
+ * @param {id} (value)
+ * @param {text} [text]
+ */
+BBD: WORD (command) index (value) id (value) text [text];
+
+/*
+ * Sends Rvalue to debug window. Same as [DBUG] but does not run in an instance.
+ * @param {rvalue} (anything)
+ */
+BDVG (command) rvalue (anything);
+
+/*
+ * Set SimpleObject's reactions to clicks by mouse and activation requests from creatures.
+ * @param {click} (integer@click)
+ * @param {creature} (integer@CreatureInteraction)
+ */
+BHVR (command) click (integer) creature (integer);
+
+/*
+ * vehicle's collision data
+ * @HitBits:bitflags {
+ * 	B0=Hit Left
+ * 	B1=Hit Right
+ * 	B2=Hit Top
+ * 	B3=Hit Bottom
+ * }
+ * @RValue
+ * @return (bitflags@HitBits)
+ */
+BUMP (bitflags);
+
+/*
+ * Set the relative coords of [TARG] VEHICLE, LIFT or AIRCRAFT'S Cab (cabin rectangle)
+ * @param {left} (integer)
+ * @param {top} (integer)
+ * @param {right} (integer)
+ * @param {bottom} (integer)
+ */
+CABN (command) left (integer) top (integer) right (integer) bottom (integer);
+
+/*
+ * Creature age (0-9)
+ * @RValue
+ * @return (integer[0 to 7])
+ */
+CAGE (integer);
+
+/*
+ * Creature age in minutes [ABUS]
+ * @RValue
+ * @return (integer)
+ */
+CAMN (integer);
+
+/*
+ * Object that's carrying [OWNR] (may be NULL)
+ * @RValue
+ * @return (agent)
+ */
+CARR (agent);
+
+/*
+ * Concentration of a chemical in [TARG]
+ * @RValue
+ * @return (integer)
+ * @param {chemical} (integer@Chemical) chemical number
+ */
+CHEM (integer) chemical (integer);
+
+/*
+ * Add this much chemical {n} to [TARG]'s bloodstream
+ * @param {chemical} (integer)
+ * @param {amount} (integer)
+ */
+CHEM (command) chemical (integer) amount (integer);
+
+/*
+ * @RValue
+ * @return (classifier)
+ */
+CLAS (classifier);
+
+/*
+ * Issue an ID_XXX command message to the application. This allows macros to activate ANY menu command.
+ * Note that command will get executed LATER - function doesn't wait before returning!
+ * @param {id} (integer) the decimal ID_XXX value - look these up in the resource file & list them for users
+ */
+CMND (command) id (integer);
+
+/*
+ * Does nothing in release version, but debug version sends String as a TRACE message that could be viewed on the debugger.
+ * @param {string} [string]
+ */
+DBGM (command) string [string];
+
+/*
+ * Performs in an INSTANCE
+ * sends {RValue} as a TRACE message that can be viewed on the debugger
+ * @param {RValue} (anything)
+ */
+DBUG (command) RValue (anything);
+
+/*
+ * Get statistics about this neurone. Used by brain debug/analysis tools.
+ * Stores the following data in buffer:
+ * Output | State | number-of-dens-of-that-type | total Susceptibility | total STW | total LTW | total Strength |
+ * The dendrite values are totalled from all dendrites of the given type in that cell -
+ * the magnitude will vary according to the number of dendrites,
+ * which is given in the returned string (so that gauges and graphs can be scaled appropriately, or mean values calculated).
+ * @param {lobe} (integer)
+ * @param {cell} (integer)
+ * @param {dentype} (integer)
+ */
+DDE: CELL (command) lobe (integer) cell (integer) dentype (integer);
+
+/*
+ * Update Number of Norns in world if egg hatches voluntarily
+ */
+DDE: DIED (command);
+
+/*
+ * Output the numbers of each of the 12 types of genes
+ */
+DDE: GENE (command);
+
+/*
+ * Get Buffer
+ * Get string and writes to dde buffer
+ * @GetBOption:Literal {
+ * 	data = get all creatures data
+ * 	cnam = get creature's name
+ * 	ctim = get time creature has been alive
+ * 	monk = get creature's moniker
+ * 	ovvd = returns the following fields (each separated by a '|' symbol) - 'Name|Moniker|Sex(1=male,2=Female)|Age(hours:min)|Pregnancy(N/A, No, Number)|Life-Force(<number> terminated in % or dead)|Medical("Healthy","Sick|"Dead")|Room#|X-Pos|Y-Pos)&(...repeat for next)'
+ * }
+ * @param {option} (literal@GetBOption)
+ */
+DDE: GETB (command) option (literal);
+
+/*
+ * Update Number of Norns in world if egg hatches voluntarily
+ */
+DDE: HATC (command);
+
+/*
+ * Update Number of Norns in world if egg hatches voluntarily
+ */
+DDE: LIVE (command);
+
+/*
+ * output the locations of the brain lobes of the subject of the macro
+ * Format is """ *'*${x_start}#[']{y_start}#[']width#[']height#['] """ after a leading count of the number of lobes based on the 64x48 grid of neurones
+ */
+DDE: LOBE (command);
+
+/*
+ * Update Number of Natural eggs in world
+ */
+DDE: NEGG (command);
+
+/*
+ * Alima simple macro to pan camera to creature before the owners kit takes a photo
+ */
+DDE: PANC (command);
+
+/*
+ * Take snapshot of the current subject create a standard windows bmp pass file name back to client
+ */
+DDE: PICT (command);
+
+/*
+ * Write from string to location determined by option token
+ * @param {data} [string_literal]
+ * @param {options} (literal@PutBOption)
+ */
+DDE: PUTB (command) data [literal string] options (literal);
+
+/*
+ * Send a string - useful for debugging macros, or for returning the results of macro commands to test the truth of some condition
+ * @param {string} [string_literal]
+ */
+DDE: PUTS (command) string [string literal];
+
+/*
+ * Send an integer Rvalue
+ * @param {rvalue} (integer)
+ */
+DDE: PUTV (command) rvalue (integer);
+
+/*
+ * Fetch a script from the scriptorium and send it (used by script editor for reading out & editing existing scripts
+ */
+DDE: SCRP (command);
+
+/*
+ * Read a word/idea from [targ] BLACKBOARD's list.
+ * Sends "###|text|", where #[###] is the vocabulary slot (WD_xxx) for the idea represented by the bbd picture whose index is Index, and '#[text]' is the word associated with that picture Used by blackboard editor tools to fetch words for editing
+ * @See [WORD] cmd for writing words into object
+ * @param {index} (integer)
+ */
+DDE: WORD (command) index (integer);
+
+/*
+ * Creature is dead
+ * @return (integer@bool)
+ */
+DEAD (integer) roomNumber (integer) edge (integer);
+
+/*
+ * Air temperature near [TARG] obj (-3 to +3)
+ * @RValue
+ * @return (integer[-3 to 3])
+ */
+TEMP (integer);
+
+/*
+ * Return world left, top, right, bottom or Type of given room
+ * Where "edge" = 0=left, 1=right, 2=top, 3=bottom abd 4=returns room Type (INDOORS...)
+ * Returns 0 if no such room
+ * @param {roomNumber} (integer)
+ * @param {edge} (integer@RoomEdge)
+ */
+ROOM (integer) roomNumber (integer) edge (integer);
+
+/*
+ * Sets the lvalue to the product of lvalue divided by rvalue
+ * lvalue = lvalue / rvalue
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+DIVV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * Do next instructions if condition is true, else skip to after correct nested [ELSE] or [ENDI]
+ * @param {val1} (value)
+ * @param {eq} (eqOp) EQ NE GT LT GE LE BT BF
+ * @param {val2} (value)
+ */
+DOIF (command) val1 (value) eq (eqOp) val2 (value);
+
+/*
+ * Creatures only. This voluntary or involuntary action has been completed.
+ * For voluntary actions: resets the decision neurone to force creature to make a new decision,
+ * and ensures current importance is zero.
+ * Put this cmd at the end of any TRANSIENT voluntary action (eg. act1 but not walkeast)
+ * and after EVERY involuntary action
+ */
+DONE (command);
+
+/*
+ * Drop passengers
+ */
+DPAS (command);
+
+/*
+ * Start dreaming, ie. start processing any pending instincts, instead of receiving sensory data from environment.
+ * Normally, this should be done only during deepest sleep phase,
+ * plus during embryology, while the creature is in limbo before hatching.
+ * Once activated, {MAX} pending instincts will be processed, then the dream state switches off automatically.
+ * Each instinct takes about 5 secs, during which the creature is insensible.
+ * Set {MAX} to a suitable value - too low and insincts take too many sleeps to get processed,
+ * too high and creatures remain insensible for too long
+ * @param {MAX} (integer) number of instincts to process
+ */
+DREA (command) MAX (integer);
+
+/*
+ * State of creature's Drive# {n} (hunger etc)
+ * @RValue
+ * @param {n} (integer) Drive Number
+ * @return (integer@Drive)
+ */
+DRIV (integer) n (integer);
+
+/*
+ * Drop any object(s) that you are carrying.
+ */
+DROP (command);
+
+/*
+ * Creature's MOST PRESSING Drive#
+ * retuns #{0} (pain) if no drives pressing
+ * Can use in: #{DOIF DRIV DRV! GT 128} to test level of strongest drive
+ * @RValue
+ * @return (integer@Drive)
+ */
+DRV! (integer);
+
+/*
+ * The contents of the EditObject variable (addr of object being placed/repositioned/deleted;
+ * EditObject is set by the [EDIT] macro or by shift-clicking an object.
+ * Use this rvalue to delete selected objects, etc.
+ * @RValue
+ * @return (agent)
+ */
+EDIT (agent);
+
+/*
+ * Attach [TARG] object to mouse (even if it's not carryable) so that user can position it.
+ * Used by Object Editor to allow [NEW:] objects to be positioned
+ * This causes the TaskSwitcher to make this object follow the mouse until a mouse button is pressed
+ */
+EDIT (command);
+
+/*
+ * Hit an [ELSE] during normal processing (ie. previous [DOIF] was true),
+ * so jump from here to corresponding [ENDI]F, skipping any nested [DOIF]s en route
+ */
+ELSE (command);
+
+/*
+ * Marks end of a [DOIF] or [DOIF]/[ELSE] statement.
+ */
+ENDI (command);
+
+/*
+ * Compulsory cmd at end of macro, placed there by Macro constructor
+ * Macro is terminated and maybe self-destructs only [STOP] (never [ENDM] commands
+ * may be placed in the body of macro. [ENDM] is string terminator
+ */
+ENDM (command);
+
+/*
+ * ...[NEXT]
+ * Iterate through each object which conforms to the given classification,
+ * setting [TARG] to point to each valid object in turn.
+ * Family, Genus and/or Species can be zero to act as wildcards.
+ * @param {family} (integer)
+ * @param {genus} (integer)
+ * @param {species} (integer)
+ */
+ENUM (command) family (integer) genus (integer) species (integer);
+
+/*
+ * Add an object onto the Event bar (either a newborn, and egg or a death)
+ * @param {object} (value)
+ */
+EVNT (command) object (value);
+
+/*
+ * Object who [EXEC]uted the tool who owns this
+ * return (int)Exec; dde macro. NOTE: only valid for DDE
+ * tools who *know* that they were executed by an object
+ * @RValue
+ * @return (agent)
+ */
+EXEC (agent);
+
+/*
+ * Fire the neurone whose position is XY (used by PET
+ * scanner, etc.) 'amount' is the signal strength - 0-255 is a 'safe' signal
+ * @param {x} (integer)
+ * @param {y} (integer)
+ * @param {amount} (integer)
+ */
+FIRE (command) x (integer) y (integer) amount (integer);
+
+/*
+ * Family (in range 0-255)
+ * @RValue
+ * @return (integer[0 to 255])
+ */
+FMLY (integer);
+
+/*
+ * Object who caused event leading to this script
+ * @RValue
+ * @return (agent)
+ */
+FROM (agent);
+
+/*
+ * Number of ground level data on map
+ * @RValue
+ * @return (integer)
+ */
+GND# (integer);
+
+/*
+ * Number of pixels per ground datum
+ * @RValue
+ * @return (integer)
+ */
+GNDW (integer);
+
+/*
+ * Genus (in range 0-255)
+ * @RValue
+ * @return (integer[0 to 255])
+ */
+GNUS (integer);
+
+/*
+ * Get passengers
+ */
+GPAS (command);
+
+/*
+ * Ground level at position x
+ * @RValue
+ * @param {x} (integer) x position
+ * @return (integer)
+ */
+GRND (integer) x (integer);
+
+/*
+ * [GSUB]s to given [SUBR] label. Often has to scan macro for subroutine start,
+ * but always remembers the address of the last subr visited, so most subrs will execute quickly in loops
+ * @param {label} (token) four letter token
+ */
+GSUB (command) label (token);
+
+/*
+ * Return object's height
+ * @RValue
+ * @return (integer)
+ */
+HGHT (integer);
+
+/*
+ * Return the number of hours elapsed since game started
+ * @RValue
+ * @return (integer)
+ */
+HOUR (integer);
+
+/*
+ * Signify how important this (voluntary) action is
+ * (how unlikely it is that another action will override this one before it has finished).
+ * value is the amount that gets used to nudge the current decision neurone.
+ * This instruction should be used at the start of EVERY creature action macro,
+ * and may be used within a macro if the importance changes during a later phase.
+ * Values should be low numbers!
+ * @param {n} (integer)
+ */
+IMPT (command) n (integer);
+
+/*
+ * Make the rest of this macro execute in a single tick, regardless of the state of the Repeat variable
+ * Use this instruction at the head of DDE macros that must execute a series of instructions
+ * without being interefered with by FastUpdate() calls, etc.
+ * For example, any macro that creates an object should use this so that the object has been fully initialised
+ * before FastUpdate() gets to look at it (especially true for CompoundObjects,
+ * whose Parts don't get created until several instructions after the [NEW: COMP] has occurred)
+ */
+INST (command);
+
+/*
+ * Delete the object whose address is rvalue,
+ * eg. #{kill edit} removes any object that's been shift-clicked on (EditObject),
+ * THIS INSTRUCTION MUST BE LAST ONE IN MACRO IF IT KILLS THE OWNER OF THAT MACRO!
+ * #{kill targ} deletes the target object.
+ */
+KILL (command);
+
+/*
+ * Attach a CompoundObj's activation function (ACT1=0, ACT2=1...) to a given hotspot
+ * (eg. to make hotspot# 0 into a Deactivate button, use #{KNOB 2 0})
+ * set [KNOB] {activationfn} to -1 to disable an action button
+ * knobs 0-2 are act1, act2, deac for creature;
+ * knobs 3-5 are act1, act2, deac for hand.
+ * @param {activationfn} (integer)
+ * @param {hotspot} (integer)
+ */
+KNOB (command) activationfn (integer) hotspot (integer);
+
+/*
+ * Return objects's bottom limit
+ * @RValue
+ * @return (integer)
+ */
+LIMB (integer);
+
+/*
+ * Return object's left limit
+ * @RValue
+ * @return (integer)
+ */
+LIML (integer);
+
+/*
+ * Return object's right limit
+ * @RValue
+ * @return (integer)
+ */
+LIMR (integer);
+
+/*
+ * Return object's top limit
+ * @RValue
+ * @return (integer)
+ */
+LIMT (integer);
+
+/*
+ * Prevent the script from being interrupted by another until [UNLK] or the end of the script is encountered.
+ */
+LOCK (command);
+
+/*
+ * Top of LOOP...[UNTL] statment or [LOOP]...[EVER]
+ * [LOOP]s may be nested, but MUST NOT be jumped out of
+ */
+LOOP (command);
+
+/*
+ * Set the Latency for the [TARG] creature's given Involuntary Action (0-7)
+ * Prevent this action repeating for at least DELAY*4 ticks
+ * (DELAY is in 4/10th sec intervals, as decision-making function gets called only every 4 ticks,
+ * and is a random number between min and max).
+ * This command may be called at the end of an involuntary action script to prevent reactivation
+ * until the chemical which triggered the action has subsided.
+ * A random latency can be useful for actions such as "languish due to lack of strength",
+ * to make them OCCASIONALLY override willed actions.
+ * @param {action} (integer) involuntary action
+ * @param {mindelay} (integer)
+ * @param {maxdelay} (integer)
+ */
+LTCY (command) action (integer) mindelay (integer) maxdelay (integer);
+
+/*
+ * Only relevant to male creatures:
+ * Pass any waiting sperm to female (if [_IT_] is a female of same genus).
+ * Female will conceive if she's in the right condition (fertile & receptive)
+ */
+MATE (command);
+
+/*
+ * Move a carrot to {x} {y} and moves the camera with it
+ * @param {x} (integer)
+ * @param {y} (integer)
+ */
+MCRT (command) x (integer) y (integer);
+
+/*
+ * Send message to all creatures that can hear [OWNR] object
+ * @param {message} (integer@Message)
+ */
+MESG SHOU (command) message (integer);
+
+/*
+ * "tactile" are in contact with [OWNR]
+ * @param {message} (integer@Message)
+ */
+MESG TACT (command) message (integer);
+
+/*
+ * "write" send message to a specific object.
+ * Object is a pointer to an object [TARG], [OWNR], [FROM] or [NORN]
+ * @param {option} (agent)
+ * @param {message} (integer@Message)
+ */
+MESG WRIT (command) option (agent) message (integer);
+
+/*
+ * Return the minutes component of time elapsed
+ * @RValue
+ * @return (integer)
+ */
+MINS (integer);
+
+/*
+ * Sets the lvalue to the remainder of lvalue divided by rvalue
+ * {lvalue} = {lvalue} % {rvalue}
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+MODV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * MovementStatus (FLOATING, MOUSEDRIVEN, etc)
+ * @RValue
+ * @return (integer@MovmentStatus)
+ */
+MOVS (integer);
+
+/*
+ * sets the lvalue to the product of lvalue multiplied by rvalue
+ * {lvalue} = {lvalue} * {rvalue}
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+MULV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * move object by relative amount and redraw
+ * @param {xd} (integer) relative-x move amount
+ * @param {yd} (integer) relative-y move amount
+ */
+MVBY (command);
+
+/*
+ * move object to absolute location and redraw
+ * @param {x} (integer)
+ * @param {y} (integer)
+ */
+MVTO (command) x (integer) y (integer);
+
+/*
+ * Negates the lvalue
+ * {lvalue} = 0 - {lvalue}
+ * @param {lvalue} (variable)
+ */
+NEGV (command) lvalue (variable);
+
+/*
+ * Object's neural ID# 0-39
+ * @RValue
+ * @return (integer[0..39])
+ */
+NEID (integer);
+
+/*
+ * Create a Blackboard (or wordbook or poster)
+ * For default object properties, see #[CompoundObject] above
+ * @example: #{new: bkbd BBD1 18 0 240 241 242 4 4}
+ * textx	int	x-coordinate of the place to plot text, relative to part 0
+ * texty	int	y-coordinate of the place to plot text, relative to part 0
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ * @param {bkgndcolour} (integer) color index for background
+ * @param {chalkcolour} (integer) color index for chalk
+ * @param {aliascolour} (integer) color index for alias
+ */
+NEW: BKBD (command) imageFile (token) numimages (integer) imageNumber (integer) bkgndcolour (integer) chalkcolour (integer) aliascolour (integer);
+
+/*
+ * Create a CallButton object
+ * @example: #{new: cbtn LIFT 2 19 7000}
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ * @param {plane} (integer) (0-9000) the plot plane (0=back, 9000=front)
+ */
+NEW: CBTN (command) imageFile (token) numimages (integer) imageNumber (integer) plane (integer);
+
+/*
+ * Create a #[CompoundObject]#
+ * Default object has these properties:
+ * 	-attributes: none
+ * 	-classifier: COMPOUND, no genus or species
+ * 	-parts: none
+ * 	-hotspots: none
+ * 	-events: no scripts
+ * @example: #{new: cbtn LIFT 2 19 7000}
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ * @param {clone} (integer@bool) value is 0 normally, or 1 to create a cloned image gallery
+ */
+NEW: COMP (command) imageFile (token) numimages (integer) imageNumber (integer) clone (integer);
+
+/*
+ * Create a newborn creature.
+ * -a) the Gene Editor,
+ * -b) a parent creature
+ * -c) the [NEW: GENE] macro, called by the Hatchery to breed a unique egg
+ * Normally, sex is randomly determined, but the initial eggs may need to be pre-sexed. All the other creature parameters are determined by the resultant genome.
+ * NOTE: the moniker must be supplied as an INTEGER, not a string literal, so that, for example, EGG objects can store the moniker in OBV0 during incubation.
+ * EGG Objects must have [OBV] set to specify the moniker of the developing creature.
+ * If I need to store a moniker in a macro as a token, then I must use the [TOKN] rvalue to convert it to integer.
+ * @example: #{NEW: CREA OBV0 0} - create creature bred from moniker stored in var
+ * @example: #{NEW: CREA TOKN EVE1 0} - create from explicitely named genome
+ * 0=random 1=male 2=female
+ * @param {monike} (integer) the moniker to use to locate the child's genome file
+ * @param {sex} (integer@CreaSexOptions) 0=Random, 1=Male, 2=Female
+ */
+NEW: CREA (command) moniker (integer);
+
+/*
+ * Create a new genome file from mum's and dad's (or just mum's if dad=0) genomes,
+ * and store the new genome's moniker in the LVALUE child.
+ * @example: #{new: gene tokn eve_ tokn adam obv0}	create a child of Adam and Eve and store the child's genome moniker in [TARG]'s [OBV0] variable.
+ * @param {mum} (integer)
+ * @param {dad} (integer)
+ * @param {child} (variable)
+ */
+NEW: GENE (command) mum (integer) dad (integer) child (variable);
+
+/*
+ * Create a Lift
+ * For default object properties, see #[CompoundObject] above
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ */
+NEW: LIFT (command) imageFile (token) numimages (integer) imageNumber (integer);
+
+/*
+ * Add a part to the current [TARG] #[CompoundObject]
+ * Call immediately after [NEW: COMP] [TARG] will point to the new object) to add one or more parts to this object
+ * After this command, PART is left pointing to this part number (for subsequent part-relative commands)
+ * @param {part} (integer) (0-9) 0=Main part
+ * @param {relx} (integer)
+ * @param {rely} (integer)
+ * @param {imageoffset} (integer)
+ * @param {plane} (integer) (0-9000)
+ */
+NEW: PART (command) part (integer) relx (integer) rely (integer) imageoffset (integer) plane (integer);
+
+/*
+ * Create a scenery object
+ * @example: #{new: scen SCN1 37 3 9000}
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ * @param {plane} (integer) (0-9000) the plot plane (0=back, 9000=front)
+ */
+NEW: SCEN (command) imageFile (token) numimages (integer) imageNumber (integer) plane (integer);
+
+/*
+ * Create a SimpleObject
+ * Default object has these properties:
+ * -attributes: none
+ * -classifier: SIMPLE, no genus or species
+ * -behaviour: dumb (no mouse or creature events)
+ * -animation: none
+ * @example: #{new: simp TOYS 3 19 7000 0}
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ * @param {plane} (integer) (0-9000) the plot plane (0=back, 9000=front)
+ * @param {clone} (integer@bool) value is 0 normally, or 1 to create a cloned image gallery
+ */
+NEW: SIMP (command) imageFile (token) numimages (integer) imageNumber (integer) plane (integer) clone (integer);
+
+/*
+ * Create a Vehicle
+ * For default object properties, see #[CompoundObject] above
+ * @param {imageFile} (token[4]) imagefile is a 4-byte token representing the filename of the image file
+ * @param {numimages} (integer) the TOTAL number of images IN THAT FILE
+ * @param {imageNumber} (integer) the image associated with this object
+ */
+NEW: VHCL (command) imageFile (token) numimages (integer) imageNumber (integer);
+
+/*
+ * part of [ENUM]...[NEXT]
+ */
+NEXT (command);
+
+/*
+ * current pet creature
+ * @LValue
+ * @RValue
+ * @return (agent)
+ */
+NORN (agent);
+
+/*
+ * A pointer to objects that will survive.
+ * NOTE: This shouldn’t really be set to a Norn – there’s nothing stopping you using it
+ * but things have the potential to go wrong if [OBJP] points to a norn who then dies.
+ * @LValue
+ * @RValue
+ * @return (agent)
+ */
+OBJP (agent);
+
+/*
+ * Sets the lvalue to the bitwise OR(|) value of lvalue and rvalue
+ * lvalue = lvalue | rvalue
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+ORRV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * Wait until the current DEST object's animation is over, before continuing. CARE: anims ending in 'R' will never stop.
+ * COMPOUND, it's the current [PART]'s anim that's checked.
+ */
+OVER (command);
+
+/*
+ * Default object (owner of script, or pet if [DDE]
+ * @RValue
+ * @return (agent)
+ */
+OWNR (agent);
+
+/*
+ * Set part# for future actions on CompoundObjects, eg. Animations
+ * part	int	part number
+ */
+PART (command);
+
+/*
+ * Preload sound into sound cache if TARG obj is visible or just off screen
+ * @param {fileName} (token[4]) 4 letter filename token
+ */
+PLDS (command) fileName (token);
+
+/*
+ * agent object
+ * @RValue
+ * @return (agent)
+ */
+PNTR (agent);
+
+/*
+ * Same as [TOUC], but creature reaches out to object with head facing camera.
+ * This can be used to allow a creature to ask the user what an object is called, for example.
+ * See [TOUC] for usage.
+ */
+POIN (command);
+
+/*
+ * Return object's bottom coords
+ * @RValue
+ * @return (integer)
+ */
+POSB (integer);
+
+/*
+ * [TARG] objects's (and current [PART]'s) current pose
+ * @RValue
+ * @return (integer)
+ */
+POSE (integer);
+
+/*
+ * Stop any animation of DEST object's entity, and set it to POSE# {n}
+ * (pose, not abs image#. ie. same effect as using [ANIM] [n]
+ * CREATURE: Will continue with next instruction ONLY when target pose has been reached.
+ * @param {n} (integer) target pose
+ */
+POSE (command) n (integer);
+
+/*
+ * Return object's left coords
+ * @RValue
+ * @return (integer)
+ */
+POSL (integer);
+
+/*
+ * Return object's right coords
+ * @RValue
+ * @return (integer)
+ */
+POSR (integer);
+
+/*
+ * Return object's top coords
+ * @RValue
+ * @return (integer)
+ */
+POST (integer);
+
+/*
+ * Pre-load image cache with these poses, to make for smoother animation later
+ * Not useable with creatures
+ * @param {anim} [anim]
+ */
+PRLD (command) anim [anim];
+
+/*
+ * Saves world & closes Vivarium
+ * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
+ */
+QUIT (command);
+
+/*
+ * End repeat loop
+ */
+REPE (command);
+
+/*
+ * Repeat the following code # times, up to next [REPE] (# >= 1)
+ * NOTE: [REPS]/[REPE] may be nested, but loops must NOT be jumped out of
+ * @param {n} (integer) repetitions
+ */
+REPS (command) n (integer);
+
+/*
+ * Returns from a [GSUB]
+ */
+RETN (command);
+
+/*
+ * Remove an event from the event bar
+ * @param {object} (value)
+ */
+RMEV (command) object (valuree);
+
+/*
+ * Number of room defined on map
+ * @RValue
+ * @return (integer)
+ */
+RMS# (integer);
+
+/*
+ * Set a variable V0-V9 to random # between min# & max# inclusive
+ * (could use with [REPS]...[REPE] for random # repeats)
+ * @param {var} (variable)
+ * @param {min} (integer)
+ * @param {max} (integer)
+ */
+RNDV (command) var (variable) min (integer) max (integer);
+
+/*
+ * @param {room} (integer)
+ * @param {left} (integer)
+ * @param {top} (integer)
+ * @param {right} (integer)
+ * @param {bottom} (integer)
+ * @param {roomType} (integer@RoomType)
+ */
+ROOM (command) room (integer) left (integer) top (integer) right (integer) bottom (integer) roomType (integer);
+
+/*
+ * Randomly selects a member from the given classification and sets it as [TARG]. Null if no members exist
+ * @param {family} (integer)
+ * @param {genus} (integer)
+ * @param {species} (integer)
+ */
+RTAR (command) family (integer) genus (integer) species (integer);
+
+/*
+ * Speak given string in a speech bubble (no signals sent)
+ * @param {string} [string]
+ */
+SAY$ (command) string [string];
+
+/*
+ * Speak word {n} in a speech bubble, and send that word as a SIGNAL message to all creatures in earshot
+ * @param {n} (integer)
+ */
+SAY$ (command) n (integer);
+
+/*
+ * Speak your most pressing need
+ */
+SAYN (command);
+
+/*
+ * return scores stored in score.cpp -- Alima
+ * @RValue
+ * @return (integer)
+ */
+SCOR (integer);
+
+/*
+ * Installs a script
+ * Deletes the event script in question from the scriptoruium.
+ * @param {family} (integer) (0-255)
+ * @param {genus} (integer) (0-255)
+ * @param {species} (integer) (0-255)
+ * @param {event} (integer) (0-255)
+ */
+SCRX (command) family (integer) genus (integer) species (integer) event (integer);
+
+/*
+ * Set a variable to a constant/variable value
+ * @param {var} (variable)
+ * @param {value} (value)
+ */
+SETV (command) var (variable) value (value);
+
+/*
+ * Set the limits of the target object
+ */
+SLIM (command);
+
+/*
+ * Reverses effects of INST
+ */
+SLOW (command);
+
+/*
+ * Start *controlled* sound if [TARG] obj is visible.
+ * Change volume according to distance from screen
+ * @param {filename} (token[4])
+ */
+SNDC (command) filename (token);
+
+/*
+ * Play sound effect if [TARG] obj is visible on screen. Change volume according to distance from screen. This replaced [SNDV] and doesn't require []'s
+ * @param {fileName} (token[4]) 4 letter sound token
+ */
+SNDE (command) fileName (token);
+
+/*
+ * Set the sound status
+ * @param {function} (token@SndfOption)
+ */
+SNDF (command) function (token);
+
+/*
+ * Start controlled *loop* if [TARG] obj is visible. Change volume according to distance from screen
+ * @param {filename} (token[4]) four letter filename token
+ */
+SNDL (command) filename (token);
+
+/*
+ * Play sound effect after a short {delay} if [TARG] obj is visible on screen
+ * Change volume according to distance from screen
+ * @param {fileName} (token[4]) 4 letter sound token
+ * @param {delay} (integer)
+ */
+SNDQ (command) fileName (token) delay (integer);
+
+/*
+ * sound status
+ * Bit 0 = Sound on/off
+ * Bit 1 = Sound mode (foreground only\continuous)
+ * @RValue
+ * @return (biflag)
+ */
+SNDS (biflag);
+
+/*
+ * Play sound if [TARG] obj is visible on screen Change volume according to distance from screen
+ * Now replaced by [SNDE] (sound effect) which doesn't require []'s
+ * @param {fileName} [string] filename WITHOUT.WAV suffix
+ */
+SNDV (command) fileName [string];
+
+/*
+ * TARG creature sneezes - infect nearby creatures or environment with any live bacteria he has in him
+ */
+SNEZ (command);
+
+/*
+ * Used to get a single creature into a vehicle; the first param is explicit because eggs use this command to get a given creature into the incubator at hatch time.
+ * @param {vehicle} (agent)
+ * @param {creature} (agent)
+ */
+SPAS (command) vehicle (agent) creature (agent);
+
+/*
+ * Species (in range 0-255)
+ * @RValue
+ * @return (integer[0..255])
+ */
+SPCS (integer);
+
+/*
+ * Set up a CompoundObj hotspot, for users/creatures to click on
+ * (See [KNOB] for how to assign a hotspot to an activation function)
+ * ltrb = coords of hotspot on object RELATIVE to part[0]
+ * Set ltrb to -1 -1 -1 -1 to remove a hotspot
+ * @param {spot} (integer) (0-5) hotspot# 0-5,
+ * @param {left} (integer)
+ * @param {top} (integer)
+ * @param {right} (integer)
+ * @param {bottom} (integer)
+ */
+SPOT (command) spot (integer) left (integer) top (integer) right (integer) bottom (integer);
+
+/*
+ *
+ * @param {significance} (integer) amount to nudge significance neurone by
+ * @param {input} (integer) sensory lobe neurone# (or 255 if none)
+ * @param {intensity} (integer) Amount to nudge input neurone by
+ * @param {features} (integer) bit record of features
+ * @param {chem1} (integer)
+ * @param {amount1} (integer)
+ * @param {chem2} (integer)
+ * @param {amount2} (integer)
+ * @param {chem3} (integer)
+ * @param {amount} (integer)
+ * @param {chem4} (integer)
+ * @param {amount4} (integer)
+ */
+STIM SHOU (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount (integer) chem4 (integer) amount4 (integer);
+
+/*
+ * @param {significance} (integer) amount to nudge significance neurone by
+ * @param {input} (integer) sensory lobe neurone# (or 255 if none)
+ * @param {intensity} (integer) Amount to nudge input neurone by
+ * @param {features} (integer) bit record of features
+ * @param {chem1} (integer)
+ * @param {amount1} (integer)
+ * @param {chem2} (integer)
+ * @param {amount2} (integer)
+ * @param {chem3} (integer)
+ * @param {amount} (integer)
+ * @param {chem4} (integer)
+ * @param {amount4} (integer)
+ */
+STIM SIGN (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount (integer) chem4 (integer) amount4 (integer);
+
+/*
+ * @param {significance} (integer) amount to nudge significance neurone by
+ * @param {input} (integer) sensory lobe neurone# (or 255 if none)
+ * @param {intensity} (integer) Amount to nudge input neurone by
+ * @param {features} (integer) bit record of features
+ * @param {chem1} (integer)
+ * @param {amount1} (integer)
+ * @param {chem2} (integer)
+ * @param {amount2} (integer)
+ * @param {chem3} (integer)
+ * @param {amount} (integer)
+ * @param {chem4} (integer)
+ * @param {amount4} (integer)
+ */
+STIM TACT (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount (integer) chem4 (integer) amount4 (integer);
+
+/*
+ *
+ * @param {object} (agent) ie. [TARG], [OWNR], [FROM] or [NORN]
+ * @param {significance} (integer) amount to nudge significance neurone by
+ * @param {input} (integer) sensory lobe neurone# (or 255 if none)
+ * @param {intensity} (integer) Amount to nudge input neurone by
+ * @param {features} (integer) bit record of features
+ * @param {chem1} (integer)
+ * @param {amount1} (integer)
+ * @param {chem2} (integer)
+ * @param {amount2} (integer)
+ * @param {chem3} (integer)
+ * @param {amount} (integer)
+ * @param {chem4} (integer)
+ * @param {amount4} (integer)
+ */
+STIM WRIT (command) object (agent) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount (integer) chem4 (integer) amount4 (integer);
+
+/*
+ * Emit one of the hard-wired stimuli to all creatures that can hear [OWNR]
+ * @param {stimulus} (integer@Stimulus) stimulus number
+ */
+STM# SHOU (command) stimulus (integer);
+
+/*
+ * Emit one of the hard-wired stimuli
+ * @param {stimulus} (integer@stimulus) stimulus number
+ */
+STM# TACT (command) stimulus (integer);
+
+/*
+ *
+ * @param {object} (agent)
+ * @param {stimulus} (integer@stimulus) stimulus number
+ */
+STM# WRIT (command) object (agent) stimulus (integer);
+
+/*
+ * Aborts the script.
+ */
+STOP (command);
+
+/*
+ * Stop execution (eg. following error, or before subroutine definitions start)
+ */
+STOP (command);
+
+/*
+ * Stop any controlled sound currently playing
+ */
+STPC (command);
+
+/*
+ * Identifies a Subroutine. 'label' is a 4-char unique label name [GSUB] takes us to point AFTER [SUBR] labl, so only reach here through normal code flow.
+ * Therefore, treat [SUBR] the same as [STOP] [STOP] is therefore not needed before the start of any subroutines).
+ * @param {label} (token) four letter token
+ */
+SUBR (command) label (token);
+
+/*
+ * sets the lvalue to the sum of lvalue minus the rvalue
+ * {lvalue} = {lvalue} - {rvalue}
+ * @param {lvalue} (variable)
+ * @param {rvalue} (integer)
+ */
+SUBV (command) lvalue (variable) rvalue (integer);
+
+/*
+ * moves camera to point at current [TARG]
+ */
+SYS: CAMT (command);
+
+/*
+ * Disconnect camera from logged-on creature & position it at these world co-ordinates (e.g. when editing map etc.)
+ * @param {x} (integer)
+ * @param {y} (integer)
+ */
+SYS: CMRA (command) x (integer) y (integer);
+
+/*
+ * Set CDisplay::EditBox, so that a rectangle is drawn on screen at the given WORLD co-ordinates. Use #{SYS: EDIT 0 0 0 0} to remove the box when finished.
+ * This macro is used by map editors and suchlike to mark out rooms and floor levels during map construction
+ * @param {left} (integer)
+ * @param {top} (integer)
+ * @param {right} (integer)
+ * @param {bottom} (integer)
+ */
+SYS: EDIT (command) left (integer) top (integer) right (integer) bottom (integer);
+
+/*
+ * set ground level at position x (worldx/GROUNDW) (see [GND#] and [GNDW] macros for establishing useful constants)
+ * @param {x} (integer)
+ * @param {int} (y)
+ */
+SYS: GRND (command) x (integer) int (y);
+
+/*
+ * Set vivarium's window to be foreground window (useful in editor tools etc to allow user access to vivarium for selecting objects etc)
+ */
+SYS: WTOP (command);
+
+/*
+ * return curr targ object* as integer
+ * @RValue
+ * @return (agent)
+ */
+TARG (agent);
+
+/*
+ * Set [TARG] object agent to point at given object #{TARG OWNR} - (re)set [Targ] to point at default object (macro owner, or pet if DDE)
+ * #{TARG FROM} - set Targ to point at cause of this event (no change if isn't an event macro)
+ * #{TARG NORN} - set Targ to point at the current Pet
+ * @param {rvalue} (agent) agent to set [targ] to
+ */
+TARG (command) rvalue (agent);
+
+/*
+ * Returns carrier of TARG (may be NULL)
+ * @RValue
+ * @return (agent)
+ */
+TCAR (agent);
+
+/*
+ * Teleport all of the vehicles occupants to x,y and moves the camera with it
+ * @param {x} (integer)
+ * @param {y} (integer)
+ */
+TELE (command) x (integer) y (integer);
+
+/*
+ * Set the [TARG] object's timer to given rate
+ * TIMER scripts will be executed whenever this timer times out
+ * Set to 0 to disable TIMER events
+ * @param {n} (integer) tick rate
+ */
+TICK (command) n (integer);
+
+/*
+ * convert 4 characters into an integer e.g. #{TOKN 1234} = integer '4321'
+ * @RValue
+ * @return (integer)
+ * @param {token} (token[4])
+ */
+TOKN (integer) token (token);
+
+/*
+ * Issued by a DDE tool app to register itself with the toolbar
+ * @param {fsp} [string]
+ * @param {menuText} [string]
+ * @param {helpText} [string]
+ * @param {glyph} (integer)
+ */
+TOOL (command) fsp [string] menuText [string] helpText [string] glyph (integer);
+
+/*
+ * returns the number of objects in the world who fit this description. Family, Genus and/or Species can be zero
+ * to act as wildcards. Examples:- #{setv totl 4 2 0} ;returns number of grendels
+ * @RValue
+ * @return (integer)
+ * @param {family} (integer) (0-255) family
+ * @param {genus} (integer) (0-255) genus
+ * @param {species} (integer) (0-255)
+ */
+TOTL (integer) family (integer) genus (integer) species (integer);
+
+/*
+ * two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are touching
+ * @RValue
+ * @return (integer@bool)
+ */
+TOUC (integer);
+
+/*
+ * Reach out and touch IT.
+ * Normally preceeded by APPR macro. Continue with next instruction when you have successfully touched IT (or when you are as close as you are going to get).
+ * If total failure (no IT, or IT gone below floor level) then the present action schema is suppressed (action has failed) and the macro is terminated.
+ */
+TOUC (command);
+
+/*
+ * Fire this particular neurone
+ * @param {lobe} (integer)
+ * @param {cell} (integer)
+ * @param {amount} (integer)
+ */
+TRIG (command) lobe (integer) cell (integer) amount (integer);
+
+/*
+ * Releases LOCK
+ */
+UNLK (command);
+
+/*
+ *
+ * @param {val1} (any)
+ * @param {val2} (any)
+ * @param {eq} (eqOp) EQ NE GT LT GE LE BT BF
+ */
+UNTL (command) val1 (any) val2 (any) eq (eqOp);
+
+/*
+ * Get Creatures Build ID. Ie. #{setv var1 vrsn}
+ * @RValue
+ * @return (integer)
+ */
+VRSN (integer);
+
+/*
+ * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{VRSN 2} then Creatures must be version 1.0.2 or higher to run this script.
+ * @param {number} (integer)
+ */
+VRSN (command) number (integer);
+
+/*
+ * Stops the script from running for the given number of ticks.
+ * @param {ticks} (integer)
+ */
+WAIT (command) ticks (integer);
+
+/*
+ * Wait for n {ticks} (approx n/10 sec) before continuing with next instructions
+ * @param {ticks} (integer)
+ */
+WAIT (command) ticks (integer);
+
+/*
+ * Walk indefinitely.
+ * Choose a walking gait according to chemo-receptors, then start walking.
+ * If extraspective, you'll continuously walk towards _IT_,
+ * but this command is primarily for introspective walking such as "wander east", so creature will walk in current direction using the given gait.
+ */
+WALK (command);
+
+/*
+ * retn obj's width
+ * @RValue
+ * @return (integer)
+ */
+WDTH (integer);
+
+/*
+ * Wind speed/dir near [TARG] obj (-3 to +3)
+ * @RValue
+ * @return (integer[-3 to 3])
+ */
+WIND (integer);
+
+/*
+ * max allowed view window height (WORLD coords)
+ * @LValue
+ * @RValue
+ * @return (integer)
+ */
+WINH (integer);
+
+/*
+ * max allowed view window width (WORLD coords)
+ * @LValue
+ * @RValue
+ * @return (integer)
+ */
+WINW (integer);
+
+/*
+ * attempt to position vivarium frame window to this size (in pixels)
+ * Actual size will be limited to maximum view size or size of screen, if necessecary
+ * @param {x} (integer)
+ * @param {y} (integer)
+ * @param {width} (integer)
+ * @param {height} (integer)
+ */
+WPOS (command) x (integer) y (integer) width (integer) height (integer);
+
+/*
+ * Opens a new document (world) after saving the current one (if any)
+ * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
+ * @param {fileName} [filename]
+ */
+WRLD (command) fileName [filename];
+
+/*
+ * vehicle's x mvt vector in 1/256ths pixel
+ * @RValue
+ * @return (integer)
+ */
+XVEC (integer);
+
+/*
+ * vehicle's y mvt vector in 1/256ths pixel
+ * @RValue
+ * @return (integer)
+ */
+YVEC (integer);
+
+@Action {
+	0 = Activate 1
+	1 = Activate 2
+	2 = Deactivate
+}
+
+@Attributes {
+	1 = Carryable - creature can pick up obj
+	2 = Mousable - mouse can pick up obj
+	4 = Activatable - can be activated with mouse
+	8 = Container - carries other objs (vehicles only)
+	16 = Invisible - creatures can't see it
+	32 = Floatable - normally floating on screen
+	64 = Wallbound - limits movement to current room
+	128 = Ground Bound - movement only limited by ground
+	//!Exclusive[64,128]
+}
+
+@bool {
+	0 = False
+	1 = True
+}
+
+@Chemicals {
+	0 = <NONE>
+	# Drive levels
+	1 = Pain
+	2 = Need for Pleasure
+	3 = Hunger
+	4 = Coldness
+	5 = Hotness
+	6 = Tiredness
+	7 = Sleepiness
+	8 = Loneliness
+	9 = Crowded
+	10 = Fear
+	11 = Boredom
+	12 = Anger
+	13 = Sex Drive
+	# Drive-raising chemicals
+	17 = Pain Increase
+	18 = Need for Pleasure Increase
+	19 = Hunger Increase
+	20 = Coldness Increase
+	21 = Hotness Increase
+	22 = Tiredness Increase
+	23 = Sleepiness Increase
+	24 = Loneliness Increase
+	25 = Crowded Increase
+	26 = Fear Increase
+	27 = Boredom Increase
+	28 = Anger Increase
+	29 = Sex Drive Increase
+	# Drive-reducing chemicals
+	33 = Pain Decrease (Endorphin)
+	34 = Need for Pleasure Decrease
+	35 = Hunger Decrease (Saccharin)
+	36 = Coldness Decrease
+	37 = Hotness Decrease
+	38 = Tiredness Decrease
+	39 = Sleepiness Decrease
+	40 = Loneliness Decrease
+	41 = Crowded Decrease
+	42 = Fear Decrease
+	43 = Boredom Decrease
+	44 = Anger Decrease
+	45 = Sex Drive Decrease
+	# Learning/Brain Chemicals
+	49 = Reward
+	50 = Punishment
+	51 = Reinforcement
+	52 = ConASH
+	53 = DecASH1
+	54 = Reward Echo
+	55 = Punish Echo
+	# Life and Digestion
+	56 = Ageing
+	57 = Starch
+	58 = Glucose
+	59 = Glycogen
+	60 = Waste Water
+	61 = Hexokinase
+	62 = Carbon Dioxide
+	# Sexual Chemicals
+	63 = Oestrogen
+	64 = Testosterone
+	65 = Gonadotrophin
+	66 = Progesterone
+	# Toxins
+	67 = Glycotoxin
+	68 = Alcohol
+	69 = Adrenaline
+	# Learning/Brain Chemicals
+	70 = DecASH2
+	# Unimplemented Chemicals
+	71 = Vitamin E
+	72 = Vitamin C
+	# Life Kit Chemicals
+	80 = Purple Mountain Alcohol[ aka Dancing].
+	91 = Activase
+	92 = Turnase
+	93 = Collapsase
+	# IV Chemicals
+	100 = Energy
+	101 = Adrenaline
+	102 = Pain Killer
+	103 = Cough Medicine
+	104 = Sleeping Pill
+	105 = Wake-up Pill
+	106 = Anti-oxidant
+	# Toxins
+	231 = Geddonase
+	232 = Histamine A
+	233 = Histamine B
+	234 = Sleep toxin
+	235 = Fever toxin
+	# Antibodies
+	240 = Antibody 0
+	241 = Antibody 1
+	242 = Antibody 2
+	243 = Antibody 3
+	244 = Antibody 4
+	245 = Antibody 5
+	246 = Antibody 6
+	247 = Antibody 7
+	# Antigens
+	248 = Antigen 0
+	249 = Antigen 1
+	250 = Antigen 2
+	251 = Antigen 3
+	252 = Antigen 4
+	253 = Antigen 5
+	254 = Antigen 6
+	255 = Antigen 7
+}
+
+@Click {
+	0 = Clicks have no effect
+	1 = Monostable - clicks activate, further clicks have no effect until object is inactive again
+	2 = Retriggerable Mono - clicks activate even if already active
+	3 = Toggle - toggle: 1st click activates, 2nd deactivates again
+	4 = Cycle - cycle: 1st click activate1, 2nd activate2, 3rd deactivate
+}
+
+@CreaSexOption {
+	0 = Random
+	1 = Male
+	2 = Female
+}
+
+@CreatureInteraction {
+	0 = No Action
+	1 = Action 1
+	2 = Action 2
+	3 = Action 1 & 2
+	4 = Deactivate
+	5 = Action 1 Deactivate
+	6 = Action 2 Deactivate
+	7 = Action 1 & 2 Deactivate
+}
+
+@Drives {
+	0 = Pain,
+	1 = Need for pleasure,
+	2 = Hunger,
+	3 = Coldness,
+	4 = Hotness,
+	5 = Tiredness,
+	6 = Sleepiness,
+	7 = Loneliness,
+	8 = Crowded,
+	9 = Fear,
+	10 = Boredom,
+	11 = Anger,
+	12 = Sex-Drive,
+	13 = Not Allocated 2,
+	14 = Not allocated 3,
+	15 = Not allocated 4
+}
+
+@Message {
+	0 = Activate 1
+	1 = Activate 2
+	2 = Deactivate
+	4 = Pickup
+	5 = Drop
+	8 = Enterscope
+}
+
+@MovementStatus {
+	0 = Autonomous
+	1 = MouseDriven
+	2 = Floating
+	3 = In Vehicle
+	4 = Carried
+}
+
+@PutBOption {
+	data = set all creatures details
+	cnam = set the creature's name from the string
+}
+
+@RoomEdge {
+	0 = Left
+	1 = Right
+	2 = Top
+	3 = Bottom
+	4 = Room Type
+}
+
+@RoomType {
+	0 = INDOORS
+	1 = SURFACE
+	2 = UNDERSEA
+}
+
+@SndfOption {
+	ON__ = Sound on
+	OFF_ = Sound off
+	FORE = Sound only plays when application is in foreground
+	CONS = Sound plays all the time
+}
+
+@Stimulus {
+	0 = Disappointment
+	1 = Pointer pats me
+	2 = Creature pats me
+	3 = Pointer slaps me
+	4 = Creature slaps me
+	5 = It is approaching
+	6 = It is retreating
+	7 = I bump into wall
+	8 = Object comes into view
+	9 = Unrecognised word
+	10 = Heard user speak
+	11 = Heard creature speak
+	12 = I am quiescent (periodic)
+	13 = I've activated1
+	14 = I've activated2
+	15 = I've deactivated
+	16 = I am approaching (periodic)
+	17 = I have retreated
+	18 = I have got
+	19 = I have dropped
+	20 = I've stated need
+	21 = I am resting (periodic)
+	22 = I am sleeping (periodic)
+	23 = I am traveling (periodic)
+	24 = Laying
+	25 = Coughing
+	26 = Sneezing
+	27 = Shivering
+	25 = Involuntary action 0-7
+	26 = Traveling (old)
+	27 = I have Retreated
+	28 = Involuntary Action 0;
+	29 = Involuntary Action 1;
+	30 = Involuntary Action 2;
+	31 = Involuntary Action 3;
+	32 = Involuntary Action 4;
+	33 = Involuntary Action 5;
+	34 = Involuntary Action 6;
+	35 = Involuntary Action 7;
+}
+
+@HitBits:bitflags {
+ 	0=Hit Left
+ 	1=Hit Right
+ 	2=Hit Top
+ 	3=Hit Bottom
+}
+
+@GetBOption:Literal {
+	data = get all creatures data
+	cnam = get creature's name
+	ctim = get time creature has been alive
+	monk = get creature's moniker
+	ovvd = data for all creatures
+}
+
+@SensoryNueron {
+	0 = <none>
+	1 = I've been patted
+	2 = I've been slapped
+	3 = I've bumped a wall
+	4 = I am near a wall
+	5 = I am in a vehicle
+	6 = User has spoken
+	7 = Creature has spoken
+	8 = Own kind has spoken
+	9 = Audible event
+	10 = Visible event
+	11 = It is approaching
+	12 = It is retreating
+	13 = It is near to me
+	14 = It is active
+	15 = It is an object
+	16 = It is a creature
+	17 = It is my sibling
+	18 = It is my parent
+	19 = It is my child
+	20 = It is opposite sex
+	21 = Spare 2
+
+}
