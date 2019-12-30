@@ -18,6 +18,8 @@
 		DOC_COMMENT_OPEN = 'regexp:/[*]+';
 		DOC_COMMENT_CLOSE = 'regexp:[*]+/'
 		LINE_COMMENT = "regexp://[^\n]*"
+		EXCLUSIVE = "regexp:[!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]"
+		REGION_HEADING_LITERAL = "regexp:[#][^\n]+"
 		WORD = "regexp:[a-zA-Z_][a-zA-Z0-9#!$_]{3}"
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
 		EQ = "=";
@@ -41,7 +43,7 @@
 		AT_RVALUE = "regexp:[@][rR][vV][aA][lL][uU][eE]";
 		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
 		AT_PARAM = "regexp:[@][pP][aA][rR][aA][mM]"
-		AT_RETURNS = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
+		AT_RETURN = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
 
 		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
 		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
@@ -56,16 +58,16 @@ def	::= (!<<eof>> def_element)*
 
 
 def_element
-	::= command_def_element
+	::= command_def_element end_of_statement
 	|	type_definition_element
 	| 	comment
 	| 	NEWLINE
-	| 	';'
+	| 	end_of_statement
 	;
 
 
 command_def_element
-	::= doc_comment? command return_type arguments_list? <<eos>>
+	::= doc_comment? command return_type arguments_list?
 	{
 		pin = 2;
 		methods = [
@@ -86,25 +88,43 @@ private arguments_list_recover
 
 
 type_definition_element
-	::= type_def_name type_definition_body
-	;
-
-type_definition
-	::= type_definition_key '=' type_definition_value '-' type_definition_description
-	;
-private type_definition_body
-	::= '{' type_definition_list? '}'
-	;
-
-type_definition_list
-	::= type_definition+
+	::= type_def_name type_note? type_definition_body
 	{
-		recoverWhile=type_definition_list_recover
+		pin=1;
 	}
 	;
 
+type_definition
+	::= type_definition_key '=' type_definition_value (DASH type_definition_description)?
+	{
+		pin=2;
+	}
+	;
+private type_definition_body
+	::= OPEN_BRACE type_definition_list? CLOSE_BRACE
+	{
+		pin=1;
+	}
+	;
+
+type_definition_list
+	::= type_definition_statements+
+	{
+		//recoverWhile=type_definition_list_recover
+	}
+	;
+private type_definition_statements
+	::=	type_definition
+	|	region_heading
+	//|	type_def_exclusives
+	;
+
+region_heading
+	::= REGION_HEADING_LITERAL
+	;
+
 private type_definition_list_recover
-	::= !('}')
+	::= !('}'|AT_ID)
 	;
 
 variable
@@ -164,11 +184,24 @@ type_definition_value
 	;
 
 type_definition_description
-	::= TEXT
+	::= TEXT_LITERAL
 	;
 
 doc_comment
-	::= DOC_COMMENT_OPEN doc_comment_element* DOC_COMMENT_CLOSE
+	::= DOC_COMMENT_OPEN doc_comment_body? DOC_COMMENT_CLOSE
+	{
+		pin=1;
+	}
+	;
+
+doc_comment_body
+	::= doc_comment_element+
+	{
+		recoverWhile=doc_comment_body_recover
+	}
+	;
+private doc_comment_body_recover
+	::= !(DOC_COMMENT_CLOSE)
 	;
 
 private doc_comment_element
@@ -178,6 +211,7 @@ private doc_comment_element
 	|	rvalue
 	|	lvalue
 	|	LEADING_ASTRISK
+	|	NEWLINE
 	;
 
 doc_comment_line
@@ -188,7 +222,7 @@ private doc_comment_line_items
 	::= code_block
 	|	WORD_LINK
 	|	TYPE_LINK
-	|	TEXT
+	|	TEXT_LITERAL
 	;
 
 code_block
@@ -204,25 +238,71 @@ lvalue
 
 doc_comment_return
 	::= AT_RETURN doc_comment_variable_type
+	{
+		pin=1;
+	}
 	;
 
 doc_comment_param
-	::= AT_PARAM '{' variable_name '}' doc_comment_variable_type doc_comment_param_text
+	::= AT_PARAM '{' variable_name '}' doc_comment_variable_type? doc_comment_param_text? NEWLINE?
+	{
+		pin=1;
+		//recoverWhile=doc_comment_line_recover
+	}
+	;
+
+private doc_comment_line_recover
+	::= !(NEWLINE|DOC_COMMENT_CLOSE)
 	;
 
 doc_comment_param_text
-	::= TEXT
+	::= TEXT_LITERAL
 	;
 
 doc_comment_variable_type
-	::= '(' type_literal variable_type_tail ')'
+	::= '(' type_literal variable_type_tail? ')'
 	|	bracket_string
+	{
+		pin=1;
+	}
 	;
 
 private variable_type_tail
-	::=  type_def_name
+	::= type_def_name
+	|	type_note
+	|	variable_tail_limits
+	;
+
+type_note
+	::= TYPE_NOTE_LITERAL
+	;
+
+private variable_tail_limits
+	::= '[' variable_tail_prime ']'
+	{
+		pin=1;
+	}
+	;
+
+private variable_tail_prime
+	::= from_until
 	|	from_to
-	|	from_until
+	|	variable_length
+	{
+		//recoverWhile=variable_tail_prime_recover
+	}
+	;
+private variable_tail_prime_recover
+	::= !(']'|NEWLINE)
+	;
+
+variable_length
+	::= INT
+	{
+		methods = [
+			getIntValue
+		]
+	}
 	;
 
 from_to
@@ -233,6 +313,23 @@ from_to
 			getIntRange
 		]
 	}
+	;
+
+from_until
+	::= INT UNTIL INT
+	{
+		pin=2;
+		methods = [
+			getIntRange
+		]
+	}
+	;
+
+end_of_statement
+	::= NEWLINE
+	|	';'
+	|	<<eos>>
+	|	<<eof>>
 	;
 
 comment
