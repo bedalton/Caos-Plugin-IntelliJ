@@ -13,33 +13,41 @@
 	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.def.psi.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
 	tokens = [
-		DOC_COMMENT = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
+		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
+		DOC_COMMENT_OPEN = 'regexp:/[*]+';
+		DOC_COMMENT_CLOSE = 'regexp:[*]+/'
 		LINE_COMMENT = "regexp://[^\n]*"
-		VAR_KEYWORD = "regexp:[vV][aA][rR]";
-		ARGS_KEYWORD = "regexp:[aA][rR][gG][sS]";
-		COMMAND_KEYWORD = "regexp:[cC][oO][mM][mM][aA][nN][dD]"
-		TYPE_KEYWORD = "regexp:[tT][yY][pP][eE]";
-		COMMENT = 'regexp:[cC][oO][mM][mM][eE][nN][tT]';
-		NONE = "regexp:[nN][oO][nN][eE]";
-		COLON = ':';
-		OPEN_PAREN = '(';
-		CLOSE_PAREN = ")";
-		space = "regexp:[ ]";
-		OPEN_BRACKET = '[';
-		CLOSE_BRACKET = ']';
-		OPEN_LINK = '<<';
-		CLOSE_LINK = '>>';
-		NEWLINE = "regexp:\n";
+		WORD = "regexp:[a-zA-Z_][a-zA-Z0-9#!$_]{3}"
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
 		EQ = "=";
 		COMMA = ',';
 		SEMI = ';'
 		SINGLE_QUO = "'";
 		DOUBLE_QUO = '"';
+		COLON = ':';
+		OPEN_PAREN = '(';
+		CLOSE_PAREN = ")";
+		space = "regexp:\s+";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		OPEN_BRACE = '{';
+		CLOSE_BRACE = '}';
+		LEADING_ASTRISK = '*';
+		DASH = '-';
+		CODE_BLOCK_LITERAL = 'regexp:#\{[^}]*\}';
+		WORD_LINK = 'regexp:\[[a-zA-Z_0-9#$!]+]'
+		TYPE_LINK = 'regexp:\@\{[a-zA-Z_0-9#$!]+\}'
+		AT_RVALUE = "regexp:[@][rR][vV][aA][lL][uU][eE]";
+		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
+		AT_PARAM = "regexp:[@][pP][aA][rR][aA][mM]"
+		AT_RETURNS = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
+
+		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
 		LINK = 'regexp:\[[^\]]*\]';
 		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
 		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
-		TEXT = "__TEXT__IN__DOUBLE__QUO__"
+		STRING_LITERAL_TYPE
+		space = "regexp:\s+"
 	]
 }
 
@@ -48,97 +56,155 @@ def	::= (!<<eof>> def_element)*
 
 
 def_element
-	::= var_def_element
-	| command_def_element
-	| type_def_element
-	| comment
-	| NEWLINE
-	| ';'
+	::= command_def_element
+	|	type_definition_element
+	| 	comment
+	| 	NEWLINE
+	| 	';'
 	;
 
-type_def_element
-	::= TYPE_KEYWORD type_name '=' string line_terminator?
-	;
-
-var_def_element
-	::= VAR_KEYWORD '[' namespace? parameter_name ']' '=' '[' type_name  ']' ('=' doc_comment)? line_terminator
-	{
-		pin = 1;
-	}
-	;
 
 command_def_element
-	::= COMMAND_KEYWORD '[' command ']' ARGS_KEYWORD '=' '[' args|NONE ']' ( COMMENT_KEYWORD '=' inline_doc_comment)? line_terminator
+	::= doc_comment? command_name return_type arguments_list?
 	{
-		pin = 1
+		pin = 2;
+		methods = [
+			isCommand
+		]
 	}
 	;
 
-args
-	::= arg (',' arg)*
+arguments_list
+	::= variable+
 	{
-		pin=1;
-		recoverWhile=args_recover
+		recoverWhile = arguments_list_recover
+	}
+	;
+private arguments_list_recover
+	::= !(';'|NEWLINE|DOC_COMMENT_LITERAL|LINE_COMMENT)
+	;
+
+
+type_definition_element
+	::= type_def_name type_definition_body
+	;
+
+type_definition
+	::= type_definition_key '=' type_definition_value '-' type_definition_description
+	;
+private type_definition_body
+	::= '{' type_definition_list? '}'
+	;
+
+type_definition_list
+	::= type_definition+
+	{
+		recoverWhile=type_definition_list_recover
 	}
 	;
 
-private args_recover
-	::= !(NEWLINE|']')
+private type_definition_list_recover
+	::= !('}')
 	;
 
-arg ::= parameter_name ':' type_name ('=' string)?
-	{
-		pin = 1;
-	}
-	;
-
-parameter_name ::= ID;
-type_name ::= ID;
-private command
-	::= namespace? command_name '(' return_type ('=' string)? ')'
+variable
+	::= variable_name '(' variable_type ')'
 	{
 		pin = 2;
 	}
 	;
 
-return_type ::= ID;
-namespace
-	::= (namespace_name ':')
+
+variable_name
+	::= ID
+	|	WORD
+	;
+
+return_type
+	::= '(' variable_type ')'
 	{
-		pin(".*")=2
+		pin = 1
 	}
 	;
-namespace_name
+
+variable_type
 	::= ID
+	|	WORD
+	|	STRING_LITERAL_TYPE
 	;
 
 command_name
-	::= ID
+	::= WORD
+	;
+
+type_def_name
+	::= AT_ID
+	;
+
+type_definition_key
+	::= TYPE_DEF_KEY
+	;
+
+type_definition_value
+	::= TYPE_DEF_VALUE
+	;
+
+type_definition_description
+	::= TEXT
 	;
 
 doc_comment
-	::= '[' doc_comment_body? ']'
+	::= DOC_COMMENT_OPEN doc_comment_element* DOC_COMMENT_CLOSE
+	;
+
+private doc_comment_element
+	::= doc_comment_param
+	|	doc_comment_return
+	|	doc_comment_line
+	|	rvalue
+	|	lvalue
+	|	LEADING_ASTRISK
+	;
+
+doc_comment_line
+	::= doc_comment_line_items+
+	;
+
+private doc_comment_line_items
+	::= code_block
+	|	WORD_LINK
+	|	TYPE_LINK
+	|	TEXT
+	;
+
+code_block
+	::= CODE_BLOCK_LITERAL
+	;
+
+rvalue
+	::= AT_RVALUE
+	;
+lvalue
+	::= AT_LVALUE
+	;
+
+doc_comment_return
+	::= AT_RETURN doc_comment_variable_type
+	;
+
+doc_comment_param
+	::= AT_PARAM '{' variable_name '}' doc_comment_variable_type doc_comment_param_text
+	;
+
+doc_comment_param_text
+	::= TEXT
+	;
+
+doc_comment_variable_type
+	::= '(' variable_type type_def_name ')'
 	;
 
 comment
-	::= LINE_COMMENT
+	::= DOC_COMMENT_LITERAL
+	|	LINE_COMMENT
 	;
-
-private line_terminator
-	::= <<eol>>
-	|	NEWLINE ';'?
-	|	';'?<<eof>>
-	;
-
-doc_comment_body
-	::= (TEXT | link)+
-	{
-	    recoverWhile=doc_comment_body_recover
-	}
-	;
-
-doc_comment_body_recover
-    ::= !(']')
-    ;
-
-private link ::= '<<' (namespace ':'?) command_name  '>>'
