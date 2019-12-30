@@ -47,6 +47,9 @@ AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]
 TYPE_DEF_KEY=[^=]+
 TYPE_DEF_VALUE = [^-\n,]+
 DEF_TEXT=[^\n]+
+INT=[-+]?[0-9]+
+TO='..'|[Tt][Oo]
+UNTIL=[uU][nN][tT][iI][lL]
 
 %state IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_TYPEDEF IN_COMMENT_AFTER_VAR
 
@@ -74,6 +77,9 @@ DEF_TEXT=[^\n]+
 <IN_PARAM_COMMENT> {
     "{"							{ return CaosDef_OPEN_BRACE;  }
     "}"							{ yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_CLOSE_BRACE; }
+    {TO}						{ return CaosDef_TO;}
+    {UNTIL}						{ return CaosDef_UNTIL; }
+    {INT}						{ return CaosDef_INT; }
     {ID}						{ return CaosDef_ID; }
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1);}
 }

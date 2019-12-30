@@ -215,8 +215,24 @@ doc_comment_param_text
 	;
 
 doc_comment_variable_type
-	::= '(' type_literal type_def_name ')'
+	::= '(' type_literal variable_type_tail ')'
 	|	bracket_string
+	;
+
+private variable_type_tail
+	::=  type_def_name
+	|	from_to
+	|	from_until
+	;
+
+from_to
+	::= INT TO INT
+	{
+		pin=2;
+		methods = [
+			getIntRange
+		]
+	}
 	;
 
 comment
