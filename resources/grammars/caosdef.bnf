@@ -38,7 +38,6 @@
 		LEADING_ASTRISK = '*';
 		DASH = '-';
 		CODE_BLOCK_LITERAL = 'regexp:#\{[^}]*}';
-		WORD_LINK = 'regexp:\[[a-zA-Z_0-9#$!]+]'
 		TYPE_LINK = 'regexp:@\{[a-zA-Z_0-9#$!]+}'
 		AT_RVALUE = "regexp:[@][rR][vV][aA][lL][uU][eE]";
 		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
@@ -220,9 +219,17 @@ doc_comment_line
 
 private doc_comment_line_items
 	::= code_block
-	|	WORD_LINK
+	|	word_link
+	|	variable_link
 	|	TYPE_LINK
-	|	TEXT_LITERAL
+	|	COMMENT_TEXT_LITERAL
+	|	'['
+	|	WORD
+	|	']'
+	;
+
+word_link
+	::= '[' command ']'
 	;
 
 code_block
@@ -244,11 +251,15 @@ doc_comment_return
 	;
 
 doc_comment_param
-	::= AT_PARAM '{' variable_name '}' doc_comment_variable_type? doc_comment_param_text? NEWLINE?
+	::= AT_PARAM variable_link doc_comment_variable_type? doc_comment_param_text? NEWLINE?
 	{
 		pin=1;
 		//recoverWhile=doc_comment_line_recover
 	}
+	;
+
+variable_link
+	::= VARIABLE_LINK_LITERAL
 	;
 
 private doc_comment_line_recover
@@ -256,7 +267,7 @@ private doc_comment_line_recover
 	;
 
 doc_comment_param_text
-	::= TEXT_LITERAL
+	::= COMMENT_TEXT_LITERAL
 	;
 
 doc_comment_variable_type

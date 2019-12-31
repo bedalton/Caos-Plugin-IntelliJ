@@ -33,15 +33,14 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 %unicode
 
 WHITE_SPACE=\s+
-TEXT=([^*\n]|"*"[^*/\n])+
+TEXT=([^*\n ]|"*"[^*/\n])+
 DOC_COMMENT_OPEN="/"[*]+
 DOC_COMMENT_CLOSE=[*]+"/"
 LINE_COMMENT="//"[^\n]*
 WORD=[a-zA-Z_][a-zA-Z0-9#!$_:]{3}
 TYPE_LINK=[@]\{[^}]\}
 ID=[_a-zA-Z][_a-zA-Z0-9]*
-CODE_BLOCK_LITERAL=#\{[^}]*\}
-WORD_LINK=\[[^\]]*\]
+CODE_BLOCK_LITERAL=[#][{][^}]*[}]
 AT_RVALUE=[@][rR][vV][aA][lL][uU][eE]
 AT_LVALUE=[@][lL][vV][aA][lL][uU][eE]
 AT_PARAM=[@][pP][aA][rR][aA][mM]
@@ -56,8 +55,9 @@ TO=([.]{2,3}|[Tt][Oo])
 UNTIL=[uU][nN][tT][iI][lL]
 EXCLUSIVE = [!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
 REGION=[#][^\n]+
+VARIABLE_LINK = [{]{ID}[}]
 
-%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR
+%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_LINK
 
 %%
 
@@ -82,9 +82,9 @@ REGION=[#][^\n]+
 
 <IN_PARAM_COMMENT> {
     "{"							{ return CaosDef_OPEN_BRACE;  }
-    "}"							{ yybegin(IN_COMMENT_AFTER_VAR); needs_type = true; return CaosDef_CLOSE_BRACE; }
+    "}"							{ needs_type = true; return CaosDef_CLOSE_BRACE; }
     {INT}						{ return CaosDef_INT; }
-    {ID}						{ return CaosDef_ID; }
+    {VARIABLE_LINK}				{ yybegin(IN_COMMENT_AFTER_VAR);  needs_type = true; return CaosDef_VARIABLE_LINK_LITERAL; }
 	[^]						 	{ yybegin(IN_COMMENT); }
 }
 
@@ -115,11 +115,18 @@ REGION=[#][^\n]+
 	{AT_ID}					 	{ return CaosDef_AT_ID; }
 }
 
+<IN_LINK> {
+	{WORD}						{ return CaosDef_ID; }
+    "]"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACKET; }
+  	[^]							{ yybegin(IN_COMMENT); }
+}
+
 <IN_COMMENT> {
-	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK; }
-	{WORD_LINK}				 	{ return CaosDef_WORD_LINK; }
 	{CODE_BLOCK_LITERAL}       	{ return CaosDef_CODE_BLOCK_LITERAL; }
-	{TEXT}						{ return CaosDef_TEXT_LITERAL; }
+    {VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
+	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK; }
+  	"["							{ yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
+	{TEXT}						{ return CaosDef_COMMENT_TEXT_LITERAL; }
 }
 
 <IN_TYPEDEF> {
