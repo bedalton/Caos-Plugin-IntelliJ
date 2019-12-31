@@ -8,6 +8,6 @@ import com.openc2e.plugins.intellij.caos.lang.CaosSyntaxHighlighter
 
 class CaosDefSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
     override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter {
-        return CaosSyntaxHighlighter()
+        return CaosDefSyntaxHighlighter()
     }
 }

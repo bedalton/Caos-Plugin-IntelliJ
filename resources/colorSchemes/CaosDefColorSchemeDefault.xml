@@ -1,0 +1,38 @@
+<?xml version='1.0'?>
+<list>
+  <option name="CaosDef_LINE_COMMENT">
+    <value>
+      <option name="FOREGROUND" value="00c853"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_BLOCK_COMMENT">
+    <value>
+      <option name="FOREGROUND" value="00c853"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_COMMENT_AT_STATEMENT">
+    <option name="FOREGROUND" value="1b5e20"/>
+    <option name="FONT_TYPE" value="3"/>
+  </option>
+  <option name="CaosDef_REGION_HEADER">
+    <value>
+      <option name="FOREGROUND" value="f57f17"/>
+      <option name="FONT_TYPE" value="2"/>
+    </value>
+  </option>
+  <option name="CaosDef_WORD_LINK">
+    <value>
+      <option name="FOREGROUND" value="1b5e20"/>
+      <option name="FONT_TYPE" value="3"/>
+    </value>
+  </option>
+  <option name="CaosDef_TYPE_LINK">
+    <value>
+      <option name="FOREGROUND" value="ff4081"/>
+      <option name="FONT_TYPE" value="2"/>
+    </value>
+  </option>
+
+</list>
