@@ -33,7 +33,7 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 %unicode
 
 WHITE_SPACE=\s+
-TEXT=([^*\n ]|"*"[^*/\n])+
+TEXT=([^*\n \[]|"*"[^*/\n])+
 DOC_COMMENT_OPEN="/"[*]+
 DOC_COMMENT_CLOSE=[*]+"/"
 LINE_COMMENT="//"[^\n]*
@@ -76,6 +76,7 @@ VARIABLE_LINK = [{]{ID}[}]
 	{AT_LVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_LVALUE; }
 	{AT_PARAM}                 	{ yybegin(IN_PARAM_COMMENT); return CaosDef_AT_PARAM; }
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
+	{VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	"*"	                     	{ return CaosDef_LEADING_ASTRISK; }
 	[^]						 	{ yybegin(IN_COMMENT); }
 }
@@ -83,8 +84,8 @@ VARIABLE_LINK = [{]{ID}[}]
 <IN_PARAM_COMMENT> {
     "{"							{ return CaosDef_OPEN_BRACE;  }
     "}"							{ needs_type = true; return CaosDef_CLOSE_BRACE; }
+	{VARIABLE_LINK}				{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_VARIABLE_LINK_LITERAL; }
     {INT}						{ return CaosDef_INT; }
-    {VARIABLE_LINK}				{ yybegin(IN_COMMENT_AFTER_VAR);  needs_type = true; return CaosDef_VARIABLE_LINK_LITERAL; }
 	[^]						 	{ yybegin(IN_COMMENT); }
 }
 
@@ -116,7 +117,7 @@ VARIABLE_LINK = [{]{ID}[}]
 }
 
 <IN_LINK> {
-	{WORD}						{ return CaosDef_ID; }
+	{WORD}						{ return CaosDef_WORD; }
     "]"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACKET; }
   	[^]							{ yybegin(IN_COMMENT); }
 }

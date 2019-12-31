@@ -50,6 +50,8 @@
     <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.lang.CaosDefSyntaxHighlighterFactory"
                                    language="CaosDef" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml"/>
+    <annotator language="CaosDef"
+               implementationClass="com.openc2e.plugins.intellij.caos.def.annotator.CaosDefHighlighterAnnotator" />
 
     <!-- Annotators -->
     <annotator language="Caos"

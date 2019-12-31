@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.utils
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import java.util.*
 
 fun String?.nullIfEmpty(): String? {
@@ -32,6 +33,10 @@ fun Boolean?.orTrue() : Boolean {
 
 fun now():Long {
     return Date().time
+}
+
+fun <PsiT : PsiElement> PsiElement.hasParentOfType(parentClass:Class<PsiT>) : Boolean {
+    return PsiTreeUtil.getParentOfType(this, parentClass) != null;
 }
 
 fun PsiElement.isNotEquivalentTo(otherElement:PsiElement): Boolean = this.isEquivalentTo(otherElement)

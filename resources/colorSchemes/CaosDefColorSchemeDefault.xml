@@ -2,37 +2,78 @@
 <list>
   <option name="CaosDef_LINE_COMMENT">
     <value>
-      <option name="FOREGROUND" value="00c853"/>
-      <option name="FONT_TYPE" value="1"/>
+      <option name="FOREGROUND" value="1565c0"/>
+      <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosDef_BLOCK_COMMENT">
     <value>
-      <option name="FOREGROUND" value="00c853"/>
-      <option name="FONT_TYPE" value="1"/>
+      <option name="FOREGROUND" value="1565c0"/>
+      <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosDef_COMMENT_AT_STATEMENT">
-    <option name="FOREGROUND" value="1b5e20"/>
-    <option name="FONT_TYPE" value="3"/>
+    <option name="FOREGROUND" value="1565c0"/>
+    <option name="FONT_TYPE" value="1"/>
   </option>
   <option name="CaosDef_REGION_HEADER">
     <value>
       <option name="FOREGROUND" value="f57f17"/>
-      <option name="FONT_TYPE" value="2"/>
+      <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="CaosDef_WORD_LINK">
     <value>
-      <option name="FOREGROUND" value="1b5e20"/>
-      <option name="FONT_TYPE" value="3"/>
+      <option name="FOREGROUND" value="1e88e5"/>
+      <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="CaosDef_TYPE_LINK">
     <value>
-      <option name="FOREGROUND" value="ff4081"/>
-      <option name="FONT_TYPE" value="2"/>
+      <option name="FOREGROUND" value="1e88e5"/>
+      <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-
+  <option name="CaosDef_VARIABLE_LINK">
+    <value>
+      <option name="FOREGROUND" value="1e88e5"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_VARIABLE_TYPE">
+    <value>
+      <option name="FOREGROUND" value="607d8b"/>
+      <option name="FONT_TYPE" value="0"/>
+    </value>
+  </option>
+  <option name="CaosDef_VARIABLE_NAME">
+    <value>
+      <option name="FOREGROUND" value="000000"/>
+      <option name="FONT_TYPE" value="0"/>
+    </value>
+  </option>
+  <option name="CaosDef_COMMAND">
+    <value>
+      <option name="FOREGROUND" value="4a148c"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_TYPE_DEF_NAME">
+    <value>
+      <option name="FOREGROUND" value="4a148c"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_TYPE_DEF_KEY">
+    <value>
+      <option name="FOREGROUND" value="000000"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_CODE_BLOCK">
+    <value>
+      <option name="FOREGROUND" value="000000"/>
+      <option name="FONT_TYPE" value="0"/>
+    </value>
+  </option>
 </list>

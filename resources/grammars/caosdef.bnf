@@ -244,10 +244,14 @@ lvalue
 	;
 
 doc_comment_return
-	::= AT_RETURN doc_comment_variable_type
+	::= returnElement doc_comment_variable_type
 	{
 		pin=1;
 	}
+	;
+
+returnElement
+	::= AT_RETURN
 	;
 
 doc_comment_param
