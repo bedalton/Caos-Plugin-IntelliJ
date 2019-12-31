@@ -6,7 +6,7 @@ import java.util.*
 
 object CaosBundle {
 
-    private const val BUNDLE = "com.openc2e.plugins.intellij.Caos"
+    private const val BUNDLE = "com.openc2e.plugins.intellij.caos-bundle"
     private val bundle: ResourceBundle by lazy { ResourceBundle.getBundle(BUNDLE) }
 
     @JvmStatic

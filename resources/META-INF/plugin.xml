@@ -46,12 +46,12 @@
     <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.lang.CaosDefSyntaxHighlighter" key="CaosDef" />
-    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.lang.CaosDefSyntaxHighlighterFactory"
+    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighter" key="CaosDef" />
+    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
                                    language="CaosDef" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml"/>
     <annotator language="CaosDef"
-               implementationClass="com.openc2e.plugins.intellij.caos.def.annotator.CaosDefHighlighterAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefHighlighterAnnotator" />
 
     <!-- Annotators -->
     <annotator language="Caos"

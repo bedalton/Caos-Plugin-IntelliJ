@@ -1,11 +1,10 @@
-package com.openc2e.plugins.intellij.caos.def.annotator
+package com.openc2e.plugins.intellij.caos.def.highlighting
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.openc2e.plugins.intellij.caos.def.lang.CaosDefSyntaxHighlighter
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 

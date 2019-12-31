@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.lang
+package com.openc2e.plugins.intellij.caos.highlighting
 
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors

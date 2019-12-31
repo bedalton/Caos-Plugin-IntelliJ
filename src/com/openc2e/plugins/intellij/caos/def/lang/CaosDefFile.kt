@@ -5,7 +5,7 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.openc2e.plugins.intellij.caos.def.stubs.interfaces.CaosDefFileStub
+import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
 import com.openc2e.plugins.intellij.caos.lang.CaosFileType
 
 class CaosDefFile(viewProvider: FileViewProvider)

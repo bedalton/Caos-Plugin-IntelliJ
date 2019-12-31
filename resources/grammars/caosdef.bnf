@@ -11,8 +11,8 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.def.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
-	//elementTypeFactory("")="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
+	elementTypeFactory("command_def_element|doc_comment|parameter")="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil"
 	tokens = [
 		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
 		DOC_COMMENT_OPEN = 'regexp:/[*]+';
@@ -38,7 +38,7 @@
 		LEADING_ASTRISK = '*';
 		DASH = '-';
 		CODE_BLOCK_LITERAL = 'regexp:#\{[^}]*}';
-		TYPE_LINK = 'regexp:@\{[a-zA-Z_0-9#$!]+}'
+		TYPE_LINK_LITERAL = 'regexp:@\{[a-zA-Z_0-9#$!]+}'
 		AT_RVALUE = "regexp:[@][rR][vV][aA][lL][uU][eE]";
 		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
 		AT_PARAM = "regexp:[@][pP][aA][rR][aA][mM]"
@@ -52,9 +52,17 @@
 	]
 }
 
-def	::= (!<<eof>> def_element)*
+def	::= header? (!<<eof>> def_element)*
 	;
 
+header
+	::= AT_VARIANT '(' variantCode (',' variantCode)* ')'
+	{
+		methods = [
+			isVariant
+		]
+	}
+	;
 
 def_element
 	::= command_def_element end_of_statement
@@ -69,6 +77,12 @@ command_def_element
 	::= doc_comment? command return_type arguments_list?
 	{
 		pin = 2;
+		stubClass="com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefCommandDefinitionStub"
+		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+
+		]
 		methods = [
 			isCommand
 		]
@@ -76,7 +90,7 @@ command_def_element
 	;
 
 arguments_list
-	::= variable+
+	::= parameter+
 	{
 		recoverWhile = arguments_list_recover
 	}
@@ -122,14 +136,22 @@ region_heading
 	::= REGION_HEADING_LITERAL
 	;
 
-private type_definition_list_recover
-	::= !('}'|AT_ID)
-	;
-
-variable
+parameter
 	::= variable_name variable_type
 	{
 		pin = 2;
+		stubClass="com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefParameterStub"
+		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+
+		]
+		methods = [
+			getParameterName
+			getParameterType
+			getParameterTypeNote
+			getParameterTypeStruct
+		]
 	}
 	;
 
@@ -190,38 +212,55 @@ doc_comment
 	::= DOC_COMMENT_OPEN doc_comment_body? DOC_COMMENT_CLOSE
 	{
 		pin=1;
+		stubClass="com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefDocCommentStub"
+        		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+        		implements = [
+        			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+        		]
+		methods = [
+			getParameterStruct
+			getParameterStructs
+			getReturnTypeStruct
+		]
 	}
 	;
 
-doc_comment_body
+private doc_comment_body
 	::= doc_comment_element+
 	{
 		recoverWhile=doc_comment_body_recover
 	}
 	;
+
 private doc_comment_body_recover
 	::= !(DOC_COMMENT_CLOSE)
 	;
 
 private doc_comment_element
-	::= doc_comment_param
-	|	doc_comment_return
-	|	doc_comment_line
-	|	rvalue
-	|	lvalue
+	::= doc_comment_param comment_end_of_line?
+	|	doc_comment_return comment_end_of_line?
+	|	doc_comment_line comment_end_of_line?
+	|	rvalue comment_end_of_line?
+	|	lvalue comment_end_of_line?
 	|	LEADING_ASTRISK
-	|	NEWLINE
+	|	comment_end_of_line
+	{
+		pin(".*")=1;
+	}
 	;
 
 doc_comment_line
-	::= doc_comment_line_items+
+	::= doc_comment_line_items doc_comment_line_items*
+	{
+		pin=1;
+	}
 	;
 
 private doc_comment_line_items
 	::= code_block
 	|	word_link
 	|	variable_link
-	|	TYPE_LINK
+	|	type_link
 	|	COMMENT_TEXT_LITERAL
 	|	'['
 	|	WORD
@@ -231,7 +270,9 @@ private doc_comment_line_items
 word_link
 	::= '[' command ']'
 	;
-
+type_link
+	::= TYPE_LINK_LITERAL
+	;
 code_block
 	::= CODE_BLOCK_LITERAL
 	;
@@ -244,9 +285,13 @@ lvalue
 	;
 
 doc_comment_return
-	::= returnElement doc_comment_variable_type
+	::= returnElement doc_comment_variable_type doc_comment_param_text?
 	{
 		pin=1;
+		methods = [
+			getReturnType
+			toStruct
+		]
 	}
 	;
 
@@ -255,19 +300,23 @@ returnElement
 	;
 
 doc_comment_param
-	::= AT_PARAM variable_link doc_comment_variable_type? doc_comment_param_text? NEWLINE?
+	::= AT_PARAM variable_link doc_comment_variable_type? doc_comment_param_text?
 	{
 		pin=1;
-		//recoverWhile=doc_comment_line_recover
+		methods = [
+			getParameterStruct
+		]
 	}
 	;
 
 variable_link
 	::= VARIABLE_LINK_LITERAL
-	;
-
-private doc_comment_line_recover
-	::= !(NEWLINE|DOC_COMMENT_CLOSE)
+	{
+		methods = [
+			getVariableNameTextRangeInLink
+			getVariableName
+		]
+	}
 	;
 
 doc_comment_param_text
@@ -279,6 +328,9 @@ doc_comment_variable_type
 	|	bracket_string
 	{
 		pin=1;
+		methods = [
+			toStruct
+		]
 	}
 	;
 
@@ -306,9 +358,6 @@ private variable_tail_prime
 	{
 		//recoverWhile=variable_tail_prime_recover
 	}
-	;
-private variable_tail_prime_recover
-	::= !(']'|NEWLINE)
 	;
 
 variable_length
@@ -341,7 +390,7 @@ from_until
 	;
 
 end_of_statement
-	::= NEWLINE
+	::= <<eol>>
 	|	';'
 	|	<<eos>>
 	|	<<eof>>
@@ -350,4 +399,21 @@ end_of_statement
 comment
 	::= DOC_COMMENT_LITERAL
 	|	LINE_COMMENT
+	;
+
+private comment_end_of_line
+	::= line_terminator
+	|	SEMI
+	|	LEADING_ASTRISK
+	;
+
+private line_terminator
+	::= NEWLINE
+	|	<<eol>>
+	;
+
+
+
+variantCode
+	::= ID ('=' VARIANT_NAME)
 	;

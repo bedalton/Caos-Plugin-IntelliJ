@@ -15,6 +15,7 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 
   private int paren_depth = 0;
   private boolean needs_type = false;
+  private boolean canDoName = false;
 
   public _CaosDefLexer() {
 	this((java.io.Reader)null);
@@ -56,19 +57,23 @@ UNTIL=[uU][nN][tT][iI][lL]
 EXCLUSIVE = [!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
 REGION=[#][^\n]+
 VARIABLE_LINK = [{]{ID}[}]
+AT_VARIANTS = [@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
+VARIANT_ID = [A-Za-z][A-Za-z0-9]
+VARIANT_NAME = [A-Za-z0-9 _]+
 
-%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_LINK
+%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY
 
 %%
 
 <IN_COMMENT, COMMENT_START, IN_PARAM_COMMENT, IN_COMMENT_AFTER_VAR> {
-	{WHITE_SPACE}				 {
-		if (yytextContainLineBreaks()) {
-			yybegin(COMMENT_START);
-		}
-		return WHITE_SPACE;
-  	}
-	"*/"						{ yybegin(YYINITIAL); return CaosDef_DOC_COMMENT_CLOSE; }
+	{WHITE_SPACE}				{
+									if (yytextContainLineBreaks()) {
+										yybegin(COMMENT_START);
+									}
+									return WHITE_SPACE;
+								}
+	"*/"						{ yybegin(IN_BODY); return CaosDef_DOC_COMMENT_CLOSE; }
+  	'\n'						{ yybegin(COMMENT_START); return CaosDef_NEWLINE; }
 }
 
 <COMMENT_START> {
@@ -76,6 +81,7 @@ VARIABLE_LINK = [{]{ID}[}]
 	{AT_LVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_LVALUE; }
 	{AT_PARAM}                 	{ yybegin(IN_PARAM_COMMENT); return CaosDef_AT_PARAM; }
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
+  	{AT_VARIANTS}				{ return CaosDef_VARIANTS; }
 	{VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	"*"	                     	{ return CaosDef_LEADING_ASTRISK; }
 	[^]						 	{ yybegin(IN_COMMENT); }
@@ -125,14 +131,14 @@ VARIABLE_LINK = [{]{ID}[}]
 <IN_COMMENT> {
 	{CODE_BLOCK_LITERAL}       	{ return CaosDef_CODE_BLOCK_LITERAL; }
     {VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
-	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK; }
+	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK_LITERAL; }
   	"["							{ yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
 	{TEXT}						{ return CaosDef_COMMENT_TEXT_LITERAL; }
 }
 
 <IN_TYPEDEF> {
 	"="                        	{ yybegin(IN_TYPEDEF_VALUE); return CaosDef_EQ; }
-	"}"						 	{ yybegin(YYINITIAL); return CaosDef_CLOSE_BRACE; }
+	"}"						 	{ yybegin(IN_BODY); return CaosDef_CLOSE_BRACE; }
 	"{"						 	{ return CaosDef_OPEN_BRACE; }
 	","                        	{ return CaosDef_COMMA; }
 	"-"                        	{ yybegin(IN_TYPEDEF_TEXT); return CaosDef_DASH; }
@@ -152,7 +158,7 @@ VARIABLE_LINK = [{]{ID}[}]
     [^]							{ yybegin(IN_TYPEDEF); }
 }
 
-<YYINITIAL> {
+<IN_BODY> {
 	"/*"						{ yybegin(IN_COMMENT); return CaosDef_DOC_COMMENT_OPEN; }
 	";"                        	{ return CaosDef_SEMI; }
 	":"                        	{ return CaosDef_COLON; }
@@ -167,8 +173,18 @@ VARIABLE_LINK = [{]{ID}[}]
 	{WORD}                     	{ return CaosDef_WORD; }
 	{ID}                       	{ return CaosDef_ID; }
 	{AT_ID}                    	{ yybegin(IN_TYPEDEF); return CaosDef_AT_ID; }
-
 }
+
+<YYINITIAL> {
+	"("                        	{ canDoName = true; return CaosDef_OPEN_PAREN; }
+	")"                        	{ yybegin(IN_BODY); return CaosDef_CLOSE_PAREN; }
+    ","							{ canDoName = true; return CaosDef_COMMA; }
+	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
+  	{VARIANT_ID}				{ return CaosDef_ID; }
+    {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME; } else return CaosDef_ID;}
+	[^]							{ yybegin(IN_BODY); }
+}
+
 {LINE_COMMENT}					{ return CaosDef_LINE_COMMENT; }
 {WHITE_SPACE}              		{ return WHITE_SPACE; }
 [^] { return BAD_CHARACTER; }

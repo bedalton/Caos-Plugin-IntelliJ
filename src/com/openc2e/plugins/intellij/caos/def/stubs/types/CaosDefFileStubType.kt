@@ -8,7 +8,7 @@ import com.intellij.util.io.StringRef
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefFileStubImpl
-import com.openc2e.plugins.intellij.caos.def.stubs.interfaces.CaosDefFileStub
+import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
 import java.io.IOException
 
 class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefLanguage.instance) {
