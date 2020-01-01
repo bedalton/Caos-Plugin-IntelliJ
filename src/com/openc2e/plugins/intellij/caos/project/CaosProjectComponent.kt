@@ -7,7 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.openc2e.plugins.intellij.caos.lang.CaosFileType
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFileType
 import com.openc2e.plugins.intellij.caos.utils.getModule
 import com.openc2e.plugins.intellij.caos.utils.virtualFile
 import java.util.logging.Logger
@@ -25,7 +25,7 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
         bus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, object : FileEditorManagerListener {
             override fun fileOpened(editorManager: FileEditorManager, file: VirtualFile) {
                 val extension = file.extension
-                if (extension != CaosFileType.DEFAULT_EXTENSION)
+                if (extension != CaosScriptFileType.DEFAULT_EXTENSION)
                     return
                 val module = file.getModule(project)
                 if (module != null) {

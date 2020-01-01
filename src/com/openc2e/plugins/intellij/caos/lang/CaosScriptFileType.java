@@ -7,17 +7,17 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class CaosFileType extends LanguageFileType {
+public class CaosScriptFileType extends LanguageFileType {
 
     @NonNls
-    public static final CaosFileType INSTANCE = new CaosFileType();
+    public static final CaosScriptFileType INSTANCE = new CaosScriptFileType();
     @NonNls
     public static final String DEFAULT_EXTENSION = "cos";
     @NonNls
     public static final String DOT_DEFAULT_EXTENSION = "."+DEFAULT_EXTENSION;
 
-    private CaosFileType() {
-        super(CaosLanguage.Companion.getInstance());
+    private CaosScriptFileType() {
+        super(CaosScriptLanguage.Companion.getInstance());
     }
 
     @NotNull

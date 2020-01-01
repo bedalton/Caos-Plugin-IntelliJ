@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.caos.highlighting.CaosSyntaxHighlighter
 
-class CaosSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
+class CaosScriptSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
     override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter {
         return CaosSyntaxHighlighter()
     }

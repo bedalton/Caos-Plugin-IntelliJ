@@ -10,6 +10,9 @@ import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefParameterStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
+import com.openc2e.plugins.intellij.caos.utils.readNameAsString
+import com.openc2e.plugins.intellij.caos.utils.readVariableType
+import com.openc2e.plugins.intellij.caos.utils.writeVariableType
 
 class CaosDefParameterStubType(debugName:String) : CaosDefStubElementType<CaosDefParameterStub, CaosDefParameterImpl>(debugName) {
 

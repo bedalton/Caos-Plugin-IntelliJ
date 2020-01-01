@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.def.stubs.types
+package com.openc2e.plugins.intellij.caos.utils
 
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -7,7 +7,6 @@ import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 fun StubInputStream.readNameAsString() : String? {
     return readName()?.string

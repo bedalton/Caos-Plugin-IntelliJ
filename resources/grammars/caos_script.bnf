@@ -1,18 +1,20 @@
 {
-	parserClass="com.openc2e.plugins.intellij.caos.parser.CaosParser"
-	parserUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosParserUtil"
-	implements="com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
-	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosCompositeElementImpl"
-	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.lexer.CaosTypes"
-	elementTypePrefix="Caos_"
-	elementTypeClass="com.openc2e.plugins.intellij.caos.psi.types.CaosElementType"
-	tokenTypeClass="com.openc2e.plugins.intellij.caos.lexer.CaosTokenType"
-	psiClassPrefix="Caos"
+	parserClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParser"
+	parserUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserUtil"
+	implements="com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes"
+	elementTypePrefix="CaosScript_"
+	elementTypeClass="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.caos.lexer.CaosScriptTokenType"
+	psiClassPrefix="CaosScript"
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("comment|tagLine")="com.openc2e.plugins.intellij.caos.psi.types.CaosElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosParserPsiUtil"
+	elementTypeFactory("command|command_call|command_token|expression")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
+	generateTokenAccessors=true
+	generateTokens=true
 	tokens = [
 		NEWLINE = "regexp:\n";
 		ENDM = "regexp:[eE][nN][dD][mM]"
@@ -47,7 +49,8 @@
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
 		PLUS = "+";
-		SPACE = "regexp:[ ]";
+		SPACE_ = "regexp:[ ]";
+		space = "regexp:\n[ ]+";
 		TAB = "regexp:[\t]"
 		OPEN_BRACKET = '[';
 		CLOSE_BRACKET = ']';
@@ -62,11 +65,11 @@ def	::= (!<<eof>> script_body_element)*
 	;
 
 script_body_element
-	::= event_script
-	|	code_block
+	::= event_script line_terminator
+	|	code_block line_terminator
 	{
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
 	}
@@ -76,7 +79,7 @@ code_block
 	::= caos_statement+
 	{
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
         ]
         methods = [
         	getCodeBlock
@@ -85,19 +88,19 @@ code_block
 	;
 
 private caos_statement
-	::= whiteSpace* caos_element line_terminator
-	|	whiteSpace* NEWLINE
+	::= caos_element line_terminator
+	|	NEWLINE
 	;
 
 caos_element
 	::= comment
-	|   control_statement
-	|   command
+	|   control_statement line_terminator?
+	|   command_call line_terminator
 	;
 
 
 event_script
-	::= (SCRP|ISCR) SPACE classifier SPACE event_number line_terminator event_script_body? whiteSpace* script_terminator
+	::= (SCRP|ISCR) SPACE_ classifier SPACE_ event_number line_terminator (event_script_body line_terminator)? script_terminator
 	{
 		pin=1
 	}
@@ -107,7 +110,7 @@ private event_script_body
 	::= code_block
 	{
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
         recoverWhile=event_script_body_recover
@@ -119,7 +122,7 @@ private event_script_body_recover
 	;
 
 classifier
-	::= family SPACE genus SPACE species
+	::= family SPACE_ genus SPACE_ species
 	;
 
 private control_statement
@@ -132,7 +135,7 @@ private control_statement
 
 
 loop_statement
-    ::= LOOP SPACE loop_body? line_terminator whiteSpace* loop_terminator
+    ::= LOOP SPACE_ loop_body? line_terminator loop_terminator
     {
         pin=1;
         methods = [
@@ -152,7 +155,10 @@ private ever_terminator
 	;
 
 private untl_terminator
-	::= UNTL equality_expression
+	::= UNTL line_terminator expression
+	{
+		pin=1
+	}
 	;
 
 
@@ -168,11 +174,11 @@ private loop_body_recover
     ;
 
 repeat_statement
-    ::= REPS SPACE expression line_terminator repeat_body? whiteSpace* REPE
+    ::= REPS SPACE_ expression line_terminator (repeat_body line_terminator)? REPE
     {
         pin=1
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
 
@@ -194,11 +200,11 @@ private repeat_body_recover
     ;
 
 enum_next_statement
-    ::= (ENUM|ESEE|ETCH) SPACE classifier line_terminator enum_body? whiteSpace* NEXT
+    ::= (ENUM|ESEE|ETCH) line_terminator classifier line_terminator (enum_body line_terminator)* NEXT
     {
         pin=1;
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
         methods = [
@@ -208,11 +214,11 @@ enum_next_statement
     ;
 
 enum_scenery_statement
-    ::= ESCN SPACE classifier line_terminator enum_body? whiteSpace* NSCN
+    ::= ESCN SPACE_ classifier line_terminator (enum_body line_terminator)? NSCN
     {
         pin=1;
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
         methods = [
@@ -225,7 +231,7 @@ private enum_body
     ::= code_block
     {
         implements = [
-            "com.openc2e.plugins.intellij.caos.psi.api.CaosCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
         ]
         recoverWhile=enum_body_recover
@@ -237,20 +243,27 @@ private enum_body_recover
     ;
 
 
-command
-    ::= command_head expressionList?
+command_call
+    ::= command expressionList?
     {
         pin=2
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosDefCommandCallStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getCommandString
+			getParameterTypes
+			getParametersLength
+			getTokens
+		]
     }
     ;
 
-private command_head
-	::= (namespaceToken ':' SPACE)? commandToken
-	|	commandToken  ':'
-	;
 
 private expressionList
-	::= (SPACE expression)+
+	::= (SPACE_ expression)+
 	{
         recoverWhile=command_recover
 	}
@@ -261,10 +274,14 @@ private command_recover
 	;
 
 doif_statement
-	::= DOIF SPACE equality_expression line_terminator do_if_body? line_terminator (whiteSpace* else_statement)? whiteSpace* ENDI
+	::= DOIF SPACE_ expression line_terminator (do_if_body line_terminator)? (else_if line_terminator)* (else_statement line_terminator)? ENDI
 	{
 		pin=1
 	}
+	;
+
+else_if
+	::= ELIF line_terminator expression line_terminator do_if_body?
 	;
 
 else_statement
@@ -281,34 +298,48 @@ private else_block
 private do_if_body
 	::= code_block
 	{
-		//recoverWhile=do_if_body_recover
+		recoverWhile=do_if_body_recover
 	}
+	;
+
+private do_if_body_recover
+	::= !(ENDI|ELSE|ELIF)
 	;
 
 expression
     ::= equality_expression
-    |   animationString
-    |   expressionPrime
+    |   animation_string
+    |   expression_prime
+    {
+    	stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpressionStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+    	methods = [
+    		getType
+    	]
+    }
     ;
 
 
-private expressionPrime
-    ::= command
+private expression_prime
+    ::= command_call
     |   literal
     |   token
-    |   varToken
+    |   var_token
     ;
 
 equality_expression
-    ::= expressionPrime eqOp expression
+    ::= expression_prime line_terminator eq_op line_terminator expression
     ;
 
-eqOp ::= ID;
+eq_op ::= ID;
 
-varToken::= VARR | OBVAR;
+var_token::= VARR | OBVAR;
 
 literal
-    ::= stringLiteral
+    ::= string_literal
     |   number
     {
         methods = [
@@ -326,7 +357,7 @@ literal
 number ::=INT|DECIMAL
     ;
 
-stringLiteral
+string_literal
     ::= QUOTE_STRING
     |   TEXT_LITERAL
     {
@@ -340,12 +371,36 @@ token
     ::= ID
     ;
 
-commandToken
-    ::= ID
-    ;
+command
+	::= command_token (SPACE_ command_token)*
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getCommandString
+			getCommandTokens
+		]
+	}
+	;
 
-namespaceToken
+command_token
     ::= ID
+	{
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandTokenStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getIndex
+			getCommandString
+		]
+	}
     ;
 
 comment
@@ -357,7 +412,7 @@ comment
     }
     ;
 
-animationString
+animation_string
     ::= '[' INT+ ANIM_R ']'
     ;
 
@@ -365,6 +420,7 @@ line_terminator
     ::= <<eof>>
     |   ","
     |   line_feed+
+    |	SPACE_
     ;
 
 private line_feed
@@ -381,12 +437,7 @@ family ::= INT;
 genus ::= INT;
 species ::= INT;
 
-whiteSpace
-	::= NEWLINE
-	|	TAB
-	|	SPACE
-	;
-
 event_number
 	::= INT
 	;
+

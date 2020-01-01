@@ -6,7 +6,7 @@ import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFileType;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
-public class CaosFileTypeFactory extends FileTypeFactory {
+public class CaosScriptFileTypeFactory extends FileTypeFactory {
     @Override
     public void createFileTypes(
             @NotNull

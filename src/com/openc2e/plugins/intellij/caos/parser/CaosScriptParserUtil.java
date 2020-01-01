@@ -4,10 +4,10 @@ import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.tree.IElementType;
-import com.openc2e.plugins.intellij.caos.psi.types.CaosTokenSets;
+import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets;
 import gnu.trove.TObjectLongHashMap;
 
-public class CaosParserUtil extends GeneratedParserUtilBase {
+public class CaosScriptParserUtil extends GeneratedParserUtilBase {
 
     private static final Key<TObjectLongHashMap<String>> MODES_KEY = Key.create("MODES_KEY");
 
@@ -66,8 +66,8 @@ public class CaosParserUtil extends GeneratedParserUtilBase {
         int offset = 0;
         do {
             type = builder_.lookAhead(offset++);
-        } while (type != null && CaosTokenSets.getWHITE_SPACE_LIKE().contains(type));
-        return type == null || CaosTokenSets.getScriptTerminators().contains(type) || eof(builder_, level);
+        } while (type != null && CaosScriptTokenSets.getWHITE_SPACE_LIKE().contains(type));
+        return type == null || CaosScriptTokenSets.getScriptTerminators().contains(type) || eof(builder_, level);
     }
 
 }

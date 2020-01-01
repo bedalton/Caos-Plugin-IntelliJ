@@ -9,6 +9,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefTypeDefValueStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStubImpl
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
+import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 
 class CaosDefTypeDefValueStubType(debugName:String) : CaosDefStubElementType<CaosDefTypeDefValueStub, CaosDefTypeDefinitionImpl>(debugName) {
 

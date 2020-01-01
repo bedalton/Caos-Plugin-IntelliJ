@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.lexer;
 
 import com.intellij.lexer.FlexLexer;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
@@ -10,7 +11,7 @@ import static com.openc2e.plugins.intellij.caos.lexer.CaosTypes.*;
 %%
 
 %{
-  public _CaosLexer() {
+  public _CaosScriptLexer() {
     this((java.io.Reader)null);
   }
 
@@ -19,7 +20,7 @@ import static com.openc2e.plugins.intellij.caos.lexer.CaosTypes.*;
 %}
 
 %public
-%class _CaosLexer
+%class _CaosScriptLexer
 %implements FlexLexer
 %function advance
 %type IElementType
@@ -37,6 +38,7 @@ EVER=[eE][vV][eE][rR]
 ENUM=[eE][nN][uU][mM]
 NEXT=[nN][eE][xX][tT]
 DOIF=[dD][oO][iI][fF]
+ELIF=[Ee][Ll][iI][fF]
 ELSE=[eE][lL][sS][eE]
 ENDI=[eE][nN][dD][iI]
 SCRP=[sS][cC][rR][pP]
@@ -48,12 +50,15 @@ QUOTE_STRING=\"[^\n|\"]*\"
 ID=[_a-zA-Z][_a-zA-Z0-9!#]*
 SPACE=[ ]
 TAB=[\t]
-
+%state START_OF_LINE IN_LINE
 %%
 
+<START_OF_LINE> {
+	'\s+'				 { return WHITE_SPACE; }
+    [^]					 { yybegin(IN_LINE); yypushback(1);}
+}
 
-
-<YYINITIAL> {
+<IN_LINE> {
   ":"                    { return Caos_COLON; }
   "+"                    { return Caos_PLUS; }
   "["                    { braceDepth++; return Caos_OPEN_BRACKET; }
@@ -67,7 +72,7 @@ TAB=[\t]
           return Caos_ANIM_R;
   }
 
-  {NEWLINE}              { return Caos_NEWLINE; }
+  {NEWLINE}              { yybegin(START_OF_LINE); return Caos_NEWLINE; }
   {ENDM}                 { return Caos_ENDM; }
   {SUBR}                 { return Caos_SUBR; }
   {GSUB}                 { return Caos_GSUB; }
@@ -90,7 +95,10 @@ TAB=[\t]
   {ID}                   { return Caos_ID; }
   {SPACE}                { return Caos_SPACE; }
   {TAB}                  { return Caos_TAB; }
+}
 
+<YYINITIAL> {
+	[^]					 {yybegin(START_OF_LINE); yypushback(1);}
 }
 
 [^] { return BAD_CHARACTER; }

@@ -287,10 +287,10 @@ doc_comment
 	{
 		pin=1;
 		stubClass="com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefDocCommentStub"
-        		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
-        		implements = [
-        			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
-        		]
+		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+		]
 		methods = [
 			getParameterStruct
 			getParameterStructs

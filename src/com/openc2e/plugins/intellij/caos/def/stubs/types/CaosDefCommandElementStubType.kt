@@ -13,8 +13,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefCommandDefinitionStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefCommandDefinitionStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
-import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
+import com.openc2e.plugins.intellij.caos.utils.*
 
 class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<CaosDefCommandDefinitionStub, CaosDefCommandDefElementImpl>(debugName) {
 

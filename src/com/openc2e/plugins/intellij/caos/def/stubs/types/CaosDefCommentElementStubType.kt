@@ -1,24 +1,16 @@
 package com.openc2e.plugins.intellij.caos.def.stubs.types
 
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentParam
-import com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefCommandDefElementImpl
 import com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefDocCommentImpl
 import com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil
-import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefCommandDefinitionStub
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefDocCommentStub
-import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefCommandDefinitionStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefDocCommentStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
-import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
+import com.openc2e.plugins.intellij.caos.utils.*
 
 class CaosDefCommentElementStubType(debugName:String) : CaosDefStubElementType<CaosDefDocCommentStub, CaosDefDocCommentImpl>(debugName) {
 

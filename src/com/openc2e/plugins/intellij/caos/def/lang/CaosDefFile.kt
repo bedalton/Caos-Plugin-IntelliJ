@@ -6,13 +6,13 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
-import com.openc2e.plugins.intellij.caos.lang.CaosFileType
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFileType
 
 class CaosDefFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosDefLanguage.instance) {
 
     override fun getFileType(): FileType {
-        return CaosFileType.INSTANCE
+        return CaosScriptFileType.INSTANCE
     }
 
     override fun getStub():CaosDefFileStub? {

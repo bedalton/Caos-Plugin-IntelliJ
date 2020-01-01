@@ -4,8 +4,8 @@ import com.intellij.psi.tree.IElementType;
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage;
 import org.jetbrains.annotations.NotNull;
 
-public class CaosElementType extends IElementType {
-    public CaosElementType(
+public class CaosScriptElementType extends IElementType {
+    public CaosScriptElementType(
             @NotNull
                     String debugName) {
         super(debugName, CaosDefLanguage.getInstance());

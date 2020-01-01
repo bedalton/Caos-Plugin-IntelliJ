@@ -8,9 +8,9 @@ import com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefTypeDefinitionEleme
 import com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefTypeDefinitionStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefinitionStubImpl
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.intellij.openapi.components.ServiceManager
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService
+import com.openc2e.plugins.intellij.caos.utils.*
 
 class CaosDefTypeDefinitionStubType(debugName:String) : CaosDefStubElementType<CaosDefTypeDefinitionStub, CaosDefTypeDefinitionElementImpl>(debugName) {
 

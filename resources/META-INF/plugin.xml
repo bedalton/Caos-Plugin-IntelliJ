@@ -1,6 +1,6 @@
 <idea-plugin>
   <id>com.openc2e.plugins.intellij.caos</id>
-  <name>Caos</name>
+  <name>Creatures Caos Script</name>
   <version>0.01</version>
 
   <description><![CDATA[
@@ -32,15 +32,35 @@
   <depends>com.intellij.modules.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
+
+
+    <!-- ======================== -->
+    <!-- ===== CAOS Script ====== -->
+    <!-- ======================== -->
+    <!-- LANG -->
+    <completion.contributor language="CaosScript"
+                            implementationClass="com.openc2e.plugins.intellij.caos.contributor.CaosCompletionContributor" />
+
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml"/>
+
+    <!-- Highlighting -->
+    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter" key="CaosScript" />
+    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
+                                   language="CaosScript" />
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosScriptHighlighterAnnotator" />
+
+    <!-- ======================== -->
+    <!-- ======= CAOS DEF ======= -->
+    <!-- ======================== -->
     <!-- LANG -->
     <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserDefinition"
                            language="CaosDef" />
-    <fileTypeFactory implementation="com.openc2e.plugins.intellij.caos.lang.CaosFileTypeFactory" />
+    <fileTypeFactory implementation="com.openc2e.plugins.intellij.caos.lang.CaosScriptFileTypeFactory" />
     <completion.contributor language="CaosDef"
                             implementationClass="com.openc2e.plugins.intellij.caos.def.contributor.CaosDefCompletionContributor" />
-    <!--completion.contributor language="Caos"
-                            implementationClass="com.openc2e.plugins.intellij.caos.contributor.CaosCompletionContributor" /-->
-
+    <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
 
     <!-- Bundled Definitions -->
     <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
@@ -49,27 +69,24 @@
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighter" key="CaosDef" />
     <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
                                    language="CaosDef" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml"/>
     <annotator language="CaosDef"
                implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefHighlighterAnnotator" />
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDarcula.xml"/>
 
     <!-- Annotators -->
-    <annotator language="Caos"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosCommandAnnotator" />
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandAnnotator" />
 
     <!-- Indices -->
-    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosStubTypes" />
+    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosIndexServiceImpl" />
-
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexServiceImpl" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNamespaceIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
-
-    <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
-
 
     <!-- Formatting -->
     <lang.braceMatcher language="CaosDef" implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefBraceMatcher" />

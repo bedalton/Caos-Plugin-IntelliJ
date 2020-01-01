@@ -1,0 +1,13 @@
+package com.openc2e.plugins.intellij.caos.stubs.types;
+
+import org.jetbrains.annotations.NotNull;
+
+public interface CaosScriptStubTypes {
+    CaosScriptCommandStubType COMMAND = new CaosScriptCommandStubType("CaosScript_COMMAND");
+    @NotNull
+    CaosScriptCommandCallStubType COMMAND_CALL = new CaosScriptCommandCallStubType("CaosScript_COMMAND_CALL");
+    @NotNull
+    CaosScriptCommandTokenStubType COMMAND_TOKEN = new CaosScriptCommandTokenStubType("CaosScript_COMMAND_TOKEN");
+    @NotNull
+    CaosScriptExpressionStubType EXPRESSION = new CaosScriptExpressionStubType("CaosScript_EXPRESSION");
+}
