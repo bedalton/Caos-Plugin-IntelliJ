@@ -66,7 +66,7 @@ header
 	}
 	;
 
-def_element
+private def_element
 	::= command_def_element end_of_statement
 	|	type_definition_element
 	| 	comment
@@ -194,6 +194,16 @@ parameter
   variable_name
 	::= ID
 	|	WORD
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+		]
+	}
 	;
 
 return_type
@@ -224,17 +234,40 @@ command
 	::= command_word+
 	{
 		methods = [
-			getReference
 		]
 	}
 	;
 
 command_word
 	::= WORD
+	{
+
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getIndex
+			getReference
+		]
+	}
 	;
 
 type_def_name
 	::= AT_ID
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	}
 	;
 
 type_definition_key
@@ -366,9 +399,18 @@ doc_comment_param
 variable_link
 	::= VARIABLE_LINK_LITERAL
 	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+		]
 		methods = [
 			getVariableNameTextRangeInLink
 			getVariableName
+			getName
+			setName
+			getTextOffset
+			getReference
+			getOffsetRange
 		]
 	}
 	;

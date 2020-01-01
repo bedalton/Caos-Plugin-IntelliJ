@@ -61,7 +61,7 @@ AT_VARIANTS = [@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
 VARIANT_ID = [A-Za-z][A-Za-z0-9]
 VARIANT_NAME = [A-Za-z0-9 _]+
 
-%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY
+%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT
 
 %%
 
@@ -174,13 +174,18 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	{AT_ID}                    	{ yybegin(IN_TYPEDEF); return CaosDef_AT_ID; }
 }
 
-<YYINITIAL> {
-	"("                        	{ canDoName = true; return CaosDef_OPEN_PAREN; }
+<IN_VARIANT> {
 	")"                        	{ yybegin(IN_BODY); return CaosDef_CLOSE_PAREN; }
-    ","							{ canDoName = true; return CaosDef_COMMA; }
-	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
+    ","							{ canDoName = false; return CaosDef_COMMA; }
+    "="							{ canDoName = true; return CaosDef_EQ; }
   	{VARIANT_ID}				{ return CaosDef_ID; }
     {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME_LITERAL; } else return CaosDef_ID;}
+	[^]							{ yybegin(IN_BODY); yypushback(1); }
+}
+
+<YYINITIAL> {
+	"("                        	{ yybegin(IN_VARIANT); return CaosDef_OPEN_PAREN; }
+	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
 	[^]							{ yybegin(IN_BODY); yypushback(1); }
 }
 

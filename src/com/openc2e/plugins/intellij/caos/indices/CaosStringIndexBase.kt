@@ -31,7 +31,6 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
 
     override operator fun get(keyString: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
         val keyLowercase = keyString.toLowerCase()
-        LOGGER.info("CoasStringIndexBase: $keyString; NumKeys: ${getAllKeys(project).size}")
         return getAllKeys(project)
                 .filter { it.toLowerCase() == keyLowercase }
                 .flatMap {

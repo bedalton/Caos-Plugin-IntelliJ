@@ -68,6 +68,7 @@
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNamespaceIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
 
+    <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
 
 
     <!-- Formatting -->

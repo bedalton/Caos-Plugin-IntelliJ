@@ -1,9 +1,12 @@
 package com.openc2e.plugins.intellij.caos.def.psi.util
 
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
-import com.openc2e.plugins.intellij.caos.def.references.CaosDefCommandReference
+import com.openc2e.plugins.intellij.caos.def.references.CaosDefCommandWordReference
+import com.openc2e.plugins.intellij.caos.def.references.CaosDefTypeNameReference
+import com.openc2e.plugins.intellij.caos.def.references.CaosDefVariableLinkReference
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
@@ -193,7 +196,7 @@ object CaosDefPsiImplUtil {
         val linkText = variableLink.text
         val linkTextLength = linkText.length
         if (linkTextLength > 2)
-            return linkText.substringFromEnd(1, 2)
+            return linkText.substringFromEnd(1, 1)
         return ""
     }
 
@@ -306,6 +309,11 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
+    fun getAllKeys(element:CaosDefTypeDefinitionElement, key:String) : List<String> {
+        return element.keys.map{ it.key }
+    }
+
+    @JvmStatic
     fun toStruct(element:CaosDefTypeDefinition) : CaosDefTypeDefValueStruct {
         return CaosDefTypeDefValueStruct(
                 key = element.stub?.key ?: element.key,
@@ -330,8 +338,95 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(command:CaosDefCommand) : CaosDefCommandReference {
-        return CaosDefCommandReference(command)
+    fun getReference(command:CaosDefCommandWord) : CaosDefCommandWordReference {
+        return CaosDefCommandWordReference(command)
     }
+
+    @JvmStatic
+    fun getName(variableName:CaosDefVariableName) : String {
+        return variableName.text
+    }
+
+    @JvmStatic
+    fun setName(variableName:CaosDefVariableName, newNameString:String) : PsiElement {
+        val newNameElement = CaosDefPsiElementFactory
+                .getVariableNameElement(variableName.project, newNameString)
+        return variableName.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getName(variableLink: CaosDefVariableLink) : String {
+        return variableLink.variableName
+    }
+
+    @JvmStatic
+    fun setName(variableLink:CaosDefVariableLink, newNameString:String) : PsiElement {
+        val newNameElement = CaosDefPsiElementFactory
+                .getVariableLinkElement(variableLink.project, newNameString)
+        return variableLink.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getTextOffset(variableLink:CaosDefVariableLink) : Int {
+        return 1
+    }
+
+
+    @JvmStatic
+    fun getName(element: CaosDefCommandWord) : String {
+        return element.text
+    }
+
+    @JvmStatic
+    fun setName(element:CaosDefCommandWord, newNameString:String) : PsiElement {
+        val newNameElement = CaosDefPsiElementFactory
+                .getCommandWordElement(element.project, newNameString)
+        return element.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getIndex(element:CaosDefCommandWord) : Int {
+        val parent = element.parent as? CaosDefCommand
+                ?: return 0
+        val index = parent.commandWordList.indexOf(element)
+        return if (index >= 0)
+            index
+        else
+            0
+    }
+
+    @JvmStatic
+    fun getOffsetRange(element:CaosDefVariableLink) : TextRange {
+        val length = element.variableName.length
+        if (length < 3)
+            return TextRange.EMPTY_RANGE
+        else
+            return TextRange(1, length + 1)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosDefVariableLink) : CaosDefVariableLinkReference {
+        return CaosDefVariableLinkReference(element)
+    }
+
+
+    @JvmStatic
+    fun getName(element: CaosDefTypeDefName) : String {
+        return element.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(element:CaosDefTypeDefName, newNameString:String) : PsiElement {
+        val newNameElement = CaosDefPsiElementFactory
+                .getTypeDefName(element.project, newNameString)
+        return element.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosDefTypeDefName) : CaosDefTypeNameReference {
+        return CaosDefTypeNameReference(element)
+    }
+
+
 
 }

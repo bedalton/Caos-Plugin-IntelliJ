@@ -33,8 +33,10 @@ class CaosDefHighlighterAnnotator : Annotator {
             is CaosDefVariableName -> {
                 addColor(element, annotationHolder, CaosDefSyntaxHighlighter.VARIABLE_NAME);
             }
-            is CaosDefCommand ->
-                addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMAND);
+            is CaosDefCommand -> {
+                if (element.parent is CaosDefCommandDefElement)
+                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMAND);
+            }
             is CaosDefBracketString -> {
                 if (element.hasParentOfType(CaosDefDocComment::class.java)) {
                     addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT);
