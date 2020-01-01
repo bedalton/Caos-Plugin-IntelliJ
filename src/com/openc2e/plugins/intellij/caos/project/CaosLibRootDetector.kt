@@ -37,13 +37,13 @@ class CaosLibRootDetector internal constructor(rootType: OrderRootType, presenta
 
     override fun detectRoots(rootCandidate: VirtualFile, progressIndicator: ProgressIndicator): Collection<VirtualFile> {
         val result = ArrayList<VirtualFile>()
-        collectRoots(rootCandidate, result, progressIndicator)
+        collectRoots(rootCandidate, progressIndicator)
         return result
     }
 
     companion object {
 
-        fun collectRoots(file: VirtualFile, result: MutableList<VirtualFile>, progressIndicator: ProgressIndicator?) {
+        fun collectRoots(file: VirtualFile, progressIndicator: ProgressIndicator?) {
             if (file.fileSystem is JarFileSystem) {
                 return
             }

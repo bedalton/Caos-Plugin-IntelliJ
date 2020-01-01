@@ -17,6 +17,8 @@ class CaosDefCommandElementsByNameIndex : CaosStringIndexBase<CaosDefCommandDefE
         private const val VERSION = 0
         @JvmStatic
         val KEY = IndexKeyUtil.create(CaosDefCommandElementsByNameIndex::class.java)
+        @JvmStatic
+        val Instance = CaosDefCommandElementsByNameIndex();
     }
 
 }

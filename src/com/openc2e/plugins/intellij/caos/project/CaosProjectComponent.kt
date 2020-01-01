@@ -5,7 +5,6 @@ import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.caos.lang.CaosFileType
@@ -31,13 +30,13 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
                 val module = file.getModule(project)
                 if (module != null) {
                     CaosBundleSourcesRegistrationUtil.register(module, project)
-                    initFrameworkDefaults(project, module, editorManager.selectedTextEditor, file)
+                    initFrameworkDefaults(editorManager.selectedTextEditor, file)
                 }
             }
         })
     }
 
-    private fun initFrameworkDefaults(project: Project, module: Module, editor: Editor?, file: VirtualFile) {
+    private fun initFrameworkDefaults(editor: Editor?, file: VirtualFile) {
         val editorVirtualFile = editor?.virtualFile ?: return
         if (editorVirtualFile.path != file.path)
             return

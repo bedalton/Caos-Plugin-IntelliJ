@@ -30,7 +30,13 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     override operator fun get(keyString: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
-        return StubIndex.getElements(key, keyString, project, scope, indexedElementClass).toList()
+        val keyLowercase = keyString.toLowerCase()
+        LOGGER.info("CoasStringIndexBase: $keyString; NumKeys: ${getAllKeys(project).size}")
+        return getAllKeys(project)
+                .filter { it.toLowerCase() == keyLowercase }
+                .flatMap {
+                    StubIndex.getElements(key, it, project, scope, indexedElementClass)
+                }
     }
 
     open fun getByPattern(start: String?, tail: String?, project: Project): Map<String, List<PsiT>> {
@@ -50,7 +56,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
             if (notMatchingKeys.contains(key) || keys.contains(key)) {
                 continue
             }
-            if (key.startsAndEndsWith(start, tail)) {
+            if (key.toLowerCase().startsAndEndsWith(start?.toLowerCase(), tail?.toLowerCase())) {
                 keys.add(key)
             } else {
                 notMatchingKeys.add(key)

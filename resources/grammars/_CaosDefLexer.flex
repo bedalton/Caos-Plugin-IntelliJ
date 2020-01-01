@@ -81,18 +81,18 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	{AT_LVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_LVALUE; }
 	{AT_PARAM}                 	{ yybegin(IN_PARAM_COMMENT); return CaosDef_AT_PARAM; }
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
-  	{AT_VARIANTS}				{ return CaosDef_VARIANTS; }
+  	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
 	{VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	"*"	                     	{ return CaosDef_LEADING_ASTRISK; }
-	[^]						 	{ yybegin(IN_COMMENT); }
+	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
 <IN_PARAM_COMMENT> {
     "{"							{ return CaosDef_OPEN_BRACE;  }
     "}"							{ needs_type = true; return CaosDef_CLOSE_BRACE; }
 	{VARIABLE_LINK}				{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_VARIABLE_LINK_LITERAL; }
-    {INT}						{ return CaosDef_INT; }
-	[^]						 	{ yybegin(IN_COMMENT); }
+    {INT}						{ return CaosDef_INT_LITERAL; }
+	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
 <IN_COMMENT_AFTER_VAR> {
@@ -100,7 +100,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
     {TO}						{ return CaosDef_TO;}
     {UNTIL}						{ return CaosDef_UNTIL; }
     {AT_ID}						{ return CaosDef_AT_ID; }
-    {INT}						{ return CaosDef_INT; }
+    {INT}						{ return CaosDef_INT_LITERAL; }
     {ID}						{ return CaosDef_ID; }
     "("							{ paren_depth++; return CaosDef_OPEN_PAREN; }
 	")"						 	{ paren_depth--; yybegin(IN_COMMENT);return CaosDef_CLOSE_PAREN; }
@@ -115,7 +115,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 		return CaosDef_TEXT_LITERAL;
       }
 
-	[^]						 	{ yybegin(IN_COMMENT); }
+	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
 <IN_COMMENT, IN_PARAM_COMMENT> {
@@ -125,7 +125,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 <IN_LINK> {
 	{WORD}						{ return CaosDef_WORD; }
     "]"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACKET; }
-  	[^]							{ yybegin(IN_COMMENT); }
+  	[^]							{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
 <IN_COMMENT> {
@@ -150,12 +150,12 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 
 <IN_TYPEDEF_VALUE> {
 	{TYPE_DEF_VALUE}			{ yybegin(IN_TYPEDEF); return CaosDef_TYPE_DEF_VALUE; }
-    [^]							{ yybegin(IN_TYPEDEF); }
+    [^]							{ yybegin(IN_TYPEDEF); yypushback(1); }
 }
 <IN_TYPEDEF_TEXT> {
 	'\n'						{ yybegin(IN_TYPEDEF); return WHITE_SPACE; }
 	{DEF_TEXT}					{ yybegin(IN_TYPEDEF); return CaosDef_TEXT_LITERAL; }
-    [^]							{ yybegin(IN_TYPEDEF); }
+    [^]							{ yybegin(IN_TYPEDEF); yypushback(1); }
 }
 
 <IN_BODY> {
@@ -167,8 +167,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
  	"["							{ return CaosDef_OPEN_BRACKET; }
  	"]"							{ return CaosDef_CLOSE_BRACKET; }
 
-	{DOC_COMMENT_OPEN}         	{ return CaosDef_DOC_COMMENT_OPEN; }
-	{DOC_COMMENT_CLOSE}        	{ return CaosDef_DOC_COMMENT_CLOSE; }
+	{DOC_COMMENT_OPEN}         	{ yybegin(IN_COMMENT); return CaosDef_DOC_COMMENT_OPEN; }
 	{LINE_COMMENT}             	{ return CaosDef_LINE_COMMENT; }
 	{WORD}                     	{ return CaosDef_WORD; }
 	{ID}                       	{ return CaosDef_ID; }
@@ -181,8 +180,8 @@ VARIANT_NAME = [A-Za-z0-9 _]+
     ","							{ canDoName = true; return CaosDef_COMMA; }
 	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
   	{VARIANT_ID}				{ return CaosDef_ID; }
-    {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME; } else return CaosDef_ID;}
-	[^]							{ yybegin(IN_BODY); }
+    {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME_LITERAL; } else return CaosDef_ID;}
+	[^]							{ yybegin(IN_BODY); yypushback(1); }
 }
 
 {LINE_COMMENT}					{ return CaosDef_LINE_COMMENT; }

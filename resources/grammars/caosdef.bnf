@@ -11,8 +11,9 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.def.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
-	elementTypeFactory("command_def_element|doc_comment|parameter")="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition")="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil"
+	generateTokenAccessors=true
 	tokens = [
 		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
 		DOC_COMMENT_OPEN = 'regexp:/[*]+';
@@ -56,10 +57,11 @@ def	::= header? (!<<eof>> def_element)*
 	;
 
 header
-	::= AT_VARIANT '(' variantCode (',' variantCode)* ')'
+	::= AT_VARIANT '(' variant (',' variant)* ')'
 	{
 		methods = [
 			isVariant
+			getVariants
 		]
 	}
 	;
@@ -85,11 +87,23 @@ command_def_element
 		]
 		methods = [
 			isCommand
+			isRvalue
+			isLvalue
+			getEnclosingDocComment
+			getComment
+			getNamespace
+			getCommandName
+			getParameterStructs
+			getReturnTypeString
+			getReturnTypeStruct
+			getVariants
+			isVariant
+			getParameterStruct
 		]
 	}
 	;
 
-arguments_list
+private arguments_list
 	::= parameter+
 	{
 		recoverWhile = arguments_list_recover
@@ -104,6 +118,17 @@ type_definition_element
 	::= type_def_name type_note? type_definition_body
 	{
 		pin=1;
+		stubClass="com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefTypeDefinitionStub"
+		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			getTypeName
+			getKeys
+			getValueForKey
+			getAllKeys
+		]
 	}
 	;
 
@@ -111,6 +136,18 @@ type_definition
 	::= type_definition_key '=' type_definition_value (DASH type_definition_description)?
 	{
 		pin=2;
+		stubClass="com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefTypeDefValueStub"
+		extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+
+		]
+		methods = [
+			toStruct
+			getKey
+			getValue
+			getDescription
+		]
 	}
 	;
 private type_definition_body
@@ -120,7 +157,7 @@ private type_definition_body
 	}
 	;
 
-type_definition_list
+private type_definition_list
 	::= type_definition_statements+
 	{
 		//recoverWhile=type_definition_list_recover
@@ -149,8 +186,7 @@ parameter
 		methods = [
 			getParameterName
 			getParameterType
-			getParameterTypeNote
-			getParameterTypeStruct
+			toStruct
 		]
 	}
 	;
@@ -186,6 +222,11 @@ string_label
 
 command
 	::= command_word+
+	{
+		methods = [
+			getReference
+		]
+	}
 	;
 
 command_word
@@ -226,10 +267,15 @@ doc_comment
 	;
 
 private doc_comment_body
-	::= doc_comment_element+
+	::= (doc_comment_front_comment doc_comment_element*)
+	|	doc_comment_element+
 	{
 		recoverWhile=doc_comment_body_recover
 	}
+	;
+
+doc_comment_front_comment
+	::= (doc_comment_line comment_end_of_line?)+
 	;
 
 private doc_comment_body_recover
@@ -240,6 +286,7 @@ private doc_comment_element
 	::= doc_comment_param comment_end_of_line?
 	|	doc_comment_return comment_end_of_line?
 	|	doc_comment_line comment_end_of_line?
+	|	doc_comment_with_tag
 	|	rvalue comment_end_of_line?
 	|	lvalue comment_end_of_line?
 	|	LEADING_ASTRISK
@@ -247,6 +294,14 @@ private doc_comment_element
 	{
 		pin(".*")=1;
 	}
+	;
+
+doc_comment_with_tag
+	::= at_tag (doc_comment_line comment_end_of_line)?
+	;
+
+at_tag
+	::= AT_ID
 	;
 
 doc_comment_line
@@ -289,7 +344,6 @@ doc_comment_return
 	{
 		pin=1;
 		methods = [
-			getReturnType
 			toStruct
 		]
 	}
@@ -361,7 +415,7 @@ private variable_tail_prime
 	;
 
 variable_length
-	::= INT
+	::= int
 	{
 		methods = [
 			getIntValue
@@ -370,24 +424,39 @@ variable_length
 	;
 
 from_to
-	::= INT TO INT
+	::= int TO int
 	{
 		pin=2;
 		methods = [
 			getIntRange
+			fromInt="/int[0]"
+			toInt="/int[1]"
 		]
 	}
 	;
 
 from_until
-	::= INT UNTIL INT
+	::= int UNTIL int
 	{
 		pin=2;
 		methods = [
 			getIntRange
+			fromInt="/int[0]"
+			untilInt="/int[1]"
 		]
 	}
 	;
+
+int
+	::= INT_LITERAL
+	{
+		methods = [
+			getIntValue
+		]
+	}
+	;
+
+
 
 end_of_statement
 	::= <<eol>>
@@ -414,6 +483,14 @@ private line_terminator
 
 
 
+variant
+	::= variantCode ('=' variable_name)?
+	;
+
 variantCode
-	::= ID ('=' VARIANT_NAME)
+	::= ID
+	;
+
+variantName
+	::= VARIANT_NAME_LITERAL
 	;

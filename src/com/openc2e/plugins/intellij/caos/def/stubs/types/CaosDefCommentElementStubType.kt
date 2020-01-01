@@ -8,38 +8,34 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentParam
 import com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefCommandDefElementImpl
+import com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefDocCommentImpl
 import com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefCommandDefinitionStub
+import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefDocCommentStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefCommandDefinitionStubImpl
+import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefDocCommentStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
-class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<CaosDefCommandDefinitionStub, CaosDefCommandDefElementImpl>(debugName) {
+class CaosDefCommentElementStubType(debugName:String) : CaosDefStubElementType<CaosDefDocCommentStub, CaosDefDocCommentImpl>(debugName) {
 
-    override fun createPsi(stub: CaosDefCommandDefinitionStub): CaosDefCommandDefElementImpl {
-        return CaosDefCommandDefElementImpl(stub, this)
+    override fun createPsi(stub: CaosDefDocCommentStub): CaosDefDocCommentImpl {
+        return CaosDefDocCommentImpl(stub, this)
     }
 
-    override fun serialize(stub: CaosDefCommandDefinitionStub, stream: StubOutputStream) {
-        stream.writeList(stub.variants) { writeName(it) }
-        stream.writeName(stub.namespace)
-        stream.writeName(stub.command)
+    override fun serialize(stub: CaosDefDocCommentStub, stream: StubOutputStream) {
         stream.writeList(stub.parameters, StubOutputStream::writeParameter)
-        stream.writeBoolean(stub.isCommand)
         stream.writeBoolean(stub.rvalue)
         stream.writeBoolean(stub.lvalue)
         stream.writeReturnType(stub.returnType)
         stream.writeUTFFast(stub.comment ?: "")
     }
 
-    override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefCommandDefinitionStub {
-        val variants = stream.readList { readNameAsString() }.filterNotNull()
-        val namespace = stream.readNameAsString()
-        val command = stream.readNameAsString()
+    override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefDocCommentStub {
         val parameters = stream.readList(StubInputStream::readParameter)
-        val isCommand = stream.readBoolean();
         val rvalue = stream.readBoolean();
         val lvalue = stream.readBoolean();
         val returnType = stream.readReturnType() ?: CaosDefReturnTypeStruct(
@@ -47,40 +43,32 @@ class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<C
                 comment = null
         )
         val comment = stream.readUTFFast().nullIfEmpty()
-        return CaosDefCommandDefinitionStubImpl(
+        return CaosDefDocCommentStubImpl(
                 parent = parent,
-                namespace = namespace,
-                command = command!!,
                 parameters = parameters,
-                isCommand = isCommand,
                 rvalue = rvalue,
                 lvalue = lvalue,
                 returnType = returnType,
-                comment = comment,
-                variants = variants
+                comment = comment
         )
     }
 
-    override fun createStub(element: CaosDefCommandDefElementImpl, parent: StubElement<*>): CaosDefCommandDefinitionStub {
-        return CaosDefCommandDefinitionStubImpl(
+    override fun createStub(element: CaosDefDocCommentImpl, parent: StubElement<*>): CaosDefDocCommentStub {
+        return CaosDefDocCommentStubImpl(
                 parent = parent,
-                namespace = element.namespace,
-                command = element.commandName,
                 parameters = element.parameterStructs,
-                isCommand = element.isCommand,
-                rvalue = element.isRvalue,
-                lvalue = element.isLvalue,
+                rvalue = element.rvalueList.isNotEmpty(),
+                lvalue = element.lvalueList.isNotEmpty(),
                 returnType = element.returnTypeStruct ?: CaosDefPsiImplUtil.UnknownReturnType,
-                comment = element.comment,
-                variants = element.variants
+                comment = element.docCommentFrontComment?.text
         )
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return (node?.psi as CaosDefCommandDefElement).commandName.nullIfEmpty() != null
+        return false
     }
 
-    override fun indexStub(stub: CaosDefCommandDefinitionStub, indexSink: IndexSink) {
-        ServiceManager.getService(CaosDefStubIndexService::class.java).indexCommand(stub, indexSink)
+    override fun indexStub(stub: CaosDefDocCommentStub, indexSink: IndexSink) {
+        // no index needed
     }
 }

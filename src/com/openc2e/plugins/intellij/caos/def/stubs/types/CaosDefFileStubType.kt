@@ -9,6 +9,7 @@ import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefFileStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
+import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import java.io.IOException
 
 class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefLanguage.instance) {
@@ -29,13 +30,17 @@ class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefL
     override fun serialize(stub: CaosDefFileStub, stream: StubOutputStream) {
         super.serialize(stub, stream)
         stream.writeName(stub.fileName)
+        stream.writeList(stub.variants) {
+            writeName(it)
+        }
     }
 
     @Throws(IOException::class)
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): CaosDefFileStub {
         super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
-        return CaosDefFileStubImpl(null, fileName)
+        val variants = stream.readList { readNameAsString() }.filterNotNull()
+        return CaosDefFileStubImpl(null, fileName, variants)
     }
 
     override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {
@@ -53,7 +58,7 @@ private class CaosDefFileStubBuilder : DefaultStubBuilder() {
             super.createStubForFile(file)
         } else {
             val fileName = file.name
-            return CaosDefFileStubImpl(file, fileName)
+            return CaosDefFileStubImpl(file, fileName, file.variants)
         }
     }
 }

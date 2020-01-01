@@ -14,7 +14,7 @@ import java.util.logging.Logger
 internal const val BUNDLE_DEFINITIONS_FOLDER = "builtins"
 private val LOGGER:Logger = Logger.getLogger("#BundledLibraryUtil")
 
-internal fun canRegisterSourcesAsLibrary(module:Module, directories: List<String>) : Boolean {
+internal fun canRegisterSourcesAsLibrary(directories: List<String>) : Boolean {
     if (!CaosFileUtil.PLUGIN_HOME_DIRECTORY?.exists().orFalse()) {
         LOGGER.severe("Failed to find plugin home directory")
         return false

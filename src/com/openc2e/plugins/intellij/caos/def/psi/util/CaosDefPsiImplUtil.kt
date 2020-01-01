@@ -1,16 +1,124 @@
 package com.openc2e.plugins.intellij.caos.def.psi.util
 
 import com.intellij.openapi.util.TextRange
+import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
+import com.openc2e.plugins.intellij.caos.def.references.CaosDefCommandReference
+import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
+import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.substringFromEnd
 
 object CaosDefPsiImplUtil {
 
+    @Suppress("MemberVisibilityCanBePrivate")
     const val AnyType:String = "value"
+    const val UnknownReturn:String = "???"
+    val UnknownReturnType = CaosDefReturnTypeStruct(type = CaosDefVariableTypeStruct(type = UnknownReturn))
+    val AnyTypeType:CaosDefVariableTypeStruct = CaosDefVariableTypeStruct(type = AnyType)
+
+    @JvmStatic
+    fun isVariant(header:CaosDefHeader, variant:String) : Boolean {
+        return variant in getVariants(header)
+    }
+
+    @JvmStatic
+    fun getVariants(header:CaosDefHeader) : List<String> {
+        return header.variantList.map { it.variantCode.text }
+    }
+
+    @JvmStatic
+    fun isVariant(command:CaosDefCommandDefElement, variant:String) : Boolean {
+        return variant in getVariants(command)
+    }
+
+    @JvmStatic
+    fun getVariants(command:CaosDefCommandDefElement) : List<String> {
+        return command.stub?.variants ?: (command.containingFile as CaosDefFile).variants
+    }
+
+    @JvmStatic
+    fun isLvalue(command:CaosDefCommandDefElement) : Boolean {
+        val stub = command.stub
+        if (stub != null)
+            return stub.lvalue
+        val comment = command.docComment
+                ?: return false
+        return comment.lvalueList.isNotEmpty()
+    }
+
+    @JvmStatic
+    fun isRvalue(command:CaosDefCommandDefElement) : Boolean {
+        val stub = command.stub
+        if (stub != null)
+            return stub.lvalue
+        val returnType = getReturnTypeString(command)
+        return returnType != "command" && returnType != UnknownReturn
+    }
+
+    @JvmStatic
+    fun getReturnTypeString(command:CaosDefCommandDefElement) : String {
+        val stub = command.stub
+        if (stub != null)
+            return stub.returnType.type.type
+        return command.returnType?.variableType?.typeLiteral?.text
+                ?: command.returnType?.variableType?.bracketString?.text
+                ?: UnknownReturn
+    }
+
+    @JvmStatic
+    fun getNamespace(@Suppress("UNUSED_PARAMETER", "MemberVisibilityCanBePrivate") command:CaosDefCommandDefElement) : String? {
+        return null
+    }
+
+    @JvmStatic
+    fun getCommandName(command:CaosDefCommandDefElement) : String {
+        return command.command.commandWordList.joinToString(" ") { it.text }
+    }
+
+    @JvmStatic
+    fun getParameterStructs(command:CaosDefCommandDefElement) : List<CaosDefParameterStruct> {
+        val comment = command.docComment
+                ?: return command.parameterList.map { it.toStruct() }
+        return command.parameterList.map {
+            comment.getParameterStruct(it.parameterName) ?: it.toStruct()
+        }
+    }
+
+    @JvmStatic
+    fun getParameterStruct(command:CaosDefCommandDefElement, name:String) : CaosDefParameterStruct? {
+        return getParameterStructs(command).firstOrNull { it.name == name }
+    }
+
+    @JvmStatic
+    fun getIntRange(fromElement:CaosDefFromTo) : Pair<Int, Int>? {
+        val from = fromElement.fromInt.intValue
+        val to = fromElement.toInt?.intValue
+                ?: return null
+        return Pair(from, to)
+    }
+
+    @JvmStatic
+    fun getIntRange(fromElement:CaosDefFromUntil) : Pair<Int, Int>? {
+        val from = fromElement.fromInt.intValue
+        val to = fromElement.untilInt?.intValue
+                ?: return null
+        return Pair(from, to)
+    }
+
+    @JvmStatic
+    fun getComment(command:CaosDefCommandDefElement) : String? {
+        val comment = command.docComment
+                ?: return null
+        return comment.docCommentFrontComment?.docCommentLineList
+                ?.joinToString {
+                    val text = it.text
+                    text.trim().removePrefix("*")+ "\n"
+                }?.trim()
+    }
 
     @JvmStatic
     fun getParameterStruct(docComment:CaosDefDocComment, variableName:String) : CaosDefParameterStruct? {
@@ -23,27 +131,20 @@ object CaosDefPsiImplUtil {
     fun getEnclosingDocComment(element:CaosDefCompositeElement) : CaosDefDocComment? {
         val parentCommandDefinition
                 = element.getParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return null;
+                ?: return null
         return parentCommandDefinition.docComment
     }
 
     @JvmStatic
-    fun getParameterTypeStruct(parameter: CaosDefParameter) : CaosDefParameterStruct {
-        val struct = parameter.stub?.parameterStruct
-        if (struct != null)
-            return struct
-        val parameterName = getParameterName(parameter)
-        val type = getParameterType(parameter)
-        // todo think about allowing all notations in
-        val typeDefType:String? = null
-        val typeNote:String? = null
+    fun toStruct(parameter: CaosDefParameter) : CaosDefParameterStruct {
+        val stub = parameter.stub
+        val parameterName = stub?.parameterName ?: getParameterName(parameter)
+        val type = stub?.type ?: CaosDefVariableTypeStruct(type = getParameterType(parameter))
         return CaosDefParameterStruct(
                 name = parameterName,
-                typedef =  typeDefType,
                 type = type,
-                noteText = typeNote,
                 comment = null
-        );
+        )
     }
 
     @JvmStatic
@@ -58,7 +159,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getParameterStructs(docComment:CaosDefDocComment?) : List<CaosDefParameterStruct> {
-        return docComment?.docCommentBody?.docCommentParamList?.mapNotNull{
+        return docComment?.docCommentParamList?.mapNotNull{
             getParameterStruct(it)
         } ?: emptyList()
     }
@@ -68,15 +169,11 @@ object CaosDefPsiImplUtil {
         val parameterNameLink = paramComment.variableLink
                 ?: return null
         val parameterName = getVariableName(parameterNameLink)
-        val parameterTypeName = paramComment.docCommentVariableType?.typeLiteral?.text
-        val type = paramComment.docCommentVariableType?.typeDefName?.text
-        val note = paramComment.docCommentVariableType?.typeNote?.text
+        val parameterTypeName = paramComment.docCommentVariableType?.toStruct()
         val comment = paramComment.docCommentParamText?.text
         return CaosDefParameterStruct(
                 name = parameterName,
-                type = parameterTypeName ?: AnyType,
-                typedef = type,
-                noteText = note,
+                type = parameterTypeName ?: AnyTypeType,
                 comment = comment
         )
     }
@@ -85,10 +182,10 @@ object CaosDefPsiImplUtil {
     fun getVariableNameTextRangeInLink(variableLink:CaosDefVariableLink) : TextRange {
         val linkText = variableLink.text
         val linkTextLength = linkText.length
-        if (linkTextLength > 2)
-            return TextRange.create(1, variableLink.text.length - 1);
+        return if (linkTextLength > 2)
+            TextRange.create(1, variableLink.text.length - 1)
         else
-            return TextRange.EMPTY_RANGE
+            TextRange.EMPTY_RANGE
     }
 
     @JvmStatic
@@ -114,8 +211,6 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun toStruct(returnElement: CaosDefDocCommentReturn) : CaosDefReturnTypeStruct? {
-        val parameterTypeName = returnElement.docCommentVariableType?.typeLiteral?.text.nullIfEmpty()
-                ?: return null
         val type = returnElement.docCommentVariableType?.toStruct() ?:
                 CaosDefVariableTypeStruct(
                         type = AnyType
@@ -144,13 +239,31 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun toStruct(element:CaosDefDocCommentVariableType) : CaosDefVariableTypeStruct {
-
-    }
-
-    @JvmStatic
-    fun getVariableTypeStruct(element:CaosDefDocCommentVariableType) : CaosDefParameterStruct {
-
+    fun toStruct(element:CaosDefDocCommentVariableType) : CaosDefVariableTypeStruct? {
+        val type = element.typeLiteral?.text
+                ?: return null
+        val typeDef = element.typeDefName?.text?.substring(1)
+        val typeNote = element.typeNote?.text?.substring(1)
+        var intRange:Pair<Int,Int>? = null
+        var length:Int? = null
+        when {
+            element.fromUntil != null -> {
+                intRange = element.fromUntil?.intRange
+            }
+            element.fromTo != null -> {
+                intRange = element.fromTo?.intRange
+            }
+            element.variableLength != null -> {
+                length = element.variableLength?.intValue
+            }
+        }
+        return CaosDefVariableTypeStruct(
+                type = type,
+                noteText = typeNote,
+                intRange = intRange,
+                length = length,
+                typedef = typeDef
+        )
     }
 
     @JvmStatic
@@ -163,5 +276,62 @@ object CaosDefPsiImplUtil {
 
     }
 
+    @JvmStatic
+    fun getIntValue(element:CaosDefVariableLength) : Int? {
+        return element.int.intValue
+    }
+
+    @JvmStatic
+    fun getIntValue(element:CaosDefInt) : Int {
+        return element.text.toInt()
+    }
+
+
+    @JvmStatic
+    fun getTypeName(element:CaosDefTypeDefinitionElement) : String {
+        return element.stub?.typeName ?: element.typeDefName.text.substring(1)
+    }
+
+    @JvmStatic
+    fun getKeys(element:CaosDefTypeDefinitionElement) : List<CaosDefTypeDefValueStruct> {
+        return element.stub?.keys ?: element.typeDefinitionList.mapNotNull {
+            it.toStruct()
+        }
+    }
+
+
+    @JvmStatic
+    fun getValueForKey(element:CaosDefTypeDefinitionElement, key:String) : CaosDefTypeDefValueStruct? {
+        return element.keys.firstOrNull{ it.key == key }
+    }
+
+    @JvmStatic
+    fun toStruct(element:CaosDefTypeDefinition) : CaosDefTypeDefValueStruct {
+        return CaosDefTypeDefValueStruct(
+                key = element.stub?.key ?: element.key,
+                value = element.stub?.value ?: element.value,
+                description = element.stub?.description ?: element.description
+        )
+    }
+
+    @JvmStatic
+    fun getKey(element:CaosDefTypeDefinition) : String {
+        return element.stub?.key ?: element.typeDefinitionKey.text
+    }
+
+    @JvmStatic
+    fun getValue(element:CaosDefTypeDefinition) : String {
+        return element.stub?.value ?: element.typeDefinitionValue?.text ?: UnknownReturn
+    }
+
+    @JvmStatic
+    fun getDescription(element:CaosDefTypeDefinition) : String? {
+        return element.stub?.description ?: element.typeDefinitionDescription?.text
+    }
+
+    @JvmStatic
+    fun getReference(command:CaosDefCommand) : CaosDefCommandReference {
+        return CaosDefCommandReference(command)
+    }
 
 }
