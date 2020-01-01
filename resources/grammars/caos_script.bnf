@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("command|command_call|command_token|expression")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("command|command_call|command_token|expression|var_token")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -19,7 +19,6 @@
 		NEWLINE = "regexp:\n";
 		ENDM = "regexp:[eE][nN][dD][mM]"
 		SUBR = "regexp:[sS][uU][bB][rR]"
-		GSUB = "regexp:[gG][sS][uU][bB]"
 		REPS = "regexp:[rR][eE][pP][sS]"
 		REPE = "regexp:[rR][eE][pP][eE]"
 		LOOP = "regexp:[lL][oO][oO][pP]"
@@ -33,25 +32,26 @@
 		DOIF = "regexp:[dD][oO][iI][fF]"
 		ENDI = "regexp:[eE][nN][dD][iI]"
 		SCRP = "regexp:[sS][cC][rR][pP]"
-		RTAR = "regexp:[rR][tT][aA][rR]"
 		ESCN = "regexp:[eE][sS][cC][nN]"
 		NSCN = "regexp:[nN][sS][cC][nN]"
 		ETCH = "regexp:[eE][tT][cC][hH]"
 		ESEE = "regexp:[eE][sS][eE][eE]"
 		ISCR = "regexp:[iI][sS][cC][rR]"
-		VARR = "regexp:VA[R0-9][0-9]"
-		OBVAR = "regexp:OB[0-9]{2}"
+		VA_XX = "regexp:[Vv][Aa][0-9][0-9]"
+		OB_XX = "regexp:[Oo][Vv][0-9][0-9]"
+		MV_XX = "regexp:[Mm][Vv][0-9][0-9]"
+		VAR_X = "regexp:[Vv][Aa][Rr][0-9]"
+		OBV_X = "regexp:[Oo][Bb][Vv][0-9]"
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
 		DECIMAL = "regexp:[0-9]+\.[0-9]+"
 		INT = "regexp:[0-9]+"
-		TEXT_LITERAL = 'regexp:\[[^\]]*\]';
+		TEXT_LITERAL = 'regexp:\[[^]]*]';
 		QUOTE_STRING = 'regexp:"[^\n|"]*"'
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
 		PLUS = "+";
 		SPACE_ = "regexp:[ ]";
-		space = "regexp:\n[ ]+";
-		TAB = "regexp:[\t]"
+		space = "regexp:\n[\t ]+";
 		OPEN_BRACKET = '[';
 		CLOSE_BRACKET = ']';
 		COMMA = ',';
@@ -70,7 +70,7 @@ script_body_element
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
 	}
 	;
@@ -111,7 +111,7 @@ private event_script_body
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
         recoverWhile=event_script_body_recover
 	}
@@ -179,7 +179,7 @@ repeat_statement
         pin=1
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
 
         methods = [
@@ -205,10 +205,9 @@ enum_next_statement
         pin=1;
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
         methods = [
-        	getCodeBlock
         ]
     }
     ;
@@ -219,10 +218,10 @@ enum_scenery_statement
         pin=1;
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
         methods = [
-        	getCodeBlock
+
         ]
     }
     ;
@@ -232,7 +231,7 @@ private enum_body
     {
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-            "com.openc2e.plugins.intellij.caos.psi.api.HasCaosBlock"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
         recoverWhile=enum_body_recover
     }
@@ -247,16 +246,19 @@ command_call
     ::= command expressionList?
     {
         pin=2
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosDefCommandCallStub"
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandCallStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getCommandString
+			getCommandTokens
 			getParameterTypes
 			getParametersLength
-			getTokens
+			getCommandTokens
+			getCallType
+			getPreviousCalls
 		]
     }
     ;
@@ -309,6 +311,7 @@ private do_if_body_recover
 expression
     ::= equality_expression
     |   animation_string
+    |	byte_string
     |   expression_prime
     {
     	stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpressionStub"
@@ -336,7 +339,24 @@ equality_expression
 
 eq_op ::= ID;
 
-var_token::= VARR | OBVAR;
+var_token
+	::= VA_XX
+	| 	OV_XX
+	|	OBV_X
+	|	VAR_X
+	|	MV_XX
+	{
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptVarTokenStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getVarGroup
+			getVarIndex
+		]
+	}
+	;
 
 literal
     ::= string_literal
@@ -362,7 +382,7 @@ string_literal
     |   TEXT_LITERAL
     {
         methods = [
-            stringValue
+            getStringValue
         ]
     }
     ;
@@ -394,11 +414,15 @@ command_token
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
 		]
 		methods = [
+			getName
+			setName
 			getReference
 			getIndex
 			getCommandString
+			isVariant
 		]
 	}
     ;
@@ -413,8 +437,12 @@ comment
     ;
 
 animation_string
-    ::= '[' INT+ ANIM_R ']'
+    ::= '[' INT+ ANIM_R? ']'
     ;
+
+byte_string
+	::= '[' INT (SPACE_ INT)* ']'
+	;
 
 line_terminator
     ::= <<eof>>

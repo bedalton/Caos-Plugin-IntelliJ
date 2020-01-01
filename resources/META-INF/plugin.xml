@@ -38,18 +38,21 @@
     <!-- ===== CAOS Script ====== -->
     <!-- ======================== -->
     <!-- LANG -->
+    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserDefinition"
+                           language="CaosScript" />
     <completion.contributor language="CaosScript"
                             implementationClass="com.openc2e.plugins.intellij.caos.contributor.CaosCompletionContributor" />
 
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml"/>
+    <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
 
     <!-- Highlighting -->
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter" key="CaosScript" />
     <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
                                    language="CaosScript" />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosScriptHighlighterAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml"/>
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->

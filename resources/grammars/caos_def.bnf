@@ -245,12 +245,14 @@ command_word
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
 			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
 		]
 		methods = [
 			getName
 			setName
 			getIndex
 			getReference
+			isVariant
 		]
 	}
 	;

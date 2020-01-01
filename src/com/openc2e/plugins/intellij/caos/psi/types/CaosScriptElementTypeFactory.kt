@@ -13,6 +13,7 @@ public class CaosScriptElementTypeFactory {
                 "CaosScript_COMMAND_CALL" -> CaosScriptStubTypes.COMMAND_CALL
                 "CaosScript_COMMAND_TOKEN" -> CaosScriptStubTypes.COMMAND_TOKEN
                 "CaosScript_EXPRESSION" -> CaosScriptStubTypes.EXPRESSION
+                "CaosScript_VAR_TOKEN" -> CaosScriptStubTypes.VAR_TOKEN
                 else -> throw IndexOutOfBoundsException("Caos token '$debugName' is not recognized")
             }
         }

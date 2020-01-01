@@ -6,7 +6,7 @@ import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static com.openc2e.plugins.intellij.caos.lexer.CaosTypes.*;
+import static com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*;
 
 %%
 
@@ -42,11 +42,18 @@ ELIF=[Ee][Ll][iI][fF]
 ELSE=[eE][lL][sS][eE]
 ENDI=[eE][nN][dD][iI]
 SCRP=[sS][cC][rR][pP]
+VAxx=[Vv][Aa][0-9][0-9]
+OVxx=[Oo][Vv][0-9][0-9]
+MVxx=[Mm][Vv][0-9][0-9]
+VAxx=[Mm][Vv][0-9][0-9]
+OBVx=[Oo][Bb][Vv][0-9]
+VARx=[Vv][Aa][Rr][0-9]
 COMMENT_LITERAL=\*[^\n]*
 DECIMAL=[0-9]+\.[0-9]+
 INT=[0-9]+
 TEXT=\[[^\]]*\]
 QUOTE_STRING=\"[^\n|\"]*\"
+WORD=[_a-zA-Z][_a-zA-Z0-9!#]{3}
 ID=[_a-zA-Z][_a-zA-Z0-9!#]*
 SPACE=[ ]
 TAB=[\t]
@@ -59,42 +66,48 @@ TAB=[\t]
 }
 
 <IN_LINE> {
-  ":"                    { return Caos_COLON; }
-  "+"                    { return Caos_PLUS; }
-  "["                    { braceDepth++; return Caos_OPEN_BRACKET; }
-  "]"                    { braceDepth--; return Caos_CLOSE_BRACKET; }
-  ","                    { return Caos_COMMA; }
+  ":"                    { return CaosScript_COLON; }
+  "+"                    { return CaosScript_PLUS; }
+  "["                    { braceDepth++; return CaosScript_OPEN_BRACKET; }
+  "]"                    { braceDepth--; return CaosScript_CLOSE_BRACKET; }
+  ","                    { return CaosScript_COMMA; }
   "R"                    {
           if (braceDepth < 1) {
               yypushback(1);
               return null;
 		  }
-          return Caos_ANIM_R;
+          return CaosScript_ANIM_R;
   }
 
-  {NEWLINE}              { yybegin(START_OF_LINE); return Caos_NEWLINE; }
-  {ENDM}                 { return Caos_ENDM; }
-  {SUBR}                 { return Caos_SUBR; }
-  {GSUB}                 { return Caos_GSUB; }
-  {REPS}                 { return Caos_REPS; }
-  {REPE}                 { return Caos_REPE; }
-  {LOOP}                 { return Caos_LOOP; }
-  {UNTL}                 { return Caos_UNTL; }
-  {EVER}                 { return Caos_EVER; }
-  {ENUM}                 { return Caos_ENUM; }
-  {NEXT}                 { return Caos_NEXT; }
-  {DOIF}                 { return Caos_DOIF; }
-  {ELSE}                 { return Caos_ELSE; }
-  {ENDI}                 { return Caos_ENDI; }
-  {SCRP}                 { return Caos_SCRP; }
-  {COMMENT_LITERAL}      { return Caos_COMMENT_LITERAL; }
-  {DECIMAL}              { return Caos_DECIMAL; }
-  {INT}                  { return Caos_INT; }
-  {TEXT}                 { return Caos_TEXT_LITERAL; }
-  {QUOTE_STRING}         { return Caos_QUOTE_STRING; }
-  {ID}                   { return Caos_ID; }
-  {SPACE}                { return Caos_SPACE; }
-  {TAB}                  { return Caos_TAB; }
+  {NEWLINE}              { yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+  {ENDM}                 { return CaosScript_ENDM; }
+  {SUBR}                 { return CaosScript_SUBR; }
+  {GSUB}                 { return CaosScript_GSUB; }
+  {REPS}                 { return CaosScript_REPS; }
+  {REPE}                 { return CaosScript_REPE; }
+  {LOOP}                 { return CaosScript_LOOP; }
+  {UNTL}                 { return CaosScript_UNTL; }
+  {EVER}                 { return CaosScript_EVER; }
+  {ENUM}                 { return CaosScript_ENUM; }
+  {NEXT}                 { return CaosScript_NEXT; }
+  {DOIF}                 { return CaosScript_DOIF; }
+  {ELIF}                 { return CaosScript_ELIF; }
+  {ELSE}                 { return CaosScript_ELSE; }
+  {ENDI}                 { return CaosScript_ENDI; }
+  {SCRP}                 { return CaosScript_SCRP; }
+  {OVxx}				 { return CaosScript_OV_XX; }
+  {OBVx}				 { return CaosScript_OBV_X; }
+  {MVxx}				 { return CaosScript_MV_XX; }
+  {VARx}				 { return CaosScript_VAR_X; }
+  {OBVx}				 { return CaosScript_OBV_X; }
+  {COMMENT_LITERAL}      { return CaosScript_COMMENT_LITERAL; }
+  {DECIMAL}              { return CaosScript_DECIMAL; }
+  {INT}                  { return CaosScript_INT; }
+  {TEXT}                 { return CaosScript_TEXT_LITERAL; }
+  {QUOTE_STRING}         { return CaosScript_QUOTE_STRING; }
+  {ID}                   { return CaosScript_ID; }
+  {SPACE}                { return CaosScript_SPACE_; }
+  {TAB}                  { return CaosScript_TAB; }
 }
 
 <YYINITIAL> {

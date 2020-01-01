@@ -4,7 +4,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
-import com.openc2e.plugins.intellij.caos.def.references.CaosDefCommandWordReference
+import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefTypeNameReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefVariableLinkReference
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
@@ -338,8 +338,8 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(command:CaosDefCommandWord) : CaosDefCommandWordReference {
-        return CaosDefCommandWordReference(command)
+    fun getReference(command:CaosDefCommandWord) : CaosScriptCommandTokenReference {
+        return CaosScriptCommandTokenReference(command)
     }
 
     @JvmStatic
@@ -427,6 +427,13 @@ object CaosDefPsiImplUtil {
         return CaosDefTypeNameReference(element)
     }
 
+    @JvmStatic
+    fun isVariant(element:CaosDefCommandWord, variants:List<String>, strict:Boolean) : Boolean {
+        val thisVariants = element.containingCaosDefFile.variants
+        if (thisVariants.isEmpty())
+            return !strict
+        return variants.intersect(thisVariants).isNotEmpty()
+    }
 
 
 }

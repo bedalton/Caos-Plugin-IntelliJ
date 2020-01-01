@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.psi.types
 
 enum class CaosScriptExpressionType(val value:String) {
+    UNKNOWN("???"),
     INT("integer"),
     STRING("string"),
     TOKEN("token"),
