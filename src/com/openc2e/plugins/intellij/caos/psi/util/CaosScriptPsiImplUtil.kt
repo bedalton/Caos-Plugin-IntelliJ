@@ -194,12 +194,12 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getPreviousCommands(element:CaosScriptCommandCall) : List<CaosScriptCommandCall> {
+    fun getPreviousCommandCalls(element:CaosScriptCommandCall) : List<CaosScriptCommandCall> {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
                 ?: return emptyList()
-        return parent.codeBlock?.caosElementList?.mapNotNull {
+        val blockCommands = parent.codeBlock?.caosElementList?.mapNotNull {
             it.commandCall
-        }.orEmpty()
+        } ?: return emptyList()
     }
 
 }

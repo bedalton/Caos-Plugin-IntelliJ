@@ -242,6 +242,7 @@ private enum_body_recover
     ;
 
 
+
 command_call
     ::= command expressionList?
     {
@@ -258,7 +259,8 @@ command_call
 			getParametersLength
 			getCommandTokens
 			getCallType
-			getPreviousCalls
+			getPreviousCommandCalls
+			consume
 		]
     }
     ;
