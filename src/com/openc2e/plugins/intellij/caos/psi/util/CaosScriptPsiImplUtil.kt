@@ -70,9 +70,7 @@ object CaosScriptPsiImplUtil {
             return type
         return when {
             expression.animationString != null -> CaosScriptExpressionType.BRACKET_STRING
-            expression.commandCall?.expressionList != null || expression.commandCall?.commandTokens?.size.orElse(0) > 1
-                -> CaosScriptExpressionType.COMMAND
-            expression.commandCall?.commandTokens?.size == 1 -> CaosScriptExpressionType.TOKEN
+            expression.commandToken != null -> CaosScriptExpressionType.TOKEN
             expression.equalityExpression != null -> CaosScriptExpressionType.EQ
             expression.literal?.isFloat.orFalse() -> CaosScriptExpressionType.FLOAT
             expression.literal?.isInt.orFalse() -> CaosScriptExpressionType.INT

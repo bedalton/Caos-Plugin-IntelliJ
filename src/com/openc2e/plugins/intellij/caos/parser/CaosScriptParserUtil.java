@@ -10,6 +10,7 @@ import gnu.trove.TObjectLongHashMap;
 public class CaosScriptParserUtil extends GeneratedParserUtilBase {
 
     private static final Key<TObjectLongHashMap<String>> MODES_KEY = Key.create("MODES_KEY");
+    private static final Key<String> CAOS_VARIANT = Key.create("CAOS_VARIANT");
 
     private static TObjectLongHashMap<String> getParsingModes(PsiBuilder builder_) {
         TObjectLongHashMap<String> flags = builder_.getUserData(MODES_KEY);

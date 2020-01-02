@@ -1,0 +1,1208 @@
+{
+	parserClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParser"
+	parserUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserUtil"
+	implements="com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes"
+	elementTypePrefix="CaosScript_"
+	elementTypeClass="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.caos.lexer.CaosScriptTokenType"
+	psiClassPrefix="CaosScript"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
+	elementTypeFactory("command|command_call|command_token|expression|var_token")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
+	generateTokenAccessors=true
+	generateTokens=true
+	tokens = [
+		NEWLINE = "regexp:\n";
+		ENDM = "regexp:[eE][nN][dD][mM]"
+		SUBR = "regexp:[sS][uU][bB][rR]"
+		REPS = "regexp:[rR][eE][pP][sS]"
+		REPE = "regexp:[rR][eE][pP][eE]"
+		LOOP = "regexp:[lL][oO][oO][pP]"
+		UNTL = "regexp:[uU][nN][tT][lL]"
+		EVER = "regexp:[eE][vV][eE][rR]"
+		ENUM = "regexp:[eE][nN][uU][mM]"
+		NEXT = "regexp:[nN][eE][xX][tT]"
+		DOIF = "regexp:[dD][oO][iI][fF]"
+		ELSE = "regexp:[eE][lL][sS][eE]"
+		ENDI = "regexp:[eE][nN][dD][iI]"
+		DOIF = "regexp:[dD][oO][iI][fF]"
+		ENDI = "regexp:[eE][nN][dD][iI]"
+		SCRP = "regexp:[sS][cC][rR][pP]"
+		ESCN = "regexp:[eE][sS][cC][nN]"
+		NSCN = "regexp:[nN][sS][cC][nN]"
+		ETCH = "regexp:[eE][tT][cC][hH]"
+		ESEE = "regexp:[eE][sS][eE][eE]"
+		ISCR = "regexp:[iI][sS][cC][rR]"
+		VA_XX = "regexp:[Vv][Aa][0-9][0-9]"
+		OB_XX = "regexp:[Oo][Vv][0-9][0-9]"
+		MV_XX = "regexp:[Mm][Vv][0-9][0-9]"
+		VAR_X = "regexp:[Vv][Aa][Rr][0-9]"
+		OBV_X = "regexp:[Oo][Bb][Vv][0-9]"
+		ABRT = 'regexp:[Aa][Bb][Rr][Tt]';
+        ADDV = 'regexp:[Aa][Dd][Dd][Vv]';
+        AIM_ = 'regexp:[Aa][Ii][Mm][:]';
+        ANDV = 'regexp:[Aa][Nn][Dd][Vv]';
+        ANIM = 'regexp:[Aa][Nn][Ii][Mm]';
+        ANIM = 'regexp:[Aa][Nn][Ii][Mm]';
+        APPR = 'regexp:[Aa][Pp][Pp][Rr]';
+        ASLP = 'regexp:[Aa][Ss][Ll][Pp]';
+        BASE = 'regexp:[Bb][Aa][Ss][Ee]';
+        BBD__EDIT = 'regexp:[Bb][Bb][Dd][:][ ][Ee][Dd][Ii][Tt]';
+        BBD__EMIT = 'regexp:[Bb][Bb][Dd][:][ ][Ee][Mm][Ii][Tt]';
+        BBD__SHOW = 'regexp:[Bb][Bb][Dd][:][ ][Ss][Hh][Oo][Ww]';
+        BBD__WORD = 'regexp:[Bb][Bb][Dd][:][ ][Ww][Oo][Rr][Dd]';
+        BDVG = 'regexp:[Bb][Dd][Vv][Gg]';
+        BHVR = 'regexp:[Bb][Hh][Vv][Rr]';
+        CABN = 'regexp:[Cc][Aa][Bb][Nn]';
+        CHEM = 'regexp:[Cc][Hh][Ee][Mm]';
+        CMND = 'regexp:[Cc][Mm][Nn][Dd]';
+        DBGM = 'regexp:[Dd][Bb][Gg][Mm]';
+        DBUG = 'regexp:[Dd][Bb][Uu][Gg]';
+        DDE__CELL = 'regexp:[Dd][Dd][Ee][:][ ][Cc][Ee][Ll][Ll]';
+        DDE__DIED = 'regexp:[Dd][Dd][Ee][:][ ][Dd][Ii][Ee][Dd]';
+        DDE__GENE = 'regexp:[Dd][Dd][Ee][:][ ][Gg][Ee][Nn][Ee]';
+        DDE__GETB = 'regexp:[Dd][Dd][Ee][:][ ][Gg][Ee][Tt][Bb]';
+        DDE__HATC = 'regexp:[Dd][Dd][Ee][:][ ][Hh][Aa][Tt][Cc]';
+        DDE__LIVE = 'regexp:[Dd][Dd][Ee][:][ ][Ll][Ii][Vv][Ee]';
+        DDE__LOBE = 'regexp:[Dd][Dd][Ee][:][ ][Ll][Oo][Bb][Ee]';
+        DDE__NEGG = 'regexp:[Dd][Dd][Ee][:][ ][Nn][Ee][Gg][Gg]';
+        DDE__PANC = 'regexp:[Dd][Dd][Ee][:][ ][Pp][Aa][Nn][Cc]';
+        DDE__PICT = 'regexp:[Dd][Dd][Ee][:][ ][Pp][Ii][Cc][Tt]';
+        DDE__PUTB = 'regexp:[Dd][Dd][Ee][:][ ][Pp][Uu][Tt][Bb]';
+        DDE__PUTS = 'regexp:[Dd][Dd][Ee][:][ ][Pp][Uu][Tt][Ss]';
+        DDE__PUTV = 'regexp:[Dd][Dd][Ee][:][ ][Pp][Uu][Tt][Vv]';
+        DDE__SCRP = 'regexp:[Dd][Dd][Ee][:][ ][Ss][Cc][Rr][Pp]';
+        DDE__WORD = 'regexp:[Dd][Dd][Ee][:][ ][Ww][Oo][Rr][Dd]';
+        DIVV = 'regexp:[Dd][Ii][Vv][Vv]';
+        DOIF = 'regexp:[Dd][Oo][Ii][Ff]';
+        DONE = 'regexp:[Dd][Oo][Nn][Ee]';
+        DPAS = 'regexp:[Dd][Pp][Aa][Ss]';
+        DREA = 'regexp:[Dd][Rr][Ee][Aa]';
+        DROP = 'regexp:[Dd][Rr][Oo][Pp]';
+        EDIT = 'regexp:[Ee][Dd][Ii][Tt]';
+        ELSE = 'regexp:[Ee][Ll][Ss][Ee]';
+        ENDI = 'regexp:[Ee][Nn][Dd][Ii]';
+        ENDM = 'regexp:[Ee][Nn][Dd][Mm]';
+        ENUM = 'regexp:[Ee][Nn][Uu][Mm]';
+        EVNT = 'regexp:[Ee][Vv][Nn][Tt]';
+        FIRE = 'regexp:[Ff][Ii][Rr][Ee]';
+        GPAS = 'regexp:[Gg][Pp][Aa][Ss]';
+        GSUB = 'regexp:[Gg][Ss][Uu][Bb]';
+        IMPT = 'regexp:[Ii][Mm][Pp][Tt]';
+        INST = 'regexp:[Ii][Nn][Ss][Tt]';
+        KILL = 'regexp:[Kk][Ii][Ll][Ll]';
+        KNOB = 'regexp:[Kk][Nn][Oo][Bb]';
+        LOCK = 'regexp:[Ll][Oo][Cc][Kk]';
+        LOOP = 'regexp:[Ll][Oo][Oo][Pp]';
+        LTCY = 'regexp:[Ll][Tt][Cc][Yy]';
+        MATE = 'regexp:[Mm][Aa][Tt][Ee]';
+        MCRT = 'regexp:[Mm][Cc][Rr][Tt]';
+        MESG_SHOU = 'regexp:[Mm][Ee][Ss][Gg][ ][Ss][Hh][Oo][Uu]';
+        MESG_TACT = 'regexp:[Mm][Ee][Ss][Gg][ ][Tt][Aa][Cc][Tt]';
+        MESG_TACT = 'regexp:[Mm][Ee][Ss][Gg][ ][Tt][Aa][Cc][Tt]';
+        MESG_WRIT = 'regexp:[Mm][Ee][Ss][Gg][ ][Ww][Rr][Ii][Tt]';
+        MODV = 'regexp:[Mm][Oo][Dd][Vv]';
+        MULV = 'regexp:[Mm][Uu][Ll][Vv]';
+        MVBY = 'regexp:[Mm][Vv][Bb][Yy]';
+        MVTO = 'regexp:[Mm][Vv][Tt][Oo]';
+        NEGV = 'regexp:[Nn][Ee][Gg][Vv]';
+        NEW__BKBD = 'regexp:[Nn][Ee][Ww][:][ ][Bb][Kk][Bb][Dd]';
+        NEW__CBTN = 'regexp:[Nn][Ee][Ww][:][ ][Cc][Bb][Tt][Nn]';
+        NEW__COMP = 'regexp:[Nn][Ee][Ww][:][ ][Cc][Oo][Mm][Pp]';
+        NEW__CREA = 'regexp:[Nn][Ee][Ww][:][ ][Cc][Rr][Ee][Aa]';
+        NEW__GENE = 'regexp:[Nn][Ee][Ww][:][ ][Gg][Ee][Nn][Ee]';
+        NEW__LIFT = 'regexp:[Nn][Ee][Ww][:][ ][Ll][Ii][Ff][Tt]';
+        NEW__PART = 'regexp:[Nn][Ee][Ww][:][ ][Pp][Aa][Rr][Tt]';
+        NEW__SCEN = 'regexp:[Nn][Ee][Ww][:][ ][Ss][Cc][Ee][Nn]';
+        NEW__SIMP = 'regexp:[Nn][Ee][Ww][:][ ][Ss][Ii][Mm][Pp]';
+        NEW__VHCL = 'regexp:[Nn][Ee][Ww][:][ ][Vv][Hh][Cc][Ll]';
+        NEXT = 'regexp:[Nn][Ee][Xx][Tt]';
+        ORRV = 'regexp:[Oo][Rr][Rr][Vv]';
+        OVER = 'regexp:[Oo][Vv][Ee][Rr]';
+        PART = 'regexp:[Pp][Aa][Rr][Tt]';
+        PLDS = 'regexp:[Pp][Ll][Dd][Ss]';
+        POIN = 'regexp:[Pp][Oo][Ii][Nn]';
+        POSE = 'regexp:[Pp][Oo][Ss][Ee]';
+        PRLD = 'regexp:[Pp][Rr][Ll][Dd]';
+        QUIT = 'regexp:[Qq][Uu][Ii][Tt]';
+        REPE = 'regexp:[Rr][Ee][Pp][Ee]';
+        REPS = 'regexp:[Rr][Ee][Pp][Ss]';
+        RETN = 'regexp:[Rr][Ee][Tt][Nn]';
+        RMEV = 'regexp:[Rr][Mm][Ee][Vv]';
+        RNDV = 'regexp:[Rr][Nn][Dd][Vv]';
+        ROOM = 'regexp:[Rr][Oo][Oo][Mm]';
+        RTAR = 'regexp:[Rr][Tt][Aa][Rr]';
+        SAY_ = 'regexp:[Ss][Aa][Yy][$]';
+        SAY_ = 'regexp:[Ss][Aa][Yy][$]';
+        SAYN = 'regexp:[Ss][Aa][Yy][Nn]';
+        SCRX = 'regexp:[Ss][Cc][Rr][Xx]';
+        SETV = 'regexp:[Ss][Ee][Tt][Vv]';
+        SLIM = 'regexp:[Ss][Ll][Ii][Mm]';
+        SLOW = 'regexp:[Ss][Ll][Oo][Ww]';
+        SNDC = 'regexp:[Ss][Nn][Dd][Cc]';
+        SNDE = 'regexp:[Ss][Nn][Dd][Ee]';
+        SNDF = 'regexp:[Ss][Nn][Dd][Ff]';
+        SNDL = 'regexp:[Ss][Nn][Dd][Ll]';
+        SNDQ = 'regexp:[Ss][Nn][Dd][Qq]';
+        SNDV = 'regexp:[Ss][Nn][Dd][Vv]';
+        SNEZ = 'regexp:[Ss][Nn][Ee][Zz]';
+        SPAS = 'regexp:[Ss][Pp][Aa][Ss]';
+        SPOT = 'regexp:[Ss][Pp][Oo][Tt]';
+        STIM_SHOU = 'regexp:[Ss][Tt][Ii][Mm][ ][Ss][Hh][Oo][Uu]';
+        STIM_SIGN = 'regexp:[Ss][Tt][Ii][Mm][ ][Ss][Ii][Gg][Nn]';
+        STIM_TACT = 'regexp:[Ss][Tt][Ii][Mm][ ][Tt][Aa][Cc][Tt]';
+        STIM_WRIT = 'regexp:[Ss][Tt][Ii][Mm][ ][Ww][Rr][Ii][Tt]';
+        STM__SHOU = 'regexp:[Ss][Tt][Mm][#][ ][Ss][Hh][Oo][Uu]';
+        STM__TACT = 'regexp:[Ss][Tt][Mm][#][ ][Tt][Aa][Cc][Tt]';
+        STM__WRIT = 'regexp:[Ss][Tt][Mm][#][ ][Ww][Rr][Ii][Tt]';
+        STOP = 'regexp:[Ss][Tt][Oo][Pp]';
+        STOP = 'regexp:[Ss][Tt][Oo][Pp]';
+        STPC = 'regexp:[Ss][Tt][Pp][Cc]';
+        SUBR = 'regexp:[Ss][Uu][Bb][Rr]';
+        SUBV = 'regexp:[Ss][Uu][Bb][Vv]';
+        SYS__CAMT = 'regexp:[Ss][Yy][Ss][:][ ][Cc][Aa][Mm][Tt]';
+        SYS__CMRA = 'regexp:[Ss][Yy][Ss][:][ ][Cc][Mm][Rr][Aa]';
+        SYS__EDIT = 'regexp:[Ss][Yy][Ss][:][ ][Ee][Dd][Ii][Tt]';
+        SYS__GRND = 'regexp:[Ss][Yy][Ss][:][ ][Gg][Rr][Nn][Dd]';
+        SYS__WTOP = 'regexp:[Ss][Yy][Ss][:][ ][Ww][Tt][Oo][Pp]';
+        TARG = 'regexp:[Tt][Aa][Rr][Gg]';
+        TELE = 'regexp:[Tt][Ee][Ll][Ee]';
+        TICK = 'regexp:[Tt][Ii][Cc][Kk]';
+        TOOL = 'regexp:[Tt][Oo][Oo][Ll]';
+        TOUC = 'regexp:[Tt][Oo][Uu][Cc]';
+        TRIG = 'regexp:[Tt][Rr][Ii][Gg]';
+        UNLK = 'regexp:[Uu][Nn][Ll][Kk]';
+        UNTL = 'regexp:[Uu][Nn][Tt][Ll]';
+        VRSN = 'regexp:[Vv][Rr][Ss][Nn]';
+        WAIT = 'regexp:[Ww][Aa][Ii][Tt]';
+        WAIT = 'regexp:[Ww][Aa][Ii][Tt]';
+        WALK = 'regexp:[Ww][Aa][Ll][Kk]';
+        WPOS = 'regexp:[Ww][Pp][Oo][Ss]';
+        WRLD = 'regexp:[Ww][Rr][Ll][Dd]';
+        IT = 'regexp:[_][Ii][Tt][_]';
+        ACTV = 'regexp:[Aa][Cc][Tt][Vv]';
+        ASLP = 'regexp:[Aa][Ss][Ll][Pp]';
+        ATTN = 'regexp:[Aa][Tt][Tt][Nn]';
+        ATTR = 'regexp:[Aa][Tt][Tt][Rr]';
+        BABY = 'regexp:[Bb][Aa][Bb][Yy]';
+        BUMP = 'regexp:[Bb][Uu][Mm][Pp]';
+        CAGE = 'regexp:[Cc][Aa][Gg][Ee]';
+        CAMN = 'regexp:[Cc][Aa][Mm][Nn]';
+        CARR = 'regexp:[Cc][Aa][Rr][Rr]';
+        CHEM = 'regexp:[Cc][Hh][Ee][Mm]';
+        CLAS = 'regexp:[Cc][Ll][Aa][Ss]';
+        DEAD = 'regexp:[Dd][Ee][Aa][Dd]';
+        DRIV = 'regexp:[Dd][Rr][Ii][Vv]';
+        DRV_ = 'regexp:[Dd][Rr][Vv][!]';
+        EDIT = 'regexp:[Ee][Dd][Ii][Tt]';
+        EXEC = 'regexp:[Ee][Xx][Ee][Cc]';
+        FMLY = 'regexp:[Ff][Mm][Ll][Yy]';
+        FROM = 'regexp:[Ff][Rr][Oo][Mm]';
+        GND_ = 'regexp:[Gg][Nn][Dd][#]';
+        GNDW = 'regexp:[Gg][Nn][Dd][Ww]';
+        GNUS = 'regexp:[Gg][Nn][Uu][Ss]';
+        GRND = 'regexp:[Gg][Rr][Nn][Dd]';
+        HGHT = 'regexp:[Hh][Gg][Hh][Tt]';
+        HOUR = 'regexp:[Hh][Oo][Uu][Rr]';
+        LIMB = 'regexp:[Ll][Ii][Mm][Bb]';
+        LIML = 'regexp:[Ll][Ii][Mm][Ll]';
+        LIMR = 'regexp:[Ll][Ii][Mm][Rr]';
+        LIMT = 'regexp:[Ll][Ii][Mm][Tt]';
+        MINS = 'regexp:[Mm][Ii][Nn][Ss]';
+        MOVS = 'regexp:[Mm][Oo][Vv][Ss]';
+        NEID = 'regexp:[Nn][Ee][Ii][Dd]';
+        NORN = 'regexp:[Nn][Oo][Rr][Nn]';
+        OBJP = 'regexp:[Oo][Bb][Jj][Pp]';
+        OWNR = 'regexp:[Oo][Ww][Nn][Rr]';
+        PNTR = 'regexp:[Pp][Nn][Tt][Rr]';
+        POSB = 'regexp:[Pp][Oo][Ss][Bb]';
+        POSE = 'regexp:[Pp][Oo][Ss][Ee]';
+        POSL = 'regexp:[Pp][Oo][Ss][Ll]';
+        POSR = 'regexp:[Pp][Oo][Ss][Rr]';
+        POST = 'regexp:[Pp][Oo][Ss][Tt]';
+        RMS_ = 'regexp:[Rr][Mm][Ss][#]';
+        ROOM = 'regexp:[Rr][Oo][Oo][Mm]';
+        SCOR = 'regexp:[Ss][Cc][Oo][Rr]';
+        SNDS = 'regexp:[Ss][Nn][Dd][Ss]';
+        SPCS = 'regexp:[Ss][Pp][Cc][Ss]';
+        TARG = 'regexp:[Tt][Aa][Rr][Gg]';
+        TCAR = 'regexp:[Tt][Cc][Aa][Rr]';
+        TEMP = 'regexp:[Tt][Ee][Mm][Pp]';
+        TOKN = 'regexp:[Tt][Oo][Kk][Nn]';
+        TOTL = 'regexp:[Tt][Oo][Tt][Ll]';
+        TOUC = 'regexp:[Tt][Oo][Uu][Cc]';
+        VRSN = 'regexp:[Vv][Rr][Ss][Nn]';
+        WDTH = 'regexp:[Ww][Dd][Tt][Hh]';
+        WIND = 'regexp:[Ww][Ii][Nn][Dd]';
+        WINH = 'regexp:[Ww][Ii][Nn][Hh]';
+        WINW = 'regexp:[Ww][Ii][Nn][Ww]';
+        XVEC = 'regexp:[Xx][Vv][Ee][Cc]';
+        YVEC = 'regexp:[Yy][Vv][Ee][Cc]';
+        ACTV = 'regexp:[Aa][Cc][Tt][Vv]';
+        ATTR = 'regexp:[Aa][Tt][Tt][Rr]';
+        BABY = 'regexp:[Bb][Aa][Bb][Yy]';
+        NORN = 'regexp:[Nn][Oo][Rr][Nn]';
+        OBJP = 'regexp:[Oo][Bb][Jj][Pp]';
+        WINH = 'regexp:[Ww][Ii][Nn][Hh]';
+        WINW = 'regexp:[Ww][Ii][Nn][Ww]';
+		COMMENT_LITERAL = "regexp:\*[^\n]*"
+		DECIMAL = "regexp:[0-9]+\.[0-9]+"
+		INT = "regexp:[0-9]+"
+		TEXT_LITERAL = 'regexp:\[[^]]*]';
+		QUOTE_STRING = 'regexp:"[^\n|"]*"'
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
+		COLON = ':';
+		PLUS = "+";
+		SPACE_ = "regexp:[ ]";
+		space = "regexp:\n[\t ]+";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		COMMA = ',';
+		ANIM_R = "R"
+
+
+	]
+}
+
+def	::= (!<<eof>> script_body_element)*
+	;
+
+script_body_element
+	::= event_script line_terminator
+	|	code_block line_terminator
+	{
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+        ]
+	}
+	;
+
+code_block
+	::= caos_statement+
+	{
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+        ]
+        methods = [
+        	getCodeBlock
+        ]
+	}
+	;
+
+private caos_statement
+	::= caos_element line_terminator
+	|	NEWLINE
+	;
+
+caos_element
+	::= comment
+	|   control_statement line_terminator?
+	|   command line_terminator
+	;
+
+
+event_script
+	::= (SCRP|ISCR) SPACE_ classifier SPACE_ event_number line_terminator (event_script_body line_terminator)? script_terminator
+	{
+		pin=1
+	}
+	;
+
+private event_script_body
+	::= code_block
+	{
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+        ]
+        recoverWhile=event_script_body_recover
+	}
+	;
+
+private event_script_body_recover
+	::= !(ENDM|SCRP|<<eof>>|<<eos>>)
+	;
+
+classifier
+	::= family SPACE_ genus SPACE_ species
+	;
+
+private control_statement
+    ::= loop_statement
+    |   repeat_statement
+    |   enum_next_statement
+    |   enum_scenery_statement
+    |	doif_statement
+    ;
+
+
+loop_statement
+    ::= LOOP SPACE_ loop_body? line_terminator loop_terminator
+    {
+        pin=1;
+        methods = [
+        	isEver
+        	isUntil
+        ]
+    }
+    ;
+
+loop_terminator
+	::= ever_terminator
+	|	untl_terminator
+	;
+
+private ever_terminator
+	::= EVER
+	;
+
+private untl_terminator
+	::= UNTL line_terminator expression
+	{
+		pin=1
+	}
+	;
+
+
+private loop_body
+    ::= code_block
+    {
+        recoverWhile=loop_body_recover
+    }
+    ;
+
+private loop_body_recover
+    ::= !(UNTL|EVER|ENDM)
+    ;
+
+repeat_statement
+    ::= REPS SPACE_ rvalue line_terminator (repeat_body line_terminator)? REPE
+    {
+        pin=1
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+        ]
+
+        methods = [
+        ]
+
+    }
+    ;
+
+private repeat_body
+    ::= code_block
+    {
+        recoverWhile=repeat_body_recover
+    }
+    ;
+
+private repeat_body_recover
+    ::= !(REPE|ENDM)
+    ;
+
+enum_next_statement
+    ::= (ENUM|ESEE|ETCH) line_terminator classifier line_terminator (enum_body line_terminator)* NEXT
+    {
+        pin=1;
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+        ]
+        methods = [
+        ]
+    }
+    ;
+
+enum_scenery_statement
+    ::= ESCN SPACE_ classifier line_terminator (enum_body line_terminator)? NSCN
+    {
+        pin=1;
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+        ]
+        methods = [
+
+        ]
+    }
+    ;
+
+private enum_body
+    ::= code_block
+    {
+        implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+        ]
+        recoverWhile=enum_body_recover
+    }
+    ;
+
+private enum_body_recover
+    ::= !(NEXT|<<eof>>)
+    ;
+
+
+
+command_call
+    ::= unknown_command expressionList?
+    {
+        pin=2
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandCallStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+            "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getCommandString
+			getCommandTokens
+			getParameterTypes
+			getParametersLength
+			getCommandTokens
+			getCallType
+			getPreviousCommandCalls
+			consume
+		]
+    }
+    ;
+
+
+private expressionList
+	::= (SPACE_ expression)+
+	{
+        recoverWhile=command_recover
+	}
+	;
+
+private command_recover
+	::= !(ENDM|NEWLINE)
+	;
+
+doif_statement
+	::= DOIF SPACE_ expression line_terminator (do_if_body line_terminator)? (else_if line_terminator)* (else_statement line_terminator)? ENDI
+	{
+		pin=1
+	}
+	;
+
+else_if
+	::= ELIF line_terminator expression line_terminator do_if_body?
+	;
+
+else_statement
+	::= ELSE line_terminator else_block
+	{
+		pin=1;
+	}
+	;
+
+private else_block
+	::= code_block
+	;
+
+private do_if_body
+	::= code_block
+	{
+		recoverWhile=do_if_body_recover
+	}
+	;
+
+private do_if_body_recover
+	::= !(ENDI|ELSE|ELIF)
+	;
+
+
+c_abrt ::= ABRT;
+c_addv ::= ADDV SPACE_ lvalue SPACE_ rvalue;
+c_aim_ ::= AIM_ SPACE_ rvalue;
+c_andv ::= ANDV SPACE_ lvalue SPACE_ rvalue;
+c_anim ::= ANIM SPACE_ rvalue;
+c_appr ::= APPR;
+c_aslp ::= ASLP SPACE_ rvalue;
+c_base ::= BASE SPACE_ rvalue;
+c_bbd__edit ::= BBD__EDIT SPACE_ rvalue;
+c_bbd__emit ::= BBD__EMIT SPACE_ rvalue;
+c_bbd__show ::= BBD__SHOW SPACE_ rvalue;
+c_bbd__word ::= BBD__WORD SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_bdvg ::= BDVG SPACE_ rvalue;
+c_bhvr ::= BHVR SPACE_ rvalue SPACE_ rvalue;
+c_cabn ::= CABN SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_chem ::= CHEM SPACE_ rvalue SPACE_ rvalue;
+c_cmnd ::= CMND;
+c_dbgm ::= DBGM SPACE_ rvalue;
+c_dbug ::= DBUG SPACE_ rvalue;
+c_dde__cell ::= DDE__CELL SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_dde__died ::= DDE__DIED;
+c_dde__gene ::= DDE__GENE;
+c_dde__getb ::= DDE__GETB SPACE_ rvalue;
+c_dde__hatc ::= DDE__HATC;
+c_dde__live ::= DDE__LIVE;
+c_dde__lobe ::= DDE__LOBE;
+c_dde__negg ::= DDE__NEGG;
+c_dde__panc ::= DDE__PANC;
+c_dde__pict ::= DDE__PICT;
+c_dde__putb ::= DDE__PUTB SPACE_ rvalue SPACE_ rvalue;
+c_dde__puts ::= DDE__PUTS SPACE_ rvalue;
+c_dde__putv ::= DDE__PUTV SPACE_ rvalue;
+c_dde__scrp ::= DDE__SCRP;
+c_dde__word ::= DDE__WORD SPACE_ rvalue;
+c_divv ::= DIVV SPACE_ lvalue SPACE_ rvalue;
+c_done ::= DONE;
+c_dpas ::= DPAS;
+c_drea ::= DREA SPACE_ rvalue;
+c_drop ::= DROP;
+c_edit ::= EDIT;
+c_evnt ::= EVNT SPACE_ rvalue;
+c_fire ::= FIRE SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_gpas ::= GPAS;
+c_gsub ::= GSUB SPACE_ token;
+c_impt ::= IMPT SPACE_ rvalue;
+c_inst ::= INST;
+c_kill ::= KILL;
+c_knob ::= KNOB SPACE_ rvalue SPACE_ rvalue;
+c_lock ::= LOCK;
+c_loop ::= LOOP;
+c_ltcy ::= LTCY SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_mate ::= MATE;
+c_mcrt ::= MCRT SPACE_ rvalue SPACE_ rvalue;
+c_mesg_shou ::= MESG_SHOU SPACE_ rvalue;
+c_mesg_tact ::= MESG_TACT SPACE_ rvalue;
+c_mesg_writ ::= MESG_WRIT SPACE_ rvalue SPACE_ rvalue;
+c_modv ::= MODV SPACE_ lvalue SPACE_ rvalue;
+c_mulv ::= MULV SPACE_ lvalue SPACE_ rvalue;
+c_mvby ::= MVBY;
+c_mvto ::= MVTO SPACE_ rvalue SPACE_ rvalue;
+c_negv ::= NEGV SPACE_ lvalue;
+c_new__bkbd ::= NEW__BKBD SPACE_ token SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__cbtn ::= NEW__CBTN SPACE_ token SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__comp ::= NEW__COMP SPACE_ token SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__crea ::= NEW__CREA SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__gene ::= NEW__GENE SPACE_ rvalue SPACE_ rvalue SPACE_ lvalue;
+c_new__lift ::= NEW__LIFT SPACE_ token SPACE_ rvalue SPACE_ rvalue;
+c_new__part ::= NEW__PART SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__scen ::= NEW__SCEN SPACE_ token SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__simp ::= NEW__SIMP SPACE_ token SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_new__vhcl ::= NEW__VHCL SPACE_ token SPACE_ rvalue SPACE_ rvalue;
+c_orrv ::= ORRV SPACE_ lvalue SPACE_ rvalue;
+c_over ::= OVER;
+c_part ::= PART;
+c_plds ::= PLDS SPACE_ token;
+c_poin ::= POIN;
+c_pose ::= POSE SPACE_ rvalue;
+c_prld ::= PRLD SPACE_ rvalue;
+c_quit ::= QUIT;
+c_retn ::= RETN;
+c_rmev ::= RMEV SPACE_ rvalue;
+c_rndv ::= RNDV SPACE_ lvalue SPACE_ rvalue SPACE_ rvalue;
+c_room ::= ROOM SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_rtar ::= RTAR SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_say_ ::= SAY_ SPACE_ rvalue;
+c_sayn ::= SAYN;
+c_scrx ::= SCRX SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_setv ::= SETV SPACE_ lvalue SPACE_ rvalue;
+c_slim ::= SLIM;
+c_slow ::= SLOW;
+c_sndc ::= SNDC SPACE_ token;
+c_snde ::= SNDE SPACE_ token;
+c_sndf ::= SNDF SPACE_ token;
+c_sndl ::= SNDL SPACE_ token;
+c_sndq ::= SNDQ SPACE_ token SPACE_ rvalue;
+c_sndv ::= SNDV SPACE_ rvalue;
+c_snez ::= SNEZ;
+c_spas ::= SPAS SPACE_ rvalue SPACE_ rvalue;
+c_spot ::= SPOT SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_stim_shou ::= STIM_SHOU SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_stim_sign ::= STIM_SIGN SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_stim_tact ::= STIM_TACT SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_stim_writ ::= STIM_WRIT SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_stm__shou ::= STM__SHOU SPACE_ rvalue;
+c_stm__tact ::= STM__TACT SPACE_ rvalue;
+c_stm__writ ::= STM__WRIT SPACE_ rvalue SPACE_ rvalue;
+c_stop ::= STOP;
+c_stpc ::= STPC;
+c_subv ::= SUBV SPACE_ lvalue SPACE_ rvalue;
+c_sys__camt ::= SYS__CAMT;
+c_sys__cmra ::= SYS__CMRA SPACE_ rvalue SPACE_ rvalue;
+c_sys__edit ::= SYS__EDIT SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_sys__grnd ::= SYS__GRND SPACE_ rvalue SPACE_ rvalue;
+c_sys__wtop ::= SYS__WTOP;
+c_targ ::= TARG SPACE_ rvalue;
+c_tele ::= TELE SPACE_ rvalue SPACE_ rvalue;
+c_tick ::= TICK SPACE_ rvalue;
+c_tool ::= TOOL SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_touc ::= TOUC;
+c_trig ::= TRIG SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_unlk ::= UNLK;
+c_vrsn ::= VRSN SPACE_ rvalue;
+c_wait ::= WAIT SPACE_ rvalue;
+c_walk ::= WALK;
+c_wpos ::= WPOS SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+c_wrld ::= WRLD SPACE_ rvalue;
+
+//==== RValue ====
+v_it ::= IT;
+v_actv ::= ACTV;
+v_aslp ::= ASLP;
+v_attn ::= ATTN;
+v_attr ::= ATTR;
+v_baby ::= BABY;
+v_bump ::= BUMP;
+v_cage ::= CAGE;
+v_camn ::= CAMN;
+v_carr ::= CARR;
+v_chem ::= CHEM SPACE_ rvalue;
+v_clas ::= CLAS;
+v_dead ::= DEAD;
+v_driv ::= DRIV SPACE_ rvalue;
+v_drv_ ::= DRV_;
+v_edit ::= EDIT;
+v_exec ::= EXEC;
+v_fmly ::= FMLY;
+v_from ::= FROM;
+v_gnd_ ::= GND_;
+v_gndw ::= GNDW;
+v_gnus ::= GNUS;
+v_grnd ::= GRND SPACE_ rvalue;
+v_hght ::= HGHT;
+v_hour ::= HOUR;
+v_limb ::= LIMB;
+v_liml ::= LIML;
+v_limr ::= LIMR;
+v_limt ::= LIMT;
+v_mins ::= MINS;
+v_movs ::= MOVS;
+v_neid ::= NEID;
+v_norn ::= NORN;
+v_objp ::= OBJP;
+v_ownr ::= OWNR;
+v_pntr ::= PNTR;
+v_posb ::= POSB;
+v_pose ::= POSE;
+v_posl ::= POSL;
+v_posr ::= POSR;
+v_post ::= POST;
+v_rms_ ::= RMS_;
+v_room ::= ROOM SPACE_ rvalue SPACE_ rvalue;
+v_scor ::= SCOR;
+v_snds ::= SNDS;
+v_spcs ::= SPCS;
+v_targ ::= TARG;
+v_tcar ::= TCAR;
+v_temp ::= TEMP;
+v_tokn ::= TOKN SPACE_ token;
+v_totl ::= TOTL SPACE_ rvalue SPACE_ rvalue SPACE_ rvalue;
+v_touc ::= TOUC;
+v_vrsn ::= VRSN;
+v_wdth ::= WDTH;
+v_wind ::= WIND;
+v_winh ::= WINH;
+v_winw ::= WINW;
+v_xvec ::= XVEC;
+v_yvec ::= YVEC;
+
+//==== LValue ====
+l_actv ::= ACTV;
+l_attr ::= ATTR;
+l_baby ::= BABY;
+l_norn ::= NORN;
+l_objp ::= OBJP;
+l_winh ::= WINH;
+l_winw ::= WINW;
+
+command
+    ::= c_abrt
+    |   c_addv
+    |   c_aim_
+    |   c_andv
+    |   c_anim
+    |   c_appr
+    |   c_aslp
+    |   c_base
+    |   c_bbd__edit
+    |   c_bbd__emit
+    |   c_bbd__show
+    |   c_bbd__word
+    |   c_bdvg
+    |   c_bhvr
+    |   c_cabn
+    |   c_chem
+    |   c_cmnd
+    |   c_dbgm
+    |   c_dbug
+    |   c_dde__cell
+    |   c_dde__died
+    |   c_dde__gene
+    |   c_dde__getb
+    |   c_dde__hatc
+    |   c_dde__live
+    |   c_dde__lobe
+    |   c_dde__negg
+    |   c_dde__panc
+    |   c_dde__pict
+    |   c_dde__putb
+    |   c_dde__puts
+    |   c_dde__putv
+    |   c_dde__scrp
+    |   c_dde__word
+    |   c_divv
+    |   c_done
+    |   c_dpas
+    |   c_drea
+    |   c_drop
+    |   c_edit
+    |   c_evnt
+    |   c_fire
+    |   c_gpas
+    |   c_gsub
+    |   c_impt
+    |   c_inst
+    |   c_kill
+    |   c_knob
+    |   c_lock
+    |   c_loop
+    |   c_ltcy
+    |   c_mate
+    |   c_mcrt
+    |   c_mesg_shou
+    |   c_mesg_tact
+    |   c_mesg_writ
+    |   c_modv
+    |   c_mulv
+    |   c_mvby
+    |   c_mvto
+    |   c_negv
+    |   c_new__bkbd
+    |   c_new__cbtn
+    |   c_new__comp
+    |   c_new__crea
+    |   c_new__gene
+    |   c_new__lift
+    |   c_new__part
+    |   c_new__scen
+    |   c_new__simp
+    |   c_new__vhcl
+    |   c_orrv
+    |   c_over
+    |   c_part
+    |   c_plds
+    |   c_poin
+    |   c_pose
+    |   c_prld
+    |   c_quit
+    |   c_retn
+    |   c_rmev
+    |   c_rndv
+    |   c_room
+    |   c_rtar
+    |   c_say_
+    |   c_sayn
+    |   c_scrx
+    |   c_setv
+    |   c_slim
+    |   c_slow
+    |   c_sndc
+    |   c_snde
+    |   c_sndf
+    |   c_sndl
+    |   c_sndq
+    |   c_sndv
+    |   c_snez
+    |   c_spas
+    |   c_spot
+    |   c_stim_shou
+    |   c_stim_sign
+    |   c_stim_tact
+    |   c_stim_writ
+    |   c_stm__shou
+    |   c_stm__tact
+    |   c_stm__writ
+    |   c_stop
+    |   c_stpc
+    |   c_subv
+    |   c_sys__camt
+    |   c_sys__cmra
+    |   c_sys__edit
+    |   c_sys__grnd
+    |   c_sys__wtop
+    |   c_targ
+    |   c_tele
+    |   c_tick
+    |   c_tool
+    |   c_touc
+    |   c_trig
+    |   c_unlk
+    |   c_vrsn
+    |   c_wait
+    |   c_walk
+    |   c_wpos
+    |   c_wrld
+    ;
+
+rvalue
+    ::= equality_expression
+	|   expression_prime
+    |   v_it
+    |   v_actv
+    |   v_aslp
+    |   v_attn
+    |   v_attr
+    |   v_baby
+    |   v_bump
+    |   v_cage
+    |   v_camn
+    |   v_carr
+    |   v_chem
+    |   v_clas
+    |   v_dead
+    |   v_driv
+    |   v_drv_
+    |   v_edit
+    |   v_exec
+    |   v_fmly
+    |   v_from
+    |   v_gnd_
+    |   v_gndw
+    |   v_gnus
+    |   v_grnd
+    |   v_hght
+    |   v_hour
+    |   v_limb
+    |   v_liml
+    |   v_limr
+    |   v_limt
+    |   v_mins
+    |   v_movs
+    |   v_neid
+    |   v_norn
+    |   v_objp
+    |   v_ownr
+    |   v_pntr
+    |   v_posb
+    |   v_pose
+    |   v_posl
+    |   v_posr
+    |   v_post
+    |   v_rms_
+    |   v_room
+    |   v_scor
+    |   v_snds
+    |   v_spcs
+    |   v_targ
+    |   v_tcar
+    |   v_temp
+    |   v_tokn
+    |   v_totl
+    |   v_touc
+    |   v_vrsn
+    |   v_wdth
+    |   v_wind
+    |   v_winh
+    |   v_winw
+    |   v_xvec
+    |   v_yvec
+    ;
+
+lvalue
+    ::= var_token
+    |	l_actv
+    |   l_attr
+    |   l_baby
+    |   l_norn
+    |   l_objp
+    |   l_winh
+    |   l_winw
+    ;
+
+unknown_command
+	::= command_token (SPACE_ command_token)*
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getCommandString
+			getCommandTokens
+		]
+	}
+	;
+
+command_token
+    ::= ID
+	{
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandTokenStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+			getIndex
+			getCommandString
+			isVariant
+		]
+	}
+    ;
+
+private expression_prime
+    ::= literal
+    |   command
+    |   var_token
+    |   animation_string
+    |	byte_string
+    ;
+
+equality_expression
+    ::= expression_prime line_terminator eq_op line_terminator expression
+    ;
+
+eq_op ::= ID;
+
+var_token
+	::= VA_XX
+	| 	OV_XX
+	|	OBV_X
+	|	VAR_X
+	|	MV_XX
+	{
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptVarTokenStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getVarGroup
+			getVarIndex
+		]
+	}
+	;
+
+token
+	::= ID
+	|   ABRT
+	|   ADDV
+	|   AIM_
+	|   ANDV
+	|   ANIM
+	|   APPR
+	|   BASE
+	|   BDVG
+	|   BHVR
+	|   CABN
+	|   CMND
+	|   DBGM
+	|   DBUG
+	|   DIVV
+	|   DOIF
+	|   DONE
+	|   DPAS
+	|   DREA
+	|   DROP
+	|   ELSE
+	|   ENDI
+	|   ENDM
+	|   ENUM
+	|   EVNT
+	|   FIRE
+	|   GPAS
+	|   GSUB
+	|   IMPT
+	|   INST
+	|   KILL
+	|   KNOB
+	|   LOCK
+	|   LOOP
+	|   LTCY
+	|   MATE
+	|   MCRT
+	|   MODV
+	|   MULV
+	|   MVBY
+	|   MVTO
+	|   NEGV
+	|   NEW_
+	|   NEXT
+	|   ORRV
+	|   OVER
+	|   PART
+	|   PLDS
+	|   POIN
+	|   PRLD
+	|   QUIT
+	|   REPE
+	|   REPS
+	|   RETN
+	|   RMEV
+	|   RNDV
+	|   RTAR
+	|   SAYN
+	|   SCRX
+	|   SETV
+	|   SLIM
+	|   SLOW
+	|   SNDC
+	|   SNDE
+	|   SNDF
+	|   SNDL
+	|   SNDQ
+	|   SNDV
+	|   SNEZ
+	|   SPAS
+	|   SPOT
+	|   STOP
+	|   STPC
+	|   SUBR
+	|   SUBV
+	|   TELE
+	|   TICK
+	|   TOOL
+	|   TRIG
+	|   UNLK
+	|   UNTL
+	|   WAIT
+	|   WALK
+	|   WPOS
+	|   WRLD
+	|   IT
+	|   ASLP
+	|   ATTN
+	|   BUMP
+	|   CAGE
+	|   CAMN
+	|   CARR
+	|   CHEM
+	|   CLAS
+	|   DEAD
+	|   DRIV
+	|   DRV_
+	|   EDIT
+	|   EXEC
+	|   FMLY
+	|   FROM
+	|   GND_
+	|   GNDW
+	|   GNUS
+	|   GRND
+	|   HGHT
+	|   HOUR
+	|   LIMB
+	|   LIML
+	|   LIMR
+	|   LIMT
+	|   MINS
+	|   MOVS
+	|   NEID
+	|   OWNR
+	|   PNTR
+	|   POSB
+	|   POSE
+	|   POSL
+	|   POSR
+	|   POST
+	|   RMS_
+	|   ROOM
+	|   SCOR
+	|   SNDS
+	|   SPCS
+	|   TARG
+	|   TCAR
+	|   TEMP
+	|   TOKN
+	|   TOTL
+	|   TOUC
+	|   VRSN
+	|   WDTH
+	|   WIND
+	|   XVEC
+	|   YVEC
+	|   ACTV
+	|   ATTR
+	|   BABY
+	|   NORN
+	|   OBJP
+	|   WINH
+	|   WINW
+	;
+
+literal
+    ::= string_literal
+    |   number
+    {
+        methods = [
+            intValue
+            isInt
+            floatValue
+            isFloat
+            isNumeric
+            stringValue
+            isString
+        ]
+    }
+    ;
+
+number ::=INT|DECIMAL
+    ;
+
+string_literal
+    ::= QUOTE_STRING
+    |   TEXT_LITERAL
+    {
+        methods = [
+            getStringValue
+        ]
+    }
+    ;
+
+comment
+    ::= COMMENT_LITERAL
+    {
+        methods = [
+            getCommentText
+        ]
+    }
+    ;
+
+animation_string
+    ::= '[' INT+ ANIM_R? ']'
+    ;
+
+byte_string
+	::= '[' INT (SPACE_ INT)* ']'
+	;
+
+line_terminator
+    ::= <<eof>>
+    |   ","
+    |   line_feed+
+    |	SPACE_
+    ;
+
+private line_feed
+	::= comment
+	|	NEWLINE
+	;
+script_terminator
+	::= ENDM
+	|   <<eos>>
+	|	<<eof>>
+	;
+
+family ::= INT;
+genus ::= INT;
+species ::= INT;
+
+event_number
+	::= INT
+	;
+
