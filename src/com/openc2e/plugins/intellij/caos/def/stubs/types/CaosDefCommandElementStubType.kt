@@ -37,7 +37,7 @@ class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<C
         val variants = stream.readList { readNameAsString() }.filterNotNull()
         val namespace = stream.readNameAsString()
         val command = stream.readNameAsString()
-        val parameters = stream.readList(StubInputStream::readParameter)
+        val parameters = stream.readList(StubInputStream::readParameter).filterNotNull()
         val isCommand = stream.readBoolean();
         val rvalue = stream.readBoolean();
         val lvalue = stream.readBoolean();

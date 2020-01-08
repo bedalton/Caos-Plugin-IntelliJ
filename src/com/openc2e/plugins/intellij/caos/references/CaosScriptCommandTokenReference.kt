@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.references
 
 import com.intellij.codeInsight.lookup.LookupElementPresentation
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
@@ -24,6 +25,8 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
     private val renameRegex: Regex = "[a-zA-Z_][a-zA-Z_#!:]{3}".toRegex()
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
+        if (DumbService.isDumb(element.project))
+            return emptyArray();
         if (element.parent?.parent is CaosDefCommandDefElement)
             return emptyArray()
         var elements = if (element is CaosDefCompositeElement)

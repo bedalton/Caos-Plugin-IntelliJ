@@ -41,7 +41,7 @@ class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefL
     @Throws(IOException::class)
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): CaosDefFileStub {
         super.deserialize(stream, parentStub)
-        val fileName = StringRef.toString(stream.readName())
+        val fileName = stream.readNameAsString()!!
         val variants = stream.readList { readNameAsString() }.filterNotNull()
         return CaosDefFileStubImpl(null, fileName, variants)
     }

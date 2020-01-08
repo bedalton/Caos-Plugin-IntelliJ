@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.annotators
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
@@ -22,6 +23,8 @@ class CaosScriptCommandAnnotator : Annotator {
 
 
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
+        if(DumbService.isDumb(element.project))
+            return
         when (element) {
             is CaosScriptCommandToken -> annotateCommand(element, annotationHolder)
         }

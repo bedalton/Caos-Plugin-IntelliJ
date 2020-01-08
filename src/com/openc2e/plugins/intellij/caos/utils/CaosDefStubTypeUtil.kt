@@ -84,9 +84,9 @@ fun <T> StubOutputStream.writeList(list: List<T>, write:StubOutputStream.(T)->Un
     }
 }
 
-fun <T> StubInputStream.readList(readItem:StubInputStream.()->T) : List<T> {
+fun <T> StubInputStream.readList(readItem:StubInputStream.()->T?) : List<T?> {
     val size = readInt()
-    return (0..size).map {
+    return (0 until size).map {
         readItem()
     }
 }
