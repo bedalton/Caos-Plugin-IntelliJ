@@ -1,6 +1,5 @@
 package com.openc2e.plugins.intellij.caos.project
 
-import com.openc2e.plugins.intellij.caos.utils.orFalse
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
@@ -9,6 +8,7 @@ import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScopes
 import com.openc2e.plugins.intellij.caos.utils.CaosFileUtil
+import com.openc2e.plugins.intellij.caos.utils.orFalse
 import java.util.logging.Logger
 
 internal const val BUNDLE_DEFINITIONS_FOLDER = "builtins"

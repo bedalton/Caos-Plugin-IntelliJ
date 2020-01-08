@@ -33,8 +33,7 @@ import com.intellij.openapi.roots.ui.configuration.libraryEditor.DefaultLibraryR
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.LibraryEditor
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
-
-import javax.swing.*
+import javax.swing.JComponent
 
 class CaosLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
     override fun getRootTypePresentation(type: OrderRootType): OrderRootTypePresentation? {

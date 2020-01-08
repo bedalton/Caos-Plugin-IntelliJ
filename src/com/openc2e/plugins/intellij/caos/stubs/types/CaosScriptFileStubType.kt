@@ -10,15 +10,13 @@ import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
 import com.openc2e.plugins.intellij.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
 import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptFileStubImpl
-import com.openc2e.plugins.intellij.caos.utils.readList
 import com.openc2e.plugins.intellij.caos.utils.readNameAsString
-import com.openc2e.plugins.intellij.caos.utils.writeList
 import java.io.IOException
 
 class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, CaosScriptLanguage.instance) {
 
     override fun getBuilder(): StubBuilder {
-        return CaosDefFileStubBuilder()
+        return CaosScriptFileStubBuilder()
     }
 
     override fun getStubVersion(): Int {
@@ -49,11 +47,11 @@ class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, Ca
     }
 
     companion object {
-        private const val NAME = "caosDef.FILE"
+        private const val NAME = "caos.FILE"
     }
 }
 
-private class CaosDefFileStubBuilder : DefaultStubBuilder() {
+private class CaosScriptFileStubBuilder : DefaultStubBuilder() {
     override fun createStubForFile(file: PsiFile): StubElement<*> {
         return if (file !is CaosScriptFile) {
             super.createStubForFile(file)

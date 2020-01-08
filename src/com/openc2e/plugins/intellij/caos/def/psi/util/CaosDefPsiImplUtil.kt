@@ -1,10 +1,11 @@
 package com.openc2e.plugins.intellij.caos.def.psi.util
 
+import com.intellij.ide.presentation.Presentation
+import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
-import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefTypeNameReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefVariableLinkReference
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
@@ -12,8 +13,10 @@ import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.substringFromEnd
+import javax.swing.Icon
 
 object CaosDefPsiImplUtil {
 
@@ -433,6 +436,26 @@ object CaosDefPsiImplUtil {
         if (thisVariants.isEmpty())
             return !strict
         return variants.intersect(thisVariants).isNotEmpty()
+    }
+
+    @JvmStatic
+    fun getPresentation(element:CaosDefCommandWord): ItemPresentation {
+        val text = (element.parent as? CaosDefCommand)?.text ?: element.text
+        //val icon = if (declaration.isCategory) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
+        val fileName = "@variants(" + element.containingCaosDefFile.variants.joinToString(",") + ")"
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return text
+            }
+
+            override fun getLocationString(): String {
+                return fileName
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return null
+            }
+        }
     }
 
 

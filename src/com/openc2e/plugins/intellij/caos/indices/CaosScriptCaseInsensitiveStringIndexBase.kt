@@ -1,16 +1,16 @@
 package com.openc2e.plugins.intellij.caos.indices
 
-import com.openc2e.plugins.intellij.caos.utils.startsAndEndsWith
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
-import com.openc2e.plugins.intellij.caos.def.stubs.types.CaosDefStubVersions
+import com.openc2e.plugins.intellij.caos.stubs.CAOS_SCRIPT_STUB_VERSION
+import com.openc2e.plugins.intellij.caos.utils.startsAndEndsWith
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
-abstract class CaosDefCaseInsensitiveStringIndexBase<PsiT : PsiElement>
+abstract class CaosScriptCaseInsensitiveStringIndexBase<PsiT : PsiElement>
 /**
  * Const
  * @param elementClass the psi element class for this elements in this index
@@ -18,7 +18,7 @@ abstract class CaosDefCaseInsensitiveStringIndexBase<PsiT : PsiElement>
 internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubIndexExtension<PsiT>() {
 
     override fun getVersion(): Int {
-        return super.getVersion() + CaosDefStubVersions.STUB_VERSION + VERSION
+        return super.getVersion() + CAOS_SCRIPT_STUB_VERSION
     }
 
     protected fun getVersion(version:Int): Int {
@@ -162,7 +162,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
 
         @Suppress("unused")
         private val LOGGER by lazy {
-            Logger.getLogger(CaosDefCaseInsensitiveStringIndexBase::class.java.name)
+            Logger.getLogger(CaosScriptCaseInsensitiveStringIndexBase::class.java.name)
         }
         protected const val VERSION = 1
     }

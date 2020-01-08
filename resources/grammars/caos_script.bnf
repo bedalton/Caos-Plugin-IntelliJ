@@ -66,8 +66,8 @@ def	::= (!<<eof>> script_body_element)*
 	;
 
 script_body_element
-	::= event_script line_terminator
-	|	code_block line_terminator
+	::= event_script line_terminator_or_space
+	|	code_block line_terminator_or_space
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -75,6 +75,10 @@ script_body_element
         ]
 	}
 	;
+private line_terminator_or_space
+	::= line_terminator
+	|	space_like;
+
 
 code_block
 	::= caos_statement+
@@ -89,19 +93,20 @@ code_block
 	;
 
 private caos_statement
-	::= caos_element line_terminator
+	::= caos_element
 	|	NEWLINE
 	;
 
 caos_element
 	::= comment
-	|   control_statement line_terminator?
-	|   command_call line_terminator
+	|   control_statement
+	|	expression_list
+	//|   command_call line_terminator
 	;
 
 
 event_script
-	::= (SCRP|ISCR) SPACE_ classifier SPACE_ event_number line_terminator (event_script_body line_terminator)? script_terminator
+	::= (SCRP|ISCR) SPACE_ classifier space_like event_number line_terminator_or_space (event_script_body line_terminator_or_space)? script_terminator
 	{
 		pin=1
 	}
@@ -134,9 +139,18 @@ private control_statement
     |	doif_statement
     ;
 
+expression_list
+	::= expression (line_terminator_or_space expression)*
+	{
+		recoverWhile=expression_list_recover
+	}
+
+private expression_list_recover
+	::= !(NEWLINE|',')
+	;
 
 loop_statement
-    ::= LOOP SPACE_ loop_body? line_terminator loop_terminator
+    ::= LOOP SPACE_ loop_body? line_terminator_or_space loop_terminator
     {
         pin=1;
         methods = [
@@ -156,7 +170,7 @@ private ever_terminator
 	;
 
 private untl_terminator
-	::= UNTL line_terminator expression
+	::= UNTL SPAC_ expression
 	{
 		pin=1
 	}
@@ -175,7 +189,7 @@ private loop_body_recover
     ;
 
 repeat_statement
-    ::= REPS SPACE_ expression line_terminator (repeat_body line_terminator)? REPE
+    ::= REPS SPACE_ expression line_terminator_or_space (repeat_body line_terminator_or_space)? REPE
     {
         pin=1
         implements = [
@@ -201,7 +215,7 @@ private repeat_body_recover
     ;
 
 enum_next_statement
-    ::= (ENUM|ESEE|ETCH) line_terminator classifier line_terminator (enum_body line_terminator)* NEXT
+    ::= (ENUM|ESEE|ETCH) SPAC_ classifier line_terminator_or_space (enum_body line_terminator_or_space)? NEXT
     {
         pin=1;
         implements = [
@@ -215,7 +229,7 @@ enum_next_statement
     ;
 
 enum_scenery_statement
-    ::= ESCN SPACE_ classifier line_terminator (enum_body line_terminator)? NSCN
+    ::= ESCN SPACE_ classifier line_terminator_or_space (enum_body line_terminator_or_space)? NSCN
     {
         pin=1;
         implements = [
@@ -244,7 +258,7 @@ private enum_body_recover
     ;
 
 
-
+/*
 command_call
     ::= command expressionList?
     {
@@ -278,20 +292,20 @@ private expressionList
 private command_recover
 	::= !(ENDM|NEWLINE)
 	;
-
+*/
 doif_statement
-	::= DOIF SPACE_ expression line_terminator (do_if_body line_terminator)? (else_if line_terminator)* (else_statement line_terminator)? ENDI
+	::= DOIF SPACE_ expression line_terminator_or_space (do_if_body line_terminator_or_space)? (else_if line_terminator_or_space)* (else_statement line_terminator_or_space)? ENDI
 	{
 		pin=1
 	}
 	;
 
 else_if
-	::= ELIF line_terminator expression line_terminator do_if_body?
+	::= ELIF SPACE_ expression line_terminator_or_space do_if_body?
 	;
 
 else_statement
-	::= ELSE line_terminator else_block
+	::= ELSE line_terminator_or_space else_block
 	{
 		pin=1;
 	}
@@ -331,14 +345,14 @@ expression
 
 
 private expression_prime
-    ::= command_call
-    |   literal
-    |   token
+    ::= //command_call
+       literal
     |   var_token
+    |   command_token
     ;
 
 equality_expression
-    ::= expression_prime line_terminator eq_op line_terminator expression
+    ::= expression_prime SPACE_ eq_op SPACE_ expression
     ;
 
 eq_op ::= ID;
@@ -378,7 +392,9 @@ literal
     }
     ;
 
-number ::=INT|DECIMAL
+number
+	::= INT
+	|	DECIMAL
     ;
 
 string_literal
@@ -391,10 +407,10 @@ string_literal
     }
     ;
 
+/*
 token
     ::= ID
     ;
-
 command
 	::= command_token (SPACE_ command_token)*
 	{
@@ -411,8 +427,9 @@ command
 	}
 	;
 
+*/
 command_token
-    ::= ID
+    ::= WORD
 	{
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandTokenStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -430,7 +447,6 @@ command_token
 		]
 	}
     ;
-
 comment
     ::= COMMENT_LITERAL
     {
@@ -441,7 +457,7 @@ comment
     ;
 
 animation_string
-    ::= '[' INT+ ANIM_R? ']'
+    ::= '[' INT ANIM_R? ']'
     ;
 
 byte_string
@@ -450,15 +466,21 @@ byte_string
 
 line_terminator
     ::= <<eof>>
-    |   ","
     |   line_feed+
-    |	SPACE_
     ;
+
+
+space_like
+	::= SPACE_
+	|	','
+	;
 
 private line_feed
 	::= comment
 	|	NEWLINE
 	;
+
+
 script_terminator
 	::= ENDM
 	|   <<eos>>

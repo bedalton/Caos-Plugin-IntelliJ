@@ -7,9 +7,9 @@ import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
-import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefFileStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
+import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefFileStubImpl
 import com.openc2e.plugins.intellij.caos.utils.readList
 import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 import com.openc2e.plugins.intellij.caos.utils.writeList

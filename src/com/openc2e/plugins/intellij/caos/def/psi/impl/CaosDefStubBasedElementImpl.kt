@@ -4,9 +4,7 @@ import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.lang.ASTNode
 import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
-import com.intellij.psi.StubBasedPsiElement
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile

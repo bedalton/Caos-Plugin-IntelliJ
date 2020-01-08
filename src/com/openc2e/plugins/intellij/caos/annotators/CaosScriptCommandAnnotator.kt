@@ -3,9 +3,15 @@ package com.openc2e.plugins.intellij.caos.annotators
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
+import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
-import com.openc2e.plugins.intellij.caos.psi.api.*
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandToken
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEnumSceneryStatement
+import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 
 class CaosScriptCommandAnnotator : Annotator {
 
@@ -34,22 +40,19 @@ class CaosScriptCommandAnnotator : Annotator {
     }
 
     private fun annotateInvalidCommand(word:CaosScriptCommandToken, annotationHolder: AnnotationHolder) : Boolean {
-        val command = (word.parent as? CaosScriptCommand)
-                ?: return true
-        val commandString = command.commandString
-        val exists = CaosDefCommandElementsByNameIndex.Instance[commandString, word.project]
-        if (exists.isEmpty()) {
-            annotationHolder.createWarningAnnotation(word, CaosBundle.message("caos.annnotator.command-annotator.invalid-command", commandString))
-            return true
-        }
+        val exists = word.reference.multiResolve(false).mapNotNull { it.element as? CaosDefCommandWord }
         val forVariant = exists.filter {
-            word.isVariant(it.variants, false)
+            word.isVariant(it.containingCaosDefFile.variants, false)
         }
         if (forVariant.isNotEmpty())
             return false
-        val availableOn = exists.flatMap { it.variants }.toSet()
-        annotationHolder.createWarningAnnotation(word, CaosBundle.message("caos.annnotator.command-annotator.invalid-variant", commandString, availableOn.joinToString(",")))
+        val availableOn = exists.flatMap { it.containingCaosDefFile.variants }.toSet()
+        annotationHolder.createWarningAnnotation(word, CaosBundle.message("caos.annnotator.command-annotator.invalid-variant", word.name, availableOn.joinToString(",")))
         return true
+    }
+
+    private fun findForward() {
+
     }
 
     private fun annotateCommandVsValue(word: CaosScriptCommandToken, annotationHolder: AnnotationHolder): Boolean {
@@ -57,7 +60,7 @@ class CaosScriptCommandAnnotator : Annotator {
     }
 
     private fun annotateSceneryEnum(element:CaosScriptEnumSceneryStatement, annotationHolder: AnnotationHolder) {
-        if (element.containingCaosFile.variant == "C2")
+        if (element.containingCaosFile?.variant == "C2")
             return
         annotationHolder.createErrorAnnotation(element.escn, CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
     }

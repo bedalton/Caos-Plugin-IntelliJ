@@ -253,6 +253,7 @@ command_word
 			getIndex
 			getReference
 			isVariant
+			getPresentation
 		]
 	}
 	;

@@ -52,7 +52,7 @@ DECIMAL=[0-9]+\.[0-9]+
 INT=[0-9]+
 TEXT=\[[^\]]*\]
 QUOTE_STRING=\"[^\n|\"]*\"
-WORD=[_a-zA-Z][_a-zA-Z0-9!#]{3}
+WORD=[_a-zA-Z][_a-zA-Z0-9]{2}[_a-zA-Z0-9!#:]
 ID=[_a-zA-Z][_a-zA-Z0-9!#]*
 SPACE=[ ]
 TAB=[\t]
@@ -103,6 +103,7 @@ TAB=[\t]
   {INT}                  { return CaosScript_INT; }
   {TEXT}                 { return CaosScript_TEXT_LITERAL; }
   {QUOTE_STRING}         { return CaosScript_QUOTE_STRING; }
+  {WORD}				 { return CaosScript_WORD; }
   {ID}                   { return CaosScript_ID; }
   {SPACE}                { return CaosScript_SPACE_; }
 }

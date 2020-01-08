@@ -1,7 +1,8 @@
 package com.openc2e.plugins.intellij.caos.def.stubs.types;
 
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.psi.stubs.*;
+import com.intellij.psi.stubs.IStubElementType;
+import com.intellij.psi.stubs.StubElement;
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService;
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage;
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement;

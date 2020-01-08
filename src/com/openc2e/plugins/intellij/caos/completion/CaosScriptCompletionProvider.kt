@@ -13,7 +13,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
         val element = parameters.position as? CaosScriptCompositeElement
                 ?: return;
-        val variant = element.containingCaosFile.variant.toUpperCase();
+        val variant = element.containingCaosFile?.variant?.toUpperCase() ?: "";
         when {
             element is CaosScriptCommandToken -> {
                 CaosDefCommandElementsByNameIndex.Instance.getAllKeys(element.project).forEach {

@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.caos.def.psi.util
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage

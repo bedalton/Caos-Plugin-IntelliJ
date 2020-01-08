@@ -7,7 +7,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
 import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefLexerAdapter
 import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes
-import com.openc2e.plugins.intellij.caos.def.psi.api.*
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefVariableLink
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefVariableName
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement
 
 class CaosDefUsagesProvider : FindUsagesProvider{

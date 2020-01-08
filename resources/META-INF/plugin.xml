@@ -38,12 +38,11 @@
     <!-- ===== CAOS Script ====== -->
     <!-- ======================== -->
     <!-- LANG -->
+    <fileTypeFactory implementation="com.openc2e.plugins.intellij.caos.lang.CaosScriptFileTypeFactory" />
     <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserDefinition"
                            language="CaosScript" />
-    <completion.contributor language="CaosScript"
-                            implementationClass="com.openc2e.plugins.intellij.caos.contributor.CaosCompletionContributor" />
 
-    <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
+    <completion.contributor language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
 
     <!-- Highlighting -->
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter" key="CaosScript" />
@@ -53,7 +52,10 @@
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml"/>
-    <completion.contributor language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
+
+    <!-- Annotators -->
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandAnnotator" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
@@ -61,7 +63,6 @@
     <!-- LANG -->
     <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserDefinition"
                            language="CaosDef" />
-    <fileTypeFactory implementation="com.openc2e.plugins.intellij.caos.lang.CaosScriptFileTypeFactory" />
     <completion.contributor language="CaosDef"
                             implementationClass="com.openc2e.plugins.intellij.caos.def.contributor.CaosDefCompletionContributor" />
     <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
@@ -78,9 +79,6 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDarcula.xml"/>
 
-    <!-- Annotators -->
-    <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandAnnotator" />
 
     <!-- Indices -->
     <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />

@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.caos.def.psi.types
 
 import com.intellij.psi.tree.TokenSet
-import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes
 import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*
 
 class CaosDefTokenSets {

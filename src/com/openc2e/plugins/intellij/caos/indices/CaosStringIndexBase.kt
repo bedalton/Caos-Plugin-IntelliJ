@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
-import com.openc2e.plugins.intellij.caos.def.stubs.types.CaosDefStubVersions
+import com.openc2e.plugins.intellij.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.openc2e.plugins.intellij.caos.utils.startsAndEndsWith
 import java.util.logging.Logger
 import java.util.regex.Pattern
@@ -18,7 +18,7 @@ abstract class CaosStringIndexBase<PsiT : PsiElement>
 internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubIndexExtension<PsiT>() {
 
     override fun getVersion(): Int {
-        return super.getVersion() + CaosDefStubVersions.STUB_VERSION + VERSION
+        return super.getVersion() + CAOS_SCRIPT_STUB_VERSION
     }
 
     protected fun getVersion(version:Int): Int {

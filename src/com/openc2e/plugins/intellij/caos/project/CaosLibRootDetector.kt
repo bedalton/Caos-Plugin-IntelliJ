@@ -27,8 +27,7 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
-
-import java.util.ArrayList
+import java.util.*
 
 /**
  * @author: Fedor.Korotkov

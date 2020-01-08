@@ -1,9 +1,7 @@
 package com.openc2e.plugins.intellij.caos.def.indices
 
 import com.intellij.psi.stubs.IndexSink
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefTypeDefinitionElement
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefCommandDefinitionStub
-import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefDocCommentStub
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefTypeDefinitionStub
 
 interface CaosDefStubIndexService {

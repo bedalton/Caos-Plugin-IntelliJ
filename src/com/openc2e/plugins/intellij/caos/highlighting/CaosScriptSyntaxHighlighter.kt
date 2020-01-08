@@ -30,7 +30,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             in CaosScriptTokenSets.Variables -> VAR_TOKEN
             in CaosScriptTokenSets.NUMBER_LITERALS -> NUMBER
             in CaosScriptTokenSets.KEYWORDS -> KEYWORDS
-            CaosScriptTypes.CaosScript_ID -> WORD_TOKEN
+            CaosScriptTypes.CaosScript_WORD -> WORD_TOKEN
             else -> null
         }
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS

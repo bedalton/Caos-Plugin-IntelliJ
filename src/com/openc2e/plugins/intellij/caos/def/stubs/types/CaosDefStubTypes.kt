@@ -1,7 +1,5 @@
 package com.openc2e.plugins.intellij.caos.def.stubs.types
 
-import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFileType
-
 object CaosDefStubTypes {
 
     @JvmStatic

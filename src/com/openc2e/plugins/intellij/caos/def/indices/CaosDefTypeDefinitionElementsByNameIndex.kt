@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.caos.def.indices
 
 import com.intellij.psi.stubs.StubIndexKey
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefTypeDefinitionElement
 import com.openc2e.plugins.intellij.caos.indices.CaosStringIndexBase
 import com.openc2e.plugins.intellij.caos.indices.IndexKeyUtil

@@ -15,19 +15,19 @@
   <option name="CaosScript_WORD_TOKEN">
     <value>
       <option name="FOREGROUND" value="01579b"/>
-      <option name="FONT_TYPE" value="1"/>
+      <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosScript_STRING_LITERAL">
     <value>
       <option name="FOREGROUND" value="7cb342"/>
-      <option name="FONT_TYPE" value="1"/>
+      <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosScript_NUMBER_LITERAL">
     <value>
       <option name="FOREGROUND" value="000000"/>
-      <option name="FONT_TYPE" value="1"/>
+      <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
 </list>

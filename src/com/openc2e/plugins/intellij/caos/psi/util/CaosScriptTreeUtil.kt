@@ -11,6 +11,7 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.caos.utils.document
@@ -310,6 +311,6 @@ internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boole
     else if (!ignoreLineTerminator && out.text.contains("\n")) {
         false
     } else {
-        out.elementType === TokenType.WHITE_SPACE || out.psi is PsiErrorElement
+        out.elementType === TokenType.WHITE_SPACE || out.elementType == CaosScriptTypes.CaosScript_SPACE_ || out.elementType == CaosScriptTypes.CaosScript_SPACE_LIKE|| out.psi is PsiErrorElement
     }
 }

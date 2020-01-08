@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
 import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefLexerAdapter
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
-import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.CaosScript_COMMAND_TOKEN
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandToken
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement
+import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 
 class CaosScriptUsagesProvider : FindUsagesProvider{
 

@@ -5,14 +5,13 @@ import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
-import com.openc2e.plugins.intellij.caos.utils.orElse
 import com.openc2e.plugins.intellij.caos.utils.orFalse
 
 object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCodeBlock(codeBlock: CaosScriptCodeBlock): CaosScriptCodeBlock = codeBlock
-
+/*
     @JvmStatic
     fun getCommandString(command: CaosScriptCommand): String {
         return command.stub?.command
@@ -49,6 +48,7 @@ object CaosScriptPsiImplUtil {
                 ?: command.commandTokenList.map { it.text }
     }
 
+*/
     @JvmStatic
     fun getCommandString(commandToken: CaosScriptCommandToken): String {
         return commandToken.stub?.text ?: commandToken.text
@@ -57,10 +57,10 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getIndex(commandToken: CaosScriptCommandToken): Int {
         return commandToken.stub?.index
-                ?: (commandToken.parent as? CaosScriptCommand)
+                /*?: (commandToken.parent as? CaosScriptCommand)
                         ?.commandTokenList
                         ?.indexOf(commandToken)
-                ?: 0
+                */?: 0
     }
 
     @JvmStatic
@@ -169,7 +169,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptCommandToken, variants:List<String>, strict:Boolean) : Boolean {
-        val thisVariant = element.containingCaosFile.variant
+        val thisVariant = element.containingCaosFile?.variant ?: ""
         if (thisVariant.isEmpty())
             return !strict
         return thisVariant in variants
@@ -191,6 +191,7 @@ object CaosScriptPsiImplUtil {
         return CaosScriptCommandTokenReference(element)
     }
 
+    /*
     @JvmStatic
     fun getPreviousCommandCalls(element:CaosScriptCommandCall) : List<CaosScriptCommandCall> {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
@@ -199,6 +200,6 @@ object CaosScriptPsiImplUtil {
             it.commandCall
         } ?: return emptyList()
         return emptyList();
-    }
+    }*/
 
 }
