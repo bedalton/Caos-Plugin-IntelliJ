@@ -14,7 +14,7 @@ import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 class CaosDefTypeDefValueStubType(debugName:String) : CaosDefStubElementType<CaosDefTypeDefValueStub, CaosDefTypeDefinitionImpl>(debugName) {
 
     override fun createPsi(stub: CaosDefTypeDefValueStub): CaosDefTypeDefinitionImpl {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return CaosDefTypeDefinitionImpl(stub, this)
     }
 
     override fun serialize(stub: CaosDefTypeDefValueStub, stream: StubOutputStream) {
