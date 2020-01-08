@@ -9,6 +9,7 @@ import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefStubBasedElement
 
@@ -21,4 +22,6 @@ open class CaosDefStubBasedElementImpl<StubT : StubElement<out PsiElement>>: Stu
     override fun <PsiT: PsiElement> getChildOfType(childType:Class<PsiT>):PsiT? = PsiTreeUtil.getChildOfType(this, childType)
     override fun <PsiT: PsiElement> getChildrenOfType(childType:Class<PsiT>):List<PsiT> = PsiTreeUtil.getChildrenOfTypeAsList(this, childType)
     override fun <PsiT: PsiElement> getParentOfType(parentClass:Class<PsiT>):PsiT? = PsiTreeUtil.getParentOfType(this, parentClass)
+    override val containingCaosDefFile: CaosDefFile
+        get() = containingFile as CaosDefFile
 }

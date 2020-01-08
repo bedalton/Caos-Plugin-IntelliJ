@@ -20,6 +20,7 @@
 		ENDM = "regexp:[eE][nN][dD][mM]"
 		SUBR = "regexp:[sS][uU][bB][rR]"
 		REPS = "regexp:[rR][eE][pP][sS]"
+		REPS = "regexp:[rR][eE][pP][sS]"
 		REPE = "regexp:[rR][eE][pP][eE]"
 		LOOP = "regexp:[lL][oO][oO][pP]"
 		UNTL = "regexp:[uU][nN][tT][lL]"
@@ -208,6 +209,7 @@ enum_next_statement
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
         methods = [
+        	codeBlock="code_block[0]"
         ]
     }
     ;

@@ -70,7 +70,7 @@ object CaosScriptPsiImplUtil {
             return type
         return when {
             expression.animationString != null -> CaosScriptExpressionType.BRACKET_STRING
-            expression.commandToken != null -> CaosScriptExpressionType.TOKEN
+            //expression.commandToken != null -> CaosScriptExpressionType.TOKEN
             expression.equalityExpression != null -> CaosScriptExpressionType.EQ
             expression.literal?.isFloat.orFalse() -> CaosScriptExpressionType.FLOAT
             expression.literal?.isInt.orFalse() -> CaosScriptExpressionType.INT
@@ -198,6 +198,7 @@ object CaosScriptPsiImplUtil {
         val blockCommands = parent.codeBlock?.caosElementList?.mapNotNull {
             it.commandCall
         } ?: return emptyList()
+        return emptyList();
     }
 
 }

@@ -8,6 +8,7 @@ import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.stubs.api.*
 import com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes
 
+/*
 class CaosScriptCommandStubImpl(
         parent:StubElement<*>?,
         override val commandTokens:List<String>
@@ -16,8 +17,8 @@ class CaosScriptCommandStubImpl(
         commandTokens.joinToString(" ")
     }
 }
-
-
+*/
+/*
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
         override val commandTokens:List<String>,
@@ -27,7 +28,7 @@ class CaosScriptCommandCallStubImpl(
     override val command:String by lazy {
         commandTokens.joinToString(" ")
     }
-}
+}*/
 
 class CaosScriptCommandTokenStubImpl(
         parent:StubElement<*>?,

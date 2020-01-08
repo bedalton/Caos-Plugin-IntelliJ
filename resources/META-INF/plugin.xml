@@ -53,6 +53,7 @@
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml"/>
+    <completion.contributor language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->

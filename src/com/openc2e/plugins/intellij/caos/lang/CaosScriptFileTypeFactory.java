@@ -11,7 +11,7 @@ public class CaosScriptFileTypeFactory extends FileTypeFactory {
     public void createFileTypes(
             @NotNull
                     FileTypeConsumer fileTypeConsumer) {
-        //fileTypeConsumer.consume(CaosFileType.INSTANCE, CaosFileType.DEFAULT_EXTENSION);
+        fileTypeConsumer.consume(CaosScriptFileType.INSTANCE, CaosScriptFileType.DEFAULT_EXTENSION);
         fileTypeConsumer.consume(CaosDefFileType.INSTANCE, CaosDefFileType.DEFAULT_EXTENSION);
     }
 }

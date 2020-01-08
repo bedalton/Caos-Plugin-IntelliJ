@@ -5,4 +5,5 @@ import com.intellij.psi.stubs.PsiFileStub
 
 interface CaosScriptFileStub :  PsiFileStub<CaosScriptFile> {
     val fileName: String
+    val variant:String
 }

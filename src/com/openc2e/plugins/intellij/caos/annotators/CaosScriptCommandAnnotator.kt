@@ -53,7 +53,7 @@ class CaosScriptCommandAnnotator : Annotator {
     }
 
     private fun annotateCommandVsValue(word: CaosScriptCommandToken, annotationHolder: AnnotationHolder): Boolean {
-
+        return false;
     }
 
     private fun annotateSceneryEnum(element:CaosScriptEnumSceneryStatement, annotationHolder: AnnotationHolder) {

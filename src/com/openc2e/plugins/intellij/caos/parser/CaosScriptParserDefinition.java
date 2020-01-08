@@ -11,13 +11,11 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
-import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile;
-import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefLexerAdapter;
-import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes;
-import com.openc2e.plugins.intellij.caos.def.parser.CaosDefParser;
-import com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefTokenSets;
-import com.openc2e.plugins.intellij.caos.def.stubs.types.CaosDefStubTypes;
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile;
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptLexerAdapter;
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes;
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets;
+import com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes;
 import org.jetbrains.annotations.NotNull;
 
 public class CaosScriptParserDefinition implements ParserDefinition {
@@ -29,17 +27,17 @@ public class CaosScriptParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public Lexer createLexer(Project project) {
-        return new CaosDefLexerAdapter();
+        return new CaosScriptLexerAdapter();
     }
 
     @Override
     public PsiParser createParser(Project project) {
-        return new CaosDefParser();
+        return new CaosScriptParser();
     }
 
     @Override
     public IFileElementType getFileNodeType() {
-        return CaosDefStubTypes.getFILE();
+        return CaosScriptStubTypes.FILE;
     }
 
     @NotNull
@@ -62,12 +60,12 @@ public class CaosScriptParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public PsiElement createElement(ASTNode astNode) {
-        return CaosDefTypes.Factory.createElement(astNode);
+        return CaosScriptTypes.Factory.createElement(astNode);
     }
 
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
-        return new CaosDefFile(fileViewProvider);
+        return new CaosScriptFile(fileViewProvider);
     }
 
     @SuppressWarnings("deprecation")

@@ -29,7 +29,6 @@ import static com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*;
 NEWLINE=\n
 ENDM=[eE][nN][dD][mM]
 SUBR=[sS][uU][bB][rR]
-GSUB=[gG][sS][uU][bB]
 REPS=[rR][eE][pP][sS]
 REPE=[rR][eE][pP][eE]
 LOOP=[lL][oO][oO][pP]
@@ -82,7 +81,6 @@ TAB=[\t]
   {NEWLINE}              { yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
   {ENDM}                 { return CaosScript_ENDM; }
   {SUBR}                 { return CaosScript_SUBR; }
-  {GSUB}                 { return CaosScript_GSUB; }
   {REPS}                 { return CaosScript_REPS; }
   {REPE}                 { return CaosScript_REPE; }
   {LOOP}                 { return CaosScript_LOOP; }
@@ -107,7 +105,6 @@ TAB=[\t]
   {QUOTE_STRING}         { return CaosScript_QUOTE_STRING; }
   {ID}                   { return CaosScript_ID; }
   {SPACE}                { return CaosScript_SPACE_; }
-  {TAB}                  { return CaosScript_TAB; }
 }
 
 <YYINITIAL> {
