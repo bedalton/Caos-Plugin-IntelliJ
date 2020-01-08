@@ -73,7 +73,7 @@ endm
                 AttributesDescriptor("Keywords", CaosScriptSyntaxHighlighter.KEYWORDS),
                 AttributesDescriptor("Line Comment", CaosScriptSyntaxHighlighter.COMMENT),
                 AttributesDescriptor("Var Tokens", CaosScriptSyntaxHighlighter.VAR_TOKEN),
-                AttributesDescriptor("Commands", CaosScriptSyntaxHighlighter.WORD_TOKEN),
+                AttributesDescriptor("Commands", CaosScriptSyntaxHighlighter.COMMAND_TOKEN),
                 AttributesDescriptor("Numbers", CaosScriptSyntaxHighlighter.NUMBER),
                 AttributesDescriptor("Equals Keywords", CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD),
                 AttributesDescriptor("Equals Symbols", CaosScriptSyntaxHighlighter.SYMBOL)

@@ -32,7 +32,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             in CaosScriptTokenSets.KEYWORDS -> KEYWORDS
             CaosScriptTypes.CaosScript_EQ_OP_OLD_ -> EQ_OP_KEYWORD
             CaosScriptTypes.CaosScript_EQ_OP_NEW_ -> SYMBOL
-            CaosScriptTypes.CaosScript_WORD -> WORD_TOKEN
+            CaosScriptTypes.CaosScript_WORD -> COMMAND_TOKEN
             else -> null
         }
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS
@@ -49,7 +49,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val VAR_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
         @JvmStatic
-        val WORD_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_WORD_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         @JvmStatic
         val NUMBER:TextAttributesKey = createTextAttributesKey("CaosScript_NUMBER_LITERAL", DefaultLanguageHighlighterColors.NUMBER)
         @JvmStatic

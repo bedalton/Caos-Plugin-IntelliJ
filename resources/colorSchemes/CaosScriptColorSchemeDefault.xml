@@ -12,9 +12,9 @@
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
-  <option name="CaosScript_WORD_TOKEN">
+  <option name="CaosScript_COMMAND_TOKEN">
     <value>
-      <option name="FOREGROUND" value="008AC8"/>
+      <option name="FOREGROUND" value="FF044E"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
@@ -48,10 +48,10 @@
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-  <option name="CaosScript_NUMBER_LITERAL">
+  <!-- option name="CaosScript_NUMBER_LITERAL">
     <value>
-      <option name="FOREGROUND" value="2D2D2D"/>
+      <option name="FOREGROUND" value="0000FF"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
-  </option>
+  </option -->
 </list>
