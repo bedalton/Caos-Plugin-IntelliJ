@@ -43,3 +43,4 @@ fun PsiElement.isNotEquivalentTo(otherElement:PsiElement): Boolean = this.isEqui
 
 fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)
         = filter{ t -> elements.none{ selector(it) == selector(t) } }
+

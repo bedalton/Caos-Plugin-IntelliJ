@@ -15,6 +15,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpression
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getNextNonEmptySibling
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 
@@ -25,10 +26,16 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         if (element.parent?.parent is CaosDefCommandDefElement)
             return emptyArray()
-        val elements = if (element is CaosDefCompositeElement)
+        var elements = if (element is CaosDefCompositeElement)
             findFromDefElement()
         else
             findFromScriptElement()
+        val commandText = element.name
+                ?: return emptyArray()
+        elements = elements
+                .filter {
+                    it.name.toLowerCase() == commandText.toLowerCase()
+                }
         return PsiElementResolveResult.createResults(elements)
     }
 

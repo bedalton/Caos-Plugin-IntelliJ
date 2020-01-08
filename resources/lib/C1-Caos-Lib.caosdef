@@ -1,3 +1,4 @@
+@Variants(C1)
 /*
  * Object that [OWNR] creature was attending to
  * @RValue
@@ -5,17 +6,12 @@
  */
 _IT_ (agent);
 
-/*
- * Abandons changes to world & closes Vivarium
- * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
- */
-ABRT (command);
 
 /*
  * Object's Active flag (INACTIVE=0 ACTIVE=1)
  * @LValue
  * @RValue
- * @return (integer@ActiveFlag)
+ * @return (integer@Bool)
  */
 ACTV (integer);
 
@@ -57,7 +53,7 @@ ANIM (command) anim [object_anim];
 
 /*
  * Approach [_IT_]
- * Choose a walking gait according to chemo-receptors, then start walking towards _IT_.
+ * Choose a walking gait according to chemo-receptors, then start walking towards [_IT_].
  * Continue with next instruction when you are WITHIN REACH
  */
 APPR (command);
@@ -1010,12 +1006,6 @@ POST (integer);
 PRLD (command) anim [anim];
 
 /*
- * Saves world & closes Vivarium
- * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
- */
-QUIT (command);
-
-/*
  * End repeat loop
  */
 REPE (command);
@@ -1321,6 +1311,12 @@ SUBR (command) label (token);
 SUBV (command) lvalue (variable) rvalue (integer);
 
 /*
+ * Abandons changes to world & closes Vivarium
+ * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
+ */
+SYS: ABRT (command);
+
+/*
  * moves camera to point at current [TARG]
  */
 SYS: CAMT (command);
@@ -1350,9 +1346,33 @@ SYS: EDIT (command) left (integer) top (integer) right (integer) bottom (integer
 SYS: GRND (command) x (integer) int (y);
 
 /*
+ * Saves world & closes Vivarium
+ * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
+ */
+SYS: QUIT (command);
+
+/*
+ * attempt to position vivarium frame window to this size (in pixels)
+ * Actual size will be limited to maximum view size or size of screen, if necessecary
+ * @param {x} (integer)
+ * @param {y} (integer)
+ * @param {width} (integer)
+ * @param {height} (integer)
+ */
+WPOS (command) x (integer) y (integer) width (integer) height (integer);
+
+/*
+ * Opens a new document (world) after saving the current one (if any)
+ * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
+ * @param {fileName} [filename]
+ */
+WRLD (command) fileName [filename];
+
+/*
  * Set vivarium's window to be foreground window (useful in editor tools etc to allow user access to vivarium for selecting objects etc)
  */
 SYS: WTOP (command);
+
 
 /*
  * return curr targ object* as integer
@@ -1420,7 +1440,7 @@ TOOL (command) fsp [string] menuText [string] helpText [string] glyph (integer);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
- * two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are touching
+ * Two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are touching
  * @RValue
  * @return (integer@bool)
  */
@@ -1516,23 +1536,6 @@ WINH (integer);
  * @return (integer)
  */
 WINW (integer);
-
-/*
- * attempt to position vivarium frame window to this size (in pixels)
- * Actual size will be limited to maximum view size or size of screen, if necessecary
- * @param {x} (integer)
- * @param {y} (integer)
- * @param {width} (integer)
- * @param {height} (integer)
- */
-WPOS (command) x (integer) y (integer) width (integer) height (integer);
-
-/*
- * Opens a new document (world) after saving the current one (if any)
- * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
- * @param {fileName} [filename]
- */
-WRLD (command) fileName [filename];
 
 /*
  * vehicle's x mvt vector in 1/256ths pixel

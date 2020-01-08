@@ -8,25 +8,49 @@
   </option>
   <option name="CaosScript_VAR_TOKEN">
     <value>
-      <option name="FOREGROUND" value="6a1b9a"/>
+      <option name="FOREGROUND" value="830081"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosScript_WORD_TOKEN">
     <value>
-      <option name="FOREGROUND" value="01579b"/>
+      <option name="FOREGROUND" value="008AC8"/>
       <option name="FONT_TYPE" value="0"/>
+    </value>
+  </option>
+  <option name="CaosScript_KEYWORDS">
+    <value>
+      <option name="FOREGROUND" value="1D41BD"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosScript_SYMBOLS">
+    <value>
+      <option name="FOREGROUND" value="1D41BD"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosScript_ANIMATION">
+    <value>
+      <option name="FOREGROUND" value="199676"/>
+      <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="CaosScript_STRING_LITERAL">
     <value>
-      <option name="FOREGROUND" value="7cb342"/>
-      <option name="FONT_TYPE" value="0"/>
+      <option name="FOREGROUND" value="529612"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosScript_TOKEN">
+    <value>
+      <option name="FOREGROUND" value="529612"/>
+      <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="CaosScript_NUMBER_LITERAL">
     <value>
-      <option name="FOREGROUND" value="000000"/>
+      <option name="FOREGROUND" value="2D2D2D"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>

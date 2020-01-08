@@ -5,12 +5,17 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
+import com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter
+import com.openc2e.plugins.intellij.caos.highlighting.colorize
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandToken
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEnumSceneryStatement
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpression
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 
 class CaosScriptCommandAnnotator : Annotator {
@@ -19,11 +24,14 @@ class CaosScriptCommandAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         when (element) {
             is CaosScriptCommandToken -> annotateCommand(element, annotationHolder)
-            is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(element, annotationHolder)
         }
     }
 
-    fun annotateCommand(word:CaosScriptCommandToken, annotationHolder: AnnotationHolder) {
+    private fun annotateCommand(word:CaosScriptCommandToken, annotationHolder: AnnotationHolder) {
+        if (isFileToken(word)) {
+            annotationHolder.colorize(word, CaosScriptSyntaxHighlighter.STRING)
+            return
+        }
         if (annotateInvalidCommandLength(word, annotationHolder))
             return
         if (annotateInvalidCommand(word, annotationHolder))
@@ -32,22 +40,49 @@ class CaosScriptCommandAnnotator : Annotator {
             return
     }
 
+    private fun isFileToken(word: CaosScriptCommandToken): Boolean {
+        val previous = (word.getPreviousNonEmptySibling(false) as? CaosScriptExpression)?.commandToken
+                ?: return false
+        val wordString = word.text.toLowerCase()
+        val previousText= previous.text.toLowerCase()
+        val prevAndSelfAreSame = previousText == wordString
+        return previous.reference.multiResolve(false)
+                .filter{
+                    it.element?.text?.toLowerCase() == previousText
+                }.mapNotNull {
+            (it.element as? CaosDefCommandWord)?.getParentOfType(CaosDefCommandDefElement::class.java) }
+                .any {
+                    val commandWords = it.command.commandWordList
+                    val first = commandWords.first().text.toLowerCase()
+                    if (commandWords.size > 1 && first == previousText)
+                        return@any false
+                    LOGGER.info("${it.command.commandWordList.first().text.toLowerCase()} == $wordString; $previousText == $wordString")
+                    (prevAndSelfAreSame ||  first != wordString) &&
+                    it.parameterStructs.getOrNull(0)?.type?.type?.toLowerCase() == "token"
+                }
+    }
+
     private fun annotateInvalidCommandLength(word:CaosScriptCommandToken, annotationHolder: AnnotationHolder) : Boolean {
         if (word.textLength == 4)
             return false
-        annotationHolder.createErrorAnnotation(word, CaosBundle.message("caos.annnotator.command-annotator.invalid-token-length"))
+        annotationHolder.createErrorAnnotation(word, CaosBundle.message("caos.annotator.command-annotator.invalid-token-length"))
         return true
     }
 
     private fun annotateInvalidCommand(word:CaosScriptCommandToken, annotationHolder: AnnotationHolder) : Boolean {
-        val exists = word.reference.multiResolve(false).mapNotNull { it.element as? CaosDefCommandWord }
+        val exists = word.reference
+                .multiResolve(false)
+                .mapNotNull { it.element as? CaosDefCommandWord }
         val forVariant = exists.filter {
             word.isVariant(it.containingCaosDefFile.variants, false)
         }
         if (forVariant.isNotEmpty())
             return false
         val availableOn = exists.flatMap { it.containingCaosDefFile.variants }.toSet()
-        annotationHolder.createWarningAnnotation(word, CaosBundle.message("caos.annnotator.command-annotator.invalid-variant", word.name, availableOn.joinToString(",")))
+        if (exists.isNotEmpty())
+            annotationHolder.createWarningAnnotation(word, CaosBundle.message("caos.annotator.command-annotator.invalid-variant", word.name, availableOn.joinToString(",")))
+        else
+            annotationHolder.createWarningAnnotation(word, CaosBundle.message("caos.annotator.command-annotator.invalid-command", word.name, availableOn.joinToString(",")))
         return true
     }
 
@@ -56,12 +91,17 @@ class CaosScriptCommandAnnotator : Annotator {
     }
 
     private fun annotateCommandVsValue(word: CaosScriptCommandToken, annotationHolder: AnnotationHolder): Boolean {
-        return false;
+        return false
     }
 
-    private fun annotateSceneryEnum(element:CaosScriptEnumSceneryStatement, annotationHolder: AnnotationHolder) {
-        if (element.containingCaosFile?.variant == "C2")
-            return
-        annotationHolder.createErrorAnnotation(element.escn, CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
+    companion object {
+        private val HAS_TOKN_COMMANDS = listOf(
+                "TOKN",
+                "SIMP",
+                "COMP",
+                "BKBD",
+                "SCEN",
+                "SIMP"
+        )
     }
 }

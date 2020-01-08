@@ -30,7 +30,6 @@
 		DOIF = "regexp:[dD][oO][iI][fF]"
 		ELSE = "regexp:[eE][lL][sS][eE]"
 		ENDI = "regexp:[eE][nN][dD][iI]"
-		DOIF = "regexp:[dD][oO][iI][fF]"
 		ENDI = "regexp:[eE][nN][dD][iI]"
 		SCRP = "regexp:[sS][cC][rR][pP]"
 		ESCN = "regexp:[eE][sS][cC][nN]"
@@ -56,7 +55,11 @@
 		OPEN_BRACKET = '[';
 		CLOSE_BRACKET = ']';
 		COMMA = ',';
+		AND = "AND"
+		OR = "OR"
 		ANIM_R = "R"
+		EQ_OP_OLD_ = "EQ_OP_C1"
+		EQ_OP_NEW_ = "EQ_OP_NEW"
 
 
 	]
@@ -67,7 +70,7 @@ def	::= (!<<eof>> script_body_element)*
 
 script_body_element
 	::= event_script line_terminator_or_space
-	|	code_block line_terminator_or_space
+	|	code_block line_terminator_or_space script_terminator?
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -294,11 +297,12 @@ private command_recover
 	;
 */
 doif_statement
-	::= DOIF SPACE_ expression line_terminator_or_space (do_if_body line_terminator_or_space)? (else_if line_terminator_or_space)* (else_statement line_terminator_or_space)? ENDI
+	::= DOIF SPACE_ equality_expression line_terminator_or_space (do_if_body line_terminator_or_space)? (else_if line_terminator_or_space)* (else_statement line_terminator_or_space)? ENDI
 	{
 		pin=1
 	}
 	;
+
 
 else_if
 	::= ELIF SPACE_ expression line_terminator_or_space do_if_body?
@@ -318,7 +322,7 @@ private else_block
 private do_if_body
 	::= code_block
 	{
-		recoverWhile=do_if_body_recover
+		//recoverWhile=do_if_body_recover
 	}
 	;
 
@@ -346,16 +350,32 @@ expression
 
 private expression_prime
     ::= //command_call
-       literal
+       	literal
     |   var_token
     |   command_token
     ;
 
 equality_expression
-    ::= expression_prime SPACE_ eq_op SPACE_ expression
+    ::= expression_prime (SPACE_ expression)* SPACE_ eq_op SPACE_ expression (SPACE_ expression)* equality_expression_plus*
+
     ;
 
-eq_op ::= ID;
+equality_expression_plus
+	::= (AND|OR) equality_expression
+	;
+
+eq_op
+	::= eq_op_old
+	|	eq_op_new
+	;
+
+eq_op_old
+	::= EQ_OP_OLD_
+	;
+
+eq_op_new
+	::= EQ_OP_NEW_
+	;
 
 var_token
 	::= VA_XX
@@ -399,7 +419,7 @@ number
 
 string_literal
     ::= QUOTE_STRING
-    |   TEXT_LITERAL
+    |   '[' TEXT_LITERAL ']'
     {
         methods = [
             getStringValue

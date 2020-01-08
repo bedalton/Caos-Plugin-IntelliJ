@@ -48,6 +48,7 @@
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter" key="CaosScript" />
     <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
                                    language="CaosScript" />
+    <colorSettingsPage implementation="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptColorSettingsPage"/>
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
@@ -56,6 +57,8 @@
     <!-- Annotators -->
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandAnnotator" />
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->

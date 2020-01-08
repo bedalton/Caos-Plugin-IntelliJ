@@ -4,18 +4,42 @@ import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 
+import java.util.List;
+import java.util.Arrays;import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*;
+import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
+
 
 %%
 
 %{
-  public _CaosScriptLexer() {
-    this((java.io.Reader)null);
-  }
+	public _CaosScriptLexer() {
+		this((java.io.Reader)null);
+	}
 
-  private int braceDepth;
+	private int braceDepth;
+	private static final List<Character> BYTE_STRING_CHARS = CaosScriptArrayUtils.toList("0123456789 R".toCharArray());
+
+
+	protected boolean isByteString() {
+		int index = 0;
+		try {
+			char nextChar = yycharat(++index);
+			while (nextChar != ']') {
+				if (!BYTE_STRING_CHARS.contains(nextChar)) {
+	  				Logger.getLogger("#_CaosScriptLexer").info("Char: <" + nextChar +"> at index ("+index+") is not a valid byte char. ByteChars: "+BYTE_STRING_CHARS);
+	  				return false;
+				}
+				Logger.getLogger("#_CaosScriptLexer").info("Char: <" + nextChar +"> is a valid byte char.");
+				nextChar = yycharat(++index);
+			}
+			return true;
+		} catch (Exception e) {
+			return true;
+		}
+	}
 
 %}
 
@@ -41,42 +65,61 @@ ELIF=[Ee][Ll][iI][fF]
 ELSE=[eE][lL][sS][eE]
 ENDI=[eE][nN][dD][iI]
 SCRP=[sS][cC][rR][pP]
+VARx=[Vv][Aa][Rr][0-9]
 VAxx=[Vv][Aa][0-9][0-9]
+OBVx=[Oo][Bb][Vv][0-9]
 OVxx=[Oo][Vv][0-9][0-9]
 MVxx=[Mm][Vv][0-9][0-9]
-VAxx=[Mm][Vv][0-9][0-9]
-OBVx=[Oo][Bb][Vv][0-9]
-VARx=[Vv][Aa][Rr][0-9]
 COMMENT_LITERAL=\*[^\n]*
 DECIMAL=[0-9]+\.[0-9]+
 INT=[0-9]+
-TEXT=\[[^\]]*\]
+TEXT=[^\]]+
 QUOTE_STRING=\"[^\n|\"]*\"
 WORD=[_a-zA-Z][_a-zA-Z0-9]{2}[_a-zA-Z0-9!#:]
 ID=[_a-zA-Z][_a-zA-Z0-9!#]*
 SPACE=[ ]
-TAB=[\t]
-%state START_OF_LINE IN_LINE
+EQ=[Ee][Qq]
+NE=[Nn][Ee]
+LT=[Ll][Tt]
+GT=[Gg][Tt]
+LE=[Ll][Ee]
+GE=[Gg][Ee]
+BT=[Bb][Tt]
+BF=[Bb][Ff]
+EQ_C1={EQ}|{NE}|{GT}|{LT}|{LE}|{GE}|{BT}|{BF}
+EQ_NEW="="|"<>"|">"|">="|"<"|"<="
+
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT
 %%
 
 <START_OF_LINE> {
 	'\s+'				 { return WHITE_SPACE; }
-    [^]					 { yybegin(IN_LINE); yypushback(1);}
+    [^]					 { yybegin(IN_LINE); yypushback(yylength());}
+}
+
+<IN_BYTE_STRING> {
+	{INT}				 { return CaosScript_INT; }
+	{SPACE}				 { return CaosScript_SPACE_; }
+    "R"					 { return CaosScript_ANIM_R; }
+}
+
+<IN_TEXT> {
+	{TEXT}				{ return CaosScript_TEXT_LITERAL; }
+}
+
+<IN_BYTE_STRING, IN_TEXT> {
+    ']'					 { yybegin(IN_LINE); return CaosScript_CLOSE_BRACKET; }
+    [^]					 { yybegin(IN_LINE); yypushback(yylength());}
 }
 
 <IN_LINE> {
   ":"                    { return CaosScript_COLON; }
   "+"                    { return CaosScript_PLUS; }
-  "["                    { braceDepth++; return CaosScript_OPEN_BRACKET; }
+  "["                    { braceDepth++; yybegin(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }
   "]"                    { braceDepth--; return CaosScript_CLOSE_BRACKET; }
   ","                    { return CaosScript_COMMA; }
-  "R"                    {
-          if (braceDepth < 1) {
-              yypushback(1);
-              return null;
-		  }
-          return CaosScript_ANIM_R;
-  }
+  {EQ_C1}				 { return CaosScript_EQ_OP_OLD_; }
+  {EQ_NEW}			 { return CaosScript_EQ_OP_NEW_; }
 
   {NEWLINE}              { yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
   {ENDM}                 { return CaosScript_ENDM; }
@@ -97,11 +140,10 @@ TAB=[\t]
   {OBVx}				 { return CaosScript_OBV_X; }
   {MVxx}				 { return CaosScript_MV_XX; }
   {VARx}				 { return CaosScript_VAR_X; }
-  {OBVx}				 { return CaosScript_OBV_X; }
+  {VAxx}				 { return CaosScript_VA_XX; }
   {COMMENT_LITERAL}      { return CaosScript_COMMENT_LITERAL; }
   {DECIMAL}              { return CaosScript_DECIMAL; }
   {INT}                  { return CaosScript_INT; }
-  {TEXT}                 { return CaosScript_TEXT_LITERAL; }
   {QUOTE_STRING}         { return CaosScript_QUOTE_STRING; }
   {WORD}				 { return CaosScript_WORD; }
   {ID}                   { return CaosScript_ID; }
@@ -109,7 +151,7 @@ TAB=[\t]
 }
 
 <YYINITIAL> {
-	[^]					 {yybegin(START_OF_LINE); yypushback(1);}
+	[^]					 {yybegin(START_OF_LINE); yypushback(yylength());}
 }
 
 [^] { return BAD_CHARACTER; }

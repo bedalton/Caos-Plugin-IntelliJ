@@ -9,6 +9,14 @@ class CaosScriptTokenSets {
     companion object {
 
         @JvmStatic
+        val EQ_OPS = TokenSet.create(
+                CaosScript_EQ_OP,
+                CaosScript_EQ_OP_OLD,
+                CaosScript_EQ_OP_OLD_,
+                CaosScript_EQ_OP_NEW,
+                CaosScript_EQ_OP_NEW_
+        )
+        @JvmStatic
         val COMMENTS = TokenSet.create(
                 CaosScript_COMMENT,
                 CaosScript_COMMENT_LITERAL
