@@ -29,10 +29,8 @@ import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
 			char nextChar = yycharat(++index);
 			while (nextChar != ']') {
 				if (!BYTE_STRING_CHARS.contains(nextChar)) {
-	  				Logger.getLogger("#_CaosScriptLexer").info("Char: <" + nextChar +"> at index ("+index+") is not a valid byte char. ByteChars: "+BYTE_STRING_CHARS);
 	  				return false;
 				}
-				Logger.getLogger("#_CaosScriptLexer").info("Char: <" + nextChar +"> is a valid byte char.");
 				nextChar = yycharat(++index);
 			}
 			return true;
@@ -93,7 +91,7 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
 %%
 
 <START_OF_LINE> {
-	'\s+'				 { return WHITE_SPACE; }
+	\s+				 	 { return WHITE_SPACE; }
     [^]					 { yybegin(IN_LINE); yypushback(yylength());}
 }
 
@@ -121,7 +119,7 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   {EQ_C1}				 { return CaosScript_EQ_OP_OLD_; }
   {EQ_NEW}			 { return CaosScript_EQ_OP_NEW_; }
 
-  {NEWLINE}              { yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+  {NEWLINE}              { yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
   {ENDM}                 { return CaosScript_ENDM; }
   {SUBR}                 { return CaosScript_SUBR; }
   {REPS}                 { return CaosScript_REPS; }
@@ -141,7 +139,7 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   {MVxx}				 { return CaosScript_MV_XX; }
   {VARx}				 { return CaosScript_VAR_X; }
   {VAxx}				 { return CaosScript_VA_XX; }
-  {COMMENT_LITERAL}      { return CaosScript_COMMENT_LITERAL; }
+  {COMMENT_LITERAL}      { yybegin(START_OF_LINE); return CaosScript_COMMENT_LITERAL; }
   {DECIMAL}              { return CaosScript_DECIMAL; }
   {INT}                  { return CaosScript_INT; }
   {QUOTE_STRING}         { return CaosScript_QUOTE_STRING; }
