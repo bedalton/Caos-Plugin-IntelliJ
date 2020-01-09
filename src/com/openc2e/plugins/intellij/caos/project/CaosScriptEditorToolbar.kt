@@ -61,7 +61,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     }
     val variant = caosFile.variant.toUpperCase()
 
-    toolbar.selectVariant(variant)
+    toolbar.selectVariant(CaosConstants.VARAINTS.indexOf(variant) + 1)
     toolbar.addVariantListener variant@{
         val selected = it.item as String
         com.openc2e.plugins.intellij.caos.psi.util.LOGGER.info("Selecting variant: $selected")
