@@ -88,6 +88,7 @@ object CaosBundleSourcesRegistrationUtil {
 
     private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {
         val versionString = newLibraryPath?.findFileByRelativePath("version.txt")?.contents
+                ?: return false
         val oldVersionString = currentLibraryVersion(model) ?: ""
         if (versionString == null)
             throw Exception("Caos definitions versions cannot be null")

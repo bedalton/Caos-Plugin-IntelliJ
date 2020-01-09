@@ -13,4 +13,14 @@ object CaosConstants {
             "Function",
             "Dynamic"
     )
+
+    val VARAINTS = listOf(
+            "C1",
+            "C2",
+            "CV",
+            "C3",
+            "DS",
+            "SM"
+    )
+
 }

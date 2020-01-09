@@ -11,7 +11,7 @@ import com.openc2e.plugins.intellij.caos.utils.CaosFileUtil
 import com.openc2e.plugins.intellij.caos.utils.orFalse
 import java.util.logging.Logger
 
-internal const val BUNDLE_DEFINITIONS_FOLDER = "builtins"
+internal const val BUNDLE_DEFINITIONS_FOLDER = "lib"
 private val LOGGER:Logger = Logger.getLogger("#BundledLibraryUtil")
 
 internal fun canRegisterSourcesAsLibrary(directories: List<String>) : Boolean {

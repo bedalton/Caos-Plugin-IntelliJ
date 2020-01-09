@@ -7,10 +7,13 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.EditorNotificationPanel
+import com.openc2e.plugins.intellij.caos.lang.CaosBundle
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFileType
-import com.openc2e.plugins.intellij.caos.utils.getModule
-import com.openc2e.plugins.intellij.caos.utils.virtualFile
+import com.openc2e.plugins.intellij.caos.utils.*
 import java.util.logging.Logger
+import javax.swing.JPanel
 
 
 class CaosProjectComponent(project: Project) : ProjectComponent {
@@ -24,16 +27,27 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
         val bus = project.getMessageBus()
         bus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, object : FileEditorManagerListener {
             override fun fileOpened(editorManager: FileEditorManager, file: VirtualFile) {
-                val extension = file.extension
-                if (extension != CaosScriptFileType.DEFAULT_EXTENSION)
-                    return
-                val module = file.getModule(project)
-                if (module != null) {
-                    CaosBundleSourcesRegistrationUtil.register(module, project)
-                    initFrameworkDefaults(editorManager.selectedTextEditor, file)
+                val psiFile = file.getPsiFile(project)
+                if (psiFile is CaosScriptFile) {
+                    onCaosFileOpened(project, editorManager, file, psiFile)
                 }
+
             }
         })
+    }
+
+    private fun onCaosFileOpened(project:Project, editorManager: FileEditorManager, file:VirtualFile, caosFile: CaosScriptFile) {
+        val module = file.getModule(project)
+        if (module != null) {
+            CaosBundleSourcesRegistrationUtil.register(module, project)
+            initFrameworkDefaults(editorManager.selectedTextEditor, file)
+        }
+        LOGGER.info("OnCaosFileOpened")
+        val editor = editorManager.selectedTextEditor
+                ?: return
+        LOGGER.info("GotEditor")
+        //editor.headerComponent = getCaosScriptHeaderComponent(caosFile)
+        //editor.contentComponent.add(getCaosScriptHeaderComponent(caosFile), 0)
     }
 
     private fun initFrameworkDefaults(editor: Editor?, file: VirtualFile) {
@@ -41,7 +55,6 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
         if (editorVirtualFile.path != file.path)
             return
         LOGGER.info("File opened is current file in current editor")
-
     }
 
     private fun registerProjectRootChangeListener(project: Project) {

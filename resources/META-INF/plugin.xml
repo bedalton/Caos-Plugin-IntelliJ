@@ -4,27 +4,26 @@
   <version>0.01</version>
 
   <description><![CDATA[
-      This plugin aims to provide a simple, proof-of-concept, editor for Caos scripts
+    This plugin aims to provide a simple, proof-of-concept, editor for Caos scripts
     ]]></description>
-  <vendor></vendor>
 
   <change-notes><![CDATA[
-      <ul>
-        <li>
-          <b>0.01</b>
-          <ul>
-            <li>initial implementation</li>
-            <li>Syntax Highlighting</li>
-            <li>Basic completion</li>
-            <li>Definition reference</li>
-          </ul>
-        </li>
-      </ul>
+    <ul>
+      <li>
+        <b>0.01</b>
+        <ul>
+          <li>initial implementation</li>
+          <li>Syntax Highlighting</li>
+          <li>Basic completion</li>
+          <li>Definition reference</li>
+        </ul>
+      </li>
+    </ul>
     ]]>
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="173.0"/>
+  <idea-version since-build="173.0" />
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -42,17 +41,21 @@
     <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserDefinition"
                            language="CaosScript" />
 
-    <completion.contributor language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
+    <completion.contributor language="CaosScript"
+                            implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
+    <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.CaosScriptEditorToolbar" />
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter" key="CaosScript" />
-    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
-                                   language="CaosScript" />
-    <colorSettingsPage implementation="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptColorSettingsPage"/>
+    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter"
+                       key="CaosScript" />
+    <lang.syntaxHighlighterFactory
+        implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
+        language="CaosScript" />
+    <colorSettingsPage implementation="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml"/>
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml" />
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml" />
 
     <!-- Annotators -->
     <annotator language="CaosScript"
@@ -68,19 +71,23 @@
                            language="CaosDef" />
     <completion.contributor language="CaosDef"
                             implementationClass="com.openc2e.plugins.intellij.caos.def.contributor.CaosDefCompletionContributor" />
-    <lang.findUsagesProvider implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider" language="CaosDef"/>
+    <lang.findUsagesProvider
+        implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider"
+        language="CaosDef" />
 
     <!-- Bundled Definitions -->
     <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighter" key="CaosDef" />
-    <lang.syntaxHighlighterFactory implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
-                                   language="CaosDef" />
+    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighter"
+                       key="CaosDef" />
+    <lang.syntaxHighlighterFactory
+        implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
+        language="CaosDef" />
     <annotator language="CaosDef"
                implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefHighlighterAnnotator" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml"/>
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDarcula.xml"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml" />
+    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDarcula.xml" />
 
 
     <!-- Indices -->
@@ -91,10 +98,12 @@
                         serviceImplementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexServiceImpl" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNamespaceIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
+    <stubIndex
+        implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
 
     <!-- Formatting -->
-    <lang.braceMatcher language="CaosDef" implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefBraceMatcher" />
+    <lang.braceMatcher language="CaosDef"
+                       implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefBraceMatcher" />
     <enterBetweenBracesDelegate language="CaosDef"
                                 implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
@@ -105,4 +114,9 @@
     <!-- Add your actions here -->
   </actions>
 
+  <project-components>
+    <component>
+      <implementation-class>com.openc2e.plugins.intellij.caos.project.CaosProjectComponent</implementation-class>
+    </component>
+  </project-components>
 </idea-plugin>

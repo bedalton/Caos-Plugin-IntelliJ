@@ -65,11 +65,11 @@
 	]
 }
 
-def	::= (!<<eof>> script_body_element)*
+def	::= (script_body_element (!<<eof>> space_like script_body_element)*)?
 	;
 
 script_body_element
-	::= event_script space_like
+	::= event_script
 	|	code_block space_like script_terminator?
 	{
         implements = [

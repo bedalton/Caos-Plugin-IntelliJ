@@ -16,7 +16,6 @@ import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandToken
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEnumSceneryStatement
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpression
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 
 class CaosScriptCommandAnnotator : Annotator {
@@ -59,7 +58,6 @@ class CaosScriptCommandAnnotator : Annotator {
                     val first = commandWords.first().text.toLowerCase()
                     if (commandWords.size > 1 && first == previousText)
                         return@any false
-                    LOGGER.info("${it.command.commandWordList.first().text.toLowerCase()} == $wordString; $previousText == $wordString")
                     (prevAndSelfAreSame ||  first != wordString) &&
                     it.parameterStructs.getOrNull(0)?.type?.type?.toLowerCase() == "token"
                 }
@@ -98,13 +96,5 @@ class CaosScriptCommandAnnotator : Annotator {
     }
 
     companion object {
-        private val HAS_TOKN_COMMANDS = listOf(
-                "TOKN",
-                "SIMP",
-                "COMP",
-                "BKBD",
-                "SCEN",
-                "SIMP"
-        )
     }
 }

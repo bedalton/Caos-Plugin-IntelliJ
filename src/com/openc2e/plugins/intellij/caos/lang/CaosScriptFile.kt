@@ -6,6 +6,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.FileContentUtil
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
 
 class CaosScriptFile(viewProvider: FileViewProvider)
@@ -13,8 +14,9 @@ class CaosScriptFile(viewProvider: FileViewProvider)
 
     var variant:String get () {
         return getUserData(VariantUserDataKey) ?: ""
-    } set(newVariant:String) {
+    } set(newVariant) {
         putUserData(VariantUserDataKey, newVariant)
+        FileContentUtil.reparseFiles(virtualFile)
     }
 
     override fun getFileType(): FileType {
