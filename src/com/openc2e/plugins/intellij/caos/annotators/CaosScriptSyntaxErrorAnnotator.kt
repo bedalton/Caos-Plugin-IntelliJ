@@ -3,26 +3,42 @@ package com.openc2e.plugins.intellij.caos.annotators
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.elementType
+import com.openc2e.plugins.intellij.caos.fixes.TransposeEqOp
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEnumSceneryStatement
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEqualityExpressionPlus
+import com.openc2e.plugins.intellij.caos.psi.api.*
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 
 class CaosScriptSyntaxErrorAnnotator : Annotator {
 
-    override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
-        if(DumbService.isDumb(element.project))
+    override fun annotate(elementIn: PsiElement, annotationHolder: AnnotationHolder) {
+        if(DumbService.isDumb(elementIn.project))
             return
-        val file = element as? CaosScriptFile
+        val element = elementIn as? CaosScriptCompositeElement
                 ?: return
-        val variant = file.variant.toUpperCase()
+        val variant = element.containingCaosFile?.variant?.toUpperCase()
+                ?: ""
         when (element) {
+            is CaosScriptSpaceLike -> annotateExtraSpaces(element, annotationHolder)
+            is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationHolder)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationHolder)
             is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationHolder)
             is PsiComment -> annotateComment(variant, element, annotationHolder)
         }
+    }
+
+    private fun annotateExtraSpaces(element: CaosScriptSpaceLike, annotationHolder: AnnotationHolder) {
+        if (element.text.length == 1)
+            return
+        val errorTextRange = if (element.text.contains("\n"))
+            element.textRange
+        else
+            TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset)
+        val annotation = annotationHolder.createErrorAnnotation(errorTextRange, CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
     }
 
     private fun annotateComment(variant:String, element: PsiComment, annotationHolder: AnnotationHolder) {
@@ -32,10 +48,16 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateEqualityExpressionPlus(variant:String, element: CaosScriptEqualityExpressionPlus, annotationHolder: AnnotationHolder) {
-        val variant = element.containingCaosFile?.variant
-        if (variant !in VARIANT_OLD )
+        if (variant !in VARIANT_OLD)
             return
         annotationHolder.createErrorAnnotation(element, CaosBundle.message("caos.annotator.syntax-error-annotator.invalid_eq_plus_expression", variant?:"C1/C2"))
+    }
+
+    private fun annotateNewEqualityOps(variant:String, element: CaosScriptEqOpNew, annotationHolder: AnnotationHolder) {
+        if (variant !in VARIANT_OLD)
+            return
+        annotationHolder.createErrorAnnotation(element, CaosBundle.message("caos.annotator.syntax-error-annotator.invalid_eq_operator"))
+                .registerFix(TransposeEqOp(element))
     }
 
 

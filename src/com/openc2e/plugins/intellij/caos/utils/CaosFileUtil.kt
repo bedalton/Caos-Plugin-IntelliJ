@@ -16,19 +16,14 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.ui.EditorNotificationPanel
-import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
-import com.openc2e.plugins.intellij.caos.project.CaosScriptEditorToolbar
-import com.openc2e.plugins.intellij.caos.project.EditorToolbar
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.File
 import java.util.logging.Logger
 
-
-private val LOGGER:Logger = Logger.getLogger("#"+ CaosFileUtil::class.java.canonicalName)
+private val LOGGER: Logger = Logger.getLogger("#" + CaosFileUtil::class.java.canonicalName)
 
 val VirtualFile.contents: String
     get() {
@@ -67,7 +62,7 @@ object CaosFileUtil {
             return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
         }
 
-    private val DEBUG_PLUGIN_HOME_DIRECTORY:VirtualFile?
+    private val DEBUG_PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
             return VfsUtil.findFileByIoFile(file, true)?.findChild(RESOURCES_FOLDER)
@@ -82,26 +77,45 @@ object CaosFileUtil {
 
 }
 
-fun copyToClipboard(string:String) {
+fun copyToClipboard(string: String) {
     val stringSelection = StringSelection(string)
     val clipboard: Clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
     clipboard.setContents(stringSelection, null)
 }
 
+
+private val MULTI_SPACE_REGEX = "\\s+".toRegex()
+private val SPACES_AROUND_COMMAS = "\\s*,\\s*".toRegex()
+
 fun CaosScriptFile.trimErrorSpaces() {
     ApplicationManager.getApplication().runWriteAction run@{
         CommandProcessor.getInstance().executeCommand(project, run@{
             val text = text
-            var trimmedText = text.replace("\\s*,[ \t]*".toRegex(), ",")
-            trimmedText = trimmedText.replace("[ ]+\n".toRegex(), "\n").trim()
+            val trimmedText = text.split("\n")
+                    .map {
+                        val lineStartIndex = it.indexOfFirstNonWhitespaceCharacter()
+                        val prefix: String
+                        var thisText: String
+                        if (lineStartIndex > 0) {
+                            prefix = it.substring(0, lineStartIndex)
+                            thisText = it.substring(lineStartIndex)
+                        } else {
+                            prefix = ""
+                            thisText = it
+                        }
+                        thisText = thisText
+                                .replace(MULTI_SPACE_REGEX, " ")
+                                .replace(SPACES_AROUND_COMMAS, ",")
+                        LOGGER.info("Trimmed line: $thisText")
+                        prefix + thisText.trim()
+                    }
+                    .joinToString("\n")
+                    .trim()
             if (trimmedText == text)
                 return@run
             val document = document
                     ?: return@run
             document.replaceString(0, text.length, trimmedText)
-            //document.setText(trimmedText)
-            //if (document.text == trimmedText)
-            // todo
         }, "Strip Error Spaces", "Strip Error Spaces")
     }
 }
@@ -121,3 +135,4 @@ fun CaosScriptFile.copyAsOneLine() {
         copyToClipboard(trimmedText)
     }
 }
+

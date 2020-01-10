@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.ProjectTopics
-import com.intellij.openapi.editor.colors.ColorKey
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -16,11 +15,10 @@ import com.openc2e.plugins.intellij.caos.utils.CaosConstants
 import com.openc2e.plugins.intellij.caos.utils.copyAsOneLine
 import com.openc2e.plugins.intellij.caos.utils.getPsiFile
 import com.openc2e.plugins.intellij.caos.utils.trimErrorSpaces
-import java.awt.Color
 import javax.swing.JPanel
 
 
-class CaosScriptEditorToolbar(val project: Project, notifications: EditorNotifications) : EditorNotifications.Provider<EditorNotificationPanel>() {
+class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
@@ -44,7 +42,6 @@ class CaosScriptEditorToolbar(val project: Project, notifications: EditorNotific
 
     companion object {
         private val KEY: Key<EditorNotificationPanel> = Key.create("Caos Editor Toolbar")
-        private val COLOR_KEY = ColorKey.createColorKey("WHITE", Color.WHITE)
 
     }
 }

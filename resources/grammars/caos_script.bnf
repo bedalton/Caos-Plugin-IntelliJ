@@ -475,11 +475,13 @@ byte_string
 	;
 
 space_like
+	::= space_like_element+
+	;
+private space_like_element
 	::= SPACE_
 	|	','
 	|	NEWLINE
 	;
-
 script_terminator
 	::= ENDM
 	|   <<eos>>

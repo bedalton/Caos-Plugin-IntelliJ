@@ -92,3 +92,14 @@ fun String.notEqualsIgnoreCase(otherString:String) : Boolean {
 fun String.notEquals(otherString:String, ignoreCase:Boolean) : Boolean {
     return !this.equals(otherString, ignoreCase)
 }
+
+fun String.indexOfFirstNonWhitespaceCharacter() : Int {
+    val characters = toCharArray();
+    for (i in 0 until length) {
+        if (Character.isWhitespace(characters[i]))
+            continue
+        else
+            return i
+    }
+    return -1
+}
