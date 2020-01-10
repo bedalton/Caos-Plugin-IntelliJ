@@ -84,33 +84,11 @@ fun copyToClipboard(string: String) {
 }
 
 
-private val MULTI_SPACE_REGEX = "\\s+".toRegex()
-private val SPACES_AROUND_COMMAS = "\\s*,\\s*".toRegex()
-
 fun CaosScriptFile.trimErrorSpaces() {
-    ApplicationManager.getApplication().runWriteAction run@{
+    ApplicationManager.getApplication().runWriteAction {
         CommandProcessor.getInstance().executeCommand(project, run@{
             val text = text
-            val trimmedText = text.split("\n")
-                    .map {
-                        val lineStartIndex = it.indexOfFirstNonWhitespaceCharacter()
-                        val prefix: String
-                        var thisText: String
-                        if (lineStartIndex > 0) {
-                            prefix = it.substring(0, lineStartIndex)
-                            thisText = it.substring(lineStartIndex)
-                        } else {
-                            prefix = ""
-                            thisText = it
-                        }
-                        thisText = thisText
-                                .replace(MULTI_SPACE_REGEX, " ")
-                                .replace(SPACES_AROUND_COMMAS, ",")
-                        LOGGER.info("Trimmed line: $thisText")
-                        prefix + thisText.trim()
-                    }
-                    .joinToString("\n")
-                    .trim()
+            val trimmedText = CaosStringUtil.sanitizeCaosString(text)
             if (trimmedText == text)
                 return@run
             val document = document

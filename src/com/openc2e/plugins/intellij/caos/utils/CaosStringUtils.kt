@@ -1,7 +1,7 @@
 package com.openc2e.plugins.intellij.caos.utils
 
 
-object Strings {
+object CaosStringUtil {
 
     @JvmOverloads
     fun notNull(string: String?, defaultVal: String = ""): String {
@@ -17,33 +17,57 @@ object Strings {
         } else string.substring(0, 1).toUpperCase() + string.substring(1)
     }
 
-    fun substringFromEnd(string:String, start:Int, fromEnd:Int) : String =
+    fun substringFromEnd(string: String, start: Int, fromEnd: Int): String =
             string.substring(start, string.length - fromEnd)
 
+
+    private val MULTI_SPACE_REGEX = "\\s+".toRegex()
+    private val SPACES_AROUND_COMMAS = "\\s*,\\s*".toRegex()
+
+    fun sanitizeCaosString(text: String): String {
+        return text.split("\n")
+                .joinToString("\n") {
+                    val lineStartIndex = it.indexOfFirstNonWhitespaceCharacter()
+                    val prefix: String
+                    var thisText: String
+                    if (lineStartIndex > 0) {
+                        prefix = it.substring(0, lineStartIndex)
+                        thisText = it.substring(lineStartIndex)
+                    } else {
+                        prefix = ""
+                        thisText = it
+                    }
+                    thisText = thisText
+                            .replace(MULTI_SPACE_REGEX, " ")
+                            .replace(SPACES_AROUND_COMMAS, ",")
+                    prefix + thisText.trim()
+                }
+                .trim()
+    }
 }
 
-fun String.upperCaseFirstLetter() : String {
+fun String.upperCaseFirstLetter(): String {
     return if (this.length < 2) {
         this.toUpperCase()
     } else this.substring(0, 1).toUpperCase() + this.substring(1)
 }
 
 @Suppress("unused")
-fun String.substringFromEnd(start:Int, subtractFromEnd:Int) : String =
-        Strings.substringFromEnd(this, start, subtractFromEnd)
+fun String.substringFromEnd(start: Int, subtractFromEnd: Int): String =
+        CaosStringUtil.substringFromEnd(this, start, subtractFromEnd)
 
-fun String.repeat(times:Int) : String {
+fun String.repeat(times: Int): String {
     val stringBuilder = StringBuilder()
-    for(i in 1..times) {
+    for (i in 1..times) {
         stringBuilder.append(this)
     }
     return stringBuilder.toString()
 }
 
-internal val uppercaseSplitRegex:Regex = "(?=\\p{Lu})".toRegex()
+internal val uppercaseSplitRegex: Regex = "(?=\\p{Lu})".toRegex()
 
 @Suppress("unused")
-fun String.splitOnUppercase() : List<String> {
+fun String.splitOnUppercase(): List<String> {
     return this.split(uppercaseSplitRegex)
 }
 
@@ -51,16 +75,16 @@ fun String?.startsAndEndsWith(start: String?, end: String?): Boolean {
     return this != null && (start == null || this.startsWith(start)) && (end == null || this.endsWith(end))
 }
 
-fun String.trimFromBeginning(vararg prefixes:String, repeatedly:Boolean = true) : String {
+fun String.trimFromBeginning(vararg prefixes: String, repeatedly: Boolean = true): String {
     return this.trimFromBeginning(prefixes.toList(), repeatedly)
 }
 
-fun String.trimFromBeginning(prefixes:List<String>, repeatedly:Boolean = true) : String {
+fun String.trimFromBeginning(prefixes: List<String>, repeatedly: Boolean = true): String {
     var out = this
-    var changed:Boolean
+    var changed: Boolean
     do {
         changed = false
-        prefixes.forEach foreach@{prefix ->
+        prefixes.forEach foreach@{ prefix ->
             if (prefix.isEmpty())
                 return@foreach
             if (!out.startsWith(prefix))
@@ -68,11 +92,11 @@ fun String.trimFromBeginning(prefixes:List<String>, repeatedly:Boolean = true) :
             out = out.substring(prefix.length)
             changed = true
         }
-    } while(changed && repeatedly)
+    } while (changed && repeatedly)
     return out
 }
 
-fun String.afterLast(sequence:String, offset:Int = 0, ignoreCase:Boolean = false) : String {
+fun String.afterLast(sequence: String, offset: Int = 0, ignoreCase: Boolean = false): String {
     if (endsWith(sequence))
         return ""
     val lastIndex = this.lastIndexOf(sequence, offset, ignoreCase)
@@ -81,19 +105,19 @@ fun String.afterLast(sequence:String, offset:Int = 0, ignoreCase:Boolean = false
     return this.substring(lastIndex + sequence.length)
 }
 
-fun String.equalsIgnoreCase(otherString:String) : Boolean {
+fun String.equalsIgnoreCase(otherString: String): Boolean {
     return this.equals(otherString, true)
 }
 
-fun String.notEqualsIgnoreCase(otherString:String) : Boolean {
+fun String.notEqualsIgnoreCase(otherString: String): Boolean {
     return !this.equals(otherString, true)
 }
 
-fun String.notEquals(otherString:String, ignoreCase:Boolean) : Boolean {
+fun String.notEquals(otherString: String, ignoreCase: Boolean): Boolean {
     return !this.equals(otherString, ignoreCase)
 }
 
-fun String.indexOfFirstNonWhitespaceCharacter() : Int {
+fun String.indexOfFirstNonWhitespaceCharacter(): Int {
     val characters = toCharArray();
     for (i in 0 until length) {
         if (Character.isWhitespace(characters[i]))
@@ -103,3 +127,5 @@ fun String.indexOfFirstNonWhitespaceCharacter() : Int {
     }
     return -1
 }
+
+

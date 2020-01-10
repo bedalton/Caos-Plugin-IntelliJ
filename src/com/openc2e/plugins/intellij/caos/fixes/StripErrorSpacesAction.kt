@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorAction
 import com.intellij.openapi.editor.actionSystem.EditorWriteActionHandler
+import com.openc2e.plugins.intellij.caos.utils.CaosStringUtil
 
 class StripErrorSpacesAction : EditorAction(Handler()) {
 }
@@ -14,10 +15,7 @@ private class Handler : EditorWriteActionHandler() {
         val document = editor?.document
                 ?: return
         val text = document.text
-        var trimmedText = text.replace("\\s*,[ \t]*".toRegex(), ",")
-        trimmedText = trimmedText.replace("[ ]+\n".toRegex(), "\n").trim()
-        if (trimmedText == text)
-            return
+        val trimmedText = CaosStringUtil.sanitizeCaosString(text)
         document.replaceString(0,text.length,trimmedText)
     }
 }

@@ -15,6 +15,8 @@
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
+	name("space.*") = "space or comma"
+	name("trailing_space") = ""
 	tokens = [
 		NEWLINE = "regexp:\n";
 		ENDM = "regexp:[eE][nN][dD][mM]"
@@ -50,7 +52,7 @@
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
 		PLUS = "+";
-		SPACE_ = "regexp:[ ]";
+		space = "regexp:[ ]";
 		space = "regexp:\n[\t ]+";
 		OPEN_BRACKET = '[';
 		CLOSE_BRACKET = ']';
@@ -65,12 +67,12 @@
 	]
 }
 
-def	::= (script_body_element (!<<eof>> space_like script_body_element)*)?
+def	::= (script_body_element (!<<eof>> space_like_or_newline script_body_element)*  trailing_space?)?
 	;
 
 script_body_element
 	::= event_script
-	|	code_block space_like script_terminator?
+	|	code_block space_like_or_newline script_terminator?
 	{
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -80,8 +82,9 @@ script_body_element
 	;
 
 code_block
-	::= caos_element (space_like caos_element)*
+	::= code_block_line (space_like_or_newline trailing_space? code_block_line)*
 		{
+		pin=1
         implements = [
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
         ]
@@ -90,16 +93,20 @@ code_block
         ]
 	}
 	;
-caos_element
+
+code_block_line
+	::= caos_element
+	;
+
+private caos_element
 	::=	control_statement
 	|	expression_list
-	|	NEWLINE
 	//|   command_call line_terminator
 	;
 
 
 event_script
-	::= (SCRP|ISCR) SPACE_ classifier space_like event_number space_like (event_script_body space_like)? script_terminator
+	::= (SCRP|ISCR) space classifier space event_number space_like_or_newline (event_script_body space_like_or_newline)? script_terminator
 	{
 		pin=1
 	}
@@ -121,7 +128,7 @@ private event_script_body_recover
 	;
 
 classifier
-	::= family SPACE_ genus SPACE_ species
+	::= family space genus space species
 	;
 
 private control_statement
@@ -133,9 +140,10 @@ private control_statement
     ;
 
 expression_list
-	::= expression (space_like expression)*
+	::= expression (!new_line_like space_like expression)* trailing_space?
 	{
-		//recoverWhile=expression_list_recover
+		pin(".*")=1
+		recoverWhile=expression_list_recover
 	}
 
 private expression_list_recover
@@ -143,7 +151,7 @@ private expression_list_recover
 	;
 
 loop_statement
-    ::= LOOP SPACE_ loop_body? space_like loop_terminator
+    ::= LOOP space_like_or_newline loop_body? space_like_or_newline loop_terminator
     {
         pin=1;
         methods = [
@@ -163,7 +171,7 @@ private ever_terminator
 	;
 
 private untl_terminator
-	::= UNTL SPAC_ expression
+	::= UNTL SPACE_ expression
 	{
 		pin=1
 	}
@@ -182,7 +190,7 @@ private loop_body_recover
     ;
 
 repeat_statement
-    ::= REPS SPACE_ expression space_like (repeat_body space_like)? REPE
+    ::= REPS space expression space_like_or_newline (repeat_body space_like_or_newline)? REPE
     {
         pin=1
         implements = [
@@ -208,7 +216,7 @@ private repeat_body_recover
     ;
 
 enum_next_statement
-    ::= (ENUM|ESEE|ETCH) SPAC_ classifier space_like (enum_body space_like)? NEXT
+    ::= (ENUM|ESEE|ETCH) space classifier space_like_or_newline (enum_body space_like_or_newline)? NEXT
     {
         pin=1;
         implements = [
@@ -222,7 +230,7 @@ enum_next_statement
     ;
 
 enum_scenery_statement
-    ::= ESCN SPACE_ classifier space_like (enum_body space_like)? NSCN
+    ::= ESCN space classifier space_like_or_newline (enum_body space_like_or_newline)? NSCN
     {
         pin=1;
         implements = [
@@ -276,7 +284,7 @@ command_call
 
 
 private expressionList
-	::= (SPACE_ expression)+
+	::= (space expression)+
 	{
         recoverWhile=command_recover
 	}
@@ -287,7 +295,7 @@ private command_recover
 	;
 */
 doif_statement
-	::= DOIF SPACE_ equality_expression space_like (do_if_body space_like)? (else_if space_like)* (else_statement space_like)? ENDI
+	::= DOIF space equality_expression space_like_or_newline (do_if_body space_like_or_newline)? (else_if space_like_or_newline)* (else_statement space_like_or_newline)? ENDI
 	{
 		pin=1
 	}
@@ -295,11 +303,14 @@ doif_statement
 
 
 else_if
-	::= ELIF SPACE_ expression space_like do_if_body?
+	::= ELIF space expression space_like_or_newline do_if_body?
+	{
+		pin=1
+	}
 	;
 
 else_statement
-	::= ELSE space_like else_block
+	::= ELSE space_like_or_newline else_block
 	{
 		pin=1;
 	}
@@ -346,7 +357,7 @@ private expression_prime
     ;
 
 equality_expression
-    ::= expression_prime (SPACE_ expression)* SPACE_ eq_op SPACE_ expression (SPACE_ expression)* equality_expression_plus*
+    ::= expression_prime (space expression)* space eq_op space expression (space expression)* equality_expression_plus*
 
     ;
 
@@ -422,7 +433,7 @@ token
     ::= ID
     ;
 command
-	::= command_token (SPACE_ command_token)*
+	::= command_token (space command_token)*
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandStub"
@@ -471,17 +482,33 @@ animation_string
     ;
 
 byte_string
-	::= '[' INT (SPACE_ INT)* ']'
+	::= '[' INT (space INT)* ']'
+	;
+
+new_line_like
+	::= ","
+	|	NEWLINE
+	|	<<eof>>
+	;
+
+space_like_or_newline
+	::= space_like
+	|	new_line_like
+	;
+
+trailing_space
+	::= space_like
+	|	new_line_like
 	;
 
 space_like
-	::= space_like_element+
+	::= space+
 	;
-private space_like_element
+
+private space
 	::= SPACE_
-	|	','
-	|	NEWLINE
 	;
+
 script_terminator
 	::= ENDM
 	|   <<eos>>
