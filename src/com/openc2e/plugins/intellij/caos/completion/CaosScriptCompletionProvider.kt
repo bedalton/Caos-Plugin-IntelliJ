@@ -1,27 +1,30 @@
 package com.openc2e.plugins.intellij.caos.completion
 
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
-import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandToken
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
+
+    private val UPPERCASE_REGEX = "[A-Z]".toRegex()
+
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
-        LOGGER.info("addCompletions")
         val element = parameters.position
         val caosFile = element.containingFile.originalFile as? CaosScriptFile
                 ?: return
-        LOGGER.info("Completion is caos script element")
         val variant = caosFile.variant.toUpperCase()
-        LOGGER.info("Variant is <$variant>")
+        val firstChar = element.textWithoutCompletionIdString.toCharArray().getOrNull(0)
+        val case = if (firstChar != null && UPPERCASE_REGEX.matches(firstChar + ""))
+            Case.UPPER_CASE
+        else
+            Case.LOWER_CASE
         val previous = element.getPreviousNonEmptySibling(false)
         if (previous is CaosScriptCommandToken) {
             val previousText = previous.text
@@ -38,14 +41,14 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
                         val word = commandWords.getOrNull(index + 1)
                                 ?: return@item null
-                        createCommandTokenLookupElement(word, commandElement.isCommand, commandElement.returnTypeString)
+                        createCommandTokenLookupElement(case, word, commandElement.isCommand, commandElement.returnTypeString)
                     }
             resultSet.addAllElements(subcommands)
         }
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project).filter {
             (variant.isBlank() || it.isVariant(variant))
         }.map {
-            createCommandTokenLookupElement(it.commandName, it.isCommand, it.returnTypeString)
+            createCommandTokenLookupElement(case, it.commandName, it.isCommand, it.returnTypeString)
         }
         resultSet.addAllElements(singleCommands)
         when (variant) {
@@ -82,7 +85,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
-    private fun createCommandTokenLookupElement(command: String, isCommand: Boolean, returnType: String): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(case:Case, commandIn: String, isCommand: Boolean, returnType: String): LookupElementBuilder {
         val tailText = if (isCommand)
             "command"
         else
@@ -91,6 +94,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             CaosScriptIcons.COMMAND
         else
             CaosScriptIcons.VARIABLE
+        val command = if (case == Case.UPPER_CASE)
+            commandIn.toUpperCase()
+        else
+            commandIn.toLowerCase()
         return LookupElementBuilder
                 .create(command)
                 .withTailText("($tailText)")
@@ -99,6 +106,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     }
 
 }
+
+private val PsiElement.textWithoutCompletionIdString get() = text.substringBefore(CompletionUtilCore.DUMMY_IDENTIFIER)
 
 private enum class Case {
     UPPER_CASE,
