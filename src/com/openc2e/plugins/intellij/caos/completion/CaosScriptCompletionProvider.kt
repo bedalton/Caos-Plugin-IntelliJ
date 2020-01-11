@@ -14,6 +14,7 @@ import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
 
     private val UPPERCASE_REGEX = "[A-Z]".toRegex()
+    private val IS_ID_CHAR = "[^_A-Za-z]".toRegex()
 
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
         val element = parameters.position
@@ -21,10 +22,13 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 ?: return
         val variant = caosFile.variant.toUpperCase()
         val firstChar = element.textWithoutCompletionIdString.toCharArray().getOrNull(0)
+        if (firstChar != null && IS_ID_CHAR.matches(firstChar+""))
+            return
         val case = if (firstChar != null && UPPERCASE_REGEX.matches(firstChar + ""))
             Case.UPPER_CASE
         else
             Case.LOWER_CASE
+
         val previous = element.getPreviousNonEmptySibling(false)
         if (previous is CaosScriptCommandToken) {
             val previousText = previous.text

@@ -51,6 +51,7 @@ import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
 NEWLINE=\n
 ENDM=[eE][nN][dD][mM]
 SUBR=[sS][uU][bB][rR]
+RETN=[Rr][Ee][Tt][Nn]
 REPS=[rR][eE][pP][sS]
 REPE=[rR][eE][pP][eE]
 LOOP=[lL][oO][oO][pP]
@@ -122,6 +123,7 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   {NEWLINE}              { yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
   {ENDM}                 { return CaosScript_ENDM; }
   {SUBR}                 { return CaosScript_SUBR; }
+  {RETN}				 { return CaosScript_RETN; }
   {REPS}                 { return CaosScript_REPS; }
   {REPE}                 { return CaosScript_REPE; }
   {LOOP}                 { return CaosScript_LOOP; }

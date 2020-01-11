@@ -106,12 +106,11 @@ private caos_element
 
 
 event_script
-	::= (SCRP|ISCR) space classifier space event_number space_like_or_newline (event_script_body space_like_or_newline)? script_terminator
+	::= (SCRP|ISCR) space classifier space event_number space_like_or_newline (<<enterMode "eventScript">>event_script_body space_like_or_newline)? <<exitMode "eventScript">>script_terminator
 	{
 		pin=1
 	}
 	;
-
 private event_script_body
 	::= code_block
 	{
@@ -119,20 +118,39 @@ private event_script_body
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
-        recoverWhile=event_script_body_recover
+        //recoverWhile=event_script_body_recover
 	}
 	;
 
+
 private event_script_body_recover
-	::= !(ENDM|SCRP|<<eof>>|<<eos>>)
+	::= !(ENDM|SCRP)
 	;
 
+subroutine
+	::= SUBR space command_token space_like_or_newline (subroutine_body space_like_or_newline)? RETN
+	{
+		pin=1
+	}
+	;
+
+private subroutine_body
+	::= code_block
+	{
+		//recoverWhile=subroutine_body_recover
+	}
+	;
+
+private subroutine_body_recover
+	::= !(ENDM|RETN|SCRP)
+	;
 classifier
 	::= family space genus space species
 	;
 
 private control_statement
-    ::= loop_statement
+    ::= subroutine
+    |	loop_statement
     |   repeat_statement
     |   enum_next_statement
     |   enum_scenery_statement
@@ -181,7 +199,7 @@ private untl_terminator
 private loop_body
     ::= code_block
     {
-        recoverWhile=loop_body_recover
+        //recoverWhile=loop_body_recover
     }
     ;
 
@@ -207,7 +225,7 @@ repeat_statement
 private repeat_body
     ::= code_block
     {
-        recoverWhile=repeat_body_recover
+        //recoverWhile=repeat_body_recover
     }
     ;
 
@@ -250,7 +268,7 @@ private enum_body
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
             "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
         ]
-        recoverWhile=enum_body_recover
+        //recoverWhile=enum_body_recover
     }
     ;
 
@@ -468,6 +486,7 @@ command_token
 		]
 	}
     ;
+
 comment
     ::= COMMENT_LITERAL
     {
