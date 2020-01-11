@@ -35,7 +35,6 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
                 ?: return null
         val headerComponent = createCaosScriptHeaderComponent(caosFile)
         val panel = EditorNotificationPanel(TRANSPARENT_COLOR)
-        com.openc2e.plugins.intellij.caos.psi.util.LOGGER.info("Recreating panel for: " + caosFile.name)
         panel.add(headerComponent)
         return panel
     }
@@ -61,7 +60,6 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     toolbar.selectVariant(CaosConstants.VARAINTS.indexOf(variant) + 1)
     toolbar.addVariantListener variant@{
         val selected = it.item as String
-        com.openc2e.plugins.intellij.caos.psi.util.LOGGER.info("Selecting variant: $selected")
         if (caosFile.variant == selected || selected !in CaosConstants.VARAINTS)
             return@variant
         caosFile.variant = selected

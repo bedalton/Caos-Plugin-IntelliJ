@@ -20,6 +20,7 @@ class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage.instance) {
 
     var variant:String get () {
+
         val virtualFile = virtualFile
                 ?: return ""
         return virtualFile.getUserData(VariantUserDataKey) ?:

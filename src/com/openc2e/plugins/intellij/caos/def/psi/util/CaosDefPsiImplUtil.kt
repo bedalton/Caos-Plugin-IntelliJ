@@ -82,7 +82,12 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getCommandName(command:CaosDefCommandDefElement) : String {
-        return command.command.commandWordList.joinToString(" ") { it.text }
+        return command.stub?.command ?: command.command.commandWordList.joinToString(" ") { it.text }
+    }
+
+    @JvmStatic
+    fun getCommandWords(command:CaosDefCommandDefElement) : List<String> {
+        return command.stub?.commandWords ?: command.command.commandWordList.map { it.text }
     }
 
     @JvmStatic

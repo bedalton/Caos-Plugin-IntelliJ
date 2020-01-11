@@ -93,6 +93,7 @@ command_def_element
 			getComment
 			getNamespace
 			getCommandName
+			getCommandWords
 			getParameterStructs
 			getReturnTypeString
 			getReturnTypeStruct
@@ -233,8 +234,6 @@ string_label
 command
 	::= command_word+
 	{
-		methods = [
-		]
 	}
 	;
 

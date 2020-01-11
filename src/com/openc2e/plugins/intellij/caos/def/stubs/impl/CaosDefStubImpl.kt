@@ -18,7 +18,11 @@ class CaosDefCommandDefinitionStubImpl(
         override val lvalue: Boolean,
         override val isCommand: Boolean,
         override val variants:List<String>
-) : StubBase<CaosDefCommandDefElementImpl>(parent, CaosDefStubTypes.COMMAND_ELEMENT), CaosDefCommandDefinitionStub
+) : StubBase<CaosDefCommandDefElementImpl>(parent, CaosDefStubTypes.COMMAND_ELEMENT), CaosDefCommandDefinitionStub {
+    override val commandWords:List<String> by lazy {
+        command.split(" ")
+    }
+}
 
 
 class CaosDefDocCommentStubImpl(

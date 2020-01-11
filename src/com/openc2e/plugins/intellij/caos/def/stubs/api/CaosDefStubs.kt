@@ -10,6 +10,7 @@ import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruc
 interface CaosDefCommandDefinitionStub : StubElement<CaosDefCommandDefElementImpl> {
     val namespace:String?
     val command:String
+    val commandWords:List<String>
     val parameters:List<CaosDefParameterStruct>
     val returnType:CaosDefReturnTypeStruct
     val rvalue:Boolean

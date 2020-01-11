@@ -498,7 +498,6 @@ space_like_or_newline
 
 trailing_space
 	::= space_like
-	|	new_line_like
 	;
 
 space_like

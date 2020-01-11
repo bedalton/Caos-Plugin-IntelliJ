@@ -50,14 +50,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val errorTextRange = if (element.text.contains("\n") || previousIsCommaOrSpace)
             element.textRange
         else
-            TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset)
+            TextRange.create(element.textRange.startOffset, element.textRange.endOffset)
         val annotation = annotationHolder.createErrorAnnotation(errorTextRange, CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
         annotation.registerFix(CaosScriptFixTooManySpaces(element))
         annotation.registerBatchFix(CaosScriptTrimErrorSpaceBatchFix(), element.containingFile.textRange, CaosScriptTrimErrorSpaceBatchFix.HIGHLIGHT_DISPLAY_KEY)
     }
 
     private fun annotateExtraSpaces(element: CaosScriptTrailingSpace, annotationHolder: AnnotationHolder) {
-        val errorTextRange= TextRange.create(element.textRange.startOffset, element.textRange.endOffset)
+        var start = element.textRange.startOffset-1
+        if (start < 0)
+            start = 0
+        val errorTextRange= TextRange.create(start, element.textRange.endOffset)
         val annotation = annotationHolder.createErrorAnnotation(errorTextRange, CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
         annotation.registerFix(CaosScriptFixTooManySpaces(element))
         annotation.registerBatchFix(CaosScriptTrimErrorSpaceBatchFix(), element.containingFile.textRange, CaosScriptTrimErrorSpaceBatchFix.HIGHLIGHT_DISPLAY_KEY)
