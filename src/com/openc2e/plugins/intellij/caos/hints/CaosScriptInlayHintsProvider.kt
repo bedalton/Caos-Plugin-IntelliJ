@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpression
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpressionList
 import com.openc2e.plugins.intellij.caos.utils.now
+import com.openc2e.plugins.intellij.caos.utils.orElse
 
 
 class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
@@ -43,7 +44,7 @@ object CaosScriptInlayHintsUtil {
     private const val CACHE_TIME = 3000
     fun getParamName(expression:CaosScriptExpression) : String? {
         val name = expression.getUserData(PARAM_NAME_USER_DATA_KEY)
-        if (now - expression.getUserData(PARAM_DATA_TIME) > CACHE_TIME || name == null)
+        if (now - expression.getUserData(PARAM_DATA_TIME).orElse(0) > CACHE_TIME || name == null)
 
     }
 

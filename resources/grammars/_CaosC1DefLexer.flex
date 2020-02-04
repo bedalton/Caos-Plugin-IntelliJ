@@ -60,6 +60,16 @@ VARIABLE_LINK = [{]{ID}[}]
 AT_VARIANTS = [@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
 VARIANT_ID = [A-Za-z][A-Za-z0-9]
 VARIANT_NAME = [A-Za-z0-9 _]+
+EQ=[Ee][Qq]
+NE=[Nn][Ee]
+LT=[Ll][Tt]
+GT=[Gg][Tt]
+LE=[Ll][Ee]
+GE=[Gg][Ee]
+BT=[Bb][Tt]
+BF=[Bb][Ff]
+EQ_C1={EQ}|{NE}|{GT}|{LT}|{LE}|{GE}|{BT}|{BF}
+EQ_NEW="="|"<>"|">"|">="|"<"|"<="
 
 %state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT
 
