@@ -23,8 +23,9 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
         if (DumbService.isDumb(project))
             return mutableListOf()
         if (element is CaosScriptExpressionList) {
-            return getExpressionInlayHints(element)
+            //return getExpressionInlayHints(element)
         }
+        return mutableListOf()
     }
 
     override fun getDefaultBlackList(): MutableSet<String> {
@@ -44,8 +45,9 @@ object CaosScriptInlayHintsUtil {
     private const val CACHE_TIME = 3000
     fun getParamName(expression:CaosScriptExpression) : String? {
         val name = expression.getUserData(PARAM_NAME_USER_DATA_KEY)
-        if (now - expression.getUserData(PARAM_DATA_TIME).orElse(0) > CACHE_TIME || name == null)
+        if (now - expression.getUserData(PARAM_DATA_TIME).orElse(0) > CACHE_TIME || name == null) {
 
+        }
+        return null
     }
-
 }

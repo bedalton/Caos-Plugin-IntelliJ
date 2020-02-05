@@ -31,14 +31,14 @@ class CaosScriptCommandCallStubType(debugName: String) : CaosScriptStubElementTy
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosScriptCommandCallStub {
         val tokens = stream.readList {
             stream.readNameAsString() ?: "???"
-        }
+        }.filterNotNull()
         val parameterTypes = stream.readList {
             val type = stream.readNameAsString().nullIfEmpty()
             if (type != null)
                 CaosScriptExpressionType.fromValue(type)
             else
                 CaosScriptExpressionType.UNKNOWN
-        }
+        }.filterNotNull()
         val numParameters = stream.readInt()
         return CaosScriptCommandCallStubImpl(
                 parent = parent,

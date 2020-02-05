@@ -2,27 +2,12 @@ package com.openc2e.plugins.intellij.caos.stubs.impl
 
 import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
-import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCommandTokenImpl
-import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptExpressionImpl
-import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptVarTokenImpl
+import com.openc2e.plugins.intellij.caos.psi.impl.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
-import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandTokenStub
-import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpressionStub
-import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptVarTokenStub
+import com.openc2e.plugins.intellij.caos.stubs.api.*
 import com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes
 
-/*
-class CaosScriptCommandStubImpl(
-        parent:StubElement<*>?,
-        override val commandTokens:List<String>
-) : StubBase<CaosScriptCommandImpl>(parent, CaosScriptStubTypes.COMMAND), CaosScriptCommandStub {
-    override val command:String by lazy {
-        commandTokens.joinToString(" ")
-    }
-}
-*/
-/*
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
         override val commandTokens:List<String>,
@@ -32,7 +17,7 @@ class CaosScriptCommandCallStubImpl(
     override val command:String by lazy {
         commandTokens.joinToString(" ")
     }
-}*/
+}
 
 class CaosScriptCommandTokenStubImpl(
         parent:StubElement<*>?,

@@ -1160,7 +1160,7 @@ SNDS (biflag);
  * Now replaced by [SNDE] (sound effect) which doesn't require []'s
  * @param {fileName} [string] filename WITHOUT.WAV suffix
  */
-SNDV (command) fileName [string];
+SNDV (command) fileName [string_literal];
 
 /*
  * TARG creature sneezes - infect nearby creatures or environment with any live bacteria he has in him

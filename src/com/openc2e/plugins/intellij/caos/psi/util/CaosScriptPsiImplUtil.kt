@@ -1,6 +1,10 @@
 package com.openc2e.plugins.intellij.caos.psi.util
 
+import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
@@ -11,17 +15,37 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCodeBlock(codeBlock: CaosScriptCodeBlock): CaosScriptCodeBlock = codeBlock
-/*
+
     @JvmStatic
-    fun getCommandString(command: CaosScriptCommand): String {
-        return command.stub?.command
-                ?: getCommandTokens(command).joinToString(" ")
+    fun getCommandElement(call: CaosScriptCommandCall): CaosScriptCommandElement? {
+        return call.getParentOfType(CaosScriptCommandElement::class.java)
+    }
+
+    @JvmStatic
+    fun getCommand(call: CaosScriptCommandCall) : CaosScriptCommandElement? {
+        return call.getChildOfType(CaosScriptCommandElement::class.java)
+    }
+
+    @JvmStatic
+    fun getCommandString(word:CaosDefCommandWord) : String {
+        return word.text
+    }
+
+    @JvmStatic
+    fun getCommandToken(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
+        return rvalue.getChildOfType(CaosScriptCommandElement::class.java)
+                ?.commandToken
+    }
+
+    @JvmStatic
+    fun getCommandString(command: CaosScriptCommandElement): String {
+        return getCommandTokens(command).joinToString(" ")
     }
 
     @JvmStatic
     fun getParameterTypes(command: CaosScriptCommandCall): List<CaosScriptExpressionType> {
-        return command.expressionList.mapNotNull {
-            it.type
+        return command.stub?.parameterTypes ?: command.getChildrenOfType(CaosScriptArgument::class.java).map {
+            getType(it)
         }
     }
 
@@ -34,33 +58,94 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandTokens(call: CaosScriptCommandCall): List<String> {
         return call.stub?.commandTokens
-                ?: call.command.commandTokens
+                ?: call.command
+                        ?.commandString?.split(" ")
+                        .orEmpty()
     }
 
     @JvmStatic
     fun getParametersLength(command: CaosScriptCommandCall): Int {
-        return command.stub?.numParameters ?: command.expressionList.size
+        return command.stub?.numParameters ?: command.getChildrenOfType(CaosScriptArgument::class.java).size
     }
 
     @JvmStatic
-    fun getCommandTokens(command: CaosScriptCommand): List<String> {
-        return command.stub?.commandTokens
-                ?: command.commandTokenList.map { it.text }
-    }
-
-*/
-    @JvmStatic
-    fun getCommandString(commandToken: CaosScriptCommandToken): String {
-        return commandToken.stub?.text ?: commandToken.text
+    fun getCommandTokens(command: CaosScriptCommandElement): List<String> {
+        return command.commandString.split(" ")
     }
 
     @JvmStatic
-    fun getIndex(commandToken: CaosScriptCommandToken): Int {
-        return commandToken.stub?.index
-                /*?: (commandToken.parent as? CaosScriptCommand)
-                        ?.commandTokenList
-                        ?.indexOf(commandToken)
-                */?: 0
+    fun getCommandToken(command:CaosScriptLvalue) : CaosScriptIsCommandToken {
+        return command.commandToken
+    }
+
+    @JvmStatic
+    fun getCommandString(commandToken: CaosScriptIsCommandToken): String {
+        return commandToken.text
+    }
+
+    @JvmStatic
+    fun getIndex(commandToken: CaosScriptIsCommandToken): Int {
+        return 0
+    }
+
+    @JvmStatic
+    fun getIndex(commandToken: CaosScriptRvalue): Int {
+        return commandToken.getParentOfType(CaosScriptCommandCall::class.java)
+                ?.getChildrenOfType(CaosScriptArgument::class.java)
+                ?.indexOf(commandToken)
+                ?: return 0
+    }
+
+    @JvmStatic
+    fun getIndex(commandToken: CaosScriptLvalue): Int {
+        return commandToken.getParentOfType(CaosScriptCommandCall::class.java)
+                ?.getChildrenOfType(CaosScriptArgument::class.java)
+                ?.indexOf(commandToken)
+                ?: return 0
+    }
+
+    @JvmStatic
+    fun getType(argument: CaosScriptArgument): CaosScriptExpressionType {
+        val expression = argument.getChildOfType(CaosScriptExpression::class.java)
+        if (expression != null)
+            return getType(expression)
+        if (DumbService.isDumb(argument.project))
+            return CaosScriptExpressionType.COMMAND
+        val index = argument.index
+        val command: CaosScriptIsCommandToken
+        if (argument is CaosScriptLvalue) {
+            command = argument.commandToken
+        } else if (argument is CaosScriptRvalue)
+            command = argument.commandToken ?: return CaosScriptExpressionType.COMMAND
+        else
+            return CaosScriptExpressionType.COMMAND
+        val resolved = command.reference
+                .multiResolve(false)
+                .mapNotNull {
+                    val temp = (it.element as? CaosDefCompositeElement)
+                            ?: return@mapNotNull null
+                    temp.getParentOfType(CaosDefCommandDefElement::class.java)
+                }
+        val type = resolved
+                .filter {
+                    if (argument is CaosScriptLvalue)
+                        it.isLvalue
+                    else
+                        it.isRvalue
+                }.mapNotNull {
+                    it.parameterStructs.getOrNull(index)
+                }.firstOrNull()
+                ?: return CaosScriptExpressionType.COMMAND
+        return when (type.type.type.toLowerCase()) {
+            "integer" -> CaosScriptExpressionType.INT
+            "float" -> CaosScriptExpressionType.FLOAT
+            "[string_literal]", "[string]" -> CaosScriptExpressionType.BRACKET_STRING
+            "string" -> CaosScriptExpressionType.STRING
+            "variable" -> CaosScriptExpressionType.VARIABLE
+            "token" -> CaosScriptExpressionType.TOKEN
+            "eq" -> CaosScriptExpressionType.EQ
+            else -> CaosScriptExpressionType.UNKNOWN
+        }
     }
 
     @JvmStatic
@@ -70,7 +155,7 @@ object CaosScriptPsiImplUtil {
             return type
         return when {
             expression.animationString != null -> CaosScriptExpressionType.BRACKET_STRING
-            //expression.commandToken != null -> CaosScriptExpressionType.TOKEN
+            expression.commandToken != null -> CaosScriptExpressionType.TOKEN
             expression.equalityExpression != null -> CaosScriptExpressionType.EQ
             expression.literal?.isFloat.orFalse() -> CaosScriptExpressionType.FLOAT
             expression.literal?.isInt.orFalse() -> CaosScriptExpressionType.INT
@@ -116,11 +201,6 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommentText(comment: CaosScriptComment): String {
-        return comment.text.trimStart(' ', '*').trim()
-    }
-
-    @JvmStatic
     fun isEver(element: CaosScriptLoopStatement): Boolean {
         return element.loopTerminator?.ever != null
     }
@@ -146,7 +226,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVarGroup(element:CaosScriptVarToken) : CaosScriptVarTokenGroup {
+    fun getVarGroup(element: CaosScriptVarToken): CaosScriptVarTokenGroup {
         val group = element.stub?.varGroup
         if (group != null)
             return group
@@ -161,14 +241,14 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVarIndex(element:CaosScriptVarToken) : Int? {
+    fun getVarIndex(element: CaosScriptVarToken): Int? {
         return element.stub?.varIndex
                 ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()
     }
 
 
     @JvmStatic
-    fun isVariant(element: CaosScriptCommandToken, variants:List<String>, strict:Boolean) : Boolean {
+    fun isVariant(element: CaosScriptCommandToken, variants: List<String>, strict: Boolean): Boolean {
         val thisVariant = element.containingCaosFile?.variant ?: ""
         if (thisVariant.isEmpty())
             return !strict
@@ -176,18 +256,26 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getName(element: CaosScriptCommandToken) : String {
-        return element.stub?.text ?: element.text
+    fun isVariant(element: CaosScriptIsCommandToken, variants: List<String>, strict: Boolean): Boolean {
+        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant ?: ""
+        if (thisVariant.isEmpty())
+            return !strict
+        return thisVariant in variants
     }
 
     @JvmStatic
-    fun setName(element:CaosScriptCommandToken, newName:String) : PsiElement {
+    fun getName(element: CaosScriptIsCommandToken): String {
+        return element.text
+    }
+
+    @JvmStatic
+    fun setName(element: CaosScriptIsCommandToken, newName: String): PsiElement {
         val newElement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, newName)
         return element.replace(newElement)
     }
 
     @JvmStatic
-    fun getReference(element:CaosScriptCommandToken) : CaosScriptCommandTokenReference {
+    fun getReference(element: CaosScriptIsCommandToken): CaosScriptCommandTokenReference {
         return CaosScriptCommandTokenReference(element)
     }
 

@@ -18,14 +18,12 @@ class CaosScriptTokenSets {
         )
         @JvmStatic
         val COMMENTS = TokenSet.create(
-                CaosScript_COMMENT,
                 CaosScript_COMMENT_LITERAL
         )
 
         @JvmStatic
         val WHITE_SPACE_LIKE = TokenSet.create(
                 CaosScript_SPACE_,
-                CaosScript_COMMENT,
                 CaosScript_COMMENT_LITERAL,
                 TokenType.WHITE_SPACE
         )

@@ -6,8 +6,8 @@ public interface CaosScriptStubTypes {
     //@NotNull
     //CaosScriptCommandStubType COMMAND = new CaosScriptCommandStubType("CaosScript_COMMAND");
 
-    //@NotNull
-    //CaosScriptCommandCallStubType COMMAND_CALL = new CaosScriptCommandCallStubType("CaosScript_COMMAND_CALL");
+    @NotNull
+    CaosScriptCommandCallStubType COMMAND_CALL = new CaosScriptCommandCallStubType("CaosScript_COMMAND_CALL");
 
     @NotNull
     CaosScriptCommandTokenStubType COMMAND_TOKEN = new CaosScriptCommandTokenStubType("CaosScript_COMMAND_TOKEN");

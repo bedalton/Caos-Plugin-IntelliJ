@@ -87,5 +87,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Bundled Protobuf Distribution" level="application" />
+    <orderEntry type="library" name="pretty-tools-JDDE-2.1.0-javadoc" level="project" />
   </component>
 </module>
