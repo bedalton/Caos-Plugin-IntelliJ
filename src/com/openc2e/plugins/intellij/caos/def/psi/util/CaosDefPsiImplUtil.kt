@@ -6,6 +6,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
+import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefTypeNameReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefVariableLinkReference
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants

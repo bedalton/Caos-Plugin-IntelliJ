@@ -43,14 +43,19 @@ val Editor.virtualFile
 fun VirtualFile.getPsiFile(project: Project): PsiFile? = PsiManager.getInstance(project).findFile(this)
 
 
+private const val PLUGIN_ID = "com.openc2e.plugins.intellij.caos"
+val PLUGIN by lazy {
+    val pluginId = PluginId.getId(PLUGIN_ID);
+    PluginManagerCore.getPlugins().firstOrNull { it.pluginId == pluginId }
+}
 object CaosFileUtil {
 
-    private const val PLUGIN_ID = "com.openc2e.plugins.intellij.caos"
+
 
     private const val RESOURCES_FOLDER = "classes"
 
     private val PLUGIN_HOME_FILE: File?
-        get() = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.path
+        get() = PLUGIN?.path
 
     val PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {

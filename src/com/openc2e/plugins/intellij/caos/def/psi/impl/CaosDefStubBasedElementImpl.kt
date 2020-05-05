@@ -20,6 +20,4 @@ open class CaosDefStubBasedElementImpl<StubT : StubElement<out PsiElement>>: Stu
     override fun <PsiT: PsiElement> getChildOfType(childType:Class<PsiT>):PsiT? = PsiTreeUtil.getChildOfType(this, childType)
     override fun <PsiT: PsiElement> getChildrenOfType(childType:Class<PsiT>):List<PsiT> = PsiTreeUtil.getChildrenOfTypeAsList(this, childType)
     override fun <PsiT: PsiElement> getParentOfType(parentClass:Class<PsiT>):PsiT? = PsiTreeUtil.getParentOfType(this, parentClass)
-    override val containingCaosDefFile: CaosDefFile
-        get() = containingFile as CaosDefFile
 }

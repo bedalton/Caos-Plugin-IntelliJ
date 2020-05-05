@@ -261,7 +261,7 @@ script_body_element
 
 code_block
 	::= code_block_line (space_like_or_newline trailingspace? code_block_line)*
-		{
+	{
 		pin=1
       implements = [
          "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -322,9 +322,9 @@ classifier
 private control_statement
    ::= subroutine
    |	loop_statement
-   |   repeat_statement
-   |   enum_next_statement
-   |   enum_scenery_statement
+   |   	repeat_statement
+   |   	enum_next_statement
+   |   	enum_scenery_statement
    |	doif_statement
    ;
 
@@ -757,12 +757,17 @@ c_commands_r ::= c_kw_r space rvalue
 }
 ;
 
-rvalue
+private rvalue_prime
 	::= r_rvalue_rrr
 	|	r_rvalue_rr
 	|	r_rvalue_r
 	|	r_rvalue_t
 	|	r_rvalue_no_args
+	;
+
+
+rvalue
+	::= rvalue_prime
 	|	expression
 	{
 		implements = [
@@ -839,7 +844,6 @@ r_rvalue_t ::= r_kw_t space token
 		getCommandString
    ]
 }
-;
 
 lvalue ::= l_kw_no_args
 {
@@ -1534,19 +1538,14 @@ expression
 
 private expression_prime
    ::= //command_call
-      	literal
-   |   var_token
-   |   command_token
+   		rvalue_prime
+   |	literal
+   |	var_token
    ;
 
 equality_expression
-   ::= expression_prime (space expression)* space eq_op space expression (space expression)* equality_expression_plus*
-
+   ::= expression_prime space eq_op space expression_prime
    ;
-
-equality_expression_plus
-	::= (AND|OR) equality_expression
-	;
 
 eq_op
 	::= eq_op_old

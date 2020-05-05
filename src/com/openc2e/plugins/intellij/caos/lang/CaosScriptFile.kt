@@ -12,6 +12,7 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.FileContentUtil
+import com.intellij.util.messages.MessageBus
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
 import java.lang.StringBuilder
 import com.intellij.openapi.roots.impl.FilePropertyPusher as FilePropertyPusher
@@ -119,6 +120,10 @@ private class VariantFilePropertyPusher : FilePropertyPusher<String> {
             stream.writeChars(variant)
             stream.close()
         }
+    }
+
+    override fun initExtra(p0: Project, p1: MessageBus, p2: FilePropertyPusher.Engine) {
+        TODO("Not yet implemented")
     }
 
 }

@@ -240,7 +240,6 @@ command
 command_word
 	::= WORD
 	{
-
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
 			"com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"

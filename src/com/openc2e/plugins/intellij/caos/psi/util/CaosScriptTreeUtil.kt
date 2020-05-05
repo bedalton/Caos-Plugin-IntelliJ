@@ -11,7 +11,6 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.caos.utils.document
