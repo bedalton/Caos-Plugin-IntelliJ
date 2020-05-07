@@ -8,6 +8,12 @@ import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.stubs.api.*
 import com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes
 
+class CaosScriptSubroutineStubImpl(
+        parent:StubElement<*>?,
+        override val name:String
+) : StubBase<CaosScriptSubroutineImpl>(parent, CaosScriptStubTypes.SUBROUTINE), CaosScriptSubroutineStub {
+}
+
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
         override val commandTokens:List<String>,
@@ -18,13 +24,6 @@ class CaosScriptCommandCallStubImpl(
         commandTokens.joinToString(" ")
     }
 }
-
-class CaosScriptCommandTokenStubImpl(
-        parent:StubElement<*>?,
-        override val text:String,
-        override val index: Int
-) : StubBase<CaosScriptCommandTokenImpl>(parent, CaosScriptStubTypes.COMMAND_TOKEN), CaosScriptCommandTokenStub
-
 
 class CaosScriptExpressionStubImpl(
         parent:StubElement<*>?,

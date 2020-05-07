@@ -8,8 +8,8 @@ import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributes
 import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
-import com.openc2e.plugins.intellij.caos.lexer.CaosScriptLexerAdapter
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptLexerAdapter
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 import java.awt.Color
 
@@ -24,6 +24,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             return EMPTY_KEYS
         }
         val attrKey: TextAttributesKey? = when (tokenType) {
+            CaosScriptTypes.CaosScript_SUBROUTINE_NAME -> SUBROUTINE_NAME
             in CaosScriptTokenSets.COMMENTS -> COMMENT
             in CaosScriptTokenSets.ANIMATION_STRING -> ANIMATION
             in CaosScriptTokenSets.STRING_LIKE -> STRING
@@ -62,6 +63,12 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         val EQ_OP_KEYWORD:TextAttributesKey = createTextAttributesKey("CaosScript_EQ_OP_KEYWORD", KEYWORDS)
         @JvmStatic
         val SYMBOL:TextAttributesKey = createTextAttributesKey("CaosScript_SYMBOLS", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
+        @JvmStatic
+        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", DefaultLanguageHighlighterColors.STATIC_FIELD)
+        @JvmStatic
+        val LVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_LVALUE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+        @JvmStatic
+        val SUBROUTINE_NAME: TextAttributesKey = createTextAttributesKey("CaosScript_SUBROUTINE_NAME", DefaultLanguageHighlighterColors.INSTANCE_METHOD)
     }
 }
 

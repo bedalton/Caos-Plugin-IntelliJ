@@ -59,9 +59,15 @@
 
     <!-- Annotators -->
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandAnnotator" />
-    <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
+
+    <!-- Indices -->
+
+    <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService"
+                        serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexServiceImpl" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
@@ -92,8 +98,6 @@
 
     <!-- Indices -->
     <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />
-    <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosIndexService"
-                        serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosIndexServiceImpl" />
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexServiceImpl" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />

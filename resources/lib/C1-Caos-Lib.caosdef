@@ -1442,9 +1442,11 @@ TOTL (integer) family (integer) genus (integer) species (integer);
 /*
  * Two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are touching
  * @RValue
+ * @param {agent} (Agent) the first agent to check for touching
+ * @param {otherAgent} (Agent) the other agent to check for touching
  * @return (integer@bool)
  */
-TOUC (integer);
+TOUC (integer) agent (agent) otherAgent (agent);
 
 /*
  * Reach out and touch IT.

@@ -121,21 +121,21 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   {EQ_NEW}			 { return CaosScript_EQ_OP_NEW_; }
 
   {NEWLINE}              { yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
-  {ENDM}                 { return CaosScript_ENDM; }
-  {SUBR}                 { return CaosScript_SUBR; }
-  {RETN}				 { return CaosScript_RETN; }
-  {REPS}                 { return CaosScript_REPS; }
-  {REPE}                 { return CaosScript_REPE; }
-  {LOOP}                 { return CaosScript_LOOP; }
-  {UNTL}                 { return CaosScript_UNTL; }
-  {EVER}                 { return CaosScript_EVER; }
-  {ENUM}                 { return CaosScript_ENUM; }
-  {NEXT}                 { return CaosScript_NEXT; }
-  {DOIF}                 { return CaosScript_DOIF; }
-  {ELIF}                 { return CaosScript_ELIF; }
-  {ELSE}                 { return CaosScript_ELSE; }
-  {ENDI}                 { return CaosScript_ENDI; }
-  {SCRP}                 { return CaosScript_SCRP; }
+  {ENDM}                 { return CaosScript_K_ENDM; }
+  {SUBR}                 { return CaosScript_K_SUBR; }
+  {RETN}				 { return CaosScript_K_RETN; }
+  {REPS}                 { return CaosScript_K_REPS; }
+  {REPE}                 { return CaosScript_K_REPE; }
+  {LOOP}                 { return CaosScript_K_LOOP; }
+  {UNTL}                 { return CaosScript_K_UNTL; }
+  {EVER}                 { return CaosScript_K_EVER; }
+  {ENUM}                 { return CaosScript_K_ENUM; }
+  {NEXT}                 { return CaosScript_K_NEXT; }
+  {DOIF}                 { return CaosScript_K_DOIF; }
+  {ELIF}                 { return CaosScript_K_ELIF; }
+  {ELSE}                 { return CaosScript_K_ELSE; }
+  {ENDI}                 { return CaosScript_K_ENDI; }
+  {SCRP}                 { return CaosScript_K_SCRP; }
   {OVxx}				 { return CaosScript_OV_XX; }
   {OBVx}				 { return CaosScript_OBV_X; }
   {MVxx}				 { return CaosScript_MV_XX; }
@@ -173,14 +173,11 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   [wW][oO][rR][dD]       { return CaosScript_K_WORD; }
   [dD][dD][eE][:]        { return CaosScript_K_DDE_COL; }
   [cC][eE][lL][lL]       { return CaosScript_K_CELL; }
-  [dD][oO][iI][fF]       { return CaosScript_K_DOIF; }
-  [eE][nN][uU][mM]       { return CaosScript_K_ENUM; }
   [fF][iI][rR][eE]       { return CaosScript_K_FIRE; }
   [lL][tT][cC][yY]       { return CaosScript_K_LTCY; }
   [cC][rR][eE][aA]       { return CaosScript_K_CREA; }
   [rR][tT][aA][rR]       { return CaosScript_K_RTAR; }
   [tT][rR][iI][gG]       { return CaosScript_K_TRIG; }
-  [uU][nN][tT][lL]       { return CaosScript_K_UNTL; }
   [aA][dD][dD][vV]       { return CaosScript_K_ADDV; }
   [aA][nN][dD][vV]       { return CaosScript_K_ANDV; }
   [dD][iI][vV][vV]       { return CaosScript_K_DIVV; }
@@ -212,26 +209,18 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   [nN][eE][gG][gG]       { return CaosScript_K_NEGG; }
   [pP][aA][nN][cC]       { return CaosScript_K_PANC; }
   [pP][iI][cC][tT]       { return CaosScript_K_PICT; }
-  [sS][cC][rR][pP]       { return CaosScript_K_SCRP; }
   [dD][oO][nN][eE]       { return CaosScript_K_DONE; }
   [dD][pP][aA][sS]       { return CaosScript_K_DPAS; }
   [dD][rR][oO][pP]       { return CaosScript_K_DROP; }
-  [eE][lL][sS][eE]       { return CaosScript_K_ELSE; }
-  [eE][nN][dD][iI]       { return CaosScript_K_ENDI; }
-  [eE][nN][dD][mM]       { return CaosScript_K_ENDM; }
   [gG][pP][aA][sS]       { return CaosScript_K_GPAS; }
   [iI][nN][sS][tT]       { return CaosScript_K_INST; }
   [kK][iI][lL][lL]       { return CaosScript_K_KILL; }
   [lL][oO][cC][kK]       { return CaosScript_K_LOCK; }
-  [lL][oO][oO][pP]       { return CaosScript_K_LOOP; }
   [mM][aA][tT][eE]       { return CaosScript_K_MATE; }
   [mM][vV][bB][yY]       { return CaosScript_K_MVBY; }
-  [nN][eE][xX][tT]       { return CaosScript_K_NEXT; }
   [oO][vV][eE][rR]       { return CaosScript_K_OVER; }
   [pP][oO][iI][nN]       { return CaosScript_K_POIN; }
   [qQ][uU][iI][tT]       { return CaosScript_K_QUIT; }
-  [rR][eE][pP][eE]       { return CaosScript_K_REPE; }
-  [rR][eE][tT][nN]       { return CaosScript_K_RETN; }
   [sS][aA][yY][nN]       { return CaosScript_K_SAYN; }
   [sS][lL][iI][mM]       { return CaosScript_K_SLIM; }
   [sS][lL][oO][wW]       { return CaosScript_K_SLOW; }
@@ -250,7 +239,6 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   [sS][nN][dD][eE]       { return CaosScript_K_SNDE; }
   [sS][nN][dD][fF]       { return CaosScript_K_SNDF; }
   [sS][nN][dD][lL]       { return CaosScript_K_SNDL; }
-  [sS][uU][bB][rR]       { return CaosScript_K_SUBR; }
   [aA][iI][mM][:]        { return CaosScript_K_AIM_COL; }
   [aA][nN][iI][mM]       { return CaosScript_K_ANIM; }
   [aA][sS][lL][pP]       { return CaosScript_K_ASLP; }
@@ -328,6 +316,8 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   [xX][vV][eE][cC]       { return CaosScript_K_XVEC; }
   [yY][vV][eE][cC]       { return CaosScript_K_YVEC; }
   [dD][rR][iI][vV]       { return CaosScript_K_DRIV; }
+  [eE][tT][cC][tT]       { return CaosScript_K_ETCH; }
+  [eE][sS][eE][eE]       { return CaosScript_K_ESEE; }
   [tT][oO][kK][nN]       { return CaosScript_K_TOKN; }
   {EQ_C1}				 { return CaosScript_EQ_OP_OLD_; }
   {EQ_NEW}			 	 { return CaosScript_EQ_OP_NEW_; }

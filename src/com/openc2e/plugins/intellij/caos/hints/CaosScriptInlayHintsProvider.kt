@@ -3,7 +3,8 @@
 package com.openc2e.plugins.intellij.caos.hints
 
 import com.intellij.codeInsight.hints.HintInfo
-import com.intellij.codeInsight.hints.*
+import com.intellij.codeInsight.hints.InlayInfo
+import com.intellij.codeInsight.hints.InlayParameterHintsProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
