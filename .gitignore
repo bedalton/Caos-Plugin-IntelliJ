@@ -73,3 +73,6 @@ fabric.properties
 
 **.notes.txt
 **.note.txt
+
+**/.DS_Store
+.DS_Store
