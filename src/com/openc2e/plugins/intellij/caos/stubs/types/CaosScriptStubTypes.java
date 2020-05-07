@@ -10,10 +10,10 @@ public interface CaosScriptStubTypes {
     CaosScriptCommandCallStubType COMMAND_CALL = new CaosScriptCommandCallStubType("CaosScript_COMMAND_CALL");
 
     @NotNull
-    CaosScriptCommandTokenStubType COMMAND_TOKEN = new CaosScriptCommandTokenStubType("CaosScript_COMMAND_TOKEN");
+    CaosScriptExpressionStubType EXPRESSION = new CaosScriptExpressionStubType("CaosScript_EXPRESSION");
 
     @NotNull
-    CaosScriptExpressionStubType EXPRESSION = new CaosScriptExpressionStubType("CaosScript_EXPRESSION");
+    CaosScriptSubroutineStubType SUBROUTINE = new CaosScriptSubroutineStubType("CaosScript_SUBROUTINE");
 
     @NotNull
     CaosScriptVarTokenStubType VAR_TOKEN = new CaosScriptVarTokenStubType("CaosScript_VAR_TOKEN");

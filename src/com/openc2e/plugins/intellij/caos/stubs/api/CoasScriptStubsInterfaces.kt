@@ -11,9 +11,9 @@ interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
     val parameterTypes:List<CaosScriptExpressionType>
     val numParameters:Int
 }
-interface CaosScriptCommandTokenStub : StubElement<CaosScriptCommandTokenImpl> {
-    val text:String
-    val index:Int
+
+interface CaosScriptSubroutineStub : StubElement<CaosScriptSubroutineImpl> {
+    val name:String
 }
 
 interface CaosScriptExpressionStub : StubElement<CaosScriptExpressionImpl> {

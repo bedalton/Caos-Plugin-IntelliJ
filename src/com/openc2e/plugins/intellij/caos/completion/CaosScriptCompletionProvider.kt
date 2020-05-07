@@ -5,10 +5,8 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandToken
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -30,25 +28,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             Case.LOWER_CASE
 
         val previous = element.getPreviousNonEmptySibling(false)
-        if (previous is CaosScriptCommandToken) {
-            val previousText = previous.text
-            val subcommands = previous.reference.multiResolve(true)
-                    .mapNotNull item@{
-                        val commandElement = (it.element as? CaosDefCommandDefElement)
-                                ?: return@item null
-                        val commandWords = commandElement.commandWords
-                        if (commandWords.size == 1)
-                            return@item null
-                        val index = commandWords.indexOf(previousText)
-                        if (index < 0)
-                            return@item null
 
-                        val word = commandWords.getOrNull(index + 1)
-                                ?: return@item null
-                        createCommandTokenLookupElement(case, word, commandElement.isCommand, commandElement.returnTypeString)
-                    }
-            resultSet.addAllElements(subcommands)
-        }
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project).filter {
             (variant.isBlank() || it.isVariant(variant))
         }.map {

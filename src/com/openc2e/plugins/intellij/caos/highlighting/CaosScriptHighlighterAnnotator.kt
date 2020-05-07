@@ -3,36 +3,46 @@ package com.openc2e.plugins.intellij.caos.highlighting
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptAnimationString
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
+import com.openc2e.plugins.intellij.caos.annotators.AnnotationHolderWrapper
+import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 
 class CaosScriptHighlighterAnnotator : Annotator {
+
+
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
-        if (element !is CaosScriptCompositeElement)
-            return
-        if(DumbService.isDumb(element.project))
-            return
+        val wrapper = AnnotationHolderWrapper(annotationHolder)
         when {
+            element is CaosScriptToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
+            //element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken-> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
+            //element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
+            element is CaosScriptIsCommandToken || element is CaosScriptIsCommandKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             element is CaosScriptAnimationString || element.hasParentOfType(CaosScriptAnimationString::class.java)
-                -> annotationHolder.colorize(element, CaosScriptSyntaxHighlighter.ANIMATION)
-            element.text.toLowerCase() == "inst" -> annotationHolder.colorize(element, CaosScriptSyntaxHighlighter.KEYWORDS)
+            -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
+            element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
         }
     }
 
+    /**
+     * Strips info annotations from a given element
+     * Making it appear as regular text
+     */
+    private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolderWrapper) {
+        annotationHolder.newInfoAnnotation("")
+                .range(psiElement)
+                .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
+                .create()
+    }
 
-}
-
-fun AnnotationHolder.colorize(element: PsiElement, attributes: TextAttributesKey) {
-    val annotation = createInfoAnnotation(element, "")
-    annotation.textAttributes = attributes
-}
-
-fun AnnotationHolder.colorize(range: TextRange, attributes: TextAttributesKey) {
-    val annotation = createInfoAnnotation(range, "")
-    annotation.textAttributes = attributes
+    /**
+     * Helper function to add color and style to a given element
+     */
+    private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolderWrapper, attribute: TextAttributesKey, message: String? = null) {
+        annotationHolder.newInfoAnnotation(message)
+                .range(psiElement)
+                .textAttributes(attribute)
+                .create()
+    }
 }

@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.psi.util
 
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
+import com.intellij.psi.tree.IElementType
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
@@ -10,6 +11,7 @@ import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
+import com.openc2e.plugins.intellij.caos.references.CaosScriptSubroutineNameReference
 import com.openc2e.plugins.intellij.caos.utils.orFalse
 
 object CaosScriptPsiImplUtil {
@@ -30,6 +32,11 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandString(word:CaosDefCommandWord) : String {
         return word.text
+    }
+
+    @JvmStatic
+    fun getCommandString(rvalue:CaosScriptRvalue) : String {
+        return rvalue.text
     }
 
     @JvmStatic
@@ -59,8 +66,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandTokens(call: CaosScriptCommandCall): List<String> {
         return call.stub?.commandTokens
-                ?: call.command
-                        ?.commandString?.split(" ")
+                ?: call.command?.commandToken?.text?.split(" ")
                         .orEmpty()
     }
 
@@ -72,11 +78,6 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandTokens(command: CaosScriptCommandElement): List<String> {
         return command.commandString.split(" ")
-    }
-
-    @JvmStatic
-    fun getCommandToken(command:CaosScriptLvalue) : CaosScriptIsCommandToken {
-        return command.commandToken
     }
 
     @JvmStatic
@@ -156,7 +157,6 @@ object CaosScriptPsiImplUtil {
             return type
         return when {
             expression.animationString != null -> CaosScriptExpressionType.BRACKET_STRING
-            expression.commandToken != null -> CaosScriptExpressionType.TOKEN
             expression.equalityExpression != null -> CaosScriptExpressionType.EQ
             expression.literal?.isFloat.orFalse() -> CaosScriptExpressionType.FLOAT
             expression.literal?.isInt.orFalse() -> CaosScriptExpressionType.INT
@@ -203,12 +203,12 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isEver(element: CaosScriptLoopStatement): Boolean {
-        return element.loopTerminator?.ever != null
+        return element.loopTerminator?.kEver != null
     }
 
     @JvmStatic
     fun isUntil(element: CaosScriptLoopStatement): Boolean {
-        return element.loopTerminator?.untl != null
+        return element.loopTerminator?.kUntl != null
     }
 
     @JvmStatic
@@ -247,18 +247,17 @@ object CaosScriptPsiImplUtil {
                 ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()
     }
 
-
     @JvmStatic
-    fun isVariant(element: CaosScriptCommandToken, variants: List<String>, strict: Boolean): Boolean {
-        val thisVariant = element.containingCaosFile?.variant ?: ""
+    fun isVariant(element: CaosScriptIsCommandToken, variants: List<String>, strict: Boolean): Boolean {
+        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant ?: ""
         if (thisVariant.isEmpty())
             return !strict
         return thisVariant in variants
     }
 
     @JvmStatic
-    fun isVariant(element: CaosScriptIsCommandToken, variants: List<String>, strict: Boolean): Boolean {
-        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant ?: ""
+    fun isVariant(element: CaosScriptCompositeElement, variants: List<String>, strict: Boolean): Boolean {
+        val thisVariant = element.containingCaosFile?.variant ?: ""
         if (thisVariant.isEmpty())
             return !strict
         return thisVariant in variants
@@ -280,6 +279,23 @@ object CaosScriptPsiImplUtil {
         return CaosScriptCommandTokenReference(element)
     }
 
+    @JvmStatic
+    fun getName(name:CaosScriptSubroutineName) : String {
+        return name.text
+    }
+
+    @JvmStatic
+    fun setName(name:CaosScriptSubroutineName, newName:String) : PsiElement {
+        val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, newName)
+                ?: name
+        return name.replace(newElement)
+    }
+
+    @JvmStatic
+    fun getReference(name:CaosScriptSubroutineName) : CaosScriptSubroutineNameReference {
+        return CaosScriptSubroutineNameReference(name)
+    }
+
     /*
     @JvmStatic
     fun getPreviousCommandCalls(element:CaosScriptCommandCall) : List<CaosScriptCommandCall> {
@@ -292,3 +308,6 @@ object CaosScriptPsiImplUtil {
     }*/
 
 }
+
+
+val PsiElement.elementType:IElementType get() = node.elementType

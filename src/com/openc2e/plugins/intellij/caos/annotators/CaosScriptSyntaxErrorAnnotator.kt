@@ -10,17 +10,13 @@ import com.openc2e.plugins.intellij.caos.fixes.CaosScriptFixTooManySpaces
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptTrimErrorSpaceBatchFix
 import com.openc2e.plugins.intellij.caos.fixes.TransposeEqOp
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
-import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.next
 import com.openc2e.plugins.intellij.caos.psi.util.previous
-import com.openc2e.plugins.intellij.caos.utils.orFalse
 
 class CaosScriptSyntaxErrorAnnotator : Annotator {
 
-    private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
 
 
     override fun annotate(elementIn: PsiElement, annotationHolder: AnnotationHolder) {
@@ -34,10 +30,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationHolder)
             is CaosScriptSpaceLike -> annotateExtraSpaces(element, annotationHolder)
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationHolder)
-            is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationHolder)
             is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationHolder)
+            is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationHolder)
+            is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationHolder)
             is PsiComment -> annotateComment(variant, element, annotationHolder)
         }
+    }
+
+    private fun annotateElseIfStatement(variant: String, element: CaosScriptElseIfStatement, annotationHolder: AnnotationHolder) {
+        if (!(variant != "C1" || variant != "C2"))
+            return
+        annotationHolder.createErrorAnnotation(element.kElif, CaosBundle.message("caos.annotator.syntax-error-annotator.elif-not-available"))
     }
 
     private fun annotateExtraSpaces(element: CaosScriptSpaceLike, annotationHolder: AnnotationHolder) {
@@ -72,12 +75,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         annotationHolder.createErrorAnnotation(element, "Comments are not allowed in version less than CV")
     }
 
-    private fun annotateEqualityExpressionPlus(variant:String, element: CaosScriptEqualityExpressionPlus, annotationHolder: AnnotationHolder) {
-        if (variant !in VARIANT_OLD)
-            return
-        annotationHolder.createErrorAnnotation(element, CaosBundle.message("caos.annotator.syntax-error-annotator.invalid_eq_plus_expression", variant?:"C1/C2"))
-    }
-
     private fun annotateNewEqualityOps(variant:String, element: CaosScriptEqOpNew, annotationHolder: AnnotationHolder) {
         if (variant !in VARIANT_OLD)
             return
@@ -87,13 +84,22 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
 
 
     private fun annotateSceneryEnum(variant:String, element: CaosScriptEnumSceneryStatement, annotationHolder: AnnotationHolder) {
-        if (element.containingCaosFile?.variant == "C2")
+        if (variant == "C2")
             return
-        annotationHolder.createErrorAnnotation(element.escn, CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
+        annotationHolder.createErrorAnnotation(element.kEscn, CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
+    }
+
+    private fun annotateBadEnumStatement(variant:String, element: CaosScriptEnumNextStatement, annotationHolder: AnnotationHolder) {
+        if (variant != "C1")
+            return
+        val badElement = element.kEsee ?: element.kEtch
+            ?: return
+        annotationHolder.createErrorAnnotation(badElement, CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
     }
 
     companion object {
         private val VARIANT_OLD = listOf("C1", "C2")
+        private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
     }
 
 }
