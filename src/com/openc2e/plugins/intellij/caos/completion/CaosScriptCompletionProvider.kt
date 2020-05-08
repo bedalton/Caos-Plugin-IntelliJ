@@ -13,6 +13,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
     private val UPPERCASE_REGEX = "[A-Z]".toRegex()
     private val IS_ID_CHAR = "[^_A-Za-z]".toRegex()
+    private val IS_NUMBER = "[0-9]+".toRegex()
 
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
         val element = parameters.position
@@ -28,6 +29,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             Case.LOWER_CASE
 
         val previous = element.getPreviousNonEmptySibling(false)
+        if (previous != null && IS_NUMBER.matches(previous.text)) {
+            resultSet.stopHere()
+            return
+        }
 
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project).filter {
             (variant.isBlank() || it.isVariant(variant))

@@ -1,10 +1,8 @@
 package com.openc2e.plugins.intellij.caos.psi.types
 
 import com.intellij.psi.TokenType
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
-import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTokenType
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*
 
 class CaosScriptTokenSets {
@@ -116,7 +114,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_ESEE,
                 CaosScript_K_ETCH,
                 CaosScript_K_EVER,
-                CaosScript_ISCR,
+                CaosScript_K_ISCR,
                 CaosScript_K_ABRT,
                 CaosScript_K_ACTV,
                 CaosScript_K_ADDV,
@@ -311,7 +309,7 @@ class CaosScriptTokenSets {
                 CaosScript_WORD
         )
         @JvmStatic
-        val ALL_CAOS_KEYWORDS = create(
+        val ALL_CAOS_COMMAND_LIKE_TOKENS = create(
                 CaosScript_K_DOIF,
                 CaosScript_K_ELIF,
                 CaosScript_K_ELSE,
@@ -322,7 +320,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_ESEE,
                 CaosScript_K_ETCH,
                 CaosScript_K_EVER,
-                CaosScript_ISCR,
+                CaosScript_K_ISCR,
                 CaosScript_K_ABRT,
                 CaosScript_K_ACTV,
                 CaosScript_K_ADDV,

@@ -9,39 +9,38 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.caos.psi.util.elementType
+import com.openc2e.plugins.intellij.caos.utils.isOrasParentOfType
 
 class CaosScriptUsagesProvider : FindUsagesProvider {
 
     override fun getWordsScanner(): WordsScanner? {
         return DefaultWordsScanner(
                 CaosDefLexerAdapter(),
-                CaosScriptTokenSets.ALL_CAOS_KEYWORDS,
+                CaosScriptTokenSets.ALL_CAOS_COMMAND_LIKE_TOKENS,
                 CaosScriptTokenSets.COMMENTS,
                 CaosScriptTokenSets.LITERALS
         )
     }
 
-    override fun getNodeText(element: PsiElement, useFullName: Boolean): String {
-        return when (element) {
-            is CaosScriptIsCommandToken, is CaosScriptIsLvalueKeywordToken, is CaosScriptIsRvalueKeywordToken -> element.text
-            else -> element.text
-        }
-    }
+    override fun getNodeText(element: PsiElement, useFullName: Boolean): String
+            = element.text
 
     override fun getDescriptiveName(element: PsiElement): String {
-        return when (element) {
-            is CaosScriptIsCommandToken, is CaosScriptIsLvalueKeywordToken, is CaosScriptIsRvalueKeywordToken -> "[" + element.text + "]"
+        return when {
+            element.isOrasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
+            element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "[" + element.text + "]"
             else -> "element"
         }
     }
 
     override fun getType(element: PsiElement): String {
 
-        return when(element) {
-            is CaosScriptIsCommandToken, is CaosScriptIsLvalueKeywordToken, is CaosScriptIsRvalueKeywordToken -> "Command"
+        return when {
+            element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "Command"
+            element.isOrasParentOfType(CaosScriptSubroutineName::class.java) -> "Subroutine Label"
             else -> when (element.elementType) {
                 in CaosScriptTokenSets.STRING_LIKE -> "String"
-                in CaosScriptTokenSets.ALL_CAOS_KEYWORDS -> "Flow Control"
+                in CaosScriptTokenSets.KEYWORDS -> "Flow Control"
                 in CaosScriptTokenSets.ALL_COMMANDS -> "Command"
                 else -> "element"
             }

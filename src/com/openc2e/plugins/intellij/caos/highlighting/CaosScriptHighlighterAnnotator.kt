@@ -16,11 +16,12 @@ class CaosScriptHighlighterAnnotator : Annotator {
         val wrapper = AnnotationHolderWrapper(annotationHolder)
         when {
             element is CaosScriptToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
-            //element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken-> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
-            //element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
-            element is CaosScriptIsCommandToken || element is CaosScriptIsCommandKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
-            element is CaosScriptAnimationString || element.hasParentOfType(CaosScriptAnimationString::class.java)
-            -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
+            element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken-> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
+            element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
+            isCommandKeyword(element) && element.text.toLowerCase() != "retn" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
+            element is CaosScriptAnimationString || element.hasParentOfType(CaosScriptAnimationString::class.java) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
+            element is CaosScriptCGsub -> colorize(element.kGsub, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
+            element is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
         }
     }
@@ -34,6 +35,10 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 .range(psiElement)
                 .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
                 .create()
+    }
+
+    private fun isCommandKeyword(element:PsiElement) : Boolean {
+        return element is CaosScriptIsCommandToken || element is CaosScriptIsCommandKeywordToken
     }
 
     /**

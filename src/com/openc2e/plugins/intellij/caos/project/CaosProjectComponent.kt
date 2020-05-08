@@ -41,6 +41,8 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
         if (module != null) {
             CaosBundleSourcesRegistrationUtil.register(module, project)
             initFrameworkDefaults(editorManager.selectedTextEditor, file)
+        } else {
+            LOGGER.info("Failed to locate CAOS module")
         }
         LOGGER.info("OnCaosFileOpened")
         val editor = editorManager.selectedTextEditor

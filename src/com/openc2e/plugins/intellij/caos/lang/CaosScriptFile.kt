@@ -32,7 +32,7 @@ class CaosScriptFile(viewProvider: FileViewProvider)
                 ?: return
         virtualFile.putUserData(VariantUserDataKey, newVariant)
         VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant)
-        FileContentUtil.reparseFiles(virtualFile)
+        FileContentUtil.reparseFiles(project, listOf(virtualFile), true)
     }
 
     override fun getFileType(): FileType {

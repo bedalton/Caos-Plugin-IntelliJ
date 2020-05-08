@@ -84,7 +84,7 @@
       <excludeFolder url="file://$MODULE_DIR$/Web/vendor/wyrihaximus/twig-view" />
       <excludeFolder url="file://$MODULE_DIR$/Web/vendor/zendframework/zend-diactoros" />
     </content>
-    <orderEntry type="jdk" jdkName="IntelliJ IDEA Community Edition IC-191.8026.42" jdkType="IDEA JDK" />
+    <orderEntry type="jdk" jdkName="IntelliJ IDEA IU-201.6668.121" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Bundled Protobuf Distribution" level="application" />
     <orderEntry type="library" name="pretty-tools-JDDE-2.1.0-javadoc" level="project" />
