@@ -232,7 +232,7 @@
 	]
 }
 
-def	::= (script_body_element (!<<eof>> space_like_or_newline script_body_element)*  trailingspace?)?
+def	::= (script_body_element (!<<eof>> space_like_or_newline script_body_element)*  trailingspace?)? c_endm?
 	;
 
 script_body_element
@@ -271,11 +271,47 @@ private caos_element
 
 
 event_script
-	::= (K_SCRP|ISCR) space classifier space event_number space_like_or_newline (<<enterMode "eventScript">>event_script_body space_like_or_newline)? <<exitMode "eventScript">>script_terminator
+	::= (c_scrp|c_iscr) space classifier space event_number space_like_or_newline (<<enterMode "eventScript">>event_script_body space_like_or_newline)? <<exitMode "eventScript">>script_terminator
 	{
 		pin=1
 	}
 	;
+
+c_scrp ::= K_SCRP
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+c_iscr ::= K_ISCR
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
 private event_script_body
 	::= code_block
 	{
@@ -288,12 +324,51 @@ private event_script_body
 	;
 
 subroutine
-	::= K_SUBR space subroutine_name space_like_or_newline (subroutine_body space_like_or_newline)? K_RETN
+	::= c_subr space subroutine_name space_like_or_newline (subroutine_body space_like_or_newline)? cc_retn
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 	}
+	;
+
+c_subr
+	::= K_SUBR
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+cc_retn
+	::= K_RETN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
 	;
 
 private subroutine_body
@@ -308,7 +383,7 @@ classifier
 	;
 
 private control_statement
-   ::= subroutine
+   ::=  subroutine
    |	loop_statement
    |   	repeat_statement
    |   	enum_next_statement
@@ -328,7 +403,7 @@ private expression_list_recover
 	;
 
 loop_statement
-   ::= K_LOOP space_like_or_newline loop_body? space_like_or_newline loop_terminator
+   ::= c_loop space_like_or_newline <<enterBlock>>loop_body? space_like_or_newline loop_terminator<<exitBlock>>
    {
       pin=1;
       methods = [
@@ -338,22 +413,74 @@ loop_statement
    }
    ;
 
+c_loop
+	::= K_LOOP
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
 loop_terminator
 	::= ever_terminator
 	|	untl_terminator
 	;
 
-private ever_terminator
+ever_terminator
 	::= K_EVER
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
 	;
 
 private untl_terminator
-	::= K_UNTL SPACE_ expression
+	::= c_untl SPACE_ expression
 	{
 		pin=1
 	}
 	;
 
+c_untl
+	::= K_UNTL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
 
 private loop_body
    ::= code_block
@@ -363,12 +490,13 @@ private loop_body
    ;
 
 repeat_statement
-	::= K_REPS space expression space_like_or_newline (repeat_body space_like_or_newline)? K_REPE
+	::= c_reps space expression space_like_or_newline <<enterBlock>>(repeat_body space_like_or_newline)? c_repe<<exitBlock>>
 	{
 		pin=1
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
 		]
 
 		methods = [
@@ -377,6 +505,41 @@ repeat_statement
 
 	}
 	;
+
+c_reps ::= K_REPS
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
+c_repe ::= K_REPE
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
 
 private repeat_body
    ::= code_block
@@ -385,12 +548,13 @@ private repeat_body
    }
    ;
 enum_next_statement
-	::= (K_ENUM|K_ESEE|K_ETCH) space classifier space_like_or_newline (enum_body space_like_or_newline)? K_NEXT
+	::= c_enum space classifier space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? c_next<<exitBlock>>
 	{
 		pin=1;
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
 		]
 		methods = [
 			codeBlock="code_block"
@@ -398,19 +562,94 @@ enum_next_statement
 	}
 	;
 
-enum_scenery_statement
-   ::= K_ESCN space classifier space_like_or_newline (enum_body space_like_or_newline)? K_NSCN
-   {
-      pin=1;
-      implements = [
-         "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-         "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-      ]
-      methods = [
+c_enum
+	::= K_ENUM
+	|	K_ESEE
+	| 	K_ETCH
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_next ::= K_NEXT
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
 
-      ]
+enum_scenery_statement
+   ::= c_escn space classifier space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? c_nscn<<exitBlock>>
+   {
+		pin=1;
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
+		]
+		methods = [
+
+		]
    }
    ;
+
+c_escn ::= K_ESCN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_nscn ::= K_NSCN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
 
 private enum_body
    ::= code_block
@@ -424,23 +663,94 @@ private enum_body
    ;
 
 doif_statement
-	::= K_DOIF space equality_expression space_like_or_newline (do_if_body space_like_or_newline)? (else_if_statement space_like_or_newline)* (else_statement space_like_or_newline)? K_ENDI
+	::= c_doif space equality_expression space_like_or_newline <<enterBlock>>(do_if_body space_like_or_newline)? (else_if_statement space_like_or_newline)* (else_statement space_like_or_newline)? c_endi<<exitBlock>>
 	{
 		pin=1
+	}
+	;
+
+c_doif::=K_DOIF
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_endi ::= K_ENDI
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
 	}
 	;
 
 else_if_statement
-	::= K_ELIF space expression space_like_or_newline do_if_body?
+	::= c_elif space expression space_like_or_newline do_if_body?
 	{
 		pin=1
 	}
 	;
 
+c_elif ::= K_ELIF
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
 else_statement
-	::= K_ELSE space_like_or_newline else_block
+	::= c_else space_like_or_newline else_block
 	{
 		pin=1;
+	}
+	;
+c_else ::= K_ELSE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
 	}
 	;
 
@@ -1217,42 +1527,43 @@ c_kw_tr
    ;
 
 c_kw_no_args
-   ::= K_ABRT
-   |   K_APPR
-   |   K_CMND
-   |   K_DDE_COL SPACE_ K_DIED
-   |   K_DDE_COL SPACE_ K_GENE
-   |   K_DDE_COL SPACE_ K_HATC
-   |   K_DDE_COL SPACE_ K_LIVE
-   |   K_DDE_COL SPACE_ K_LOBE
-   |   K_DDE_COL SPACE_ K_NEGG
-   |   K_DDE_COL SPACE_ K_PANC
-   |   K_DDE_COL SPACE_ K_PICT
-   |   K_DDE_COL SPACE_ K_SCRP
-   |   K_DONE
-   |   K_DPAS
-   |   K_DROP
-   |   K_EDIT
-   |   K_GPAS
-   |   K_INST
-   |   K_KILL
-   |   K_LOCK
-   |   K_MATE
-   |   K_MVBY
-   |   K_OVER
-   |   K_PART
-   |   K_POIN
-   |   K_QUIT
-   |   K_SAYN
-   |   K_SLIM
-   |   K_SLOW
-   |   K_SNEZ
-   |   K_STOP
-   |   K_STPC
-   |   K_SYS_COL SPACE_ K_CAMT
-   |   K_SYS_COL SPACE_ K_WTOP
-   |   K_UNLK
-   |   K_WALK
+	::= K_ABRT
+	|   K_APPR
+	|   K_CMND
+	|   K_DDE_COL SPACE_ K_DIED
+	|   K_DDE_COL SPACE_ K_GENE
+	|   K_DDE_COL SPACE_ K_HATC
+	|   K_DDE_COL SPACE_ K_LIVE
+	|   K_DDE_COL SPACE_ K_LOBE
+	|   K_DDE_COL SPACE_ K_NEGG
+	|   K_DDE_COL SPACE_ K_PANC
+	|   K_DDE_COL SPACE_ K_PICT
+	|   K_DDE_COL SPACE_ K_SCRP
+	|   K_DONE
+	|   K_DPAS
+	|   K_DROP
+	|   K_EDIT
+	|   K_GPAS
+	|   K_INST
+	|   K_KILL
+	|   K_LOCK
+	|   K_MATE
+	|   K_MVBY
+	|   K_OVER
+	|   K_PART
+	|   K_POIN
+	|   K_QUIT
+	|   K_SAYN
+	|   K_SLIM
+	|   K_SLOW
+	|   K_SNEZ
+	|   K_STOP
+	|   K_STPC
+	|   K_SYS_COL SPACE_ K_CAMT
+	|   K_SYS_COL SPACE_ K_WTOP
+	|   K_UNLK
+	|   K_WALK
+	|	<<insideBlock>> c_retn
    {
    		pin = 3;
    		implements = [
@@ -1270,6 +1581,25 @@ c_kw_no_args
    		]
    }
    ;
+
+c_retn
+	::= K_RETN
+	{
+		implements = [
+   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+   			getCommandString
+			isVariant
+			getName
+			setName
+			getReference
+		]
+	}
+	;
 
 c_kw_l
    ::= K_NEGV
@@ -1291,6 +1621,9 @@ c_kw_l
    ;
 c_gsub
 	::= K_GSUB SPACE_ subroutine_name
+	{
+		pin=1
+	}
 	;
 c_kw_t
    ::= K_PLDS
@@ -2070,10 +2403,28 @@ token
 	}
 	;
 script_terminator
-	::= K_ENDM
+	::= c_endm
 	|   <<eos>>
 	|	<<eof>>
 	;
+
+c_endm ::= K_ENDM
+{
+	implements = [
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+	]
+	methods = [
+		getReference
+		getCommandString
+		isVariant
+		getName
+		setName
+	]
+}
+;
 
 family ::= INT;
 genus ::= INT;

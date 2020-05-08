@@ -17,7 +17,7 @@ import com.openc2e.plugins.intellij.caos.utils.orElse
 class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
 
 
-    override fun getParameterHints(element: PsiElement?): MutableList<InlayInfo> {
+    override fun getParameterHints(element: PsiElement): MutableList<InlayInfo> {
         if (element == null)
             return mutableListOf()
         val project = element.project;
@@ -33,7 +33,7 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getHintInfo(p0: PsiElement?): HintInfo? {
+    override fun getHintInfo(p0: PsiElement): HintInfo? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

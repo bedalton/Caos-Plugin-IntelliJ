@@ -42,6 +42,10 @@ fun <PsiT : PsiElement> PsiElement.hasParentOfType(parentClass:Class<PsiT>) : Bo
     return PsiTreeUtil.getParentOfType(this, parentClass) != null;
 }
 
+fun <PsiT : PsiElement> PsiElement.isOrasParentOfType(parentClass:Class<PsiT>) : Boolean {
+    return parentClass.isInstance(this) || PsiTreeUtil.getParentOfType(this, parentClass) != null;
+}
+
 fun PsiElement.isNotEquivalentTo(otherElement:PsiElement): Boolean = this.isEquivalentTo(otherElement)
 
 fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)

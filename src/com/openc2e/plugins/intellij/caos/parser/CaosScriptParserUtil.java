@@ -7,10 +7,13 @@ import com.intellij.psi.tree.IElementType;
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets;
 import gnu.trove.TObjectLongHashMap;
 
+import java.util.logging.Logger;
+
 public class CaosScriptParserUtil extends GeneratedParserUtilBase {
 
     private static final Key<TObjectLongHashMap<String>> MODES_KEY = Key.create("MODES_KEY");
     private static final Key<String> CAOS_VARIANT = Key.create("CAOS_VARIANT");
+    private static int blocks = 0;
 
     private static TObjectLongHashMap<String> getParsingModes(PsiBuilder builder_) {
         TObjectLongHashMap<String> flags = builder_.getUserData(MODES_KEY);
@@ -28,6 +31,30 @@ public class CaosScriptParserUtil extends GeneratedParserUtilBase {
             flags.put(mode, 1);
         }
         return true;
+    }
+
+    public static boolean enterBlock(PsiBuilder builder_,
+                                     @SuppressWarnings("UnusedParameters")
+                                             int level) {
+        blocks++;
+        Logger.getLogger("#CaosScriptParserUtil").info("Entering block leaving: " + blocks);
+        return true;
+    }
+
+    public static boolean exitBlock(PsiBuilder builder_,
+                                     @SuppressWarnings("UnusedParameters")
+                                             int level) {
+        blocks--;
+        Logger.getLogger("#CaosScriptParserUtil").info("Exiting block leaving: " + blocks);
+        return true;
+    }
+
+    public static boolean insideBlock(PsiBuilder builder_,
+                                     @SuppressWarnings("UnusedParameters")
+                                             int level) {
+
+        Logger.getLogger("#CaosScriptParserUtil").info("Inside Blocks: " + blocks);
+        return blocks > 0;
     }
 
     public static boolean exitMode(PsiBuilder builder_,

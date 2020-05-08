@@ -203,12 +203,12 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isEver(element: CaosScriptLoopStatement): Boolean {
-        return element.loopTerminator?.kEver != null
+        return element.loopTerminator?.cEver != null
     }
 
     @JvmStatic
     fun isUntil(element: CaosScriptLoopStatement): Boolean {
-        return element.loopTerminator?.kUntl != null
+        return element.loopTerminator?.cUntl != null
     }
 
     @JvmStatic

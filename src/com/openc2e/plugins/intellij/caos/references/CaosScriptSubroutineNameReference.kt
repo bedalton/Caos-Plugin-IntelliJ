@@ -15,14 +15,14 @@ class CaosScriptSubroutineNameReference(element:CaosScriptSubroutineName) : PsiR
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element.text != myElement.text)
             return false
-        if (myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java))
+        if (!myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java))
             return false
         return (myElement.parent is CaosScriptSubroutine && element.parent is CaosScriptCGsub) ||
                 (myElement.parent is CaosScriptCGsub && element.parent is CaosScriptSubroutine)
     }
 
     override fun resolve(): PsiElement? {
-        if (myElement.parent is CaosScriptSubroutine)
+        if (myElement.parent !is CaosScriptSubroutine)
             return null;
         return CaosScriptSubroutineIndex.instance[myElement.name, myElement.project].firstOrNull {
             myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
