@@ -38,7 +38,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
     }
 
     private fun isCommandKeyword(element:PsiElement) : Boolean {
-        return element is CaosScriptIsCommandToken || element is CaosScriptIsCommandKeywordToken
+        return element is CaosScriptIsCommandKeywordToken
     }
 
     /**

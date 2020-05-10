@@ -1,6 +1,9 @@
 package com.openc2e.plugins.intellij.caos.completion
 
-import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionProvider
+import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
@@ -8,6 +11,7 @@ import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNam
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
+import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
 
@@ -21,7 +25,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 ?: return
         val variant = caosFile.variant.toUpperCase()
         val firstChar = element.textWithoutCompletionIdString.toCharArray().getOrNull(0)
-        if (firstChar != null && IS_ID_CHAR.matches(firstChar+""))
+        if (firstChar != null && IS_ID_CHAR.matches(firstChar + ""))
             return
         val case = if (firstChar != null && UPPERCASE_REGEX.matches(firstChar + ""))
             Case.UPPER_CASE
@@ -37,6 +41,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project).filter {
             (variant.isBlank() || it.isVariant(variant))
         }.map {
+            if (it.commandWords.size > 1) {
+                val commandWords = it.commandWords
+                if (previous?.text?.toLowerCase() == it.commandWords[0].toLowerCase()) {
+                    return@map createCommandTokenLookupElement(case, it.commandWords[1], it.isCommand, it.returnTypeString, commandWords[0])
+                }
+            }
             createCommandTokenLookupElement(case, it.commandName, it.isCommand, it.returnTypeString)
         }
         resultSet.addAllElements(singleCommands)
@@ -74,7 +84,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
-    private fun createCommandTokenLookupElement(case:Case, commandIn: String, isCommand: Boolean, returnType: String): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(case: Case, commandIn: String, isCommand: Boolean, returnType: String, prefixIn: String? = null): LookupElementBuilder {
         val tailText = if (isCommand)
             "command"
         else
@@ -87,11 +97,20 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             commandIn.toUpperCase()
         else
             commandIn.toLowerCase()
-        return LookupElementBuilder
+        val prefix = when {
+            prefixIn == null -> null
+            case == Case.UPPER_CASE -> prefixIn.toUpperCase()
+            else -> prefixIn.toLowerCase()
+        }
+        var builder = LookupElementBuilder
                 .create(command)
                 .withTailText("($tailText)")
                 .withIcon(icon)
                 .withInsertHandler(SpaceAfterInsertHandler)
+        if (prefix.isNotNullOrBlank()) {
+            builder = builder.withPresentableText("$prefix $command")
+        }
+        return builder
     }
 
 }

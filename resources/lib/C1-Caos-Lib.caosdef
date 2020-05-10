@@ -169,11 +169,12 @@ BHVR (command) click (integer) creature (integer);
 
 /*
  * vehicle's collision data
+ * example, value of 5 = Hit top and hit left. Sum of (1=left and 4=ceiling
  * @HitBits:bitflags {
- * 	B0=Hit Left
- * 	B1=Hit Right
- * 	B2=Hit Top
- * 	B3=Hit Bottom
+ * 	1=Hit Left
+ * 	2=Hit Right
+ * 	4=Hit Top
+ *  8=Hit Bottom
  * }
  * @RValue
  * @return (bitflags@HitBits)
@@ -226,10 +227,19 @@ CHEM (integer) chemical (integer);
 CHEM (command) chemical (integer) amount (integer);
 
 /*
+ * FMLY+GNUS+SPCS
  * @RValue
  * @return (classifier)
  */
 CLAS (classifier);
+
+/*
+ * The classifier(family + genus + species) as an integer
+ * Calulated from the hex strings of family, genus and species concatenated together with "00" append to end
+ * This build up hex string is then parsed to an int, and used as the [CLAS] value.
+ * @LValue
+ */
+CLAS (integer);
 
 /*
  * Issue an ID_XXX command message to the application. This allows macros to activate ANY menu command.
@@ -482,6 +492,11 @@ ENDM (command);
  */
 ENUM (command) family (integer) genus (integer) species (integer);
 
+/**
+ * Part of a [LOOP]...[EVER]statement. Repeat loop forever.
+ */
+EVER (command)
+
 /*
  * Add an object onto the Event bar (either a newborn, and egg or a death)
  * @param {object} (value)
@@ -601,8 +616,9 @@ INST (command);
  * eg. #{kill edit} removes any object that's been shift-clicked on (EditObject),
  * THIS INSTRUCTION MUST BE LAST ONE IN MACRO IF IT KILLS THE OWNER OF THAT MACRO!
  * #{kill targ} deletes the target object.
+ * @param {agent} (agent) the agent to be killed
  */
-KILL (command);
+KILL (command) agent(agent);
 
 /*
  * Attach a CompoundObj's activation function (ACT1=0, ACT2=1...) to a given hotspot
@@ -1820,9 +1836,9 @@ YVEC (integer);
 
 @HitBits:bitflags {
  	0=Hit Left
- 	1=Hit Right
- 	2=Hit Top
- 	3=Hit Bottom
+ 	2=Hit Right
+ 	4=Hit Top
+ 	8=Hit Bottom
 }
 
 @GetBOption:Literal {

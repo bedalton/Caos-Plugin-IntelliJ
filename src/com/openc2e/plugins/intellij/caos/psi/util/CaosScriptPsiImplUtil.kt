@@ -1,18 +1,17 @@
 package com.openc2e.plugins.intellij.caos.psi.util
 
-import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
+import com.openc2e.plugins.intellij.caos.deducer.CaosScriptBlockType
+import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.references.CaosScriptSubroutineNameReference
-import com.openc2e.plugins.intellij.caos.utils.orFalse
+
+private val EXTRACT_NUMBER_REGEX = "[^0-9.+-]".toRegex()
 
 object CaosScriptPsiImplUtil {
 
@@ -25,17 +24,17 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommand(call: CaosScriptCommandCall) : CaosScriptCommandElement? {
+    fun getCommand(call: CaosScriptCommandCall): CaosScriptCommandElement? {
         return call.getChildOfType(CaosScriptCommandElement::class.java)
     }
 
     @JvmStatic
-    fun getCommandString(word:CaosDefCommandWord) : String {
+    fun getCommandString(word: CaosDefCommandWord): String {
         return word.text
     }
 
     @JvmStatic
-    fun getCommandString(rvalue:CaosScriptRvalue) : String {
+    fun getCommandString(rvalue: CaosScriptRvalue): String {
         return rvalue.text
     }
 
@@ -48,13 +47,6 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandString(command: CaosScriptCommandElement): String {
         return getCommandTokens(command).joinToString(" ")
-    }
-
-    @JvmStatic
-    fun getParameterTypes(command: CaosScriptCommandCall): List<CaosScriptExpressionType> {
-        return command.stub?.parameterTypes ?: command.getChildrenOfType(CaosScriptArgument::class.java).map {
-            getType(it)
-        }
     }
 
     @JvmStatic
@@ -104,66 +96,6 @@ object CaosScriptPsiImplUtil {
                 ?.getChildrenOfType(CaosScriptArgument::class.java)
                 ?.indexOf(commandToken)
                 ?: return 0
-    }
-
-    @JvmStatic
-    fun getType(argument: CaosScriptArgument): CaosScriptExpressionType {
-        val expression = argument.getChildOfType(CaosScriptExpression::class.java)
-        if (expression != null)
-            return getType(expression)
-        if (DumbService.isDumb(argument.project))
-            return CaosScriptExpressionType.COMMAND
-        val index = argument.index
-        val command: CaosScriptIsCommandToken
-        if (argument is CaosScriptLvalue) {
-            command = argument.commandToken
-        } else if (argument is CaosScriptRvalue)
-            command = argument.commandToken ?: return CaosScriptExpressionType.COMMAND
-        else
-            return CaosScriptExpressionType.COMMAND
-        val resolved = command.reference
-                .multiResolve(false)
-                .mapNotNull {
-                    val temp = (it.element as? CaosDefCompositeElement)
-                            ?: return@mapNotNull null
-                    temp.getParentOfType(CaosDefCommandDefElement::class.java)
-                }
-        val type = resolved
-                .filter {
-                    if (argument is CaosScriptLvalue)
-                        it.isLvalue
-                    else
-                        it.isRvalue
-                }.mapNotNull {
-                    it.parameterStructs.getOrNull(index)
-                }.firstOrNull()
-                ?: return CaosScriptExpressionType.COMMAND
-        return when (type.type.type.toLowerCase()) {
-            "integer" -> CaosScriptExpressionType.INT
-            "float" -> CaosScriptExpressionType.FLOAT
-            "[string_literal]", "[string]" -> CaosScriptExpressionType.BRACKET_STRING
-            "string" -> CaosScriptExpressionType.STRING
-            "variable" -> CaosScriptExpressionType.VARIABLE
-            "token" -> CaosScriptExpressionType.TOKEN
-            "eq" -> CaosScriptExpressionType.EQ
-            else -> CaosScriptExpressionType.UNKNOWN
-        }
-    }
-
-    @JvmStatic
-    fun getType(expression: CaosScriptExpression): CaosScriptExpressionType {
-        val type = expression.stub?.type
-        if (type != null)
-            return type
-        return when {
-            expression.animationString != null -> CaosScriptExpressionType.BRACKET_STRING
-            expression.equalityExpression != null -> CaosScriptExpressionType.EQ
-            expression.literal?.isFloat.orFalse() -> CaosScriptExpressionType.FLOAT
-            expression.literal?.isInt.orFalse() -> CaosScriptExpressionType.INT
-            expression.literal?.isString.orFalse() -> CaosScriptExpressionType.STRING
-            expression.varToken != null -> CaosScriptExpressionType.VARIABLE
-            else -> CaosScriptExpressionType.UNKNOWN
-        }
     }
 
     @JvmStatic
@@ -280,21 +212,162 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getName(name:CaosScriptSubroutineName) : String {
+    fun getName(name: CaosScriptSubroutineName): String {
         return name.text
     }
 
     @JvmStatic
-    fun setName(name:CaosScriptSubroutineName, newName:String) : PsiElement {
+    fun setName(name: CaosScriptSubroutineName, newName: String): PsiElement {
         val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, newName)
                 ?: name
         return name.replace(newElement)
     }
 
     @JvmStatic
-    fun getReference(name:CaosScriptSubroutineName) : CaosScriptSubroutineNameReference {
+    fun getReference(name: CaosScriptSubroutineName): CaosScriptSubroutineNameReference {
         return CaosScriptSubroutineNameReference(name)
     }
+
+    @JvmStatic
+    fun getRVar(assignment: CaosScriptCAssignment): CaosVar? {
+        assignment.stub?.rvalue?.let {
+            return it
+        }
+        return assignment.rvalue?.let {
+            return getRValue(it)
+        }
+    }
+    @JvmStatic
+    fun getLVar(assignment: CaosScriptCAssignment): CaosVar? {
+        assignment.stub?.lvalue?.let {
+            return it
+        }
+        return assignment.lvalue?.let {
+            return getLValue(it)
+        }
+    }
+
+    @JvmStatic
+    fun toCaosVar(rvalue:CaosScriptRvalue) : CaosVar {
+        val text = rvalue.text
+        (rvalue.varToken)?.let {
+            return toCaosVar(it)
+        }
+        (rvalue.namedConstant)?.let {
+            return toCaosVar(it)
+        }
+        (rvalue.namedVar)?.let {
+            return CaosVar.NamedVar(it.text)
+        }
+        rvalue.literal?.let { literal ->
+
+        }
+        rvalue.commandToken?.text?.let {
+            return CaosVar.CaosCommandCall(it)
+        }
+
+        rvalue.byteString?.text?.let {
+            return CaosVar.CaosLiteral.CaosByteString(it)
+        }
+        rvalue.animationString?.let {
+            return CaosVar.CaosLiteral.CaosAnimationString(it.text, it.animR != null)
+        }
+        return CaosVar.CaosLiteralVal
+    }
+
+    @JvmStatic
+    fun toCaosVar(namedConstant: CaosScriptNamedConstant) : CaosVar.ConstVal {
+        return namedConstant?.stub?.caosVar ?: CaosVar.ConstVal(namedConstant.text)
+    }
+
+    @JvmStatic
+    fun toCaosVar(namedVar: CaosScriptNamedVar) : CaosVar.NamedVar {
+        return namedVar?.stub?.caosVar ?: CaosVar.NamedVar(namedVar.text)
+    }
+
+    @JvmStatic
+    fun toCaosVar(literal: CaosScriptLiteral) : CaosVar {
+        literal.intValue()?.let {
+            return CaosVar.CaosLiteral.CaosInt(it)
+        }
+        literal.floatValue()?.let {
+            return CaosVar.CaosLiteral.CaosFloat(it)
+        }
+        literal.stringLiteral?.stringValue?.let {
+            return CaosVar.CaosLiteral.CaosString(it)
+        }
+        LOGGER.severe("Failed to locate caos literal type.")
+        return CaosVar.CaosLiteralVal
+    }
+
+    @JvmStatic
+    fun toCaosVar(varToken:CaosScriptVarToken) : CaosVar {
+        val text = varToken.text
+        val number = Integer.parseInt(text.replace(EXTRACT_NUMBER_REGEX, ""))
+        return when {
+            varToken.varX != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, true)
+            varToken.obvX != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, true)
+            varToken.vaXx != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, false)
+            varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
+            varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
+            else -> {
+                val validTypes = when (varToken.containingCaosFile?.variant?.toUpperCase()) {
+                    null -> "???"
+                    "C1" -> "[varX,obvX]"
+                    "C2" -> "[varX,vaXX,obvX,ovXX]"
+                    else -> "[vaXX,ovXX,mvXX]"
+                }
+                throw Exception("Unexpected caos variable encountered. Expected types are: $validTypes. Found '$text'")
+            }
+        }
+    }
+
+    @JvmStatic
+    fun toCaosVar(lvalue:CaosScriptLvalue) : CaosVar {
+        lvalue.stub?.caosVar ?: lvalue.namedVar?.let {
+            return CaosVar.NamedVar(it.nVar.text)
+        }
+
+    }
+
+    @JvmStatic
+    fun getRValueString(assignment: CaosScriptCAssignment): String {
+        return assignment.stub?.rvalue?.text ?: assignment.rvalue?.text ?: ""
+    }
+
+
+    @JvmStatic
+    fun getBlockType(doif: CaosScriptDoifStatementStatement): CaosScriptBlockType = CaosScriptBlockType.DOIF
+
+
+    @JvmStatic
+    fun getBlockType(elif: CaosScriptElseIfStatement): CaosScriptBlockType = CaosScriptBlockType.ELIF
+
+    @JvmStatic
+    fun getBlockType(doElse: CaosScriptElseStatement): CaosScriptBlockType = CaosScriptBlockType.ELSE
+
+    @JvmStatic
+    fun getBlockType(escn: CaosScriptEnumSceneryStatement): CaosScriptBlockType = CaosScriptBlockType.ESCN
+
+    @JvmStatic
+    fun getBlockType(loop: CaosScriptLoopStatement): CaosScriptBlockType = CaosScriptBlockType.LOOP
+
+    @JvmStatic
+    fun getBlockType(reps: CaosScriptRepeatStatement): CaosScriptBlockType = CaosScriptBlockType.REPS
+
+    @JvmStatic
+    fun getBlockType(scrp: CaosScriptScriptBodyElement): CaosScriptBlockType {
+        if (scrp.eventScript != null)
+            CaosScriptBlockType.SCRP
+        return CaosScriptBlockType.INST
+    }
+
+    @JvmStatic
+    fun getBlockType(subr: CaosScriptSubroutine): CaosScriptBlockType = CaosScriptBlockType.SUBR
+
+    @JvmStatic
+    fun getBlockType(enumStatement: CaosScriptEnumNextStatement): CaosScriptBlockType = CaosScriptBlockType.ENUM
+
 
     /*
     @JvmStatic
@@ -310,4 +383,4 @@ object CaosScriptPsiImplUtil {
 }
 
 
-val PsiElement.elementType:IElementType get() = node.elementType
+val PsiElement.elementType: IElementType get() = node.elementType

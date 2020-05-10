@@ -87,8 +87,12 @@ BT=[Bb][Tt]
 BF=[Bb][Ff]
 EQ_C1={EQ}|{NE}|{GT}|{LT}|{LE}|{GE}|{BT}|{BF}
 EQ_NEW="="|"<>"|">"|">="|"<"|"<="
+K_CONST = [*]\s*[Cc][Oo][nN][sS][tT]
+EQ_SPACE = [=]
+N_CONST = [:][a-zA-Z_0-9]+
+N_VAR = [$][a-zA-Z_0-9]+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST
 %%
 
 <START_OF_LINE> {
@@ -111,6 +115,15 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
     [^]					 { yybegin(IN_LINE); yypushback(yylength());}
 }
 
+<IN_CONST> {
+	{ID}				 { return CaosScript_ID; }
+  	{EQ_SPACE}			 { return CaosScript_EQ_SPACE; }
+    {INT}				 { return CaosScript_INT; }
+   {NEWLINE}			 { return CaosScript_NEWLINE; }
+    \s+					 { return WHITE_SPACE; }
+   [^]					 { yybegin(IN_LINE); yypushback(yylength());}
+}
+
 <IN_LINE> {
   ":"                    { return CaosScript_COLON; }
   "+"                    { return CaosScript_PLUS; }
@@ -119,7 +132,9 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
   ","                    { return CaosScript_COMMA; }
   {EQ_C1}				 { return CaosScript_EQ_OP_OLD_; }
   {EQ_NEW}			 { return CaosScript_EQ_OP_NEW_; }
-
+  {K_CONST}				 { yybegin(IN_CONST); return CaosScript_K_CONST; }
+  {N_CONST}				 { return CaosScript_N_CONST; }
+  {N_VAR}				 { return CaosScript_N_VAR; }
   {NEWLINE}              { yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
   {ENDM}                 { return CaosScript_K_ENDM; }
   {SUBR}                 { return CaosScript_K_SUBR; }
