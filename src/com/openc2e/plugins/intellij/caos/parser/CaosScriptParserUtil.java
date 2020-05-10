@@ -37,7 +37,6 @@ public class CaosScriptParserUtil extends GeneratedParserUtilBase {
                                      @SuppressWarnings("UnusedParameters")
                                              int level) {
         blocks++;
-        Logger.getLogger("#CaosScriptParserUtil").info("Entering block leaving: " + blocks);
         return true;
     }
 
@@ -45,15 +44,12 @@ public class CaosScriptParserUtil extends GeneratedParserUtilBase {
                                      @SuppressWarnings("UnusedParameters")
                                              int level) {
         blocks--;
-        Logger.getLogger("#CaosScriptParserUtil").info("Exiting block leaving: " + blocks);
         return true;
     }
 
     public static boolean insideBlock(PsiBuilder builder_,
                                      @SuppressWarnings("UnusedParameters")
                                              int level) {
-
-        Logger.getLogger("#CaosScriptParserUtil").info("Inside Blocks: " + blocks);
         return blocks > 0;
     }
 
@@ -82,6 +78,12 @@ public class CaosScriptParserUtil extends GeneratedParserUtilBase {
                                     @SuppressWarnings("UnusedParameters")
                                             int level, String mode) {
         return getParsingModes(builder_).get(mode) == 0;
+    }
+
+    public static boolean eofNext(PsiBuilder builder_,
+                                    @SuppressWarnings("UnusedParameters")
+                                            int level) {
+        return builder_.eof();
     }
 
     public static boolean eol(PsiBuilder builder_, int level) {
