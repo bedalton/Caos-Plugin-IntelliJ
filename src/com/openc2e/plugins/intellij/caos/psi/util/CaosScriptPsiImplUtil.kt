@@ -24,8 +24,14 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getCommandElement(parent:CaosScriptCommandElementParent) : CaosScriptCommandLike? {
+        return parent.getChildOfType(CaosScriptCommandLike::class.java)
+    }
+
+    @JvmStatic
     fun getCommand(call: CaosScriptCommandCall): CaosScriptCommandElement? {
         return call.getChildOfType(CaosScriptCommandElement::class.java)
+                ?: call.getChildOfType(CaosScriptCommandElementParent::class.java)?.command
     }
 
     @JvmStatic
@@ -57,8 +63,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandTokens(call: CaosScriptCommandCall): List<String> {
-        return call.stub?.commandTokens
-                ?: call.command?.commandToken?.text?.split(" ")
+        return call.stub?.commandTokens ?: call.commandElement?.commandToken?.text?.split(" ")
                         .orEmpty()
     }
 
@@ -233,8 +238,8 @@ object CaosScriptPsiImplUtil {
         assignment.stub?.rvalue?.let {
             return it
         }
-        return assignment.rvalue?.let {
-            return getRValue(it)
+        return assignment.expectsDecimal?.rvalue?.let {
+            return toCaosVar(it)
         }
     }
     @JvmStatic
@@ -243,7 +248,7 @@ object CaosScriptPsiImplUtil {
             return it
         }
         return assignment.lvalue?.let {
-            return getLValue(it)
+            return toCaosVar(it)
         }
     }
 
@@ -277,12 +282,12 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun toCaosVar(namedConstant: CaosScriptNamedConstant) : CaosVar.ConstVal {
-        return namedConstant?.stub?.caosVar ?: CaosVar.ConstVal(namedConstant.text)
+        return CaosVar.ConstVal(namedConstant.text)
     }
 
     @JvmStatic
-    fun toCaosVar(namedVar: CaosScriptNamedVar) : CaosVar.NamedVar {
-        return namedVar?.stub?.caosVar ?: CaosVar.NamedVar(namedVar.text)
+    fun toCaosVar(namedVar: CaosScriptNamedVar) : CaosVar {
+        return namedVar.stub?.caosVar ?: CaosVar.NamedVar(namedVar.text)
     }
 
     @JvmStatic
@@ -327,12 +332,24 @@ object CaosScriptPsiImplUtil {
         lvalue.stub?.caosVar ?: lvalue.namedVar?.let {
             return CaosVar.NamedVar(it.nVar.text)
         }
-
+        (lvalue.varToken)?.let {
+            return toCaosVar(it)
+        }
+        (lvalue.namedConstant)?.let {
+            return toCaosVar(it)
+        }
+        (lvalue.namedVar)?.let {
+            return CaosVar.NamedVar(it.text)
+        }
+        lvalue.commandToken.text?.let {
+            return CaosVar.CaosCommandCall(it)
+        }
+        return CaosVar.CaosLiteralVal
     }
 
     @JvmStatic
     fun getRValueString(assignment: CaosScriptCAssignment): String {
-        return assignment.stub?.rvalue?.text ?: assignment.rvalue?.text ?: ""
+        return assignment.stub?.rvalue?.text ?: assignment.expectsDecimal?.rvalue?.text ?: ""
     }
 
 
