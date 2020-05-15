@@ -20,7 +20,7 @@ class CaosScriptAssignmentStubType(debugName:String) : CaosScriptStubElementType
     }
 
     override fun serialize(stub: CaosScriptAssignmentStub, stream: StubOutputStream) {
-        stream.writeName(stub.varGroup.value)
+        stream.writeName(stub.lvalue.group.value)
         stream.writeInt(stub.varIndex ?: -1)
     }
 
