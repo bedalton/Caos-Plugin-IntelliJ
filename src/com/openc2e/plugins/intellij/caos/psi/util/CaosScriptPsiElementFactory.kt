@@ -28,4 +28,38 @@ object CaosScriptPsiElementFactory {
         return command.subroutineName
     }
 
+    val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
+
+    fun createNamedVar(project: Project, newNameString: String) : CaosScriptNamedVar? {
+        if (!NAMED_VAR_REGEX.matches(newNameString))
+            return null
+        val newName = if (newNameString.startsWith("$"))
+            newNameString
+        else
+            "$$newNameString"
+        createFileFromText(project,"setv $newName 0")
+        return null
+    }
+
+    val NAMED_CONST_REGEX = "[#]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
+    fun createNamedConst(project: Project, newNameString: String) : CaosScriptNamedConstant? {
+        if (!NAMED_CONST_REGEX.matches(newNameString))
+            return null
+        val newName = if (newNameString.startsWith("#"))
+            newNameString
+        else
+            "#$newNameString"
+        val file = createFileFromText(project,"setv var0 $newName")
+        return null
+    }
+
+    val CONSTANT_NAME_REGEX = "[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
+    fun createConstantName(project: Project, newNameString: String) : CaosScriptConstantName? {
+        if (!CONSTANT_NAME_REGEX.matches(newNameString))
+            return null
+        val file = createFileFromText(project, "const $newNameString = 0")
+
+        return null
+    }
+
 }

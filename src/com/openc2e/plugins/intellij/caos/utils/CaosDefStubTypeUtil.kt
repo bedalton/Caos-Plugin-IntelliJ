@@ -12,7 +12,7 @@ fun StubInputStream.readNameAsString() : String? {
     return readName()?.string
 }
 
-fun StubInputStream.readParameter() : CaosDefParameterStruct {
+internal fun StubInputStream.readParameter() : CaosDefParameterStruct {
     val name = readNameAsString().nullIfEmpty() ?: "???"
     val type = readVariableType() ?: CaosDefPsiImplUtil.AnyTypeType
     val comment = readUTFFast().nullIfEmpty()
@@ -23,14 +23,14 @@ fun StubInputStream.readParameter() : CaosDefParameterStruct {
     )
 }
 
-fun StubOutputStream.writeParameter(parameter:CaosDefParameterStruct) {
+internal fun StubOutputStream.writeParameter(parameter:CaosDefParameterStruct) {
     writeName(parameter.name)
     writeVariableType(parameter.type)
     writeUTFFast(parameter.comment ?: "")
 
 }
 
-fun StubInputStream.readReturnType() : CaosDefReturnTypeStruct? {
+internal fun StubInputStream.readReturnType() : CaosDefReturnTypeStruct? {
     val returnType = readVariableType()
     val comment = readUTFFast().nullIfEmpty()
     if (returnType == null)
@@ -41,12 +41,12 @@ fun StubInputStream.readReturnType() : CaosDefReturnTypeStruct? {
     )
 }
 
-fun StubOutputStream.writeReturnType(returnType:CaosDefReturnTypeStruct) {
+internal fun StubOutputStream.writeReturnType(returnType:CaosDefReturnTypeStruct) {
     writeVariableType(returnType.type)
     writeUTFFast(returnType.comment ?: "")
 }
 
-fun StubInputStream.readVariableType() : CaosDefVariableTypeStruct? {
+internal fun StubInputStream.readVariableType() : CaosDefVariableTypeStruct? {
     val type = readNameAsString()
     val typeDef = readNameString()
     val typeNote = readNameAsString()
@@ -68,7 +68,7 @@ fun StubInputStream.readVariableType() : CaosDefVariableTypeStruct? {
     )
 }
 
-fun StubOutputStream.writeVariableType(struct:CaosDefVariableTypeStruct) {
+internal fun StubOutputStream.writeVariableType(struct:CaosDefVariableTypeStruct) {
     writeName(struct.type)
     writeName(struct.typedef)
     writeName(struct.noteText)
@@ -77,27 +77,27 @@ fun StubOutputStream.writeVariableType(struct:CaosDefVariableTypeStruct) {
     writeInt(struct.length ?: -1)
 }
 
-fun <T> StubOutputStream.writeList(list: List<T>, write:StubOutputStream.(T)->Unit) {
+internal fun <T> StubOutputStream.writeList(list: List<T>, write:StubOutputStream.(T)->Unit) {
     writeInt(list.size)
     list.forEach {
         write(it)
     }
 }
 
-fun <T> StubInputStream.readList(readItem:StubInputStream.()->T?) : List<T?> {
+internal fun <T> StubInputStream.readList(readItem:StubInputStream.()->T?) : List<T?> {
     val size = readInt()
     return (0 until size).map {
         readItem()
     }
 }
 
-fun StubOutputStream.writeTypeDefValue(value:CaosDefTypeDefValueStruct) {
+internal fun StubOutputStream.writeTypeDefValue(value:CaosDefTypeDefValueStruct) {
     writeName(value.key)
     writeName(value.value)
     writeUTFFast(value.description ?: "")
 }
 
-fun StubInputStream.readTypeDefValue() : CaosDefTypeDefValueStruct? {
+internal fun StubInputStream.readTypeDefValue() : CaosDefTypeDefValueStruct? {
     val key = readNameAsString().nullIfEmpty()
     val value = readNameString() ?: CaosDefPsiImplUtil.UnknownReturn
     val comment = readUTFFast().nullIfEmpty()

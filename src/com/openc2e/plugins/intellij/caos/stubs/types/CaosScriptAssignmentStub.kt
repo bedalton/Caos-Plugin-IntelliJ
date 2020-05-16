@@ -3,15 +3,11 @@ package com.openc2e.plugins.intellij.caos.stubs.types
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
+import com.openc2e.plugins.intellij.caos.deducer.CaosOp
 import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCAssignmentImpl
-import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptVarTokenImpl
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
+import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptAssignmentStub
-import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptVarTokenStub
 import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptAssignmentStubImpl
-import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptVarTokenStubImpl
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
-import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 
 class CaosScriptAssignmentStubType(debugName:String) : CaosScriptStubElementType<CaosScriptAssignmentStub, CaosScriptCAssignmentImpl>(debugName) {
 
@@ -20,35 +16,34 @@ class CaosScriptAssignmentStubType(debugName:String) : CaosScriptStubElementType
     }
 
     override fun serialize(stub: CaosScriptAssignmentStub, stream: StubOutputStream) {
-        stream.writeName(stub.lvalue.group.value)
-        stream.writeInt(stub.varIndex ?: -1)
+        stream.writeInt(stub.operation.value)
+        stream.writeBoolean(stub.lvalue != null)
+        stub.lvalue?.let { stream.writeCaosVar(it) }
+        stream.writeBoolean(stub.rvalue != null)
+        stub.rvalue?.let { stream.writeCaosVar(it) }
+        stream.writeScope(stub.enclosingScope)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosScriptAssignmentStub {
-        val typeString = stream.readNameAsString().nullIfEmpty()
-        val group = if (typeString != null)
-            CaosScriptVarTokenGroup.fromValue(typeString)
-        else
-            CaosScriptVarTokenGroup.UNKNOWN
-        val varIndex = stream.readInt().let {
-            if (it >= 0)
-                it
-            else
-                null
-        }
-        return CaosScriptAssignmentStub(
+        val operation = CaosOp.fromValue(stream.readInt())
+        val lvalue = if (stream.readBoolean()) stream.readCaosVar() else null
+        val rvalue = if (stream.readBoolean()) stream.readCaosVar() else null
+        return CaosScriptAssignmentStubImpl (
                 parent = parent,
-                varGroup = group,
-                varIndex = varIndex
+                operation = operation,
+                lvalue = lvalue,
+                rvalue = rvalue,
+                enclosingScope = stream.readScope()
         )
     }
 
     override fun createStub(element: CaosScriptCAssignmentImpl, parent: StubElement<*>): CaosScriptAssignmentStub {
-
         return CaosScriptAssignmentStubImpl(
                 parent = parent,
-                varGroup = element.varGroup,
-                varIndex = element.varIndex
+                operation = element.op,
+                lvalue = element.lvalue?.toCaosVar(),
+                rvalue = element.expectsDecimal?.rvalue?.toCaosVar(),
+                enclosingScope = CaosScriptPsiImplUtil.getScope(element)
         )
     }
 

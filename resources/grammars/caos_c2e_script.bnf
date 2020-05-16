@@ -1327,7 +1327,7 @@ c_c3_ds_i_v ::= c_kw_c3_ds_i_v space_like expects_int space_like rvalue
 	}
 	;
 
-c_c3_ds
+private c_c3_ds
 	::= c_c3_ds_none
 	|	c_c3_ds_i
 	|	c_c3_ds_i_i
@@ -1351,16 +1351,6 @@ c_c3_ds
 	|	c_c3_ds_i_s_s_i_i_i
 	|	c_c3_ds_i_s_s_i_i
 	|	c_c3_ds_i_v
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_c1_c2_cv_c3_ds_none ::= c_kw_c1_c2_cv_c3_ds_none space_like
@@ -1591,7 +1581,7 @@ c_c1_c2_cv_c3_ds_a_a ::= c_kw_c1_c2_cv_c3_ds_a_a space_like expects_agent space_
 	}
 	;
 
-c_c1_c2_cv_c3_ds
+private c_c1_c2_cv_c3_ds
 	::= c_c1_c2_cv_c3_ds_none
 	|	c_c1_c2_cv_c3_ds_i
 	|	c_c1_c2_cv_c3_ds_lv
@@ -1604,16 +1594,6 @@ c_c1_c2_cv_c3_ds
 	|	c_c1_c2_cv_c3_ds_a_i
 	|	c_c1_c2_cv_c3_ds_t
 	|	c_c1_c2_cv_c3_ds_a_a
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_c2_none ::= c_kw_c2_none space_like
@@ -1796,7 +1776,7 @@ c_c2_t_i ::= c_kw_c2_t_i space_like expects_token space_like expects_int
 	}
 	;
 
-c_c2
+private c_c2
 	::= c_c2_none
 	|	c_c2_i
 	|	c_c2_i_i
@@ -1809,16 +1789,6 @@ c_c2
 	|	c_c2_t_i_i_i_i
 	|	c_c2_i_i_i_i_i_i_i_i_i_i_i_i_i_i_i_i_i_i
 	|	c_c2_t_i
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_c1_none ::= c_kw_c1_none space_like
@@ -1941,7 +1911,7 @@ c_c1_s_s_s_i ::= c_kw_c1_s_s_s_i space_like expects_c1_string space_like expects
 	}
 	;
 
-c_c1
+private c_c1
 	::= c_c1_none
 	|	c_c1_i
 	|	c_c1_i_i
@@ -1950,16 +1920,6 @@ c_c1
 	|	c_c1_t
 	|	c_c1_i_i_i_i_i_i
 	|	c_c1_s_s_s_i
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_cv_c3_ds_none ::= c_kw_cv_c3_ds_none space_like
@@ -2081,7 +2041,9 @@ c_cv_c3_ds_lv_s ::= c_kw_cv_c3_ds_lv_s space_like lvalue space_like expects_stri
 	}
 	;
 
-c_assignment ::= c_kw_cv_c3_ds_lv_d space_like lvalue space_like expects_decimal
+c_assignment
+	::= c_assignment_prime
+	| 	c_negv
 	{
 		pin=1
    		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptAssignmentStub"
@@ -2089,6 +2051,8 @@ c_assignment ::= c_kw_cv_c3_ds_lv_d space_like lvalue space_like expects_decimal
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantC1"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantC2"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantCV"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantC3"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantDS"
@@ -2096,9 +2060,27 @@ c_assignment ::= c_kw_cv_c3_ds_lv_d space_like lvalue space_like expects_decimal
 		methods = [
 			getCommandString
 			commandToken="c_kw_cv_c3_ds_lv_d"
+			getOp
 		]
 	}
 	;
+
+private c_assignment_prime ::= c_kw_cv_c3_ds_lv_d space_like lvalue space_like expects_decimal
+	{
+		pin = 1
+	}
+	;
+
+private c_negv ::= c_kw_negv lvalue
+	{
+		pin = 1
+	}
+	;
+
+c_kw_negv ::= K_NEGV
+{
+	imple
+}
 
 c_cv_c3_ds_i_i_f ::= c_kw_cv_c3_ds_i_i_f space_like expects_int space_like expects_int space_like expects_float
 	{
@@ -2899,7 +2881,7 @@ c_cv_c3_ds_a_i_f_i_f ::= c_kw_cv_c3_ds_a_i_f_i_f space_like expects_agent space_
 	}
 	;
 
-c_cv_c3_ds
+private c_cv_c3_ds
 	::= c_cv_c3_ds_none
 	|	c_cv_c3_ds_i
 	|	c_cv_c3_ds_i_i
@@ -2955,16 +2937,6 @@ c_cv_c3_ds
 	|	c_cv_c3_ds_a_i_i_i_i
 	|	c_cv_c3_ds_f_i_f
 	|	c_cv_c3_ds_a_i_f_i_f
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_c1_c2_none ::= c_kw_c1_c2_none space_like
@@ -3011,22 +2983,6 @@ c_c1_c2_i_i ::= c_kw_c1_c2_i_i space_like expects_int space_like expects_int
 		methods = [
 			getCommandString
 			commandToken="c_kw_c1_c2_i_i"
-		]
-	}
-	;
-
-c_c1_c2_lv_i ::= c_kw_c1_c2_lv_i space_like lvalue space_like expects_int
-	{
-		pin=1
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantC1"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandVariantC2"
-		]
-		methods = [
-			getCommandString
-			commandToken="c_kw_c1_c2_lv_i"
 		]
 	}
 	;
@@ -3367,11 +3323,10 @@ c_c1_c2_a_i_i_i_i_i_i_i_i_i_i_i_i ::= c_kw_c1_c2_a_i_i_i_i_i_i_i_i_i_i_i_i space
 	}
 	;
 
-c_c1_c2
+private c_c1_c2
 	::= c_c1_c2_none
 	|	c_c1_c2_i
 	|	c_c1_c2_i_i
-	|	c_c1_c2_lv_i
 	|	c_c1_c2_bs
 	|	c_c1_c2_s
 	|	c_c1_c2_i_i_i
@@ -3393,16 +3348,6 @@ c_c1_c2
 	|	c_c1_c2_t_i
 	|	c_c1_c2_i_i_i_i_i_i_i_i_i_i_i_i
 	|	c_c1_c2_a_i_i_i_i_i_i_i_i_i_i_i_i
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_c1_cv_c3_ds_none ::= c_kw_c1_cv_c3_ds_none space_like
@@ -3527,22 +3472,12 @@ c_c2_cv_c3_ds_a_i_v_v_i ::= c_kw_c2_cv_c3_ds_a_i_v_v_i space_like expects_agent 
 	}
 	;
 
-c_c2_cv_c3_ds
+private c_c2_cv_c3_ds
 	::= c_c2_cv_c3_ds_none
 	|	c_c2_cv_c3_ds_i
 	|	c_c2_cv_c3_ds_i_i
 	|	c_c2_cv_c3_ds_i_i_i
 	|	c_c2_cv_c3_ds_a_i_v_v_i
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_ds_none ::= c_kw_ds_none space_like
@@ -3665,7 +3600,7 @@ c_ds_s_s_i_v_v ::= c_kw_ds_s_s_i_v_v space_like expects_string space_like expect
 	}
 	;
 
-c_ds
+private c_ds
 	::= c_ds_none
 	|	c_ds_i
 	|	c_ds_lv
@@ -3674,16 +3609,6 @@ c_ds
 	|	c_ds_lv_lv_lv_lv
 	|	c_ds_s_lv
 	|	c_ds_s_s_i_v_v
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_cv_none ::= c_kw_cv_none space_like
@@ -3896,7 +3821,7 @@ c_cv_v_i ::= c_kw_cv_v_i space_like rvalue space_like expects_int
 	}
 	;
 
-c_cv
+private c_cv
 	::= c_cv_none
 	|	c_cv_i
 	|	c_cv_i_i
@@ -3911,16 +3836,6 @@ c_cv
 	|	c_cv_a_i_i_a
 	|	c_cv_s_i_s_i_i
 	|	c_cv_v_i
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
 c_c2_c3_ds_i_i_s ::= c_kw_c2_c3_ds_i_i_s space_like expects_int space_like expects_int space_like expects_string
@@ -3940,21 +3855,11 @@ c_c2_c3_ds_i_i_s ::= c_kw_c2_c3_ds_i_i_s space_like expects_int space_like expec
 	}
 	;
 
-c_c2_c3_ds
+private c_c2_c3_ds
 	::= c_c2_c3_ds_i_i_s
-	{
-
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElementParent"
-		]
-		methods = [
-			getCommandElement
-		]
-	}
 	;
 
-rvalue_prime
+private rvalue_prime
 	::= r_c3_ds
 	|	r_c1_c2_cv_c3_ds
 	|	r_c2_cv_c3_ds
@@ -4194,7 +4099,7 @@ r_c3_ds_f_f_f_f ::= r_kw_c3_ds_f_f_f_f space_like expects_float space_like expec
 	}
 	;
 
-r_c3_ds
+private r_c3_ds
 	::= r_c3_ds_none
 	|	r_c3_ds_f
 	|	r_c3_ds_i_i_i_i_s
@@ -4268,7 +4173,7 @@ r_c1_c2_cv_c3_ds_a_a ::= r_kw_c1_c2_cv_c3_ds_a_a space_like expects_agent space_
 	}
 	;
 
-r_c1_c2_cv_c3_ds
+private r_c1_c2_cv_c3_ds
 	::= r_c1_c2_cv_c3_ds_none
 	|	r_c1_c2_cv_c3_ds_i
 	|	r_c1_c2_cv_c3_ds_a_a
@@ -4328,7 +4233,7 @@ r_c2_cv_c3_ds_i_i_i ::= r_kw_c2_cv_c3_ds_i_i_i space_like expects_int space_like
 	}
 	;
 
-r_c2_cv_c3_ds
+private r_c2_cv_c3_ds
 	::= r_c2_cv_c3_ds_none
 	|	r_c2_cv_c3_ds_i
 	|	r_c2_cv_c3_ds_i_i_i
@@ -4776,7 +4681,7 @@ r_cv_c3_ds_i_i_i_s_i ::= r_kw_cv_c3_ds_i_i_i_s_i space_like expects_int space_li
 	}
 	;
 
-r_cv_c3_ds
+private r_cv_c3_ds
 	::= r_cv_c3_ds_none
 	|	r_cv_c3_ds_f
 	|	r_cv_c3_ds_i_i_i_i_i_i_i
@@ -4853,7 +4758,7 @@ r_c1_c2_t ::= r_kw_c1_c2_t space_like expects_token
 	}
 	;
 
-r_c1_c2
+private r_c1_c2
 	::= r_c1_c2_none
 	|	r_c1_c2_i_i
 	|	r_c1_c2_t
@@ -4877,7 +4782,7 @@ r_c1_cv_c3_ds_none ::= r_kw_c1_cv_c3_ds_none space_like
 	}
 	;
 
-r_c1_cv_c3_ds
+private r_c1_cv_c3_ds
 	::= r_c1_cv_c3_ds_none
 	;
 
@@ -4956,7 +4861,7 @@ r_c2_i_i ::= r_kw_c2_i_i space_like expects_int space_like expects_int
 	}
 	;
 
-r_c2
+private r_c2
 	::= r_c2_none
 	|	r_c2_i
 	|	r_c2_i_i_i
@@ -5084,7 +4989,7 @@ r_cv_i_s_s ::= r_kw_cv_i_s_s space_like expects_int space_like expects_string sp
 	}
 	;
 
-r_cv
+private r_cv
 	::= r_cv_none
 	|	r_cv_i_i_s_i_i
 	|	r_cv_i
@@ -5110,7 +5015,7 @@ r_c1_none ::= r_kw_c1_none space_like
 	}
 	;
 
-r_c1
+private r_c1
 	::= r_c1_none
 	;
 
@@ -5130,7 +5035,7 @@ r_c2_cv_none ::= r_kw_c2_cv_none space_like
 	}
 	;
 
-r_c2_cv
+private r_c2_cv
 	::= r_c2_cv_none
 	;
 
@@ -5194,7 +5099,7 @@ r_ds_i_s_s_lv ::= r_kw_ds_i_s_s_lv space_like expects_int space_like expects_str
 	}
 	;
 
-r_ds
+private r_ds
 	::= r_ds_none
 	|	r_ds_s
 	|	r_ds_s_s
@@ -5217,7 +5122,7 @@ r_cv_ds_s_i ::= r_kw_cv_ds_s_i space_like expects_string space_like expects_int
 	}
 	;
 
-r_cv_ds
+private r_cv_ds
 	::= r_cv_ds_s_i
 	;
 
@@ -5236,7 +5141,7 @@ r_c3_i_s ::= r_kw_c3_i_s space_like expects_int space_like expects_string
 	}
 	;
 
-r_c3
+private r_c3
 	::= r_c3_i_s
 	;
 
@@ -5260,15 +5165,12 @@ lvalue
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
-			commandToken="/l_kw_no_args"
 			getCommandString
 			isVariant
 			getIndex
 			getCommandToken
+     		toCaosVar
 		]
-	}
-	{
-
 	}
 	;
 
@@ -5332,7 +5234,7 @@ l_c2_i ::= l_kw_c2_i space_like expects_int
 	}
 	;
 
-l_c2
+private l_c2
 	::= l_c2_none
 	|	l_c2_i_i_i
 	|	l_c2_i_i
@@ -5355,7 +5257,7 @@ l_c1_c2_none ::= l_kw_c1_c2_none space_like
 	}
 	;
 
-l_c1_c2
+private l_c1_c2
 	::= l_c1_c2_none
 	;
 
@@ -5407,7 +5309,7 @@ l_c3_ds_v ::= l_kw_c3_ds_v space_like rvalue
 	}
 	;
 
-l_c3_ds
+private l_c3_ds
 	::= l_c3_ds_none
 	|	l_c3_ds_s
 	|	l_c3_ds_v
@@ -5464,7 +5366,7 @@ l_cv_c3_ds_s ::= l_kw_cv_c3_ds_s space_like expects_string
 	}
 	;
 
-l_cv_c3_ds
+private l_cv_c3_ds
 	::= l_cv_c3_ds_none
 	|	l_cv_c3_ds_a_i
 	|	l_cv_c3_ds_s
@@ -5488,7 +5390,7 @@ l_c2_cv_c3_ds_none ::= l_kw_c2_cv_c3_ds_none space_like
 	}
 	;
 
-l_c2_cv_c3_ds
+private l_c2_cv_c3_ds
 	::= l_c2_cv_c3_ds_none
 	;
 
@@ -5507,7 +5409,7 @@ l_c1_none ::= l_kw_c1_none space_like
 	}
 	;
 
-l_c1
+private l_c1
 	::= l_c1_none
 	;
 
@@ -6019,46 +5921,6 @@ c_kw_c1_c2_cv_c3_ds_i
 	|	K_REPS
 	|	K_TICK
 	|	K_WAIT
-	{
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
-c_kw_c1_c2_cv_c3_ds_lv
-	::= K_NEGV
-	{
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
-c_kw_c1_c2_cv_c3_ds_lv_i
-	::= K_ANDV
-	|	K_MODV
-	|	K_ORRV
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -6882,6 +6744,9 @@ c_kw_cv_c3_ds_lv_d
 	|	K_MULV
 	|	K_SETV
 	|	K_SUBV
+	|	K_MODV
+	|	K_ANDV
+	|	K_ORRV
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -11809,11 +11674,12 @@ rvalue
 
 
 constant_assignment
-	::= K_CONST ID EQ_SPACE INT
+	::= K_CONST constant_name EQ_SPACE (INT|FLOAT)
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptConstStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+
 		methods = [
 			getNumberValue
 			name="/ID"
@@ -11822,8 +11688,34 @@ constant_assignment
 	}
 	;
 
+constant_name
+	::= ID
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	}
+	;
+
 named_constant
 	::= N_CONST
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	}
 	;
 
 named_var
@@ -11831,9 +11723,15 @@ named_var
 	{
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptNamedVarStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
 		methods = [
 			getScope
-			getVarName
+			getName
+			setName
+			getReference
 			getAction
 		]
 	}

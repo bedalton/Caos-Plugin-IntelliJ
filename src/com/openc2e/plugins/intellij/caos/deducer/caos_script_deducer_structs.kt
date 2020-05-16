@@ -1,11 +1,16 @@
 package com.openc2e.plugins.intellij.caos.deducer
 
 import com.intellij.openapi.util.TextRange
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 
 
 data class CaosScope(val range:TextRange, val blockType:CaosScriptBlockType, val enclosingScope:List<CaosScope>) {
     val startOffset:Int get() = range.startOffset
     val endOffset:Int get() = range.endOffset
+}
+
+fun rootScope(file:CaosScriptFile) : CaosScope {
+    return CaosScope(file.textRange, CaosScriptBlockType.MACRO, emptyList())
 }
 
 data class CaosBlockCondition(
@@ -31,8 +36,9 @@ enum class CaosScriptEqualityOp (val expr:List<String>) {
 }
 
 enum class CaosScriptBlockType(val value:String) {
+    UNDEF("UNDEF"),
     SCRP("scrp"),
-    INST("inst"),
+    MACRO("inst"),
     DOIF("doif"),
     ELIF("elif"),
     ELSE("else"),
@@ -56,7 +62,10 @@ enum class CaosOp(val value:Int) {
     DIVV(3),
     MULV(4),
     ADDV(5),
-    SUBV(6);
+    SUBV(6),
+    NEGV(7),
+    MODV(8),
+    UNDEF(-1);
 
     companion object {
         fun fromValue(value:Int) : CaosOp = values().first { it.value == value }
@@ -66,9 +75,9 @@ enum class CaosOp(val value:Int) {
 sealed class CaosVar(open val text:String) {
     data class ConstVal(val name:String) : CaosVar(name)
     data class NamedVar(val name:String, val assumedValue: CaosVar? = null) : CaosVar(name)
-    sealed class CaosNumberedVar(override val text:String, open val number:Int, open val c1:Boolean) : CaosVar(text) {
-        data class CaosVaXXVar(override val text:String, override val number:Int, override val c1:Boolean) : CaosNumberedVar(text, number, c1)
-        data class CaosOvXXVar(override val text:String, override val number:Int, override val c1:Boolean) : CaosNumberedVar(text, number, c1)
+    sealed class CaosNumberedVar(override val text:String, open val number:Int, open val isC1Var:Boolean) : CaosVar(text) {
+        data class CaosVaXXVar(override val text:String, override val number:Int, override val isC1Var:Boolean) : CaosNumberedVar(text, number, isC1Var)
+        data class CaosOvXXVar(override val text:String, override val number:Int, override val isC1Var:Boolean) : CaosNumberedVar(text, number, isC1Var)
         data class CaosMvXXVar(override val text:String, override val number:Int) : CaosNumberedVar(text, number, false)
     }
     data class CaosCommandCall(override val text:String) : CaosVar(text)

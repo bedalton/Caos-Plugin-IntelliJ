@@ -2,14 +2,15 @@ package com.openc2e.plugins.intellij.caos.psi.util
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
-import com.openc2e.plugins.intellij.caos.deducer.CaosScriptBlockType
-import com.openc2e.plugins.intellij.caos.deducer.CaosVar
+import com.openc2e.plugins.intellij.caos.deducer.*
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
+import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.references.CaosScriptSubroutineNameReference
+import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 private val EXTRACT_NUMBER_REGEX = "[^0-9.+-]".toRegex()
 
@@ -373,10 +374,19 @@ object CaosScriptPsiImplUtil {
     fun getBlockType(reps: CaosScriptRepeatStatement): CaosScriptBlockType = CaosScriptBlockType.REPS
 
     @JvmStatic
-    fun getBlockType(scrp: CaosScriptScriptBodyElement): CaosScriptBlockType {
-        if (scrp.eventScript != null)
-            CaosScriptBlockType.SCRP
-        return CaosScriptBlockType.INST
+    fun getBlockType(scrp: CaosScriptMacro): CaosScriptBlockType = CaosScriptBlockType.MACRO
+
+    @JvmStatic
+    fun getBlockType(script:CaosScriptEventScript) : CaosScriptBlockType = CaosScriptBlockType.SCRP
+
+    @JvmStatic
+    fun getCommandToken(lvalue: CaosScriptLvalue) : CaosScriptIsCommandToken? {
+        return lvalue.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
+    }
+
+    @JvmStatic
+    fun getScope(element:CaosScriptCompositeElement) : CaosScope {
+        return element.getSelfOrParentOfType(CaosScriptHasCodeBlock::class.java)?.scope() ?: rootScope(element.containingCaosFile!!)
     }
 
     @JvmStatic
@@ -385,6 +395,62 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getBlockType(enumStatement: CaosScriptEnumNextStatement): CaosScriptBlockType = CaosScriptBlockType.ENUM
 
+    @JvmStatic
+    fun getNumberValue(assignment: CaosScriptConstantAssignment) : Float? {
+        return (assignment.int?.text ?: assignment.float?.text)?.nullIfEmpty()?.toFloat()
+    }
+
+
+    @JvmStatic
+    fun getOp(assignment:CaosScriptCAssignment) : CaosOp {
+        assignment.cKwNegv?.let { return CaosOp.NEGV}
+        val assigmentOperator = assignment.commandToken
+        assigmentOperator.kSetv?.let { return CaosOp.SETV }
+        assigmentOperator.kAddv?.let { return CaosOp.ADDV }
+        assigmentOperator.kSubv?.let { return CaosOp.SUBV }
+        assigmentOperator.kDivv?.let { return CaosOp.DIVV }
+        assigmentOperator.kMulv?.let { return CaosOp.MULV }
+        assigmentOperator.kModv?.let { return CaosOp.MODV }
+        assigmentOperator.kAndv?.let { return CaosOp.ANDV }
+        assigmentOperator.kOrrv?.let { return CaosOp.ORRV }
+        return CaosOp.UNDEF
+    }
+
+    @JvmStatic
+    fun getName(name:CaosScriptNamedVar) : String {
+        return name.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(name:CaosScriptNamedVar, newName: String) : PsiElement {
+        val newNameElement = CaosScriptPsiElementFactory.createNamedVar(name.project, newName)
+                ?: return name
+        return name.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getName(constant: CaosScriptNamedConstant) : String {
+        return constant.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(constant:CaosScriptNamedConstant, newName: String) : PsiElement {
+        val newNameElement = CaosScriptPsiElementFactory.createNamedConst(constant.project, newName)
+                ?: return constant
+        return constant.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getName(constantName:CaosScriptConstantName) : String {
+        return constantName.text
+    }
+
+    @JvmStatic
+    fun setName(constantName:CaosScriptConstantName, newName: String) : PsiElement {
+        val newNameElement = CaosScriptPsiElementFactory.createConstantName(constantName.project, newName)
+                ?: return constantName
+        return constantName.replace(newNameElement)
+    }
 
     /*
     @JvmStatic
@@ -397,6 +463,13 @@ object CaosScriptPsiImplUtil {
         return emptyList();
     }*/
 
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun <PsiT:PsiElement> CaosScriptCompositeElement.getSelfOrParentOfType(clazz:Class<PsiT>): PsiT? {
+    if (clazz.isInstance(this))
+        return this as PsiT
+    return this.getParentOfType(clazz)
 }
 
 
