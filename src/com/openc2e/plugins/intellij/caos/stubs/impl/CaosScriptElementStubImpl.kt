@@ -48,9 +48,9 @@ class CaosScriptNamedVar(
 class CaosScriptAssignmentStubImpl(
         parent: StubElement<*>?,
         override val operation:CaosOp,
-        override val rvalue:CaosVar,
-        override val lvalue:CaosVar,
-        override val enclosingScope:List<CaosScope>
+        override val rvalue:CaosVar?,
+        override val lvalue:CaosVar?,
+        override val enclosingScope:CaosScope
 ) : StubBase<CaosScriptCAssignmentImpl>(parent, CaosScriptStubTypes.VAR_ASSIGNMENT), CaosScriptAssignmentStub
 
 class CaosScriptDoIfStubImpl(
@@ -135,3 +135,5 @@ class CaosScriptVarTokenStubImpl(
         override val varGroup: CaosScriptVarTokenGroup,
         override val varIndex: Int?
 ) : StubBase<CaosScriptVarTokenImpl>(parent, CaosScriptStubTypes.VAR_TOKEN), CaosScriptVarTokenStub
+
+

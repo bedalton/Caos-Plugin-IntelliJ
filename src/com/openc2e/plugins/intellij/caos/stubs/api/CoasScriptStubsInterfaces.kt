@@ -34,9 +34,9 @@ interface CaosScriptNamedVarStub : StubElement<CaosScriptNamedVarImpl> {
 
 interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
     val operation: CaosOp
-    val lvalue:CaosVar
-    val rvalue:CaosVar
-    val enclosingScope:List<CaosScope>
+    val lvalue:CaosVar?
+    val rvalue:CaosVar?
+    val enclosingScope:CaosScope
 }
 
 interface CaosScriptBlockStub {

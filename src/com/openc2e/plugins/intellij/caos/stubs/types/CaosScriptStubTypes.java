@@ -17,5 +17,15 @@ public interface CaosScriptStubTypes {
 
     @NotNull
     CaosScriptVarTokenStubType VAR_TOKEN = new CaosScriptVarTokenStubType("CaosScript_VAR_TOKEN");
+
+    @NotNull
+    CaosScriptLValueStubType LVALUE = new CaosScriptVarTokenStubType("CaosScript_LVALUE");
+
+    @NotNull
+    CaosScriptRValueStubType RVALUE = new CaosScriptVarTokenStubType("CaosScript_RVALUE");
+
+    @NotNull
+    CaosScriptAssignmentStubType ASSIGNMENT = new CaosScriptAssignmentStubType("CaosScript_CAssignment");
+
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
 }
