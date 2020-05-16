@@ -251,9 +251,6 @@ script_body_element
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 		]
-		methods = [
-			getBlockType
-		]
 	}
 	;
 
@@ -7253,7 +7250,7 @@ rvalue
 
 
 constant_assignment
-	::= K_CONST constant_name EQ_SPACE (INT|FLOAT)
+	::= K_CONST constant_name EQ_SPACE constant_value
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptConstStub"
@@ -7261,10 +7258,13 @@ constant_assignment
 
 		methods = [
 			getNumberValue
-			name="/ID"
-			value="/INT"
+			name ="/constant_name"
+			value="/constant_value"
 		]
 	}
+	;
+constant_value
+	::= (INT|FLOAT)
 	;
 
 constant_name
@@ -7311,7 +7311,6 @@ named_var
 			getName
 			setName
 			getReference
-			getAction
 		]
 	}
 	;
