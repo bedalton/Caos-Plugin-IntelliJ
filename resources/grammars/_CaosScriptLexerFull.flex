@@ -178,7 +178,7 @@ N_VAR = [$][a-zA-Z_0-9]+
   [Ff][Rr][Oo][Mm]       { return CaosScript_K_FROM; }
   [Nn][Oo][Rr][Nn]       { return CaosScript_K_NORN; }
   [Pp][Nn][Tt][Rr]       { return CaosScript_K_PNTR; }
-  [_][Ii][Tt][_]         { return CaosScript_K__IT_; }
+  [_][Ii][Tt][_]         { return CaosScript_K_IT_; }
   [Cc][Aa][Rr][Rr]       { return CaosScript_K_CARR; }
   [Ee][Dd][Ii][Tt]       { return CaosScript_K_EDIT; }
   [Tt][Cc][Aa][Rr]       { return CaosScript_K_TCAR; }
@@ -194,8 +194,8 @@ N_VAR = [$][a-zA-Z_0-9]+
   [Bb][Hh][Vv][Rr]       { return CaosScript_K_BHVR; }
   [Ww][Dd][Tt][Hh]       { return CaosScript_K_WDTH; }
   [Hh][Gg][Hh][Tt]       { return CaosScript_K_HGHT; }
-  [_][Pp][1][_]          { return CaosScript_K__P1_; }
-  [_][Pp][2][_]          { return CaosScript_K__P2_; }
+  [_][Pp][1][_]          { return CaosScript_K_P1_; }
+  [_][Pp][2][_]          { return CaosScript_K_P2_; }
   [Cc][Ll][Ss][2]        { return CaosScript_K_CLS2; }
   [Uu][Nn][Ii][Dd]       { return CaosScript_K_UNID; }
   [Gg][Rr][Aa][Vv]       { return CaosScript_K_GRAV; }
@@ -623,7 +623,7 @@ N_VAR = [$][a-zA-Z_0-9]+
   [Rr][Ll][Oo][Cc]       { return CaosScript_K_RLOC; }
   [Tt][Oo][Rr][Xx]       { return CaosScript_K_TORX; }
   [Tt][Oo][Rr][Yy]       { return CaosScript_K_TORY; }
-  [_][Uu][Pp][_]         { return CaosScript_K__UP_; }
+  [_][Uu][Pp][_]         { return CaosScript_K_UP_; }
   [Ee][Ll][Aa][Ss]       { return CaosScript_K_ELAS; }
   [Ff][Aa][Ll][Ll]       { return CaosScript_K_FALL; }
   [Ff][Ll][Tt][Oo]       { return CaosScript_K_FLTO; }
@@ -738,7 +738,7 @@ N_VAR = [$][a-zA-Z_0-9]+
   [Ss][Ee][Tt][Nn]       { return CaosScript_K_SETN; }
   [Ss][Ee][Tt][Tt]       { return CaosScript_K_SETT; }
   [Dd][Oo][Ii][Nn]       { return CaosScript_K_DOIN; }
-  [_][Cc][Dd][_]         { return CaosScript_K__CD_; }
+  [_][Cc][Dd][_]         { return CaosScript_K_CD_; }
   [Ee][Jj][Cc][Tt]       { return CaosScript_K_EJCT; }
   [Ff][Rr][Qq][Hh]       { return CaosScript_K_FRQH; }
   [Ff][Rr][Qq][Ll]       { return CaosScript_K_FRQL; }
