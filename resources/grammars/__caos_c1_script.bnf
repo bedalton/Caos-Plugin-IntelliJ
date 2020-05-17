@@ -2568,7 +2568,7 @@ constant_assignment
 	::= K_CONST ID EQ_SPACE INT
 	{
 		pin=1
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptConstStub"
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptConstantAssignmentStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		methods = [
 			getNumberValue
