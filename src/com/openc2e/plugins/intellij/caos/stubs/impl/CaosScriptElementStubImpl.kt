@@ -4,8 +4,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.caos.deducer.*
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptLvalue
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptRvalue
 import com.openc2e.plugins.intellij.caos.psi.impl.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
@@ -31,7 +29,8 @@ class CaosScriptCommandCallStubImpl(
 
 
 data class CaosScriptLValueStubImpl(val parent: StubElement<*>?, override val caosVar: CaosVar) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub
-data class CaosScriptRValueStubImpl(val parent: StubElement<*>?, override val caosVar: CaosVar) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
+
+data class CaosScriptRValueStubImpl(val parent: StubElement<*>?, override val caosVar: CaosVar) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
 class CaosScriptConstStubImpl(
         parent: StubElement<*>?,
@@ -136,4 +135,8 @@ class CaosScriptVarTokenStubImpl(
         override val varIndex: Int?
 ) : StubBase<CaosScriptVarTokenImpl>(parent, CaosScriptStubTypes.VAR_TOKEN), CaosScriptVarTokenStub
 
-
+class CaosScriptTargAssignmentStubImpl(
+        parent:StubElement<*>?,
+        override val scope: CaosScope,
+        override val rvalue: CaosVar?
+) : StubBase<CaosScriptCTargImpl>(parent, CaosScriptStubTypes.TARG_ASSIGNMENT), CaosScriptTargAssignmentStub
