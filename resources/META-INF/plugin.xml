@@ -69,7 +69,11 @@
 
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexServiceImpl" />
+    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptConstAssignmentIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptNamedVarUseIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptVarAssignmentIndex" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
