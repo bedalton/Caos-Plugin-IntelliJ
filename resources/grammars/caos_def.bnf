@@ -192,7 +192,7 @@ parameter
 	}
 	;
 
-  variable_name
+variable_name
 	::= ID
 	|	WORD
 	{
@@ -252,6 +252,7 @@ command_word
 			getReference
 			isVariant
 			getPresentation
+			getCommandString
 		]
 	}
 	;
@@ -527,13 +528,13 @@ private line_terminator
 
 
 variant
-	::= variantCode ('=' variable_name)?
+	::= variantCode ('=' variant_name)?
 	;
 
 variantCode
 	::= ID
 	;
 
-variantName
+variant_name
 	::= VARIANT_NAME_LITERAL
 	;
