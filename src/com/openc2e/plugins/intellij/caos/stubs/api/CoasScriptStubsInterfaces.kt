@@ -3,6 +3,7 @@ package com.openc2e.plugins.intellij.caos.stubs.api
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.caos.deducer.*
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCTarg
 import com.openc2e.plugins.intellij.caos.psi.impl.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
@@ -12,6 +13,11 @@ interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
     val commandTokens:List<String>
     val parameterTypes:List<CaosScriptExpressionType>
     val numParameters:Int
+}
+
+interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
+    val scope:CaosScope
+    val rvalue:CaosVar?
 }
 
 interface CaosScriptLValueStub : StubElement<CaosScriptLvalueImpl> {
@@ -25,6 +31,11 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
 interface CaosScriptConstStub : StubElement<CaosScriptConstantAssignmentImpl> {
     val name:String
     val caosVar:CaosVar
+}
+
+interface CaosScriptConstantAssignment : StubElement<CaosScriptConstantAssignmentImpl> {
+    val name:String
+    val value:Float
 }
 
 interface CaosScriptNamedVarStub : StubElement<CaosScriptNamedVarImpl> {

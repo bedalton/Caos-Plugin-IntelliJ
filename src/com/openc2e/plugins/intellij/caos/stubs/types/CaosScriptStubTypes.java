@@ -1,5 +1,6 @@
 package com.openc2e.plugins.intellij.caos.stubs.types;
 
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptConstantAssignment;
 import org.jetbrains.annotations.NotNull;
 
 public interface CaosScriptStubTypes {
@@ -19,13 +20,19 @@ public interface CaosScriptStubTypes {
     CaosScriptVarTokenStubType VAR_TOKEN = new CaosScriptVarTokenStubType("CaosScript_VAR_TOKEN");
 
     @NotNull
-    CaosScriptLValueStubType LVALUE = new CaosScriptVarTokenStubType("CaosScript_LVALUE");
+    CaosScriptTargAssignmentStubType TARG_ASSIGNMENT = new CaosScriptTargAssignmentStubType("CaosScript_CTarg");
 
     @NotNull
-    CaosScriptRValueStubType RVALUE = new CaosScriptVarTokenStubType("CaosScript_RVALUE");
+    CaosScriptLValueStubType LVALUE = new CaosScriptLValueStubType("CaosScript_LVALUE");
+
+    @NotNull
+    CaosScriptRValueStubType RVALUE = new CaosScriptRValueStubType("CaosScript_RVALUE");
 
     @NotNull
     CaosScriptAssignmentStubType ASSIGNMENT = new CaosScriptAssignmentStubType("CaosScript_CAssignment");
+
+    @NotNull
+    CaosScriptConstantAssignmentStubType CONSTANT_ASSIGNMENT = new CaosScriptConstantAssignmentStubType("CaosScript_CONSTANT_ASSIGNMENT")
 
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
 }

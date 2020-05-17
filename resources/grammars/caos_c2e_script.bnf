@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("command|command_call|command_token|expression|var_token|subroutine|c_targ|constant_assignment|named_var|rvalue|lvalue")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("command_call|expression|var_token|subroutine|c_targ|constant_assignment|named_var|rvalue|lvalue")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -733,6 +733,7 @@ c_enum
 	::= K_ENUM
 	|	K_ESEE
 	| 	K_ETCH
+	|	K_EPAS
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -903,16 +904,6 @@ private expression
    |   	*/animation_string
    |	byte_string
    |   	expression_prime
-   {
-   		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpressionStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		]
-		methods = [
-			getType
-		]
-   }
    ;
 
 
@@ -943,9 +934,27 @@ equality_expression_plus
 	;
 
 command_call ::= command_call_by_args // I think private values are have equal priority
+	{
+		pin=2
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandCallStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandTokens
+			getParametersLength
+			getCommandTokens
+			getCommandElement
+		]
+		//recoverWhile = command_recover
+	}
 	;
 
-private command_call_by_args ::= c_none
+private command_call_by_args
+	::= c_targ
 	|	c_d
 	|	c_d_d
 	|	c_l
@@ -1027,29 +1036,40 @@ private command_call_by_args ::= c_none
 	|	c_a_d_d_d_d
 	|	c_f_d_f
 	|	c_a_d_f_d_f
-	|	c_assign
+	|	c_assignment
+	|	c_none
 	;
 
 
-c_assign
+c_assignment
 	::= c_all_assign_int
 	|	c_assign_agent
 	|	c_assign_string
 	|	c_setv
 	|	c_negv
+	{
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptAssignmentStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getOp
+			getCommandToken
+			getCommandString
+			getRVar
+			getLVar
+		]
+	}
 	;
 
-private c_assign_agent ::= c_kw_assign_agent space_like expects_agent
+private c_assign_agent ::= c_kw_assign_agent space_like lvalue space_like expects_agent
 	{
 		pin = 1
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVariantC1"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVariantC2"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVariantCV"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVariantC3"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVariantDS"
 		]
 		methods = [
 			getCommandString
@@ -1077,7 +1097,7 @@ private c_kw_assign_agent ::= K_SETA
 	}
 	;
 
-private c_assign_string ::= c_kw_assign_string space_like expects_string
+private c_assign_string ::= c_kw_assign_string space_like lvalue space_like expects_string
 	{
 		pin = 1
 		implements = [
@@ -1127,6 +1147,10 @@ rvalue_decimal_or_int ::=
 	;
 
 private c_setv ::= c_kw_setv space_like lvalue space_like setv_prime
+	{
+		pin = 1
+	}
+	;
 
 private setv_prime
 	::= (<<inMode "C1">>|<<inMode "C2">>) rvalue
@@ -1174,9 +1198,9 @@ c_kw_assign_number
 		]
 	}
 	;
-c_negv ::= c_kw_negv space_like lvalue
+private c_negv ::= c_kw_negv space_like lvalue
 	{
-
+		pin = 1
 	}
 
 c_kw_negv ::= K_NEGV
@@ -3054,7 +3078,7 @@ private r_d_d_d_s_d ::= r_kw_d_d_d_s_d space_like rvalue_decimal_or_int space_li
 	}
 	;
 
-private lvalue
+lvalue
 	::= l_none
 	|	l_a_d
 	|	l_d_d_d
@@ -3063,11 +3087,30 @@ private lvalue
 	|	l_v
 	|	l_d
 	|	rvars
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptLValueStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			isVariant
+			getIndex
+			getCommandToken
+			toCaosVar
+		]
+	}
 	;
 
 private rvars
 	::= var_token
     |	named_var
+    ;
 
 
 
@@ -3257,9 +3300,7 @@ c_kw_none
 	|	K_NET_COL space_like K_HEAD
 	|	K_NET_COL space_like K_WHOD
 	|	K_NET_COL space_like K_WHOZ
-	|	K_NEXT
 	|	K_NOHH
-	|	K_NSCN
 	|	K_NUDE
 	|	K_OVER
 	|	K_POIN
@@ -3736,11 +3777,6 @@ c_kw_d_d_d
 	|	<<inMode "DS">>K_DPAS
 	|	<<inMode "CV">>K_DPAS
 	|	<<inMode "C3">>K_DPAS
-	|	K_ENUM
-	|	K_EPAS
-	|	K_ESCN
-	|	K_ESEE
-	|	K_ETCH
 	|	K_FIRE
 	|	K_GIDS space_like K_SPCS
 	|	K_KMSG
@@ -4017,7 +4053,43 @@ c_kw_a
 	|	K_LIKE
 	|	K_NORN
 	|	K_RMEV
-	|	K_TARG
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_targ
+	::= c_kw_targ space_like expects_agent
+	{
+		pin = 1
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptTargAssignmentStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getScope
+			getRVar
+		]
+	}
+
+c_kw_targ
+	::= K_TARG
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -6396,7 +6468,9 @@ l_kw_d
 			setName
 		]
 	}
-	;all_tokens ::= K_CD_
+	;
+
+all_tokens ::= K_CD_
 	|	K_EJCT
 	|	K_INIT
 	|	K_SHUT
@@ -7311,6 +7385,7 @@ named_var
 			getName
 			setName
 			getReference
+			toCaosVar
 		]
 	}
 	;

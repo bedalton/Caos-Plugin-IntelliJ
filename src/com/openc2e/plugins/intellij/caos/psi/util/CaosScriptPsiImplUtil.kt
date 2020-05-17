@@ -6,14 +6,13 @@ import com.openc2e.plugins.intellij.caos.deducer.*
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.references.CaosScriptSubroutineNameReference
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 private val EXTRACT_NUMBER_REGEX = "[^0-9.+-]".toRegex()
 
+@Suppress("UNUSED_PARAMETER")
 object CaosScriptPsiImplUtil {
 
     @JvmStatic
@@ -52,6 +51,11 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getCommandToken(element: CaosScriptCTarg): CaosScriptIsCommandToken? {
+        return element.cKwTarg
+    }
+
+    @JvmStatic
     fun getCommandString(command: CaosScriptCommandElement): String {
         return getCommandTokens(command).joinToString(" ")
     }
@@ -71,6 +75,11 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getParametersLength(command: CaosScriptCommandCall): Int {
         return command.stub?.numParameters ?: command.getChildrenOfType(CaosScriptArgument::class.java).size
+    }
+
+    @JvmStatic
+    fun getCommandToken(assignment: CaosScriptCAssignment) : CaosScriptIsCommandToken? {
+        return assignment.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
 
     @JvmStatic
@@ -235,13 +244,36 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getRVar(assignment:CaosScriptCTarg) : CaosVar? {
+        return assignment.expectsAgent?.rvalue?.toCaosVar()
+    }
+
+    @JvmStatic
     fun getRVar(assignment: CaosScriptCAssignment): CaosVar? {
         assignment.stub?.rvalue?.let {
             return it
         }
-        return assignment.expectsDecimal?.rvalue?.let {
+        assignment.rvalue?.let {
             return toCaosVar(it)
         }
+        assignment.rvalueDecimalOrInt?.let { intOrDecimal ->
+            intOrDecimal.expectsDecimal?.let {
+                toCaosVar(it.rvalue)
+            }
+            intOrDecimal.expectsInt?.let {
+                toCaosVar(it.rvalue)
+            }
+        }
+        assignment.expectsDecimal?.let {
+            return toCaosVar(it.rvalue)
+        }
+        assignment.expectsString?.let {
+            return toCaosVar(it.rvalue)
+        }
+        assignment.expectsAgent?.let {
+            return toCaosVar(it.rvalue)
+        }
+        return null
     }
     @JvmStatic
     fun getLVar(assignment: CaosScriptCAssignment): CaosVar? {
@@ -255,6 +287,9 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun toCaosVar(rvalue:CaosScriptRvalue) : CaosVar {
+        rvalue.stub?.caosVar?.let {
+            return it
+        }
         val text = rvalue.text
         (rvalue.varToken)?.let {
             return toCaosVar(it)
@@ -330,13 +365,13 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun toCaosVar(lvalue:CaosScriptLvalue) : CaosVar {
-        lvalue.stub?.caosVar ?: lvalue.namedVar?.let {
+        lvalue.stub?.caosVar?.let {
+            return it
+        }
+        lvalue.namedVar?.let {
             return CaosVar.NamedVar(it.nVar.text)
         }
         (lvalue.varToken)?.let {
-            return toCaosVar(it)
-        }
-        (lvalue.namedConstant)?.let {
             return toCaosVar(it)
         }
         (lvalue.namedVar)?.let {
@@ -347,12 +382,6 @@ object CaosScriptPsiImplUtil {
         }
         return CaosVar.CaosLiteralVal
     }
-
-    @JvmStatic
-    fun getRValueString(assignment: CaosScriptCAssignment): String {
-        return assignment.stub?.rvalue?.text ?: assignment.expectsDecimal?.rvalue?.text ?: ""
-    }
-
 
     @JvmStatic
     fun getBlockType(doif: CaosScriptDoifStatementStatement): CaosScriptBlockType = CaosScriptBlockType.DOIF
@@ -397,22 +426,24 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getNumberValue(assignment: CaosScriptConstantAssignment) : Float? {
-        return (assignment.int?.text ?: assignment.float?.text)?.nullIfEmpty()?.toFloat()
+        return assignment.constantValue?.text?.toFloat()
     }
-
 
     @JvmStatic
     fun getOp(assignment:CaosScriptCAssignment) : CaosOp {
-        assignment.cKwNegv?.let { return CaosOp.NEGV}
-        val assigmentOperator = assignment.commandToken
-        assigmentOperator.kSetv?.let { return CaosOp.SETV }
-        assigmentOperator.kAddv?.let { return CaosOp.ADDV }
-        assigmentOperator.kSubv?.let { return CaosOp.SUBV }
-        assigmentOperator.kDivv?.let { return CaosOp.DIVV }
-        assigmentOperator.kMulv?.let { return CaosOp.MULV }
-        assigmentOperator.kModv?.let { return CaosOp.MODV }
-        assigmentOperator.kAndv?.let { return CaosOp.ANDV }
-        assigmentOperator.kOrrv?.let { return CaosOp.ORRV }
+        assignment.cKwNegv?.let { return CaosOp.NEGV }
+        assignment.cKwSetv?.let { return CaosOp.SETV }
+        assignment.kSeta?.let   { return CaosOp.SETV }
+        assignment.kSets?.let   { return CaosOp.SETV }
+        assignment.cKwAssignNumber?.let {
+            it.kAddv?.let { return CaosOp.ADDV }
+            it.kAndv?.let { return CaosOp.ANDV }
+            it.kModv?.let { return CaosOp.MODV }
+            it.kMulv?.let { return CaosOp.MULV }
+            it.kDivv?.let { return CaosOp.DIVV }
+            it.kOrrv?.let { return CaosOp.ORRV }
+            it.kSubv?.let { return CaosOp.SUBV }
+        }
         return CaosOp.UNDEF
     }
 
