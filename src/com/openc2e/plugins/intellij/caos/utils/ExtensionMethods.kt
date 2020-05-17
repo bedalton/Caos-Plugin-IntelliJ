@@ -42,7 +42,7 @@ fun <PsiT : PsiElement> PsiElement.hasParentOfType(parentClass:Class<PsiT>) : Bo
     return PsiTreeUtil.getParentOfType(this, parentClass) != null;
 }
 
-fun <PsiT : PsiElement> PsiElement.isOrasParentOfType(parentClass:Class<PsiT>) : Boolean {
+fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass:Class<PsiT>) : Boolean {
     return parentClass.isInstance(this) || PsiTreeUtil.getParentOfType(this, parentClass) != null;
 }
 
