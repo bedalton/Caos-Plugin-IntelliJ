@@ -7,6 +7,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptFixTooManySpaces
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptTrimErrorSpaceBatchFix
 import com.openc2e.plugins.intellij.caos.fixes.TransposeEqOp
@@ -40,7 +41,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptCRetn -> annotateRetnCommand(variant, element, annotationWrapper)
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
-            is CaosScriptCIscr -> annotationIscr(variant, element, annotationWrapper)
         }
     }
 
@@ -127,14 +127,24 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotationIscr(variant: String, element: CaosScriptCIscr, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant == "C3")
+    private fun annotationNotAvailable(element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+        val command = element.commandString
+        val variants = CaosDefCommandElementsByNameIndex
+                .Instance[command, element.project]
+                .flatMap { it.variants.filterNotNull() }
+        if (variants.isEmpty()) {
+            annotationWrapper
+                    .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command", command))
+                    .range(element)
+                    .create()
+            return
+        }
+        if (element.isVariant(variants, false))
             return
         annotationWrapper
-                .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.iscr-not-allowed"))
+                .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variants.joinToString(",")))
                 .range(element)
                 .create()
-
     }
 
     companion object {
