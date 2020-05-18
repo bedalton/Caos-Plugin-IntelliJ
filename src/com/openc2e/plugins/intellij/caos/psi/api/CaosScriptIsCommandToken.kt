@@ -6,4 +6,5 @@ import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenRefere
 interface CaosScriptIsCommandToken : PsiNamedElement, CaosScriptCompositeElement {
     fun isVariant(variants:List<String>, strict:Boolean) : Boolean
     val reference:CaosScriptCommandTokenReference
+    val commandString:String
 }

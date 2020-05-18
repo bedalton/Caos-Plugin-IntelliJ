@@ -87,6 +87,11 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
+    fun getCommandString(commandWord: CaosDefCommandWord) : String {
+        return commandWord.text
+    }
+
+    @JvmStatic
     fun getCommandWords(command:CaosDefCommandDefElement) : List<String> {
         return command.stub?.commandWords ?: command.command.commandWordList.map { it.text }
     }
