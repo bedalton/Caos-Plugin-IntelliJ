@@ -18,9 +18,12 @@
 	name("space.*") = "space or comma"
 	name("c_.*") = "command"
 	name("r_.*") = "value";
+	name("rvalue.*") = "value";
+	name("expects.*") = "value";
 	name("l_.*") = "variable";
 	name("lvalue") = "variable";
-	name("rvalue") = "value";
+	name("rvalue.*") = "value";
+	name("eq_op.*") = "EQ|NE|etc.."
 	name("command_call") = "command"
 	tokens = [
 		NEWLINE = "regexp:\n";
@@ -273,7 +276,7 @@ macro
 private macro_code_block
 	::= code_block
 	{
-		recoverWhile = macro_code_block_recover
+		//recoverWhile = macro_code_block_recover
 	}
 	;
 
@@ -347,7 +350,7 @@ private event_script_body
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
 		]
-		recoverWhile=event_script_body_recover
+		//recoverWhile=event_script_body_recover
 	}
 	;
 
@@ -426,7 +429,7 @@ c_retn
 private subroutine_body
 	::= code_block
 	{
-		recoverWhile=subroutine_body_recover
+		//recoverWhile=subroutine_body_recover
 	}
 	;
 
@@ -451,7 +454,7 @@ expression_list
 	::= expression (!new_line_like space_like expression)* space_like?
 	{
 		pin(".*")=1
-		recoverWhile=expression_list_recover
+		//recoverWhile=expression_list_recover
 	}
 
 private expression_list_recover
@@ -497,7 +500,7 @@ private untl_terminator
 private loop_body
 	::= code_block
 	{
-		recoverWhile=loop_body_recover
+		//recoverWhile=loop_body_recover
 	}
 	;
 
@@ -526,7 +529,7 @@ repeat_statement
 private repeat_body
    ::= code_block
    {
-      recoverWhile=repeat_body_recover
+      //recoverWhile=repeat_body_recover
    }
    ;
 
@@ -575,7 +578,7 @@ private enum_body
          "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
          "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
       ]
-      recoverWhile=enum_body_recover
+      //recoverWhile=enum_body_recover
    }
    ;
 
@@ -586,7 +589,7 @@ private enum_body_recover
 private escn_body
    ::= code_block
    {
-      recoverWhile=escn_body_recover
+      //recoverWhile=escn_body_recover
    }
    ;
 
@@ -648,7 +651,7 @@ else_statement
 private else_block
 	::= code_block
 	{
-		recoverWhile=else_body_recover
+		//recoverWhile=else_body_recover
 	}
 	;
 
@@ -659,7 +662,7 @@ private else_body_recover
 private do_if_body
 	::= code_block
 	{
-		recoverWhile=do_if_body_recover
+		//recoverWhile=do_if_body_recover
 	}
 	;
 
@@ -937,7 +940,7 @@ private expression_prime
 	;
 
 equality_expression
-   ::= equality_expression_prime (space_like equality_expression_plus)
+   ::= equality_expression_prime (space_like equality_expression_plus)*
    {
    		pin=3
    }
@@ -2314,8 +2317,6 @@ c_kw_none
 	|	<<isVariant "C1">>K_DPAS
 	|	K_DROP
 	|	K_EDIT
-	|	K_ENDI
-	|	K_ENDM
 	|	K_FADE
 	|	K_FCUS
 	|	K_FILE space_like K_ICLO
