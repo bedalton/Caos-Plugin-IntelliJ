@@ -15,51 +15,100 @@ object CaosScriptPsiElementFactory {
     }
 
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken {
-        val file= createFileFromText(project, "$newNameString 0");
-        val command =  file.firstChild.firstChild as CaosScriptIsCommandToken
-        return command
+        val file = createFileFromText(project, "$newNameString 0")
+        return file.firstChild.firstChild as CaosScriptIsCommandToken
     }
 
     fun createSubroutineNameElement(project: Project, newNameString: String): CaosScriptSubroutineName? {
         if (newNameString.isEmpty() || !newNameString.matches(SUBROUTINE_NAME_REGEX))
             return null
-        val file= createFileFromText(project, "gsub $newNameString");
-        val command =  file.firstChild.firstChild?.firstChild?.firstChild?.firstChild as CaosScriptCGsub
+        val file = createFileFromText(project, "gsub $newNameString")
+        val command = file.firstChild.firstChild?.firstChild?.firstChild?.firstChild as CaosScriptCGsub
         return command.subroutineName
     }
 
-    val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
+    private val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
 
-    fun createNamedVar(project: Project, newNameString: String) : CaosScriptNamedVar? {
+    fun createNamedVar(project: Project, newNameString: String): CaosScriptNamedVar? {
         if (!NAMED_VAR_REGEX.matches(newNameString))
             return null
         val newName = if (newNameString.startsWith("$"))
             newNameString
         else
             "$$newNameString"
-        createFileFromText(project,"setv $newName 0")
-        return null
+        val file = createFileFromText(project, "setv $newName 0")
+        var first = file.firstChild
+        while (first != null && first !is CaosScriptCAssignment) {
+            first = first.firstChild
+        }
+        if (first !is CaosScriptCAssignment)
+            throw NullPointerException("Failed to find constant name in element type factory")
+        return first.lvalue?.namedVar
     }
 
-    val NAMED_CONST_REGEX = "[#]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
-    fun createNamedConst(project: Project, newNameString: String) : CaosScriptNamedConstant? {
+    private val NAMED_CONST_REGEX = "[#]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
+
+    fun createNamedConst(project: Project, newNameString: String): CaosScriptNamedConstant? {
         if (!NAMED_CONST_REGEX.matches(newNameString))
             return null
         val newName = if (newNameString.startsWith("#"))
             newNameString
         else
             "#$newNameString"
-        val file = createFileFromText(project,"setv var0 $newName")
-        return null
+        val file = createFileFromText(project, "setv var0 $newName")
+        var first = file.firstChild
+        while (first != null && first !is CaosScriptCAssignment) {
+            first = first.firstChild
+        }
+        if (first !is CaosScriptCAssignment)
+            throw NullPointerException("Failed to find constant name in element type factory")
+        val rvalue =
+                first.rvalueDecimalOrInt
+                        ?.let {
+                            it.expectsDecimal?.rvalue ?: it.expectsInt?.rvalue
+                        }
+                        ?: first.expectsValue?.rvalue
+                        ?: return null
+        return rvalue.namedConstant
     }
 
-    val CONSTANT_NAME_REGEX = "[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
-    fun createConstantName(project: Project, newNameString: String) : CaosScriptConstantName? {
+    private val CONSTANT_NAME_REGEX = "[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
+    fun createConstantName(project: Project, newNameString: String): CaosScriptConstantName? {
         if (!CONSTANT_NAME_REGEX.matches(newNameString))
             return null
         val file = createFileFromText(project, "const $newNameString = 0")
+        var first = file.firstChild
+        while (first != null && first !is CaosScriptConstantAssignment) {
+            first = first.firstChild
+        }
+        if (first !is CaosScriptConstantAssignment)
+            throw NullPointerException("Failed to find constant name in element type factory")
+        return first.constantName
+    }
 
-        return null
+    private val TOKEN_NAME_REGEX = "[a-zA-Z_0-9]*".toRegex()
+    fun createTokenElement(project: Project, newNameString: String): CaosScriptToken? {
+        if (newNameString.isEmpty() || !newNameString.matches(TOKEN_NAME_REGEX))
+            return null
+        val file = createFileFromText(project, "tokn $newNameString")
+        var first = file.firstChild
+        while (first != null && first !is CaosScriptCommandCall) {
+            first = first.firstChild
+        }
+        if (first !is CaosScriptCommandCall)
+            throw NullPointerException("Failed to find string in element type factory")
+        return first.expectsToken?.rvalue?.token
+    }
+
+    fun createStringElement(project: Project, newNameString: String): CaosScriptRvalue? {
+        val file = createFileFromText(project, "sets var1 \"$newNameString\"")
+        var first = file.firstChild
+        while (first != null && first !is CaosScriptCAssignment) {
+            first = first.firstChild
+        }
+        if (first !is CaosScriptCAssignment)
+            throw NullPointerException("Failed to find string in element type factory")
+        return first.expectsString?.rvalue
     }
 
 }
