@@ -30,23 +30,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         var currentVariant: String? = builder_.getUserData(CAOS_VARIANT)
         if (currentVariant != null)
             return currentVariant == variant
-        val element = builder_.treeBuilt.psi
-        if (element != null) {
-            var file = element.containingFile
-            if (file == null) {
-                val originalElement = element.originalElement
-                if (originalElement != null) {
-                    file = originalElement.containingFile
-                }
-                if (file != null) {
-                    currentVariant = file.virtualFile.variant
-                }
-            } else {
-                currentVariant = file.virtualFile.variant
-            }
-        }
-        if (currentVariant == null)
-            currentVariant = ServiceManager.getService(CaosScriptProjectSettingsService::class.java).state.baseVariant
+        currentVariant = CaosScriptProjectSettingsService.getInstance(builder_.project).variant
         builder_.putUserData(CAOS_VARIANT, currentVariant)
         return currentVariant == variant
     }
