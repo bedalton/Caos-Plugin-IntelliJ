@@ -65,6 +65,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_ISCR,
                 CaosScript_K_RSCR,
                 CaosScript_K_DOIF,
+                CaosScript_K_ELIF,
                 CaosScript_K_ELSE,
                 CaosScript_K_ENDI,
                 CaosScript_K_ENDM,

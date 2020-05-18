@@ -1,6 +1,8 @@
 package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.ProjectTopics
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -62,7 +64,11 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
         val selected = it.item as String
         if (caosFile.variant == selected || selected !in CaosConstants.VARAINTS)
             return@variant
+        val settingsService = CaosScriptProjectSettingsService.getInstance(project = caosFile.project)
+        val state = settingsService.state.copy(baseVariant = selected)
+        settingsService.loadState(state)
         caosFile.variant = selected
+        DaemonCodeAnalyzer.getInstance(caosFile.project).restart(caosFile)
     }
     return toolbar.panel
 }

@@ -40,6 +40,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
             is CaosScriptCRetn -> annotateRetnCommand(variant, element, annotationWrapper)
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
+            is CaosScriptIsCommandToken -> annotateNotAvailable(element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
         }
     }
@@ -127,7 +128,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotationNotAvailable(element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNotAvailable(element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
         val command = element.commandString
         val variants = CaosDefCommandElementsByNameIndex
                 .Instance[command, element.project]

@@ -1,16 +1,21 @@
 package com.openc2e.plugins.intellij.caos.project
 
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.*
+import com.intellij.openapi.project.Project
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettingsService.ProjectSettings
 
-@State(
-        name = "caosScript",
-        reloadable = true
-)
-data class CaosScriptProjectSettingsService(private var _state:ProjectSettings = ProjectSettings()) : PersistentStateComponent<ProjectSettings> {
 
+/**
+ * Data class holding project settings
+ */
+@State(
+        name = "caosScript.xml",
+        reloadable = true,
+        storages = [Storage(value = "caosScript.xml")]
+)
+class CaosScriptProjectSettingsService : PersistentStateComponent<ProjectSettings> {
+
+    private var _state:ProjectSettings = ProjectSettings()
     /**
      * Gets the current state
      */
@@ -23,15 +28,22 @@ data class CaosScriptProjectSettingsService(private var _state:ProjectSettings =
         _state = newState
     }
 
-    /**
-     * Data class holding project settings
-     */
-    @Storage("caosScript.xml")
+    val variant:String get() = _state.baseVariant
+
+    fun setVariant(variant:String) {
+        _state = state.copy(baseVariant = variant)
+    }
+    fun isVariant(variant:String): Boolean = variant == _state.baseVariant
+
     data class ProjectSettings(
             val baseVariant:String = DEFAULT_VARIANT,
             val indentCode:Boolean = true
     )
     companion object {
         const val DEFAULT_VARIANT = "DS"
+        fun getInstance(project:Project) : CaosScriptProjectSettingsService {
+            return ServiceManager.getService(project, CaosScriptProjectSettingsService::class.java)
+                    ?: CaosScriptProjectSettingsService()
+        }
     }
 }
