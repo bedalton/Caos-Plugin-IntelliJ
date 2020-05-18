@@ -23,7 +23,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="173.0" />
+  <idea-version since-build="191.5600" />
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -46,7 +46,7 @@
     <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.openc2e.plugins.intellij.caos.references.CaosScriptUsagesProvider" />
-    <applicationService
+    <projectService
         serviceImplementation="com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettingsService" />
 
     <!-- Highlighting -->
