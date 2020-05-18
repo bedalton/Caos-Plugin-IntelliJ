@@ -14,14 +14,21 @@ class CaosScriptRValueStubType(debugName:String) : CaosScriptStubElementType<Cao
 
     override fun serialize(stub: CaosScriptRValueStub, stream: StubOutputStream) {
         stream.writeCaosVar(stub.caosVar)
+        stream.writeList(stub.argumentValues) {
+            writeCaosVar(it)
+        }
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptRValueStub {
-        return CaosScriptRValueStubImpl(parent, stream.readCaosVar())
+        val selfAsCaosVar = stream.readCaosVar()
+        val arguments = stream.readList {
+            readCaosVar()
+        }
+        return CaosScriptRValueStubImpl(parent, selfAsCaosVar, arguments)
     }
 
     override fun createStub(element: CaosScriptRvalueImpl, parent: StubElement<*>?): CaosScriptRValueStub {
-        return CaosScriptRValueStubImpl(parent, element.toCaosVar())
+        return CaosScriptRValueStubImpl(parent, element.toCaosVar(), element.argumentValues)
     }
 
 }

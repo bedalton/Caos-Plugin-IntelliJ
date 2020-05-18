@@ -47,6 +47,20 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
     }
 }
 
+
+internal fun StubInputStream.readCaosVarSafe() : CaosVar? {
+    if (!readBoolean())
+        return null
+    return readCaosVar()
+}
+
+internal fun StubOutputStream.writeCaosVarSafe(caosVar:CaosVar?) {
+    writeBoolean(caosVar != null)
+    if (caosVar != null)
+        writeCaosVar(caosVar)
+}
+
+
 internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
     when (caosVar) {
         is ConstVal -> writeConst(caosVar)
@@ -157,18 +171,19 @@ private fun StubOutputStream.writeCaosCommandVar(call: CaosCommandCall) {
     writeName(call.text)
 }
 
-internal fun <T> StubOutputStream.writeList(list:List<T>, writer:StubOutputStream.(T)->Unit) {
+internal inline fun <T> StubOutputStream.writeList(list:List<T>, writer:StubOutputStream.(T)->Unit) {
     writeInt(list.size)
     for(item in list) {
         writer(item)
     }
 }
 
-internal fun <T> StubInputStream.readList(reader:StubInputStream.()->T) : List<T> {
+internal inline fun <T:Any> StubInputStream.readList(reader:StubInputStream.()->T) : List<T> {
     val listSize = readInt()
-    return (0 until listSize).mapNotNull {
+    val out:List<T> = (0 until listSize).mapNotNull {
         reader()
     }
+    return out
 }
 
 internal fun StubOutputStream.writeStringList(list:List<String>) {

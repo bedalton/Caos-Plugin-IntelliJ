@@ -6,7 +6,6 @@ import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService
 import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptSubroutineImpl
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub
