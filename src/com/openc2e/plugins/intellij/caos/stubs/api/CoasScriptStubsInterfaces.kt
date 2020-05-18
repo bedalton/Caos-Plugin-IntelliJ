@@ -3,16 +3,17 @@ package com.openc2e.plugins.intellij.caos.stubs.api
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.caos.deducer.*
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCTarg
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectedType
 import com.openc2e.plugins.intellij.caos.psi.impl.*
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
+import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
+import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptConstantAssignmentStruct
 
 interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
     val command:String
     val commandTokens:List<String>
-    val parameterTypes:List<CaosScriptExpressionType>
-    val numParameters:Int
+    val argumentValues:List<CaosVar>
+    val numArguments:Int get() = argumentValues.size
 }
 
 interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
@@ -22,28 +23,47 @@ interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
 
 interface CaosScriptLValueStub : StubElement<CaosScriptLvalueImpl> {
     val caosVar:CaosVar
+    val argumentValues: List<CaosVar>
 }
 
 interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val caosVar:CaosVar
+    val argumentValues: List<CaosVar>
 }
 
-interface CaosScriptConstStub : StubElement<CaosScriptConstantAssignmentImpl> {
-    val name:String
+interface CaosScriptArgumentStub {
+    val index:Int
     val caosVar:CaosVar
+    val expectedType:CaosScriptExpectedType
 }
 
-interface CaosScriptConstantAssignment : StubElement<CaosScriptConstantAssignmentImpl> {
+interface CaosScriptExpectsIntStub : StubElement<CaosScriptExpectsIntImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsFloatStub : StubElement<CaosScriptExpectsFloatImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsStringStub : StubElement<CaosScriptExpectsStringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsC1StringStub : StubElement<CaosScriptExpectsC1StringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsByteStringStub : StubElement<CaosScriptExpectsByteStringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsTokenStub : StubElement<CaosScriptExpectsTokenImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsAgentStub : StubElement<CaosScriptExpectsAgentImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsValueStub : StubElement<CaosScriptExpectsValueImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsDecimalStub : StubElement<CaosScriptExpectsDecimalImpl>, CaosScriptArgumentStub
+
+interface CaosScriptConstantAssignmentStub : StubElement<CaosScriptConstantAssignmentImpl> {
     val name:String
-    val value:Float
+    val value:Float?
+}
+
+interface CaosScriptNamedConstantStub : StubElement<CaosScriptNamedConstantImpl> {
+    val name:String
+    val scope:CaosScope
 }
 
 interface CaosScriptNamedVarStub : StubElement<CaosScriptNamedVarImpl> {
     val name:String
-    val caosVar:CaosVar
+    val scope:CaosScope
 }
 
 interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
+    val fileName:String
     val operation: CaosOp
     val lvalue:CaosVar?
     val rvalue:CaosVar?
@@ -52,7 +72,7 @@ interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
 
 interface CaosScriptBlockStub {
     val range:TextRange
-    val enclosingScope:List<CaosScope>
+    val enclosingScope:CaosScope
     val blockType:CaosScriptBlockType
 }
 
@@ -80,13 +100,19 @@ interface CaosScriptLoopStub : StubElement<CaosScriptLoopStatementImpl>, CaosScr
     val loopCondition:CaosLoopCondition?
 }
 
-interface CaosScriptMacroStub : StubElement<CaosScriptMacroImpl>, CaosScriptBlockStub
+interface CaosScriptMacroStub : StubElement<CaosScriptMacroImpl>
 
-interface CaosScriptEventScriptStub : StubElement<CaosScriptEventScriptImpl>, CaosScriptBlockStub {
+interface CaosScriptEventScriptStub : StubElement<CaosScriptEventScriptImpl> {
     val family:Int
     val genus:Int
     val species:Int
-    val event:Int
+    val eventNumber:Int
+}
+
+interface CaosScriptNamedGameVarStub : StubElement<CaosScriptNamedGameVarImpl> {
+    val type: CaosScriptNamedGameVarType
+    val name:String
+    val key:CaosVar
 }
 
 interface CaosScriptRepsStub : StubElement<CaosScriptRepeatStatementImpl>, CaosScriptBlockStub {

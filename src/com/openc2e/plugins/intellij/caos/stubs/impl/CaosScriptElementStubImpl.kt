@@ -1,12 +1,14 @@
 package com.openc2e.plugins.intellij.caos.stubs.impl
 
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
-import com.openc2e.plugins.intellij.caos.deducer.*
+import com.openc2e.plugins.intellij.caos.deducer.CaosOp
+import com.openc2e.plugins.intellij.caos.deducer.CaosScope
+import com.openc2e.plugins.intellij.caos.deducer.CaosVar
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectedType
 import com.openc2e.plugins.intellij.caos.psi.impl.*
-import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptExpressionType
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
+import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
 import com.openc2e.plugins.intellij.caos.stubs.api.*
 import com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes
 
@@ -19,38 +21,144 @@ class CaosScriptSubroutineStubImpl(
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
         override val commandTokens:List<String>,
-        override val numParameters: Int,
-        override val parameterTypes: List<CaosScriptExpressionType>
+        override val argumentValues: List<CaosVar>
 ) : StubBase<CaosScriptCommandCallImpl>(parent, CaosScriptStubTypes.COMMAND_CALL), CaosScriptCommandCallStub {
     override val command:String by lazy {
         commandTokens.joinToString(" ")
     }
 }
 
+data class CaosScriptLValueStubImpl(
+        val parent: StubElement<*>?,
+        override val caosVar: CaosVar,
+        override val argumentValues: List<CaosVar>
+) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub
 
-data class CaosScriptLValueStubImpl(val parent: StubElement<*>?, override val caosVar: CaosVar) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub
+data class CaosScriptRValueStubImpl(
+        val parent: StubElement<*>?,
+        override val caosVar: CaosVar,
+        override val argumentValues: List<CaosVar>
+) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
-data class CaosScriptRValueStubImpl(val parent: StubElement<*>?, override val caosVar: CaosVar) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
-class CaosScriptConstStubImpl(
+data class CaosScriptExpectsIntStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsIntImpl>(parent, CaosScriptStubTypes.EXPECTS_INT), CaosScriptExpectsIntStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.INT
+}
+
+data class CaosScriptExpectsFloatStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsFloatImpl>(parent, CaosScriptStubTypes.EXPECTS_FLOAT), CaosScriptExpectsFloatStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.FLOAT
+}
+
+data class CaosScriptExpectsStringStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsStringImpl>(parent, CaosScriptStubTypes.EXPECTS_STRING), CaosScriptExpectsStringStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.STRING
+}
+
+
+data class CaosScriptExpectsC1StringStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsC1StringImpl>(parent, CaosScriptStubTypes.EXPECTS_C1_STRING), CaosScriptExpectsC1StringStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.C1_STRING
+}
+
+data class CaosScriptExpectsTokenStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsTokenImpl>(parent, CaosScriptStubTypes.EXPECTS_TOKEN), CaosScriptExpectsTokenStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.TOKEN
+}
+
+data class CaosScriptExpectsDecimalStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsDecimalImpl>(parent, CaosScriptStubTypes.EXPECTS_DECIMAL), CaosScriptExpectsDecimalStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.DECIMAL
+}
+
+data class CaosScriptExpectsByteStringStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsByteStringImpl>(parent, CaosScriptStubTypes.EXPECTS_BYTE_STRING), CaosScriptExpectsByteStringStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.BYTE_STRING
+}
+
+data class CaosScriptExpectsAgentStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsAgentImpl>(parent, CaosScriptStubTypes.EXPECTS_AGENT), CaosScriptExpectsAgentStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.AGENT
+}
+
+data class CaosScriptExpectsValueStubImpl(
+        val parent:StubElement<*>?,
+        override val index:Int,
+        override val caosVar: CaosVar
+) : StubBase<CaosScriptExpectsValueImpl>(parent, CaosScriptStubTypes.EXPECTS_VALUE), CaosScriptExpectsValueStub {
+    override val expectedType: CaosScriptExpectedType
+        get() =  CaosScriptExpectedType.ANY
+}
+
+class CaosScriptNamedGameVarStubImpl(
+        parent: StubElement<*>?,
+        override val type: CaosScriptNamedGameVarType,
+        override val name: String,
+        override val key:CaosVar
+) : StubBase<CaosScriptNamedGameVarImpl>(parent, CaosScriptStubTypes.NAMED_GAME_VAR), CaosScriptNamedGameVarStub
+
+
+class CaosScriptConstantAssignmentStubImpl(
         parent: StubElement<*>?,
         override val name:String,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptConstantAssignmentImpl>(parent, CaosScriptStubTypes.CONST), CaosScriptConstStub
+        override val value:Float?
+) : StubBase<CaosScriptConstantAssignmentImpl>(parent, CaosScriptStubTypes.CONSTANT_ASSIGNMENT), CaosScriptConstantAssignmentStub
 
-class CaosScriptNamedVar(
+class CaosScriptNamedConstantStubImpl(
         parent: StubElement<*>?,
+        override val name: String,
+        override val scope: CaosScope
+) : StubBase<CaosScriptNamedConstantImpl>(parent, CaosScriptStubTypes.NAMED_CONSTANT), CaosScriptNamedConstantStub
+
+class CaosScriptNamedVarStubImpl(
+        parent:StubElement<*>?,
         override val name:String,
-        override val caosVar: CaosVar
+        override val scope: CaosScope
 ) : StubBase<CaosScriptNamedVarImpl>(parent, CaosScriptStubTypes.NAMED_VAR), CaosScriptNamedVarStub
 
 class CaosScriptAssignmentStubImpl(
         parent: StubElement<*>?,
+        override val fileName:String,
         override val operation:CaosOp,
         override val rvalue:CaosVar?,
         override val lvalue:CaosVar?,
         override val enclosingScope:CaosScope
 ) : StubBase<CaosScriptCAssignmentImpl>(parent, CaosScriptStubTypes.VAR_ASSIGNMENT), CaosScriptAssignmentStub
+
+/*
 
 class CaosScriptDoIfStubImpl(
         parent: StubElement<*>?,
@@ -126,7 +234,25 @@ class CaosScriptEventScriptStubImpl(
 
 class CaosScriptRepsStubImpl(
         parent: StubElement<*>?
-) : StubBase<CaosScriptRepsStub>, CaosS
+) : StubBase<CaosScriptRepeatStatementImpl>(parent, CaosScriptStubTypes.REPS_STUB), CaosScriptRepsStub
+*/
+class CaosScriptEventScriptStubImpl(
+        parent: StubElement<*>?,
+        override val family: Int,
+        override val genus: Int,
+        override val species: Int,
+        override val eventNumber: Int
+) : StubBase<CaosScriptEventScriptImpl>(parent, CaosScriptStubTypes.EVENT_SCRIPT), CaosScriptEventScriptStub
+
+class CaosScriptMacroStubImpl(
+        parent: StubElement<*>?
+) : StubBase<CaosScriptMacroImpl>(parent, CaosScriptStubTypes.MACRO), CaosScriptMacroStub
+
+
+data class CaosScriptConstantAssignmentStruct(
+        val name:String,
+        val value:CaosVar
+)
 
 
 class CaosScriptVarTokenStubImpl(

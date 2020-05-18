@@ -1,7 +1,10 @@
 package com.openc2e.plugins.intellij.caos.stubs.types;
 
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptConstantAssignment;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.stubs.IStubElementType;
+import com.intellij.psi.stubs.StubElement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface CaosScriptStubTypes {
     //@NotNull
@@ -9,9 +12,6 @@ public interface CaosScriptStubTypes {
 
     @NotNull
     CaosScriptCommandCallStubType COMMAND_CALL = new CaosScriptCommandCallStubType("CaosScript_COMMAND_CALL");
-
-    @NotNull
-    CaosScriptExpressionStubType EXPRESSION = new CaosScriptExpressionStubType("CaosScript_EXPRESSION");
 
     @NotNull
     CaosScriptSubroutineStubType SUBROUTINE = new CaosScriptSubroutineStubType("CaosScript_SUBROUTINE");
@@ -29,10 +29,52 @@ public interface CaosScriptStubTypes {
     CaosScriptRValueStubType RVALUE = new CaosScriptRValueStubType("CaosScript_RVALUE");
 
     @NotNull
-    CaosScriptAssignmentStubType ASSIGNMENT = new CaosScriptAssignmentStubType("CaosScript_CAssignment");
+    CaosScriptAssignmentStubType VAR_ASSIGNMENT = new CaosScriptAssignmentStubType("CaosScript_CAssignment");
 
     @NotNull
-    CaosScriptConstantAssignmentStubType CONSTANT_ASSIGNMENT = new CaosScriptConstantAssignmentStubType("CaosScript_CONSTANT_ASSIGNMENT")
+    CaosScriptConstantAssignmentStubType CONSTANT_ASSIGNMENT = new CaosScriptConstantAssignmentStubType("CaosScript_CONSTANT_ASSIGNMENT");
+
+    @NotNull
+    CaosScriptNamedVarStubType NAMED_VAR = new CaosScriptNamedVarStubType("CaosScript_NAMED_VAR");
+
+    @NotNull
+    CaosScriptNamedConstantStubType NAMED_CONSTANT = new CaosScriptNamedConstantStubType("CaosScript_NAMED_CONSTANT");
+
+    @NotNull
+    CaosScriptExpectsIntStubType EXPECTS_INT = new CaosScriptExpectsIntStubType("CaosScript_EXPECTS_INT");
+
+    @NotNull
+    CaosScriptExpectsFloatStubType EXPECTS_FLOAT = new CaosScriptExpectsFloatStubType("CaosScript_EXPECTS_FLOAT");
+
+    @NotNull
+    CaosScriptExpectsAgentStubType EXPECTS_AGENT = new CaosScriptExpectsAgentStubType("CaosScript_EXPECTS_AGENT");
+
+    @NotNull
+    CaosScriptExpectsStringStubType EXPECTS_STRING = new CaosScriptExpectsStringStubType("CaosScript_EXPECTS_STRING");
+
+    @NotNull
+    CaosScriptExpectsC1StringStubType EXPECTS_C1_STRING = new CaosScriptExpectsC1StringStubType("CaosScript_C1_STRING");
+
+    @NotNull
+    CaosScriptExpectsByteStringStubType EXPECTS_BYTE_STRING = new CaosScriptExpectsByteStringStubType("CaosScript_EXPECTS_ByteString");
+
+    @NotNull
+    CaosScriptExpectsDecimalStubType EXPECTS_DECIMAL = new CaosScriptExpectsDecimalStubType("CaosScript_EXPECTS_DECIMAL");
+
+    @NotNull
+    CaosScriptExpectsValueStubType EXPECTS_VALUE = new CaosScriptExpectsValueStubType("CaosScript_EXPECTS_VALUE");
+
+    @NotNull
+    CaosScriptExpectsTokenStubType EXPECTS_TOKEN = new CaosScriptExpectsTokenStubType("CaosScript_EXPECTS_TOKEN");
+
+    @NotNull
+    CaosScriptNamedGameVarStubType NAMED_GAME_VAR = new CaosScriptNamedGameVarStubType("CaosScript_NAMED_GAME_VAR");
+
+    @NotNull
+    CaosScriptEventScriptStubType EVENT_SCRIPT = new CaosScriptEventScriptStubType("CaosScript_EVENT_SCRIPT");
+
+    @NotNull
+    CaosScriptMacroStubType MACRO = new CaosScriptMacroStubType("CaosScript_MACRO");
 
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
 }

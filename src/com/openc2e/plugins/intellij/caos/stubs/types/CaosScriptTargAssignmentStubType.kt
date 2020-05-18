@@ -3,7 +3,6 @@ package com.openc2e.plugins.intellij.caos.stubs.types
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCAssignmentImpl
 import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCTargImpl
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptTargAssignmentStub
 import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptTargAssignmentStubImpl
