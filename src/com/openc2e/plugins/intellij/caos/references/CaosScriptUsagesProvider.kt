@@ -9,7 +9,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.caos.psi.util.elementType
-import com.openc2e.plugins.intellij.caos.utils.isOrasParentOfType
+import com.openc2e.plugins.intellij.caos.utils.isOrHasParentOfType
 
 class CaosScriptUsagesProvider : FindUsagesProvider {
 
@@ -27,7 +27,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
 
     override fun getDescriptiveName(element: PsiElement): String {
         return when {
-            element.isOrasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
+            element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
             element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "[" + element.text + "]"
             else -> "element"
         }
@@ -37,7 +37,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
 
         return when {
             element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "Command"
-            element.isOrasParentOfType(CaosScriptSubroutineName::class.java) -> "Subroutine Label"
+            element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "Subroutine Label"
             else -> when (element.elementType) {
                 in CaosScriptTokenSets.STRING_LIKE -> "String"
                 in CaosScriptTokenSets.KEYWORDS -> "Flow Control"
