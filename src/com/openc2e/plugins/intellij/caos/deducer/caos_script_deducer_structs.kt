@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.deducer
 
 import com.intellij.openapi.util.TextRange
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
 
 
 data class CaosScope(val range:TextRange, val blockType:CaosScriptBlockType, val enclosingScope:List<CaosScope>) {
@@ -80,6 +81,12 @@ sealed class CaosVar(open val text:String) {
         data class CaosOvXXVar(override val text:String, override val number:Int, override val isC1Var:Boolean) : CaosNumberedVar(text, number, isC1Var)
         data class CaosMvXXVar(override val text:String, override val number:Int) : CaosNumberedVar(text, number, false)
     }
+    sealed class CaosNamedGameVar(val name:String, val type:CaosScriptNamedGameVarType) : CaosVar("${type.token} \"$name\"") {
+        class MameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.MAME)
+        class GameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.GAME)
+        class EameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.EAME)
+        class NameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.NAME)
+    }
     data class CaosCommandCall(override val text:String) : CaosVar(text)
     object CaosLiteralVal: CaosVar("")
     sealed class CaosLiteral(text:String) : CaosVar(text) {
@@ -90,4 +97,6 @@ sealed class CaosVar(open val text:String) {
         data class CaosAnimationString(val value:String, val repeats:Boolean = false) : CaosLiteral(value)
         data class CaosToken(val value:String) : CaosLiteral(value)
     }
+    object CaosVarNull : CaosVar("NULL")
+    object CaosVarNone : CaosVar("{NONE}")
 }
