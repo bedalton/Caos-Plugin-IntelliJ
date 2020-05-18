@@ -61,22 +61,29 @@ object CaosScriptPsiImplUtil {
     fun getCommandString(call: CaosScriptCommandCall): String {
         return call.stub?.command
                 ?: getCommandToken(call)
-                        .text
+                        ?.text
+                        .orEmpty()
                         .split(" ")
                         .filterNot { it.isEmpty() }
                         .joinToString(" ")
     }
 
     @JvmStatic
-    fun getCommandToken(call: CaosScriptCommandCall): CaosScriptIsCommandToken {
-        return call.getChildOfType(CaosScriptIsCommandToken::class.java)!!
+    fun getCommandToken(call: CaosScriptCommandCall): CaosScriptIsCommandToken? {
+        val token = call.getChildOfType(CaosScriptIsCommandToken::class.java)
+                ?: call.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
+        if (token == null) {
+            LOGGER.severe("Failed to get command token from call: ${call.text}")
+        }
+        return token
     }
 
     @JvmStatic
     fun getCommandTokens(call: CaosScriptCommandCall): List<String> {
         return call.stub?.commandTokens
                 ?: getCommandToken(call)
-                        .text
+                        ?.text
+                        .orEmpty()
                         .split(" ")
                         .filterNot { it.isEmpty() }
     }
