@@ -46,6 +46,8 @@
     <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.openc2e.plugins.intellij.caos.references.CaosScriptUsagesProvider" />
+    <applicationService
+        serviceImplementation="com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettingsService" />
 
     <!-- Highlighting -->
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter"
