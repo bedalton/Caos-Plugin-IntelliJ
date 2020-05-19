@@ -13,5 +13,7 @@ object CaosDefStubTypes {
     @JvmStatic
     val PARAMETER = CaosDefParameterStubType("CaosDef_PARAMETER")
     @JvmStatic
+    val HASHTAG = CaosDefDocCommentHashtagStubType("CaosDef_DOC_COMMENT_HASHTAG")
+    @JvmStatic
     val FILE:CaosDefFileStubType = CaosDefFileStubType()
 }

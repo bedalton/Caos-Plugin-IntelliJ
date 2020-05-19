@@ -16,6 +16,10 @@
     <option name="FOREGROUND" value="1565c0"/>
     <option name="FONT_TYPE" value="1"/>
   </option>
+  <option name="CaosDef_DOC_COMMENT_HASHTAG">
+    <option name="FOREGROUND" value="1565c0"/>
+    <option name="FONT_TYPE" value="1"/>
+  </option>
   <option name="CaosDef_REGION_HEADER">
     <value>
       <option name="FOREGROUND" value="f57f17"/>

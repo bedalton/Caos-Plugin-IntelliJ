@@ -24,7 +24,6 @@ class CaosDefCommandDefinitionStubImpl(
     }
 }
 
-
 class CaosDefDocCommentStubImpl(
         parent: StubElement<*>,
         override val parameters: List<CaosDefParameterStruct>,
@@ -73,3 +72,9 @@ data class CaosDefTypeDefValueStruct (
         val value:String,
         val description:String? = null
 )
+
+class CaosDefDocCommentHashtagStubImpl(
+        parent:StubElement<*>?,
+        override val hashtag:String,
+        override val variants: List<String>
+) : StubBase<CaosDefDocCommentHashtagImpl>(parent, CaosDefStubTypes.HASHTAG), CaosDefDocCommentHashtagStub

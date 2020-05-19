@@ -47,4 +47,18 @@ object CaosDefPsiElementFactory {
         return comment.docCommentParamList[0].docCommentVariableType!!.typeDefName!!
     }
 
+    private val HASHTAG_VALIDATION = "[#][A-Za-z][_A-Za-z0-9]*".toRegex()
+
+    fun createHashTag(project: Project, newHashTag:String) : CaosDefDocCommentHashtag? {
+        if (!HASHTAG_VALIDATION.matches(newHashTag))
+            return null
+        val commentText = """
+            /*
+             * #$newHashTag
+             */
+        """.trimIndent()
+        val comment = createComment(project, commentText);
+        return comment.docCommentHashtagList[0]
+    }
+
 }
