@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.def.stubs.api
 
 import com.intellij.psi.stubs.StubElement
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentHashtag
 import com.openc2e.plugins.intellij.caos.def.psi.impl.*
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
@@ -26,6 +27,11 @@ interface CaosDefDocCommentStub : StubElement<CaosDefDocCommentImpl> {
     val lvalue:Boolean
     val rvalue:Boolean
     val comment:String?
+}
+
+interface CaosDefDocCommentHashtagStub: StubElement<CaosDefDocCommentHashtagImpl> {
+    val hashtag:String
+    val variants:List<String>
 }
 
 interface CaosDefTypeDefinitionStub : StubElement<CaosDefTypeDefinitionElementImpl> {

@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.caos.def.references.CaosDefDocCommentHashtagReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefTypeNameReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefVariableLinkReference
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
@@ -381,6 +382,24 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
+    fun getName(hashtag: CaosDefDocCommentHashtag) : String {
+        return hashtag.stub?.hashtag ?: hashtag.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(hashtag: CaosDefDocCommentHashtag, newNameString: String) : PsiElement {
+        val newNameElement = CaosDefPsiElementFactory
+                .createHashTag(hashtag.project, newNameString)
+                ?: return hashtag
+        return hashtag.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getReference(hashtag: CaosDefDocCommentHashtag) : CaosDefDocCommentHashtagReference {
+        return CaosDefDocCommentHashtagReference(hashtag)
+    }
+
+    @JvmStatic
     fun getTextOffset(variableLink:CaosDefVariableLink) : Int {
         return 1
     }
@@ -448,6 +467,20 @@ object CaosDefPsiImplUtil {
             return !strict
         return variants.intersect(thisVariants).isNotEmpty()
     }
+
+    @JvmStatic
+    fun isVariant(element:CaosDefDocCommentHashtag, variants:List<String>, strict:Boolean) : Boolean {
+        val thisVariants = getVariants(element)
+        if (thisVariants.isEmpty())
+            return !strict
+        return variants.intersect(thisVariants).isNotEmpty()
+    }
+
+    @JvmStatic
+    fun getVariants(element:CaosDefDocCommentHashtag) : List<String> {
+        return element.stub?.variants ?: element.containingCaosDefFile.variants
+    }
+
 
     @JvmStatic
     fun getPresentation(element:CaosDefCommandWord): ItemPresentation {

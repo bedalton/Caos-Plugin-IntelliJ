@@ -36,6 +36,10 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
             attrKey = TYPE_LINK
         if (tokenType == CaosDef_REGION_HEADING_LITERAL)
             attrKey = REGION_HEADER
+        //if (tokenType == CaosDef_AT_TAG)
+          //  attrKey = DOC_COMMENT_TAG
+        if (tokenType == CaosDef_HASH_TAG)
+            attrKey = DOC_COMMENT_HASHTAG;
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS
     }
 
@@ -54,6 +58,8 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
         val VARIABLE_TYPE: TextAttributesKey = createTextAttributesKey("CaosDef_VARIABLE_TYPE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
         val VARIABLE_NAME: TextAttributesKey = createTextAttributesKey("CaosDef_VARIABLE_NAME", DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
         val COMMAND: TextAttributesKey = createTextAttributesKey("CaosDef_COMMAND", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION)
+        val DOC_COMMENT_HASHTAG: TextAttributesKey = createTextAttributesKey("CaosDef_DOC_COMMENT_HASHTAG", DefaultLanguageHighlighterColors.DOC_COMMENT_TAG)
+        val DOC_COMMENT_TAG: TextAttributesKey = createTextAttributesKey("CaosDef_DOC_COMMENT_HASHTAG", DefaultLanguageHighlighterColors.DOC_COMMENT_TAG)
     }
 }
 

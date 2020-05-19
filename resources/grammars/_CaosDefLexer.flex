@@ -56,12 +56,13 @@ TO=([.]{2,3}|[Tt][Oo])
 UNTIL=[uU][nN][tT][iI][lL]
 EXCLUSIVE = [!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
 REGION=[#][^\n]+
+HASH_TAG= [#][A-Za-z][_A-Za-z0-9]*
 VARIABLE_LINK = [{]{ID}[}]
 AT_VARIANTS = [@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
 VARIANT_ID = [A-Za-z][A-Za-z0-9]
 VARIANT_NAME = [A-Za-z0-9 _]+
 
-%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT
+%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE
 
 %%
 
@@ -76,6 +77,13 @@ VARIANT_NAME = [A-Za-z0-9 _]+
   	'\n'						{ yybegin(COMMENT_START); return CaosDef_NEWLINE; }
 }
 
+<IN_HASHTAG_LINE> {
+    {HASH_TAG}					{ return CaosDef_HASH_TAG; }
+	[ \t]						{ return WHITE_SPACE; }
+    [\n]						{ yybegin(COMMENT_START); return WHITE_SPACE; }
+	[^] { return BAD_CHARACTER; }
+}
+
 <COMMENT_START> {
 	{AT_RVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_RVALUE; }
 	{AT_LVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_LVALUE; }
@@ -83,6 +91,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
   	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
 	{VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
+    {HASH_TAG}					{ return CaosDef_HASH_TAG; }
 	"*"	                     	{ return CaosDef_LEADING_ASTRISK; }
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
