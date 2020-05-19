@@ -321,7 +321,7 @@ private doc_comment_element
 	::= doc_comment_param comment_end_of_line?
 	|	doc_comment_return comment_end_of_line?
 	|	doc_comment_line comment_end_of_line?
-	|	doc_comment_hashtag doc_comment_line comment_end_of_line?
+	|	doc_comment_hashtag_set comment_end_of_line?
 	|	doc_comment_with_tag
 	|	rvalue comment_end_of_line?
 	|	lvalue comment_end_of_line?
@@ -330,6 +330,10 @@ private doc_comment_element
 	{
 		pin(".*")=1;
 	}
+	;
+
+private doc_comment_hashtag_set
+	::= doc_comment_hashtag+
 	;
 
 doc_comment_hashtag
