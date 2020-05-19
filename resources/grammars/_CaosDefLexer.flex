@@ -66,7 +66,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 
 %%
 
-<IN_COMMENT, COMMENT_START, IN_PARAM_COMMENT, IN_COMMENT_AFTER_VAR> {
+<IN_COMMENT, COMMENT_START, IN_PARAM_COMMENT, IN_COMMENT_AFTER_VAR, IN_HASHTAG_LINE> {
 	{WHITE_SPACE}				{
 									if (yytextContainLineBreaks()) {
 										yybegin(COMMENT_START);
@@ -79,9 +79,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 
 <IN_HASHTAG_LINE> {
     {HASH_TAG}					{ return CaosDef_HASH_TAG; }
-	[ \t]						{ return WHITE_SPACE; }
-    [\n]						{ yybegin(COMMENT_START); return WHITE_SPACE; }
-	[^] { return BAD_CHARACTER; }
+	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
 <COMMENT_START> {
