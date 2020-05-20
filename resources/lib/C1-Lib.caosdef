@@ -1,7 +1,7 @@
 @variant(C1 = Creatures 1)
 
 /*
- * obj that Owner creature was attending to
+ * object that [OWNR] creature was attending to
  * #AgentVars
  *
  * @rvalue
@@ -20,8 +20,7 @@ _IT_ (agent);
 ACTV (integer);
 
 /*
- * sets the lvalue to the sum of the lvalue plus the rvalue
- * {lvalue} = {lvalue} + {rvalue}
+ * Adds two integers or floats, so {var} = {var} + {sum}.
  * #Variabels
  *
  * @param {var} (variable)
@@ -41,8 +40,8 @@ ADDV (command) var (variable) sum (integer);
 AIM: (command) action (integer);
 
 /*
- * sets the lvalue to the lvalue bit-wise and with rvalue
- * lvalue = {lvalue} & {rvalue}
+ * sets the {var} to the  {var} bit-wise and with {value}
+ * {var} = {var} & {value}
  * #Math
  *
  * @param {var} (variable)
@@ -55,20 +54,20 @@ ANDV (command) var (variable) value (integer);
  * Start animation of DEST object/part using these poses
  * #AgentSprites
  *
- * @param {anim} ([anim]) - [1234R] 'R' ending denotes repeat
+ * @param {anim} [anim] - [1234R] 'R' ending denotes repeat
  *
  */
-ANIM (command) anim ([anim]);
+ANIM (command) anim [anim];
 
 /*
  * Start animation of DEST object/part using these poses CREATURE: poses refer to entries in the
  * pose table; anims are TWO-digit numbers fr creatures
  * #AgentSprites
  *
- * @param {anim} ([anim]) - [01020304R] 'R' ending denotes loop
+ * @param {anim} [anim] - [01020304R] 'R' ending denotes loop
  *
  */
-ANIM (command) anim ([anim]);
+ANIM (command) anim [anim];
 
 /*
  * Approach [_IT_]
@@ -110,7 +109,7 @@ ASLP (integer);
 ATTN (agent);
 
 /*
- * obj's attributes (INVISIBLE, CARRYABLE, etc)
+ * Object's attributes (INVISIBLE, CARRYABLE, etc)
  * #AgentAttributes
  *
  * @lvalue
@@ -141,14 +140,14 @@ BABY (integer);
  * The example below is from the Cloud Butterfly COB and shows the use of the BASE command –
  * in all other ways the two subroutines below are identical.
  * #{
- * subr left
- * base 0 anim 0123 over anim [450]
- * mvby -3 0
- * retn
- * subr rite
- * base 6 anim 0123 over anim [450]
- * mvby 3 0
- * retn
+ * 	subr left
+ * 	base 0 anim 0123 over anim [450]
+ * 	mvby -3 0
+ * 	retn
+ * 	subr rite
+ * 	base 6 anim 0123 over anim [450]
+ * 	mvby 3 0
+ * 	retn
  * }#
  * #AgentSprites
  *
@@ -185,7 +184,7 @@ BBD: EMIT (command);
  * draws the current text string text[Obv[0]] onto part0 (if n=1) or wipes text from bbd (if n=0)
  * #Blackboard
  *
- * @param {show} (integer[0 to 1]) - 0=Wipe Text, 1=Write text onto part0
+ * @param {show} (integer) - 0=Wipe Text, 1=Write text onto part0
  *
  */
 BBD: SHOW (command) show (integer);
@@ -198,13 +197,13 @@ BBD: SHOW (command) show (integer);
  *
  * @param {index} (integer)
  * @param {conceptId} (integer)
- * @param {text} ([string])
+ * @param {text} [string]
  *
  */
-BBD: WORD (command) index (integer) conceptId (integer) text ([string]);
+BBD: WORD (command) index (integer) conceptId (integer) text [string];
 
 /*
- *
+ * Set SimpleObject's reactions to clicks by mouse and activation requests from creatures
  * #AgentAttributes
  *
  * @param {click} (integer)
@@ -294,13 +293,13 @@ CLAS (command);
  * be viewed on the debugger.
  * #Debug
  *
- * @param {string} ([string])
+ * @param {string} [string]
  *
  */
-DBGM (command) string ([string]);
+DBGM (command) string [string];
 
 /*
- * Sends Rvalue to debug window. Same as [DBUG] but does not run in an instance.
+ * Sends {rvalue} to debug window. Same as [DBUG] but does not run in an instance.
  * #Debug
  *
  * @param {rvalue} (any)
@@ -310,7 +309,7 @@ DBGV (command) rvalue (any);
 
 /*
  * Performs in an INSTANCE
- * sends {RValue} as a TRACE message that can be viewed on the debugger
+ * sends {rvalue} as a TRACE message that can be viewed on the debugger
  * #Debug
  *
  * @param {rvalue} (any)
@@ -444,24 +443,24 @@ DDE: PICT (command);
  * write from string to location determined by option token
  * #Debug
  *
- * @param {string} ([string])
+ * @param {string} [string]
  * @param {option} (token)
  *
  */
-DDE: PUTB (command) string ([string]) option (token);
+DDE: PUTB (command) string [string] option (token);
 
 /*
  * Send a string - useful for debugging macros, or for returning the results of macro commands to
  * test the truth of some condition
  * #Debug
  *
- * @param {string} ([string])
+ * @param {string} [string]
  *
  */
-DDE: PUTS (command) string ([string]);
+DDE: PUTS (command) string [string];
 
 /*
- * Send an integer Rvalue
+ * Send an integer {rvalue}
  * #Debug
  *
  * @param {rvalue} (any)
@@ -504,8 +503,8 @@ DDE: WORD (command) index (integer);
 DEAD (command);
 
 /*
- * sets the lvalue to the product of lvalue divided by rvalue
- * lvalue = lvalue / rvalue
+ * sets the {var} to the product of {var} divided by {value}
+ * {var} = {var} / {value}
  * #Math
  *
  * @param {var} (variable)
@@ -806,7 +805,7 @@ IMPT (command) value (integer);
 INST (command);
 
 /*
- * Delete the object whose address is rvalue, eg. "kill edit" removes any object that's been
+ * Delete the object whose address is {agent}, eg. #{kill edit} removes any object that's been
  * shift-clicked on (EditObject),
  * THIS INSTRUCTION MUST BE LAST ONE IN MACRO IF IT KILLS THE OWNER OF THAT MACRO!
  * #{kill targ} deletes the target object.
@@ -960,8 +959,8 @@ MESG WRIT (command) agent (agent) messageId (integer);
 MINS (integer);
 
 /*
- * sets the lvalue to the remainder of lvalue divided by rvalue
- * {lvalue} = {lvalue} % {rvalue}
+ * sets the{var} to the remainder of {var} divided by {value}
+ * {var} = {var} % {value}
  * #Math
  *
  * @param {var} (variable)
@@ -980,8 +979,8 @@ MODV (command) var (variable) mod (integer);
 MOVS (integer);
 
 /*
- * sets the lvalue to the product of lvalue multiplied by rvalue
- * {lvalue} = {lvalue} * {rvalue}
+ * sets the {var} to the product of {var} multiplied by {value}
+ * {var} = {var} * {value}
  * #Math
  *
  * @param {var} (variable)
@@ -1013,8 +1012,8 @@ MVBY (command) deltaX (float) deltaY (float);
 MVTO (command) x (float) y (float);
 
 /*
- * Negates the lvalue
- * {lvalue} = 0 - {lvalue}
+ * Negates the {var} value
+ * {var} = 0 - {var}
  * #Math
  *
  * @param {var} (variable)
@@ -1057,7 +1056,7 @@ NEW: BKBD (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {numimages} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {plane} (integer[0 to 9000]) - the plot plane (0=back, 9000=front)
+ * @param {plane} (integer) - the plot plane (0=back, 9000=front)
  *
  */
 NEW: CBTN (command) spriteFile (token) numimages (integer) firstImage (integer) plane (integer);
@@ -1091,7 +1090,7 @@ NEW: COMP (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * other creature parameters are determined by the resultant genome.
  * NOTE: the moniker must be supplied as an INTEGER, not a string literal, so that, for example,
  * EGG objects can store the moniker in OBV0 during incubation.
- * EGG Objects must have [OBV] set to specify the moniker of the developing creature.
+ * EGG Objects must have OBV0 set to specify the moniker of the developing creature.
  * If I need to store a moniker in a macro as a token, then I must use the [TOKN] rvalue to
  * convert it to integer.
  * @example: #{NEW: CREA OBV0 0} - create creature bred from moniker stored in var
@@ -1107,7 +1106,7 @@ NEW: CREA (command) moniker (integer) sex (integer);
 
 /*
  * Create a new genome file from mum's and dad's (or just mum's if dad=0) genomes, and store the
- * new genome's moniker in the LVALUE child.
+ * new genome's moniker in the lvalue {child}.
  * @example: #{new: gene tokn eve_ tokn adam obv0}	create a child of Adam and Eve and store the
  * child's genome moniker in [TARG]'s OBV0 variable.
  * #Creatures
@@ -1138,11 +1137,11 @@ NEW: LIFT (command) spriteFile (token) numimages (integer) firstImage (integer);
  * commands)
  * #AgentConstructors
  *
- * @param {part} (integer[0 to 9]) - 0=Main part
+ * @param {part} (integer) - 0=Main part
  * @param {relx} (integer)
  * @param {rely} (integer)
  * @param {imageOffset} (integer)
- * @param {plane} (integer[0 to 9000])
+ * @param {plane} (integer)
  *
  */
 NEW: PART (command) part (integer) relx (integer) rely (integer) imageOffset (integer) plane (integer);
@@ -1155,7 +1154,7 @@ NEW: PART (command) part (integer) relx (integer) rely (integer) imageOffset (in
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {totalinsprite} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {plane} (integer[0 to 9000]) - the plot plane (0=back, 9000=front)
+ * @param {plane} (integer) - the plot plane (0=back, 9000=front)
  *
  */
 NEW: SCEN (command) spriteFile (token) totalinsprite (integer) firstImage (integer) plane (integer);
@@ -1173,7 +1172,7 @@ NEW: SCEN (command) spriteFile (token) totalinsprite (integer) firstImage (integ
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {numimages} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {plane} (integer[0 to 9000]) - the plot plane (0=back, 9000=front)
+ * @param {plane} (integer) - the plot plane (0=back, 9000=front)
  * @param {clone} (integer) - value is 0 normally, or 1 to create a cloned image gallery
  *
  */
@@ -1221,8 +1220,8 @@ NORN (agent);
 OBJP (agent);
 
 /*
- * sets the lvalue to the lvalue bit-wise or with rvalue
- * lvalue = {lvalue} | {rvalue}
+ * sets the {var} to the {var} bit-wise or with {value}
+ * {var} = {var} | {value}
  * #Math
  *
  * @param {var} (variable)
@@ -1348,10 +1347,10 @@ POST (integer);
  * Not useable with creatures
  * #AgentSprites
  *
- * @param {anim} ([anim])
+ * @param {anim} [anim]
  *
  */
-PRLD (command) anim ([anim]);
+PRLD (command) anim [anim];
 
 /*
  * End repeat loop
@@ -1459,10 +1458,10 @@ SAY# (command) number (integer);
  * Speak given string in a speech bubble (no signals sent)
  * #Creatures
  *
- * @param {string} ([string])
+ * @param {string} [string]
  *
  */
-SAY$ (command) string ([string]);
+SAY$ (command) string [string];
 
 /*
  * Speak your most pressing need
@@ -1502,10 +1501,10 @@ SCRP (command) family (integer) genus (integer) species (integer) event (integer
  * Installs a script
  * #Scripts
  *
- * @param {family} (integer[0 to 255])
- * @param {genus} (integer[0 to 255])
- * @param {species} (integer[0 to 255])
- * @param {event} (integer[0 to 255])
+ * @param {family} (integer)
+ * @param {genus} (integer)
+ * @param {species} (integer)
+ * @param {event} (integer)
  *
  */
 SCRX (command) family (integer) genus (integer) species (integer) event (integer);
@@ -1593,10 +1592,10 @@ SNDS (integer);
  * Now replaced by [SNDE] (sound effect) which doesn't require []'s
  * #Sounds
  *
- * @param {filename} ([string]) - filename WITHOUT.WAV suffix
+ * @param {filename} [string] - filename WITHOUT.WAV suffix
  *
  */
-SNDV (command) filename ([string]);
+SNDV (command) filename [string];
 
 /*
  *
@@ -1630,7 +1629,7 @@ SPCS (integer);
  * hotspot to an activation function)
  * #AgentInteractions
  *
- * @param {spot} (integer[0 to 5]) - hotspot# 0-5, ltrb = coords of hotspot on object RELATIVE to part[0]
+ * @param {spot} (integer) - hotspot# 0-5, ltrb = coords of hotspot on object RELATIVE to part[0]
  * @param {left} (integer)
  * @param {top} (integer)
  * @param {right} (integer)
@@ -1791,8 +1790,8 @@ STPC (command);
 SUBR (command) label (token);
 
 /*
- * sets the lvalue to the sum of lvalue minus the rvalue
- * {lvalue} = {lvalue} - {rvalue}
+ * sets the {var} to the sum of {var} minus the {value}
+ * {var} = {var} - {value}
  * #Math
  *
  * @param {var} (variable)
@@ -1890,10 +1889,10 @@ SYS: WPOS (command) x (integer) y (integer) width (integer) height (integer);
  * THIS MUST BE THE ONLY/LAST COMMAND IN THE MACRO
  * #World
  *
- * @param {filename} ([string])
+ * @param {filename} [string]
  *
  */
-SYS: WRLD (command) filename ([string]);
+SYS: WRLD (command) filename [string];
 
 /*
  * Set vivarium's window to be foreground window (useful in editor tools etc to allow user access
@@ -1976,13 +1975,13 @@ TOKN (integer) token (token);
  * Issued by a DDE tool app to register itself with the toolbar
  * #World
  *
- * @param {fsp} ([string])
- * @param {menutext} ([string])
- * @param {helptext} ([string])
+ * @param {fsp} [string]
+ * @param {menutext} [string]
+ * @param {helptext} [string]
  * @param {glyph} (integer)
  *
  */
-TOOL (command) fsp ([string]) menutext ([string]) helptext ([string]) glyph (integer);
+TOOL (command) fsp [string] menutext [string] helptext [string] glyph (integer);
 
 /*
  * returns the number of objects in the world who fit this description. Family, Genus and/or
@@ -1990,9 +1989,9 @@ TOOL (command) fsp ([string]) menutext ([string]) helptext ([string]) glyph (int
  * to act as wildcards. Examples:- #{setv totl 4 2 0} ;returns number of grendels
  * #Agents
  *
- * @param {family} (integer[0 to 255]) - family
- * @param {genus} (integer[0 to 255]) - genus
- * @param {species} (integer[0 to 255])
+ * @param {family} (integer) - family
+ * @param {genus} (integer) - genus
+ * @param {species} (integer)
  *
  */
 TOTL (command) family (integer) genus (integer) species (integer);
@@ -2149,24 +2148,24 @@ YVEC (integer);
 	0 = Activate 1
 	1 = Activate 2
 	2 = Deactivate
-};
+}
 
 @ActiveStatus {
 	0 = Inactive
 	1 = Active 1
 	2 = Active 2
-};
+}
 
 @Attributes {
-	1 = Carryable - creature can pick up obj
-	2 = Mousable - mouse can pick up obj
-	4 = Activatable - can be activated with mouse
-	8 = Container - carries other objs (vehicles only)
-	16 = Invisible - creatures can't see it
-	32 = Floatable - normally floating on screen
-	64 = Wallbound - limits movement to current room
-	128 = Ground Bound - movement only limited by ground
-};
+	1 = Carryable - Creature can pick up object
+	2 = Mousable - Mouse can pick up object
+	4 = Activatable - Can be activated with mouse
+	8 = Container - Carries other objects (vehicles only)
+	16 = Invisible - Creatures can't see it
+	32 = Floatable - Normally floating on screen
+	64 = Wallbound - Limits movement to current room
+	128 = Ground Bound - Movement only limited by ground
+}
 
 @BehaviorClick {
 	0 = No Clicks - clicks have no effect 0
@@ -2174,7 +2173,7 @@ YVEC (integer);
 	2 = retriggerable monostable - clicks activate even if already active
 	3 = toggle - 1st click activates, 2nd deactivates again
 	4 = cycle - 1st click activate1, 2nd activate2, 3rd deactivate
-};
+}
 
 @BehaviorTouch {
 	0 = No Action - Creature can take no actions
@@ -2185,12 +2184,12 @@ YVEC (integer);
 	5 = Activate 1 & Deactivate
 	6 = Activate 2 & Deactivate
 	7 = Activate 1,2,Deactivate
-};
+}
 
 @bool {
 	0 = False
 	1 = True
-};
+}
 
 @Chemicals {
 	0 = <NONE>
@@ -2266,8 +2265,8 @@ YVEC (integer);
 	102 = Pain Killer
 	103 = Cough Medicine
 	104 = Sleeping Pill
-	105 = Wake-up Pill
-	106 = Anti-oxidant
+	105 = Wake-Up Pill
+	106 = Anti-Oxidant
 	231 = Geddonase
 	232 = Histamine A
 	233 = Histamine B
@@ -2289,7 +2288,7 @@ YVEC (integer);
 	253 = Antigen 5
 	254 = Antigen 6
 	255 = Antigen 7
-};
+}
 
 @Click {
 	0 = Clicks have no effect
@@ -2297,7 +2296,7 @@ YVEC (integer);
 	2 = Retriggerable Mono	clicks activate even if already active
 	3 = Toggle	toggle: 1st click activates, 2nd deactivates again
 	4 = Cycle	cycle: 1st click activate1, 2nd activate2, 3rd deactivate
-};
+}
 
 @CreatureInteraction {
 	0 = No Action
@@ -2308,12 +2307,12 @@ YVEC (integer);
 	5 = Action 1 Deactivate
 	6 = Action 2 Deactivate
 	7 = Action 1 & 2 Deactivate
-};
+}
 
 @Dead {
 	0 = Alive
 	255 = Dead
-};
+}
 
 @Drives {
 	1 = Pain
@@ -2328,34 +2327,70 @@ YVEC (integer);
 	10 = Fear
 	11 = Boredom
 	12 = Anger
-	13 = Sex-Drive
+	13 = Sex Drive
 	14 = Not Allocated 2
 	15 = Not allocated 3
 	16 = Not allocated 4
-};
+}
 
 @EventNumbers {
 	0 = Deactivate
 	1 = Activate 1
 	2 = Activate 2
-	4 = Picked Up
+	3 = Hit
+	4 = Picked-Up
 	5 = Dropped
+	6 = collision
 	7 = Enter Scope
+	8 = Leavescope
 	9 = Timer
 	16 = Extra Quiescent
 	17 = Extra Activate 1
 	18 = Extra Activate 2
 	19 = Extra Deactivate
+	20 = Extra Seek
+	21 = Extra Avoid
 	22 = Extra Pickup
 	23 = Extra Drop
-	 =
-};
+	24 = Extra Say Need
+	25 = Extra Rest
+	26 = Extra Go West
+	27 = Extra Go East
+	28 = Extra Undef 1
+	29 = Extra Undef 2
+	30 = Extra Undef 3
+	31 = Extra Undef 4
+	32 = Intro Quiescent
+	39 = Intro Drop
+	40 = Intro Say Need
+	41 = Intro Rest
+	42 = Intro Go West
+	43 = Intro Go East
+	44 = Intro Undef 1
+	45 = Intro Undef 2
+	46 = Intro Undef 3
+	47 = Intro Undef 4
+	50 = Pointer Activate 1
+	51 = Pointer Activate 2
+	52 = Pointer Deactivate
+	53 = Pointer Pickup
+	54 = Pointer Drop
+	64 = Involuntary Action 0
+	65 = Involuntary Action 1
+	66 = Involuntary Action 2
+	67 = Involuntary Action 3
+	68 = Involuntary Action 4
+	69 = Involuntary Action 5
+	70 = Involuntary Action 6
+	71 = Involuntary Action 7
+	72 = Creature Death Scipt
+}
 
 @Gender {
 	0 = Random
 	1 = Male
 	2 = Female
-};
+}
 
 @MessageNumbers {
 	0 = Activate 1
@@ -2364,7 +2399,7 @@ YVEC (integer);
 	4 = Pickup
 	5 = Drop
 	8 = Enterscope
-};
+}
 
 @MovementStatus {
 	0 = Autonomous
@@ -2372,12 +2407,12 @@ YVEC (integer);
 	2 = Floating
 	3 = In Vehicle
 	4 = Carried
-};
+}
 
 @PutBOption {
 	data = set all creatures details
 	cnam = set the creature's name from the string
-};
+}
 
 @RoomEdge {
 	0 = Left
@@ -2385,25 +2420,25 @@ YVEC (integer);
 	2 = Top
 	3 = Bottom
 	4 = Room Type
-};
+}
 
 @RoomType {
 	0 = INDOORS
 	1 = SURFACE
 	2 = UNDERSEA
-};
+}
 
 @Sleeping {
 	0 = Awake
 	1 = Sleeping
-};
+}
 
 @SndfOption {
 	ON__ = Sound on
 	OFF_ = Sound off
 	FORE = Sound only plays when application is in foreground
 	CONS = Sound plays all the time
-};
+}
 
 @Stimulus {
 	0 = Disappointment
@@ -2442,4 +2477,4 @@ YVEC (integer);
 	33 = Involuntary Action 5
 	34 = Involuntary Action 6
 	35 = Involuntary Action 7
-};
+}

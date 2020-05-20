@@ -3,22 +3,22 @@ package com.openc2e.plugins.intellij.caos.def.lexer;
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.util.text.CharArrayUtil;
+import com.intellij.util.text.CharArrayUtil;import com.openc2e.plugins.intellij.caos.utils.CaosStringUtil;
 
-import static com.intellij.psi.TokenType.BAD_CHARACTER;
+import java.util.Arrays;import java.util.logging.Logger;import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 
 %%
 
 %{
+	private int paren_depth = 0;
+	private boolean needs_type = false;
+	private boolean canDoName = false;
+	private static final Logger LOGGER = Logger.getLogger("#_CaosDefLexer");
 
-  private int paren_depth = 0;
-  private boolean needs_type = false;
-  private boolean canDoName = false;
-
-  public _CaosDefLexer() {
-	this((java.io.Reader)null);
+	public _CaosDefLexer() {
+		this((java.io.Reader)null);
 	}
 
 	private boolean yytextContainLineBreaks() {
@@ -34,13 +34,13 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 %unicode
 
 WHITE_SPACE=\s+
-TEXT=([^*\n \[]|"*"[^*/\n])+
+TEXT=([^*\n \[]|"*"[^/])+
 DOC_COMMENT_OPEN="/"[*]+
 DOC_COMMENT_CLOSE=[*]+"/"
 LINE_COMMENT="//"[^\n]*
-WORD=[a-zA-Z_][a-zA-Z0-9#!$_:]{3}
+WORD=[a-zA-Z_0-9]{3}[a-zA-Z0-9#!$_:+]
 TYPE_LINK=[@]\{[^}]\}
-ID=[_a-zA-Z][_a-zA-Z0-9]*
+ID=[_a-zA-Z][_a-zA-Z0-9]*[%]?
 CODE_BLOCK_LITERAL=[#][{][^}]*[}]
 AT_RVALUE=[@][rR][vV][aA][lL][uU][eE]
 AT_LVALUE=[@][lL][vV][aA][lL][uU][eE]
@@ -48,8 +48,8 @@ AT_PARAM=[@][pP][aA][rR][aA][mM]
 AT_RETURN=[@][rR][eE][tT][uU][rR][nN][sS]?
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
 TYPE_NOTE=[:]{ID}
-TYPE_DEF_KEY=[a-zA-Z0-9_#]+
-TYPE_DEF_VALUE = [^-\n]+
+TYPE_DEF_KEY=[a-zA-Z0-9_#-]+
+TYPE_DEF_VALUE = ([^-\n]|-[^ ])+
 DEF_TEXT=[^\n]+
 INT=[-+]?[0-9]+
 TO=([.]{2,3}|[Tt][Oo])
@@ -132,6 +132,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 <IN_LINK> {
 	{WORD}						{ return CaosDef_WORD; }
     "]"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACKET; }
+    " "							{ return WHITE_SPACE; }
   	[^]							{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
@@ -139,7 +140,8 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	{CODE_BLOCK_LITERAL}       	{ return CaosDef_CODE_BLOCK_LITERAL; }
     {VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK_LITERAL; }
-  	"["							{ yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
+  	//"["	/{WORD}					{ return CaosDef_COMMENT_TEXT_LITERAL; }
+  	"[" 						{ yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
 	{TEXT}						{ return CaosDef_COMMENT_TEXT_LITERAL; }
 }
 
