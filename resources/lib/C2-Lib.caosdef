@@ -20,7 +20,7 @@ _IT_ (agent);
 _P1_ (any);
 
 /*
- * Second macro script parameters specified in command [MESG WRT+].
+ * Second macro script parameters specified in command [MESG WRT+]]
  * #Caos
  *
  * @rvalue
@@ -91,7 +91,7 @@ AIM: (command) action (integer);
 ANDV (command) var (variable) value (integer);
 
 /*
- * {value1} = {value1} | {value2}
+ * {value1} = {value1} & {value2}
  * #Math
  *
  * @param {var} (variable)
@@ -108,10 +108,10 @@ ANDV (command) var (variable) value (integer);
  * Max length of animation string in both cases is 32 digits
  * #AgentSprites
  *
- * @param {anim} ([anim]) - [123456789R] ANIM [001002003R]
+ * @param {anim} [anim] - [123456789R] ANIM [001002003R]
  *
  */
-ANIM (command) anim ([anim]);
+ANIM (command) anim [anim];
 
 /*
  * Approach [_IT_]
@@ -238,10 +238,10 @@ BBD: VOCB (command) bbdStartPosition (integer) startPosition (integer) count (in
  *
  * @param {index} (integer) - word index in blackboard
  * @param {conceptId} (integer) - the word concept id number
- * @param {text} ([string]) - text to be used for the word
+ * @param {text} [string] - text to be used for the word
  *
  */
-BBD: WORD (command) index (integer) conceptId (integer) text ([string]);
+BBD: WORD (command) index (integer) conceptId (integer) text [string];
 
 /*
  * Specifies the target colour of the text in the given textpart. The bubble will then fade the
@@ -249,9 +249,9 @@ BBD: WORD (command) index (integer) conceptId (integer) text ([string]);
  * #Bubbles
  *
  * @param {textPart} (integer) - unique identifier for part
- * @param {red} (integer[0 to 255])
- * @param {green} (integer[0 to 255])
- * @param {blue} (integer[0 to 255])
+ * @param {red} (integer)
+ * @param {green} (integer)
+ * @param {blue} (integer)
  *
  */
 BBFD (command) textPart (integer) red (integer) green (integer) blue (integer);
@@ -260,23 +260,23 @@ BBFD (command) textPart (integer) red (integer) green (integer) blue (integer);
  * Create a speech bubble object containing the given text for the specified number of ticks.
  * #Bubbles
  *
- * @param {text} ([string])
+ * @param {text} [string]
  * @param {duration} (integer) - the number of ticks to display the bubble for
  * @param {type} (integer) - 0=speech bubble, 1=think bubble
  * @param {location} (integer) - 0=track owner, 1=centre in viewport
  *
  */
-BBLE (command) text ([string]) duration (integer) type (integer) location (integer);
+BBLE (command) text [string] duration (integer) type (integer) location (integer);
 
 /*
  * Specify a text string to be used for the given textpart
  * #Bubbles
  *
  * @param {textPart} (integer) - unique identifier for part
- * @param {string} ([string]) - string to be used
+ * @param {string} [string] - string to be used
  *
  */
-BBT2 (command) textPart (integer) string ([string]);
+BBT2 (command) textPart (integer) string [string];
 
 /*
  * Associate a text string in the application resource table with the given text part.
@@ -457,13 +457,14 @@ CREA (creature) moniker (any);
  * Displays string as a trace message
  * #Debug
  *
- * @param {string} ([string])
+ * @param {string} [string]
  *
  */
-DBGM (command) string ([string]);
+DBGM (command) string [string];
 
 /*
- * Sends the value of rvalue. Same as [DBUG] but doesn’t force all commands to run in an [INST].
+ * Sends the value of {rvalue}. Same as [DBUG] but doesn’t force all commands to run in an
+ * [INST].
  * #Debug
  *
  * @param {rvalue} (any)
@@ -472,7 +473,7 @@ DBGM (command) string ([string]);
 DBGV (command) rvalue (any);
 
 /*
- * All commands after this will run in an [INST], sends the value of rvalue.
+ * All commands after this will run in an [INST], sends the value of {rvalue}.
  * #Debug
  *
  * @param {rvalue} (any)
@@ -494,7 +495,7 @@ DBUG (command) rvalue (any);
  *
  * @param {lobe} (integer)
  * @param {cell} (integer)
- * @param {dentype} (integer[0 to 1]) - 0 - type 0 dens, 1 - type 1 dens
+ * @param {dentype} (integer) - 0 - type 0 dens, 1 - type 1 dens
  *
  */
 DDE: CELL (command) lobe (integer) cell (integer) dentype (integer);
@@ -769,7 +770,7 @@ DDE: HATC (command);
  * refer to the organs defined in the genome.
  * #Debug
  *
- * @param {type} (integer[0 to 1]) - 0=receptor loci 1=emmiter loci
+ * @param {type} (integer) - 0=receptor loci 1=emmiter loci
  * @param {organ} (integer) - Note: organ field does not refer to the organs defined in the
  * @param {tissue} (integer)
  * @param {locusid} (integer)
@@ -853,32 +854,32 @@ DDE: PANC (command);
  *
  * @param {width} (integer)
  * @param {height} (integer)
- * @param {filename} ([string])
+ * @param {filename} [string]
  *
  */
-DDE: PIC2 (command) width (integer) height (integer) filename ([string]);
+DDE: PIC2 (command) width (integer) height (integer) filename [string];
 
 /*
  * write from string to location determined by option token
  * #Debug
  *
- * @param {string} ([string])
+ * @param {string} [string]
  * @param {option} (token)
  *
  */
-DDE: PUTB (command) string ([string]) option (token);
+DDE: PUTB (command) string [string] option (token);
 
 /*
  * Send a string to the output window.
  * #Debug
  *
- * @param {string} ([string])
+ * @param {string} [string]
  *
  */
-DDE: PUTS (command) string ([string]);
+DDE: PUTS (command) string [string];
 
 /*
- * Display the value of RValue
+ * Display the value of {rvalue}
  * #Debug
  *
  * @param {rvalue} (any)
@@ -1181,7 +1182,7 @@ FADE (command);
  *
  * @param {x} (integer)
  * @param {y} (integer)
- * @param {amount} (integer[0 to 255])
+ * @param {amount} (integer)
  *
  */
 FIRE (command) x (integer) y (integer) amount (integer);
@@ -1240,10 +1241,10 @@ FRZN (integer);
  * @rvalue
  * @param {category} (integer)
  * @param {variable} (integer)
- * @return ([string])
+ * @return [string]
  *
  */
-GAME ([string]) category (integer) variable (integer);
+GAME [string] category (integer) variable (integer);
 
 /*
  * Returns the object's genus
@@ -1424,7 +1425,7 @@ KILL (command) agent (agent);
  *
  * @param {knob} (integer) - refers to the KNOB functions already set up
  * @param {flag} (integer) - flag used to describe the usage of the knob
- * @param {message} (integer[0 to 65535]) - message/event to be sent when this knob is activated.
+ * @param {message} (integer) - message/event to be sent when this knob is activated.
  *
  */
 KMSG (command) knob (integer) flag (integer) message (integer);
@@ -1434,7 +1435,7 @@ KMSG (command) knob (integer) flag (integer) message (integer);
  * #AgentInteractions
  *
  * @param {function} (integer) - specifies the event and usage
- * @param {hotspot} (integer[0 to 5]) - refers to the hot spot number defined with the SPOT command.
+ * @param {hotspot} (integer) - refers to the hot spot number defined with the SPOT command.
  *
  */
 KNOB (command) function (integer) hotspot (integer);
@@ -1482,9 +1483,9 @@ LACB (integer);
  * #World
  *
  * @rvalue
- * @return ([Byte-String])
+ * @return [byte_string]
  */
-LANG ([Byte-String]);
+LANG [byte_string];
 
 /*
  * Returns object’s Limit to the Bottom as absolute value of rooms boundary
@@ -1657,7 +1658,7 @@ MESG WRIT (command) agent (agent) messageId (integer);
  * #Agents
  *
  * @param {agent} (agent)
- * @param {messageId} (integer[256 to 65535])
+ * @param {messageId} (integer)
  * @param {param1} (any) - passed to event script as _P1_
  * @param {param2} (any) - passed to event script as _P2_
  * @param {delay} (integer)
@@ -1771,7 +1772,7 @@ NEID (integer);
  * Create a new text part for the current compound bubble object.
  * #Bubbles
  *
- * @param {textpart} (integer[0 to 9]) - a unique identifier for the part
+ * @param {textpart} (integer) - a unique identifier for the part
  * @param {relx} (integer) - x position of text part relative to compound bubble
  * @param {rely} (integer) - y position of text part relative to compound bubble
  * @param {width} (integer) - width of the text.
@@ -2031,8 +2032,8 @@ ONTR (integer);
 ORGN (integer);
 
 /*
- * sets the lvalue to the lvalue bit-wise or with rvalue
- * lvalue = {lvalue} | {rvalue}
+ * sets the {var} to the {var} bit-wise OR  with {value}
+ * {var} = {var} | {value}
  * #Math
  *
  * @param {var} (variable)
@@ -2199,10 +2200,10 @@ PRES (integer);
  * Note: Not applicable on a creature
  * #AgentSprites
  *
- * @param {anim} ([anim]) - ie. [1234]
+ * @param {anim} [anim] - ie. [1234]
  *
  */
-PRLD (command) anim ([anim]);
+PRLD (command) anim [anim];
 
 /*
  * Sets/returns the Pressure source in room at targ
@@ -2433,10 +2434,10 @@ RMS# (integer);
  *
  * @param {x} (integer)
  * @param {y} (integer)
- * @param {trackName} ([string]) - file name, [] (Empty string) = no change in track, [Silence] = play no track.
+ * @param {trackName} [string] - file name, [] (Empty string) = no change in track, [Silence] = play no track.
  *
  */
-RMSC (command) x (integer) y (integer) trackName ([string]);
+RMSC (command) x (integer) y (integer) trackName [string];
 
 /*
  * Renderer image format. Returns 0 if image format is 555 and 1 if it is 565.
@@ -2586,10 +2587,10 @@ SAY# (command) number (integer);
  * Speak the given string in a speech bubble – no signal sent
  * #Creatures
  *
- * @param {string} ([string]) - text to speak
+ * @param {string} [string] - text to speak
  *
  */
-SAY$ (command) string ([string]);
+SAY$ (command) string [string];
 
 /*
  * Speak your most pressing need
@@ -2777,7 +2778,7 @@ SPCS (integer);
  * 	@example: #{SPOT 0 -1 -1 -1 -1} - will remove hot spot 0
  * #AgentInteractions
  *
- * @param {spot} (integer[0 to 5]) - a number to identify this particular spot
+ * @param {spot} (integer) - a number to identify this particular spot
  * @param {left} (integer) - left of hotspot relative to part 0 of the object.
  * @param {top} (integer)
  * @param {right} (integer)
@@ -3065,10 +3066,10 @@ SYS: WPOS (command) x (integer) y (integer) width (integer) height (integer);
  * Saves the current world and opens the named one
  * #World
  *
- * @param {filename} ([string])
+ * @param {filename} [string]
  *
  */
-SYS: WRLD (command) filename ([string]);
+SYS: WRLD (command) filename [string];
 
 /*
  * Set the world window to be the foreground window.
@@ -3231,7 +3232,7 @@ TOUC (integer) first (agent) second (agent);
  *
  * @param {lobe} (integer)
  * @param {cell} (integer)
- * @param {amount} (integer[0 to 255])
+ * @param {amount} (integer)
  *
  */
 TRIG (command) lobe (integer) cell (integer) amount (integer);
@@ -3440,7 +3441,7 @@ YVEC (integer);
 	2 = Activate 2
 	3 = Hit
 	4 = Eat
-};
+}
 
 @Ages {
 	0 = Embryo
@@ -3451,7 +3452,7 @@ YVEC (integer);
 	6 = Old
 	7 = Senile
 	5 = Adult
-};
+}
 
 @Attributes {
 	1 = Carryable - Creature or another object can pick up object
@@ -3462,14 +3463,14 @@ YVEC (integer);
 	32 = Floatable - Maintains it’s position relative to window, not world
 	64 = Has Boundaries - Responds to collision events and size
 	128 = Suffers Gravity - Falls due to gravity
-};
+}
 
 @BehaviorClick {
 	0 = No Clicks - Clicks have not effect
 	1 = MonoStabe - Clicks activate, further clicks have no effect until object is inactive again
 	3 = Toggle - First click activates, second deactivates
 	4 = Cycle - First click activate 1, second activate 2, third deactivate
-};
+}
 
 @BehaviorTouch {
 	0 = No Action - Creature can take no actions
@@ -3478,19 +3479,19 @@ YVEC (integer);
 	4 = Deactivate - Creature can deactivate
 	8 = Can Hit - Creature can hit
 	64 = Can Eat - Creature can eat
-};
+}
 
 @bool {
 	0 = false
 	1 = true
-};
+}
 
 @CardinalDirection {
 	0 = North (back to viewer)
 	1 = South (facing viewer)
 	2 = East
 	3 = West
-};
+}
 
 @Chemicals {
 	1 = Pain
@@ -3644,12 +3645,12 @@ YVEC (integer);
 	253 = Antigen 5
 	254 = Antigen 6
 	255 = Antigen 7
-};
+}
 
 @Dead {
 	0 = Alive
 	255 = Dead
-};
+}
 
 @Direction {
 	0 = left
@@ -3657,7 +3658,7 @@ YVEC (integer);
 	2 = up
 	3 = down
 	4 = unknown
-};
+}
 
 @Drives {
 	1 = PAIN
@@ -3677,7 +3678,7 @@ YVEC (integer);
 	15 = SUFFOCATION
 	16 = THIRST
 	17 = STRESS
-};
+}
 
 @EqOp {
 	EQ = Equal
@@ -3688,7 +3689,7 @@ YVEC (integer);
 	LE = Less than or equal to
 	BT = Bit-wise AND function
 	BF = Bit-wise NAND function
-};
+}
 
 @EventNumbers {
 	0 = Deactivate - An action generally used to disable an active object – [STOP] to a creature
@@ -3749,24 +3750,24 @@ YVEC (integer);
 	72 = Death - CREATURE – Death event
 	200 = Donate Sperm - MALE CREATURE – event that can triggered by a female during mating.
 	255 = Exception - A script was referencing an object that has been destroyed
-};
+}
 
 @Gender {
 	0 = Random
 	1 = Male
 	2 = Female
-};
+}
 
 @ImageFormat {
 	0 = 555
 	1 = 565
-};
+}
 
 @KnobFlag {
 	1 = Only creature can use this knob
 	2 = Only pointer can use this knob
 	3 = Both creature and pointer can use this knob message
-};
+}
 
 @KnobFunction {
 	0 = creature activate 1
@@ -3775,7 +3776,7 @@ YVEC (integer);
 	3 = pointer activate 1
 	4 = pointer activate 2
 	5 = pointer deactivate
-};
+}
 
 @Languages {
 	0x00 = Neutral
@@ -3802,7 +3803,7 @@ YVEC (integer);
 	0x0a = Spanish
 	0x1d = Swedish
 	0x1F = Turkish
-};
+}
 
 @MessageNumbers {
 	0 = Activate 1
@@ -3814,7 +3815,7 @@ YVEC (integer);
 	10 = Push Left
 	11 = Push Right
 	12 = Eat
-};
+}
 
 @MovementStatus {
 	0 = Autonomous - Default – normal object in world
@@ -3822,29 +3823,29 @@ YVEC (integer);
 	2 = Floating - Object is in fixed place on screen
 	3 = In Vehicle - Object is carried in a vehicle
 	4 = Carried - Object is carried by a creature
-};
+}
 
 @OnOff {
 	0 = Off
 	1 = On
-};
+}
 
 @Paused {
 	0 = normal
 	1 = pause
-};
+}
 
 @PutBOption {
 	CNAM = CNAM - Set the creatures name from the string
 	DATA = DATA - Set all the creatures details, see GETB DATA for ordering of details.
-};
+}
 
 @RainMode {
 	0 = Stopped
 	1 = Running
 	2 = Start
 	3 = Stop
-};
+}
 
 @RainProperty {
 	0 = x position, relative to object
@@ -3854,13 +3855,13 @@ YVEC (integer);
 	4 = angle of effect (updated by wind)
 	5 = speed	number of pixels moved per update
 	6 = mode	(0=stopped, 1=running, 2=start!, 3=stop!)
-	7 = rain image number (0-11)
-};
+	7 = Rain Image Number (0-11)
+}
 
 @RenderFormat {
 	0 = 555
 	1 = 565
-};
+}
 
 @RoomProperties {
 	0 = left
@@ -3883,7 +3884,7 @@ YVEC (integer);
 	17 = radiationsource
 	18 = visitedflag
 	19 = dropstatus
-};
+}
 
 @ScorItems {
 	0 = Generation 1 eggs used
@@ -3892,19 +3893,19 @@ YVEC (integer);
 	3 = Number of creatures imported
 	4 = Number of creatures exported
 	5 = Number of creatures alive
-};
+}
 
 @Season {
 	0 = Spring
 	1 = Summer
 	2 = Autumn
 	3 = Winter
-};
+}
 
 @Sleeping {
 	0 = Awake
 	1 = Sleeping
-};
+}
 
 @Stimulus {
 	0 = Disappointment
@@ -3953,7 +3954,7 @@ YVEC (integer);
 	43 = Creature says no
 	44 = Aggression
 	45 = Mate
-};
+}
 
 @TimeOfDay {
 	0 = Dawn
@@ -3961,12 +3962,12 @@ YVEC (integer);
 	2 = Afternoon
 	3 = Evening
 	4 = Night
-};
+}
 
 @Unconscious {
 	0 = Conscious
 	1 = Unconcious
-};
+}
 
 @WallDirection {
 	0 = Left
@@ -3974,7 +3975,7 @@ YVEC (integer);
 	2 = Up
 	3 = Down
 	4 = Unknown
-};
+}
 
 @Words {
 	1 = Pain
@@ -4130,9 +4131,9 @@ YVEC (integer);
 	253 = Antigen 5
 	254 = Antigen 6
 	255 = Antigen 7
-};
+}
 
 @YesNo {
 	0 = NO
 	1 = YES
-};
+}

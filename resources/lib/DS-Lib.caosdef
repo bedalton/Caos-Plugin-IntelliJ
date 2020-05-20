@@ -91,7 +91,7 @@ _CD_ STOP (command);
 _IT_ (agent);
 
 /*
- * First macro script parameters specified in command [MESG WRT+].
+ * First macro script parameters specified in command [MESG WRT+]]
  * #Caos
  *
  * @rvalue
@@ -100,7 +100,7 @@ _IT_ (agent);
 _P1_ (any);
 
 /*
- * Second macro script parameters specified in command [MESG WRT+].
+ * Second macro script parameters specified in command [MESG WRT+]]
  * #Caos
  *
  * @rvalue
@@ -109,7 +109,7 @@ _P1_ (any);
 _P2_ (any);
 
 /*
- * Returns the value of the up constant.
+ * Returns the value of the UP constant.
  * #Map
  *
  * @rvalue
@@ -128,8 +128,8 @@ _UP_ (integer);
 ABBA (integer);
 
 /*
- * Makes a variable positive (its absolute value), so if var is negative var = 0 - var, otherwise
- * var is left alone.
+ * Set a variable to its absolute value, so if var is negative var = 0 - {var}, otherwise {var} is
+ * left alone.
  * #Variables
  *
  * @param {var} (variable)
@@ -156,7 +156,7 @@ ACCG (command) acceleration (float);
 ACCG (float);
 
 /*
- * Returns arccosine of x in degrees.
+ * Returns arccosine of {x} in degrees.
  * #Variables
  *
  * @rvalue
@@ -213,7 +213,7 @@ ADDM (integer) x (integer) y (integer) width (integer) height (integer) backgrou
 ADDR (integer) metaroomId (integer) xLeft (integer) xRight (integer) yLeftCeiling (integer) yRightCeiling (integer) yLeftFloor (integer) yRightFloor (integer);
 
 /*
- * Concatenates two strings, so var = var + append.
+ * Concatenates two strings, so {var} = {var} + {append}.
  * #Variables
  *
  * @param {var} (variable)
@@ -223,7 +223,7 @@ ADDR (integer) metaroomId (integer) xLeft (integer) xRight (integer) yLeftCeilin
 ADDS (command) var (variable) append (string);
 
 /*
- * Adds two integers or floats, so var = var + sum.
+ * Adds two integers or floats, so {var} = {var} + {sum}.
  * #Variables
  *
  * @param {var} (variable)
@@ -294,10 +294,10 @@ AERO (integer);
 AGES (command) times (integer);
 
 /*
- * Given a unique identifier, returns the corresponding agent. Returns [NULL] if the agent no longer
- * exists. [UNID] extracts the unique id. NOTE: This should only be used for external programs to
- * persistently refer to an agent during a session. Variables can use [SETA] to store agent r-values
- * directly for internal use. Unique identifiers can change across saved sessions.
+ * Given a unique identifier, returns the corresponding agent. Returns [NULL] if the agent no
+ * longer exists. [UNID] extracts the unique id. NOTE: This should only be used for external
+ * programs to persistently refer to an agent during a session. Variables can use [SETA] to store
+ * agent r-values directly for internal use. Unique identifiers can change across saved sessions.
  * #Debug
  *
  * @rvalue
@@ -335,7 +335,7 @@ ALPH (command) alphaValue (integer) yesorno (integer);
 ALTR (command) roomId (integer) caIndex (integer) caDelta (float);
 
 /*
- * Peform a bitwise AND on an integer variable, so var = var & value.
+ * Peform a bitwise AND on an integer variable, so {var} = {var} & {value}.
  * #Math
  *
  * @param {var} (variable)
@@ -363,14 +363,14 @@ ANGL (float) x (float) y (float);
  * would loop just the 10, 11, 12 section.
  * #AgentSprites
  *
- * @param {poseList} ([anim])
+ * @param {poseList} [anim]
  *
  */
-ANIM (command) poseList ([anim]);
+ANIM (command) poseList [anim];
 
 /*
- * This is like [ANIM], only it reads the poses from a string such as "3 4 5 255". Use this when you
- * need to dynamically construct animations. Use [ANIM] in general as it is quicker to execute,
+ * This is like [ANIM], only it reads the poses from a string such as "3 4 5 255". Use this when
+ * you need to dynamically construct animations. Use [ANIM] in general as it is quicker to execute,
  * although they are the same speed once the animation is underway.
  * #AgentSprites
  *
@@ -380,9 +380,9 @@ ANIM (command) poseList ([anim]);
 ANMS (command) animString (string);
 
 /*
- * Creature approaches the IT agent. If there is no IT agent, the creature follows the CA smell to
- * find an agent of that category. The script resumes when it gets there, or if it can't get any
- * further.
+ * Creature approaches the [_IT_] agent. If there is no [_IT_] agent, the creature follows the CA
+ * smell to find an agent of that category. The script resumes when it gets there, or if it can't
+ * get any further.
  * #Creatures
  *
  */
@@ -398,7 +398,7 @@ APPR (command);
 APRO (command) searchText (string);
 
 /*
- * Returns arcsine of x in degrees.
+ * Returns arcsine of {x} in degrees.
  * #Variables
  *
  * @rvalue
@@ -427,7 +427,7 @@ ASLP (command) asleep (integer);
 ASLP (integer);
 
 /*
- * Returns arctangent of x in degrees.
+ * Returns arctangent of {x} in degrees.
  * #Variables
  *
  * @rvalue
@@ -508,8 +508,8 @@ BANG (command);
 
 /*
  * Set the base image for this agent or part. The index is relative to the first_image specified
- * in the NEW: command. Future [POSE]/[ANIM] commands and any [ANIM] in progress are relative to this
- * new base.
+ * in the NEW: ] command. Future [POSE]/[ANIM] commands and any [ANIM] in progress are relative
+ * to this new base.
  * #AgentSprites
  *
  * @param {index} (integer)
@@ -1054,7 +1054,7 @@ CHAR (integer) string (string) index (integer);
  * #Creatures
  *
  * @param {chemical} (integer)
- * @param {adjustment} (float[-1 to 1])
+ * @param {adjustment} (float)
  *
  */
 CHEM (command) chemical (integer) adjustment (float);
@@ -1603,13 +1603,15 @@ DOCA (command) noOfUpdates (integer);
  * Execute a block of code if the condition is true. The code block ends at the next [ELSE], [ELIF] or
  * [ENDI]. A condition is composed of one or more comparisons joined by AND or OR. A comparison
  * compares two values with EQ, NE, GT, GE, LT, LE, or alternatively =, <>, >, >=, <, <=.
- * DOIF ov00 GE 5 AND ov00 LT 10
- * --- code block 1 ---
- * [ELIF] ov00 GE 10 OR ov00 LT 100
- * --- code block 2 ---
- * [ELSE]
- * --- code block 3 ---
- * [ENDI]
+ * #{
+ * 	DOIF ov00 GE 5 AND ov00 LT 10
+ * 	*--- code block 1 ---
+ * 	[ELIF] ov00 GE 10 OR ov00 LT 100
+ * 	*--- code block 2 ---
+ * 	[ELSE]
+ * 	*--- code block 3 ---
+ * 	[ENDI]
+ * }
  * Conditions are evaluated simply from left to right, so "a AND b OR c" is the same as "(a AND b)
  * OR c", not "a AND ( b OR c )".
  * Conditional statements may not work correctly with commands overloaded by rvalue.
@@ -4732,12 +4734,12 @@ PART (integer) partId (integer);
  * @param {relX} (decimal)
  * @param {relY} (decimal)
  * @param {relPlane} (integer)
- * @param {animHover} ([anim])
+ * @param {animHover} [anim]
  * @param {messageId} (integer)
  * @param {option} (integer)
  *
  */
-PAT: BUTT (command) partId (integer) spriteFile (string) firstImage (integer) imageCount (integer) relX (decimal) relY (decimal) relPlane (integer) animHover ([anim]) messageId (integer) option (integer);
+PAT: BUTT (command) partId (integer) spriteFile (string) firstImage (integer) imageCount (integer) relX (decimal) relY (decimal) relPlane (integer) animHover [anim] messageId (integer) option (integer);
 
 /*
  * Create a camera with possible overlay sprite whose name may be blank. Use [SCAM] to change the
@@ -6037,12 +6039,12 @@ SCAM (command) compoundagent (agent) partnumber (integer);
  * @rvalue
  * @param {andMask} (integer)
  * @param {eorMask} (integer)
- * @param {upSpeeds} ([Byte-String])
- * @param {downSpeeds} ([Byte-String])
+ * @param {upSpeeds} [byte_string]
+ * @param {downSpeeds} [byte_string]
  * @return (integer)
  *
  */
-SCOL (integer) andMask (integer) eorMask (integer) upSpeeds ([byte-string]) downSpeeds ([byte-string]);
+SCOL (integer) andMask (integer) eorMask (integer) upSpeeds [byte_string] downSpeeds [byte_string];
 
 /*
  * Remove specified script from the scriptorium.
@@ -7629,7 +7631,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	6 = Old
 	7 = Senile
 	5 = Adult
-};
+}
 
 @Attributes {
 	1 = Carryable - Can be picked up by things other than creatures, vehicles and the pointer.
@@ -7644,7 +7646,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	512 = Open Air Cabin - When set on a vehicle, it allows creatures to see and activate its passengers. The default behaviour is that they can't.
 	1024 = Rotatable - When set on an agent the various rotation commands ([SPIN], [ROTN], [AVEL] etc.) can be used.
 	2048 = Presence - An agent with this attribute set has a circular physical presence in the world and receives Impact script callbacks.
-};
+}
 
 @Behavior {
 	1 = Activate 1 - Creature can activate 1 this agent.
@@ -7653,17 +7655,17 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	8 = Hit - Creature can hit this agent.
 	16 = Eat - Creature can eat this agent.
 	32 = Pick Up - Creature can pick up this agent.
-};
+}
 
 @CanMove {
 	0 = Cannot Move
 	1 = Can Move
-};
+}
 
 @CanSee {
 	0 = Cannot See
 	1 = Can See
-};
+}
 
 @Chemicals {
 	1 = Lactate - Neutral (see main article)
@@ -7816,24 +7818,24 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	209 = Brain chemical 12 - Not used.
 	210 = Brain chemical 13 - Not used.
 	211 = Brain chemical 14 - Not used.
-	212 = Pre - REM - Controls dreaming. Your creature learns its instinctual behaviors while it dreams.
+	212 = Pre-REM - Controls dreaming. Your creature learns its instinctual behaviors while it dreams.
 	213 = REM - Controls dreaming.
-};
+}
 
 @Connected {
 	0 = Not-Connected - Not connected to Babel server
 	1 = Connected - Connected to babel server
-};
+}
 
 @Dreaming {
 	1 = Dreaming
 	0 = Awake
-};
+}
 
 @Enabled {
 	0 = Disabled
 	1 = Enabled
-};
+}
 
 @EventNumbers {
 	0 = Deactivate - Called when the agent receives a deactivate message.
@@ -7933,23 +7935,23 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	160 = Creature Ageing Callback - Called when the creature is about to age. [_P1_] contains the value of the next age stage.
 	200 = Mate - Reserved for use in the mating scripts, but not directly used by the engine. Tells a male to mate.
 	255 = Agent Exception - This script specifies the behaviour when an agent tries to do something to an invalid agent. For example, if you try and access an OVxx with a [NULL] target. If this script isn't present for [OWNR], you get a run time error. If it is present, that script is called and you can reset variables as necessary.
-};
+}
 
 @FullScreen {
 	0 = Windowed Mode
 	1 = Fullscreen Mode
-};
+}
 
 @HistGender {
 	1 = Male
 	2 = Female
 	-1 = Unborn
-};
+}
 
 @ImageExists {
 	0 = Does Not Exist
 	1 = Image Exists
-};
+}
 
 @MessageNumbers {
 	0 = Activate 1 - Calls the Activate 1 script. If the message is from a creature, and the permissions set with [BHVR] disallow it, then the script is not executed.
@@ -7961,12 +7963,12 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	12 = Eat - Calls the Eat script. The permissions set with [BHVR] are checked first.
 	13 = Hold Hands - Causes a creature to hold hands with the pointer.
 	14 = Stop Holding Hands - Causes a creature to stop holding hands with the pointer. Since messages take a tick to be procesed, calling [NOHH] is quicker than using this message.
-};
+}
 
 @Mirrored {
 	0 = Not-Mirrored
 	1 = Mirrored
-};
+}
 
 @MonikerStatus {
 	0 = Never Existed
@@ -7977,7 +7979,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	5 = Dead, Body Still Exists
 	6 = Dead, Body [KILL]ed
 	7 = Unreferenced Genome
-};
+}
 
 @MovementStatus {
 	0 = Autonomous - Default – normal object in world
@@ -7985,7 +7987,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	2 = Floating - Object is in fixed place on screen
 	3 = In Vehicle - Object is carried in a vehicle
 	4 = Carried - Object is carried by a creature
-};
+}
 
 @NetErrorCodes {
 	0 = Unknown
@@ -7996,33 +7998,33 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	5 = Too many users - To many users for server
 	6 = Internal Error
 	7 = Version Out Of Date - New client version required
-};
+}
 
 @Online {
 	0 = Offline
 	1 = Online
-};
+}
 
 @Paused {
 	0 = Not-Paused
 	1 = Paused
-};
+}
 
 @PawsDisabled {
 	1 = Debug Pawsed
 	0 = Playing
-};
+}
 
 @Pressed {
 	0 = Not-Pressed
 	1 = Pressed
-};
+}
 
 @RectToUse {
 	0 = Agent Bounds - Nearby means touching bounding rectangle of agent
 
 	1 = Cabin Bounds - Nearby means touching cabin rectangle
-};
+}
 
 @ScriptNumbers {
 	0 = Deactivate - Called when the agent receives a deactivate message.
@@ -8122,19 +8124,19 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	160 = Creature Ageing Callback - Called when the creature is about to age. [_P1_] contains the value of the next age stage.
 	200 = Mate - Reserved for use in the mating scripts, but not directly used by the engine. Tells a male to mate.
 	255 = Agent Exception - This script specifies the behaviour when an agent tries to do something to an invalid agent. For example, if you try and access an OVxx with a [NULL] target. If this script isn't present for [OWNR], you get a run time error. If it is present, that script is called and you can reset variables as necessary.
-};
+}
 
 @Season {
 	0 = Spring
 	1 = Summer
 	2 = Autumn
 	3 = Winter
-};
+}
 
 @Sleeping {
 	0 = Awake
 	1 = Sleeping
-};
+}
 
 @Stimulus {
 	0 = Disappoint - Issue to disappoint (punish) a creature for a pointless action (eg. failed to activate)
@@ -8235,12 +8237,12 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	95 = Travelled through meta door
 	96 = Travelled through internal door
 	97 = Played with toy
-};
+}
 
 @StreamStatus {
 	0 = Stream Bad
 	1 = Stream OK
-};
+}
 
 @TimeOfDay {
 	0 = Dawn
@@ -8248,18 +8250,17 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	2 = Afternoon
 	3 = Evening
 	4 = Night
-};
+}
 
 @TranswarpExitCode {
 	0 = Success
 	1 = Already On Disk - If the creature, or if pregnant any of its offspring, are already on disk in some form. This case won't happen much, if you use a special chunk name like WARP.
-	2 = User/World Unknown - If the user hasn't been online in this world yet / since the user name changed, so we don't know who they are.
-When receiving a creature, use [NET: FROM] to find out who sent it.
-};
+	2 = User/World Unknown - If the user hasn't been online in this world yet / since the user name changed, so we don't know who they are. When receiving a creature, use [NET: FROM] to find out who sent it.
+}
 
 @VarTypeAsInt {
 	0 = integer
-	1 = floating-point
+	1 = Floating-Point
 	2 = string
 	3 = simple agent
 	4 = pointer agent
@@ -8268,16 +8269,16 @@ When receiving a creature, use [NET: FROM] to find out who sent it.
 	7 = creature
 	-1 = NULL agent handle
 	-2 = Unknown agent - you should never get this
-};
+}
 
 @WallDirectionConstants {
 	LEFT = Left
 	RGHT = Right
 	_UP_ = Up
 	DOWN = Down
-};
+}
 
 @Zombied {
 	1 = Zombied
 	0 = False
-};
+}
