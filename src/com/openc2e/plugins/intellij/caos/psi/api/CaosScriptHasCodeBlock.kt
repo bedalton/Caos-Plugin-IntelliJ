@@ -15,7 +15,7 @@ fun CaosScriptHasCodeBlock.scope() : CaosScope {
     var parent = getParentOfType(CaosScriptHasCodeBlock::class.java)
     while(parent != null) {
         enclosingScopes.add(parent.scope())
-        parent = getParentOfType(CaosScriptHasCodeBlock::class.java)
+        parent = parent.getParentOfType(CaosScriptHasCodeBlock::class.java)
     }
     return CaosScope(range, blockType, enclosingScopes)
 }
