@@ -386,9 +386,10 @@ object CaosScriptPsiImplUtil {
         (lvalue.namedVar)?.let {
             return CaosVar.NamedVar(it.text)
         }
-        lvalue.commandToken.text?.let {
+        lvalue.commandToken?.text?.let {
             return CaosVar.CaosCommandCall(it)
         }
+        LOGGER.info("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}")
         return CaosVar.CaosLiteralVal
     }
 
