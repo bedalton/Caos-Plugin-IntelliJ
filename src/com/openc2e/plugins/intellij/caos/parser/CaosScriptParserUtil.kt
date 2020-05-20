@@ -95,7 +95,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun eofNext(builder_: PsiBuilder,
                 level: Int): Boolean {
-        return builder_.eof()
+        return builder_.lookAhead(1) == null || builder_.eof()
     }
 
     @JvmStatic
