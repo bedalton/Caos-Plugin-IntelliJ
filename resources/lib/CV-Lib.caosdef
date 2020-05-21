@@ -1444,6 +1444,15 @@ DRIV (float) drive (integer);
 DROP (command);
 
 /*
+ * Returns the id of the highest drive for the target creature.
+ * #Creatures
+ *
+ * @rvalue
+ * @return (integer)
+ */
+DRV! (integer);
+
+/*
  * Sets a layer of clothing on part of the creature. The overlay_file is the index of the overlay
  * gallery. Currently there is also one tintable gallery available which is index 1. The
  * set_number is the type of clothing to put on from the overlay file - think of it as an outfit
@@ -1532,6 +1541,15 @@ EMIT (command) caIndex (integer) amount (float);
  *
  */
 ENDI (command);
+
+/*
+ * Compulsory command at end of macro, placed there by Macro constructor Macro is terminated and
+ * maybe self-destructs only [STOP] (never ENDM) commands may be placed in the body of macro.
+ * ENDM is string terminator
+ * #Flow
+ *
+ */
+ENDM (command);
 
 /*
  * Iterate through each agent which conforms to the given classification, setting [TARG] to point to
@@ -7093,7 +7111,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 
 @VarTypeAsInt {
 	0 = integer
-	1 = floating-point
+	1 = Floating-Point
 	2 = string
 	3 = simple agent
 	4 = pointer agent

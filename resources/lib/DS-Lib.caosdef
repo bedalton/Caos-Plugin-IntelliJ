@@ -1733,6 +1733,15 @@ DRIV (float) drive (integer);
 DROP (command);
 
 /*
+ * Returns the id of the highest drive for the target creature.
+ * #Creatures
+ *
+ * @rvalue
+ * @return (integer)
+ */
+DRV! (integer);
+
+/*
  * Debug command to show all the agents which can be seen by any creature.
  * #Agents
  *
@@ -1840,6 +1849,15 @@ EMIT (command) caIndex (integer) amount (float);
  *
  */
 ENDI (command);
+
+/*
+ * Compulsory command at end of macro, placed there by Macro constructor Macro is terminated and
+ * maybe self-destructs only [STOP] (never ENDM) commands may be placed in the body of macro.
+ * ENDM is string terminator
+ * #Flow
+ *
+ */
+ENDM (command);
 
 /*
  * Iterate through each agent which conforms to the given classification, setting [TARG] to point to
