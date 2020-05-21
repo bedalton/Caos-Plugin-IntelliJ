@@ -710,11 +710,13 @@ FMLY (integer);
 FROM (agent);
 
 /*
- *
+ * Number of ground level data on map
  * #Map
  *
+ * @rvalue
+ * @return (integer)
  */
-GND# (command);
+GND# (integer);
 
 /*
  *

@@ -1040,7 +1040,7 @@ DRIV (integer) drive (integer);
 DROP (command);
 
 /*
- * Returns the number of the creatures most pressing drive
+ * Returns the id of the highest drive for the target creature.
  * #Creatures
  *
  * @rvalue
@@ -1483,9 +1483,9 @@ LACB (integer);
  * #World
  *
  * @rvalue
- * @return [byte_string]
+ * @return (hexidecimal)
  */
-LANG [byte_string];
+LANG (hexidecimal);
 
 /*
  * Returns object’s Limit to the Bottom as absolute value of rooms boundary
