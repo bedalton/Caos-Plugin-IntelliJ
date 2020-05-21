@@ -16,7 +16,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
     override fun getWordsScanner(): WordsScanner? {
         return DefaultWordsScanner(
                 CaosDefLexerAdapter(),
-                CaosScriptTokenSets.ALL_CAOS_COMMAND_LIKE_TOKENS,
+                CaosScriptTokenSets.ALL_FIND_USAGES_TOKENS,
                 CaosScriptTokenSets.COMMENTS,
                 CaosScriptTokenSets.LITERALS
         )
@@ -29,6 +29,8 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
         return when {
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
             element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "[" + element.text + "]"
+            element.isOrHasParentOfType(CaosScriptNamedVar::class.java) -> "var ${element.text}"
+            element.isOrHasParentOfType(CaosScriptNamedConstant::class.java) -> "const ${element.text}"
             else -> "element"
         }
     }

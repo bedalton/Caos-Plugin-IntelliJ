@@ -1,7 +1,7 @@
 package com.openc2e.plugins.intellij.caos.def.lang;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
-import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons;
+import icons.CaosScriptIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

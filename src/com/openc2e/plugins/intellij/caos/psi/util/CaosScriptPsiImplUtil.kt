@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.psi.util
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import com.openc2e.plugins.intellij.caos.deducer.*
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
@@ -8,7 +9,10 @@ import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
+import com.openc2e.plugins.intellij.caos.references.CaosScriptNamedConstReference
+import com.openc2e.plugins.intellij.caos.references.CaosScriptNamedVarReference
 import com.openc2e.plugins.intellij.caos.references.CaosScriptSubroutineNameReference
+import com.openc2e.plugins.intellij.caos.utils.isOrHasParentOfType
 
 const val UNDEF = "{UNDEF}"
 
@@ -165,8 +169,9 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun isVariant(element: CaosScriptIsCommandToken, variants: List<String>, strict: Boolean): Boolean {
         val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant ?: ""
-        if (thisVariant.isEmpty())
+        if (thisVariant.isEmpty()) {
             return !strict
+        }
         return thisVariant in variants
     }
 
@@ -582,13 +587,44 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getValue(assignment: CaosScriptConstantAssignment): Float? {
-        return assignment.constantValue?.text?.toFloat()
+    fun getValue(assignment: CaosScriptConstantAssignment): CaosVar? {
+        assignment.constantValue?.let { value ->
+            value.float?.let {
+                return CaosVar.CaosLiteral.CaosFloat(it.text.toFloat())
+            }
+            value.int?.let {
+                return CaosVar.CaosLiteral.CaosInt(it.text.toInt())
+            }
+            value.varToken?.let {
+                return toCaosVar(it)
+            }
+        }
+        return CaosVar.CaosVarNone
     }
 
     @JvmStatic
     fun getName(assignment: CaosScriptConstantAssignment): String {
-        return assignment.stub?.name ?: assignment.nameElement?.text ?: "UNDEF"
+        return assignment.stub?.name ?: assignment.namedConstant.text.substring(1) ?: "UNDEF"
+    }
+
+    @JvmStatic
+    fun getName(assignment: CaosScriptNamedVarAssignment): String {
+        return assignment.stub?.name ?: assignment.namedVar.text.substring(1) ?: "UNDEF"
+    }
+
+    @JvmStatic
+    fun setName(assignment: CaosScriptNamedVarAssignment, newName:String) : PsiElement {
+        val newElement = CaosScriptPsiElementFactory.createNamedVar(assignment.project, newName)
+                ?: return assignment
+        return assignment.namedVar.replace(newElement)
+    }
+
+
+    @JvmStatic
+    fun getValue(assignment: CaosScriptNamedVarAssignment) : CaosVar? {
+        return assignment.varToken?.let {
+            toCaosVar(it)
+        }
     }
 
     @JvmStatic
@@ -622,6 +658,11 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getReference(element: CaosScriptNamedVar) : CaosScriptNamedVarReference {
+        return CaosScriptNamedVarReference(element)
+    }
+
+    @JvmStatic
     fun getName(constant: CaosScriptNamedConstant): String {
         return constant.text.substring(1)
     }
@@ -631,6 +672,11 @@ object CaosScriptPsiImplUtil {
         val newNameElement = CaosScriptPsiElementFactory.createNamedConst(constant.project, newName)
                 ?: return constant
         return constant.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getReference(constant: CaosScriptNamedConstant) : CaosScriptNamedConstReference {
+        return CaosScriptNamedConstReference(constant)
     }
 
     @JvmStatic
@@ -663,18 +709,6 @@ object CaosScriptPsiImplUtil {
             CaosScriptNamedGameVarType.NAME -> CaosVar.CaosNamedGameVar.NameVar(name)
             CaosScriptNamedGameVarType.UNDEF -> null
         }
-    }
-
-    @JvmStatic
-    fun getName(constantName: CaosScriptConstantName): String {
-        return constantName.text
-    }
-
-    @JvmStatic
-    fun setName(constantName: CaosScriptConstantName, newName: String): PsiElement {
-        val newNameElement = CaosScriptPsiElementFactory.createConstantName(constantName.project, newName)
-                ?: return constantName
-        return constantName.replace(newNameElement)
     }
 
     /*
@@ -719,4 +753,29 @@ enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
             }
         }
     }
+}
+
+fun PsiElement.getEnclosingCommandType() : CaosCommandType {
+    var parent:PsiElement? = parent
+            ?: return CaosCommandType.UNDEFINED
+    while (parent != null && parent !is CaosScriptCommandElement && parent !is CaosScriptCodeBlockLine) {
+        parent = parent.parent
+    }
+    if (parent == null || parent !is CaosScriptCommandElement)
+        return CaosCommandType.UNDEFINED
+    return when (parent) {
+        is CaosScriptCommandCall -> CaosCommandType.COMMAND
+        is CaosScriptRvalue -> CaosCommandType.RVALUE
+        is CaosScriptLvalue -> CaosCommandType.LVALUE
+        else -> {
+            parent.getEnclosingCommandType()
+        }
+    }
+}
+
+enum class CaosCommandType(val value:String) {
+    COMMAND("Command"),
+    RVALUE("RValue"),
+    LVALUE("LValue"),
+    UNDEFINED("???")
 }

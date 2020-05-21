@@ -2,13 +2,14 @@ package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
-import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.refactoring.suggested.endOffset
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
@@ -64,10 +65,11 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
         val selected = it.item as String
         if (caosFile.variant == selected || selected !in CaosConstants.VARAINTS)
             return@variant
-        val settingsService = CaosScriptProjectSettingsService.getInstance(project = caosFile.project)
-        val state = settingsService.state.copy(baseVariant = selected)
-        settingsService.loadState(state)
-        caosFile.variant = selected
+        CaosScriptProjectSettings.setVariant(selected)
+        //caosFile.variant = selected
+        runWriteAction {
+            com.intellij.psi.text.BlockSupport.getInstance(caosFile.project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
+        }
         DaemonCodeAnalyzer.getInstance(caosFile.project).restart(caosFile)
     }
     return toolbar.panel

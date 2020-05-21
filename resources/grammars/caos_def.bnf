@@ -100,6 +100,7 @@ command_def_element
 			getVariants
 			isVariant
 			getParameterStruct
+			getFullCommand
 		]
 	}
 	;
@@ -351,6 +352,7 @@ doc_comment_hashtag
 			getReference
 			isVariant
 			getVariants
+			getPresentation
 		]
 	}
 	;

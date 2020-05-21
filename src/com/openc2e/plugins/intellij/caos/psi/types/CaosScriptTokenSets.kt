@@ -3,6 +3,8 @@ package com.openc2e.plugins.intellij.caos.psi.types
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
+import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentHashtag
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*
 
 class CaosScriptTokenSets {
@@ -20,7 +22,13 @@ class CaosScriptTokenSets {
 
         @JvmStatic
         val COMMENTS = create(
-                CaosScript_COMMENT_LITERAL
+                CaosScript_COMMENT_LITERAL,
+                CaosScript_COMMENT_START,
+                CaosScript_COMMENT_TEXT,
+                CaosScript_COMMENT,
+                CaosScript_COMMENT_BODY,
+                CaosScript_K_CONST,
+                CaosScript_CONST_EQ
         )
 
         @JvmStatic
@@ -833,6 +841,15 @@ class CaosScriptTokenSets {
                     .types
                     .filterNot{ KEYWORDS.contains(it)}
                     .toSet()
+                    .toTypedArray()
+            create(*tokens)
+        }
+
+        @JvmStatic
+        val ALL_FIND_USAGES_TOKENS:TokenSet by lazy {
+            val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
+                    .types
+                    .toSet() + listOf(CaosScript_N_VAR, CaosScript_N_CONST, CaosDefTypes.CaosDef_HASH_TAG))
                     .toTypedArray()
             create(*tokens)
         }

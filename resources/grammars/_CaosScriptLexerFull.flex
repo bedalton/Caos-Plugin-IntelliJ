@@ -10,12 +10,11 @@ import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*;
 import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
-
-
 %%
 
 %{
-	public _CaosScriptLexer() {
+
+  	public _CaosScriptLexer() {
 		this((java.io.Reader)null);
 	}
 
@@ -69,7 +68,7 @@ VAxx=[Vv][Aa][0-9][0-9]
 OBVx=[Oo][Bb][Vv][0-9]
 OVxx=[Oo][Vv][0-9][0-9]
 MVxx=[Mm][Vv][0-9][0-9]
-COMMENT_LITERAL=\*[^\n]*
+COMMENT_TEXT=[^ \n]+
 DECIMAL=[0-9]+\.[0-9]+
 INT=[0-9]+
 TEXT=[^\]]+
@@ -87,16 +86,17 @@ BT=[Bb][Tt]
 BF=[Bb][Ff]
 EQ_C1={EQ}|{NE}|{GT}|{LT}|{LE}|{GE}|{BT}|{BF}
 EQ_NEW="="|"<>"|">"|">="|"<"|"<="
-K_CONST = [\*]\s*[Cc][Oo][nN][sS][tT]
-EQ_SPACE = [=]
-N_CONST = [:][a-zA-Z_0-9]+
+K_CONST = [Cc][Oo][nN][sS][tT]
+CONST_EQ = [=]
+N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR
 %%
 
 <START_OF_LINE> {
 	\s+				 	 	{ return WHITE_SPACE; }
+    "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
@@ -104,6 +104,19 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{INT}				 	{ return CaosScript_INT; }
 	{SPACE}				 	{ return CaosScript_SPACE_; }
     "R"					 	{ return CaosScript_ANIM_R; }
+}
+
+<COMMENT_START> {
+	{N_CONST}				{ yybegin(IN_CONST); return CaosScript_N_CONST; }
+  	{N_VAR}					{ yybegin(IN_VAR); return CaosScript_N_VAR; }
+    " "						{ return WHITE_SPACE; }
+    [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
+}
+
+<IN_COMMENT> {
+	{COMMENT_TEXT}			{ return CaosScript_COMMENT_TEXT; }
+    " "						{ return WHITE_SPACE; }
+    \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
 }
 
 <IN_TEXT> {
@@ -116,12 +129,28 @@ N_VAR = [$][a-zA-Z_0-9]+
 }
 
 <IN_CONST> {
-	{ID}				 	{ return CaosScript_ID; }
-	{EQ_SPACE}			 	{ return CaosScript_EQ_SPACE; }
+	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
+	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+	{OVxx}				 	{ return CaosScript_OV_XX; }
+	{OBVx}				 	{ return CaosScript_OBV_X; }
+	{MVxx}				 	{ return CaosScript_MV_XX; }
+	{VARx}				 	{ return CaosScript_VAR_X; }
+	{VAxx}				 	{ return CaosScript_VA_XX; }
+    {DECIMAL}				{ return CaosScript_FLOAT; }
 	{INT}				 	{ return CaosScript_INT; }
-	{NEWLINE}			 	{ return CaosScript_NEWLINE; }
-	\s+					 	{ return WHITE_SPACE; }
-	[^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+	" "+				 	{ return WHITE_SPACE; }
+	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
+}
+<IN_VAR> {
+	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
+	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+	{OVxx}				 	{ return CaosScript_OV_XX; }
+	{OBVx}				 	{ return CaosScript_OBV_X; }
+	{MVxx}				 	{ return CaosScript_MV_XX; }
+	{VARx}				 	{ return CaosScript_VAR_X; }
+	{VAxx}				 	{ return CaosScript_VA_XX; }
+	" "+				 	{ return WHITE_SPACE; }
+	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
 }
 
 <IN_LINE> {
@@ -132,7 +161,6 @@ N_VAR = [$][a-zA-Z_0-9]+
 	","                    	{ return CaosScript_COMMA; }
 	{EQ_C1}				 	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}			 	{ return CaosScript_EQ_OP_NEW_; }
-	{K_CONST}				{ yybegin(IN_CONST); return CaosScript_K_CONST; }
 	{N_CONST}				{ return CaosScript_N_CONST; }
 	{N_VAR}				 	{ return CaosScript_N_VAR; }
 	{NEWLINE}              	{ yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
@@ -156,7 +184,6 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{MVxx}				 	{ return CaosScript_MV_XX; }
 	{VARx}				 	{ return CaosScript_VAR_X; }
 	{VAxx}				 	{ return CaosScript_VA_XX; }
-	{COMMENT_LITERAL}      	{ yybegin(START_OF_LINE); return CaosScript_COMMENT_LITERAL; }
 	{DECIMAL}              	{ return CaosScript_DECIMAL; }
 	{INT}                  	{ return CaosScript_INT; }
 	{QUOTE_STRING}         	{ return CaosScript_QUOTE_STRING; }

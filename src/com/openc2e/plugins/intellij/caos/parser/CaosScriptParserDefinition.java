@@ -13,6 +13,7 @@ import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile;
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptLexerAdapter;
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTokenType;
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes;
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets;
 import com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 public class CaosScriptParserDefinition implements ParserDefinition {
 
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-    private static final TokenSet COMMENTS = CaosScriptTokenSets.getCOMMENTS();
+    private static final TokenSet COMMENTS = TokenSet.create(CaosScriptTypes.CaosScript_COMMENT);
     private static final TokenSet STRINGS = CaosScriptTokenSets.getSTRING_LIKE();
 
     @NotNull

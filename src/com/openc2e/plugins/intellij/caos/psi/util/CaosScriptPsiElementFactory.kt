@@ -5,6 +5,7 @@ import com.intellij.psi.PsiFileFactory
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
 import com.openc2e.plugins.intellij.caos.psi.api.*
+import java.lang.RuntimeException
 
 object CaosScriptPsiElementFactory {
 
@@ -22,9 +23,11 @@ object CaosScriptPsiElementFactory {
     fun createSubroutineNameElement(project: Project, newNameString: String): CaosScriptSubroutineName? {
         if (newNameString.isEmpty() || !newNameString.matches(SUBROUTINE_NAME_REGEX))
             return null
-        val file = createFileFromText(project, "gsub $newNameString")
-        val command = file.firstChild.firstChild?.firstChild?.firstChild?.firstChild as CaosScriptCGsub
-        return command.subroutineName
+        val commandCall = getCommandCall(project, "gsub $newNameString")
+        commandCall?.cGsub?.subroutineName?.let {
+            return it
+        }
+        throw NullPointerException("Failed to find gsub in command")
     }
 
     private val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
@@ -32,18 +35,15 @@ object CaosScriptPsiElementFactory {
     fun createNamedVar(project: Project, newNameString: String): CaosScriptNamedVar? {
         if (!NAMED_VAR_REGEX.matches(newNameString))
             return null
-        val newName = if (newNameString.startsWith("$"))
-            newNameString
+        val script = if (newNameString.startsWith("$"))
+            "* $newNameString = var0"
         else
-            "$$newNameString"
-        val file = createFileFromText(project, "setv $newName 0")
-        var first = file.firstChild
-        while (first != null && first !is CaosScriptCAssignment) {
-            first = first.firstChild
-        }
-        if (first !is CaosScriptCAssignment)
-            throw NullPointerException("Failed to find constant name in element type factory")
-        return first.lvalue?.namedVar
+            "* $$newNameString = var0"
+        val file = createFileFromText(project, script)
+        val comment = file.firstChild?.firstChild as? CaosScriptComment
+                ?: throw RuntimeException("Failed to find expected comment in caos element factory script")
+        return comment.namedVarAssignment?.namedVar
+
     }
 
     private val NAMED_CONST_REGEX = "[#]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
@@ -51,64 +51,42 @@ object CaosScriptPsiElementFactory {
     fun createNamedConst(project: Project, newNameString: String): CaosScriptNamedConstant? {
         if (!NAMED_CONST_REGEX.matches(newNameString))
             return null
-        val newName = if (newNameString.startsWith("#"))
-            newNameString
+        val script = if (newNameString.startsWith("#"))
+            "* $newNameString = 10"
         else
-            "#$newNameString"
-        val file = createFileFromText(project, "setv var0 $newName")
-        var first = file.firstChild
-        while (first != null && first !is CaosScriptCAssignment) {
-            first = first.firstChild
-        }
-        if (first !is CaosScriptCAssignment)
-            throw NullPointerException("Failed to find constant name in element type factory")
-        val rvalue =
-                first.rvalueDecimalOrInt
-                        ?.let {
-                            it.expectsDecimal?.rvalue ?: it.expectsInt?.rvalue
-                        }
-                        ?: first.expectsValue?.rvalue
-                        ?: return null
-        return rvalue.namedConstant
-    }
-
-    private val CONSTANT_NAME_REGEX = "[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
-    fun createConstantName(project: Project, newNameString: String): CaosScriptConstantName? {
-        if (!CONSTANT_NAME_REGEX.matches(newNameString))
-            return null
-        val file = createFileFromText(project, "const $newNameString = 0")
-        var first = file.firstChild
-        while (first != null && first !is CaosScriptConstantAssignment) {
-            first = first.firstChild
-        }
-        if (first !is CaosScriptConstantAssignment)
-            throw NullPointerException("Failed to find constant name in element type factory")
-        return first.constantName
+            "* #$newNameString = 10"
+        val file = createFileFromText(project, script)
+        val comment = file.firstChild?.firstChild as? CaosScriptComment
+                ?: throw RuntimeException("Failed to find expected comment in caos element factory script")
+        return comment.constantAssignment?.namedConstant
     }
 
     private val TOKEN_NAME_REGEX = "[a-zA-Z_0-9]*".toRegex()
     fun createTokenElement(project: Project, newNameString: String): CaosScriptToken? {
-        if (newNameString.isEmpty() || !newNameString.matches(TOKEN_NAME_REGEX))
-            return null
-        val file = createFileFromText(project, "tokn $newNameString")
+        val script = "setv var0 tokn $newNameString"
+        val commandCall = getCommandCall(project, script)
+                ?: return null
+        return commandCall.expectsDecimal?.rvalue?.token
+    }
+
+    fun createStringElement(project: Project, newNameString: String): CaosScriptRvalue? {
+        val script = "sets var1 \"$newNameString\""
+        val commandCall = getCommandCall(project, script)
+                ?: return null
+        return commandCall.expectsString?.rvalue
+    }
+
+    private fun getCommandCall(project:Project, script:String, throws:Boolean = true) : CaosScriptCommandCall? {
+        val file = createFileFromText(project, script)
         var first = file.firstChild
         while (first != null && first !is CaosScriptCommandCall) {
             first = first.firstChild
         }
-        if (first !is CaosScriptCommandCall)
-            throw NullPointerException("Failed to find string in element type factory")
-        return first.expectsToken?.rvalue?.token
-    }
-
-    fun createStringElement(project: Project, newNameString: String): CaosScriptRvalue? {
-        val file = createFileFromText(project, "sets var1 \"$newNameString\"")
-        var first = file.firstChild
-        while (first != null && first !is CaosScriptCAssignment) {
-            first = first.firstChild
-        }
-        if (first !is CaosScriptCAssignment)
-            throw NullPointerException("Failed to find string in element type factory")
-        return first.expectsString?.rvalue
+        if (first is CaosScriptCommandCall)
+           return first
+        if (throws)
+            throw NullPointerException("Failed to find command call in element type factory for script: '${script}'")
+        return null
     }
 
 }

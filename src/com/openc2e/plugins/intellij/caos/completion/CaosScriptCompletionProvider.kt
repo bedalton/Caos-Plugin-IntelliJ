@@ -9,7 +9,12 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
-import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
+import icons.CaosScriptIcons
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandCall
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptLvalue
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptRvalue
+import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
+import com.openc2e.plugins.intellij.caos.psi.util.getEnclosingCommandType
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 
@@ -18,6 +23,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     private val UPPERCASE_REGEX = "[A-Z]".toRegex()
     private val IS_ID_CHAR = "[^_A-Za-z]".toRegex()
     private val IS_NUMBER = "[0-9]+".toRegex()
+    private val WHITESPACE = "\\s+".toRegex()
 
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
         val element = parameters.position
@@ -31,25 +37,54 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             Case.UPPER_CASE
         else
             Case.LOWER_CASE
-
+        val text = element.textWithoutCompletionIdString
+        if (IS_NUMBER.matches(text)) {
+            resultSet.stopHere()
+            return
+        }
+        if (!WHITESPACE.matches(element.prevSibling?.text?:"")) {
+            resultSet.stopHere()
+            return
+        }
         val previous = element.getPreviousNonEmptySibling(false)
         if (previous != null && IS_NUMBER.matches(previous.text)) {
             resultSet.stopHere()
             return
         }
+        var parent:PsiElement? = element.parent
+        while(parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
+            parent = parent.parent
+        }
+        if (parent == null) {
+            resultSet.stopHere()
+            return
+        }
+        val type = parent.getEnclosingCommandType()
 
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project).filter {
-            (variant.isBlank() || it.isVariant(variant))
+            if (!(variant.isBlank() || it.isVariant(variant)))
+                return@filter false
+            when(type) {
+                CaosCommandType.COMMAND -> it.isCommand
+                CaosCommandType.RVALUE -> it.isRvalue
+                CaosCommandType.LVALUE -> it.isLvalue
+                CaosCommandType.UNDEFINED -> false
+            }
         }.map {
             if (it.commandWords.size > 1) {
                 val commandWords = it.commandWords
                 if (previous?.text?.toLowerCase() == it.commandWords[0].toLowerCase()) {
-                    return@map createCommandTokenLookupElement(case, it.commandWords[1], it.isCommand, it.returnTypeString, commandWords[0])
+                    return@map createCommandTokenLookupElement(element, case, it.commandWords[1], it.isCommand, it.returnTypeString, commandWords[0])
                 }
             }
-            createCommandTokenLookupElement(case, it.commandName, it.isCommand, it.returnTypeString)
+            createCommandTokenLookupElement(element, case, it.commandName, it.isCommand, it.returnTypeString)
         }
         resultSet.addAllElements(singleCommands)
+        if (type == CaosCommandType.RVALUE || type == CaosCommandType.LVALUE)
+            addVariableCompletions(variant, element, resultSet)
+    }
+
+    private fun addVariableCompletions(variant:String, element:PsiElement, resultSet: CompletionResultSet) {
         when (variant) {
             "C1" -> {
                 (0..2).forEach {
@@ -84,7 +119,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
-    private fun createCommandTokenLookupElement(case: Case, commandIn: String, isCommand: Boolean, returnType: String, prefixIn: String? = null): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(element:PsiElement, case: Case, commandIn: String, isCommand: Boolean, returnType: String, prefixIn: String? = null): LookupElementBuilder {
         val tailText = if (isCommand)
             "command"
         else
@@ -92,7 +127,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val icon = if (isCommand)
             CaosScriptIcons.COMMAND
         else
-            CaosScriptIcons.VARIABLE
+            CaosScriptIcons.RVALUE
         val command = if (case == Case.UPPER_CASE)
             commandIn.toUpperCase()
         else
@@ -106,11 +141,33 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 .create(command)
                 .withTailText("($tailText)")
                 .withIcon(icon)
-                .withInsertHandler(SpaceAfterInsertHandler)
+        if (needsSpaceAfter(element, command))
+            builder = builder.withInsertHandler(SpaceAfterInsertHandler)
         if (prefix.isNotNullOrBlank()) {
             builder = builder.withPresentableText("$prefix $command")
         }
         return builder
+    }
+
+    fun needsSpaceAfter(element:PsiElement, commandString:String) : Boolean {
+        var parent:PsiElement? = element.parent
+        while(parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
+            parent = parent.parent
+        }
+        if (parent == null)
+            return false
+        val variant = (element.containingFile as? CaosScriptFile)?.variant
+        var matches = CaosDefCommandElementsByNameIndex.Instance[commandString, element.project]
+                .filter { (variant == null || variant in it.variants) }
+        matches = when (parent) {
+            is CaosScriptCommandCall -> matches.filter { it.isCommand }
+            is CaosScriptRvalue -> matches.filter { it.isRvalue }
+            is CaosScriptLvalue -> matches.filter { it.isLvalue }
+            else -> return false
+        }
+        if (matches.isEmpty())
+            return false
+        return matches.all { it.parameterStructs.size > 0 }
     }
 
 }

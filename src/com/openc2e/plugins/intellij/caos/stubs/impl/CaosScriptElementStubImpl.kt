@@ -134,8 +134,14 @@ class CaosScriptNamedGameVarStubImpl(
 class CaosScriptConstantAssignmentStubImpl(
         parent: StubElement<*>?,
         override val name:String,
-        override val value:Float?
+        override val value:CaosVar?
 ) : StubBase<CaosScriptConstantAssignmentImpl>(parent, CaosScriptStubTypes.CONSTANT_ASSIGNMENT), CaosScriptConstantAssignmentStub
+
+class CaosScriptNamedVarAssignmentStubImpl(
+        parent: StubElement<*>?,
+        override val name:String,
+        override val value:CaosVar?
+) : StubBase<CaosScriptNamedVarAssignmentImpl>(parent, CaosScriptStubTypes.NAMED_VAR_ASSIGNMENT), CaosScriptNamedVarAssignmentStub
 
 class CaosScriptNamedConstantStubImpl(
         parent: StubElement<*>?,

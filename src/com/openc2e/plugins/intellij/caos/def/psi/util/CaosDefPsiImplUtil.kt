@@ -1,9 +1,9 @@
 package com.openc2e.plugins.intellij.caos.def.psi.util
 
-import com.intellij.ide.presentation.Presentation
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.usageView.UsageViewUtil
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
@@ -15,11 +15,14 @@ import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import icons.CaosScriptIcons
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.substringFromEnd
 import javax.swing.Icon
 
+@Suppress("UNUSED_PARAMETER")
 object CaosDefPsiImplUtil {
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -35,7 +38,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getVariants(header:CaosDefHeader) : List<String> {
-        return header.variantList.map { it.variantCode.text }
+        return header.variantList.mapNotNull { it.variantCode.text.trim().nullIfEmpty() }
     }
 
     @JvmStatic
@@ -50,21 +53,18 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun isLvalue(command:CaosDefCommandDefElement) : Boolean {
-        val stub = command.stub
-        if (stub != null)
-            return stub.lvalue
-        val comment = command.docComment
-                ?: return false
-        return comment.lvalueList.isNotEmpty()
+        command.stub?.lvalue?.let {
+            return it
+        }
+        return command.docComment?.lvalueList.orEmpty().isNotEmpty()
     }
 
     @JvmStatic
     fun isRvalue(command:CaosDefCommandDefElement) : Boolean {
-        val stub = command.stub
-        if (stub != null)
-            return stub.lvalue
-        val returnType = getReturnTypeString(command)
-        return returnType != "command" && returnType != UnknownReturn
+        command.stub?.rvalue?.let {
+            return it
+        }
+        return command.docComment?.rvalueList?.isNotEmpty() ?: command.returnTypeString.let { it != "command" && it != UnknownReturn }
     }
 
     @JvmStatic
@@ -286,12 +286,11 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun isCommand(element:CaosDefCommandDefElement) : Boolean {
-        val stub = element.stub
-        if (stub != null) {
-            return stub.isCommand
+        LOGGER.info("Return type: ${element.returnTypeString}")
+        element.stub?.isCommand?.let {
+            return it
         }
-        return element.returnType?.text?.toLowerCase() == "command"
-
+        return element.returnTypeString.toLowerCase() == "command"
     }
 
     @JvmStatic
@@ -350,6 +349,41 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getDescription(element:CaosDefTypeDefinition) : String? {
         return element.stub?.description ?: element.typeDefinitionDescription?.text
+    }
+
+    @JvmStatic
+    fun getPresentation(element:CaosDefDocCommentHashtag): ItemPresentation? {
+        val parentDeclaration = element.getParentOfType(CaosDefCommandDefElement::class.java)
+        val text = parentDeclaration?.fullCommand ?: UsageViewUtil.createNodeText(element)
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return text
+            }
+
+            override fun getLocationString(): String {
+                return element.containingFile.name
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return CaosScriptIcons.HASHTAG
+            }
+        }
+    }
+
+    @JvmStatic
+    fun getFullCommand(command:CaosDefCommandDefElement) : String {
+        val tokens = mutableListOf<String>(command.commandName, wrapParameterType(command.returnTypeString))
+        for(param in command.parameterStructs) {
+            tokens.add(param.name)
+            tokens.add(wrapParameterType(param.type.type))
+        }
+        return tokens.joinToString(" ")
+    }
+
+    private fun wrapParameterType(type:String) : String {
+        if (type.substring(0,1) == "[")
+            return type
+        return "($type)"
     }
 
     @JvmStatic
@@ -431,10 +465,10 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getOffsetRange(element:CaosDefVariableLink) : TextRange {
         val length = element.variableName.length
-        if (length < 3)
-            return TextRange.EMPTY_RANGE
+        return if (length < 3)
+            TextRange.EMPTY_RANGE
         else
-            return TextRange(1, length + 1)
+            TextRange(1, length + 1)
     }
 
     @JvmStatic

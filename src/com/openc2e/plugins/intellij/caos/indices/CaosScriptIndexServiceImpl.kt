@@ -25,4 +25,8 @@ class CaosScriptIndexServiceImpl : CaosScriptIndexService {
         indexSink.occurrence(CaosScriptVarAssignmentIndex.KEY, stub.fileName)
     }
 
+    override fun indexNamedVarAssignment(stub: CaosScriptNamedVarAssignmentStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosScriptNamedVarAssignmentIndex.KEY, stub.name)
+    }
+
 }

@@ -5,7 +5,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
-import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
+import icons.CaosScriptIcons
 import javax.swing.Icon
 
 class CaosScriptColorSettingsPage : ColorSettingsPage {

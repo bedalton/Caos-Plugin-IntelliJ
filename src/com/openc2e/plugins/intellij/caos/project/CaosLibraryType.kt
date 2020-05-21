@@ -7,7 +7,7 @@ import com.intellij.openapi.roots.libraries.ui.LibraryPropertiesEditor
 import com.intellij.openapi.roots.libraries.ui.LibraryRootsComponentDescriptor
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
-import com.openc2e.plugins.intellij.caos.lang.CaosScriptIcons
+import icons.CaosScriptIcons
 import javax.swing.Icon
 import javax.swing.JComponent
 
