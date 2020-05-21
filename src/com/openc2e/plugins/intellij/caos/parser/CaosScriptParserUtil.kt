@@ -2,11 +2,9 @@ package com.openc2e.plugins.intellij.caos.parser
 
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.util.Key
 import com.intellij.psi.tree.IElementType
-import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettingsService
+import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE
 import gnu.trove.TObjectLongHashMap
@@ -30,7 +28,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         var currentVariant: String? = builder_.getUserData(CAOS_VARIANT)
         if (currentVariant != null)
             return currentVariant == variant
-        currentVariant = CaosScriptProjectSettingsService.getInstance(builder_.project).variant
+        currentVariant = CaosScriptProjectSettings.variant
         builder_.putUserData(CAOS_VARIANT, currentVariant)
         return currentVariant == variant
     }

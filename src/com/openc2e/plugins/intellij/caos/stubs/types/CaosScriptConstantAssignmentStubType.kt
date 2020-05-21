@@ -19,15 +19,12 @@ class CaosScriptConstantAssignmentStubType(debugName:String) : CaosScriptStubEle
 
     override fun serialize(stub: CaosScriptConstantAssignmentStub, stream: StubOutputStream) {
         stream.writeName(stub.name)
-        stream.writeBoolean(stub.value != null)
-        if (stub.value != null) {
-            stream.writeFloat(stub.value!!)
-        }
+        stream.writeCaosVarSafe(stub.value)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptConstantAssignmentStub {
         val name = stream.readNameAsString() ?: UNDEF
-        val value = if (stream.readBoolean()) stream.readFloat() else null
+        val value = stream.readCaosVarSafe()
         return CaosScriptConstantAssignmentStubImpl(
                 parent = parent,
                 name = name,

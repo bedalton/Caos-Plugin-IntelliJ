@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.caos.lang
 
 import com.intellij.extapi.psi.PsiFileBase
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.module.Module
@@ -13,14 +12,15 @@ import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.FileContentUtil
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettingsService
+import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage.instance) {
 
-    var variant: String
+    val variant: String
+        get() = CaosScriptProjectSettings.variant
+        /*
         get() {
 
             val virtualFile = virtualFile
@@ -35,7 +35,7 @@ class CaosScriptFile(viewProvider: FileViewProvider)
             virtualFile.putUserData(VariantUserDataKey, newVariant)
             VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant)
             FileContentUtil.reparseFiles(project, listOf(virtualFile), true)
-        }
+        }*/
 
     override fun getFileType(): FileType {
         return CaosScriptFileType.INSTANCE
@@ -131,6 +131,5 @@ val VirtualFile.variant: String
     get() {
         return getUserData(CaosScriptFile.VariantUserDataKey)
                 ?: VariantFilePropertyPusher.readFromStorage(this)
-                ?: ServiceManager.getService(CaosScriptProjectSettingsService::class.java)?.state?.baseVariant
-                ?: CaosScriptProjectSettingsService.DEFAULT_VARIANT
+                ?: CaosScriptProjectSettings.variant
     }

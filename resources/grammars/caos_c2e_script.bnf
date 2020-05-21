@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|constant_assignment|named_constant|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -222,7 +222,7 @@
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
-		EQ_SPACE = "regexp:\s*=\s*";
+		CONST_EQ = "regexp:=";
 		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
 		N_VAR = "regexp:[$][a-zA-Z_0-9]+"
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
@@ -244,11 +244,18 @@
 	]
 }
 
-private def	::= (constant_assignment NEWLINE)* (script_body_element (!<<eof>> space_like_or_newline script_body_element)*  space_like?)? c_endm?
+private def	::= file_body?
+	;
+
+private file_body
+	::= script_body_element (!<<eof>> space_like_or_newline script_body_element)*
+	{
+	}
 	;
 
 script_body_element
-	::= event_script
+	::= comment
+	|	event_script
 	|	macro
 	{
 		implements = [
@@ -258,7 +265,7 @@ script_body_element
 	;
 
 macro
-	::= macro_code_block space_like_or_newline script_terminator?
+	::= macro_code_block (space_like_or_newline script_terminator)?
 	{
 
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptMacroStub"
@@ -301,12 +308,12 @@ code_block_line
 private caos_element
 	::=	control_statement
 	|	command_call
-	|	expression_list
+	//|	expression_list
 	;
 
 
 event_script
-	::= c_scrp space_like classifier space_like event_number_element space_like_or_newline (<<enterMode "eventScript">>event_script_body space_like_or_newline)? <<exitMode "eventScript">>script_terminator
+	::= c_scrp space_like classifier space_like event_number_element (<<enterMode "eventScript">>space_like_or_newline event_script_body)? <<exitMode "eventScript">>  (space_like_or_newline script_terminator)?
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptEventScriptStub"
@@ -905,7 +912,6 @@ byte_string
 new_line_like
 	::= symbol_comma
 	|	NEWLINE
-	|	<<eof>>
 	;
 
 symbol_comma
@@ -954,7 +960,7 @@ private equality_expression_prime
 equality_expression_plus
 	::=  equality_join space_like equality_expression
 	{
-		pin("*")=1
+		pin(".*")=1
 	}
 	;
 
@@ -963,7 +969,7 @@ equality_join
 	|	K_OR
 	;
 
-command_call ::= command_call_by_args // I think private values are have equal priority
+command_call ::= command_call_by_args // I think private values all have equal priority
 	{
 		pin=2
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandCallStub"
@@ -2279,7 +2285,6 @@ c_kw_none
 	|	<<isVariant "C1">>K_BBD_COL space_like K_EMIT
 	|	K_BORN
 	|	K_BRN_COL space_like K_DMPB
-	|	K_BUMP
 	|	K_CAGE
 	|	K_CALC
 	|	K_CAMN
@@ -2311,7 +2316,6 @@ c_kw_none
 	|	K_DDE_COL space_like K_NEGG
 	|	K_DDE_COL space_like K_PANC
 	|	K_DDE_COL space_like K_PICT
-	|	K_DEAD
 	|	K_DONE
 	|	<<isVariant "C2">>K_DPAS
 	|	<<isVariant "C1">>K_DPAS
@@ -2324,8 +2328,6 @@ c_kw_none
 	|	K_FILE space_like K_OFLU
 	|	K_FRSH
 	|	K_GIDS space_like K_ROOT
-	|	K_GND_NUM
-	|	K_GNDW
 	|	<<isVariant "C2">>K_GPAS
 	|	<<isVariant "C1">>K_GPAS
 	|	K_HELP
@@ -2349,7 +2351,7 @@ c_kw_none
 	|	<<isVariant "C2">>K_RCLR
 	|	K_REAF
 	|	K_RGAM
-	|	K_RMS_NUM
+	|S_NUM
 	|	K_RSCR
 	|	K_RSET
 	|	K_SAVE
@@ -4323,6 +4325,8 @@ r_kw_none
 	|	K_FVEL
 	|	K_GALL
 	|	K_GNAM
+	|	K_GND_NUM
+	|	K_GNDW
 	|	K_GNUS
 	|	K_GRAV
 	|	K_HAND
@@ -4414,7 +4418,7 @@ r_kw_none
 	|	<<isVariant "C2">>K_RELX
 	|	<<isVariant "C2">>K_RELY
 	|	K_REST
-	|	K_RGHT
+	|	K_RG
 	|	K_RMNO
 	|	K_RMS_NUM
 	|	K_RNDR
@@ -4575,7 +4579,6 @@ r_kw_d
 	|	K_DBGA
 	|	K_DRIV
 	|	K_ERID
-	|	K_GRND
 	|	K_GTOS
 	|	K_HEAP
 	|	K_HEDX
@@ -5468,6 +5471,7 @@ all_tokens ::= K_CD_
 	|	K_FRSH
 	|	K_GND_NUM
 	|	K_GNDW
+	|	K_GRND
 	|	K_GPAS
 	|	K_HELP
 	|	K_INST
@@ -6198,7 +6202,6 @@ token
 	;
 script_terminator
 	::= c_endm
-	|	<<eof>>
 	;
 
 c_endm ::= K_ENDM
@@ -6375,7 +6378,7 @@ rvalue
 
 
 constant_assignment
-	::= K_CONST constant_name EQ_SPACE constant_value
+	::= named_constant CONST_EQ constant_value
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptConstantAssignmentStub"
@@ -6389,24 +6392,21 @@ constant_assignment
 		]
 	}
 	;
-
-constant_value
-	::= (INT|FLOAT)
-	;
-
-constant_name
-	::= ID
+named_var_assignment
+	::= named_var CONST_EQ var_token
 	{
-		implements = [
-			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		]
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptNamedVarAssignmentStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+
 		methods = [
+			getValue
 			getName
-			setName
-			getReference
 		]
 	}
+	;
+constant_value
+	::= (INT|FLOAT|var_token)
 	;
 
 named_constant
@@ -6447,6 +6447,13 @@ named_var
 	}
 	;
 
+comment
+	::= COMMENT_START (constant_assignment|named_var_assignment|comment_body)?
+	;
+
+comment_body
+	::= COMMENT_TEXT+
+	;
 
 family ::= INT | rvalue;
 genus ::= INT | rvalue;

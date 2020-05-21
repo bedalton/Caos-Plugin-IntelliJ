@@ -31,6 +31,7 @@ public class CaosScriptElementTypeFactory {
                 "CaosScript_NAMED_GAME_VAR" -> CaosScriptStubTypes.NAMED_GAME_VAR
                 "CaosScript_EVENT_SCRIPT" -> CaosScriptStubTypes.EVENT_SCRIPT
                 "CaosScript_MACRO" -> CaosScriptStubTypes.MACRO
+                "CaosScript_NAMED_VAR_ASSIGNMENT" -> CaosScriptStubTypes.NAMED_VAR_ASSIGNMENT
                 else -> throw IndexOutOfBoundsException("Caos token '$debugName' is not recognized")
             }
         }

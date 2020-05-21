@@ -35,6 +35,9 @@ public interface CaosScriptStubTypes {
     CaosScriptConstantAssignmentStubType CONSTANT_ASSIGNMENT = new CaosScriptConstantAssignmentStubType("CaosScript_CONSTANT_ASSIGNMENT");
 
     @NotNull
+    CaosScriptNamedVarAssignmentStubType NAMED_VAR_ASSIGNMENT = new CaosScriptNamedVarAssignmentStubType("CaosScript_NAMED_VAR_ASSIGNMENT");
+
+    @NotNull
     CaosScriptNamedVarStubType NAMED_VAR = new CaosScriptNamedVarStubType("CaosScript_NAMED_VAR");
 
     @NotNull

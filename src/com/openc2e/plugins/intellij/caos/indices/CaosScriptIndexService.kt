@@ -9,4 +9,5 @@ interface CaosScriptIndexService {
     fun indexConstantAssignment(stub: CaosScriptConstantAssignmentStub, indexSink: IndexSink)
     fun indexNamedConstant(stub: CaosScriptNamedConstantStub, indexSink: IndexSink)
     fun indexVarAssignment(stub: CaosScriptAssignmentStub, indexSink: IndexSink)
+    fun indexNamedVarAssignment(stub: CaosScriptNamedVarAssignmentStub, indexSink: IndexSink)
 }
