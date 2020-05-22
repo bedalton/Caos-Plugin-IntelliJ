@@ -43,6 +43,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
+            is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
         }
     }
 
@@ -52,6 +53,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.elif-not-available"))
                 .range(element.cElif)
+                .create()
+    }
+
+    @Suppress("SameParameterValue")
+    private fun simpleError(element:PsiElement, message:String, annotationWrapper:AnnotationHolderWrapper) {
+        annotationWrapper.newErrorAnnotation(message)
+                .range(element)
                 .create()
     }
 
@@ -84,6 +92,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
+    private fun annotateByteStringR(byteStringR: CaosScriptByteStringR, annotationWrapper: AnnotationHolderWrapper) {
+
+    }
+
     private fun annotateNewEqualityOps(variant: String, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
@@ -98,7 +110,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (variant == "C2")
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
-                .range(element.cEscn)
+                .range(element.escnHeader.cEscn)
                 .create()
     }
 
@@ -116,11 +128,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
-        if (element.cEnum.kEnum != null)
+        val header = element.emumHeaderCommand?.cEnum
+                ?: return
+        if (header.kEnum != null)
             return
         if (!(variant == "C2" || variant == "C1"))
             return
-        element.cEnum.kEpas?.let {
+        header.kEpas?.let {
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", it.text.toUpperCase()))
                     .range(it)
                     .create()
@@ -128,7 +142,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
         if (variant != "C1")
             return
-        val badElement = element.cEnum.kEsee ?: element.cEnum.kEtch ?: element.cEnum.kEpas
+        val badElement = header.kEsee ?: header.kEtch ?: header.kEpas
         ?: return // return if enum type is ENUM
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
                 .range(badElement)
