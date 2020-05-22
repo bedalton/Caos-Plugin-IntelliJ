@@ -286,7 +286,6 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun isCommand(element:CaosDefCommandDefElement) : Boolean {
-        LOGGER.info("Return type: ${element.returnTypeString}")
         element.stub?.isCommand?.let {
             return it
         }
@@ -514,7 +513,6 @@ object CaosDefPsiImplUtil {
     fun getVariants(element:CaosDefDocCommentHashtag) : List<String> {
         return element.stub?.variants ?: element.containingCaosDefFile.variants
     }
-
 
     @JvmStatic
     fun getPresentation(element:CaosDefCommandWord): ItemPresentation {

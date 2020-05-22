@@ -17,6 +17,7 @@ import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.*
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
+import com.openc2e.plugins.intellij.caos.utils.orElse
 
 class CaosScriptSyntaxErrorAnnotator : Annotator {
 
@@ -40,9 +41,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptCRetn -> annotateRetnCommand(variant, element, annotationWrapper)
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
             is CaosScriptIsCommandToken -> annotateNotAvailable(element, annotationWrapper)
+            is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
         }
     }
+
 
     private fun annotateElseIfStatement(variant: String, element: CaosScriptElseIfStatement, annotationWrapper: AnnotationHolderWrapper) {
         if (!(variant != "C1" || variant != "C2"))
@@ -105,7 +108,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     .range(element)
                     .create()
         }
-        if (!element.hasParentOfType(CaosScriptNoJump::class.java) || variant != "C1")
+        if (!element.hasParentOfType(CaosScriptNoJump::class.java))
             return
         annotationWrapper.newAnnotation(HighlightSeverity.ERROR, CaosBundle.message("caos.annotator.command-annotator.loop-should-not-be-jumped-out-of"))
                 .range(element.textRange)
@@ -157,7 +160,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
 
         val variant = element.variant.nullIfEmpty()
                 ?: return
-
         if (variant !in variants) {
             variants = sortVariants(variants)
             LOGGER.info("Current Variant = '${element.containingCaosFile?.variant}'; Available in variants: $variants")
@@ -210,6 +212,57 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 else -> 7
             }
         }
+    }
+
+    private fun annotateVarToken(variantIn:String, element:CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
+        val variant = variantIn.toUpperCase()
+        val variants:String =  if (element.varX != null) {
+            if (variant != "C1" && variant != "C2")
+                "C1,C2"
+            else
+                return
+        } else if (element.vaXx != null) {
+            if (variant == "C1")
+                "C2+"
+            else
+                return
+        } else if (element.obvX != null) {
+            if (variant != "C1" && variant != "C2") {
+                if (element.varIndex.orElse(100) < 3)
+                    "C1,C2"
+                else
+                    "C2"
+            } else if (variant == "C1" && element.varIndex.orElse(0) > 2)
+                "C2"
+            else
+                return
+        } else if (element.ovXx != null) {
+            if (variant == "C1")
+                "C2+"
+            else
+                return
+        } else if (element.mvXx != null) {
+            if (variant == "C1" || variant == "C2")
+                "CV+"
+            else
+                return
+        }  else
+            return
+
+        val varName = when {
+            element.varX != null -> "VARx"
+            element.vaXx != null -> "VAxx"
+            element.obvX != null -> if (element.varIndex.orElse(0) > 2) "OBVx[3-9]" else "OBVx"
+            element.ovXx != null -> "OVxx"
+            element.mvXx != null -> "MVxx"
+            else -> element.text
+        }
+
+        val error = CaosBundle.message("caos.annotator.command-annotator.invalid-var-type-for-variant", varName, variants)
+        annotationWrapper
+                .newErrorAnnotation(error)
+                .range(element)
+                .create()
     }
 
     companion object {

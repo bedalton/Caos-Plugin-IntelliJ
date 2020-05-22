@@ -28,16 +28,10 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
             return emptyArray()
         if (element.parent?.parent is CaosDefCommandDefElement)
             return emptyArray()
-        var elements = if (element is CaosDefCompositeElement)
+        val elements = if (element is CaosDefCompositeElement)
             findFromDefElement()
         else
             findFromScriptElement()
-        val commandText = element.name
-                ?: return emptyArray()
-        elements = elements
-                .filter {
-                    it.name.toLowerCase() == commandText.toLowerCase()
-                }
         return PsiElementResolveResult.createResults(elements)
     }
 
