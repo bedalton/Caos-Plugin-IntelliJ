@@ -73,7 +73,7 @@ object CaosScriptPsiElementFactory {
         val script = "sets var1 \"$newNameString\""
         val commandCall = getCommandCall(project, script)
                 ?: return null
-        return commandCall.expectsString?.rvalue
+        return (commandCall.expectsQuoteString?.rvalue ?: commandCall.expectsC1String?.rvalue)
     }
 
     private fun getCommandCall(project:Project, script:String, throws:Boolean = true) : CaosScriptCommandCall? {

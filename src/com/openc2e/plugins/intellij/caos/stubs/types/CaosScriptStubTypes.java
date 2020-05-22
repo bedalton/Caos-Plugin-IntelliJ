@@ -1,10 +1,6 @@
 package com.openc2e.plugins.intellij.caos.stubs.types;
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.stubs.IStubElementType;
-import com.intellij.psi.stubs.StubElement;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public interface CaosScriptStubTypes {
     //@NotNull
@@ -53,7 +49,7 @@ public interface CaosScriptStubTypes {
     CaosScriptExpectsAgentStubType EXPECTS_AGENT = new CaosScriptExpectsAgentStubType("CaosScript_EXPECTS_AGENT");
 
     @NotNull
-    CaosScriptExpectsStringStubType EXPECTS_STRING = new CaosScriptExpectsStringStubType("CaosScript_EXPECTS_STRING");
+    CaosScriptExpectsQuoteStringStubType EXPECTS_QUOTE_STRING = new CaosScriptExpectsQuoteStringStubType("CaosScript_EXPECTS_STRING");
 
     @NotNull
     CaosScriptExpectsC1StringStubType EXPECTS_C1_STRING = new CaosScriptExpectsC1StringStubType("CaosScript_C1_STRING");

@@ -95,24 +95,24 @@ class CaosScriptExpectsDecimalStubType(debugName:String) : CaosScriptStubElement
 /**
  * Stub type for caos expects string
  */
-class CaosScriptExpectsStringStubType(debugName:String) : CaosScriptStubElementType<CaosScriptExpectsStringStub, CaosScriptExpectsStringImpl>(debugName) {
-    override fun createPsi(stub: CaosScriptExpectsStringStub): CaosScriptExpectsStringImpl {
-        return CaosScriptExpectsStringImpl(stub, this)
+class CaosScriptExpectsQuoteStringStubType(debugName:String) : CaosScriptStubElementType<CaosScriptExpectsQuoteStringStub, CaosScriptExpectsQuoteStringImpl>(debugName) {
+    override fun createPsi(stub: CaosScriptExpectsQuoteStringStub): CaosScriptExpectsQuoteStringImpl {
+        return CaosScriptExpectsQuoteStringImpl(stub, this)
     }
 
-    override fun serialize(stub: CaosScriptExpectsStringStub, stream: StubOutputStream) {
+    override fun serialize(stub: CaosScriptExpectsQuoteStringStub, stream: StubOutputStream) {
         stream.writeInt(stub.index)
         stream.writeCaosVar(stub.caosVar)
     }
 
-    override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptExpectsStringStub {
+    override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptExpectsQuoteStringStub {
         val index = stream.readInt()
         val caosVar = stream.readCaosVar()
-        return CaosScriptExpectsStringStubImpl(parent, index, caosVar)
+        return CaosScriptExpectsQuoteStringStubImpl(parent, index, caosVar)
     }
 
-    override fun createStub(element: CaosScriptExpectsStringImpl, parent: StubElement<*>?): CaosScriptExpectsStringStub {
-        return CaosScriptExpectsStringStubImpl(
+    override fun createStub(element: CaosScriptExpectsQuoteStringImpl, parent: StubElement<*>?): CaosScriptExpectsQuoteStringStub {
+        return CaosScriptExpectsQuoteStringStubImpl(
                 parent = parent,
                 caosVar = element.toCaosVar(),
                 index = element.index

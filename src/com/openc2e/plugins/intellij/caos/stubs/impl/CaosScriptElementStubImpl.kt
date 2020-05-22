@@ -5,7 +5,7 @@ import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.caos.deducer.CaosOp
 import com.openc2e.plugins.intellij.caos.deducer.CaosScope
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectedType
+import com.openc2e.plugins.intellij.caos.psi.api.CaosExpressionValueType
 import com.openc2e.plugins.intellij.caos.psi.impl.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
@@ -46,8 +46,8 @@ data class CaosScriptExpectsIntStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsIntImpl>(parent, CaosScriptStubTypes.EXPECTS_INT), CaosScriptExpectsIntStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.INT
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.INT
 }
 
 data class CaosScriptExpectsFloatStubImpl(
@@ -55,17 +55,17 @@ data class CaosScriptExpectsFloatStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsFloatImpl>(parent, CaosScriptStubTypes.EXPECTS_FLOAT), CaosScriptExpectsFloatStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.FLOAT
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.FLOAT
 }
 
-data class CaosScriptExpectsStringStubImpl(
+data class CaosScriptExpectsQuoteStringStubImpl(
         val parent:StubElement<*>?,
         override val index:Int,
         override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsStringImpl>(parent, CaosScriptStubTypes.EXPECTS_STRING), CaosScriptExpectsStringStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.STRING
+) : StubBase<CaosScriptExpectsQuoteStringImpl>(parent, CaosScriptStubTypes.EXPECTS_QUOTE_STRING), CaosScriptExpectsQuoteStringStub {
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.STRING
 }
 
 
@@ -74,8 +74,8 @@ data class CaosScriptExpectsC1StringStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsC1StringImpl>(parent, CaosScriptStubTypes.EXPECTS_C1_STRING), CaosScriptExpectsC1StringStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.C1_STRING
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.C1_STRING
 }
 
 data class CaosScriptExpectsTokenStubImpl(
@@ -83,8 +83,8 @@ data class CaosScriptExpectsTokenStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsTokenImpl>(parent, CaosScriptStubTypes.EXPECTS_TOKEN), CaosScriptExpectsTokenStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.TOKEN
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.TOKEN
 }
 
 data class CaosScriptExpectsDecimalStubImpl(
@@ -92,8 +92,8 @@ data class CaosScriptExpectsDecimalStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsDecimalImpl>(parent, CaosScriptStubTypes.EXPECTS_DECIMAL), CaosScriptExpectsDecimalStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.DECIMAL
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.DECIMAL
 }
 
 data class CaosScriptExpectsByteStringStubImpl(
@@ -101,8 +101,8 @@ data class CaosScriptExpectsByteStringStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsByteStringImpl>(parent, CaosScriptStubTypes.EXPECTS_BYTE_STRING), CaosScriptExpectsByteStringStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.BYTE_STRING
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.BYTE_STRING
 }
 
 data class CaosScriptExpectsAgentStubImpl(
@@ -110,8 +110,8 @@ data class CaosScriptExpectsAgentStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsAgentImpl>(parent, CaosScriptStubTypes.EXPECTS_AGENT), CaosScriptExpectsAgentStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.AGENT
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.AGENT
 }
 
 data class CaosScriptExpectsValueStubImpl(
@@ -119,8 +119,8 @@ data class CaosScriptExpectsValueStubImpl(
         override val index:Int,
         override val caosVar: CaosVar
 ) : StubBase<CaosScriptExpectsValueImpl>(parent, CaosScriptStubTypes.EXPECTS_VALUE), CaosScriptExpectsValueStub {
-    override val expectedType: CaosScriptExpectedType
-        get() =  CaosScriptExpectedType.ANY
+    override val expectedType: CaosExpressionValueType
+        get() =  CaosExpressionValueType.ANY
 }
 
 class CaosScriptNamedGameVarStubImpl(

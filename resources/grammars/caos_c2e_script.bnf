@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -308,6 +308,7 @@ code_block_line
 private caos_element
 	::=	control_statement
 	|	command_call
+	|	incomplete
 	//|	expression_list
 	;
 
@@ -366,7 +367,7 @@ private event_script_body_recover
 	;
 
 subroutine
-	::= c_subr space_like subroutine_name space_like_or_newline (subroutine_body space_like_or_newline)? cc_retn
+	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? cc_retn
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
@@ -376,6 +377,24 @@ subroutine
 		]
 		methods = [
 			getBlockType
+		]
+	}
+	;
+
+subroutine_header
+	::= c_subr space_like subroutine_name
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			commandToken="/c_subr"
+			getArguments
+			getArgumentValues
 		]
 	}
 	;
@@ -516,7 +535,7 @@ private loop_body_recover
 	;
 
 repeat_statement
-	::= c_reps space_like expects_value space_like_or_newline <<enterBlock>>(repeat_body space_like_or_newline)? c_repe<<exitBlock>>
+	::= reps_header space_like_or_newline <<enterBlock>>(repeat_body space_like_or_newline)? c_repe<<exitBlock>>
 	{
 		pin=1
 		implements = [
@@ -531,7 +550,23 @@ repeat_statement
 
 	}
 	;
-
+reps_header
+	::= c_reps space_like expects_int
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			commandToken="/c_reps"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
 
 private repeat_body
    ::= code_block
@@ -546,7 +581,7 @@ private repeat_body_recover
 
 
 enum_next_statement
-	::= c_enum space_like classifier space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? c_next<<exitBlock>>
+	::= emum_header_command space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? c_next<<exitBlock>>
 	{
 		pin=1;
 		implements = [
@@ -561,9 +596,26 @@ enum_next_statement
 	}
 	;
 
+emum_header_command
+	::= c_enum space_like classifier
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			commandToken="/c_enum"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
 
 enum_scenery_statement
-   ::= c_escn space_like classifier space_like_or_newline <<enterBlock>>(escn_body space_like_or_newline)? c_nscn<<exitBlock>>
+   ::= escn_header space_like classifier space_like_or_newline <<enterBlock>>(escn_body space_like_or_newline)? c_nscn<<exitBlock>>
    {
 		pin=1;
 		implements = [
@@ -577,6 +629,23 @@ enum_scenery_statement
    }
    ;
 
+escn_header
+	::= c_escn space_like classifier
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			commandToken="/c_escn"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
 
 private enum_body
    ::= code_block
@@ -902,24 +971,35 @@ c_else ::= K_ELSE
 
 
 animation_string
-   ::= '[' INT* ANIM_R? ']'
+   ::= OPEN_BRACKET animation_string_body? CLOSE_BRACKET
    {
-   		pin = 3
+   		pin = 2
    }
    ;
 
-byte_string
-	::= '[' byte_string_body? ']'
+private animation_string_body
+	::= INT ANIM_R?
 	{
-		pin(".*") = 2
+		pin = 2
+	}
+	;
+
+byte_string
+	::= OPEN_BRACKET byte_string_body? CLOSE_BRACKET
+	{
+		pin(".*") = 3
 	}
 	;
 
 private byte_string_body
-	::= INT (space_like INT)*
+	::= INT (space_like INT)* (space_like? byte_string_r)?
 	{
 		pin(".*")=2
 	}
+	;
+
+byte_string_r
+	::= ANIM_R
 	;
 
 new_line_like
@@ -944,9 +1024,9 @@ private space
 	;
 
 private expression
-   ::= 	/*equality_expression
-   |   	*/animation_string
+   ::= 	al
    |	byte_string
+   |	animation_string
    |   	expression_prime
    ;
 
@@ -956,6 +1036,7 @@ private expression_prime
 	|	literal
 	|	vars
 	|	named_constant
+	|	incomplete
 	;
 
 equality_expression
@@ -994,12 +1075,12 @@ command_call ::= command_call_by_args // I think private values all have equal p
 		]
 		methods = [
 			getCommandString
-			getCommandTokens
+			getCommandToken
 			getArguments
 			getArgumentValues
 			getCommandTokens
+			getCommandTokens
 			getCommandElement
-			getCommandToken
 		]
 		//recoverWhile = command_recover
 	}
@@ -1916,7 +1997,8 @@ private c_a_d_f_d_f ::= c_kw_a_d_f_d_f space_like expects_agent space_like expec
 	}
 	;
 
-rvalue_prime ::= r_none
+rvalue_prime
+	::= r_none
 	|	r_f
 	|	r_d_d_d_d_s
 	|	r_d_d_d_d_d_d_d
@@ -2215,6 +2297,7 @@ lvalue
 	|	l_v
 	|	l_d
 	|	vars
+	|	incomplete
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptLValueStub"
@@ -4413,7 +4496,6 @@ r_kw_none
 	|	K_MSEC
 	|	K_MTHX
 	|	K_MTHY
-	|	K_MVXX
 	|	K_NEID
 	|	K_NET_COL space_like K_ERRA
 	|	K_NET_COL space_like K_HOST
@@ -4429,7 +4511,6 @@ r_kw_none
 	|	K_OBJP
 	|	K_ONTR
 	|	K_ORGN
-	|	K_OVXX
 	|	K_OWNR
 	|	K_PACE
 	|	K_PAGE
@@ -4490,7 +4571,6 @@ r_kw_none
 	|	K_UNCS
 	|	K_UNID
 	|	K_VARC
-	|	K_VAXX
 	|	K_VELX
 	|	K_VELY
 	|	K_VMJR
@@ -5309,11 +5389,9 @@ l_kw_none
 	|	K_LITE
 	|	K_LSRC
 	|	K_MOVS
-	|	K_MVXX
 	|	K_NORN
 	|	K_OBJP
 	|	K_ONTR
-	|	K_OVXX
 	|	K_PAUS
 	|	K_PRES
 	|	K_PSRC
@@ -5325,7 +5403,6 @@ l_kw_none
 	|	K_SIZE
 	|	K_TEMP
 	|	K_THRT
-	|	K_VAXX
 	|	K_VELX
 	|	K_VELY
 	|	K_WINH
@@ -5954,7 +6031,7 @@ all_tokens ::= K_CD_
 	|	K_MSEC
 	|	K_MTHX
 	|	K_MTHY
-	|	K_MVXX
+	|	MV_XX
 	|	K_NEID
 	|	K_ERRA
 	|	K_HOST
@@ -5966,7 +6043,7 @@ all_tokens ::= K_CD_
 	|	K_NWLD
 	|	K_OBJP
 	|	K_ONTR
-	|	K_OVXX
+	|	OV_XX
 	|	K_OWNR
 	|	K_PACE
 	|	K_PAGE
@@ -6005,7 +6082,7 @@ all_tokens ::= K_CD_
 	|	K_UFTX
 	|	K_UFTY
 	|	K_UNID
-	|	K_VAXX
+	|	VA_XX
 	|	K_VELX
 	|	K_VELY
 	|	K_VMJR
@@ -6176,6 +6253,7 @@ var_token
 		methods = [
 			getVarGroup
 			getVarIndex
+			getReference
 		]
 	}
 	;
@@ -6203,14 +6281,23 @@ number
    ;
 
 string_literal
-   ::= QUOTE_STRING
-   |   '[' TEXT_LITERAL? ']'
-   {
-      methods = [
-         getStringValue
-      ]
-   }
+	::= quote_string_literal
+	|   c1_string
+	{
+		pin(".*")=3
+		methods = [
+			getStringValue
+		]
+	}
    ;
+
+c1_string
+	::= OPEN_BRACKET TEXT_LITERAL? CLOSE_BRACKET
+	;
+
+quote_string_literal
+	::= QUOTE_STRING
+	;
 
 subroutine_name
 	::= all_tokens
@@ -6271,7 +6358,6 @@ expects_token ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
@@ -6288,7 +6374,6 @@ expects_byte_string ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
@@ -6305,7 +6390,6 @@ expects_agent ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
@@ -6322,7 +6406,6 @@ expects_decimal ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
@@ -6339,7 +6422,22 @@ expects_float ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
+		]
+	}
+	;
+
+expects_quote_string ::= rvalue
+	{
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpectsQuoteStringStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
 		]
 	}
 	;
@@ -6356,10 +6454,11 @@ expects_c1_string ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
+
+
 expects_int ::= rvalue
 	{
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpectsIntStub"
@@ -6372,26 +6471,13 @@ expects_int ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
 
-expects_string ::= rvalue
-	{
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpectsStringStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		hasExpectedValue
-		]
-	}
+private expects_string
+	::= (<<isVariant "CV">>|<<isVariant "C3">>|<<isVariant "DS">>) expects_quote_string
+	|	expects_c1_string
 	;
 
 expects_value ::= rvalue
@@ -6406,7 +6492,6 @@ expects_value ::= rvalue
 			getIndex
 			getExpectedType
      		toCaosVar
-     		hasExpectedValue
 		]
 	}
 	;
@@ -6520,4 +6605,7 @@ species ::= INT | expects_int;
 event_number_element
 	::= INT
 	;
+
+
+incomplete ::= ID;
 
