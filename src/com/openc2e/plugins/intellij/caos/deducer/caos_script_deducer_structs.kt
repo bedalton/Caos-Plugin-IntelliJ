@@ -2,7 +2,7 @@ package com.openc2e.plugins.intellij.caos.deducer
 
 import com.intellij.openapi.util.TextRange
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectedType
+import com.openc2e.plugins.intellij.caos.psi.api.CaosExpressionValueType
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
 
 
@@ -75,31 +75,33 @@ enum class CaosOp(val value:Int) {
     }
 }
 
-sealed class CaosVar(open val text:String, val simpleType: CaosScriptExpectedType) {
-    data class ConstVal(val name:String) : CaosVar(name, CaosScriptExpectedType.VARIABLE)
-    data class NamedVar(val name:String, val assumedValue: CaosVar? = null) : CaosVar(name, CaosScriptExpectedType.VARIABLE)
-    sealed class CaosNumberedVar(override val text:String, open val number:Int, open val isC1Var:Boolean) : CaosVar(text, CaosScriptExpectedType.VARIABLE) {
+interface CaosScriptIsVariableVar
+
+sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueType) {
+    data class ConstVal(val name:String) : CaosVar(name, CaosExpressionValueType.DECIMAL)
+    data class NamedVar(val name:String, val assumedValue: CaosVar? = null) : CaosVar(name, CaosExpressionValueType.VARIABLE), CaosScriptIsVariableVar
+    sealed class CaosNumberedVar(override val text:String, open val number:Int, open val isC1Var:Boolean) : CaosVar(text, CaosExpressionValueType.VARIABLE),CaosScriptIsVariableVar {
         data class CaosVaXXVar(override val text:String, override val number:Int, override val isC1Var:Boolean) : CaosNumberedVar(text, number, isC1Var)
         data class CaosOvXXVar(override val text:String, override val number:Int, override val isC1Var:Boolean) : CaosNumberedVar(text, number, isC1Var)
         data class CaosMvXXVar(override val text:String, override val number:Int) : CaosNumberedVar(text, number, false)
     }
-    sealed class CaosNamedGameVar(val name:String, val type:CaosScriptNamedGameVarType) : CaosVar("${type.token} \"$name\"", CaosScriptExpectedType.VARIABLE) {
+    sealed class CaosNamedGameVar(val name:String, val type:CaosScriptNamedGameVarType) : CaosVar("${type.token} \"$name\"", CaosExpressionValueType.VARIABLE), CaosScriptIsVariableVar {
         class MameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.MAME)
         class GameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.GAME)
         class EameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.EAME)
         class NameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.NAME)
     }
-    data class CaosCommandCall(override val text:String) : CaosVar(text, CaosScriptExpectedType.ANY)
-    object CaosLiteralVal: CaosVar("", CaosScriptExpectedType.ANY)
-    sealed class CaosLiteral(text:String, simpleType: CaosScriptExpectedType) : CaosVar(text, simpleType) {
-        data class CaosString(val value:String) : CaosLiteral(value, CaosScriptExpectedType.STRING)
-        data class CaosC1String(val value:String) : CaosLiteral(value, CaosScriptExpectedType.C1_STRING)
-        data class CaosByteString(val value:String) : CaosLiteral(value, CaosScriptExpectedType.BYTE_STRING)
-        data class CaosInt(val value:Int) : CaosLiteral("$value", CaosScriptExpectedType.INT)
-        data class CaosFloat(val value:Float) : CaosLiteral("$value", CaosScriptExpectedType.FLOAT)
-        data class CaosAnimationString(val value:String, val repeats:Boolean = false) : CaosLiteral(value, CaosScriptExpectedType.ANIMATION)
-        data class CaosToken(val value:String) : CaosLiteral(value, CaosScriptExpectedType.TOKEN)
+    data class CaosCommandCall(override val text:String) : CaosVar(text, CaosExpressionValueType.ANY)
+    object CaosLiteralVal: CaosVar("", CaosExpressionValueType.ANY)
+    sealed class CaosLiteral(text:String, simpleType: CaosExpressionValueType) : CaosVar(text, simpleType) {
+        data class CaosString(val value:String) : CaosLiteral(value, CaosExpressionValueType.STRING)
+        data class CaosC1String(val value:String) : CaosLiteral(value, CaosExpressionValueType.C1_STRING)
+        data class CaosByteString(val value:String) : CaosLiteral(value, CaosExpressionValueType.BYTE_STRING)
+        data class CaosInt(val value:Int) : CaosLiteral("$value", CaosExpressionValueType.INT)
+        data class CaosFloat(val value:Float) : CaosLiteral("$value", CaosExpressionValueType.FLOAT)
+        data class CaosAnimationString(val value:String, val repeats:Boolean = false) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
+        data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
     }
-    object CaosVarNull : CaosVar("NULL")
-    object CaosVarNone : CaosVar("{NONE}")
+    object CaosVarNull : CaosVar("NULL", CaosExpressionValueType.NULL)
+    object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.NULL)
 }

@@ -65,6 +65,16 @@
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
 
+    <!-- Inspections -->
+    <localInspection language="CaosScript"
+                     implementationClass="com.openc2e.plugins.intellij.caos.inspections.CaosScriptTypesAnnotation"
+                     level="WARNING"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Expected Parameter Type"
+                     shortName="ExpectedParameterType"
+                     order="last"
+    />
     <!-- Indices -->
 
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService"
