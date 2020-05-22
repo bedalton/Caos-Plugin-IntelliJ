@@ -11,11 +11,11 @@ import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNam
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import icons.CaosScriptIcons
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandCall
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIncomplete
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptLvalue
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptRvalue
-import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
-import com.openc2e.plugins.intellij.caos.psi.util.getEnclosingCommandType
-import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
+import com.openc2e.plugins.intellij.caos.psi.util.*
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -31,9 +31,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 ?: return
         val variant = caosFile.variant.toUpperCase()
         val firstChar = element.textWithoutCompletionIdString.toCharArray().getOrNull(0)
-        if (firstChar != null && IS_ID_CHAR.matches(firstChar + ""))
-            return
-        val case = if (firstChar != null && UPPERCASE_REGEX.matches(firstChar + ""))
+                ?: return
+        val case = if (firstChar == firstChar.toUpperCase())
             Case.UPPER_CASE
         else
             Case.LOWER_CASE
@@ -42,25 +41,27 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             resultSet.stopHere()
             return
         }
-        if (!WHITESPACE.matches(element.prevSibling?.text?:"")) {
+
+        val previous = element.previous
+        if (!WHITESPACE.matches(previous?.text?:"")) {
             resultSet.stopHere()
             return
         }
-        val previous = element.getPreviousNonEmptySibling(false)
         if (previous != null && IS_NUMBER.matches(previous.text)) {
             resultSet.stopHere()
             return
         }
-        var parent:PsiElement? = element.parent
-        while(parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
+        var parent:PsiElement? = element
+        while(parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall && parent !is CaosScriptIncomplete) {
             parent = parent.parent
         }
         if (parent == null) {
+            LOGGER.info("Parent of ${element.text} is not of a command type")
             resultSet.stopHere()
             return
         }
         val type = parent.getEnclosingCommandType()
-
+        LOGGER.info("Element: ${element.text} of type ${element.elementType} is of caos value type ${type.value.toLowerCase()}")
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project).filter {
             if (!(variant.isBlank() || it.isVariant(variant)))
                 return@filter false
