@@ -422,7 +422,7 @@ ASLP (command) asleep (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Sleeping)
  */
 ASLP (integer);
 
@@ -885,7 +885,7 @@ CACL (command) family (integer) genus (integer) species (integer) caIndex (integ
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Ages)
  */
 CAGE (integer);
 
@@ -1179,7 +1179,7 @@ CMRY (integer);
  * #Debug
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@EventNumbers)
  */
 CODE (integer);
 
@@ -1453,7 +1453,7 @@ DEAD (command);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Dead)
  */
 DEAD (integer);
 
@@ -1697,7 +1697,7 @@ DREA (command) dream (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Dreaming)
  */
 DREA (integer);
 
@@ -1713,7 +1713,7 @@ DRIV (command) drive (integer) adjustment (float);
 
 /*
  * Returns the value (0.0 to 1.0) of the specified drive.
- * DRV! (integer)
+ * [DRV!] (integer)
  * Returns the id of the highest drive for the target creature.
  * #Creatures
  *
@@ -2690,7 +2690,7 @@ HIRP (integer) roomId (integer) caIndex (integer) directions (integer);
  * @rvalue
  * @param {moniker} (string)
  * @param {eventNo} (integer)
- * @return (integer)
+ * @return (integer@Ages)
  *
  */
 HIST CAGE (integer) moniker (string) eventNo (integer);
@@ -2814,7 +2814,7 @@ HIST FOTO (command) moniker (string) eventNo (integer) newValue (string);
  *
  * @rvalue
  * @param {moniker} (string)
- * @return (integer)
+ * @return (integer@HistGender)
  *
  */
 HIST GEND (integer) moniker (string);
@@ -2944,7 +2944,7 @@ HIST RTIM (integer) moniker (string) eventNo (integer);
  *
  * @rvalue
  * @param {worldTick} (integer)
- * @return (integer)
+ * @return (integer@Season)
  *
  */
 HIST SEAN (integer) worldTick (integer);
@@ -3228,7 +3228,7 @@ INNL (string);
  * #Files
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@StreamStatus)
  */
 INOK (integer);
 
@@ -3288,7 +3288,7 @@ JECT (command) cosFile (string) flags (integer);
  *
  * @rvalue
  * @param {keycode} (integer)
- * @return (integer)
+ * @return (integer@Pressed)
  *
  */
 KEYD (integer) keycode (integer);
@@ -3672,7 +3672,7 @@ MIRA (command) onOff (integer);
  * #AgentSprites
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Mirrored)
  */
 MIRA (integer);
 
@@ -3800,7 +3800,7 @@ MOUS (command) behaviour (integer);
  * #Motion
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@MovementStatus)
  */
 MOVS (integer);
 
@@ -3961,9 +3961,7 @@ MVSF (command) x (float) y (float);
 MVTO (command) x (float) y (float);
 
 /*
- * MV00 to MV99 are variables specific to an agent. They are read from [OWNR], the owner agent of
- * the current script. These are the exact same variables as OVxx, except read from owner not
- * targ. If owner and targ are the same, then OV23 is MV23, for example.
+ * @range(0 to 99)
  * #Variables
  *
  * @lvalue
@@ -4036,7 +4034,7 @@ NEGV (command) var (variable);
  * #Net
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@NetErrorCodes)
  */
 NET: ERRA (integer);
 
@@ -4054,7 +4052,7 @@ NET: ERRA (integer);
  * @rvalue
  * @param {chunkType} (string)
  * @param {destUserId} (string)
- * @return (integer)
+ * @return (integer@TranswarpExitCode)
  *
  */
 NET: EXPO (integer) chunkType (string) destUserId (string);
@@ -4119,7 +4117,7 @@ NET: LINE (command) state (integer);
  * #Net
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Connected)
  */
 NET: LINE (integer);
 
@@ -4212,7 +4210,7 @@ NET: STAT (command) timeOnline (variable) usersOnline (variable) bytesReceived (
  *
  * @rvalue
  * @param {userId} (string)
- * @return (integer)
+ * @return (integer@Online)
  *
  */
 NET: ULIN (integer) userId (string);
@@ -4506,7 +4504,7 @@ OBST (float) direction (integer);
  *
  * @rvalue
  * @param {moniker} (string)
- * @return (integer)
+ * @return (integer@MonikerStatus)
  *
  */
 OOWW (integer) moniker (string);
@@ -4653,8 +4651,7 @@ OUTX (command) text (string);
 OVER (command);
 
 /*
- * OV00 to OV99 are variables specific to an agent. They are read from [TARG], the target agent. You
- * can also access these same variables via owner using MVxx.
+ * @range(0 to 99)
  * #Variables
  *
  * @lvalue
@@ -4881,7 +4878,7 @@ PAUS (command) paused (integer);
  * #Agents
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Paused)
  */
 PAUS (integer);
 
@@ -4890,7 +4887,7 @@ PAUS (integer);
  * #Debug
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@PawsDisabled)
  */
 PAWS (integer);
 
@@ -5652,7 +5649,7 @@ PURE (command) value (integer);
  * #Input
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Enabled)
  */
 PURE (integer);
 
@@ -6106,7 +6103,7 @@ SDMP (float);
  * #Time
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Season)
  */
 SEAN (integer);
 
@@ -6117,7 +6114,7 @@ SEAN (integer);
  * @rvalue
  * @param {first} (agent)
  * @param {second} (agent)
- * @return (integer)
+ * @return (integer@CanSee)
  *
  */
 SEEE (integer) first (agent) second (agent);
@@ -6245,7 +6242,7 @@ SNAP (command) filename (string) xCentre (integer) yCentre (integer) width (inte
  *
  * @rvalue
  * @param {filename} (string)
- * @return (integer)
+ * @return (integer@ImageExists)
  *
  */
 SNAX (integer) filename (string);
@@ -6743,7 +6740,7 @@ TICK (integer);
  * #Time
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@TimeOfDay)
  */
 TIME (integer);
 
@@ -6802,7 +6799,7 @@ TINT (integer) attribute (integer);
  * @rvalue
  * @param {deltaX} (float)
  * @param {deltaY} (float)
- * @return (integer)
+ * @return (integer@CanMove)
  *
  */
 TMVB (integer) deltaX (float) deltaY (float);
@@ -6814,7 +6811,7 @@ TMVB (integer) deltaX (float) deltaY (float);
  * @rvalue
  * @param {x} (float)
  * @param {y} (float)
- * @return (integer)
+ * @return (integer@CanMove)
  *
  */
 TMVF (integer) x (float) y (float);
@@ -6827,7 +6824,7 @@ TMVF (integer) x (float) y (float);
  * @rvalue
  * @param {x} (float)
  * @param {y} (float)
- * @return (integer)
+ * @return (integer@CanMove)
  *
  */
 TMVT (integer) x (float) y (float);
@@ -6999,7 +6996,7 @@ TWIN (agent) original (agent) agentNull (integer);
  *
  * @rvalue
  * @param {something} (any)
- * @return (integer)
+ * @return (integer@VarTypeAsInt)
  *
  */
 TYPE (integer) something (any);
@@ -7159,7 +7156,7 @@ VARC (command) viewArcSize (float);
 VARC (float);
 
 /*
- * VA00 to VA99 are local variables, whose values are lost when the current script ends.
+ * @range(0 to 99)
  * #Variables
  *
  * @lvalue
@@ -7352,7 +7349,7 @@ WALK (command);
  * #Motion
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@WallDirectionConstants)
  */
 WALL (integer);
 
@@ -7368,7 +7365,7 @@ WDOW (command);
  * #Camera
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@FullScreen)
  */
 WDOW (integer);
 
@@ -7537,7 +7534,7 @@ WPAU (command) paused (integer);
  * #Time
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Paused)
  */
 WPAU (integer);
 
@@ -7623,7 +7620,7 @@ ZOMB (command) zombie (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Zombied)
  */
 ZOMB (integer);
 
@@ -7843,6 +7840,11 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @Connected {
 	0 = Not-Connected - Not connected to Babel server
 	1 = Connected - Connected to babel server
+}
+
+@Dead {
+	0 = Alive
+	1 = Dead
 }
 
 @Dreaming {

@@ -15,13 +15,13 @@ _IT_ (agent);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@ActiveStatus)
  */
 ACTV (integer);
 
 /*
  * Adds two integers or floats, so {var} = {var} + {sum}.
- * #Variabels
+ * #Variables
  *
  * @param {var} (variable)
  * @param {sum} (integer)
@@ -94,7 +94,7 @@ ASLP (command) asleep (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Sleeping)
  */
 ASLP (integer);
 
@@ -114,7 +114,7 @@ ATTN (agent);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@Attributes)
  */
 ATTR (integer);
 
@@ -222,8 +222,10 @@ BHVR (command) click (integer) touch (integer);
  * }
  * #Vehicles
  *
+ * @rvalue
+ * @return (integer)
  */
-BUMP (command);
+BUMP (integer);
 
 /*
  * Set the relative coords of [TARG] VEHICLE, LIFT or AIRCRAFT'S Cab (cabin rectangle)
@@ -241,15 +243,19 @@ CABN (command) left (integer) top (integer) right (integer) bottom (integer);
  * Creature age (0-9)
  * #Creatures
  *
+ * @rvalue
+ * @return (integer@Ages)
  */
-CAGE (command);
+CAGE (integer);
 
 /*
  * Creature age in minutes ABUS]
  * #Creatures
  *
+ * @rvalue
+ * @return (integer)
  */
-CAMN (command);
+CAMN (integer);
 
 /*
  * object that's carrying [OWNR] (may be NULL)
@@ -282,11 +288,16 @@ CHEM (integer) chemical (integer);
 CHEM (command) chemical (integer) amount (integer);
 
 /*
- *
+ * This sets the classifier of the current [TARG]. The classifier is its unique family/genus/species
+ * id. This number is calculated from the hexadecimal version of the long form classifier (see
+ * class calculator below)
  * #AgentAttributes
  *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
  */
-CLAS (command);
+CLAS (variable);
 
 /*
  * Does nothing in release version, but debug version sends String as a TRACE message that I can
@@ -495,12 +506,13 @@ DDE: SCRP (command) family (integer) genus (integer) species (integer) event (in
 DDE: WORD (command) index (integer);
 
 /*
- * creature is dead
- * == Enviromental Operands
+ * Creature is dead
  * #Creatures
  *
+ * @rvalue
+ * @return (integer)
  */
-DEAD (command);
+DEAD (integer);
 
 /*
  * sets the {var} to the product of {var} divided by {value}
@@ -562,7 +574,7 @@ DREA (command) max (integer);
  *
  * @rvalue
  * @param {drive} (integer) - Drive Number
- * @return (integer)
+ * @return (integer@Drives)
  *
  */
 DRIV (integer) drive (integer);
@@ -575,13 +587,13 @@ DRIV (integer) drive (integer);
 DROP (command);
 
 /*
- * creature's MOST PRESSING Drive#
+ * Returns the id of the highest drive for the target creature.
  * retuns #{0} (pain) if no drives pressing
  * Can use in: #{DOIF DRIV DRV! GT 128} to test level of strongest drive
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Drives)
  */
 DRV! (integer);
 
@@ -622,9 +634,9 @@ ELSE (command);
 ENDI (command);
 
 /*
- * Compulsory cmd at end of macro, placed there by Macro constructor Macro is terminated and maybe
- * self-destructs only [STOP] (never ENDM) commands may be placed in the body of macro. ENDM
- * is string terminator
+ * Compulsory command at end of macro, placed there by Macro constructor Macro is terminated and
+ * maybe self-destructs only [STOP] (never ENDM) commands may be placed in the body of macro.
+ * ENDM is string terminator
  * #Flow
  *
  */
@@ -710,7 +722,7 @@ FMLY (integer);
 FROM (agent);
 
 /*
- * Number of ground level data on map
+ *
  * #Map
  *
  * @rvalue
@@ -719,11 +731,13 @@ FROM (agent);
 GND# (integer);
 
 /*
- *
+ * Number of pixels per ground datum
  * #Map
  *
+ * @rvalue
+ * @return (integer)
  */
-GNDW (command);
+GNDW (integer);
 
 /*
  * genus (in range 0-255)
@@ -745,10 +759,12 @@ GPAS (command);
  * Ground level at position x
  * #Map
  *
+ * @rvalue
  * @param {x} (integer) - x position
+ * @return (integer)
  *
  */
-GRND (command) x (integer);
+GRND (integer) x (integer);
 
 /*
  * Gosubs to given [SUBR] label. Often has to scan macro for subroutine start, but always remembers
@@ -976,7 +992,7 @@ MODV (command) var (variable) mod (integer);
  * #Motion
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@MovementStatus)
  */
 MOVS (integer);
 
@@ -1222,6 +1238,16 @@ NORN (agent);
 OBJP (agent);
 
 /*
+ * @range(0 to 2)
+ * #Variables
+ *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
+ */
+OBVX (variable);
+
+/*
  * sets the {var} to the {var} bit-wise or with {value}
  * {var} = {var} | {value}
  * #Math
@@ -1391,8 +1417,10 @@ RMEV (command) targ (agent);
  * Number of room defined on map
  * #Map
  *
+ * @rvalue
+ * @return (integer)
  */
-RMS# (command);
+RMS# (integer);
 
 /*
  * Set a variable V0-V9 to random # between min# & max# inclusive (could use with [REPS]...[REPE]
@@ -1948,8 +1976,10 @@ TELE (command) x (integer) y (integer);
  * air temperature near [TARG] obj (-3 to +3)
  * #Map
  *
+ * @rvalue
+ * @return (integer)
  */
-TEMP (command);
+TEMP (integer);
 
 /*
  * Set the [TARG] object's timer to given rate
@@ -1991,12 +2021,14 @@ TOOL (command) fsp [string] menutext [string] helptext [string] glyph (integer);
  * to act as wildcards. Examples:- #{setv totl 4 2 0} ;returns number of grendels
  * #Agents
  *
+ * @rvalue
  * @param {family} (integer) - family
  * @param {genus} (integer) - genus
  * @param {species} (integer)
+ * @return (integer)
  *
  */
-TOTL (command) family (integer) genus (integer) species (integer);
+TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
  * Reach out and touch IT.
@@ -2018,7 +2050,7 @@ TOUC (command);
  * @rvalue
  * @param {first} (agent)
  * @param {second} (agent)
- * @return (integer)
+ * @return (integer@bool)
  *
  */
 TOUC (integer) first (agent) second (agent);
@@ -2042,6 +2074,16 @@ TRIG (command) lobe (integer) cell (integer) amount (integer);
  *
  */
 UNTL (command) condition (condition);
+
+/*
+ * @range(0 to 9)
+ * #Variables
+ *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
+ */
+VARX (variable);
 
 /*
  * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{VRSN
@@ -2105,8 +2147,10 @@ WDTH (integer);
  * wind speed/dir near [TARG] obj (-3 to +3)
  * #Map
  *
+ * @rvalue
+ * @return (integer)
  */
-WIND (command);
+WIND (integer);
 
 /*
  * max allowed view window height (WORLD coords)
@@ -2156,6 +2200,17 @@ YVEC (integer);
 	0 = Inactive
 	1 = Active 1
 	2 = Active 2
+}
+
+@Ages {
+	0 = Embryo
+	1 = Baby
+	2 = Child
+	3 = Adolescent
+	4 = Youth
+	6 = Old
+	7 = Senile
+	5 = Adult
 }
 
 @Attributes {

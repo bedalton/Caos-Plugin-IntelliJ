@@ -45,7 +45,7 @@ ACCG (integer);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@ActiveStatus)
  */
 ACTV (integer);
 
@@ -136,7 +136,7 @@ ASEA (command);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Sleeping)
  */
 ASLP (integer);
 
@@ -146,10 +146,9 @@ ASLP (integer);
  * #Creatures
  *
  * @param {asleep} (integer) - 0=awake, 1=asleep
- * @return (integer)
  *
  */
-ASLP (integer) asleep (integer);
+ASLP (command) asleep (integer);
 
 /*
  * Sets/returns an objects Attributes. See reference section for values.
@@ -342,7 +341,7 @@ CABN (command) left (integer) top (integer) right (integer) bottom (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Ages)
  */
 CAGE (integer);
 
@@ -448,10 +447,10 @@ CMRY (integer);
  *
  * @rvalue
  * @param {moniker} (any) - Creature Moniker
- * @return (creature)
+ * @return (agent)
  *
  */
-CREA (creature) moniker (any);
+CREA (agent) moniker (any);
 
 /*
  * Displays string as a trace message
@@ -916,7 +915,7 @@ DDE: WORD (command) index (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Dead)
  */
 DEAD (integer);
 
@@ -945,7 +944,7 @@ DELR (command) roomId (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@CardinalDirection)
  */
 DIRN (integer);
 
@@ -1027,7 +1026,7 @@ DREA (command) max (integer);
  *
  * @rvalue
  * @param {drive} (integer) - drive number
- * @return (integer)
+ * @return (integer@Drives)
  *
  */
 DRIV (integer) drive (integer);
@@ -1089,9 +1088,9 @@ ELSE (command);
 ENDI (command);
 
 /*
- * Compulsory cmd at end of macro, placed there by Macro constructor Macro is terminated and maybe
- * self-destructs only [STOP] (never ENDM) commands may be placed in the body of macro. ENDM
- * is string terminator
+ * Compulsory command at end of macro, placed there by Macro constructor Macro is terminated and
+ * maybe self-destructs only [STOP] (never ENDM) commands may be placed in the body of macro.
+ * ENDM is string terminator
  * #Flow
  *
  */
@@ -1222,7 +1221,7 @@ FROM (agent);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@bool)
  */
 FRZN (integer);
 
@@ -1269,7 +1268,7 @@ GPAS (command);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@OnOff)
  */
 GRAV (integer);
 
@@ -1388,7 +1387,7 @@ INTR (integer);
  *
  * @rvalue
  * @param {roomid} (integer) - number of room to check
- * @return (integer)
+ * @return (integer@bool)
  *
  */
 ISAR (integer) roomid (integer);
@@ -1483,9 +1482,9 @@ LACB (integer);
  * #World
  *
  * @rvalue
- * @return (hexidecimal)
+ * @return (hexadecimal@Languages)
  */
-LANG (hexidecimal);
+LANG (hexadecimal);
 
 /*
  * Returns object’s Limit to the Bottom as absolute value of rooms boundary
@@ -1700,7 +1699,7 @@ MONK (integer);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@MovementStatus)
  */
 MOVS (integer);
 
@@ -1951,9 +1950,9 @@ NEXT (command);
  *
  * @lvalue
  * @rvalue
- * @return (creature)
+ * @return (agent)
  */
-NORN (creature);
+NORN (agent);
 
 /*
  * Ends [ESCN] enum loop
@@ -2013,6 +2012,16 @@ OBST (integer) direction (integer);
 OBSV (integer) direction (integer);
 
 /*
+ * @range(0 to 9)
+ * #Variables
+ *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
+ */
+OBVX (variable);
+
+/*
  * Sets/returns the room's organic nutrients at [targ]
  * #Map
  *
@@ -2051,6 +2060,16 @@ ORRV (command) var (variable) value (integer);
 OVER (command);
 
 /*
+ * @range(0 to 99)
+ * #Variables
+ *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
+ */
+OVXX (variable);
+
+/*
  * default object (owner of script, or pet if [DDE])
  * #AgentVars
  *
@@ -2083,7 +2102,7 @@ PART (command) partId (integer);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@Paused)
  */
 PAUS (integer);
 
@@ -2443,7 +2462,7 @@ RMSC (command) x (integer) y (integer) trackName [string];
  * Renderer image format. Returns 0 if image format is 555 and 1 if it is 565.
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@RenderFormat)
  */
 RNDR (integer);
 
@@ -2654,7 +2673,7 @@ SCRX (command) family (integer) genus (integer) species (integer) event (integer
  * #Time
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Season)
  */
 SEAN (integer);
 
@@ -3174,7 +3193,7 @@ TICK (command) tickRate (integer);
  * #Time
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@TimeOfDay)
  */
 TMOD (integer);
 
@@ -3220,7 +3239,7 @@ TOUC (command);
  * @rvalue
  * @param {first} (agent)
  * @param {second} (agent)
- * @return (integer)
+ * @return (integer@bool)
  *
  */
 TOUC (integer) first (agent) second (agent);
@@ -3242,7 +3261,7 @@ TRIG (command) lobe (integer) cell (integer) amount (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Unconscious)
  */
 UNCS (integer);
 
@@ -3251,7 +3270,7 @@ UNCS (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Unconscious)
  */
 UNCS (integer);
 
@@ -3292,6 +3311,26 @@ UNLK (command);
  *
  */
 UNTL (command) condition (condition);
+
+/*
+ * @range(0 to 9)
+ * #Variables
+ *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
+ */
+VARX (variable);
+
+/*
+ * @range(0 to 99)
+ * #Variables
+ *
+ * @lvalue
+ * @rvalue
+ * @return (variable)
+ */
+VAXX (variable);
 
 /*
  * Sets/returns the object's velocity in X direction.
@@ -3355,7 +3394,7 @@ WALK (command);
  * #Motion
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@WallDirection)
  */
 WALL (integer);
 
