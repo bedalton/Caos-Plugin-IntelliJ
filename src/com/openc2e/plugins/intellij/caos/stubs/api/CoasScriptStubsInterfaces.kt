@@ -3,11 +3,10 @@ package com.openc2e.plugins.intellij.caos.stubs.api
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.caos.deducer.*
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectedType
+import com.openc2e.plugins.intellij.caos.psi.api.CaosExpressionValueType
 import com.openc2e.plugins.intellij.caos.psi.impl.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
-import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptConstantAssignmentStruct
 
 interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
     val command:String
@@ -34,12 +33,12 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
 interface CaosScriptArgumentStub {
     val index:Int
     val caosVar:CaosVar
-    val expectedType:CaosScriptExpectedType
+    val expectedType:CaosExpressionValueType
 }
 
 interface CaosScriptExpectsIntStub : StubElement<CaosScriptExpectsIntImpl>, CaosScriptArgumentStub
 interface CaosScriptExpectsFloatStub : StubElement<CaosScriptExpectsFloatImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsStringStub : StubElement<CaosScriptExpectsStringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsQuoteStringStub : StubElement<CaosScriptExpectsQuoteStringImpl>, CaosScriptArgumentStub
 interface CaosScriptExpectsC1StringStub : StubElement<CaosScriptExpectsC1StringImpl>, CaosScriptArgumentStub
 interface CaosScriptExpectsByteStringStub : StubElement<CaosScriptExpectsByteStringImpl>, CaosScriptArgumentStub
 interface CaosScriptExpectsTokenStub : StubElement<CaosScriptExpectsTokenImpl>, CaosScriptArgumentStub

@@ -20,7 +20,7 @@ public class CaosScriptElementTypeFactory {
                 "CaosScript_CONSTANT_ASSIGNMENT" -> CaosScriptStubTypes.CONSTANT_ASSIGNMENT
                 "CaosScript_C_TARG" -> CaosScriptStubTypes.TARG_ASSIGNMENT
                 "CaosScript_EXPECTS_INT" -> CaosScriptStubTypes.EXPECTS_INT
-                "CaosScript_EXPECTS_STRING" -> CaosScriptStubTypes.EXPECTS_STRING
+                "CaosScript_EXPECTS_QUOTE_STRING" -> CaosScriptStubTypes.EXPECTS_QUOTE_STRING
                 "CaosScript_EXPECTS_FLOAT" -> CaosScriptStubTypes.EXPECTS_FLOAT
                 "CaosScript_EXPECTS_AGENT" -> CaosScriptStubTypes.EXPECTS_AGENT
                 "CaosScript_EXPECTS_VALUE" -> CaosScriptStubTypes.EXPECTS_VALUE
