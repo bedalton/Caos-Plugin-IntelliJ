@@ -702,8 +702,6 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Gg][Aa][Mm][Nn]       	{ return CaosScript_K_GAMN; }
 	[Gg][Nn][Aa][Mm]       	{ return CaosScript_K_GNAM; }
 	[Ii][Tt][Oo][Ff]       	{ return CaosScript_K_ITOF; }
-	[Mm][Vv][Xx][Xx]       	{ return CaosScript_K_MVXX; }
-	[Oo][Vv][Xx][Xx]       	{ return CaosScript_K_OVXX; }
 	[Rr][Aa][Nn][Dd]       	{ return CaosScript_K_RAND; }
 	[Rr][Ee][Aa][Dd]       	{ return CaosScript_K_READ; }
 	[Rr][Ee][Aa][Ff]       	{ return CaosScript_K_REAF; }
@@ -719,7 +717,6 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Ss][Uu][Bb][Ss]       	{ return CaosScript_K_SUBS; }
 	[Tt][Aa][Nn][_]        	{ return CaosScript_K_TAN_; }
 	[Tt][Yy][Pp][Ee]       	{ return CaosScript_K_TYPE; }
-	[Vv][Aa][Xx][Xx]       	{ return CaosScript_K_VAXX; }
 	[Vv][Mm][Jj][Rr]       	{ return CaosScript_K_VMJR; }
 	[Vv][Mm][Nn][Rr]       	{ return CaosScript_K_VMNR; }
 	[Vv][Tt][Oo][Ss]       	{ return CaosScript_K_VTOS; }

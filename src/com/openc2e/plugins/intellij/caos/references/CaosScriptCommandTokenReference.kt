@@ -60,9 +60,7 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
                 // Filter for type and variant
                 .filter {
                     val isVariant = (variant == null || it.isVariant(variant))
-                    if (isVariant)
-                        LOGGER.info("Command '${it.commandName}'is variant")
-                    else
+                    if (!isVariant)
                         return@filter false
                     val isForElement = when (type) {
                         CaosCommandType.COMMAND -> it.isCommand
@@ -75,13 +73,6 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
                             LOGGER.severe("Command element '${it.commandName}' is unknown return type")
                             return@filter false
                         }
-                        when (type) {
-                            CaosCommandType.COMMAND -> LOGGER.info("Element: ${it.commandName} is for type: $type. IsRValue: ${it.isRvalue} IsLValue: ${it.isLvalue}")
-                            CaosCommandType.RVALUE -> LOGGER.info("Element: ${it.commandName} is not RValue. IsCommand: ${it.isCommand} IsLValue: ${it.isLvalue}")
-                            CaosCommandType.LVALUE -> LOGGER.info("Element: ${it.commandName} is not LValue. IsCommand: ${it.isCommand} IsRValue: ${it.isRvalue}")
-                            CaosCommandType.UNDEFINED -> LOGGER.info("myElement is invalid command type")
-                        }
-
                     }
                     isForElement
                 }

@@ -3,8 +3,7 @@ package com.openc2e.plugins.intellij.caos.psi.types
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
-import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentHashtag
+import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*
 
 class CaosScriptTokenSets {
@@ -654,11 +653,9 @@ class CaosScriptTokenSets {
                 CaosScript_K_MSEC,
                 CaosScript_K_MTHX,
                 CaosScript_K_MTHY,
-                CaosScript_K_MVXX,
                 CaosScript_K_NPGS,
                 CaosScript_K_NULL,
                 CaosScript_K_NWLD,
-                CaosScript_K_OVXX,
                 CaosScript_K_PACE,
                 CaosScript_K_PAGE,
                 CaosScript_K_ITOT,
@@ -670,7 +667,6 @@ class CaosScriptTokenSets {
                 CaosScript_K_TIME,
                 CaosScript_K_UFTX,
                 CaosScript_K_UFTY,
-                CaosScript_K_VAXX,
                 CaosScript_K_VMJR,
                 CaosScript_K_VMNR,
                 CaosScript_K_WNAM,
@@ -836,20 +832,30 @@ class CaosScriptTokenSets {
         )
 
         @JvmStatic
-        val ALL_COMMANDS:TokenSet by lazy {
+        val ALL_COMMANDS: TokenSet by lazy {
             val tokens = ALL_CAOS_COMMAND_LIKE_TOKENS
                     .types
-                    .filterNot{ KEYWORDS.contains(it)}
+                    .filterNot { KEYWORDS.contains(it) }
                     .toSet()
                     .toTypedArray()
             create(*tokens)
         }
 
         @JvmStatic
-        val ALL_FIND_USAGES_TOKENS:TokenSet by lazy {
+        val ALL_FIND_USAGES_TOKENS: TokenSet by lazy {
+            val otherTokens = listOf(
+                    CaosScript_N_VAR,
+                    CaosScript_N_CONST,
+                    CaosScript_VAR_X,
+                    CaosScript_VA_XX,
+                    CaosScript_OBV_X,
+                    CaosScript_OV_XX,
+                    CaosScript_MV_XX,
+                    CaosDef_HASH_TAG
+            )
             val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
-                    .types
-                    .toSet() + listOf(CaosScript_N_VAR, CaosScript_N_CONST, CaosDefTypes.CaosDef_HASH_TAG))
+                    .types + otherTokens)
+                    .toSet()
                     .toTypedArray()
             create(*tokens)
         }
