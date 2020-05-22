@@ -88,6 +88,9 @@
         implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider"
         language="CaosDef" />
 
+    <!-- Documentation & Hints -->
+    <codeInsight.parameterNameHints language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
+
     <!-- Bundled Definitions -->
     <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
 

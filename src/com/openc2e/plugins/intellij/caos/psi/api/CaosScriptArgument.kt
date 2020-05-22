@@ -20,5 +20,6 @@ enum class CaosScriptExpectedType(val value:Int) {
     C1_STRING(8),
     STRING(9),
     ANY(10),
-    VARIABLE(11)
+    VARIABLE(11),
+    ANIMATION(12)
 }

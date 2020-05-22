@@ -41,11 +41,6 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandString(rvalue: CaosScriptRvalue): String {
-        return rvalue.text
-    }
-
-    @JvmStatic
     fun getCommandToken(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
         return rvalue.getChildOfType(CaosScriptCommandElement::class.java)
                 ?.commandToken
@@ -58,7 +53,29 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandString(command: CaosScriptCommandElement): String {
-        return getCommandTokens(command).joinToString(" ")
+        val type = command.getEnclosingCommandType()
+        return when(type) {
+            CaosCommandType.COMMAND -> command
+                    .getSelfOrParentOfType(CaosScriptCommandCall::class.java)
+                    ?.let { getCommandString(it) }
+            CaosCommandType.RVALUE -> command
+                    .getSelfOrParentOfType(CaosScriptRvalue::class.java)
+                    ?.let { getCommandString(it) }
+            CaosCommandType.LVALUE -> command
+                    .getSelfOrParentOfType(CaosScriptLvalue::class.java)
+                    ?.let { getCommandString(it) }
+            CaosCommandType.UNDEFINED -> null
+        } ?: UNDEF
+    }
+
+    @JvmStatic
+    fun getCommandString(element:CaosScriptRvalue) : String {
+        return (element.stub?.caosVar ?: element.toCaosVar()).text
+    }
+
+    @JvmStatic
+    fun getCommandString(element:CaosScriptLvalue) : String {
+        return (element.stub?.caosVar ?: element.toCaosVar()).text
     }
 
     @JvmStatic
@@ -114,10 +131,15 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getIndex(commandToken: CaosScriptLvalue): Int {
-        return commandToken.getParentOfType(CaosScriptCommandCall::class.java)
-                ?.getChildrenOfType(CaosScriptArgument::class.java)
-                ?.indexOf(commandToken)
+        var lastParent:PsiElement? = commandToken.parent
+        while (lastParent != null && lastParent.parent !is CaosScriptCommandElement) {
+            lastParent = lastParent.parent
+        }
+        val parent = lastParent as? CaosScriptCommandElement
                 ?: return 0
+        if(lastParent !is CaosScriptArgument)
+                return 0
+        return parent.arguments.indexOf(lastParent)
     }
 
     @JvmStatic
@@ -261,15 +283,10 @@ object CaosScriptPsiImplUtil {
         assignment.expectsValue?.let {
             return toCaosVar(it.rvalue)
         }
-        assignment.rvalueDecimalOrInt?.let { intOrDecimal ->
-            intOrDecimal.expectsDecimal?.let {
-                toCaosVar(it.rvalue)
-            }
-            intOrDecimal.expectsInt?.let {
-                toCaosVar(it.rvalue)
-            }
-        }
         assignment.expectsDecimal?.let {
+            return toCaosVar(it.rvalue)
+        }
+        assignment.expectsInt?.let {
             return toCaosVar(it.rvalue)
         }
         assignment.expectsString?.let {
@@ -554,7 +571,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandToken(lvalue: CaosScriptLvalue): CaosScriptIsCommandToken? {
-        return lvalue.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
+        return lvalue.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
 
     @JvmStatic
@@ -631,8 +648,9 @@ object CaosScriptPsiImplUtil {
     fun getOp(assignment: CaosScriptCAssignment): CaosOp {
         assignment.cKwNegv?.let { return CaosOp.NEGV }
         assignment.cKwSetv?.let { return CaosOp.SETV }
-        assignment.kSeta?.let { return CaosOp.SETV }
-        assignment.kSets?.let { return CaosOp.SETV }
+        assignment.cKwSetv?.let { return CaosOp.SETV }
+        assignment.cKwAssignAgent?.let { return CaosOp.SETV }
+        assignment.cKwAssignString?.let { return CaosOp.SETS }
         assignment.cKwAssignNumber?.let {
             it.kAddv?.let { return CaosOp.ADDV }
             it.kAndv?.let { return CaosOp.ANDV }
