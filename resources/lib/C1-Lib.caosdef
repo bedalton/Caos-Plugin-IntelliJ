@@ -1238,6 +1238,7 @@ NORN (agent);
 OBJP (agent);
 
 /*
+ * OBV0 to OBV2 are variables specific to an agent. They are read from [TARG], the target agent.
  * @range(0 to 2)
  * #Variables
  *
@@ -1628,7 +1629,8 @@ SNDS (integer);
 SNDV (command) filename [string];
 
 /*
- *
+ * [TARG] creature sneezes - infect nearby creatures or environment with any live bacteria he has in
+ * him
  * #Creatures
  *
  */
@@ -2076,6 +2078,7 @@ TRIG (command) lobe (integer) cell (integer) amount (integer);
 UNTL (command) condition (condition);
 
 /*
+ * VAR0 to VAR9 are local variables, whose values are lost when the current script ends.
  * @range(0 to 9)
  * #Variables
  *

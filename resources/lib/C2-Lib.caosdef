@@ -922,7 +922,7 @@ DEAD (integer);
 /*
  * Delete Neighbour doors. Removes all neighbours for a room. Does not actually delete the rooms,
  * just the relationship between room and the neighbours
- * #Variables
+ * #Map
  *
  * @param {room} (integer) - room ID.
  * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
@@ -1137,6 +1137,7 @@ ESCN (command) family (integer) genus (integer) species (integer);
 ESEE (command) family (integer) genus (integer) species (integer);
 
 /*
+ * ETCH...[NEXT]
  * Enumerate across all specified objects are touching the [OWNR] object.
  * Note: All commands between [ESEE] and [NEXT] run as [INST]. [TARG] is returned to [OWNR] (in
  * event scripts) after enumeration.
@@ -1286,7 +1287,8 @@ GRAV (integer);
 GRND (integer) x (integer);
 
 /*
- *
+ * GSUBs to given [SUBR] label. Often has to scan macro for subroutine start, but always remembers
+ * the address of the last subr visited, so most subrs will execute quickly in loops
  * #Flow
  *
  * @param {destination} (token) - four letter token
@@ -2012,6 +2014,7 @@ OBST (integer) direction (integer);
 OBSV (integer) direction (integer);
 
 /*
+ * OBV0 to OBV9 are variables specific to an agent. They are read from [TARG], the target agent.
  * @range(0 to 9)
  * #Variables
  *
@@ -2060,6 +2063,8 @@ ORRV (command) var (variable) value (integer);
 OVER (command);
 
 /*
+ * OV00 to OV99 are variables specific to an agent. They are read from [TARG], the target agent.
+ * You can also access these same variables via [OWNR] using MVxx.
  * @range(0 to 99)
  * #Variables
  *
@@ -2089,6 +2094,7 @@ OWNR (agent);
 PART (command) partId (integer);
 
 /*
+ * PAUSe game. 0=normal, 1=pause
  * Note that Creatures already calls a dispatch method for each applet currently running when the
  * game pauses.
  * [GAME]	<<value>>
@@ -3026,6 +3032,9 @@ SYS: CMRA (command) x (integer) y (integer);
 SYS: CMRP (command) x (integer) y (integer);
 
 /*
+ * CONVert sprite file. Command converts a given sprite file (located in the images directory) to
+ * the current system image format. If the file is already in the correct format it is not
+ * modified.
  * Filespec – a 4 letter sprite file specifier.
  * p – p=0 no progress dialog is displayed. p=1 a progress dialog is displayed.
  * filespec	token
@@ -3257,6 +3266,7 @@ TOUC (integer) first (agent) second (agent);
 TRIG (command) lobe (integer) cell (integer) amount (integer);
 
 /*
+ * UNCS (integer)
  * Returns 1 if the creature is unconscious, 0 otherwise.
  * #Creatures
  *
@@ -3313,6 +3323,7 @@ UNLK (command);
 UNTL (command) condition (condition);
 
 /*
+ * VAR0 to VAR9 are local variables, whose values are lost when the current script ends.
  * @range(0 to 9)
  * #Variables
  *
@@ -3323,6 +3334,7 @@ UNTL (command) condition (condition);
 VARX (variable);
 
 /*
+ * VA00 to VA99 are local variables, whose values are lost when the current script ends.
  * @range(0 to 99)
  * #Variables
  *
@@ -3390,7 +3402,7 @@ WAIT (command) ticks (integer);
 WALK (command);
 
 /*
- *
+ * WALL last collided with. 0 = left, 1 = right, 2 = up, 3 = down, 4 = unknown.
  * #Motion
  *
  * @rvalue
