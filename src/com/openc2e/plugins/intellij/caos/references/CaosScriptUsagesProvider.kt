@@ -5,10 +5,14 @@ import com.intellij.lang.cacheBuilder.WordsScanner
 import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefLexerAdapter
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
+import com.openc2e.plugins.intellij.caos.hints.CaosScriptPresentationUtil
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.elementType
+import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.caos.utils.isOrHasParentOfType
 
 class CaosScriptUsagesProvider : FindUsagesProvider {
@@ -28,10 +32,13 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
     override fun getDescriptiveName(element: PsiElement): String {
         return when {
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
-            element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "[" + element.text + "]"
             element.isOrHasParentOfType(CaosScriptNamedVar::class.java) -> "var ${element.text}"
             element.isOrHasParentOfType(CaosScriptNamedConstant::class.java) -> "const ${element.text}"
-            else -> "element"
+            else -> {
+                element.getSelfOrParentOfType(CaosScriptIsCommandToken::class.java)?.let {
+                    CaosScriptPresentationUtil.getDescriptiveText(it)
+                } ?: "element"
+            }
         }
     }
 
