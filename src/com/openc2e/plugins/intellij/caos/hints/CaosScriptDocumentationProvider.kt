@@ -33,7 +33,7 @@ class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
                 ?: return CaosScriptPresentationUtil.getDescriptiveText(element)
         val fullCommand = declarationElement.fullCommand
         declarationElement.comment.nullIfEmpty()?.let {
-            return "$it\n$fullCommand"
+            return "<b>$fullCommand</b>\n$it"
         }
         return fullCommand
     }
