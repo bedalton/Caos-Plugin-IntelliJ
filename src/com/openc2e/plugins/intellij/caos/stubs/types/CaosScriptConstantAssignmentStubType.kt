@@ -5,6 +5,7 @@ import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
+import com.openc2e.plugins.intellij.caos.deducer.CaosNumber
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService
 import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptConstantAssignmentImpl
 import com.openc2e.plugins.intellij.caos.psi.util.UNDEF
@@ -19,12 +20,12 @@ class CaosScriptConstantAssignmentStubType(debugName:String) : CaosScriptStubEle
 
     override fun serialize(stub: CaosScriptConstantAssignmentStub, stream: StubOutputStream) {
         stream.writeName(stub.name)
-        stream.writeCaosVarSafe(stub.value)
+        stream.writeCaosNumber(stub.value)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptConstantAssignmentStub {
         val name = stream.readNameAsString() ?: UNDEF
-        val value = stream.readCaosVarSafe()
+        val value = stream.readCaosNumber()
         return CaosScriptConstantAssignmentStubImpl(
                 parent = parent,
                 name = name,

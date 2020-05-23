@@ -2,8 +2,6 @@ package com.openc2e.plugins.intellij.caos.inspections
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.openc2e.plugins.intellij.caos.annotators.AnnotationHolderWrapper
@@ -14,11 +12,10 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 
-class CaosScriptTypesAnnotation : LocalInspectionTool() {
+class CaosScriptTypesInspection : LocalInspectionTool() {
 
-    override fun getDisplayName(): String = "Expected Parameter Type"
+    override fun getDisplayName(): String = "Expected parameter type"
     override fun getGroupDisplayName(): String = "CaosScript"
     override fun getShortName(): String = "ExpectedParameterType"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
@@ -75,16 +72,10 @@ class CaosScriptTypesAnnotation : LocalInspectionTool() {
             // todo handle var type checks
             return
         }
-        val rvalue = element.rvalue
-        if (rvalue == null) {
-            LOGGER.info("RValue in element ${element.text} is null")
-            return
-        }
+        val rvalue = element.rvalue ?: return
         val actualType = getActualType(rvalue, caosVar)
         val expectedTypeSimple = element.expectedType
-        LOGGER.info("${element.text} = $actualType")
         if (actualType == expectedTypeSimple || fudge(actualType, expectedTypeSimple)) {
-            LOGGER.info("${actualType.simpleName} == ${expectedTypeSimple.simpleName}")
             return
         }
         val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
@@ -105,24 +96,18 @@ class CaosScriptTypesAnnotation : LocalInspectionTool() {
                 ?.multiResolve(true)
                 ?.firstOrNull()
                 ?.element as? CaosDefCompositeElement
-        if (containingToken == null) {
-            LOGGER.info("Failed to find command matching ${element.text}")
-            return null
-        }
+                ?: return null
         val containingCommand = containingToken.getParentOfType(CaosDefCommandDefElement::class.java)
         return containingCommand?.parameterStructs?.getOrNull(index)
     }
 
     private fun getActualType(element: CaosScriptRvalue, caosVar: CaosVar): CaosExpressionValueType {
         val commandToken = element.commandToken
-        if (commandToken == null) {
-            LOGGER.info("Element ${element.text} is not a command.")
-            return caosVar.simpleType
-        }
+                ?: return caosVar.simpleType
         val returnTypeString = (commandToken
                 .reference
-                ?.multiResolve(true)
-                ?.firstOrNull()
+                .multiResolve(true)
+                .firstOrNull()
                 ?.element as? CaosDefCompositeElement)
                 ?.getParentOfType(CaosDefCommandDefElement::class.java)
                 ?.returnTypeString

@@ -67,6 +67,8 @@ object CaosBundleSourcesRegistrationUtil {
             } else {
                 LOGGER.severe("Failed to locate bundled caos definition files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
             }
+            rootModel.dispose()
+            modifiableModel.dispose()
             return false
         }
 
@@ -75,7 +77,6 @@ object CaosBundleSourcesRegistrationUtil {
             LOGGER.info("Caos std-lib files are current")
             //return true
         }
-
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
                 ?: modifiableModel.createLibrary(LIBRARY_NAME, CaosLibraryType.LIBRARY)
         val libModel = library.modifiableModel

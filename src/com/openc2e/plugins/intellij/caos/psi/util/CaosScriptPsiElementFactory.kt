@@ -66,7 +66,7 @@ object CaosScriptPsiElementFactory {
         val script = "setv var0 tokn $newNameString"
         val commandCall = getCommandCall(project, script)
                 ?: return null
-        return commandCall.expectsDecimal?.rvalue?.token
+        return commandCall.expectsDecimal?.rvalue?.expression?.token
     }
 
     fun createStringElement(project: Project, newNameString: String): CaosScriptRvalue? {

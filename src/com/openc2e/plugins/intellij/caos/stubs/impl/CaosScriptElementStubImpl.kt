@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.stubs.impl
 
 import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
+import com.openc2e.plugins.intellij.caos.deducer.CaosNumber
 import com.openc2e.plugins.intellij.caos.deducer.CaosOp
 import com.openc2e.plugins.intellij.caos.deducer.CaosScope
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar
@@ -134,7 +135,7 @@ class CaosScriptNamedGameVarStubImpl(
 class CaosScriptConstantAssignmentStubImpl(
         parent: StubElement<*>?,
         override val name:String,
-        override val value:CaosVar?
+        override val value:CaosNumber
 ) : StubBase<CaosScriptConstantAssignmentImpl>(parent, CaosScriptStubTypes.CONSTANT_ASSIGNMENT), CaosScriptConstantAssignmentStub
 
 class CaosScriptNamedVarAssignmentStubImpl(
@@ -257,7 +258,7 @@ class CaosScriptMacroStubImpl(
 
 data class CaosScriptConstantAssignmentStruct(
         val name:String,
-        val value:CaosVar
+        val value:CaosNumber
 )
 
 

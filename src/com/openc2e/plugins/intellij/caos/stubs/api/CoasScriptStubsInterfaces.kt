@@ -48,7 +48,7 @@ interface CaosScriptExpectsDecimalStub : StubElement<CaosScriptExpectsDecimalImp
 
 interface CaosScriptConstantAssignmentStub : StubElement<CaosScriptConstantAssignmentImpl> {
     val name:String
-    val value:CaosVar?
+    val value:CaosNumber
 }
 
 interface CaosScriptNamedVarAssignmentStub : StubElement<CaosScriptNamedVarAssignmentImpl> {
