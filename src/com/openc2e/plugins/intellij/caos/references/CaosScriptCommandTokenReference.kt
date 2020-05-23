@@ -23,12 +23,15 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
 
     private val renameRegex: Regex = "[a-zA-Z_][a-zA-Z_#!:]{3}".toRegex()
 
+    private val name:String? by lazy {
+        element.name
+    }
+
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         if (DumbService.isDumb(myElement.project))
             return emptyArray()
         if (myElement.parent?.parent is CaosDefCommandDefElement) {
-            LOGGER.info("")
-            return emptyArray()
+            return PsiElementResolveResult.createResults(myElement)
         }
         val elements = if (myElement is CaosDefCompositeElement)
             findFromDefElement()
@@ -54,7 +57,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
 
     private fun findFromScriptElement(): List<CaosDefCommandWord> {
         val type = myElement.getEnclosingCommandType()
-        val formattedName = myElement.name?.replace(EXTRA_SPACE_REGEX, " ")
+        val formattedName = name?.replace(EXTRA_SPACE_REGEX, " ")
                 ?: return emptyList()
         val variant = myElement.containingCaosFile?.variant
         return CaosDefCommandElementsByNameIndex
