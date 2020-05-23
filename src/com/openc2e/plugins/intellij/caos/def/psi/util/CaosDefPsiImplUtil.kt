@@ -127,15 +127,20 @@ object CaosDefPsiImplUtil {
         return Pair(from, to)
     }
 
+    private val STAR_FIRST_REGEX = "^\\s*\\*\\s*".toRegex()
+
     @JvmStatic
     fun getComment(command:CaosDefCommandDefElement) : String? {
         return command.stub?.comment ?: command
                 .docComment
                 ?.docCommentFrontComment
                 ?.children
-                ?.filterNot { it.text == "*" }
-                ?.map {it.text}
-                ?.joinToString("")
+                ?.flatMap {
+                    it.text.split("\n")
+                }
+                ?.joinToString("\n") {
+                    it.replace(STAR_FIRST_REGEX, "")
+                }
                 ?.replace("[ ]+".toRegex(), " ")
     }
 
