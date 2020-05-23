@@ -129,13 +129,14 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getComment(command:CaosDefCommandDefElement) : String? {
-        val comment = command.docComment
-                ?: return null
-        return comment.docCommentFrontComment?.docCommentLineList
-                ?.joinToString {
-                    val text = it.text
-                    text.trim().removePrefix("*")+ "\n"
-                }?.trim()
+        return command.stub?.comment ?: command
+                .docComment
+                ?.docCommentFrontComment
+                ?.children
+                ?.filterNot { it.text == "*" }
+                ?.map {it.text}
+                ?.joinToString("")
+                ?.replace("[ ]+".toRegex(), " ")
     }
 
     @JvmStatic
