@@ -8,32 +8,30 @@ import com.intellij.codeInsight.hints.InlayParameterHintsProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.refactoring.suggested.startOffset
+import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
-import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
-import com.openc2e.plugins.intellij.caos.psi.util.getEnclosingCommandType
-import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
-import com.openc2e.plugins.intellij.caos.utils.orElse
+import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement
+import com.openc2e.plugins.intellij.caos.psi.api.argumentsLength
 
 
 class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
 
-
     override fun getParameterHints(elementIn: PsiElement): MutableList<InlayInfo> {
-        val project = elementIn.project;
+        val project = elementIn.project
         if (DumbService.isDumb(project))
             return mutableListOf()
+
         val element = elementIn as? CaosScriptCommandElement
                 ?: return mutableListOf()
         val referencedCommand = getCommand(element)
                 ?: return mutableListOf()
-        LOGGER.info("${referencedCommand.fullCommand} - parameters: ${referencedCommand.parameterStructs}")
-        val parameters = referencedCommand.parameterStructs
+        val skipLast = skipLast(element)
+        val parameters = getParametersAsStrings(referencedCommand.parameterStructs, skipLast)
         return element.arguments.mapIndexed{ i, it ->
-            InlayInfo(parameters[i].name, it.startOffset)
+            InlayInfo(parameters[i], it.startOffset)
         }.toMutableList()
     }
 
@@ -46,11 +44,15 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
                 ?: return null
         val referencedCommand = getCommand(element)
                 ?: return null
-        val parameters = referencedCommand.parameterStructs
-        return HintInfo.MethodInfo(element.commandString, parameters.map { it.name }, CaosDefLanguage.instance)
+        val skipLast = skipLast(element)
+        val parameters = getParametersAsStrings(referencedCommand.parameterStructs, skipLast)
+        return HintInfo.MethodInfo(element.commandString, parameters, CaosDefLanguage.instance)
     }
 
     companion object {
+
+        private val setLike = listOf("SETV", "SETS", "SETA")
+
         private fun getCommand(element:PsiElement) : CaosDefCommandDefElement? {
             if (element !is CaosScriptCommandElement)
                 return null
@@ -66,6 +68,25 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
                 commandTokens.filter { it.parameterStructs.size == numParameters }.ifEmpty { null }?.first()
                         ?: commandTokens.filter { it.parameterStructs.size > numParameters }.ifEmpty { null }?.first()
                         ?: return null
+            }
+        }
+
+        private fun skipLast(element:CaosScriptCommandElement) : Boolean {
+            return if (element.commandString.toUpperCase() in setLike) {
+                val firstArg = element.argumentValues.firstOrNull()
+                (firstArg is CaosVar.CaosCommandCall && firstArg.text.toUpperCase() == "CLS2")
+            } else
+                false
+        }
+
+        private fun getParametersAsStrings(parameters:List<CaosDefParameterStruct>, skipLast:Boolean) : List<String> {
+            return if (skipLast && parameters.size == 2) {
+                listOfNotNull(parameters.firstOrNull()?.name, "species")
+            } else if (skipLast) {
+                val lastIndex = parameters.lastIndex
+                parameters.mapIndexed { i, parameter -> if (i == lastIndex) "species" else parameter.name }
+            } else {
+                parameters.map { it.name }
             }
         }
     }
