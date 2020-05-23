@@ -5582,8 +5582,7 @@ l_kw_a_d
 	;
 
 l_kw_d_d_d
-	::= K_CLS2
-	|	<<isVariant "C2">>K_DOOR
+	::= <<isVariant "C2">>K_DOOR
 	|	K_PUHL
 	|	K_PUPT
 	|	K_RMND
@@ -5607,6 +5606,7 @@ l_kw_d_d_d
 
 l_kw_d_d
 	::= <<isVariant "C2">>K_GAME
+	|	K_CLS2
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
