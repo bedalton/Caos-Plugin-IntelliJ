@@ -1510,7 +1510,8 @@ ELAS (integer);
 ELIF (command) condition (condition);
 
 /*
- *
+ * ELSE clause to follow [DOIF] and [ELIF](s). If nothing else matches, the ELSE block will be
+ * executed.
  * #Flow
  *
  */
@@ -3535,6 +3536,9 @@ MVSF (command) x (float) y (float);
 MVTO (command) x (float) y (float);
 
 /*
+ * MV00 to MV99 are variables specific to an agent. They are read from [OWNR], the owner agent of
+ * the current script. These are the exact same variables as [OVxx], except read from [OWNR] not
+ * [TARG]. If [OWNR] and [TARG] are the same, then OV23 is MV23, for example.
  * @range(0 to 99)
  * #Variables
  *
@@ -3915,6 +3919,8 @@ OUTX (command) text (string);
 OVER (command);
 
 /*
+ * OV00 to OV99 are variables specific to an agent. They are read from [TARG], the target agent.
+ * You can also access these same variables via [OWNR] using [MVxx].
  * @range(0 to 99)
  * #Variables
  *
@@ -4910,6 +4916,7 @@ RATE (command) roomType (integer) caIndex (integer) gain (float) loss (float) di
 RATE (string) roomType (integer) caIndex (integer);
 
 /*
+ * RCLR (command) X (integer) Y (integer)
  * Clear the music for the room at the given location.
  * #Sounds
  *
@@ -6080,7 +6087,7 @@ TTAR (command) family (integer) genus (integer) species (integer);
 
 /*
  * Clones an agent, and returns the replica. If agent_null is set to 1 the agents that this agent
- * points to (in OVxx, or VAxx in its running script) are set to [NULL] in the clone. If agent_null
+ * points to (in [OVxx], or [VAxx] in its running script) are set to [NULL] in the clone. If agent_null
  * is 0, then the clone points to the same agents as the original. When using agent_null 1, you
  * might want to call [STPT] first so variables being used mid-script aren't cleared under the
  * agent's nose.
@@ -6230,6 +6237,7 @@ URGE TACT (command) nounStim (float) verbId (integer) verbStim (float);
 URGE WRIT (command) creature (agent) nounId (integer) nounStim (float) verbId (integer) verbStim (float);
 
 /*
+ * VA00 to VA99 are local variables, whose values are lost when the current script ends.
  * @range(0 to 99)
  * #Variables
  *
