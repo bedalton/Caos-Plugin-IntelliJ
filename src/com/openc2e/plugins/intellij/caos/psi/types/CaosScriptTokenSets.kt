@@ -50,8 +50,9 @@ class CaosScriptTokenSets {
                 CaosScript_BYTE_STRING,
                 CaosScript_ANIM_R,
                 CaosScript_QUOTE_STRING,
-                CaosScript_STRING_LITERAL,
+                CaosScript_QUOTE_STRING_LITERAL,
                 CaosScript_TEXT_LITERAL,
+                CaosScript_C_1_STRING,
                 CaosScript_OPEN_BRACKET,
                 CaosScript_CLOSE_BRACKET
         )
@@ -60,7 +61,8 @@ class CaosScriptTokenSets {
                 CaosScript_INT,
                 CaosScript_DECIMAL,
                 CaosScript_NUMBER,
-                CaosScript_STRING_LITERAL,
+                CaosScript_QUOTE_STRING_LITERAL,
+                CaosScript_C_1_STRING,
                 CaosScript_BYTE_STRING,
                 CaosScript_ANIMATION_STRING,
                 CaosScript_QUOTE_STRING

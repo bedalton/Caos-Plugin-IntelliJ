@@ -1,17 +1,16 @@
 package com.openc2e.plugins.intellij.caos.psi.util
 
+import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.deducer.*
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
+import com.openc2e.plugins.intellij.caos.hints.CaosScriptPresentationUtil
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
-import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
-import com.openc2e.plugins.intellij.caos.references.CaosScriptNamedConstReference
-import com.openc2e.plugins.intellij.caos.references.CaosScriptNamedVarReference
-import com.openc2e.plugins.intellij.caos.references.CaosScriptSubroutineNameReference
+import com.openc2e.plugins.intellij.caos.references.*
 
 const val UNDEF = "{UNDEF}"
 
@@ -149,21 +148,6 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun isUntil(element: CaosScriptLoopStatement): Boolean {
         return element.loopTerminator?.cUntl != null
-    }
-
-    @JvmStatic
-    fun getStringValue(element: CaosScriptStringLiteral): String {
-        val text = element.text
-        val length = text.length
-        if (length < 2)
-            return ""
-        val quoteChar = text.substring(1, 2)
-        return if (length == 2)
-            text.substring(1)
-        else if (length > 2 && text.substring(length - 1, length) == quoteChar)
-            text.substring(0, length - 1)
-        else
-            text
     }
 
     @JvmStatic
@@ -339,8 +323,12 @@ object CaosScriptPsiImplUtil {
             return it.toCaosVar() ?: CaosVar.CaosLiteralVal
         }
 
-        rvalue.stringLiteral?.let {
-            return CaosVar.CaosLiteral.CaosString(it.stringValue)
+        rvalue.c1String?.let {
+            return CaosVar.CaosLiteral.CaosC1String(it.stringValue)
+        }
+
+        rvalue.quoteStringLiteral?.let {
+            return CaosVar.CaosLiteral.CaosC1String(it.stringValue)
         }
 
         rvalue.rvaluePrime?.let { rvaluePrime ->
@@ -353,6 +341,21 @@ object CaosScriptPsiImplUtil {
         }
 
         return CaosVar.CaosVarNone
+    }
+
+    @JvmStatic
+    fun getStringValue(string:CaosScriptC1String) : String {
+        return string.textLiteral?.text ?: ""
+    }
+
+    @JvmStatic
+    fun getStringValue(stringIn:CaosScriptQuoteStringLiteral) : String {
+        var string = stringIn.text
+        if (string.startsWith("\""))
+            string = string.substring(1)
+        if (string.endsWith("\""))
+            string = string.substring(0, string.length - 2)
+        return string
     }
 
     @JvmStatic
@@ -724,6 +727,17 @@ object CaosScriptPsiImplUtil {
             CaosScriptNamedGameVarType.UNDEF -> null
         }
     }
+
+    @JvmStatic
+    fun getReference(element:CaosScriptVarToken) : CaosScriptVarTokenReference {
+        return CaosScriptVarTokenReference(element)
+    }
+
+    @JvmStatic
+    fun getPresentation(element:CaosScriptIsCommandToken) : ItemPresentation {
+        return CaosScriptPresentationUtil.getPresentation(element)
+    }
+
 
     /*
     @JvmStatic
