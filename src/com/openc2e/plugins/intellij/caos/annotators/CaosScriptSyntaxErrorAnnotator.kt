@@ -57,7 +57,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     @Suppress("SameParameterValue")
-    private fun simpleError(element:PsiElement, message:String, annotationWrapper:AnnotationHolderWrapper) {
+    private fun simpleError(element: PsiElement, message: String, annotationWrapper: AnnotationHolderWrapper) {
         annotationWrapper.newErrorAnnotation(message)
                 .range(element)
                 .create()
@@ -128,7 +128,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
-        val header = element.emumHeaderCommand?.cEnum
+        val header = element.emumHeaderCommand.cEnum
                 ?: return
         if (header.kEnum != null)
             return
@@ -175,13 +175,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val variant = element.variant.nullIfEmpty()
                 ?: return
         if (variant !in variants) {
-            variants = sortVariants(variants)
-            LOGGER.info("Current Variant = '${element.containingCaosFile?.variant}'; Available in variants: $variants")
-            val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variants.joinToString(","))
+            val variantString = getVariantString(variants)
+            val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variantString)
             annotationWrapper
                     .newErrorAnnotation(message)
                     .range(element)
                     .create()
+            return
         }
         // If command type cannot be determined, exit This means it was used as out of command expression
         if (commandType == CaosCommandType.UNDEFINED)
@@ -205,13 +205,28 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .flatMap { it.variants }
                 .toSet()
                 .filterNotNull()
-        variants = sortVariants(variants)
         // Command variant of type does not exist, show error
-        val error = CaosBundle.message("caos.annotator.command-annotator.invalid-command-type-for-variant", command.toUpperCase(), commandType.value.toLowerCase(), variants.joinToString(","))
+        val error = CaosBundle.message(
+                "caos.annotator.command-annotator.invalid-command-type-for-variant",
+                command.toUpperCase(),
+                commandType.value.toLowerCase(),
+                getVariantString(variants)
+        )
         annotationWrapper
                 .newErrorAnnotation(error)
                 .range(element)
                 .create()
+    }
+
+    private fun getVariantString(variantsIn: List<String>): String {
+        val variants = sortVariants(variantsIn)
+        val numVariants = variants.size
+        return when {
+            numVariants == variants.intersect(listOf("C3", "DS")).size -> "C3+"
+            numVariants == variants.intersect(listOf("CV", "C3", "DS")).size -> "CV+"
+            numVariants == variants.intersect(listOf("C2", "CV", "C3", "DS")).size -> "C2+"
+            else -> variants.joinToString(",")
+        }
     }
 
     private fun sortVariants(variants: List<String>): List<String> {
@@ -228,9 +243,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
     }
 
-    private fun annotateVarToken(variantIn:String, element:CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateVarToken(variantIn: String, element: CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
         val variant = variantIn.toUpperCase()
-        val variants:String =  if (element.varX != null) {
+        val variants: String = if (element.varX != null) {
             if (variant != "C1" && variant != "C2")
                 "C1,C2"
             else
@@ -260,7 +275,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 "CV+"
             else
                 return
-        }  else
+        } else
             return
 
         val varName = when {
