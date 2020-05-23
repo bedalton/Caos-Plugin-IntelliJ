@@ -42,7 +42,6 @@ internal fun registerSourcesAsLibrary(module: Module, libraryName:String, direct
                 LOGGER.severe(errorMessage)
                 //throw Exception(errorMessage)
             }
-
             return false
         }
         libModel.addRoot(libraryPath, OrderRootType.SOURCES)

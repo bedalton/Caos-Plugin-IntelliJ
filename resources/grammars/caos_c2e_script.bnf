@@ -24,6 +24,7 @@
 	name("l_.*") = "variable";
 	name("lvalue") = "variable";
 	name("rvalue.*") = "value";
+	name("K_.*") = "command"
 	name("eq_op.*") = "EQ|NE|etc.."
 	name("command_call") = "command"
 	tokens = [
@@ -1041,7 +1042,7 @@ private space
 	::= SPACE_
 	;
 
-private expression
+expression
 	::= rvalue_prime
 	|	string_literal
 	|	byte_string
@@ -1049,8 +1050,26 @@ private expression
 	|	vars
 	|	named_constant
 	|	number
-   	|	token
+	|	token
 	|	incomplete
+	{
+		methods = [
+			isString
+			isQuoteString
+			isC1String
+			isInt
+			isFloat
+			isToken
+			isNumeric
+			getFloatValue
+			getIntValue
+			getStringValue
+			toCaosVar
+			getByteStringArray
+			getCreatureAnimation
+			getAnimation
+		]
+	}
 	;
 
 
@@ -1066,7 +1085,7 @@ private equality_expression_prime
 	;
 
 equality_expression_plus
-	::=  equality_join space_like equality_expression
+	::=  equality_join space_like equality_expression_prime
 	{
 		pin(".*")=1
 	}
@@ -2419,46 +2438,46 @@ private l_d ::= l_kw_d space_like expects_decimal_or_int
 	;
 
 c_kw_none
-	::= K_CD_ space_like K_EJCT
-	|	K_CD_ space_like K_INIT
-	|	K_CD_ space_like K_SHUT
-	|	K_CD_ space_like K_STOP
+	::= K_CD_ space_like (K_EJCT|incomplete)
+	|	K_CD_ space_like (K_INIT|incomplete)
+	|	K_CD_ space_like (K_SHUT|incomplete)
+	|	K_CD_ space_like (K_STOP|incomplete)
 	|	K_APPR
 	|	K_ASEA
 	|	K_BANG
-	|	<<isVariant "C1">>K_BBD_COL space_like K_EMIT
+	|	<<isVariant "C1">>K_BBD_COL space_like (K_EMIT|incomplete)
 	|	K_BORN
-	|	K_BRN_COL space_like K_DMPB
+	|	K_BRN_COL space_like (K_DMPB|incomplete)
 	|	K_CAGE
 	|	K_CALC
 	|	K_CAMN
 	|	K_CBRG
-	|	K_DBG_COL space_like K_CPRO
-	|	K_DBG_COL space_like K_FLSH
-	|	K_DBG_COL space_like K_PAWS
-	|	K_DBG_COL space_like K_PLAY
-	|	K_DBG_COL space_like K_POLL
-	|	K_DBG_COL space_like K_PROF
-	|	K_DBG_COL space_like K_TOCK
-	|	K_DDE_COL space_like K_DIED
-	|	K_DDE_COL space_like K_GENE
-	|	K_DDE_COL space_like K_GETB space_like K_BIOC
-	|	K_DDE_COL space_like K_GETB space_like K_CNAM
-	|	K_DDE_COL space_like K_GETB space_like K_CTIM
-	|	K_DDE_COL space_like K_GETB space_like K_DATA
-	|	K_DDE_COL space_like K_GETB space_like K_MONK
-	|	K_DDE_COL space_like K_GETB space_like K_NEWV
-	|	K_DDE_COL space_like K_GETB space_like K_ORGN
-	|	K_DDE_COL space_like K_GETB space_like K_OVVD
-	|	K_DDE_COL space_like K_GETB space_like K_RRCT
-	|	K_DDE_COL space_like K_GIDS space_like K_ROOT
-	|	K_DDE_COL space_like K_HATC
-	|	K_DDE_COL space_like K_LIVE
-	|	K_DDE_COL space_like K_LOBE
-	|	K_DDE_COL space_like K_NACT
-	|	K_DDE_COL space_like K_NEGG
-	|	K_DDE_COL space_like K_PANC
-	|	K_DDE_COL space_like K_PICT
+	|	K_DBG_COL space_like (K_CPRO|incomplete)
+	|	K_DBG_COL space_like (K_FLSH|incomplete)
+	|	K_DBG_COL space_like (K_PAWS|incomplete)
+	|	K_DBG_COL space_like (K_PLAY|incomplete)
+	|	K_DBG_COL space_like (K_POLL|incomplete)
+	|	K_DBG_COL space_like (K_PROF|incomplete)
+	|	K_DBG_COL space_like (K_TOCK|incomplete)
+	|	K_DDE_COL space_like (K_DIED|incomplete)
+	|	K_DDE_COL space_like (K_GENE|incomplete)
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_BIOC
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_CNAM
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_CTIM
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_DATA
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_MONK
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_NEWV
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ORGN
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_OVVD
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RRCT
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_ROOT
+	|	K_DDE_COL space_like (K_HATC|incomplete)
+	|	K_DDE_COL space_like (K_LIVE|incomplete)
+	|	K_DDE_COL space_like (K_LOBE|incomplete)
+	|	K_DDE_COL space_like (K_NACT|incomplete)
+	|	K_DDE_COL space_like (K_NEGG|incomplete)
+	|	K_DDE_COL space_like (K_PANC|incomplete)
+	|	K_DDE_COL space_like (K_PICT|incomplete)
 	|	K_DONE
 	|	<<isVariant "C2">>K_DPAS
 	|	<<isVariant "C1">>K_DPAS
@@ -2466,11 +2485,11 @@ c_kw_none
 	|	K_EDIT
 	|	K_FADE
 	|	K_FCUS
-	|	K_FILE space_like K_ICLO
-	|	K_FILE space_like K_OCLO
-	|	K_FILE space_like K_OFLU
+	|	K_FILE space_like (K_ICLO|incomplete)
+	|	K_FILE space_like (K_OCLO|incomplete)
+	|	K_FILE space_like (K_OFLU|incomplete)
 	|	K_FRSH
-	|	K_GIDS space_like K_ROOT
+	|	K_GIDS space_like (K_ROOT|incomplete)
 	|	<<isVariant "C2">>K_GPAS
 	|	<<isVariant "C1">>K_GPAS
 	|	K_HELP
@@ -2482,14 +2501,14 @@ c_kw_none
 	|	K_MAPK
 	|	K_MATE
 	|	K_MEMX
-	|	K_NET_COL space_like K_HEAD
-	|	K_NET_COL space_like K_WHOD
-	|	K_NET_COL space_like K_WHOZ
+	|	K_NET_COL space_like (K_HEAD|incomplete)
+	|	K_NET_COL space_like (K_WHOD|incomplete)
+	|	K_NET_COL space_like (K_WHOZ|incomplete)
 	|	K_NOHH
 	|	K_NUDE
 	|	K_OVER
 	|	K_POIN
-	|	K_PRAY space_like K_REFR
+	|	K_PRAY space_like (K_REFR|incomplete)
 	|	K_QUIT
 	|	<<isVariant "C2">>K_RCLR
 	|	K_REAF
@@ -2506,11 +2525,11 @@ c_kw_none
 	|	K_STPC
 	|	K_STPT
 	|	K_STRE
-	|	K_SYS_COL space_like K_ABRT
-	|	K_SYS_COL space_like K_CAMT
-	|	K_SYS_COL space_like K_DMAP
-	|	K_SYS_COL space_like K_QUIT
-	|	K_SYS_COL space_like K_WTOP
+	|	K_SYS_COL space_like (K_ABRT|incomplete)
+	|	K_SYS_COL space_like (K_CAMT|incomplete)
+	|	K_SYS_COL space_like (K_DMAP|incomplete)
+	|	K_SYS_COL space_like (K_QUIT|incomplete)
+	|	K_SYS_COL space_like (K_WTOP|incomplete)
 	|	K_TECO
 	|	K_TOUC
 	|	K_UCLN
@@ -2538,21 +2557,21 @@ c_kw_none
 	;
 
 c_kw_d
-	::= K_CD_ space_like K_PAWS
+	::= K_CD_ space_like (K_PAWS|incomplete)
 	|	K_AERO
 	|	K_AGES
 	|	K_AIM_COL
 	|	K_ASLP
 	|	K_ATTR
 	|	K_BASE
-	|	K_BBD_COL space_like K_EDIT
-	|	<<isVariant "C2">>K_BBD_COL space_like K_EMIT
-	|	K_BBD_COL space_like K_SHOW
+	|	K_BBD_COL space_like (K_EDIT|incomplete)
+	|	<<isVariant "C2">>K_BBD_COL space_like (K_EMIT|incomplete)
+	|	K_BBD_COL space_like (K_SHOW|incomplete)
 	|	<<isVariant "C3">>K_BHVR
 	|	<<isVariant "DS">>K_BHVR
 	|	<<isVariant "CV">>K_BHVR
-	|	K_BRN_COL space_like K_DMPL
-	|	K_BRN_COL space_like K_DMPT
+	|	K_BRN_COL space_like (K_DMPL|incomplete)
+	|	K_BRN_COL space_like (K_DMPT|incomplete)
 	|	K_BUZZ
 	|	K_CABP
 	|	K_CABV
@@ -2560,18 +2579,18 @@ c_kw_d
 	|	K_CATO
 	|	K_CLAC
 	|	K_CMRT
-	|	K_DBG_COL space_like K_HTML
-	|	K_DBG_COL space_like K_OUTV
-	|	K_DBG_COL space_like K_WTIK
+	|	K_DBG_COL space_like (K_HTML|incomplete)
+	|	K_DBG_COL space_like (K_OUTV|incomplete)
+	|	K_DBG_COL space_like (K_WTIK|incomplete)
 	|	K_DCOR
-	|	K_DDE_COL space_like K_GETB
-	|	K_DDE_COL space_like K_GETB space_like K_ALLR
-	|	K_DDE_COL space_like K_GETB space_like K_EMTR
-	|	K_DDE_COL space_like K_GETB space_like K_RCTN
-	|	K_DDE_COL space_like K_GETB space_like K_RPTY
-	|	K_DDE_COL space_like K_GIDS space_like K_FMLY
-	|	K_DDE_COL space_like K_LNEU
-	|	K_DDE_COL space_like K_WORD
+	|	K_DDE_COL space_like (K_GETB|incomplete)
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ALLR
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_EMTR
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RCTN
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RPTY
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_FMLY
+	|	K_DDE_COL space_like (K_LNEU|incomplete)
+	|	K_DDE_COL space_like (K_WORD|incomplete)
 	|	K_DELM
 	|	K_DELR
 	|	K_DIRN
@@ -2586,41 +2605,41 @@ c_kw_d
 	|	K_FRAT
 	|	K_FRIC
 	|	K_GAIT
-	|	K_GIDS space_like K_FMLY
+	|	K_GIDS space_like (K_FMLY|incomplete)
 	|	K_HAIR
 	|	K_IMPT
 	|	K_IMSK
-	|	K_MESG space_like K_SHOU
-	|	K_MESG space_like K_SIGN
-	|	K_MESG space_like K_TACT
+	|	K_MESG space_like (K_SHOU|incomplete)
+	|	K_MESG space_like (K_SIGN|incomplete)
+	|	K_MESG space_like (K_TACT|incomplete)
 	|	K_MIND
 	|	K_MIRA
 	|	K_MOTR
 	|	K_MOUS
-	|	K_NET_COL space_like K_LINE
+	|	K_NET_COL space_like (K_LINE|incomplete)
 	|	K_OUTV
 	|	K_PART
-	|	K_PAT_COL space_like K_CHAR
-	|	K_PAT_COL space_like K_KILL
+	|	K_PAT_COL space_like (K_CHAR|incomplete)
+	|	K_PAT_COL space_like (K_KILL|incomplete)
 	|	K_PAUS
 	|	K_PERM
 	|	K_PLNE
 	|	K_POSE
-	|	K_PRAY space_like K_GARB
+	|	K_PRAY space_like (K_GARB|incomplete)
 	|	K_PRNT
-	|	K_PRT_COL space_like K_BANG
-	|	K_PRT_COL space_like K_IZAP
-	|	K_PRT_COL space_like K_OZAP
+	|	K_PRT_COL space_like (K_BANG|incomplete)
+	|	K_PRT_COL space_like (K_IZAP|incomplete)
+	|	K_PRT_COL space_like (K_OZAP|incomplete)
 	|	K_PURE
 	|	K_REPS
 	|	K_SAY_NUM
 	|	K_SCRL
 	|	K_SHOW
 	|	K_STEP
-	|	K_STM_NUM space_like K_SHOU
-	|	K_STM_NUM space_like K_SIGN
-	|	K_STM_NUM space_like K_TACT
-	|	K_SYS_COL space_like K_CMND
+	|	K_STM_NUM space_like (K_SHOU|incomplete)
+	|	K_STM_NUM space_like (K_SIGN|incomplete)
+	|	K_STM_NUM space_like (K_TACT|incomplete)
+	|	K_SYS_COL space_like (K_CMND|incomplete)
 	|	K_TICK
 	|	K_TNTW
 	|	K_UNCS
@@ -2646,32 +2665,32 @@ c_kw_d
 	;
 
 c_kw_d_d
-	::= K_CD_ space_like K_PLAY
+	::= K_CD_ space_like (K_PLAY|incomplete)
 	|	K_ALPH
-	|	K_BBD_COL space_like K_VCB1
+	|	K_BBD_COL space_like (K_VCB1|incomplete)
 	|	K_BBTX
 	|	<<isVariant "C2">>K_BHVR
 	|	<<isVariant "C1">>K_BHVR
 	|	K_BODY
 	|	K_BRMI
-	|	K_BRN_COL space_like K_DMPD
-	|	K_BRN_COL space_like K_DMPN
+	|	K_BRN_COL space_like (K_DMPD|incomplete)
+	|	K_BRN_COL space_like (K_DMPN|incomplete)
 	|	K_CALG
 	|	K_CBRX
 	|	<<isVariant "C2">>K_CHEM
 	|	<<isVariant "C1">>K_CHEM
-	|	K_DDE_COL space_like K_GIDS space_like K_GNUS
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_GNUS
 	|	<<isVariant "C2">>K_DELN
 	|	K_EXPR
-	|	K_GIDS space_like K_GNUS
+	|	K_GIDS space_like (K_GNUS|incomplete)
 	|	K_INJR
 	|	K_KNOB
 	|	K_MAPD
 	|	K_MCLR
 	|	K_MCRT
 	|	K_MIRR
-	|	<<isVariant "C2">>K_NEW_COL space_like K_CREA
-	|	<<isVariant "C1">>K_NEW_COL space_like K_CREA
+	|	<<isVariant "C2">>K_NEW_COL space_like (K_CREA|incomplete)
+	|	<<isVariant "C1">>K_NEW_COL space_like (K_CREA|incomplete)
 	|	K_RAIN
 	|	<<isVariant "C3">>K_RCLR
 	|	<<isVariant "CV">>K_RCLR
@@ -2680,9 +2699,9 @@ c_kw_d_d
 	|	<<isVariant "C3">>K_RTYP
 	|	<<isVariant "CV">>K_RTYP
 	|	K_SOUL
-	|	K_SYS_COL space_like K_CMRA
-	|	K_SYS_COL space_like K_CMRP
-	|	K_SYS_COL space_like K_GRND
+	|	K_SYS_COL space_like (K_CMRA|incomplete)
+	|	K_SYS_COL space_like (K_CMRP|incomplete)
+	|	K_SYS_COL space_like (K_GRND|incomplete)
 	|	K_TELE
 	|	<<isVariant "DS">>K_TRAN
 	|	<<isVariant "C3">>K_TRAN
@@ -2708,7 +2727,7 @@ c_kw_d_d
 c_kw_l
 	::= K_ABSV
 	|	K_NAMN
-	|	K_NET_COL space_like K_RUSO
+	|	K_NET_COL space_like (K_RUSO|incomplete)
 	|	K_NOTV
 	{
 		implements = [
@@ -2759,10 +2778,10 @@ c_kw_d_s
 	::= K_ADDB
 	|	K_BBT2
 	|	K_BMPS
-	|	K_FILE space_like K_EXEC
-	|	K_FILE space_like K_GLOB
-	|	K_FILE space_like K_IOPE
-	|	K_FILE space_like K_JDEL
+	|	K_FILE space_like (K_EXEC|incomplete)
+	|	K_FILE space_like (K_GLOB|incomplete)
+	|	K_FILE space_like (K_IOPE|incomplete)
+	|	K_FILE space_like (K_JDEL|incomplete)
 	|	K_PLMD
 	|	K_PLMU
 	|	K_STRK
@@ -2844,8 +2863,8 @@ c_kw_d_d_f_d
 
 c_kw_d_d_f
 	::= K_ALTR
-	|	K_BRN_COL space_like K_SETL
-	|	K_BRN_COL space_like K_SETT
+	|	K_BRN_COL space_like (K_SETL|incomplete)
+	|	K_BRN_COL space_like (K_SETT|incomplete)
 	|	K_PROP
 	{
 		implements = [
@@ -2887,24 +2906,24 @@ c_kw_bs
 c_kw_s
 	::= K_ANMS
 	|	K_APRO
-	|	K_DBG_COL space_like K_OUTS
+	|	K_DBG_COL space_like (K_OUTS|incomplete)
 	|	K_DBGM
-	|	K_DDE_COL space_like K_PUTS
+	|	K_DDE_COL space_like (K_PUTS|incomplete)
 	|	K_DELE
 	|	K_DELG
 	|	K_DELW
 	|	K_HAND
-	|	K_HIST space_like K_WIPE
+	|	K_HIST space_like (K_WIPE|incomplete)
 	|	K_IMGE
 	|	K_LOAD
 	|	K_MANN
 	|	K_MIDI
-	|	K_NET_COL space_like K_HEAR
-	|	K_NET_COL space_like K_WHOF
-	|	K_NET_COL space_like K_WHON
-	|	K_ORDR space_like K_SHOU
-	|	K_ORDR space_like K_SIGN
-	|	K_ORDR space_like K_TACT
+	|	K_NET_COL space_like (K_HEAR|incomplete)
+	|	K_NET_COL space_like (K_WHOF|incomplete)
+	|	K_NET_COL space_like (K_WHON|incomplete)
+	|	K_ORDR space_like (K_SHOU|incomplete)
+	|	K_ORDR space_like (K_SIGN|incomplete)
+	|	K_ORDR space_like (K_TACT|incomplete)
 	|	K_OUTS
 	|	K_OUTX
 	|	K_PSWD
@@ -2921,7 +2940,7 @@ c_kw_s
 	|	<<isVariant "C3">>K_SNDL
 	|	<<isVariant "DS">>K_SNDL
 	|	K_SNDV
-	|	K_SYS_COL space_like K_WRLD
+	|	K_SYS_COL space_like (K_WRLD|incomplete)
 	|	K_VOIS
 	|	K_WEBB
 	|	K_WRLD
@@ -2943,14 +2962,14 @@ c_kw_s
 	;
 
 c_kw_d_d_d
-	::= K_BBD_COL space_like K_VOCB
+	::= K_BBD_COL space_like (K_VOCB|incomplete)
 	|	K_BOOT
 	|	K_CLIK
 	|	K_CMRA
 	|	K_CMRP
-	|	K_DDE_COL space_like K_CELL
-	|	K_DDE_COL space_like K_GETB space_like K_LVOB
-	|	K_DDE_COL space_like K_GIDS space_like K_SPCS
+	|	K_DDE_COL space_like (K_CELL|incomplete)
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_LVOB
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_SPCS
 	|	<<isVariant "DS">>K_DOOR
 	|	<<isVariant "C3">>K_DOOR
 	|	<<isVariant "CV">>K_DOOR
@@ -2958,11 +2977,11 @@ c_kw_d_d_d
 	|	<<isVariant "CV">>K_DPAS
 	|	<<isVariant "C3">>K_DPAS
 	|	K_FIRE
-	|	K_GIDS space_like K_SPCS
+	|	K_GIDS space_like (K_SPCS|incomplete)
 	|	K_KMSG
 	|	K_LINK
 	|	K_LTCY
-	|	K_PAT_COL space_like K_MOVE
+	|	K_PAT_COL space_like (K_MOVE|incomplete)
 	|	K_PUHL
 	|	K_PUPT
 	|	K_RTAR
@@ -2992,8 +3011,8 @@ c_kw_d_d_d
 	;
 
 c_kw_d_d_s
-	::= K_BBD_COL space_like K_WORD
-	|	K_DDE_COL space_like K_PIC2
+	::= K_BBD_COL space_like (K_WORD|incomplete)
+	|	K_DDE_COL space_like (K_PIC2|incomplete)
 	|	K_MMSC
 	|	K_RMSC
 	{
@@ -3017,18 +3036,18 @@ c_kw_d_d_d_d
 	::= K_BBFD
 	|	K_CABN
 	|	K_CACL
-	|	K_DDE_COL space_like K_LCUS
-	|	K_DDE_COL space_like K_SCRP
+	|	K_DDE_COL space_like (K_LCUS|incomplete)
+	|	K_DDE_COL space_like (K_SCRP|incomplete)
 	|	K_DYED
 	|	<<isVariant "DS">>K_GPAS
 	|	<<isVariant "CV">>K_GPAS
 	|	<<isVariant "C3">>K_GPAS
 	|	K_META
-	|	K_NEW_COL space_like K_BBTX
+	|	K_NEW_COL space_like (K_BBTX|incomplete)
 	|	K_SCRP
 	|	K_SCRX
-	|	K_SYS_COL space_like K_EDIT
-	|	K_SYS_COL space_like K_WPOS
+	|	K_SYS_COL space_like (K_EDIT|incomplete)
+	|	K_SYS_COL space_like (K_WPOS|incomplete)
 	|	K_TNTO
 	{
 		implements = [
@@ -3068,7 +3087,7 @@ c_kw_s_d_d_d
 
 c_kw_d_s_d
 	::= K_BKGD
-	|	K_FILE space_like K_OOPE
+	|	K_FILE space_like (K_OOPE|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3087,8 +3106,8 @@ c_kw_d_s_d
 	;
 
 c_kw_d_d_d_f
-	::= K_BRN_COL space_like K_SETD
-	|	K_BRN_COL space_like K_SETN
+	::= K_BRN_COL space_like (K_SETD|incomplete)
+	|	K_BRN_COL space_like (K_SETN|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3156,15 +3175,15 @@ c_kw_d_f
 	|	K_EMIT
 	|	K_GRPV
 	|	K_SCLE
-	|	<<isVariant "CV">>K_STIM space_like K_SHOU
-	|	<<isVariant "C3">>K_STIM space_like K_SHOU
-	|	<<isVariant "DS">>K_STIM space_like K_SHOU
-	|	<<isVariant "CV">>K_STIM space_like K_SIGN
-	|	<<isVariant "C3">>K_STIM space_like K_SIGN
-	|	<<isVariant "DS">>K_STIM space_like K_SIGN
-	|	<<isVariant "CV">>K_STIM space_like K_TACT
-	|	<<isVariant "C3">>K_STIM space_like K_TACT
-	|	<<isVariant "DS">>K_STIM space_like K_TACT
+	|	<<isVariant "CV">>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant "C3">>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant "DS">>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant "CV">>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant "C3">>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant "DS">>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant "CV">>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant "C3">>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant "DS">>K_STIM space_like (K_TACT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3202,7 +3221,7 @@ c_kw_f_f_f_f
 	;
 
 c_kw_cond
-	::= K_DBG_COL space_like K_ASRT
+	::= K_DBG_COL space_like (K_ASRT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3221,7 +3240,7 @@ c_kw_cond
 	;
 
 c_kw_a
-	::= K_DBG_COL space_like K_TACK
+	::= K_DBG_COL space_like (K_TACK|incomplete)
 	|	K_ECON
 	|	K_EVNT
 	|	K_FORF
@@ -3289,7 +3308,7 @@ c_kw_targ
 c_kw_v
 	::= K_DBGV
 	|	K_DBUG
-	|	K_DDE_COL space_like K_PUTV
+	|	K_DDE_COL space_like (K_PUTV|incomplete)
 	|	<<isVariant "C3">>K_DELN
 	|	<<isVariant "DS">>K_DELN
 	{
@@ -3310,7 +3329,7 @@ c_kw_v
 	;
 
 c_kw_s_t
-	::= K_DDE_COL space_like K_PUTB
+	::= K_DDE_COL space_like (K_PUTB|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3396,9 +3415,9 @@ c_kw_s_d
 	;
 
 c_kw_a_d_a_d
-	::= K_GENE space_like K_CLON
-	|	K_GENE space_like K_MOVE
-	|	K_PRT_COL space_like K_JOIN
+	::= K_GENE space_like (K_CLON|incomplete)
+	|	K_GENE space_like (K_MOVE|incomplete)
+	|	K_PRT_COL space_like (K_JOIN|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3417,7 +3436,7 @@ c_kw_a_d_a_d
 	;
 
 c_kw_a_d_a_d_a_d_d_d_d_d
-	::= K_GENE space_like K_CROS
+	::= K_GENE space_like (K_CROS|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3436,10 +3455,10 @@ c_kw_a_d_a_d_a_d_d_d_d_d
 	;
 
 c_kw_a_d
-	::= K_GENE space_like K_KILL
-	|	K_MESG space_like K_WRIT
+	::= K_GENE space_like (K_KILL|incomplete)
+	|	K_MESG space_like (K_WRIT|incomplete)
 	|	K_SCAM
-	|	K_STM_NUM space_like K_WRIT
+	|	K_STM_NUM space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3458,7 +3477,7 @@ c_kw_a_d
 	;
 
 c_kw_a_d_s
-	::= K_GENE space_like K_LOAD
+	::= K_GENE space_like (K_LOAD|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3543,7 +3562,7 @@ c_kw_d_d_d_f_f
 	;
 
 c_kw_s_d_s_s
-	::= K_HIST space_like K_EVNT
+	::= K_HIST space_like (K_EVNT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3562,8 +3581,8 @@ c_kw_s_d_s_s
 	;
 
 c_kw_s_d_s
-	::= K_HIST space_like K_FOTO
-	|	K_HIST space_like K_UTXT
+	::= K_HIST space_like (K_FOTO|incomplete)
+	|	K_HIST space_like (K_UTXT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3582,8 +3601,8 @@ c_kw_s_d_s
 	;
 
 c_kw_s_s
-	::= K_HIST space_like K_NAME
-	|	K_NET_COL space_like K_PASS
+	::= K_HIST space_like (K_NAME|incomplete)
+	|	K_NET_COL space_like (K_PASS|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3640,7 +3659,7 @@ c_kw_d_d_d_d_f
 	;
 
 c_kw_a_d_v_v_d
-	::= K_MESG space_like K_WRT_PLUS
+	::= K_MESG space_like (K_WRT_PLUS|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3659,7 +3678,7 @@ c_kw_a_d_v_v_d
 	;
 
 c_kw_l_l_l_l
-	::= K_NET_COL space_like K_STAT
+	::= K_NET_COL space_like (K_STAT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3678,7 +3697,7 @@ c_kw_l_l_l_l
 	;
 
 c_kw_s_l
-	::= K_NET_COL space_like K_UNIK
+	::= K_NET_COL space_like (K_UNIK|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3697,7 +3716,7 @@ c_kw_s_l
 	;
 
 c_kw_s_s_d_v_v
-	::= K_NET_COL space_like K_WRIT
+	::= K_NET_COL space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3716,7 +3735,7 @@ c_kw_s_s_d_v_v
 	;
 
 c_kw_t_d_d_d_d_d_d_d
-	::= K_NEW_COL space_like K_BKBD
+	::= K_NEW_COL space_like (K_BKBD|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3735,10 +3754,10 @@ c_kw_t_d_d_d_d_d_d_d
 	;
 
 c_kw_t_d_d_d
-	::= K_NEW_COL space_like K_CBTN
-	|	<<isVariant "C2">>K_NEW_COL space_like K_COMP
-	|	<<isVariant "C1">>K_NEW_COL space_like K_COMP
-	|	K_NEW_COL space_like K_SCEN
+	::= K_NEW_COL space_like (K_CBTN|incomplete)
+	|	<<isVariant "C2">>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant "C1">>K_NEW_COL space_like (K_COMP|incomplete)
+	|	K_NEW_COL space_like (K_SCEN|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3757,7 +3776,7 @@ c_kw_t_d_d_d
 	;
 
 c_kw_t_d_d_v
-	::= K_NEW_COL space_like K_CBUB
+	::= K_NEW_COL space_like (K_CBUB|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3776,15 +3795,15 @@ c_kw_t_d_d_v
 	;
 
 c_kw_d_d_d_s_d_d_d
-	::= <<isVariant "DS">>K_NEW_COL space_like K_COMP
-	|	<<isVariant "C3">>K_NEW_COL space_like K_COMP
-	|	<<isVariant "CV">>K_NEW_COL space_like K_COMP
-	|	<<isVariant "C3">>K_NEW_COL space_like K_SIMP
-	|	<<isVariant "CV">>K_NEW_COL space_like K_SIMP
-	|	<<isVariant "DS">>K_NEW_COL space_like K_SIMP
-	|	<<isVariant "DS">>K_NEW_COL space_like K_VHCL
-	|	<<isVariant "C3">>K_NEW_COL space_like K_VHCL
-	|	<<isVariant "CV">>K_NEW_COL space_like K_VHCL
+	::= <<isVariant "DS">>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant "C3">>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant "CV">>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant "C3">>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant "CV">>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant "DS">>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant "DS">>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	<<isVariant "C3">>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	<<isVariant "CV">>K_NEW_COL space_like (K_VHCL|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3803,7 +3822,7 @@ c_kw_d_d_d_s_d_d_d
 	;
 
 c_kw_d_a_d_d_d_s_d_d_d
-	::= K_NEW_COL space_like K_CRAG
+	::= K_NEW_COL space_like (K_CRAG|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3822,9 +3841,9 @@ c_kw_d_a_d_d_d_s_d_d_d
 	;
 
 c_kw_d_a_d_d_d
-	::= <<isVariant "CV">>K_NEW_COL space_like K_CREA
-	|	<<isVariant "C3">>K_NEW_COL space_like K_CREA
-	|	<<isVariant "DS">>K_NEW_COL space_like K_CREA
+	::= <<isVariant "CV">>K_NEW_COL space_like (K_CREA|incomplete)
+	|	<<isVariant "C3">>K_NEW_COL space_like (K_CREA|incomplete)
+	|	<<isVariant "DS">>K_NEW_COL space_like (K_CREA|incomplete)
 	|	K_NEWC
 	{
 		implements = [
@@ -3844,7 +3863,7 @@ c_kw_d_a_d_d_d
 	;
 
 c_kw_d_d_l
-	::= K_NEW_COL space_like K_GENE
+	::= K_NEW_COL space_like (K_GENE|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3863,9 +3882,9 @@ c_kw_d_d_l
 	;
 
 c_kw_t_d_d
-	::= K_NEW_COL space_like K_LIFT
-	|	<<isVariant "C2">>K_NEW_COL space_like K_VHCL
-	|	<<isVariant "C1">>K_NEW_COL space_like K_VHCL
+	::= K_NEW_COL space_like (K_LIFT|incomplete)
+	|	<<isVariant "C2">>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	<<isVariant "C1">>K_NEW_COL space_like (K_VHCL|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3884,7 +3903,7 @@ c_kw_t_d_d
 	;
 
 c_kw_d_d_d_d_d
-	::= K_NEW_COL space_like K_PART
+	::= K_NEW_COL space_like (K_PART|incomplete)
 	|	K_SPOT
 	|	K_TINO
 	|	K_TINT
@@ -3906,9 +3925,9 @@ c_kw_d_d_d_d_d
 	;
 
 c_kw_t_d_d_d_d
-	::= K_NEW_COL space_like K_RAIN
-	|	<<isVariant "C2">>K_NEW_COL space_like K_SIMP
-	|	<<isVariant "C1">>K_NEW_COL space_like K_SIMP
+	::= K_NEW_COL space_like (K_RAIN|incomplete)
+	|	<<isVariant "C2">>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant "C1">>K_NEW_COL space_like (K_SIMP|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3927,7 +3946,7 @@ c_kw_t_d_d_d_d
 	;
 
 c_kw_a_s
-	::= K_ORDR space_like K_WRIT
+	::= K_ORDR space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3946,7 +3965,7 @@ c_kw_a_s
 	;
 
 c_kw_d_s_d_d_d_d_d_bs_d_d
-	::= K_PAT_COL space_like K_BUTT
+	::= K_PAT_COL space_like (K_BUTT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3965,7 +3984,7 @@ c_kw_d_s_d_d_d_d_d_bs_d_d
 	;
 
 c_kw_d_s_d_d_d_d_d_d_d_d
-	::= K_PAT_COL space_like K_CMRA
+	::= K_PAT_COL space_like (K_CMRA|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -3984,7 +4003,7 @@ c_kw_d_s_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d
-	::= K_PAT_COL space_like K_DULL
+	::= K_PAT_COL space_like (K_DULL|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4003,7 +4022,7 @@ c_kw_d_s_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d_s
-	::= K_PAT_COL space_like K_FIXD
+	::= K_PAT_COL space_like (K_FIXD|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4022,7 +4041,7 @@ c_kw_d_s_d_d_d_d_s
 	;
 
 c_kw_d_s_d_d_d_d_d
-	::= K_PAT_COL space_like K_GRPH
+	::= K_PAT_COL space_like (K_GRPH|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4041,7 +4060,7 @@ c_kw_d_s_d_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d_d_s
-	::= K_PAT_COL space_like K_TEXT
+	::= K_PAT_COL space_like (K_TEXT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4060,7 +4079,7 @@ c_kw_d_s_d_d_d_d_d_s
 	;
 
 c_kw_d_s_s_d_d_d
-	::= K_PRT_COL space_like K_INEW
+	::= K_PRT_COL space_like (K_INEW|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4079,7 +4098,7 @@ c_kw_d_s_s_d_d_d
 	;
 
 c_kw_a_d_d
-	::= K_PRT_COL space_like K_KRAK
+	::= K_PRT_COL space_like (K_KRAK|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4098,7 +4117,7 @@ c_kw_a_d_d
 	;
 
 c_kw_d_s_s_d_d
-	::= K_PRT_COL space_like K_ONEW
+	::= K_PRT_COL space_like (K_ONEW|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4117,7 +4136,7 @@ c_kw_d_s_s_d_d
 	;
 
 c_kw_d_v
-	::= K_PRT_COL space_like K_SEND
+	::= K_PRT_COL space_like (K_SEND|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4255,7 +4274,7 @@ c_kw_s_d_d_d_d_d
 c_kw_t_d
 	::= <<isVariant "C1">>K_SNDQ
 	|	<<isVariant "C2">>K_SNDQ
-	|	K_SYS_COL space_like K_CONV
+	|	K_SYS_COL space_like (K_CONV|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4293,12 +4312,12 @@ c_kw_s_d_f
 	;
 
 c_kw_d_d_d_d_d_d_d_d_d_d_d_d
-	::= <<isVariant "C2">>K_STIM space_like K_SHOU
-	|	<<isVariant "C1">>K_STIM space_like K_SHOU
-	|	<<isVariant "C2">>K_STIM space_like K_SIGN
-	|	<<isVariant "C1">>K_STIM space_like K_SIGN
-	|	<<isVariant "C2">>K_STIM space_like K_TACT
-	|	<<isVariant "C1">>K_STIM space_like K_TACT
+	::= <<isVariant "C2">>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant "C1">>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant "C2">>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant "C1">>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant "C2">>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant "C1">>K_STIM space_like (K_TACT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4317,9 +4336,9 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_a_d_f
-	::= <<isVariant "CV">>K_STIM space_like K_WRIT
-	|	<<isVariant "C3">>K_STIM space_like K_WRIT
-	|	<<isVariant "DS">>K_STIM space_like K_WRIT
+	::= <<isVariant "CV">>K_STIM space_like (K_WRIT|incomplete)
+	|	<<isVariant "C3">>K_STIM space_like (K_WRIT|incomplete)
+	|	<<isVariant "DS">>K_STIM space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4338,8 +4357,8 @@ c_kw_a_d_f
 	;
 
 c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
-	::= <<isVariant "C2">>K_STIM space_like K_WRIT
-	|	<<isVariant "C1">>K_STIM space_like K_WRIT
+	::= <<isVariant "C2">>K_STIM space_like (K_WRIT|incomplete)
+	|	<<isVariant "C1">>K_STIM space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4358,9 +4377,9 @@ c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_f_d_f_d_f_d_f
-	::= K_SWAY space_like K_SHOU
-	|	K_SWAY space_like K_SIGN
-	|	K_SWAY space_like K_TACT
+	::= K_SWAY space_like (K_SHOU|incomplete)
+	|	K_SWAY space_like (K_SIGN|incomplete)
+	|	K_SWAY space_like (K_TACT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4379,7 +4398,7 @@ c_kw_d_f_d_f_d_f_d_f
 	;
 
 c_kw_a_d_f_d_f_d_f_d_f
-	::= K_SWAY space_like K_WRIT
+	::= K_SWAY space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4436,9 +4455,9 @@ c_kw_a_d_d_d_d
 	;
 
 c_kw_f_d_f
-	::= K_URGE space_like K_SHOU
-	|	K_URGE space_like K_SIGN
-	|	K_URGE space_like K_TACT
+	::= K_URGE space_like (K_SHOU|incomplete)
+	|	K_URGE space_like (K_SIGN|incomplete)
+	|	K_URGE space_like (K_TACT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4457,7 +4476,7 @@ c_kw_f_d_f
 	;
 
 c_kw_a_d_f_d_f
-	::= K_URGE space_like K_WRIT
+	::= K_URGE space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -4476,9 +4495,9 @@ c_kw_a_d_f_d_f
 	;
 
 r_kw_none
-	::= K_CD_ space_like K_FRQH
-	|	K_CD_ space_like K_FRQL
-	|	K_CD_ space_like K_FRQM
+	::= K_CD_ space_like (K_FRQH|incomplete)
+	|	K_CD_ space_like (K_FRQL|incomplete)
+	|	K_CD_ space_like (K_FRQM|incomplete)
 	|	K_IT_
 	|	K_P1_
 	|	K_P2_
@@ -4600,13 +4619,13 @@ r_kw_none
 	|	K_MTHX
 	|	K_MTHY
 	|	K_NEID
-	|	K_NET_COL space_like K_ERRA
-	|	K_NET_COL space_like K_HOST
-	|	K_NET_COL space_like K_LINE
-	|	K_NET_COL space_like K_PASS
-	|	K_NET_COL space_like K_RAWE
-	|	K_NET_COL space_like K_USER
-	|	K_NET_COL space_like K_WHAT
+	|	K_NET_COL space_like (K_ERRA|incomplete)
+	|	K_NET_COL space_like (K_HOST|incomplete)
+	|	K_NET_COL space_like (K_LINE|incomplete)
+	|	K_NET_COL space_like (K_PASS|incomplete)
+	|	K_NET_COL space_like (K_RAWE|incomplete)
+	|	K_NET_COL space_like (K_USER|incomplete)
+	|	K_NET_COL space_like (K_WHAT|incomplete)
 	|	K_NORN
 	|	K_NPGS
 	|	K_NULL
@@ -4630,8 +4649,8 @@ r_kw_none
 	|	K_POSX
 	|	K_POSY
 	|	K_PRES
-	|	K_PRT_COL space_like K_ITOT
-	|	K_PRT_COL space_like K_OTOT
+	|	K_PRT_COL space_like (K_ITOT|incomplete)
+	|	K_PRT_COL space_like (K_OTOT|incomplete)
 	|	K_PSRC
 	|	K_PTXT
 	|	K_PURE
@@ -4808,10 +4827,10 @@ r_kw_d
 	|	K_HEAP
 	|	K_HEDX
 	|	K_HEDY
-	|	K_HIST space_like K_DATE
-	|	K_HIST space_like K_SEAN
-	|	K_HIST space_like K_TIME
-	|	K_HIST space_like K_YEAR
+	|	K_HIST space_like (K_DATE|incomplete)
+	|	K_HIST space_like (K_SEAN|incomplete)
+	|	K_HIST space_like (K_TIME|incomplete)
+	|	K_HIST space_like (K_YEAR|incomplete)
 	|	K_ISAR
 	|	K_ITOF
 	|	K_KEYD
@@ -4822,8 +4841,8 @@ r_kw_d
 	|	K_OBSV
 	|	K_PART
 	|	K_PNXT
-	|	K_PRT_COL space_like K_FRMA
-	|	K_PRT_COL space_like K_FROM
+	|	K_PRT_COL space_like (K_FRMA|incomplete)
+	|	K_PRT_COL space_like (K_FROM|incomplete)
 	|	K_PSWD
 	|	K_RAIN
 	|	K_RLOC
@@ -4953,19 +4972,19 @@ r_kw_s_d
 	::= <<isVariant "CV">>K_CHAR
 	|	<<isVariant "C3">>K_CHAR
 	|	<<isVariant "DS">>K_CHAR
-	|	K_HIST space_like K_CAGE
-	|	K_HIST space_like K_FOTO
-	|	K_HIST space_like K_MON1
-	|	K_HIST space_like K_MON2
-	|	K_HIST space_like K_NETU
-	|	K_HIST space_like K_RTIM
-	|	K_HIST space_like K_TAGE
-	|	K_HIST space_like K_TYPE
-	|	K_HIST space_like K_UTXT
-	|	K_HIST space_like K_WNAM
-	|	K_HIST space_like K_WTIK
-	|	K_HIST space_like K_WUID
-	|	K_PRAY space_like K_DEPS
+	|	K_HIST space_like (K_CAGE|incomplete)
+	|	K_HIST space_like (K_FOTO|incomplete)
+	|	K_HIST space_like (K_MON1|incomplete)
+	|	K_HIST space_like (K_MON2|incomplete)
+	|	K_HIST space_like (K_NETU|incomplete)
+	|	K_HIST space_like (K_RTIM|incomplete)
+	|	K_HIST space_like (K_TAGE|incomplete)
+	|	K_HIST space_like (K_TYPE|incomplete)
+	|	K_HIST space_like (K_UTXT|incomplete)
+	|	K_HIST space_like (K_WNAM|incomplete)
+	|	K_HIST space_like (K_WTIK|incomplete)
+	|	K_HIST space_like (K_WUID|incomplete)
+	|	K_PRAY space_like (K_DEPS|incomplete)
 	|	K_READ
 	{
 		implements = [
@@ -5101,28 +5120,28 @@ r_kw_d_d
 r_kw_s
 	::= K_FVWM
 	|	K_GAMN
-	|	K_HIST space_like K_COUN
-	|	K_HIST space_like K_CROS
-	|	K_HIST space_like K_GEND
-	|	K_HIST space_like K_GNUS
-	|	K_HIST space_like K_MUTE
-	|	K_HIST space_like K_NAME
-	|	K_HIST space_like K_NEXT
-	|	K_HIST space_like K_PREV
-	|	K_HIST space_like K_VARI
-	|	K_HIST space_like K_WVET
+	|	K_HIST space_like (K_COUN|incomplete)
+	|	K_HIST space_like (K_CROS|incomplete)
+	|	K_HIST space_like (K_GEND|incomplete)
+	|	K_HIST space_like (K_GNUS|incomplete)
+	|	K_HIST space_like (K_MUTE|incomplete)
+	|	K_HIST space_like (K_NAME|incomplete)
+	|	K_HIST space_like (K_NEXT|incomplete)
+	|	K_HIST space_like (K_PREV|incomplete)
+	|	K_HIST space_like (K_VARI|incomplete)
+	|	K_HIST space_like (K_WVET|incomplete)
 	|	K_LOFT
 	|	K_LOWA
 	|	K_MTOA
 	|	K_MTOC
-	|	K_NET_COL space_like K_FROM
-	|	K_NET_COL space_like K_ULIN
+	|	K_NET_COL space_like (K_FROM|incomplete)
+	|	K_NET_COL space_like (K_ULIN|incomplete)
 	|	K_OOWW
-	|	K_PRAY space_like K_COUN
-	|	K_PRAY space_like K_EXPO
-	|	K_PRAY space_like K_KILL
-	|	K_PRAY space_like K_SIZE
-	|	K_PRAY space_like K_TEST
+	|	K_PRAY space_like (K_COUN|incomplete)
+	|	K_PRAY space_like (K_EXPO|incomplete)
+	|	K_PRAY space_like (K_KILL|incomplete)
+	|	K_PRAY space_like (K_SIZE|incomplete)
+	|	K_PRAY space_like (K_TEST|incomplete)
 	|	K_REAN
 	|	K_REAQ
 	|	K_SNAX
@@ -5149,10 +5168,10 @@ r_kw_s
 	;
 
 r_kw_s_d_d
-	::= K_HIST space_like K_FIND
-	|	K_HIST space_like K_FINR
-	|	K_PRAY space_like K_FILE
-	|	K_PRAY space_like K_IMPO
+	::= K_HIST space_like (K_FIND|incomplete)
+	|	K_HIST space_like (K_FINR|incomplete)
+	|	K_PRAY space_like (K_FILE|incomplete)
+	|	K_PRAY space_like (K_IMPO|incomplete)
 	|	K_SUBS
 	{
 		implements = [
@@ -5233,11 +5252,11 @@ r_kw_a_d_d_d
 	;
 
 r_kw_s_s
-	::= K_NET_COL space_like K_EXPO
-	|	K_PRAY space_like K_BACK
-	|	K_PRAY space_like K_FORE
-	|	K_PRAY space_like K_NEXT
-	|	K_PRAY space_like K_PREV
+	::= K_NET_COL space_like (K_EXPO|incomplete)
+	|	K_PRAY space_like (K_BACK|incomplete)
+	|	K_PRAY space_like (K_FORE|incomplete)
+	|	K_PRAY space_like (K_NEXT|incomplete)
+	|	K_PRAY space_like (K_PREV|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5256,7 +5275,7 @@ r_kw_s_s
 	;
 
 r_kw_d_s_s_l
-	::= K_NET_COL space_like K_MAKE
+	::= K_NET_COL space_like (K_MAKE|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5275,7 +5294,7 @@ r_kw_d_s_s_l
 	;
 
 r_kw_s_s_d
-	::= K_PRAY space_like K_AGTI
+	::= K_PRAY space_like (K_AGTI|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5294,7 +5313,7 @@ r_kw_s_s_d
 	;
 
 r_kw_s_s_s
-	::= K_PRAY space_like K_AGTS
+	::= K_PRAY space_like (K_AGTS|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5313,7 +5332,7 @@ r_kw_s_s_s
 	;
 
 r_kw_s_d_l
-	::= K_PRAY space_like K_INJT
+	::= K_PRAY space_like (K_INJT|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5332,7 +5351,7 @@ r_kw_s_d_l
 	;
 
 r_kw_d_s_d_s_l
-	::= K_PRAY space_like K_MAKE
+	::= K_PRAY space_like (K_MAKE|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5351,7 +5370,7 @@ r_kw_d_s_d_s_l
 	;
 
 r_kw_a_d_d
-	::= K_PRT_COL space_like K_NAME
+	::= K_PRT_COL space_like (K_NAME|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -6403,25 +6422,13 @@ var_token
 	}
 	;
 
-private literal
-   ::=
-   {
-      methods = [
-         intValue
-         isInt
-         floatValue
-         isFloat
-         isNumeric
-         stringValue
-         isString
-      ]
-   }
-   ;
-
 number
 	::= INT
 	|	DECIMAL
-   ;
+	{
+
+	}
+	;
 
 private string_literal
 	::= quote_string_literal
@@ -6508,6 +6515,7 @@ expects_token ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6524,6 +6532,7 @@ expects_byte_string ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6540,6 +6549,7 @@ expects_agent ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6556,6 +6566,7 @@ expects_decimal ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6572,6 +6583,7 @@ expects_float ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6588,6 +6600,7 @@ expects_quote_string ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6604,6 +6617,7 @@ expects_c1_string ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6621,6 +6635,7 @@ expects_int ::= rvalue
      		getIndex
      		getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;
@@ -6642,6 +6657,7 @@ expects_value ::= rvalue
 			getIndex
 			getExpectedType
      		toCaosVar
+     		getParameterListValue
 		]
 	}
 	;

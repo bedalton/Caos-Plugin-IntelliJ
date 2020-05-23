@@ -42,6 +42,7 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
         return panel
     }
 
+
     companion object {
         private val KEY: Key<EditorNotificationPanel> = Key.create("Caos Editor Toolbar")
 

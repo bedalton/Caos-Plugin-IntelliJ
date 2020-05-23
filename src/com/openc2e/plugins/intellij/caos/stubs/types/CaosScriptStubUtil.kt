@@ -3,9 +3,9 @@ package com.openc2e.plugins.intellij.caos.stubs.types
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.openc2e.plugins.intellij.caos.deducer.CaosScope
-import com.openc2e.plugins.intellij.caos.deducer.CaosScriptBlockType
-import com.openc2e.plugins.intellij.caos.deducer.CaosVar
+import com.openc2e.plugins.intellij.caos.deducer.*
+import com.openc2e.plugins.intellij.caos.deducer.CaosNumber.CaosFloatNumber
+import com.openc2e.plugins.intellij.caos.deducer.CaosNumber.CaosIntNumber
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.*
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosLiteral.*
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosNumberedVar.*
@@ -38,10 +38,10 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         COMMAND_CALL -> readCaosCommandAsCaosVar()
         LITERAL_VAL -> CaosLiteralVal
         STRING -> CaosString(readNameAsString() ?: "")
-        BYTE_STRING -> CaosByteString(readNameString() ?: "")
+        BYTE_STRING -> CaosByteString(readNameString() ?: "", readList { readInt() }.filterNotNull())
         INT -> CaosInt(readInt())
         FLOAT -> CaosFloat(readFloat())
-        ANIMATION_STRING -> CaosAnimationString(value = readNameAsString() ?: "", repeats = readBoolean())
+        ANIMATION_STRING -> CaosAnimationString(value = readNameAsString() ?: "", animation = readAnimation())
         TOKEN -> CaosToken(value = readNameString() ?: "XXXX")
         else -> throw Exception("Unexpected caos var type '$value' encountered")
     }
@@ -60,6 +60,31 @@ internal fun StubOutputStream.writeCaosVarSafe(caosVar:CaosVar?) {
         writeCaosVar(caosVar)
 }
 
+private const val UNDEFINED = -1
+
+internal fun StubInputStream.readCaosNumber() : CaosNumber {
+    return when (readInt()) {
+        INT -> CaosIntNumber(readInt())
+        FLOAT -> CaosFloatNumber(readFloat())
+        else -> CaosNumber.Undefined
+    }
+}
+
+
+internal fun StubOutputStream.writeCaosNumber(number:CaosNumber) {
+    when (number) {
+        is CaosIntNumber -> {
+            writeInt(INT)
+            writeInt(number.value)
+        }
+        is CaosFloatNumber -> {
+            writeInt(FLOAT)
+            writeFloat(number.value)
+        }
+        else -> writeInt(UNDEFINED)
+    }
+}
+
 
 internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
     when (caosVar) {
@@ -76,7 +101,8 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
         }
         is CaosByteString -> {
             writeInt(BYTE_STRING)
-            writeName(caosVar.value)
+            writeName(caosVar.text)
+            writeList(caosVar.value) { writeInt(it) }
         }
         is CaosInt -> {
             writeInt(INT)
@@ -89,7 +115,8 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
         is CaosAnimationString -> {
             writeInt(ANIMATION_STRING)
             writeName(caosVar.value)
-            writeBoolean(caosVar.repeats)
+            writeAnimation(caosVar.animation)
+
         }
         is CaosToken -> {
             writeInt(TOKEN)
@@ -213,4 +240,38 @@ internal fun StubOutputStream.writeScope(scope: CaosScope) {
     writeInt(scope.endOffset)
     writeName(scope.blockType.value)
     writeList(scope.enclosingScope) { writeScope(it) }
+}
+
+internal fun StubOutputStream.writeAnimation(animation:CaosAnimation?) {
+    writeBoolean(animation != null)
+    if (animation == null)
+        return
+    writeBoolean(animation !is CaosAnimation.ErrorAnimation)
+    if (animation is CaosAnimation.ErrorAnimation) {
+        writeName(animation.errorMessage)
+        return
+    }
+    animation as CaosAnimation.Animation
+    writeList(animation.poseList) {
+        writeInt(it)
+    }
+    writeBoolean(animation.repeats)
+    writeInt(animation.repeatsFrom ?: -1)
+}
+
+internal fun StubInputStream.readAnimation() : CaosAnimation? {
+    if (!readBoolean())
+        return null
+    if (readBoolean()) {
+        val poseList = readList {
+            readInt()
+        }.filterNotNull()
+        val repeats = readBoolean()
+        val repeatsFrom = readInt()
+        return if (repeatsFrom < 0)
+            CaosAnimation.Animation(poseList, repeats, null)
+        else
+            CaosAnimation.Animation(poseList, repeats, repeatsFrom)
+    }
+    return CaosAnimation.ErrorAnimation(readNameAsString() ?: "UNDEFINED ERROR")
 }

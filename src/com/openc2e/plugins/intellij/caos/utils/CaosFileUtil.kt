@@ -1,5 +1,6 @@
 package com.openc2e.plugins.intellij.caos.utils
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
@@ -44,13 +45,12 @@ fun VirtualFile.getPsiFile(project: Project): PsiFile? = PsiManager.getInstance(
 
 
 private const val PLUGIN_ID = "com.openc2e.plugins.intellij.caos"
-val PLUGIN by lazy {
+val PLUGIN: IdeaPluginDescriptor? get() {
     val pluginId = PluginId.getId(PLUGIN_ID);
-    PluginManagerCore.getPlugins().firstOrNull { it.pluginId == pluginId }
+    return PluginManagerCore.getPlugins().firstOrNull { it.pluginId == pluginId }
 }
+
 object CaosFileUtil {
-
-
 
     private const val RESOURCES_FOLDER = "classes"
 

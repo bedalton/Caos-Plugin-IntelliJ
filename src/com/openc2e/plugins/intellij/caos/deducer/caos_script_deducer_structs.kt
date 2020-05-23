@@ -96,12 +96,23 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
     sealed class CaosLiteral(text:String, simpleType: CaosExpressionValueType) : CaosVar(text, simpleType) {
         data class CaosString(val value:String) : CaosLiteral(value, CaosExpressionValueType.STRING)
         data class CaosC1String(val value:String) : CaosLiteral(value, CaosExpressionValueType.C1_STRING)
-        data class CaosByteString(val value:String) : CaosLiteral(value, CaosExpressionValueType.BYTE_STRING)
+        data class CaosByteString(override val text:String, val value:List<Int>) : CaosLiteral(text, CaosExpressionValueType.BYTE_STRING)
         data class CaosInt(val value:Int) : CaosLiteral("$value", CaosExpressionValueType.INT)
         data class CaosFloat(val value:Float) : CaosLiteral("$value", CaosExpressionValueType.FLOAT)
-        data class CaosAnimationString(val value:String, val repeats:Boolean = false) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
+        data class CaosAnimationString(val value:String, val animation:CaosAnimation?) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
         data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
     }
     object CaosVarNull : CaosVar("NULL", CaosExpressionValueType.NULL)
     object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.NULL)
+}
+
+sealed class CaosNumber {
+    data class CaosIntNumber(val value:Int) : CaosNumber()
+    data class CaosFloatNumber(val value:Float) : CaosNumber()
+    object Undefined: CaosNumber()
+}
+
+sealed class CaosAnimation {
+    data class Animation(val poseList:List<Int>, val repeats:Boolean, val repeatsFrom:Int? = null) : CaosAnimation()
+    data class ErrorAnimation(val errorMessage:String) : CaosAnimation()
 }

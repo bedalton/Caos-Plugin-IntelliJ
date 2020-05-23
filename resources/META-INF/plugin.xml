@@ -67,7 +67,7 @@
 
     <!-- Inspections -->
     <localInspection language="CaosScript"
-                     implementationClass="com.openc2e.plugins.intellij.caos.inspections.CaosScriptTypesAnnotation"
+                     implementationClass="com.openc2e.plugins.intellij.caos.inspections.CaosScriptTypesInspection"
                      level="WARNING"
                      groupName="CaosScript"
                      enabledByDefault="true"
@@ -101,7 +101,8 @@
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
     <documentationProvider implementation="com.openc2e.plugins.intellij.caos.hints.CaosScriptDocumentationProvider" />
-
+    <lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptRValueFoldingBuilder"/>
 
     <!-- Bundled Definitions -->
     <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
