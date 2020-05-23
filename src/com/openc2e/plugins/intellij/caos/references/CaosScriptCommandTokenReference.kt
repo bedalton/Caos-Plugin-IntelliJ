@@ -19,16 +19,18 @@ import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getEnclosingCommandType
 
-class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
+class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
 
     private val renameRegex: Regex = "[a-zA-Z_][a-zA-Z_#!:]{3}".toRegex()
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
-        if (DumbService.isDumb(element.project))
+        if (DumbService.isDumb(myElement.project))
             return emptyArray()
-        if (element.parent?.parent is CaosDefCommandDefElement)
+        if (myElement.parent?.parent is CaosDefCommandDefElement) {
+            LOGGER.info("")
             return emptyArray()
-        val elements = if (element is CaosDefCompositeElement)
+        }
+        val elements = if (myElement is CaosDefCompositeElement)
             findFromDefElement()
         else
             findFromScriptElement()
@@ -36,27 +38,27 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
     }
 
     private fun findFromDefElement(): List<CaosDefCommandWord> {
-        val parentCommand = element.parent as? CaosDefCommand
+        val parentCommand = myElement.parent as? CaosDefCommand
                 ?: return emptyList()
-        val index = parentCommand.commandWordList.indexOf(element)
-        val variants = (element.containingFile as? CaosDefFile)?.variants
+        val index = parentCommand.commandWordList.indexOf(myElement)
+        val variants = (myElement.containingFile as? CaosDefFile)?.variants
         return CaosDefCommandElementsByNameIndex
-                .Instance[parentCommand.commandWordList.joinToString(" ") { it.text }, element.project]
+                .Instance[parentCommand.commandWordList.joinToString(" ") { it.text }, myElement.project]
                 .filter {
                     it.variants.intersect(variants.orEmpty()).isNotEmpty()
                 }.mapNotNull {
                     it.command.commandWordList.getOrNull(index)
                 }
-                .filter { it != element }
+                .filter { it != myElement }
     }
 
     private fun findFromScriptElement(): List<CaosDefCommandWord> {
         val type = myElement.getEnclosingCommandType()
-        val formattedName = element.name?.replace(EXTRA_SPACE_REGEX, " ")
+        val formattedName = myElement.name?.replace(EXTRA_SPACE_REGEX, " ")
                 ?: return emptyList()
         val variant = myElement.containingCaosFile?.variant
         return CaosDefCommandElementsByNameIndex
-                .Instance[formattedName, element.project]
+                .Instance[formattedName, myElement.project]
                 // Filter for type and variant
                 .filter {
                     val isVariant = (variant == null || it.isVariant(variant))
@@ -83,8 +85,8 @@ class CaosScriptCommandTokenReference(private val element: CaosScriptIsCommandTo
 
     override fun handleElementRename(newElementName: String): PsiElement {
         if (renameRegex.matches(newElementName))
-            return element.setName(newElementName)
-        return element
+            return myElement.setName(newElementName)
+        return myElement
     }
 
     companion object {
