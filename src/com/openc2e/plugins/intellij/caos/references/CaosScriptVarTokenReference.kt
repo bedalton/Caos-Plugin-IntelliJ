@@ -30,22 +30,14 @@ class CaosScriptVarTokenReference(element:CaosScriptVarToken) : PsiPolyVariantRe
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         val key = myElement.varGroup.value
-        val commands = CaosDefCommandElementsByNameIndex
-                .Instance[key, element.project]
-        val variants = commands
-                .flatMap { it.variants.filterNotNull() }
-                .toSet()
-                .toList()
-
-        if (variants.isEmpty()) {
-            return emptyArray()
-        }
-
         val variant = myElement.containingCaosFile?.variant.nullIfEmpty()
                 ?: return emptyArray()
-        if (variant !in variants) {
-            return emptyArray()
-        }
+        val commands = CaosDefCommandElementsByNameIndex
+                .Instance[key, element.project]
+                .filter {
+                    it.isVariant(variant)
+                }
+                .map { it.command }
         return PsiElementResolveResult.createResults(commands)
     }
 }
