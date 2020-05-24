@@ -74,11 +74,16 @@ object CaosScriptPsiElementFactory {
         return commandCall.expectsDecimal?.rvalue?.expression?.token
     }
 
-    fun createStringElement(project: Project, newNameString: String): CaosScriptRvalue? {
-        val script = "sets var1 \"$newNameString\""
-        val commandCall = getCommandCall(project, script)
-                ?: return null
-        return (commandCall.expectsQuoteString?.rvalue ?: commandCall.expectsC1String?.rvalue)
+    fun createStringRValue(project: Project, newNameString: String, start:Char, end:Char = start): CaosScriptRvalue {
+        val script = "sets var1 $start$newNameString$end"
+        LOGGER.info("String script = <$script>")
+        val commandCall = getCommandCall(project, script)!!
+        val assignment = commandCall.cAssignment
+        if (assignment == null) {
+            LOGGER.info("Assignment is null. Command = ${commandCall.text}. FirstChild: ${commandCall.firstChild.text}; last Child = ${commandCall.lastChild?.text}")
+            return assignment!!
+        }
+        return assignment.expectsC1String?.rvalue ?: assignment.expectsQuoteString!!.rvalue
     }
 
     private fun getCommandCall(project:Project, script:String, throws:Boolean = true) : CaosScriptCommandCall? {
