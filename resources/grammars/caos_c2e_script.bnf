@@ -26,6 +26,8 @@
 	name("rvalue.*") = "value";
 	name("K_.*") = "command"
 	name("eq_op.*") = "EQ|NE|etc.."
+	name("word_factory_element") = ""
+	name("K_XX_DEF") = ""
 	name("command_call") = "command"
 	tokens = [
 		NEWLINE = "regexp:\n";
@@ -223,6 +225,7 @@
 		K_YVEC = "regexp:[yY][vV][eE][cC]"
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
+		K_XX_DEF = "____X____DEF__"
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
 		CONST_EQ = "regexp:=";
 		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
@@ -246,7 +249,27 @@
 	]
 }
 
-private def	::= file_body?
+private def	::= (word_factory_element|file_body)?
+	;
+
+word_factory_element ::= K_XX_DEF space_like a_word;
+
+a_word
+	::= all_tokens
+	|	WORD
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getCommandString
+			isVariant
+			getName
+			setName
+		]
+	}
 	;
 
 private file_body
@@ -287,10 +310,6 @@ private macro_code_block
 	{
 		//recoverWhile = macro_code_block_recover
 	}
-	;
-
-private macro_code_block_recover
-	::= !(K_ENDM|c_endm|<<eofNext>>)
 	;
 
 code_block
@@ -363,10 +382,6 @@ private event_script_body
 		]
 		//recoverWhile=event_script_body_recover
 	}
-	;
-
-private event_script_body_recover
-	::= !(K_ENDM|<<eofNext>>)
 	;
 
 subroutine
@@ -458,6 +473,7 @@ c_retn
 		]
 	}
 	;
+
 private subroutine_body
 	::= code_block
 	{
@@ -465,12 +481,11 @@ private subroutine_body
 	}
 	;
 
-private subroutine_body_recover
-	::= !(!<<insideBlock>> (K_RETN|K_ENDM|<<eofNext>>))
-	;
-
 classifier
 	::= family space_like genus space_like species
+	{
+		pin = 1
+	}
 	;
 
 private control_statement
@@ -488,10 +503,6 @@ expression_list
 		pin(".*")=1
 		//recoverWhile=expression_list_recover
 	}
-
-private expression_list_recover
-	::= !(NEWLINE|',')
-	;
 
 loop_statement
    ::= c_loop space_like_or_newline <<enterBlock>>loop_body? space_like_or_newline loop_terminator<<exitBlock>>
@@ -536,10 +547,6 @@ private loop_body
 	}
 	;
 
-private loop_body_recover
-	::= !(K_EVER|K_UNTL|<<eofNext>>)
-	;
-
 repeat_statement
 	::= reps_header space_like_or_newline <<enterBlock>>(repeat_body space_like_or_newline)? c_repe<<exitBlock>>
 	{
@@ -581,13 +588,8 @@ private repeat_body
    }
    ;
 
-private repeat_body_recover
-	::= !(K_REPE|c_repe|<<eofNext>>)
-	;
-
-
 enum_next_statement
-	::= emum_header_command space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? c_next<<exitBlock>>
+	::= emum_header_command space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? (c_next|c_nscn)<<exitBlock>>
 	{
 		pin=1;
 		implements = [
@@ -621,7 +623,7 @@ emum_header_command
 	;
 
 enum_scenery_statement
-   ::= escn_header space_like classifier space_like_or_newline <<enterBlock>>(escn_body space_like_or_newline)? c_nscn<<exitBlock>>
+   ::= escn_header space_like_or_newline <<enterBlock>>(escn_body space_like_or_newline)? (c_nscn|c_next)<<exitBlock>>
    {
 		pin=1;
 		implements = [
@@ -664,20 +666,12 @@ private enum_body
    }
    ;
 
-private enum_body_recover
-	::= !(K_NEXT)
-	;
-
 private escn_body
    ::= code_block
    {
       //recoverWhile=escn_body_recover
    }
    ;
-
-private escn_body_recover
-	::= !(K_NSCN)
-	;
 
 doif_statement
 	::= doif_statement_statement (else_if_statement space_like_or_newline)* (else_statement space_like_or_newline)? c_endi<<exitBlock>>
@@ -737,19 +731,11 @@ private else_block
 	}
 	;
 
-private else_body_recover
-	::= !(K_ELSE|K_ELIF|K_ENDI)
-	;
-
 private do_if_body
 	::= code_block
 	{
 		//recoverWhile=do_if_body_recover
 	}
-	;
-
-private do_if_body_recover
-	::= !(K_ELSE|K_ELIF|K_ENDI)
 	;
 
 c_loop
@@ -6764,9 +6750,9 @@ comment_body
 	::= COMMENT_TEXT+
 	;
 
-family ::= INT | expects_int;
-genus ::= INT | expects_int;
-species ::= INT | expects_int;
+family ::= expects_int;
+genus ::= expects_int;
+species ::= expects_int;
 
 event_number_element
 	::= INT
