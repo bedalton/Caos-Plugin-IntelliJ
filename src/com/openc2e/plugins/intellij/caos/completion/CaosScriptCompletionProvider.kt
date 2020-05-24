@@ -57,7 +57,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val case = element.case
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
-                    if (it.commandName.toUpperCase() !in SKIP_VAR_NAMES)
+                    if (it.commandName.toUpperCase() in SKIP_VAR_NAMES)
                         return@filter false
                     if (!(variant.isBlank() || it.isVariant(variant)))
                         return@filter false
@@ -65,20 +65,15 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                         CaosCommandType.COMMAND -> it.isCommand
                         CaosCommandType.RVALUE -> it.isRvalue
                         CaosCommandType.LVALUE -> it.isLvalue
-                        CaosCommandType.UNDEFINED -> false
+                        CaosCommandType.UNDEFINED -> it.isRvalue
                     }
                 }
                 .map {
-                    if (it.commandWords.size > 1) {
-                        val commandWords = it.commandWords
-                        if (previous?.text?.toLowerCase() == it.commandWords[0].toLowerCase()) {
-                            return@map createCommandTokenLookupElement(element, case, it.commandWords[1], it.isCommand, it.returnTypeString, commandWords[0])
-                        }
-                    }
                     createCommandTokenLookupElement(element, case, it.commandName, it.isCommand, it.returnTypeString)
                 }
+        LOGGER.info("Adding: ${singleCommands.size} commands")
         resultSet.addAllElements(singleCommands)
-        if (type == CaosCommandType.RVALUE || type == CaosCommandType.LVALUE)
+        if (type != CaosCommandType.COMMAND)
             addVariableCompletions(variant, element, resultSet)
     }
 
