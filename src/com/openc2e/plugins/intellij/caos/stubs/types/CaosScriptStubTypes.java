@@ -52,7 +52,7 @@ public interface CaosScriptStubTypes {
     CaosScriptExpectsQuoteStringStubType EXPECTS_QUOTE_STRING = new CaosScriptExpectsQuoteStringStubType("CaosScript_EXPECTS_STRING");
 
     @NotNull
-    CaosScriptExpectsC1StringStubType EXPECTS_C1_STRING = new CaosScriptExpectsC1StringStubType("CaosScript_C1_STRING");
+    CaosScriptExpectsC1StringStubType EXPECTS_C1_STRING = new CaosScriptExpectsC1StringStubType("CaosScript_EXPECTS_C1_STRING");
 
     @NotNull
     CaosScriptExpectsByteStringStubType EXPECTS_BYTE_STRING = new CaosScriptExpectsByteStringStubType("CaosScript_EXPECTS_ByteString");
