@@ -366,7 +366,7 @@ BASE (integer);
  * get the value to use.
  * #AgentAttributes
  *
- * @param {permissions} (integer)
+ * @param {permissions} (integer@Behavior)
  *
  */
 BHVR (command) permissions (integer);
@@ -814,7 +814,7 @@ CHAR (integer) string (string) index (integer);
  * #Creatures
  *
  * @param {chemical} (integer)
- * @param {adjustment} (float)
+ * @param {adjustment} (float[-1 to 1])
  *
  */
 CHEM (command) chemical (integer) adjustment (float);
@@ -2177,7 +2177,7 @@ GOTO (command) destination (token);
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {rectToUse} (integer)
+ * @param {rectToUse} (integer@RectToUse)
  *
  */
 GPAS (command) family (integer) genus (integer) species (integer) rectToUse (integer);
@@ -5556,7 +5556,7 @@ STAR (command) family (integer) genus (integer) species (integer);
  * Stimulus Numbers.
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */
@@ -5566,7 +5566,7 @@ STIM SHOU (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who can see [OWNR].
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */
@@ -5576,7 +5576,7 @@ STIM SIGN (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who are touching [OWNR].
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */
@@ -5588,7 +5588,7 @@ STIM TACT (command) stimulus (integer) strength (float);
  * #Creatures
  *
  * @param {creature} (agent)
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */

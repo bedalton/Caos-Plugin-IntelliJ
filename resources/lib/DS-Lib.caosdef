@@ -531,7 +531,7 @@ BASE (integer);
  * get the value to use.
  * #AgentAttributes
  *
- * @param {permissions} (integer)
+ * @param {permissions} (integer@Behavior)
  *
  */
 BHVR (command) permissions (integer);
@@ -1087,8 +1087,8 @@ CHAR (integer) string (string) index (integer);
  * Adjusts chemical (0 to 255) by concentration -1.0 to +1.0 in the target creature's bloodstream.
  * #Creatures
  *
- * @param {chemical} (integer)
- * @param {adjustment} (float)
+ * @param {chemical} (integer@Chemicals)
+ * @param {adjustment} (float[-1 to 1])
  *
  */
 CHEM (command) chemical (integer) adjustment (float);
@@ -1099,7 +1099,7 @@ CHEM (command) chemical (integer) adjustment (float);
  * #Creatures
  *
  * @rvalue
- * @param {chemical} (integer)
+ * @param {chemical} (integer@Chemicals)
  * @return (float)
  *
  */
@@ -2644,7 +2644,7 @@ GOTO (command) destination (token);
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {rectToUse} (integer)
+ * @param {rectToUse} (integer@RectToUse)
  *
  */
 GPAS (command) family (integer) genus (integer) species (integer) rectToUse (integer);
@@ -6768,7 +6768,7 @@ STEP (command) facultyid (integer);
  * Stimulus Numbers.
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */
@@ -6778,7 +6778,7 @@ STIM SHOU (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who can see [OWNR].
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */
@@ -6788,7 +6788,7 @@ STIM SIGN (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who are touching [OWNR].
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */
@@ -6800,7 +6800,7 @@ STIM TACT (command) stimulus (integer) strength (float);
  * #Creatures
  *
  * @param {creature} (agent)
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
  */

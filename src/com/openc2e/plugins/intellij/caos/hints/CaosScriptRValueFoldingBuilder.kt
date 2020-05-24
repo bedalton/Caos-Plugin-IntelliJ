@@ -37,6 +37,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         (expression.parent?.parent as? CaosScriptExpectsValueOfType)?.let {
             return getCommandPlaceholderText(it)
         }
+
         expression.getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
             return getEqualityExpressionFoldingText(it, expression)
         }
@@ -57,7 +58,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         } ?: return null
         val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
         if (token == null) {
-            LOGGER.info("Failed to find rvaluePrime in equality expressions '${expression.text}'")
+            LOGGER.info("Failed to find rvaluePrime in equality expressions '${other.text}'")
             return null
         }
         val reference = token
@@ -136,12 +137,13 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         return literalExpressions.filter {
             getExpressionFoldingText(it).isNotNullOrBlank()
         }.map {
+            LOGGER.info("Creating folding region for ${it.text}")
             FoldingDescriptor(it.node, it.textRange, group)
         }.toTypedArray()
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return node.psi is CaosScriptExpression
+        return true
     }
 
     companion object {

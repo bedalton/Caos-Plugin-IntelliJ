@@ -18,6 +18,7 @@ import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.*
+import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import kotlin.math.floor
 
 const val UNDEF = "{UNDEF}"
@@ -660,14 +661,24 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getIndex(element: CaosScriptArgument): Int {
-        val parent = element.getParentOfType(CaosScriptCommandElement::class.java)
+        val commandElement = element.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return -1
-        return parent.arguments.indexOf(element)
+        val arguments = commandElement.arguments
+        var temp:PsiElement? = element
+        while(temp != null && temp.parent != commandElement) {
+            val index = arguments.indexOf(temp)
+            if (index >= 0)
+                return index
+            temp = temp.parent
+        }
+        return -1;
     }
+
 
     @JvmStatic
     fun getArguments(command: CaosScriptCommandElement): List<CaosScriptArgument> {
-        return command.getChildrenOfType(CaosScriptArgument::class.java)
+        val base = (command as? CaosScriptRvalue)?.rvaluePrime ?: command
+        return base.getChildrenOfType(CaosScriptArgument::class.java)
     }
 
     @JvmStatic
@@ -1118,6 +1129,8 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
     if (parent == null || parent !is CaosScriptCommandElement) {
         if (isOrHasParentOfType(CaosScriptIncomplete::class.java))
             return CaosCommandType.COMMAND
+        if (this.isOrHasParentOfType(CaosScriptExpression::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
+            return CaosCommandType.RVALUE
         return CaosCommandType.UNDEFINED
     }
     return when (parent) {
