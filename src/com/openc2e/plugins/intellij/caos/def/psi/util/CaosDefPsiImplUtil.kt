@@ -4,28 +4,21 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.usageView.UsageViewUtil
-import com.openc2e.plugins.intellij.caos.deducer.CaosVar
-import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.psi.api.*
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefDocCommentHashtagReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefTypeNameReference
 import com.openc2e.plugins.intellij.caos.def.references.CaosDefVariableLinkReference
-import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsValueOfType
-import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
-import icons.CaosScriptIcons
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.substringFromEnd
+import icons.CaosScriptIcons
 import javax.swing.Icon
 
 @Suppress("UNUSED_PARAMETER")
@@ -354,7 +347,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getValue(element:CaosDefTypeDefinition) : String {
-        return element.stub?.value ?: element.typeDefinitionValue?.text ?: UnknownReturn
+        return element.stub?.value ?: element.typeDefinitionValue?.text?.trim() ?: UnknownReturn
     }
 
     @JvmStatic
