@@ -5,12 +5,10 @@ import com.intellij.lang.cacheBuilder.WordsScanner
 import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.lexer.CaosDefLexerAdapter
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
-import com.openc2e.plugins.intellij.caos.hints.CaosScriptPresentationUtil
+import com.openc2e.plugins.intellij.caos.documentation.CaosScriptPresentationUtil
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.caos.utils.isOrHasParentOfType
