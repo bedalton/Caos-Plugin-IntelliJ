@@ -102,7 +102,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         data class CaosAnimationString(val value:String, val animation:CaosAnimation?) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
         data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
     }
-    object CaosVarNull : CaosVar("NULL", CaosExpressionValueType.NULL)
+    object CaosVarNull : CaosVar("[NULL]", CaosExpressionValueType.NULL)
     object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.NULL)
 }
 
