@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.hints
+package com.openc2e.plugins.intellij.caos.documentation
 
 import com.intellij.navigation.ItemPresentation
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
