@@ -8,14 +8,19 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.openc2e.plugins.intellij.caos.fixes.CaosScriptEscnNextFix
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptFixTooManySpaces
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptTrimErrorSpaceBatchFix
 import com.openc2e.plugins.intellij.caos.fixes.TransposeEqOp
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.util.*
+import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
+import com.openc2e.plugins.intellij.caos.psi.util.getEnclosingCommandType
+import com.openc2e.plugins.intellij.caos.psi.util.next
+import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
+import com.openc2e.plugins.intellij.caos.utils.matchCase
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.orElse
 
@@ -40,7 +45,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
             is CaosScriptCRetn -> annotateRetnCommand(variant, element, annotationWrapper)
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
-            is CaosScriptIsCommandToken -> annotateNotAvailable(element, annotationWrapper)
+            is CaosScriptCNext -> annotateNext(element, annotationWrapper)
+            is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
+            is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
@@ -105,6 +112,44 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
+    private fun annotateNext(element: CaosScriptCNext, annotationWrapper: AnnotationHolderWrapper) {
+        val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
+        if (parent == null) {
+            annotationWrapper.newErrorAnnotation("NEXT should not be used outside of enum")
+                    .range(element)
+                    .create()
+            return
+        }
+        if (parent is CaosScriptEnumSceneryStatement) {
+            val next = "NSCN".matchCase(element.text)
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", "ESCN", "NSCN", "NEXT"))
+                    .range(element)
+                    .withFix(CaosScriptEscnNextFix(next, element))
+                    .create()
+        }
+    }
+
+    private fun annotateNscn(variant:String, element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
+        val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
+
+        if (parent == null) {
+            annotationWrapper.newErrorAnnotation("NSCN should not be used outside of ESCN..NSCN enum")
+                    .range(element)
+                    .create()
+            return
+        }
+
+        if (parent is CaosScriptEnumNextStatement) {
+            val enum = parent.emumHeaderCommand.cEnum.text.toUpperCase()
+            val next = "NEXT".matchCase(element.text)
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
+                    .range(element)
+                    .withFix(CaosScriptEscnNextFix(next, element))
+                    .create()
+        } else if (variant != "C2") {
+            annotateNotAvailable(variant, element, annotationWrapper)
+        }
+    }
 
     private fun annotateSceneryEnum(variant: String, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolderWrapper) {
         if (variant == "C2")
@@ -128,6 +173,15 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
+        val cNscn = element.cNscn
+        if (cNscn != null) {
+            val enum = element.emumHeaderCommand.cEnum.text
+            val next = "NEXT".matchCase(cNscn.text)
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
+                    .range(cNscn)
+                    .withFix(CaosScriptEscnNextFix(next, cNscn))
+                    .create()
+        }
         val header = element.emumHeaderCommand.cEnum
                 ?: return
         if (header.kEnum != null)
@@ -155,7 +209,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateNotAvailable(element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNotAvailable(variant:String, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
         val command = element.commandString
         val commandType = element.getEnclosingCommandType()
         val commands = CaosDefCommandElementsByNameIndex
@@ -172,8 +226,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             return
         }
 
-        val variant = element.variant.nullIfEmpty()
-                ?: return
         if (variant !in variants) {
             val variantString = getVariantString(variants)
             val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variantString)
