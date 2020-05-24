@@ -145,7 +145,7 @@ ASLP (integer);
  * insensible to some stimuli. A change of action automatically wakes creature up again.
  * #Creatures
  *
- * @param {asleep} (integer) - 0=awake, 1=asleep
+ * @param {asleep} (integer@bool) - 0=awake, 1=asleep
  *
  */
 ASLP (command) asleep (integer);
@@ -248,9 +248,9 @@ BBD: WORD (command) index (integer) conceptId (integer) text [string];
  * #Bubbles
  *
  * @param {textPart} (integer) - unique identifier for part
- * @param {red} (integer)
- * @param {green} (integer)
- * @param {blue} (integer)
+ * @param {red} (integer[0 to 255])
+ * @param {green} (integer[0 to 255])
+ * @param {blue} (integer[0 to 255])
  *
  */
 BBFD (command) textPart (integer) red (integer) green (integer) blue (integer);
@@ -292,8 +292,8 @@ BBTX (command) textPart (integer) stringNum (integer);
  * for click and touch are listed in the reference section
  * #AgentAttributes
  *
- * @param {click} (integer)
- * @param {touch} (integer)
+ * @param {click} (integer@BehaviorClick)
+ * @param {touch} (integer@BehaviorTouch)
  *
  */
 BHVR (command) click (integer) touch (integer);
@@ -388,7 +388,7 @@ CBRX (command) x (integer) y (integer);
  * #Creatures
  *
  * @rvalue
- * @param {chemical} (integer)
+ * @param {chemical} (integer@Chemicals)
  * @return (integer)
  *
  */
@@ -398,7 +398,7 @@ CHEM (integer) chemical (integer);
  * Adds the amount given.
  * #Creatures
  *
- * @param {chemical} (integer)
+ * @param {chemical} (integer@Chemicals)
  * @param {amount} (integer)
  *
  */
@@ -494,7 +494,7 @@ DBUG (command) rvalue (any);
  *
  * @param {lobe} (integer)
  * @param {cell} (integer)
- * @param {dentype} (integer) - 0 - type 0 dens, 1 - type 1 dens
+ * @param {dentype} (integer[0 to 1]) - 0 - type 0 dens, 1 - type 1 dens
  *
  */
 DDE: CELL (command) lobe (integer) cell (integer) dentype (integer);
@@ -769,7 +769,7 @@ DDE: HATC (command);
  * refer to the organs defined in the genome.
  * #Debug
  *
- * @param {type} (integer) - 0=receptor loci 1=emmiter loci
+ * @param {type} (integer[0 to 1]) - 0=receptor loci 1=emmiter loci
  * @param {organ} (integer) - Note: organ field does not refer to the organs defined in the
  * @param {tissue} (integer)
  * @param {locusid} (integer)
@@ -863,7 +863,7 @@ DDE: PIC2 (command) width (integer) height (integer) filename [string];
  * #Debug
  *
  * @param {string} [string]
- * @param {option} (token)
+ * @param {option} (token@PutBOption)
  *
  */
 DDE: PUTB (command) string [string] option (token);
@@ -925,7 +925,7 @@ DEAD (integer);
  * #Map
  *
  * @param {room} (integer) - room ID.
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  *
  */
 DELN (command) room (integer) direction (integer);
@@ -980,7 +980,7 @@ DONE (command);
  *
  * @lvalue
  * @rvalue
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  * @param {room1Id} (integer)
  * @param {room2Id} (integer)
  * @return (integer)
@@ -1025,7 +1025,7 @@ DREA (command) max (integer);
  * #Creatures
  *
  * @rvalue
- * @param {drive} (integer) - drive number
+ * @param {drive} (integer@Drives) - drive number
  * @return (integer@Drives)
  *
  */
@@ -1043,7 +1043,7 @@ DROP (command);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Drives)
  */
 DRV! (integer);
 
@@ -1182,7 +1182,7 @@ FADE (command);
  *
  * @param {x} (integer)
  * @param {y} (integer)
- * @param {amount} (integer)
+ * @param {amount} (integer[0 to 255])
  *
  */
 FIRE (command) x (integer) y (integer) amount (integer);
@@ -1424,9 +1424,9 @@ KILL (command) agent (agent);
  * 	3=Both creature and pointer can use this knob message
  * #AgentInteractions
  *
- * @param {knob} (integer) - refers to the KNOB functions already set up
- * @param {flag} (integer) - flag used to describe the usage of the knob
- * @param {message} (integer) - message/event to be sent when this knob is activated.
+ * @param {knob} (integer@KnobFunction) - refers to the KNOB functions already set up
+ * @param {flag} (integer@KnobFlag) - flag used to describe the usage of the knob
+ * @param {message} (integer[0 to 65535]) - message/event to be sent when this knob is activated.
  *
  */
 KMSG (command) knob (integer) flag (integer) message (integer);
@@ -1435,8 +1435,8 @@ KMSG (command) knob (integer) flag (integer) message (integer);
  * Attach compound objects’ hotspot to a particular function.
  * #AgentInteractions
  *
- * @param {function} (integer) - specifies the event and usage
- * @param {hotspot} (integer) - refers to the hot spot number defined with the SPOT command.
+ * @param {function} (integer@KnobFunction) - specifies the event and usage
+ * @param {hotspot} (integer[0 to 5]) - refers to the hot spot number defined with the SPOT command.
  *
  */
 KNOB (command) function (integer) hotspot (integer);
@@ -1646,7 +1646,7 @@ MESG TACT (command) message (integer);
  * #Agents
  *
  * @param {agent} (agent)
- * @param {messageId} (integer)
+ * @param {messageId} (integer@MessageNumbers)
  *
  */
 MESG WRIT (command) agent (agent) messageId (integer);
@@ -1659,7 +1659,7 @@ MESG WRIT (command) agent (agent) messageId (integer);
  * #Agents
  *
  * @param {agent} (agent)
- * @param {messageId} (integer)
+ * @param {messageId} (integer[256 to 65535])
  * @param {param1} (any) - passed to event script as _P1_
  * @param {param2} (any) - passed to event script as _P2_
  * @param {delay} (integer)
@@ -1773,7 +1773,7 @@ NEID (integer);
  * Create a new text part for the current compound bubble object.
  * #Bubbles
  *
- * @param {textpart} (integer) - a unique identifier for the part
+ * @param {textpart} (integer[0 to 9]) - a unique identifier for the part
  * @param {relx} (integer) - x position of text part relative to compound bubble
  * @param {rely} (integer) - y position of text part relative to compound bubble
  * @param {width} (integer) - width of the text.
@@ -1843,7 +1843,7 @@ NEW: COMP (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * #Creatures
  *
  * @param {moniker} (integer) - the moniker to use to locate the child’s genome. **Should already exist**. Must be int. Use [TOKN] to get int from moniker
- * @param {sex} (integer) - 1 if male, 2 if female and 0 for random
+ * @param {sex} (integer@Gender) - 1 if male, 2 if female and 0 for random
  *
  */
 NEW: CREA (command) moniker (integer) sex (integer);
@@ -1897,7 +1897,7 @@ NEW: PART (command) part (integer) relx (integer) rely (integer) imageOffset (in
  * @param {numimages} (integer) - the total number of images to be used for this object
  * @param {firstImage} (integer) - the number of the first image belonging to this object
  * @param {plane} (integer) - the image plane to plot the object at.
- * @param {clone} (integer) - create a cloned image gallery yes/no
+ * @param {clone} (integer@bool) - create a cloned image gallery yes/no
  *
  */
 NEW: RAIN (command) spriteFile (token) numimages (integer) firstImage (integer) plane (integer) clone (integer);
@@ -1969,7 +1969,7 @@ NSCN (command);
  * #Motion
  *
  * @rvalue
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  * @return (integer)
  *
  */
@@ -1996,7 +1996,7 @@ OBJP (agent);
  * #Motion
  *
  * @rvalue
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  * @return (integer)
  *
  */
@@ -2007,7 +2007,7 @@ OBST (integer) direction (integer);
  * #Motion
  *
  * @rvalue
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  * @return (integer)
  *
  */
@@ -2292,7 +2292,7 @@ RADN (integer);
  * #Rain
  *
  * @rvalue
- * @param {property} (integer)
+ * @param {property} (integer@RainProperty)
  * @return (integer)
  *
  */
@@ -2311,7 +2311,7 @@ RAIN (integer) property (integer);
  * 	7=rain image number (0-11)
  * #Rain
  *
- * @param {property} (integer)
+ * @param {property} (integer@RainProperty)
  * @param {value} (integer)
  *
  */
@@ -2389,7 +2389,7 @@ RETN (command);
  * 5 – Number of creatures alive
  * #World
  *
- * @param {targ} (agent)
+ * @param {targ} (agent@ScorItems)
  *
  */
 RMEV (command) targ (agent);
@@ -2414,7 +2414,7 @@ RMN# (integer) room (integer) edge (integer);
  * @lvalue
  * @rvalue
  * @param {room} (integer) - room number.
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  * @param {door} (integer) - number of door required. E.g. 1 for 1st, 2 for 2nd, etc.
  * @return (integer)
  *
@@ -2437,7 +2437,7 @@ RMNO (integer);
  * @lvalue
  * @rvalue
  * @param {room} (integer) - room number.
- * @param {direction} (integer) - 0 = left, 1 = right, 2 = up, 3 = down.
+ * @param {direction} (integer@Direction) - 0 = left, 1 = right, 2 = up, 3 = down.
  * @param {neighbour} (integer) - number of door required. E.g. 1 for 1st, 2 for 2nd, etc.
  * @return (integer)
  *
@@ -2520,7 +2520,7 @@ RNGE (integer);
  *
  * @rvalue
  * @param {room} (integer) - room ID
- * @param {property} (integer) - property of room
+ * @param {property} (integer@RoomProperties) - property of room
  * @return (integer)
  *
  */
@@ -2803,7 +2803,7 @@ SPCS (integer);
  * 	@example: #{SPOT 0 -1 -1 -1 -1} - will remove hot spot 0
  * #AgentInteractions
  *
- * @param {spot} (integer) - a number to identify this particular spot
+ * @param {spot} (integer[0 to 5]) - a number to identify this particular spot
  * @param {left} (integer) - left of hotspot relative to part 0 of the object.
  * @param {top} (integer)
  * @param {right} (integer)
@@ -2835,13 +2835,13 @@ STAR (command) family (integer) genus (integer) species (integer);
  * @param {input} (integer) - Which neuron in the General Sense Lobe to fire
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
  * @param {features} (integer) - << do not use non-zero values – not implemented >>
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -2859,13 +2859,13 @@ STIM SHOU (command) significance (integer) input (integer) intensity (integer) f
  * @param {input} (integer) - Which neuron in the General Sense Lobe to fire
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
  * @param {features} (integer) - << do not use non-zero values – not implemented >>
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -2883,13 +2883,13 @@ STIM SIGN (command) significance (integer) input (integer) intensity (integer) f
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
  * @param {features} (integer) - << do not use non-zero values – not implemented >>
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -2908,13 +2908,13 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
  * @param {features} (integer) - << do not use non-zero values – not implemented >>
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -2924,7 +2924,7 @@ STIM WRIT (command) object (agent) significance (integer) input (integer) intens
  * Shout {stimulus} to all creatures within earshot
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# SHOU (command) stimulus (integer);
@@ -2933,7 +2933,7 @@ STM# SHOU (command) stimulus (integer);
  * Send {stimulus} to all creatures that can see the object
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# SIGN (command) stimulus (integer);
@@ -2942,7 +2942,7 @@ STM# SIGN (command) stimulus (integer);
  * Send {stimulus} to all creatures that are touching the object
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# TACT (command) stimulus (integer);
@@ -2952,7 +2952,7 @@ STM# TACT (command) stimulus (integer);
  * #Creatures
  *
  * @param {object} (agent)
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# WRIT (command) object (agent) stimulus (integer);
@@ -3044,7 +3044,7 @@ SYS: CMRP (command) x (integer) y (integer);
  * #World
  *
  * @param {fileSpec} (token)
- * @param {showProgress} (integer)
+ * @param {showProgress} (integer@bool)
  *
  */
 SYS: CONV (command) fileSpec (token) showProgress (integer);
@@ -3260,7 +3260,7 @@ TOUC (integer) first (agent) second (agent);
  *
  * @param {lobe} (integer)
  * @param {cell} (integer)
- * @param {amount} (integer)
+ * @param {amount} (integer[0 to 255])
  *
  */
 TRIG (command) lobe (integer) cell (integer) amount (integer);

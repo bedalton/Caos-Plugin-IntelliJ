@@ -124,7 +124,6 @@
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexServiceImpl" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNamespaceIndex" />
     <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefHashTagsIndex" />
     <stubIndex
         implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />

@@ -13,6 +13,8 @@ import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptClassifier
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement
 import com.openc2e.plugins.intellij.caos.psi.api.argumentsLength
 
@@ -23,6 +25,14 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
         val project = elementIn.project
         if (DumbService.isDumb(project))
             return mutableListOf()
+
+        (elementIn as? CaosScriptClassifier)?.let {
+            return listOfNotNull(
+                    elementIn.family?.let { InlayInfo("family", it.startOffset) },
+                    elementIn.genus?.let { InlayInfo("genus", it.startOffset) },
+                    elementIn.species?.let { InlayInfo("species", it.startOffset) }
+            ).toMutableList()
+        }
 
         val element = elementIn as? CaosScriptCommandElement
                 ?: return mutableListOf()
@@ -40,6 +50,9 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
     }
 
     override fun getHintInfo(elementIn: PsiElement): HintInfo? {
+        if (elementIn is CaosScriptClassifier) {
+            return HintInfo.MethodInfo("family (integer) genus (integer) species (integer)", listOf("family", "genus", "species"), CaosScriptLanguage.instance)
+        }
         val element = elementIn as? CaosScriptCommandElement
                 ?: return null
         val referencedCommand = getCommand(element)

@@ -34,7 +34,7 @@ ADDV (command) var (variable) sum (integer);
  * VALUES FOR ACT 0: act1 1: act2 2: deac
  * #Agents
  *
- * @param {action} (integer)
+ * @param {action} (integer@Action)
  *
  */
 AIM: (command) action (integer);
@@ -84,7 +84,7 @@ APPR (command);
  * Any change of action will automatically wake creature up again.
  * #Creatures
  *
- * @param {asleep} (integer)
+ * @param {asleep} (integer@bool)
  *
  */
 ASLP (command) asleep (integer);
@@ -184,7 +184,7 @@ BBD: EMIT (command);
  * draws the current text string text[Obv[0]] onto part0 (if n=1) or wipes text from bbd (if n=0)
  * #Blackboard
  *
- * @param {show} (integer) - 0=Wipe Text, 1=Write text onto part0
+ * @param {show} (integer[0 to 1]) - 0=Wipe Text, 1=Write text onto part0
  *
  */
 BBD: SHOW (command) show (integer);
@@ -206,8 +206,8 @@ BBD: WORD (command) index (integer) conceptId (integer) text [string];
  * Set SimpleObject's reactions to clicks by mouse and activation requests from creatures
  * #AgentAttributes
  *
- * @param {click} (integer)
- * @param {touch} (integer)
+ * @param {click} (integer@BehaviorClick)
+ * @param {touch} (integer@BehaviorTouch)
  *
  */
 BHVR (command) click (integer) touch (integer);
@@ -271,7 +271,7 @@ CARR (agent);
  * #Creatures
  *
  * @rvalue
- * @param {chemical} (integer) - chemical number
+ * @param {chemical} (integer@Chemicals) - chemical number
  * @return (integer)
  *
  */
@@ -281,7 +281,7 @@ CHEM (integer) chemical (integer);
  * Add this much chemical n to [TARG]'s bloodstream
  * #Creatures
  *
- * @param {chemical} (integer)
+ * @param {chemical} (integer@Chemicals)
  * @param {amount} (integer)
  *
  */
@@ -455,7 +455,7 @@ DDE: PICT (command);
  * #Debug
  *
  * @param {string} [string]
- * @param {option} (token)
+ * @param {option} (token@PutBOption)
  *
  */
 DDE: PUTB (command) string [string] option (token);
@@ -573,7 +573,7 @@ DREA (command) max (integer);
  * #Creatures
  *
  * @rvalue
- * @param {drive} (integer) - Drive Number
+ * @param {drive} (integer@Drives) - Drive Number
  * @return (integer@Drives)
  *
  */
@@ -933,7 +933,7 @@ MCRT (command) x (integer) y (integer);
  * Send message to all creatures that can hear [OWNR] obj
  * #Agents
  *
- * @param {message} (integer)
+ * @param {message} (integer@MessageNumbers)
  *
  */
 MESG SHOU (command) message (integer);
@@ -951,7 +951,7 @@ MESG SIGN (command) message (integer);
  * "tactile" are in contact with [OWNR]]
  * #Agents
  *
- * @param {message} (integer)
+ * @param {message} (integer@MessageNumbers)
  *
  */
 MESG TACT (command) message (integer);
@@ -962,7 +962,7 @@ MESG TACT (command) message (integer);
  * #Agents
  *
  * @param {agent} (agent)
- * @param {messageId} (integer)
+ * @param {messageId} (integer@MessageNumbers)
  *
  */
 MESG WRIT (command) agent (agent) messageId (integer);
@@ -1074,7 +1074,7 @@ NEW: BKBD (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {numimages} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {plane} (integer) - the plot plane (0=back, 9000=front)
+ * @param {plane} (integer[0 to 9000]) - the plot plane (0=back, 9000=front)
  *
  */
 NEW: CBTN (command) spriteFile (token) numimages (integer) firstImage (integer) plane (integer);
@@ -1093,7 +1093,7 @@ NEW: CBTN (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {numimages} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {clone} (integer) - value is 0 normally, or 1 to create a cloned image gallery
+ * @param {clone} (integer@bool) - value is 0 normally, or 1 to create a cloned image gallery
  *
  */
 NEW: COMP (command) spriteFile (token) numimages (integer) firstImage (integer) clone (integer);
@@ -1117,7 +1117,7 @@ NEW: COMP (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * #Creatures
  *
  * @param {moniker} (integer) - the moniker to use to locate the child's genome file
- * @param {sex} (integer) - 0=Random, 1=Male, 2=Female
+ * @param {sex} (integer@Gender) - 0=Random, 1=Male, 2=Female
  *
  */
 NEW: CREA (command) moniker (integer) sex (integer);
@@ -1155,11 +1155,11 @@ NEW: LIFT (command) spriteFile (token) numimages (integer) firstImage (integer);
  * commands)
  * #AgentConstructors
  *
- * @param {part} (integer) - 0=Main part
+ * @param {part} (integer[0 to 9]) - 0=Main part
  * @param {relx} (integer)
  * @param {rely} (integer)
  * @param {imageOffset} (integer)
- * @param {plane} (integer)
+ * @param {plane} (integer[0 to 9000])
  *
  */
 NEW: PART (command) part (integer) relx (integer) rely (integer) imageOffset (integer) plane (integer);
@@ -1172,7 +1172,7 @@ NEW: PART (command) part (integer) relx (integer) rely (integer) imageOffset (in
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {totalinsprite} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {plane} (integer) - the plot plane (0=back, 9000=front)
+ * @param {plane} (integer[0 to 9000]) - the plot plane (0=back, 9000=front)
  *
  */
 NEW: SCEN (command) spriteFile (token) totalinsprite (integer) firstImage (integer) plane (integer);
@@ -1190,8 +1190,8 @@ NEW: SCEN (command) spriteFile (token) totalinsprite (integer) firstImage (integ
  * @param {spriteFile} (token) - imagefile is a 4-byte token representing the filename of the image file
  * @param {numimages} (integer) - the TOTAL number of images IN THAT FILE
  * @param {firstImage} (integer) - the image associated with this object
- * @param {plane} (integer) - the plot plane (0=back, 9000=front)
- * @param {clone} (integer) - value is 0 normally, or 1 to create a cloned image gallery
+ * @param {plane} (integer[0 to 9000]) - the plot plane (0=back, 9000=front)
+ * @param {clone} (integer@bool) - value is 0 normally, or 1 to create a cloned image gallery
  *
  */
 NEW: SIMP (command) spriteFile (token) numimages (integer) firstImage (integer) plane (integer) clone (integer);
@@ -1442,7 +1442,7 @@ RNDV (command) var (variable) min (integer) max (integer);
  *
  * @rvalue
  * @param {roomNumber} (integer)
- * @param {edge} (integer)
+ * @param {edge} (integer@RoomEdge)
  * @return (integer)
  *
  */
@@ -1458,7 +1458,7 @@ ROOM (integer) roomNumber (integer) edge (integer);
  * @param {top} (integer)
  * @param {right} (integer)
  * @param {bottom} (integer)
- * @param {roomType} (integer) - 0=INDOORS 1=SURFACE 2=UNDERSEA
+ * @param {roomType} (integer@RoomType) - 0=INDOORS 1=SURFACE 2=UNDERSEA
  *
  */
 ROOM (command) roomNumber (integer) left (integer) top (integer) right (integer) bottom (integer) roomType (integer);
@@ -1532,10 +1532,10 @@ SCRP (command) family (integer) genus (integer) species (integer) event (integer
  * Installs a script
  * #Scripts
  *
- * @param {family} (integer)
- * @param {genus} (integer)
- * @param {species} (integer)
- * @param {event} (integer)
+ * @param {family} (integer[0 to 255])
+ * @param {genus} (integer[0 to 255])
+ * @param {species} (integer[0 to 255])
+ * @param {event} (integer[0 to 255])
  *
  */
 SCRX (command) family (integer) genus (integer) species (integer) event (integer);
@@ -1581,7 +1581,7 @@ SNDE (command) filename (token);
  * Set the sound status
  * #Sounds
  *
- * @param {function} (token)
+ * @param {function} (token@SndfOption)
  *
  */
 SNDF (command) function (token);
@@ -1661,7 +1661,7 @@ SPCS (integer);
  * hotspot to an activation function)
  * #AgentInteractions
  *
- * @param {spot} (integer) - hotspot# 0-5, ltrb = coords of hotspot on object RELATIVE to part[0]
+ * @param {spot} (integer[0 to 5]) - hotspot# 0-5, ltrb = coords of hotspot on object RELATIVE to part[0]
  * @param {left} (integer)
  * @param {top} (integer)
  * @param {right} (integer)
@@ -1678,13 +1678,13 @@ SPOT (command) spot (integer) left (integer) top (integer) right (integer) botto
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
  * @param {features} (integer) - bit record of features
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -1698,13 +1698,13 @@ STIM SHOU (command) significance (integer) input (integer) intensity (integer) f
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
  * @param {features} (integer) - bit record of features
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -1718,13 +1718,13 @@ STIM SIGN (command) significance (integer) input (integer) intensity (integer) f
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
  * @param {features} (integer) - bit record of features
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -1739,13 +1739,13 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
  * @param {features} (integer) - bit record of features
- * @param {chem1} (integer)
+ * @param {chem1} (integer@Chemicals)
  * @param {amount1} (integer)
- * @param {chem2} (integer)
+ * @param {chem2} (integer@Chemicals)
  * @param {amount2} (integer)
- * @param {chem3} (integer)
+ * @param {chem3} (integer@Chemicals)
  * @param {amount3} (integer)
- * @param {chem4} (integer)
+ * @param {chem4} (integer@Chemicals)
  * @param {amount4} (integer)
  *
  */
@@ -1755,7 +1755,7 @@ STIM WRIT (command) object (agent) significance (integer) input (integer) intens
  * Emit one of the hard-wired stimuli to all creatures that can hear [OWNR]]
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# SHOU (command) stimulus (integer);
@@ -1764,7 +1764,7 @@ STM# SHOU (command) stimulus (integer);
  * Send {stimulus} to all creatures that can see the object
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# SIGN (command) stimulus (integer);
@@ -1773,7 +1773,7 @@ STM# SIGN (command) stimulus (integer);
  * Emit one of the hard-wired stimuli
  * #Creatures
  *
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# TACT (command) stimulus (integer);
@@ -1783,7 +1783,7 @@ STM# TACT (command) stimulus (integer);
  * #Creatures
  *
  * @param {object} (agent)
- * @param {stimulus} (integer)
+ * @param {stimulus} (integer@Stimulus)
  *
  */
 STM# WRIT (command) object (agent) stimulus (integer);
@@ -2024,9 +2024,9 @@ TOOL (command) fsp [string] menutext [string] helptext [string] glyph (integer);
  * #Agents
  *
  * @rvalue
- * @param {family} (integer) - family
- * @param {genus} (integer) - genus
- * @param {species} (integer)
+ * @param {family} (integer[0 to 255]) - family
+ * @param {genus} (integer[0 to 255]) - genus
+ * @param {species} (integer[0 to 255])
  * @return (integer)
  *
  */
