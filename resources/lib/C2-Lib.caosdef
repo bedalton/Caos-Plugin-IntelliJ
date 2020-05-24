@@ -3712,23 +3712,23 @@ YVEC (integer);
 }
 
 @Drives {
-	1 = PAIN
-	2 = NEEDFORPLEASURE
-	3 = HUNGER
-	4 = COLDNESS
-	5 = HOTNESS
-	6 = TIREDNESS
-	7 = SLEEPINESS
-	8 = LONELINESS
-	9 = OVERCROWDEDNESS
-	10 = FEAR
-	11 = BOREDOM
-	12 = ANGER
-	13 = SEXDRIVE,
-	14 = INJURY
-	15 = SUFFOCATION
-	16 = THIRST
-	17 = STRESS
+	1 = Pain
+	2 = Need For Pleasure
+	3 = Hunger
+	4 = Coldness
+	5 = Hotness
+	6 = Tiredness
+	7 = Sleepiness
+	8 = Loneliness
+	9 = Overcrowdedness
+	10 = Fear
+	11 = Boredom
+	12 = Anger
+	13 = Sex Drive
+	14 = Injury
+	15 = Suffocation
+	16 = Thirst
+	17 = Stress
 }
 
 @EqOp {
@@ -4185,6 +4185,6 @@ YVEC (integer);
 }
 
 @YesNo {
-	0 = NO
-	1 = YES
+	0 = No
+	1 = Yes
 }
