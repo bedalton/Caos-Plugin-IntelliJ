@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.hints
+package com.openc2e.plugins.intellij.caos.documentation
 
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationMarkup

@@ -2483,9 +2483,9 @@ YVEC (integer);
 }
 
 @RoomType {
-	0 = INDOORS
-	1 = SURFACE
-	2 = UNDERSEA
+	0 = Indoors
+	1 = Surface
+	2 = Undersea
 }
 
 @Sleeping {

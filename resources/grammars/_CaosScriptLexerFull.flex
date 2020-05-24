@@ -86,7 +86,6 @@ BT=[Bb][Tt]
 BF=[Bb][Ff]
 EQ_C1={EQ}|{NE}|{GT}|{LT}|{LE}|{GE}|{BT}|{BF}
 EQ_NEW="="|"<>"|">"|">="|"<"|"<="
-K_CONST = [Cc][Oo][nN][sS][tT]
 CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
@@ -898,6 +897,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Ll][Nn][Gg][+]        	{ return CaosScript_K_LNG_PLUS; }
 	[Aa][Nn][Dd]           	{ return CaosScript_K_AND; }
 	[Oo][Rr]               	{ return CaosScript_K_OR; }
+    "____X____DEF__"		{ return CaosScript_K_XX_DEF; }
 	{EQ_C1}                	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}               	{ return CaosScript_EQ_OP_NEW_; }
 	{WORD}                 	{ return CaosScript_WORD; }
