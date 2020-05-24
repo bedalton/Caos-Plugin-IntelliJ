@@ -15,7 +15,7 @@ class CaosDefCommandElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBa
     }
 
     companion object {
-        private const val VERSION = 1
+        private const val VERSION = 2
         @JvmStatic
         val KEY = IndexKeyUtil.create(CaosDefCommandElementsByNameIndex::class.java)
         @JvmStatic
