@@ -74,7 +74,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         }
         val rvalue = element.rvalue ?: return
         val actualType = getActualType(rvalue, caosVar)
-        val expectedTypeSimple = element.expectedType
+        var expectedTypeSimple = element.expectedType
+        if (expectedTypeSimple == CaosExpressionValueType.DECIMAL && expectsInt(element)) {
+            expectedTypeSimple = CaosExpressionValueType.INT
+        }
         if (actualType == expectedTypeSimple || fudge(actualType, expectedTypeSimple)) {
             return
         }
@@ -86,6 +89,14 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 ?: return
         val expectedType = getCaosTypeStringAsType(matchingParameter.type.type)
         validateType(element, matchingParameter.name, expectedType, actualType, annotationWrapper)*/
+    }
+
+    private fun expectsInt(element: CaosScriptExpectsValueOfType) : Boolean {
+        val matchingParameter = getMatchingParameter(element, element.index)
+                ?: return false
+        return matchingParameter.type.type.let {
+            it == "integer" || it == "int"
+        }
     }
 
     private fun getMatchingParameter(element: CaosScriptCompositeElement, index: Int): CaosDefParameterStruct? {

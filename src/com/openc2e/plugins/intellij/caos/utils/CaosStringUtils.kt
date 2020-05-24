@@ -1,6 +1,5 @@
 package com.openc2e.plugins.intellij.caos.utils
 
-
 object CaosStringUtil {
 
     @JvmOverloads
@@ -128,4 +127,29 @@ fun String.indexOfFirstNonWhitespaceCharacter(): Int {
     return -1
 }
 
+fun String.matchCase(stringToMatch:String):String {
+    return when(stringToMatch.case) {
+        Case.UPPER_CASE -> toUpperCase()
+        Case.LOWER_CASE -> toLowerCase()
+        Case.CAPITAL_FIRST -> upperCaseFirstLetter()
+    }
+}
 
+val String.case:Case get()  {
+    val chars = toCharArray()
+    if (chars.size < 2)
+        return Case.LOWER_CASE
+    if (chars[0] == chars[0].toLowerCase()) {
+        return Case.LOWER_CASE
+    }
+    if (chars[1] == chars[1].toLowerCase()) {
+        return Case.CAPITAL_FIRST
+    }
+    return Case.UPPER_CASE
+}
+
+enum class Case {
+    UPPER_CASE,
+    LOWER_CASE,
+    CAPITAL_FIRST
+}
