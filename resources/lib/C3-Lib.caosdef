@@ -6107,6 +6107,24 @@ SCAM (command) compoundagent (agent) partnumber (integer);
 SCOL (integer) andMask (integer) eorMask (integer) upSpeeds [byte_string] downSpeeds [byte_string];
 
 /*
+ * Indicates that the rest of this macro is to be installed into the scriptorium, making it
+ * available as a new/replacement event script for a given type of object.
+ * family genus species – indicate the owner of this script, if values of 0 are used for any of
+ * these then the script will be installed as a default script for a wide range of objects. i.e.
+ * if species is 0 then the script will apply to all who share the same family and genus. event
+ * – indicates the event that will invoke this script, see the reference section for a list of
+ * event numbers.
+ * #Scripts
+ *
+ * @param {family} (integer)
+ * @param {genus} (integer)
+ * @param {species} (integer)
+ * @param {event} (integer)
+ *
+ */
+SCRP (command) family (integer) genus (integer) species (integer) event (integer);
+
+/*
  * SCRX (command) FAMILY (integer) GENUS (integer) SPECIES (integer) EVENT (integer)
  * Remove specified script from the scriptorium.
  * #Scripts
