@@ -15,9 +15,14 @@ object CaosScriptPsiElementFactory {
         return PsiFileFactory.getInstance(project).createFileFromText("dummy.caosdef", CaosScriptLanguage.instance, text) as CaosScriptFile
     }
 
-    fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken {
-        val file = createFileFromText(project, "$newNameString 0")
-        return file.firstChild.firstChild as CaosScriptIsCommandToken
+    val COMMAND_NAME_REGEX = "[a-zA-Z0-9_]{3}[a-zA-Z0-9_:+#$!]"
+
+    fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
+        if (!SUBROUTINE_NAME_REGEX.matches(newNameString))
+            return null
+        val file = createFileFromText(project, "____X____DEF__ $newNameString")
+        val factoryElement = file.firstChild as CaosScriptWordFactoryElement
+        return factoryElement.aWord
     }
 
     fun createSubroutineNameElement(project: Project, newNameString: String): CaosScriptSubroutineName? {
