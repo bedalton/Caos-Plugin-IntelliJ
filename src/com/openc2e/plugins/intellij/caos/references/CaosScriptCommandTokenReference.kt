@@ -71,7 +71,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                         CaosCommandType.COMMAND -> it.isCommand
                         CaosCommandType.RVALUE -> it.isRvalue
                         CaosCommandType.LVALUE -> it.isLvalue
-                        CaosCommandType.UNDEFINED -> false
+                        CaosCommandType.UNDEFINED -> it.isRvalue
                     }
                     if (!isForElement) {
                         if (!(it.isLvalue || it.isRvalue || it.isCommand)) {
