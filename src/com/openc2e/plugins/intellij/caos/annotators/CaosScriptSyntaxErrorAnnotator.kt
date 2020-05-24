@@ -8,10 +8,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.openc2e.plugins.intellij.caos.fixes.CaosScriptEscnNextFix
-import com.openc2e.plugins.intellij.caos.fixes.CaosScriptFixTooManySpaces
-import com.openc2e.plugins.intellij.caos.fixes.CaosScriptTrimErrorSpaceBatchFix
-import com.openc2e.plugins.intellij.caos.fixes.TransposeEqOp
+import com.openc2e.plugins.intellij.caos.fixes.*
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -21,7 +18,6 @@ import com.openc2e.plugins.intellij.caos.psi.util.next
 import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.caos.utils.matchCase
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.orElse
 
 class CaosScriptSyntaxErrorAnnotator : Annotator {
@@ -47,11 +43,41 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
             is CaosScriptCNext -> annotateNext(element, annotationWrapper)
             is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
+            is CaosScriptToken -> annotateToken(element, annotationWrapper)
+            is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, annotationWrapper)
+            is CaosScriptC1String -> annotateC1String(variant, element, annotationWrapper)
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
         }
+    }
+
+    private fun annotateToken(element: CaosScriptToken, annotationWrapper: AnnotationHolderWrapper) {
+        val parentExpectation = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
+        if (parentExpectation != null && parentExpectation is CaosScriptExpectsToken)
+            return
+        annotationWrapper.newErrorAnnotation("Unexpected token")
+                .range(element)
+                .create()
+    }
+
+    private fun annotateDoubleQuoteString(variant: String, quoteStringLiteral: CaosScriptQuoteStringLiteral, wrapper: AnnotationHolderWrapper) {
+        if (!(variant == "C1" || variant == "C2"))
+            return
+        wrapper.newErrorAnnotation("Quoted string are only available in [CV+] varaints")
+                .range(quoteStringLiteral)
+                .withFix(CaosScriptFixQuoteType(quoteStringLiteral,'[', ']'))
+                .create()
+    }
+
+    private fun annotateC1String(variant: String, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
+        if (variant == "C1" || variant == "C2")
+            return
+        wrapper.newErrorAnnotation("String literals in brackets are only available in [C1,C2] variants")
+                .range(element)
+                .withFix(CaosScriptFixQuoteType(element,'"'))
+                .create()
     }
 
 
