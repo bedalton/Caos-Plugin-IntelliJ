@@ -1080,10 +1080,6 @@ private eq_op_with_expression
 	}
 	;
 
-private equality_expression_prime_recover
-	::= !(NEWLINE|COMMA|new_line_like|command_call)
-	;
-
 equality_expression_plus
 	::=  equality_join space_like equality_expression_prime
 	{
@@ -6440,6 +6436,10 @@ c1_string
 	::= OPEN_BRACKET TEXT_LITERAL? CLOSE_BRACKET
 	{
 		pin(".*")=3
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptStringLike"
+		]
 		methods = [
 			getStringValue
 		]
@@ -6449,6 +6449,10 @@ c1_string
 quote_string_literal
 	::= QUOTE_STRING
 	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptStringLike"
+		]
 		methods = [
 			getStringValue
 		]
