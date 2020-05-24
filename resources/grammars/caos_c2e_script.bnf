@@ -289,10 +289,6 @@ private macro_code_block
 	}
 	;
 
-private macro_code_block_recover
-	::= !(K_ENDM|c_endm|<<eofNext>>)
-	;
-
 code_block
 	::= code_block_line (space_like_or_newline code_block_line)*
 	{
@@ -463,10 +459,6 @@ private subroutine_body
 	{
 		//recoverWhile=subroutine_body_recover
 	}
-	;
-
-private subroutine_body_recover
-	::= !(!<<insideBlock>> (K_RETN|K_ENDM|<<eofNext>>))
 	;
 
 classifier
@@ -1076,12 +1068,26 @@ expression
 equality_expression
    ::= equality_expression_prime (space_like equality_expression_plus)*
    {
-   		pin=3
+   		pin=1
    }
    ;
 
 private equality_expression_prime
-	::= expression space_like eq_op space_like expression
+	::= expression space_like eq_op_with_expression
+	{
+		pin = 1
+	}
+	;
+
+private eq_op_with_expression
+	::= eq_op space_like expression
+	{
+		pin=1
+	}
+	;
+
+private equality_expression_prime_recover
+	::= !(NEWLINE|COMMA|new_line_like|command_call)
 	;
 
 equality_expression_plus
