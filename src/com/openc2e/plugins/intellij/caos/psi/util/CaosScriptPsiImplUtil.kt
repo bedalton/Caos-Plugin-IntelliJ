@@ -12,12 +12,13 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
-import com.openc2e.plugins.intellij.caos.hints.CaosScriptPresentationUtil
+import com.openc2e.plugins.intellij.caos.documentation.CaosScriptPresentationUtil
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.caos.references.*
+import com.openc2e.plugins.intellij.caos.utils.Case
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import kotlin.math.floor
 
@@ -204,8 +205,10 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun setName(element: CaosScriptIsCommandToken, newName: String): PsiElement {
-        val newElement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, newName)
-        return element.replace(newElement)
+        CaosScriptPsiElementFactory.createCommandTokenElement(element.project, newName)?.let {
+            element.replace(it)
+        }
+        return element
     }
 
     @JvmStatic
@@ -1158,4 +1161,18 @@ fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass: Class<PsiT>)
     if (parentClass.isInstance(this))
         return true
     return PsiTreeUtil.getParentOfType(this, parentClass) != null
+}
+
+
+val PsiElement.case:Case get()  {
+    val chars = this.text.toCharArray()
+    if (chars.size < 2)
+        return Case.LOWER_CASE
+    if (chars[0] == chars[0].toLowerCase()) {
+        return Case.LOWER_CASE
+    }
+    if (chars[1] == chars[1].toLowerCase()) {
+        return Case.CAPITAL_FIRST
+    }
+    return Case.UPPER_CASE
 }
