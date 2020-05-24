@@ -1,5 +1,6 @@
 package com.openc2e.plugins.intellij.caos.hints
 
+import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -9,6 +10,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.endOffset
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
@@ -26,108 +28,28 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         (node.psi as? CaosScriptExpression)?.let {
             return getExpressionFoldingText(it)
         }
+        (node.psi as? CaosScriptEventNumberElement)?.let {
+
+        }
         return null
+    }
+
+    private fun getEventName(element:CaosScriptEventNumberElement):String? {
+        val eventElement = element as? CaosScriptEventNumberElement
+                ?: return null
+        val variant = element.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+        val typeList = CaosDefTypeDefinitionElementsByNameIndex
+                .Instance["EventNumbers", element.project]
+                .filter {
+                    it.containingCaosDefFile.isVariant(variant)
+                }
+                .firstOrNull()
+                ?: return null
+        return typeList.getValueForKey(eventElement.text)?.value
     }
 
     private fun getExpressionFoldingText(expression: CaosScriptExpression): String? {
-        // Lists values can only be for expressions of string or int
-        if (!(expression.isString || expression.isInt)) {
-            return null
-        }
-        (expression.parent?.parent as? CaosScriptExpectsValueOfType)?.let {
-            return getCommandPlaceholderText(it)
-        }
-
-        expression.getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
-            return getEqualityExpressionFoldingText(it, expression)
-        }
-        return null
-    }
-
-    private fun getEqualityExpressionFoldingText(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): String? {
-        val value = expression.intValue?.let { "$it" } ?: expression.stringValue ?: return null
-        val other = equalityExpression.expressionList.let {
-            when (it.size) {
-                0, 1 -> return null
-                2 -> if (it[0].isEquivalentTo(expression)) it[1] else it[0]
-                else -> {
-                    LOGGER.severe("Equality operator expects exactly TWO expressions")
-                    return null
-                }
-            }
-        } ?: return null
-        val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
-        if (token == null) {
-            LOGGER.info("Failed to find rvaluePrime in equality expressions '${other.text}'")
-            return null
-        }
-        val reference = token
-                .reference
-                .multiResolve(true)
-                .firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-        if (reference == null) {
-            LOGGER.info("Failed to resolve reference to ${token.text} in equality expression")
-            return null
-        }
-        val typeDef = reference
-                .docComment
-                ?.returnTypeStruct
-                ?.type
-                ?.typedef
-        if (typeDef == null) {
-            LOGGER.info("Equality expressions type is null in typedef for command ${token.text}")
-            return null
-        }
-        val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
-        return getListValue(variant, typeDef, expression.project, value)
-    }
-
-    private fun getListValue(variant: String, listName: String, project: Project, key: String): String? {
-        val list = CaosDefTypeDefinitionElementsByNameIndex
-                .Instance[listName, project]
-                .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
-        if (list == null) {
-            LOGGER.info("Failed to find list definition for name: $listName")
-            return null
-        }
-        val value = list.keys.firstOrNull { it.key == key }
-        if (value == null) {
-            LOGGER.info("Failed to find value in list $listName for key $key")
-        }
-        return value?.value
-    }
-
-    private fun getCommandPlaceholderText(valueOfType: CaosScriptExpectsValueOfType): String? {
-        val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
-                ?: return null
-        val index = valueOfType.index
-        val reference = containingCommand
-                .commandToken
-                ?.reference
-                ?.multiResolve(true)
-                ?.firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return null
-        val parameterStruct = reference
-                .docComment
-                ?.parameterStructs
-                ?.getOrNull(index)
-        if (parameterStruct == null) {
-            LOGGER.info("Parameter struct is null for argument $index in command ${containingCommand.commandString}")
-            return null
-        }
-        val typeDef = parameterStruct
-                .type
-                .typedef
-        if (typeDef == null) {
-            LOGGER.info("RValue type is null in typedef for command ${containingCommand.commandString}. Parameter Data: $parameterStruct")
-            return null
-        }
-        val variant = valueOfType.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
-        return getListValue(variant, typeDef, valueOfType.project, valueOfType.text)
+        return expression.getTypeDefValue()?.value
     }
 
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
