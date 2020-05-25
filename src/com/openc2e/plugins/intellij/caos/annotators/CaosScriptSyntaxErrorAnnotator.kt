@@ -1,5 +1,7 @@
 package com.openc2e.plugins.intellij.caos.annotators
 
+import com.openc2e.plugins.intellij.caos.psi.util.next
+import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -14,10 +16,11 @@ import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.*
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.caos.utils.matchCase
 import com.openc2e.plugins.intellij.caos.utils.orElse
+import kotlin.math.abs
+import kotlin.math.floor
 
 class CaosScriptSyntaxErrorAnnotator : Annotator {
 
@@ -57,9 +60,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotateNumber(variant: String, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
         if (variant != "C1" || element.decimal == null)
             return
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.float-value-not-allowed-in-variant"))
+        val floatValue = element.text.toFloat()
+        var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.float-value-not-allowed-in-variant"))
                 .range(element)
-                .create()
+                .withFix(CaosScriptRoundNumberFix(element, floatValue, true))
+        if (abs(floatValue - floor(floatValue)) > 0.00001)
+            builder = builder.withFix(CaosScriptRoundNumberFix(element, floatValue, false))
+        builder.create()
+    }
+
+    private fun annotateSetv(variant:String, element:CaosScriptNumber, annoteWrapper: AnnotationHolderWrapper) {
+
     }
 
     private fun annotateEqualityExpressionPlus(variant: String, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
@@ -93,12 +104,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
                 wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed"))
                         .range(element)
-                        .withFix(CaosScriptFixQuoteType(element, '"'))
                         .create()
             } else if (element.getParentOfType(CaosScriptExpectsValueOfType::class.java)?.parent is CaosScriptCAssignment) {
                 wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.variable-string-assignments-not-allowed"))
                         .range(element)
-                        .withFix(CaosScriptFixQuoteType(element, '"'))
                         .create()
             }
         }
@@ -180,7 +189,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             val next = "NSCN".matchCase(element.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", "ESCN", "NSCN", "NEXT"))
                     .range(element)
-                    .withFix(CaosScriptEscnNextFix(next, element))
+                    .withFix(CaosScriptReplaceWordFix(next, element))
                     .create()
         }
     }
@@ -200,7 +209,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             val next = "NEXT".matchCase(element.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(element)
-                    .withFix(CaosScriptEscnNextFix(next, element))
+                    .withFix(CaosScriptReplaceWordFix(next, element))
                     .create()
         } else if (variant != "C2") {
             annotateNotAvailable(variant, element, annotationWrapper)
@@ -235,7 +244,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             val next = "NEXT".matchCase(cNscn.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(cNscn)
-                    .withFix(CaosScriptEscnNextFix(next, cNscn))
+                    .withFix(CaosScriptReplaceWordFix(next, cNscn))
                     .create()
         }
         val header = element.emumHeaderCommand.cEnum
