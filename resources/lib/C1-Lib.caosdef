@@ -1734,7 +1734,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
  *
  * #Creatures
  *
- * @param {object} (agent) - ie. [TARG], [OWNR], [FROM] or [NORN]
+ * @param {agent} (agent) - ie. [TARG], [OWNR], [FROM] or [NORN]
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
@@ -1749,7 +1749,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
  * @param {amount4} (integer)
  *
  */
-STIM WRIT (command) object (agent) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
+STIM WRIT (command) agent (agent) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
  * Emit one of the hard-wired stimuli to all creatures that can hear [OWNR]]
@@ -1782,11 +1782,11 @@ STM# TACT (command) stimulus (integer);
  *
  * #Creatures
  *
- * @param {object} (agent)
+ * @param {agent} (agent)
  * @param {stimulus} (integer@Stimulus)
  *
  */
-STM# WRIT (command) object (agent) stimulus (integer);
+STM# WRIT (command) agent (agent) stimulus (integer);
 
 /*
  * Stop execution (eg. following error, or before subroutine definitions start)
