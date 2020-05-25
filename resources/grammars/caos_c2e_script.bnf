@@ -1123,7 +1123,6 @@ private command_call_by_args
 	|	c_f
 	|	c_d_s
 	|	c_l_s
-	|	c_l_d
 	|	c_d_d_f_d
 	|	c_d_d_f
 	|	c_bs
@@ -1185,7 +1184,6 @@ private command_call_by_args
 	|	c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
 	|	c_d_d_d_d_d_d
 	|	c_a_a
-	|	c_l_v
 	|	c_s_d_d_d_d_d
 	|	c_t_d
 	|	c_s_d_f
@@ -1431,16 +1429,6 @@ private c_l_s ::= c_kw_l_s space_like lvalue space_like expects_string
 		pin=1
 	}
 	;
-
-
-
-private c_l_d ::= c_kw_l_d space_like lvalue space_like expects_decimal
-	{
-		pin=1
-	}
-	;
-
-
 
 private c_d_d_f_d ::= c_kw_d_d_f_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int
 	{
@@ -1929,13 +1917,6 @@ private c_a_a ::= c_kw_a_a space_like expects_agent space_like expects_agent
 	}
 	;
 
-private c_l_v ::= c_kw_l_v space_like lvalue space_like expects_value
-	{
-		pin=1
-	}
-	;
-
-
 
 private c_s_d_d_d_d_d ::= c_kw_s_d_d_d_d_d space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
 	{
@@ -2364,6 +2345,7 @@ named_game_var
 			"com.intellij.psi.PsiNamedElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsVariable"
 		]
 		methods = [
 			commandToken="/caos_named_var_kw"
@@ -2376,6 +2358,7 @@ named_game_var
 			setName
 			getArguments
 			getArgumentValues
+			getInferredType
 		]
 	}
 	;
@@ -2817,26 +2800,6 @@ c_kw_l_s
 	}
 	;
 
-c_kw_l_d
-	::= <<isVariant "DS">>K_SETV
-	|	<<isVariant "CV">>K_SETV
-	|	<<isVariant "C3">>K_SETV
-	{
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
 
 c_kw_d_d_f_d
 	::= K_ADIN
@@ -4211,26 +4174,6 @@ c_kw_d_d_d_d_d_d
 c_kw_a_a
 	::= K_RPAS
 	|	K_SPAS
-	{
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
-c_kw_l_v
-	::= <<isVariant "C2">>K_SETV
-	|	<<isVariant "C1">>K_SETV
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -6409,11 +6352,13 @@ var_token
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsVariable"
 		]
 		methods = [
 			getVarGroup
 			getVarIndex
 			getReference
+			getInferredType
 		]
 	}
 	;
@@ -6719,7 +6664,7 @@ named_var_assignment
 	}
 	;
 constant_value
-	::= (INT|FLOAT|var_token)
+	::= INT|FLOAT
 	;
 
 named_constant
@@ -6730,6 +6675,7 @@ named_constant
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsVariable"
 		]
 		methods = [
 			getScope
@@ -6737,6 +6683,7 @@ named_constant
 			setName
 			getReference
 			toCaosVar
+			getInferredType
 		]
 	}
 	;
@@ -6749,6 +6696,7 @@ named_var
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsVariable"
 		]
 		methods = [
 			getScope
@@ -6756,6 +6704,7 @@ named_var
 			setName
 			getReference
 			toCaosVar
+			getInferredType
 		]
 	}
 	;
