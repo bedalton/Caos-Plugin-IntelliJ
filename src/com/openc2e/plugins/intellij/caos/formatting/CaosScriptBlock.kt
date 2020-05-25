@@ -2,10 +2,10 @@ package com.openc2e.plugins.intellij.caos.formatting
 
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
+import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
-import com.intellij.psi.impl.source.tree.ElementType
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCodeBlock
@@ -64,9 +64,14 @@ class CaosScriptBlock internal constructor(
             null) ?: elementType
         val previousBlock = if (newIndex == 0 || subFormattedBlocks.isEmpty()) null else subFormattedBlocks[newIndex - 1]
         val previousType = previousBlock?.node?.elementType
-        if (elementType == ElementType.WHITE_SPACE && node.psi.getParentOfType(CaosScriptCodeBlock::class.java)?.parent !is CaosScriptMacro)
-            return normalIndent
+        if (elementType == TokenType.WHITE_SPACE) {
+            val parent = node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent
+            if (parent !is CaosScriptMacro)
+                return normalIndent
+        }
         if (previousType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE)
+            return normalIndent
+        if (previousType == CaosScriptTypes.CaosScript_SUBROUTINE_HEADER)
             return normalIndent
         if (elementType in CaosScriptTokenSets.BLOCK_ENDS)
             return ChildAttributes(Indent.getNoneIndent(), null)
