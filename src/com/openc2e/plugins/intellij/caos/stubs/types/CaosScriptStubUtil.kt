@@ -9,6 +9,8 @@ import com.openc2e.plugins.intellij.caos.deducer.CaosNumber.CaosIntNumber
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.*
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosLiteral.*
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosNumberedVar.*
+import com.openc2e.plugins.intellij.caos.psi.api.CaosExpressionValueType
+import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.readList
 import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 
@@ -190,12 +192,15 @@ private fun StubOutputStream.writeMVxx(caosVar:CaosMvXXVar) {
 }
 
 private fun StubInputStream.readCaosCommandAsCaosVar() : CaosCommandCall {
-    return CaosCommandCall(readNameAsString() ?: UNDEF)
+    val command =readNameAsString() ?: UNDEF
+    val returnType = readNameAsString()?.nullIfEmpty()?.let { CaosExpressionValueType.fromSimpleName(it)}
+    return CaosCommandCall(command, returnType)
 }
 
 private fun StubOutputStream.writeCaosCommandVar(call: CaosCommandCall) {
     writeInt(COMMAND_CALL)
     writeName(call.text)
+    writeName(call.returnType?.simpleName ?: "")
 }
 
 internal inline fun <T> StubOutputStream.writeList(list:List<T>, writer:StubOutputStream.(T)->Unit) {
