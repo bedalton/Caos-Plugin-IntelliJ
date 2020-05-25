@@ -109,6 +109,10 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
     return node
 }
 
+fun ASTNode?.getPreviousPossiblyEmptySibling(): ASTNode? {
+    return this?.treePrev ?: getPrevInTreeParent(this)
+}
+
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.treePrev ?: getPrevInTreeParent(this) ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
@@ -123,6 +127,16 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
         ////LOGGER.info("<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
+}
+
+val ASTNode.previous: PsiElement? get(){
+    val out: ASTNode? = this.treePrev ?: getPrevInTreeParent(this) ?: return null
+    return out?.psi
+}
+
+val ASTNode.next: PsiElement? get() {
+    val out: ASTNode? = this.treeNext ?: getNextInTreeParent(this) ?: return null
+    return out?.psi
 }
 
 
@@ -144,6 +158,11 @@ private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
     return temp?.treePrev
 }
 
+
+
+fun ASTNode?.getNextPossiblyEmptySibling(): ASTNode? {
+    return this?.treeNext ?: getNextInTreeParent(this)
+}
 
 fun ASTNode.getNextNonEmptySiblingIgnoringComments(): ASTNode? {
     var node = this.getNextNonEmptyNode(true)
@@ -261,7 +280,7 @@ fun <PsiT: PsiElement> PsiElement?.thisOrParentAs(psiClass:Class<PsiT>) : PsiT? 
     return if (psiClass.isInstance(this)) {
         psiClass.cast(this)
     } else {
-        PsiTreeUtil.getParentOfType(this, psiClass)
+        this?.getParentOfType(psiClass)
     }
 }
 
@@ -297,7 +316,16 @@ fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<PsiElement>?
 }
 
 fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?, stubClass: Class<StubT>): List<StubT> {
-    return children?.filterIsInstance(stubClass) ?: emptyList()
+    return if (children == null) {
+        emptyList()
+    } else
+        children.mapNotNull{ child ->
+            if (stubClass.isInstance(child))
+                stubClass.cast(child)
+            else
+                null
+        }
+
 }
 
 
@@ -310,6 +338,6 @@ internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boole
     else if (!ignoreLineTerminator && out.text.contains("\n")) {
         false
     } else {
-        out.elementType === TokenType.WHITE_SPACE || out.elementType == CaosScriptTypes.CaosScript_SPACE_ || out.elementType == CaosScriptTypes.CaosScript_SPACE_LIKE|| out.psi is PsiErrorElement
+        out.elementType === TokenType.WHITE_SPACE || out.psi is PsiErrorElement
     }
 }
