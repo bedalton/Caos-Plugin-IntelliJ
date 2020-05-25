@@ -5,7 +5,6 @@ import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.openc2e.plugins.intellij.caos.deducer.CaosNumber
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService
 import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptConstantAssignmentImpl
 import com.openc2e.plugins.intellij.caos.psi.util.UNDEF

@@ -3,7 +3,6 @@ package com.openc2e.plugins.intellij.caos.fixes
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile

@@ -4,8 +4,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil
 
 object CaosScriptVarDeducer {
 

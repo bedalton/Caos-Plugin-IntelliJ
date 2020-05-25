@@ -13,6 +13,8 @@ import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandCall
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIncomplete
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptLvalue
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptRvalue
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.psi.util.*
 import com.openc2e.plugins.intellij.caos.utils.Case
 import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank

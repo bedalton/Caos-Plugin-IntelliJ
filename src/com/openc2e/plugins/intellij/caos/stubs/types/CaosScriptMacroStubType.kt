@@ -4,11 +4,8 @@ import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptMacroImpl
-import com.openc2e.plugins.intellij.caos.psi.util.UNDEF
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptMacroStub
-import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptConstantAssignmentStruct
 import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptMacroStubImpl
-import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 
 class CaosScriptMacroStubType(debugName:String) : CaosScriptStubElementType<CaosScriptMacroStub, CaosScriptMacroImpl>(debugName) {
     override fun createPsi(parent: CaosScriptMacroStub): CaosScriptMacroImpl {
