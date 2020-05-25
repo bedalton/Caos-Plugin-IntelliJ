@@ -898,6 +898,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Aa][Nn][Dd]           	{ return CaosScript_K_AND; }
 	[Oo][Rr]               	{ return CaosScript_K_OR; }
     "____X____DEF__"		{ return CaosScript_K_XX_DEF; }
+    "____X____EXPR__"		{ return CaosScript_K_XX_EXPR; }
 	{EQ_C1}                	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}               	{ return CaosScript_EQ_OP_NEW_; }
 	{WORD}                 	{ return CaosScript_WORD; }

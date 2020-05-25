@@ -27,7 +27,9 @@
 	name("K_.*") = "command"
 	name("eq_op.*") = "EQ|NE|etc.."
 	name("word_factory_element") = ""
+	name("expression_factory") = ""
 	name("K_XX_DEF") = ""
+	name("K_XX_EXPR") = ""
 	name("command_call") = "command"
 	tokens = [
 		NEWLINE = "regexp:\n";
@@ -226,6 +228,7 @@
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
 		K_XX_DEF = "____X____DEF__"
+		K_XX_EXPR = "____X____EXP__"
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
 		CONST_EQ = "regexp:=";
 		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
@@ -249,7 +252,7 @@
 	]
 }
 
-private def	::= (word_factory_element|file_body)?
+private def	::= (word_factory_element|expression_factory|file_body)?
 	;
 
 word_factory_element ::= K_XX_DEF space_like a_word;
@@ -270,6 +273,10 @@ a_word
 			setName
 		]
 	}
+	;
+
+expression_factory
+	::= K_XX_EXPR space_like expression
 	;
 
 private file_body
