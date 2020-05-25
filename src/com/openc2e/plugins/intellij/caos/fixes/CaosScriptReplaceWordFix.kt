@@ -9,7 +9,7 @@ import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiElementFactory
 
-class CaosScriptEscnNextFix (private val word:String, element:CaosScriptCompositeElement)  : IntentionAction {
+class CaosScriptReplaceWordFix (private val word:String, element:CaosScriptCompositeElement)  : IntentionAction {
 
     private val pointer = SmartPointerManager.createPointer(element)
 

@@ -61,8 +61,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandString(command: CaosScriptCommandElement): String {
-        val type = command.getEnclosingCommandType()
-        return when (type) {
+        return when (command.getEnclosingCommandType()) {
             CaosCommandType.COMMAND -> command
                     .getSelfOrParentOfType(CaosScriptCommandCall::class.java)
                     ?.let { getCommandString(it) }
@@ -310,6 +309,7 @@ object CaosScriptPsiImplUtil {
 
         return CaosVar.CaosVarNone
     }
+
     @JvmStatic
     fun toCaosVar(expression: CaosScriptExpression): CaosVar {
         (expression.varToken)?.let {
@@ -341,24 +341,19 @@ object CaosScriptPsiImplUtil {
         expression.quoteStringLiteral?.let {
             return CaosVar.CaosLiteral.CaosString(it.stringValue)
         }
-        expression.animation?.let {
-            return CaosVar.CaosLiteral.CaosAnimationString(expression.text, it)
-        }
-        expression.byteStringArray?.let {
-            return CaosVar.CaosLiteral.CaosByteString(expression.text, it)
-        }
-
-        expression.byteString?.text?.let {
-            return CaosVar.CaosLiteral.CaosByteString(expression.stringValue ?: "", expression.byteStringArray?: emptyList())
-        }
-        expression.animationString?.let {
-            return CaosVar.CaosLiteral.CaosAnimationString(it.text, expression.animation)
-        }
 
         expression.token?.text?.let {
             return CaosVar.CaosLiteral.CaosToken(it)
         }
 
+        expression.animationString?.let {
+            return CaosVar.CaosLiteral.CaosAnimationString(it.text, expression.animation)
+        }
+
+        expression.byteString?.text?.let {
+            return CaosVar.CaosLiteral.CaosByteString(expression.stringValue ?: "", expression.byteStringArray
+                    ?: emptyList())
+        }
         expression.namedGameVar?.let {
             return it.toCaosVar() ?: CaosVar.CaosLiteralVal
         }
@@ -367,7 +362,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    private fun toCaosVar(rvaluePrime:CaosScriptRvaluePrime) : CaosVar {
+    private fun toCaosVar(rvaluePrime: CaosScriptRvaluePrime): CaosVar {
         return rvaluePrime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let {
             val commandString = it.commandString
             if (commandString.toLowerCase() == "null")
@@ -379,7 +374,7 @@ object CaosScriptPsiImplUtil {
         } ?: CaosVar.CaosLiteralVal
     }
 
-    private fun getReturnType(token:CaosScriptIsCommandToken) : CaosExpressionValueType {
+    private fun getReturnType(token: CaosScriptIsCommandToken): CaosExpressionValueType {
         return token.reference.multiResolve(true)
                 .mapNotNull {
                     PsiTreeUtil
@@ -398,7 +393,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getByteStringArray(expression: CaosScriptExpression) : List<Int>? {
+    fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
         val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
         expression.stringValue?.let { stringValue ->
             if (variant !in listOf("C1", "C2")) {
@@ -410,7 +405,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getAnimation(expression: CaosScriptExpression) : CaosAnimation? {
+    fun getAnimation(expression: CaosScriptExpression): CaosAnimation? {
         val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
         val stringValue = expression.stringValue
                 ?: return null
@@ -420,7 +415,7 @@ object CaosScriptPsiImplUtil {
             return getCVPlusAnimation(stringValue)
         }
         val charsRaw = stringValue.toCharArray().toList()
-        val poses:List<Int>
+        val poses: List<Int>
         val repeats = charsRaw.last().toUpperCase() == 'R'
         val repeatsFrom = if (repeats) 0 else null
         if (repeats) {
@@ -431,10 +426,10 @@ object CaosScriptPsiImplUtil {
         return CaosAnimation.Animation(poses, repeats, repeatsFrom)
     }
 
-    private fun getCVPlusAnimation(stringValue:String) : CaosAnimation? {
+    private fun getCVPlusAnimation(stringValue: String): CaosAnimation? {
         val posesRaw = stringValue.split(" ").map { it.toInt() }
-        var repeats:Boolean = false
-        var repeatsFrom:Int? = null
+        var repeats: Boolean = false
+        var repeatsFrom: Int? = null
         when (posesRaw.size) {
             0 -> return CaosAnimation.Animation(emptyList(), false, null)
             1 -> if (posesRaw[0] == 255) {
@@ -452,15 +447,14 @@ object CaosScriptPsiImplUtil {
                 if (posesRaw.last() == 255) {
                     repeats = true
                     repeatsFrom = 0
-                }
-                else if (posesRaw[posesRaw.lastIndex - 1] == 255) {
+                } else if (posesRaw[posesRaw.lastIndex - 1] == 255) {
                     repeats = true
                     repeatsFrom = posesRaw.last()
                 }
             }
         }
 
-        val poses:List<Int> = if (repeats) {
+        val poses: List<Int> = if (repeats) {
             if (repeatsFrom != null) {
                 posesRaw.subList(0, posesRaw.lastIndex - 1)
             } else {
@@ -475,7 +469,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCreatureAnimation(expression: CaosScriptExpression) : CaosAnimation? {
+    fun getCreatureAnimation(expression: CaosScriptExpression): CaosAnimation? {
         val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
         val stringValue = expression.stringValue
                 ?: return null
@@ -498,7 +492,7 @@ object CaosScriptPsiImplUtil {
         }
         val poses = (0 until numPoses).map {
             val base = it * 3
-            "${charsRaw[base]}${charsRaw[base + 1]}${charsRaw[base+2]}".toInt()
+            "${charsRaw[base]}${charsRaw[base + 1]}${charsRaw[base + 2]}".toInt()
         }
         return CaosAnimation.Animation(poses, repeats, repeatsFrom)
     }
@@ -514,7 +508,7 @@ object CaosScriptPsiImplUtil {
         if (string.startsWith("\""))
             string = string.substring(1)
         if (string.endsWith("\""))
-            string = string.substring(0, string.length - 2)
+            string = string.substring(0, string.length - 1)
         return string
     }
 
@@ -671,12 +665,13 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getIndex(commandToken: CaosScriptIsCommandToken): Int {
+        LOGGER.info("Getting index of command token: ${commandToken.text} as 0")
         return 0
     }
 
     @JvmStatic
-    fun getIndex(commandToken: CaosScriptLvalue): Int {
-        var lastParent: PsiElement? = commandToken.parent
+    fun getIndex(element: CaosScriptLvalue): Int {
+        var lastParent: PsiElement? = element
         while (lastParent != null && lastParent.parent !is CaosScriptCommandElement) {
             lastParent = lastParent.parent
         }
@@ -690,14 +685,17 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getIndex(element: CaosScriptArgument): Int {
-        var lastParent: PsiElement? = element.parent
+        var lastParent: PsiElement? = element
         while (lastParent != null && lastParent.parent !is CaosScriptCommandElement) {
             lastParent = lastParent.parent
         }
         val parent = lastParent?.parent as? CaosScriptCommandElement
-                ?: return 0
-        if (lastParent !is CaosScriptArgument)
+        if (parent == null) {
             return 0
+        }
+        if (lastParent !is CaosScriptArgument) {
+            return 0
+        }
         return parent.arguments.indexOf(lastParent)
     }
 
@@ -1181,6 +1179,18 @@ fun <PsiT : PsiElement> PsiElement.getSelfOrParentOfType(parentClass: Class<PsiT
     return PsiTreeUtil.getParentOfType(this, parentClass)
 }
 
+fun <PsiT : PsiElement> PsiElement.getParentOfType(parentClass: Class<PsiT>): PsiT? {
+    return PsiTreeUtil.getParentOfType(this, parentClass)
+}
+
+fun <PsiT : PsiElement> PsiElement.getChildOfType(parentClass: Class<PsiT>): PsiT? {
+    return PsiTreeUtil.getChildOfType(this, parentClass)
+}
+
+fun <PsiT : PsiElement> PsiElement.getChildrenOfType(parentClass: Class<PsiT>): List<PsiT> {
+    return PsiTreeUtil.getChildrenOfType(this, parentClass)?.toList().orEmpty()
+}
+
 fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass: Class<PsiT>): Boolean {
     if (parentClass.isInstance(this))
         return true
@@ -1188,15 +1198,16 @@ fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass: Class<PsiT>)
 }
 
 
-val PsiElement.case:Case get()  {
-    val chars = this.text.toCharArray()
-    if (chars.size < 2)
-        return Case.LOWER_CASE
-    if (chars[0] == chars[0].toLowerCase()) {
-        return Case.LOWER_CASE
+val PsiElement.case: Case
+    get() {
+        val chars = this.text.toCharArray()
+        if (chars.size < 2)
+            return Case.LOWER_CASE
+        if (chars[0] == chars[0].toLowerCase()) {
+            return Case.LOWER_CASE
+        }
+        if (chars[1] == chars[1].toLowerCase()) {
+            return Case.CAPITAL_FIRST
+        }
+        return Case.UPPER_CASE
     }
-    if (chars[1] == chars[1].toLowerCase()) {
-        return Case.CAPITAL_FIRST
-    }
-    return Case.UPPER_CASE
-}
