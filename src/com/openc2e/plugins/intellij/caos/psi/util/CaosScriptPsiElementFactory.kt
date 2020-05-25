@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.psi.util
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
 import com.openc2e.plugins.intellij.caos.psi.api.*
@@ -75,15 +76,16 @@ object CaosScriptPsiElementFactory {
     }
 
     fun createStringRValue(project: Project, newNameString: String, start:Char, end:Char = start): CaosScriptRvalue {
-        val script = "sets var1 $start$newNameString$end"
-        LOGGER.info("String script = <$script>")
-        val commandCall = getCommandCall(project, script)!!
-        val assignment = commandCall.cAssignment
-        if (assignment == null) {
-            LOGGER.info("Assignment is null. Command = ${commandCall.text}. FirstChild: ${commandCall.firstChild.text}; last Child = ${commandCall.lastChild?.text}")
-            return assignment!!
-        }
-        return assignment.expectsC1String?.rvalue ?: assignment.expectsQuoteString!!.rvalue
+        val script = "$start$newNameString$end"
+        return createRValue(project,script)
+    }
+
+    fun createNumber(project:Project, number:Int) : CaosScriptExpression {
+        return createRValue(project, "$number").expression!!
+    }
+
+    fun createFloat(project:Project, number:Int) : CaosScriptExpression {
+        return createRValue(project, "$number").expression!!
     }
 
     private fun getCommandCall(project:Project, script:String, throws:Boolean = true) : CaosScriptCommandCall? {
@@ -97,6 +99,11 @@ object CaosScriptPsiElementFactory {
         if (throws)
             throw NullPointerException("Failed to find command call in element type factory for script: '${script}'")
         return null
+    }
+
+    private fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
+        val script = "____X____EXPR__ $expr"
+        return PsiTreeUtil.findChildOfType(createFileFromText(project, script).firstChild, CaosScriptRvalue::class.java)!!
     }
 
 }
