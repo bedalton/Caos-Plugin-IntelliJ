@@ -46,6 +46,13 @@
     <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.openc2e.plugins.intellij.caos.references.CaosScriptUsagesProvider" />
+    <!-- Formatting -->
+    <lang.formatter language="CaosScript"
+                    implementationClass="com.openc2e.plugins.intellij.caos.formatting.CaosScriptFormattingModelBuilder"/>
+
+    <!-- Code Style Settings -->
+    <codeStyleSettingsProvider implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider"/>
 
     <!-- Highlighting -->
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter"
