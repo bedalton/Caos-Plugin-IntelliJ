@@ -276,7 +276,7 @@ a_word
 	;
 
 expression_factory
-	::= K_XX_EXPR space_like expression
+	::= K_XX_EXPR space_like rvalue
 	;
 
 private file_body
@@ -1004,14 +1004,18 @@ byte_string
 	;
 
 private byte_string_body
-	::= INT (space_like INT)* (space_like? byte_string_r)?
+	::=  byte_string_pose_list byte_string_r?
 	{
 		pin(".*")=2
 	}
 	;
 
+byte_string_pose_list
+	::= INT (space_like INT)*
+	;
+
 byte_string_r
-	::= ANIM_R
+	::= space_like? ANIM_R
 	;
 
 new_line_like
