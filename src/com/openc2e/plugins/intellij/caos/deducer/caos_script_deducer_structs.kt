@@ -91,7 +91,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         class EameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.EAME)
         class NameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.NAME)
     }
-    data class CaosCommandCall(override val text:String) : CaosVar(text, CaosExpressionValueType.ANY)
+    data class CaosCommandCall(override val text:String, val returnType:CaosExpressionValueType? = null) : CaosVar(text, CaosExpressionValueType.ANY)
     object CaosLiteralVal: CaosVar("", CaosExpressionValueType.ANY)
     sealed class CaosLiteral(text:String, simpleType: CaosExpressionValueType) : CaosVar(text, simpleType) {
         data class CaosString(val value:String) : CaosLiteral(value, CaosExpressionValueType.STRING)
