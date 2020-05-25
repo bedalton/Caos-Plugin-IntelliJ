@@ -289,8 +289,11 @@ object CaosScriptPsiImplUtil {
         (rvalue.namedVar)?.let {
             return CaosVar.NamedVar(it.text)
         }
-        rvalue.commandToken?.text?.let {
-            return CaosVar.CaosCommandCall(it)
+        rvalue.commandToken?.let {
+            if (!DumbService.isDumb(it.project)) {
+                return CaosVar.CaosCommandCall(it.text, getReturnType(it))
+            }
+            return CaosVar.CaosCommandCall(it.text)
         }
 
         rvalue.expression?.let {
@@ -302,12 +305,7 @@ object CaosScriptPsiImplUtil {
         }
 
         rvalue.rvaluePrime?.let { rvaluePrime ->
-            return rvaluePrime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let {
-                val commandString = it.commandString
-                if (commandString.toLowerCase() == "null")
-                    return CaosVar.CaosVarNull
-                return CaosVar.CaosCommandCall(commandString)
-            } ?: CaosVar.CaosLiteralVal
+            return toCaosVar(rvaluePrime)
         }
 
         return CaosVar.CaosVarNone
@@ -325,12 +323,7 @@ object CaosScriptPsiImplUtil {
         }
 
         expression.rvaluePrime?.let { rvaluePrime ->
-            return rvaluePrime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let {
-                val commandString = it.commandString
-                if (commandString.toLowerCase() == "null")
-                    return CaosVar.CaosVarNull
-                return CaosVar.CaosCommandCall(commandString)
-            } ?: CaosVar.CaosLiteralVal
+            return toCaosVar(rvaluePrime)
         }
 
         expression.number?.let { number ->
@@ -371,6 +364,37 @@ object CaosScriptPsiImplUtil {
         }
 
         return CaosVar.CaosVarNone
+    }
+
+    @JvmStatic
+    private fun toCaosVar(rvaluePrime:CaosScriptRvaluePrime) : CaosVar {
+        return rvaluePrime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let {
+            val commandString = it.commandString
+            if (commandString.toLowerCase() == "null")
+                return CaosVar.CaosVarNull
+            if (!DumbService.isDumb(rvaluePrime.project)) {
+                return CaosVar.CaosCommandCall(commandString, getReturnType(it))
+            }
+            return CaosVar.CaosCommandCall(commandString)
+        } ?: CaosVar.CaosLiteralVal
+    }
+
+    private fun getReturnType(token:CaosScriptIsCommandToken) : CaosExpressionValueType {
+        return token.reference.multiResolve(true)
+                .mapNotNull {
+                    PsiTreeUtil
+                            .getParentOfType(it.element, CaosDefCommandDefElement::class.java)
+                            ?.returnTypeStruct
+                            ?.type
+                            ?.type
+                            ?.let {
+                                CaosExpressionValueType.fromSimpleName(it)
+                            }
+                }
+                .firstOrNull {
+                    it != CaosExpressionValueType.UNKNOWN
+                }
+                ?: CaosExpressionValueType.UNKNOWN
     }
 
     @JvmStatic
@@ -540,8 +564,11 @@ object CaosScriptPsiImplUtil {
         (lvalue.namedVar)?.let {
             return CaosVar.NamedVar(it.text)
         }
-        lvalue.commandToken?.text?.let {
-            return CaosVar.CaosCommandCall(it)
+        lvalue.commandToken?.let {
+            if (!DumbService.isDumb(it.project)) {
+                return CaosVar.CaosCommandCall(it.text, getReturnType(it))
+            }
+            return CaosVar.CaosCommandCall(it.text)
         }
         LOGGER.info("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}")
         return CaosVar.CaosLiteralVal
