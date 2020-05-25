@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.hints
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.openc2e.plugins.intellij.caos.deducer.CaosScriptVarDeducer
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
@@ -22,7 +23,7 @@ fun CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
         return null
     }
     (parent?.parent as? CaosScriptExpectsValueOfType)?.let {
-        return getCommandParameterTypeDefValue(it)
+        return getCommandParameterTypeDefValue(it, text)
     }
 
     getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
@@ -86,7 +87,7 @@ private fun getListValue(variant: String, listName: String, project: Project, ke
     return value
 }
 
-private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType): CaosDefTypeDefValueStruct? {
+private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key:String): CaosDefTypeDefValueStruct? {
     val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
             ?: return null
     val index = valueOfType.index
@@ -114,7 +115,7 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
         return null
     }
     val variant = valueOfType.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
-    return getListValue(variant, typeDef, valueOfType.project, valueOfType.text)
+    return getListValue(variant, typeDef, valueOfType.project, key)
 }
 
 
