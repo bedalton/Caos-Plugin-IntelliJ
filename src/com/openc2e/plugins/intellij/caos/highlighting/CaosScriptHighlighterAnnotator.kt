@@ -6,11 +6,10 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.caos.annotators.AnnotationHolderWrapper
-import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
+import com.openc2e.plugins.intellij.caos.psi.util.getParentOfType
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
-import com.openc2e.plugins.intellij.caos.utils.isOrHasParentOfType
 
 class CaosScriptHighlighterAnnotator : Annotator {
 
@@ -24,8 +23,8 @@ class CaosScriptHighlighterAnnotator : Annotator {
             element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken-> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
             element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
             element is CaosScriptAnimationString -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
-            element is CaosScriptByteString && isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
-            //isCommandKeyword(element) && element.text.toLowerCase() != "retn" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
+            (element is CaosScriptByteString || element is CaosScriptByteStringPoseList) && isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
+            (element is CaosScriptByteString || element is CaosScriptByteStringPoseList)  && !isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.BYTE_STRING)
             element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
             element is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
@@ -57,7 +56,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 .create()
     }
 
-    private fun isAnimationByteString(element: CaosScriptByteString) : Boolean {
+    private fun isAnimationByteString(element: PsiElement) : Boolean {
         if (!element.hasParentOfType(CaosScriptExpectsByteString::class.java))
             return false
         val argumentParent = element.getParentOfType(CaosScriptArgument::class.java)
@@ -65,14 +64,13 @@ class CaosScriptHighlighterAnnotator : Annotator {
         val index = argumentParent.index
         val commandParent = element.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return false
-        val command = commandParent.commandString
-        val variant = element.containingCaosFile?.variant
-        return CaosDefCommandElementsByNameIndex.Instance[command, element.project]
+        return commandParent
+                .commandToken
+                ?.reference
+                ?.multiResolve(true)
+                .orEmpty()
+                .mapNotNull { it.element as? CaosDefCommandDefElement}
                 .any {
-                    if (!it.isRvalue)
-                        return@any false
-                    if (variant != null && !it.isVariant(variant))
-                        return@any false
                     val parameter = it.parameterList
                             .getOrNull(index)
                             ?.parameterType
