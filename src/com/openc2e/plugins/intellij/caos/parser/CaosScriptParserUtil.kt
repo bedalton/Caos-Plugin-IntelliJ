@@ -25,12 +25,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun isVariant(builder_: PsiBuilder,
                   level: Int, variant: String?): Boolean {
-        var currentVariant: String? = builder_.getUserData(CAOS_VARIANT)
-        if (currentVariant != null)
-            return currentVariant == variant
-        currentVariant = CaosScriptProjectSettings.variant
-        builder_.putUserData(CAOS_VARIANT, currentVariant)
-        return currentVariant == variant
+        return CaosScriptProjectSettings.variant == variant
     }
 
     @JvmStatic
