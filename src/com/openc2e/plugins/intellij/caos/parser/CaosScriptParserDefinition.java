@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 public class CaosScriptParserDefinition implements ParserDefinition {
 
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-    private static final TokenSet COMMENTS = TokenSet.create(CaosScriptTypes.CaosScript_COMMENT);
+    private static final TokenSet COMMENTS = CaosScriptTokenSets.getCOMMENTS();
     private static final TokenSet STRINGS = CaosScriptTokenSets.getSTRING_LIKE();
 
     @NotNull
