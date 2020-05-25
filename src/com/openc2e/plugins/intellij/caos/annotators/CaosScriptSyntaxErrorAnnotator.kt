@@ -48,9 +48,18 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptC1String -> annotateC1String(variant, element, annotationWrapper)
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
+            is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
         }
+    }
+
+    private fun annotateNumber(variant: String, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant != "C1" || element.decimal == null)
+            return
+        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.float-value-not-allowed-in-variant"))
+                .range(element)
+                .create()
     }
 
     private fun annotateEqualityExpressionPlus(variant: String, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
