@@ -27,7 +27,6 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
             val list = mutableListOf<InlayInfo>()
             if (DumbService.isDumb(project))
                 return list
-
             if (element !is CaosScriptExpression)
                 return list
             val typeDefValue = element.getTypeDefValue()
