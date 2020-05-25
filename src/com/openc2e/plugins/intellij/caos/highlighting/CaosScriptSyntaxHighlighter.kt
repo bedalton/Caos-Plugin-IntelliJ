@@ -57,6 +57,8 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val ANIMATION:TextAttributesKey = createTextAttributesKey("CaosScript_ANIMATION", DefaultLanguageHighlighterColors.CONSTANT)
         @JvmStatic
+        val BYTE_STRING:TextAttributesKey = ANIMATION
+        @JvmStatic
         val STRING:TextAttributesKey = createTextAttributesKey("CaosScript_STRING_LITERAL", DefaultLanguageHighlighterColors.STRING)
         @JvmStatic
         val TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_TOKEN", DefaultLanguageHighlighterColors.STRING)
