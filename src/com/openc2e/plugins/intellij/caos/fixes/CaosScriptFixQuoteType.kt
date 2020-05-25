@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.caos.fixes
 
 import com.intellij.codeInspection.IntentionAndQuickFixAction
-import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -11,7 +10,6 @@ import com.intellij.psi.SmartPointerManager
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptStringLike
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiElementFactory
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
-import kotlin.math.exp
 
 class CaosScriptFixQuoteType(element:PsiElement, val quoteStart:Char, val quoteEnd:Char = quoteStart) : IntentionAndQuickFixAction() {
     private val pointer = SmartPointerManager.createPointer(element)
