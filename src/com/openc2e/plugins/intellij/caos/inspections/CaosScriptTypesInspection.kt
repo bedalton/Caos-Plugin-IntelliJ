@@ -5,7 +5,6 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.openc2e.plugins.intellij.caos.annotators.AnnotationHolderWrapper
-import com.openc2e.plugins.intellij.caos.deducer.CaosScriptIsVariableVar
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
@@ -67,13 +66,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     }
 
     private fun annotateArgument(element: CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
-        val caosVar = element.toCaosVar()
-        if (caosVar is CaosScriptIsVariableVar) {
-            // todo handle var type checks
-            return
-        }
         val rvalue = element.rvalue ?: return
-        val actualType = getActualType(rvalue, caosVar)
+        val actualType = (rvalue.expression ?: rvalue).getChildOfType(CaosScriptIsVariable::class.java)
+                ?.getInferredType()
+                ?: getActualType(rvalue, rvalue.toCaosVar())
         var expectedTypeSimple = element.expectedType
         if (expectedTypeSimple == CaosExpressionValueType.DECIMAL && expectsInt(element)) {
             expectedTypeSimple = CaosExpressionValueType.INT
