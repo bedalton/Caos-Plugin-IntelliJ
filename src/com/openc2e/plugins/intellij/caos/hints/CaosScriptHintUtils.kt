@@ -1,8 +1,6 @@
 package com.openc2e.plugins.intellij.caos.hints
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
-import com.openc2e.plugins.intellij.caos.deducer.CaosScriptVarDeducer
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
@@ -13,6 +11,7 @@ import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.caos.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.caos.utils.orElse
 
@@ -23,6 +22,7 @@ fun CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
         return null
     }
     (parent?.parent as? CaosScriptExpectsValueOfType)?.let {
+        LOGGER.info("Getting typedef value for ${it.text} in command ${parent?.parent?.text}")
         return getCommandParameterTypeDefValue(it, text)
     }
 
@@ -73,6 +73,7 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
 }
 
 private fun getListValue(variant: String, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
+    LOGGER.info("Getting list value '${key}' from $listName")
     val list = CaosDefTypeDefinitionElementsByNameIndex
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
@@ -81,6 +82,7 @@ private fun getListValue(variant: String, listName: String, project: Project, ke
         return null
     }
     val value = list.keys.firstOrNull { it.key == key }
+    LOGGER.info("Found list $listName for value '${key}'")
     if (value == null) {
         LOGGER.info("Failed to find value in list $listName for key $key")
     }
@@ -89,7 +91,10 @@ private fun getListValue(variant: String, listName: String, project: Project, ke
 
 private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key:String): CaosDefTypeDefValueStruct? {
     val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
-            ?: return null
+    if (containingCommand == null) {
+        LOGGER.info("Failed to find parent command of ${valueOfType.text}. Parent is ${valueOfType.parent?.elementType}")
+        return null
+    }
     val index = valueOfType.index
     val reference = containingCommand
             .commandToken
@@ -98,7 +103,11 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             ?.firstOrNull()
             ?.element
             ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-            ?: return null
+    if (reference == null) {
+        LOGGER.info("Failed to find referenced command for ${valueOfType.text} in call ${containingCommand.commandString}")
+        return null
+    }
+    LOGGER.info("Found reference for ${valueOfType.text} in commmand ${containingCommand.commandString}")
     val parameterStruct = reference
             .docComment
             ?.parameterStructs
@@ -111,9 +120,11 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             .type
             .typedef
     if (typeDef == null) {
-        LOGGER.info("RValue type is null in typedef for command ${containingCommand.commandString}. Parameter Data: $parameterStruct")
+        LOGGER.info("Parameter($index) ${valueOfType.text} has no typedef parameter. Parameter Type: ${parameterStruct.type}")
         return null
     }
+
+    LOGGER.info("Parameter ${valueOfType.text} has typedef $typeDef")
     val variant = valueOfType.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
     return getListValue(variant, typeDef, valueOfType.project, key)
 }
@@ -145,9 +156,9 @@ internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosDefCommandD
     if (commandTokens.size == 1) {
         return commandTokens[0]
     }
-    val numParameters = commandToken.getParentOfType(CaosScriptCommandElement::class.java)?.let {
-        it.argumentsLength
-    }.orElse(-1)
+    val numParameters = commandToken.getParentOfType(CaosScriptCommandElement::class.java)
+            ?.argumentsLength
+            .orElse(-1)
 
     return if (numParameters >= 0){
         commandTokens.filter { it.parameterStructs.size == numParameters }.ifEmpty { null }?.first()
@@ -179,14 +190,12 @@ private fun getCommand(equalityExpression: CaosScriptEqualityExpression, express
             0, 1 -> return null
             2 -> if (it[0].isEquivalentTo(expression)) it[1] else it[0]
             else -> {
-                LOGGER.severe("Equality operator expects exactly TWO expressions")
                 return null
             }
         }
     } ?: return null
     val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
     if (token == null) {
-        LOGGER.info("Failed to find rvaluePrime in equality expressions '${other.text}'")
         return null
     }
     return token

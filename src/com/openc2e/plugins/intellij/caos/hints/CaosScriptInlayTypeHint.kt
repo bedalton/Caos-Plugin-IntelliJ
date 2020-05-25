@@ -10,11 +10,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.refactoring.suggested.endOffset
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
+import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 
 enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boolean) : CaosScriptHintsProvider {
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
@@ -88,13 +91,39 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val rvalue = element as? CaosScriptRvalue
                     ?: return emptyList()
+            LOGGER.info("Getting Return type hint for rvalue '${rvalue.text}'")
             val token = rvalue.commandToken
                     ?: return emptyList()
+            LOGGER.info("Got return type hint command token '${token.text}'")
             val resolved = getCommand(token)
                     ?: return emptyList()
-            return resolved.returnTypeStruct?.type?.type?.let {
-                listOf(InlayInfo("($it)", token.endOffset))
-            }.orEmpty()
+            LOGGER.info("Resolved command token ${token.text}")
+            val type = resolved.returnTypeStruct?.type?.type
+                    ?: return emptyList()
+            val inlayInfo = listOf(InlayInfo("($type)", token.endOffset))
+            val expectsParentOfType = (rvalue.parent as? CaosScriptExpectsValueOfType)
+                    ?: return inlayInfo
+            LOGGER.info("Got expects value of type parent")
+            val index = expectsParentOfType.index
+            val containingCommand = (expectsParentOfType.parent as? CaosScriptCommandElement)
+                    ?.commandToken
+                    ?.reference
+                    ?.multiResolve(false)
+                    ?.firstOrNull()
+                    ?.element
+                    ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+                    ?: return inlayInfo
+            val parameterStruct = containingCommand.parameterStructs?.getOrNull(index)
+            if (parameterStruct != null) {
+                val parameterName = parameterStruct.name.toLowerCase()
+                val typeName = type.toLowerCase()
+                LOGGER.info("ParameterName: '${parameterName}' == '${typeName}'? ${parameterName == typeName}")
+                if (parameterName == typeName)
+                    return emptyList()
+            } else {
+                LOGGER.info("Failed to find parameter number $index for command ${resolved.commandName}. Parameters are ${resolved.parameterStructs}")
+            }
+            return inlayInfo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {

@@ -2903,7 +2903,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
  * remaining values should be set to 0
  * #Creatures
  *
- * @param {object} (agent)
+ * @param {agent} (agent)
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
@@ -2918,7 +2918,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
  * @param {amount4} (integer)
  *
  */
-STIM WRIT (command) object (agent) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
+STIM WRIT (command) agent (agent) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
  * Shout {stimulus} to all creatures within earshot
@@ -2951,11 +2951,11 @@ STM# TACT (command) stimulus (integer);
  * Send {stimulus} to the specified {object}
  * #Creatures
  *
- * @param {object} (agent)
+ * @param {agent} (agent)
  * @param {stimulus} (integer@Stimulus)
  *
  */
-STM# WRIT (command) object (agent) stimulus (integer);
+STM# WRIT (command) agent (agent) stimulus (integer);
 
 /*
  * Stop execution (eg. following error, or before subroutine definitions start)
