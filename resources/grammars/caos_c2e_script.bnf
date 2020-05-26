@@ -512,7 +512,7 @@ expression_list
 	}
 
 loop_statement
-   ::= c_loop space_like_or_newline <<enterBlock>>loop_body? space_like_or_newline loop_terminator<<exitBlock>>
+   ::= c_loop space_like_or_newline <<enterBlock>> loop_body? space_like_or_newline loop_terminator<<exitBlock>>
 	{
 		pin=1
 		implements = [
