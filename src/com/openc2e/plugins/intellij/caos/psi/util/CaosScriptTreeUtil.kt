@@ -114,40 +114,28 @@ fun ASTNode?.getPreviousPossiblyEmptySibling(): ASTNode? {
 }
 
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.treePrev ?: getPrevInTreeParent(this) ?: return null
+    var out: ASTNode? = this?.previous ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
-        out = if (out.treePrev == null) {
-            getPrevInTreeParent(out)
-        } else {
-            out.treePrev
-        }
-        if (out == null) {
-            return null
-        }
-        ////LOGGER.info("<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
+        out = out.previous ?: return null
     }
     return out
 }
 
-val ASTNode.previous: PsiElement? get(){
-    val out: ASTNode? = this.treePrev ?: getPrevInTreeParent(this) ?: return null
-    return out?.psi
+val ASTNode.previous: ASTNode? get(){
+    return this.treePrev ?: getPrevInTreeParent(this)
 }
 
-val ASTNode.next: PsiElement? get() {
-    val out: ASTNode? = this.treeNext ?: getNextInTreeParent(this) ?: return null
-    return out?.psi
+val ASTNode.next: ASTNode? get() {
+    return this.treeNext ?: getNextInTreeParent(this)
 }
 
 
 val PsiElement.previous: PsiElement? get(){
-    val out: ASTNode? = this.node.treePrev ?: getPrevInTreeParent(this.node) ?: return null
-    return out?.psi
+    return this.node.treePrev ?: getPrevInTreeParent(this.node)
 }
 
 val PsiElement.next: PsiElement? get() {
-    val out: ASTNode? = this.node.treeNext ?: getNextInTreeParent(this.node) ?: return null
-    return out?.psi
+    return this.node.treeNext ?: getNextInTreeParent(this.node)
 }
 
 private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
@@ -173,16 +161,9 @@ fun ASTNode.getNextNonEmptySiblingIgnoringComments(): ASTNode? {
 }
 
 fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.treeNext ?: getNextInTreeParent(this) ?: return null
+    var out: ASTNode? = this?.next ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
-        out = if (out.treeNext == null) {
-            getNextInTreeParent(out)
-        } else {
-            out.treeNext
-        }
-        if (out == null) {
-            return null
-        }
+        out = out.next ?: return null
     }
     return out
 }
@@ -335,9 +316,12 @@ internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boole
     }
     return if (ignoreLineTerminator && out.elementType === CaosScriptTypes.CaosScript_NEWLINE)
         true
-    else if (!ignoreLineTerminator && out.text.contains("\n")) {
-        false
-    } else {
-        out.elementType === TokenType.WHITE_SPACE || out.psi is PsiErrorElement
+    else {
+        return out.text.let {
+            if (!ignoreLineTerminator && it.contains("\n"))
+                false
+            else
+                it.isBlank()
+        }
     }
 }
