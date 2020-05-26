@@ -13,7 +13,7 @@ import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpression
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken
 import java.util.logging.Logger
 
-private val LOGGER: Logger by lazy {
+internal val LOGGER: Logger by lazy {
     Logger.getLogger("#CaosScriptSpacingProcessor")
 }
 
