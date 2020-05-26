@@ -19,7 +19,7 @@ class CaosScriptBlock internal constructor(
         node: ASTNode,
         wrap: Wrap?,
         alignment: Alignment?,
-        val settings:CommonCodeStyleSettings
+        val settings: CommonCodeStyleSettings
 ) : AbstractBlock(node, wrap, alignment) {
 
     private val subFormattedBlocks by lazy {
@@ -64,14 +64,11 @@ class CaosScriptBlock internal constructor(
             null) ?: elementType
         val previousBlock = if (newIndex == 0 || subFormattedBlocks.isEmpty()) null else subFormattedBlocks[newIndex - 1]
         val previousType = previousBlock?.node?.elementType
-        if (elementType == TokenType.WHITE_SPACE) {
-            val parent = node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent
-            if (parent !is CaosScriptMacro)
-                return normalIndent
-        }
-        if (previousType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE)
+        if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent !is CaosScriptMacro) {
             return normalIndent
-        if (previousType == CaosScriptTypes.CaosScript_SUBROUTINE_HEADER)
+        }
+        LOGGER.info("Get indent for type: $elementType. PrevType: $previousType")
+        if (previousType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE)
             return normalIndent
         if (elementType in CaosScriptTokenSets.BLOCK_ENDS)
             return ChildAttributes(Indent.getNoneIndent(), null)
@@ -91,7 +88,7 @@ class CaosScriptBlock internal constructor(
     }
 
     companion object {
-        private val EMPTY:List<CaosScriptBlock> = emptyList()
+        private val EMPTY: List<CaosScriptBlock> = emptyList()
         private val normalIndent = ChildAttributes(Indent.getNormalIndent(), null)
         private val noneIndent = ChildAttributes(Indent.getNoneIndent(), null)
     }
@@ -99,4 +96,4 @@ class CaosScriptBlock internal constructor(
 }
 
 
-internal val  NONE_WRAP:Wrap = Wrap.createWrap(WrapType.NONE, false)
+internal val NONE_WRAP: Wrap = Wrap.createWrap(WrapType.NONE, false)
