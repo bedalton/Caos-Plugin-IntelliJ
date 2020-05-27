@@ -11,14 +11,12 @@ import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandCall
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIncomplete
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptLvalue
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptRvalue
+import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.psi.util.*
 import com.openc2e.plugins.intellij.caos.utils.Case
+import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import icons.CaosScriptIcons
@@ -39,18 +37,19 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        val previous = element.previous
-        if (!WHITESPACE.matches(previous?.text ?: "")) {
+        if (!WHITESPACE.matches(element.previous?.text ?: "")) {
             resultSet.stopHere()
             return
         }
+        val previous = element.getPreviousNonEmptySibling(true)
         if (previous != null && IS_NUMBER.matches(previous.text)) {
             resultSet.stopHere()
             return
         }
-        if (previous?.text == "gsub") {
+        if (element.hasParentOfType(CaosScriptCGsub::class.java)) {
             addSubroutineNames(element, resultSet)
             resultSet.stopHere()
+            return
         }
 
         var parent: PsiElement? = element
@@ -174,9 +173,18 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     }
 
     fun addSubroutineNames(element:PsiElement, resultSet: CompletionResultSet) {
-        val scope = GlobalSearchScope.fileScope(element.containingFile)
-        val subroutines = CaosScriptSubroutineIndex.instance.getByPatternFlat(".+",element.project, scope)
+        val project = element.project
+        val file = element.containingFile
+        val scope = GlobalSearchScope.everythingScope(project)
+        val subroutines = CaosScriptSubroutineIndex.instance.getAllInScope(project, scope)
+                .filter {
+                    LOGGER.info("Containing File: ${it.containingFile.name}")
+                    file.name == (it.originalElement?.containingFile ?: it.containingFile)?.name
+                }
                 .mapNotNull { it.name.nullIfEmpty() }
+                .toSet()
+        LOGGER.info("Adding ${subroutines.size} subroutine names for completion.")
+        LOGGER.info("There are ${CaosScriptSubroutineIndex.instance.getAllKeys(project)} keys in subroutine key index")
         for(subr in subroutines) {
             val builder = LookupElementBuilder.create(subr)
             resultSet.addElement(builder)

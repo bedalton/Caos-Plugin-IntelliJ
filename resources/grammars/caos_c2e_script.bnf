@@ -6436,6 +6436,7 @@ quote_string_literal
 
 subroutine_name
 	::= all_tokens
+	|	ID
 	|	WORD
 	|	incomplete
 	{
