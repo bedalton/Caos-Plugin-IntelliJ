@@ -28,9 +28,7 @@ fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> 
         return out
     }
     for (child in children) {
-        ////LOGGER.info("Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
         if (child.node.elementType === iElementType) {
-            ////LOGGER.info("Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
             out.add(child)
         }
     }
@@ -131,11 +129,11 @@ val ASTNode.next: ASTNode? get() {
 
 
 val PsiElement.previous: PsiElement? get(){
-    return this.node.treePrev ?: getPrevInTreeParent(this.node)
+    return this.node.treePrev?.psi ?: getPrevInTreeParent(this.node)?.psi
 }
 
 val PsiElement.next: PsiElement? get() {
-    return this.node.treeNext ?: getNextInTreeParent(this.node)
+    return this.node.treeNext?.psi ?: getNextInTreeParent(this.node)?.psi
 }
 
 private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
@@ -226,17 +224,13 @@ val PsiElement.lineNumber:Int? get() {
 
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
-    var node: ASTNode? = this.treePrev ?: getPrevInTreeParent(this) ?: return false
+    var node: ASTNode? = previous
     while (node != null) {
-        if (node.elementType == CaosScriptTypes.CaosScript_NEWLINE)
+        if (node.text.isNotBlank())
+            return false
+        if (node.text.contains("\n"))
             return true
-        if (node.elementType == TokenType.WHITE_SPACE) {
-            if (node.text.contains("\n"))
-                return true
-            node = node.treePrev ?: getPrevInTreeParent(node)
-            continue
-        }
-        break
+        node = node.previous
     }
     return false
 }
