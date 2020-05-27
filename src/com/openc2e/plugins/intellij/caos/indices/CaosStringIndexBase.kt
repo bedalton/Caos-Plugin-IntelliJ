@@ -38,6 +38,13 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
                 }
     }
 
+    fun getAllInScope(project: Project, scope: GlobalSearchScope) : List<PsiT> {
+        return getAllKeys(project)
+                .flatMap { key ->
+                    get(key, project, scope)
+                }
+    }
+
     open fun getByPattern(start: String?, tail: String?, project: Project): Map<String, List<PsiT>> {
         return getByPattern(start, tail, project, null)
     }
