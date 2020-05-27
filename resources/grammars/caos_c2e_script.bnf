@@ -403,6 +403,7 @@ subroutine
 		]
 		methods = [
 			getBlockType
+			getName
 		]
 	}
 	;
