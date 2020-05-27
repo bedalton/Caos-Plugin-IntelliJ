@@ -106,8 +106,8 @@ N_VAR = [$][a-zA-Z_0-9]+
 }
 
 <COMMENT_START> {
-	{N_CONST}				{ yybegin(IN_CONST); return CaosScript_N_CONST; }
-  	{N_VAR}					{ yybegin(IN_VAR); return CaosScript_N_VAR; }
+	//{N_CONST}				{ yybegin(IN_CONST); return CaosScript_N_CONST; }
+  	//{N_VAR}				{ yybegin(IN_VAR); return CaosScript_N_VAR; }
     " "						{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
@@ -130,16 +130,12 @@ N_VAR = [$][a-zA-Z_0-9]+
 <IN_CONST> {
 	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
 	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
-	{OVxx}				 	{ return CaosScript_OV_XX; }
-	{OBVx}				 	{ return CaosScript_OBV_X; }
-	{MVxx}				 	{ return CaosScript_MV_XX; }
-	{VARx}				 	{ return CaosScript_VAR_X; }
-	{VAxx}				 	{ return CaosScript_VA_XX; }
     {DECIMAL}				{ return CaosScript_FLOAT; }
 	{INT}				 	{ return CaosScript_INT; }
 	" "+				 	{ return WHITE_SPACE; }
 	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
 }
+
 <IN_VAR> {
 	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
 	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }

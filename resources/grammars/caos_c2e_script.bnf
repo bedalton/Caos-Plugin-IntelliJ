@@ -337,6 +337,7 @@ private caos_element
 	::=	control_statement
 	|	command_call
 	|	incomplete
+	| 	comment
 	//|	expression_list
 	;
 
@@ -6738,7 +6739,8 @@ named_var
 	;
 
 comment
-	::= COMMENT_START (constant_assignment|named_var_assignment|comment_body)?
+	::= //COMMENT_START (constant_assignment|named_var_assignment|comment_body)?
+	COMMENT_START comment_body?
 	;
 
 comment_body
