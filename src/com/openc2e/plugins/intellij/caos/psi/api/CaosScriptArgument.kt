@@ -3,12 +3,12 @@ package com.openc2e.plugins.intellij.caos.psi.api
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
-    val index:Int
-    val expectedType:CaosExpressionValueType
+    val index: Int
+    val expectedType: CaosExpressionValueType
     fun toCaosVar(): CaosVar
 }
 
-enum class CaosExpressionValueType(val value:Int, val simpleName:String) {
+enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     INT(1, "integer"),
     FLOAT(2, "float"),
     TOKEN(3, "token"),
@@ -27,8 +27,44 @@ enum class CaosExpressionValueType(val value:Int, val simpleName:String) {
     UNKNOWN(-1, "UNKNOWN");
 
     companion object {
-        fun fromSimpleName(simpleName: String) : CaosExpressionValueType {
+        fun fromSimpleName(simpleName: String): CaosExpressionValueType {
             return values().firstOrNull { it.simpleName == simpleName } ?: UNKNOWN
         }
     }
 }
+
+private val listOfNumberTypes = listOf(
+        CaosExpressionValueType.INT,
+        CaosExpressionValueType.FLOAT,
+        CaosExpressionValueType.DECIMAL
+)
+
+val CaosExpressionValueType.isNumberType: Boolean
+    get()
+    = this in listOfNumberTypes
+
+val listOfStringTypes = listOf(
+        CaosExpressionValueType.STRING,
+        CaosExpressionValueType.C1_STRING,
+        CaosExpressionValueType.HEXADECIMAL
+)
+
+val listOfAgentTypes = listOf(
+        CaosExpressionValueType.AGENT,
+        CaosExpressionValueType.NULL
+)
+val CaosExpressionValueType.isAgentType: Boolean
+    get()
+    = this in listOfAgentTypes
+
+val CaosExpressionValueType.isStringType: Boolean
+    get()
+    = this in listOfStringTypes
+
+val listOfAnyTypes = listOf(
+        CaosExpressionValueType.ANY,
+        CaosExpressionValueType.UNKNOWN
+)
+val CaosExpressionValueType.isAnyType: Boolean
+    get()
+    = this in listOfAnyTypes
