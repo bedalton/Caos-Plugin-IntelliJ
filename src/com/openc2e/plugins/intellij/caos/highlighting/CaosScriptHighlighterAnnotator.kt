@@ -25,8 +25,8 @@ class CaosScriptHighlighterAnnotator : Annotator {
             element is CaosScriptAnimationString -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
             (element is CaosScriptByteString || element is CaosScriptByteStringPoseList) && isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
             (element is CaosScriptByteString || element is CaosScriptByteStringPoseList)  && !isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.BYTE_STRING)
-            element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
-            element is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
+            //element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
+            element is CaosScriptSubroutineName || element.parent is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
         }
     }
