@@ -45,9 +45,7 @@ class CaosScriptTokenSets {
                 CaosScript_COMMENT_START,
                 CaosScript_COMMENT_TEXT,
                 CaosScript_COMMENT,
-                CaosScript_COMMENT_BODY,
-                CaosScript_K_CONST,
-                CaosScript_CONST_EQ
+                CaosScript_COMMENT_BODY
         )
 
         @JvmStatic

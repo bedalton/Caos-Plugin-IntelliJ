@@ -55,11 +55,11 @@
     <langCodeStyleSettingsProvider implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider"/>
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighter"
-                       key="CaosScript" />
     <lang.syntaxHighlighterFactory
         implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
-        language="CaosScript" />
+        language="CaosScript"
+        key="CaosScript"
+    />
     <colorSettingsPage implementation="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
