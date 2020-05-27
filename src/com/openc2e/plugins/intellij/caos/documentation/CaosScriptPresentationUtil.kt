@@ -39,14 +39,10 @@ object CaosScriptPresentationUtil {
                 .firstOrNull()
                 ?.element
         if (resolved == null) {
-            LOGGER.info("Resolved is null for command token: ${element.text}")
             return simpleDescription
         }
-        val command = resolved?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-        if (command == null) {
-            LOGGER.info("Resolved element does not have parent command def element. Self is ${resolved.elementType}. Parent is ${resolved.parent?.elementType}")
-            return simpleDescription
-        }
+        val command = resolved.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+                ?: return simpleDescription
         return command.fullCommand
 
     }
