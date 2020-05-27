@@ -8,10 +8,13 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCodeBlock
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptMacro
+import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
+import com.openc2e.plugins.intellij.caos.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.psi.util.getParentOfType
+import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
+import com.openc2e.plugins.intellij.caos.psi.util.previous
+import com.openc2e.plugins.intellij.caos.utils.orFalse
 import java.util.*
 
 
@@ -51,27 +54,27 @@ class CaosScriptBlock internal constructor(
                 )
                 blocks.add(block)
             }
-            child = child.getTreeNext()
+            child = child.treeNext
         }
         return blocks
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
         val elementType = myNode.elementType
-        val elementTypeReduced = (if (node.psi.children.size == 1)
-            (node.firstChildNode.psi as? LeafPsiElement)?.elementType
-        else
-            null) ?: elementType
         val previousBlock = if (newIndex == 0 || subFormattedBlocks.isEmpty()) null else subFormattedBlocks[newIndex - 1]
         val previousType = previousBlock?.node?.elementType
-        if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent !is CaosScriptMacro) {
-            return normalIndent
+        LOGGER.info("Get child attribute indent for type: $elementType. PrevType: $previousType")
+        val canIndent = previousType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE
+        if (canIndent || previousBlock == null) {
+            val isMacroOrEventScript = myNode.psi.getSelfOrParentOfType(CaosScriptHasCodeBlock::class.java)
+                    ?.elementType
+                    ?.let { it == CaosScriptTypes.CaosScript_MACRO || it == CaosScriptTypes.CaosScript_EVENT_SCRIPT }
+                    .orFalse()
+            if (!isMacroOrEventScript)
+                return normalIndent
         }
-        LOGGER.info("Get indent for type: $elementType. PrevType: $previousType")
-        if (previousType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE)
-            return normalIndent
         if (elementType in CaosScriptTokenSets.BLOCK_ENDS)
-            return ChildAttributes(Indent.getNoneIndent(), null)
+            return noneIndent
         return super.getChildAttributes(newIndex)
     }
 
