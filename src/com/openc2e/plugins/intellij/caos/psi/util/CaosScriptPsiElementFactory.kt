@@ -38,6 +38,7 @@ object CaosScriptPsiElementFactory {
 
     private val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
 
+
     fun createNamedVar(project: Project, newNameString: String): CaosScriptNamedVar? {
         if (!NAMED_VAR_REGEX.matches(newNameString))
             return null
@@ -48,7 +49,7 @@ object CaosScriptPsiElementFactory {
         val file = createFileFromText(project, script)
         val comment = file.firstChild?.firstChild as? CaosScriptComment
                 ?: throw RuntimeException("Failed to find expected comment in caos element factory script")
-        return comment.namedVarAssignment?.namedVar
+        return null//comment.namedVarAssignment?.namedVar
 
     }
 
@@ -64,7 +65,7 @@ object CaosScriptPsiElementFactory {
         val file = createFileFromText(project, script)
         val comment = file.firstChild?.firstChild as? CaosScriptComment
                 ?: throw RuntimeException("Failed to find expected comment in caos element factory script")
-        return comment.constantAssignment?.namedConstant
+        return null//comment.constantAssignment?.namedConstant
     }
 
     private val TOKEN_NAME_REGEX = "[a-zA-Z_0-9]*".toRegex()
