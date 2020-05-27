@@ -96,10 +96,11 @@ object CaosScriptVarDeducer {
                                 ?.type
                                 ?.type
                                 ?.let {
+                                    LOGGER.info("Type found for ${prime.text}. Type: $it")
                                     CaosVar.CaosCommandCall(token.text, CaosExpressionValueType.fromSimpleName(it))
                                 }
                     }
-                    .firstOrNull { it.simpleType != CaosExpressionValueType.COMMAND && it.simpleType != CaosExpressionValueType.ANY && it.simpleType != CaosExpressionValueType.VARIABLE && it.simpleType != CaosExpressionValueType.UNKNOWN }
+                    .firstOrNull { it.returnType != null && it.returnType != CaosExpressionValueType.ANY && it.returnType != CaosExpressionValueType.VARIABLE && it.returnType != CaosExpressionValueType.UNKNOWN }
         }
     }
 
