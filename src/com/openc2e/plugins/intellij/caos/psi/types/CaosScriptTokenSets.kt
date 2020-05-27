@@ -15,6 +15,7 @@ class CaosScriptTokenSets {
                 CaosScript_C_DOIF,
                 CaosScript_C_ELIF,
                 CaosScript_C_ELSE,
+                CaosScript_C_ENDI,
                 CaosScript_CC_RETN,
                 CaosScript_C_ENUM,
                 CaosScript_C_NEXT,
