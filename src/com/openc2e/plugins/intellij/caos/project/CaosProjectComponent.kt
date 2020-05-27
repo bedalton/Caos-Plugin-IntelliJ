@@ -44,12 +44,11 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
         } else {
             LOGGER.info("Failed to locate CAOS module")
         }
-        LOGGER.info("OnCaosFileOpened")
+        /*
         val editor = editorManager.selectedTextEditor
                 ?: return
-        LOGGER.info("GotEditor")
-        //editor.headerComponent = getCaosScriptHeaderComponent(caosFile)
-        //editor.contentComponent.add(getCaosScriptHeaderComponent(caosFile), 0)
+        editor.headerComponent = getCaosScriptHeaderComponent(caosFile)
+        editor.contentComponent.add(getCaosScriptHeaderComponent(caosFile), 0)*/
     }
 
     private fun initFrameworkDefaults(editor: Editor?, file: VirtualFile) {

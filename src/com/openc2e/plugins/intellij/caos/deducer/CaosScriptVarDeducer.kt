@@ -38,7 +38,6 @@ object CaosScriptVarDeducer {
                             ?.text
                 }
                 ?: element.text
-        LOGGER.info("Checking var type for var: ${name}")
         val scope = CaosScriptPsiImplUtil.getScope(element)
         while (enclosingBlock != null) {
             val assignments = enclosingBlock
@@ -49,7 +48,6 @@ object CaosScriptVarDeducer {
                     .filter {
                         it.lvalue?.text == name && it.startOffset < endRange
                     }
-            LOGGER.info("Found ${assignments.size} assignments before filtering")
             val expressions = assignments
                     .mapNotNull {
                         it.getChildOfType(CaosScriptExpectsValueOfType::class.java)
@@ -64,22 +62,18 @@ object CaosScriptVarDeducer {
                         }
                     }
                     .sortedByDescending { it.startOffset }
-            LOGGER.info("Found ${expressions.size} matching assignments")
             // Iterate through expressions to find type
             for (expression in expressions) {
                 val rvalue = expression.rvalue?.rvaluePrime
                 if (rvalue != null) {
                     getFromRValuePrime(rvalue)?.let {
-                        LOGGER.info("Found type: $it")
                         return it
                     }
                 }
                 val value = expression.toCaosVar()
                 val simpleType = value.simpleType
-                LOGGER.info("Simple type is: $simpleType")
                 if (simpleType != CaosExpressionValueType.ANY && simpleType != CaosExpressionValueType.VARIABLE && simpleType != CaosExpressionValueType.UNKNOWN) {
                     if (value is CaosVar.CaosCommandCall) {
-                        LOGGER.info("Found simple type later $value")
                         if (value.returnType != null)
                             return value
                         else
@@ -90,7 +84,6 @@ object CaosScriptVarDeducer {
             }
             enclosingBlock = enclosingBlock.getParentOfType(CaosScriptCodeBlock::class.java)
         }
-        LOGGER.info("No matching var types")
         return CaosVar.CaosVarNone
     }
 

@@ -91,19 +91,15 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val rvalue = element as? CaosScriptRvalue
                     ?: return emptyList()
-            LOGGER.info("Getting Return type hint for rvalue '${rvalue.text}'")
             val token = rvalue.commandToken
                     ?: return emptyList()
-            LOGGER.info("Got return type hint command token '${token.text}'")
             val resolved = getCommand(token)
                     ?: return emptyList()
-            LOGGER.info("Resolved command token ${token.text}")
             val type = resolved.returnTypeStruct?.type?.type
                     ?: return emptyList()
             val inlayInfo = listOf(InlayInfo("($type)", token.endOffset))
             val expectsParentOfType = (rvalue.parent as? CaosScriptExpectsValueOfType)
                     ?: return inlayInfo
-            LOGGER.info("Got expects value of type parent")
             val index = expectsParentOfType.index
             val containingCommand = (expectsParentOfType.parent as? CaosScriptCommandElement)
                     ?.commandToken
@@ -117,11 +113,8 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
             if (parameterStruct != null) {
                 val parameterName = parameterStruct.name.toLowerCase()
                 val typeName = type.toLowerCase()
-                LOGGER.info("ParameterName: '${parameterName}' == '${typeName}'? ${parameterName == typeName}")
                 if (parameterName == typeName)
                     return emptyList()
-            } else {
-                LOGGER.info("Failed to find parameter number $index for command ${resolved.commandName}. Parameters are ${resolved.parameterStructs}")
             }
             return inlayInfo
         }

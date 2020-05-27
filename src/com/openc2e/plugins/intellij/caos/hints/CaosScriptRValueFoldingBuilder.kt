@@ -54,7 +54,6 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         return literalExpressions.filter {
             getExpressionFoldingText(it).isNotNullOrBlank()
         }.map {
-            LOGGER.info("Creating folding region for ${it.text}")
             FoldingDescriptor(it.node, it.textRange, group)
         }.toTypedArray()
     }

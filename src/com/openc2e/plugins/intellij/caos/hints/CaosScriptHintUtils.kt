@@ -22,7 +22,6 @@ fun CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
         return null
     }
     (parent?.parent as? CaosScriptExpectsValueOfType)?.let {
-        LOGGER.info("Getting typedef value for ${it.text} in command ${parent?.parent?.text}")
         return getCommandParameterTypeDefValue(it, text)
     }
 
@@ -46,7 +45,6 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
     } ?: return null
     val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
     if (token == null) {
-        LOGGER.info("Failed to find rvaluePrime in equality expressions '${other.text}'")
         return null
     }
     val reference = token
@@ -56,7 +54,6 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
             ?.element
             ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
     if (reference == null) {
-        LOGGER.info("Failed to resolve reference to ${token.text} in equality expression")
         return null
     }
     val typeDef = reference
@@ -65,7 +62,6 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
             ?.type
             ?.typedef
     if (typeDef == null) {
-        LOGGER.info("Equality expressions type is null in typedef for command ${token.text}")
         return null
     }
     val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
@@ -73,28 +69,16 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
 }
 
 private fun getListValue(variant: String, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
-    LOGGER.info("Getting list value '${key}' from $listName")
     val list = CaosDefTypeDefinitionElementsByNameIndex
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
-    if (list == null) {
-        LOGGER.info("Failed to find list definition for name: $listName")
-        return null
-    }
-    val value = list.keys.firstOrNull { it.key == key }
-    LOGGER.info("Found list $listName for value '${key}'")
-    if (value == null) {
-        LOGGER.info("Failed to find value in list $listName for key $key")
-    }
-    return value
+            ?: return null
+    return list.keys.firstOrNull { it.key == key }
 }
 
 private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key:String): CaosDefTypeDefValueStruct? {
     val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
-    if (containingCommand == null) {
-        LOGGER.info("Failed to find parent command of ${valueOfType.text}. Parent is ${valueOfType.parent?.elementType}")
-        return null
-    }
+            ?: return null
     val index = valueOfType.index
     val reference = containingCommand
             .commandToken
@@ -103,28 +87,17 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             ?.firstOrNull()
             ?.element
             ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-    if (reference == null) {
-        LOGGER.info("Failed to find referenced command for ${valueOfType.text} in call ${containingCommand.commandString}")
-        return null
-    }
-    LOGGER.info("Found reference for ${valueOfType.text} in commmand ${containingCommand.commandString}")
+            ?: return null
     val parameterStruct = reference
             .docComment
             ?.parameterStructs
             ?.getOrNull(index)
-    if (parameterStruct == null) {
-        LOGGER.info("Parameter struct is null for argument $index in command ${containingCommand.commandString}")
-        return null
-    }
+            ?: return null
     val typeDef = parameterStruct
             .type
             .typedef
-    if (typeDef == null) {
-        LOGGER.info("Parameter($index) ${valueOfType.text} has no typedef parameter. Parameter Type: ${parameterStruct.type}")
-        return null
-    }
+            ?: return null
 
-    LOGGER.info("Parameter ${valueOfType.text} has typedef $typeDef")
     val variant = valueOfType.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
     return getListValue(variant, typeDef, valueOfType.project, key)
 }
