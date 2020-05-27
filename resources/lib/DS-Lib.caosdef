@@ -328,7 +328,7 @@ ALPH (command) alphaValue (integer) yesorno (integer);
  * #Map
  *
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {caDelta} (float)
  *
  */
@@ -745,7 +745,6 @@ BRN: SETT (command) tractNumber (integer) lineNumber (integer) newValue (float);
 BUZZ (command) interval (integer);
 
 /*
- * BUZZ (integer)
  * Returns the ideal interval in milliseconds between each tick. You can find the actual interval
  * with [RACE].
  * #Time
@@ -887,7 +886,6 @@ CABV (integer);
 CABW (command) cabinCapacity (integer);
 
 /*
- * CACL (command) FAMILY (integer) GENUS (integer) SPECIES (integer) CA_INDEX (integer)
  * This associates the classification specified with the CA specified. This allows the linking of
  * CA's to classifiers within creatures' brains.
  * #Map
@@ -895,7 +893,7 @@ CABW (command) cabinCapacity (integer);
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  *
  */
 CACL (command) family (integer) genus (integer) species (integer) caIndex (integer);
@@ -1660,7 +1658,6 @@ DIVV (command) var (variable) div (decimal);
 DMAP (command) debugMap (integer);
 
 /*
- * DOCA (command) NO_OF_UPDATES (integer)
  * Updates all CAs the specified number of times.
  * #Map
  *
@@ -1924,11 +1921,10 @@ ELSE (command);
 EMID (string);
 
 /*
- * EMIT (command) CA_INDEX (integer) AMOUNT (float)
  * Target now constantly emits an amount of a CA into the room it is in.
  * #Map
  *
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {amount} (float)
  *
  */
@@ -2823,7 +2819,7 @@ HHLD (agent);
  *
  * @rvalue
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {directions} (integer)
  * @return (integer)
  *
@@ -3629,7 +3625,7 @@ LOOP (command);
  *
  * @rvalue
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {directions} (integer)
  * @return (integer)
  *
@@ -5624,13 +5620,12 @@ PRAY REFR (command);
 PRAY TEST (integer) resourceName (string);
 
 /*
- * PROP (command) [ROOM]_ID (integer) CA_INDEX (integer) CA_VALUE (float)
  * Sets the level of a CA (cellular automata) in a particular room. There are 16 CAs, and their
  * meaning depends on the game. The level is between 0 and 1.
  * #Map
  *
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {caValue} (float)
  *
  */
@@ -5643,7 +5638,7 @@ PROP (command) roomId (integer) caIndex (integer) caValue (float);
  *
  * @rvalue
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @return (float)
  *
  */
@@ -5977,7 +5972,7 @@ RAND (integer) value1 (integer) value2 (integer);
  * #Map
  *
  * @param {roomType} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {gain} (float)
  * @param {loss} (float)
  * @param {diffusion} (float)
@@ -5993,7 +5988,7 @@ RATE (command) roomType (integer) caIndex (integer) gain (float) loss (float) di
  *
  * @rvalue
  * @param {roomType} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @return (string)
  *
  */
@@ -8130,6 +8125,27 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	1 = Can See
 }
 
+@CAs {
+	0 = <not used>
+	1 = Light
+	2 = Heat
+	3 = Water (Soil) - Soil moisture only
+	4 = Nutrients
+	5 = Water (Bodies of) - Bodies of water
+	6 = Protein
+	7 = Carbohydrate
+	8 = Fat
+	9 = <not used>
+	10 = Machinery
+	11 = <not used>
+	12 = Norns
+	13 = Grendels
+	14 = Ettins
+	15 = Norn homes
+	16 = Grendel hones
+	17 = Ettin homes
+}
+
 @Chemicals {
 	1 = Lactate - Neutral (see main article)
 	2 = Pyruvate - Good
@@ -8490,7 +8506,6 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 
 @RectToUse {
 	0 = Agent Bounds - Nearby means touching bounding rectangle of agent
-
 	1 = Cabin Bounds - Nearby means touching cabin rectangle
 }
 

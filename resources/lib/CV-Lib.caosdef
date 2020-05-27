@@ -201,7 +201,7 @@ ALPH (command) onOff (integer) alphaValue (integer);
  * #Map
  *
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {caDelta} (float)
  *
  */
@@ -697,7 +697,7 @@ CABW (command) cabinCapacity (integer);
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  *
  */
 CACL (command) family (integer) genus (integer) species (integer) caIndex (integer);
@@ -1530,7 +1530,7 @@ EMID (string);
  * Target now constantly emits an amount of a CA into the room it is in.
  * #Map
  *
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {amount} (float)
  *
  */
@@ -2368,7 +2368,7 @@ HHLD (agent);
  *
  * @rvalue
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {directions} (integer)
  * @return (integer)
  *
@@ -3092,7 +3092,7 @@ LOOP (command);
  *
  * @rvalue
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {directions} (integer)
  * @return (integer)
  *
@@ -4570,7 +4570,7 @@ PRNT (command) pose (integer);
  * #Map
  *
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {caValue} (float)
  *
  */
@@ -4582,7 +4582,7 @@ PROP (command) roomId (integer) caIndex (integer) caValue (float);
  *
  * @rvalue
  * @param {roomId} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @return (float)
  *
  */
@@ -4894,7 +4894,7 @@ RAND (integer) value1 (integer) value2 (integer);
  * #Map
  *
  * @param {roomType} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @param {gain} (float)
  * @param {loss} (float)
  * @param {diffusion} (float)
@@ -4909,7 +4909,7 @@ RATE (command) roomType (integer) caIndex (integer) gain (float) loss (float) di
  *
  * @rvalue
  * @param {roomType} (integer)
- * @param {caIndex} (integer)
+ * @param {caIndex} (integer@CAs)
  * @return (string)
  *
  */
@@ -6749,6 +6749,27 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @CanSee {
 	0 = Cannot See
 	1 = Can See
+}
+
+@CAs {
+	0 = <not used>
+	1 = Light
+	2 = Heat
+	3 = Water (Soil) - Soil moisture only
+	4 = Nutrients
+	5 = Water (Bodies of) - Bodies of water
+	6 = Protein
+	7 = Carbohydrate
+	8 = Fat
+	9 = <not used>
+	10 = Machinery
+	11 = <not used>
+	12 = Norns
+	13 = Grendels
+	14 = Ettins
+	15 = Norn homes
+	16 = Grendel hones
+	17 = Ettin homes
 }
 
 @Dead {
