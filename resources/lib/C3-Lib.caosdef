@@ -8331,7 +8331,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 
 @Unconscious {
 	0 = Conscious
-	1 = Unconcious
+	1 = Unconscious
 }
 
 @VarTypeAsInt {
