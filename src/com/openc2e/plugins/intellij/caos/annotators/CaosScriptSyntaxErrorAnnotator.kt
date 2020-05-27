@@ -9,9 +9,11 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.GlobalSearchScope
 import com.openc2e.plugins.intellij.caos.deducer.CaosScriptVarDeducer
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.fixes.*
+import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -52,9 +54,24 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
+            is CaosScriptSubroutineName -> annotateSubroutineName(element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
         }
+    }
+
+    private fun annotateSubroutineName(element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
+        if (!element.hasParentOfType(CaosScriptCommandCall::class.java))
+            return
+        val name = element.name
+        val searchScope = GlobalSearchScope.fileScope(element.containingFile)
+        val hasMatch = CaosScriptSubroutineIndex.instance[name, element.project, searchScope]
+                .isNotEmpty()
+        if (hasMatch)
+            return
+        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-not-found", name))
+                .range(element)
+                .create()
     }
 
     private fun annotateNumber(variant: String, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
