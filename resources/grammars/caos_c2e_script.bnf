@@ -1018,10 +1018,6 @@ byte_string_r
 	::= space_like? ANIM_R
 	;
 
-new_line_like
-	::= symbol_comma
-	|	NEWLINE
-	;
 
 symbol_comma
 	::= COMMA
@@ -1030,9 +1026,30 @@ symbol_comma
 space_like_or_newline
 	::= (space_like new_line_like?) (new_line_like|space_like)*
 	|	(new_line_like space_like?) (new_line_like|space_like)*
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
 	;
+
+new_line_like
+	::= symbol_comma
+	|	NEWLINE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
+	;
+
 space_like
 	::= space+
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
 	;
 
 private space
