@@ -846,9 +846,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_ULIN,
                 CaosScript_K_MON1,
                 CaosScript_K_CLS2,
-                CaosScript_K_WORD,
-                CaosScript_SUBROUTINE_NAME,
-                CaosScript_WORD
+                CaosScript_K_WORD
         )
 
         @JvmStatic
