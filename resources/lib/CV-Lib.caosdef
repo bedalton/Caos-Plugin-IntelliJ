@@ -6917,7 +6917,6 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 
 @RectToUse {
 	0 = Agent Bounds - Nearby means touching bounding rectangle of agent
-
 	1 = Cabin Bounds - Nearby means touching cabin rectangle
 }
 
@@ -7023,17 +7022,17 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 
 @Stimulus {
 	0 = Disappoint - Issue to disappoint (punish) a creature for a pointless action (eg. failed to activate)
-	1 = Pointerpat - User has patted creature
-	2 = Creaturepat - Another creature has patted you
-	3 = Pointerslap - User has slapped creature
-	4 = Creatureslap - Another creature has slapped you
+	1 = Pointer Pat - User has patted creature
+	2 = Creature Pat - Another creature has patted you
+	3 = Pointer Slap - User has slapped creature
+	4 = Creature Slap - Another creature has slapped you
 	5 = Approaching deprecated - Object is approaching
 	6 = Retreating deprecated - Object is retreating
 	7 = Bump - Creature has hit a wall
-	8 = Newobj deprecated - New object has come into view
+	8 = NewObject (deprecated) - New object has come into view
 	9 = Gobbledygook - Heard unrecognised speech
-	10 = Pointerword - Heard user speak
-	11 = Creatureword - Heard creature speak
+	10 = Pointer Word - Heard user speak
+	11 = Creature Word - Heard creature speak
 	12 = Quiescent - Emit PERIODICALLY while quiescent
 	13 = Activate1 - Emit AFTER activation
 	14 = Activate2
@@ -7042,10 +7041,10 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	17 = Retreat - Emit AFTER retreat
 	18 = Get - Emit AFTER get
 	19 = Drop
-	20 = Expressneed - Emit AFTER say need
+	20 = Express need - Emit AFTER say need
 	21 = Rest - Emit after resting but before falling asleep
 	22 = Sleep - Emit PERIODICALLY while sleeping (later in REST action)
-	23 = Travwesteast - Emit PERIODICALLY while walking west OR east
+	23 = Travel WestEast - Emit PERIODICALLY while walking west OR east
 	24 = Push - Emit AFTER being pushed
 	25 = Hit - Emit AFTER being hit
 	26 = Eat - Emit AFTER eating
@@ -7062,14 +7061,14 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	37 = Retreating edge deprecated - Emit AFTER moving away from an edge object
 	38 = Falling deprecated - Emit whilst falling under gravity
 	39 = Impact - Emit after a collision
-	40 = Pointeryes - Emit after user spoken verb YES
-	41 = Creatureyes - Emit after creature spoken verb YES
-	42 = Pointerno - Emit after user spoken verb NO
-	43 = Creatureno - Emit after creature spoken verb NO
+	40 = Pointer Yes - Emit after user spoken verb YES
+	41 = Creature Yes - Emit after creature spoken verb YES
+	42 = Pointer No - Emit after user spoken verb NO
+	43 = Creature No - Emit after creature spoken verb NO
 	44 = Aggression - Emit after performing a HIT
 	45 = Mate - Emit after mating
 	46 = Oppsex tickle
-	47 = Samesex tickle
+	47 = Same-Sex tickle
 	48 = Go nowhere
 	49 = Go in
 	50 = Go out
@@ -7137,7 +7136,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 
 @Unconscious {
 	0 = Conscious
-	1 = Unconcious
+	1 = Unconscious
 }
 
 @VarTypeAsInt {
