@@ -11,6 +11,9 @@ import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEqOp
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsValueOfType
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpression
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken
+import com.openc2e.plugins.intellij.caos.psi.util.isDirectlyPrecededByNewline
+import com.openc2e.plugins.intellij.caos.psi.util.previous
+import com.openc2e.plugins.intellij.caos.utils.orFalse
 import java.util.logging.Logger
 
 internal val LOGGER: Logger by lazy {
@@ -30,6 +33,10 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
         val node1 = child1.node
         val type1 = node1.elementType
         val node2 = child2.node
+        if (myNode.next?.isDirectlyPrecededByNewline().orFalse())
+            Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, 0)
+        if (node2.isDirectlyPrecededByNewline())
+            return Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, 0)
         val type2 = node2.elementType
         if (node1.next?.text.orEmpty().contains("\n")) {
             val lineFeeds = if (mySettings.KEEP_LINE_BREAKS) 1 else 0
@@ -59,7 +66,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
     }
 
     private fun spaceAfterIsValueOfType(node2: ASTNode): Spacing? {
-        if (node2.elementType == CaosScriptTypes.CaosScript_COMMA) {
+        if (node2.elementType == CaosScriptTypes.CaosScript_COMMA || node2.isDirectlyPrecededByNewline()) {
             return Spacing.createSpacing(0, 0, 0, false, 0)
         }
         if (node2.psi is CaosScriptExpectsValueOfType) {
