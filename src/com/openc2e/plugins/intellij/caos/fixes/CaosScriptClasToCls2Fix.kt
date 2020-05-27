@@ -5,9 +5,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCAssignment
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement
 
-class CaosScriptClasToCls2Fix(element:CaosScriptCompositeElement) : IntentionAction {
+class CaosScriptClasToCls2Fix(element:CaosScriptCAssignment) : IntentionAction {
 
     private val element = SmartPointerManager.createPointer(element)
 
