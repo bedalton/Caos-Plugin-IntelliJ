@@ -208,7 +208,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getName(element:CaosScriptSubroutine) : String {
-        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name ?: ""
+        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name ?: element.subroutineHeader.subroutineName?.text ?: ""
     }
 
     @JvmStatic
