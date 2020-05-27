@@ -11,6 +11,7 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.openc2e.plugins.intellij.caos.deducer.CaosScriptVarDeducer
+import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.fixes.*
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
@@ -53,12 +54,20 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is CaosScriptSubroutineName -> annotateSubroutineName(variant, element, annotationWrapper)
+            is CaosScriptCAssignment -> annotateAssignment(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, annotationWrapper)
             }
+        }
+    }
+
+    private fun annotateAssignment(variant: String, element: CaosScriptCAssignment, annotationWrapper: AnnotationHolderWrapper) {
+        val command = element.commandString.toUpperCase()
+        when(command) {
+            "SETV" -> annotateSetv(variant, element, annotationWrapper)
         }
     }
 
@@ -108,8 +117,107 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         builder.create()
     }
 
-    private fun annotateSetv(variant:String, element:CaosScriptNumber, annoteWrapper: AnnotationHolderWrapper) {
-
+    private fun annotateSetv(variant:String, element:CaosScriptCAssignment, annoteWrapper: AnnotationHolderWrapper) {
+        val lvalue = element.lvalue
+                ?: return
+        val setv = element.commandToken
+                ?: return
+        if (!(variant != "C1" || variant != "C2")) {
+            val type = lvalue.varToken?.let {
+                CaosScriptVarDeducer.getInferredType(it)
+            } ?: lvalue.toCaosVar().let {
+                if (it is CaosVar.CaosCommandCall) {
+                    it.returnType ?: it.simpleType
+                } else
+                    it.simpleType
+            }
+            if (type.isNumberType || type.isAnyType)
+                return
+            val replacement = when {
+                type.isStringType -> "SETS"
+                type.isAgentType -> "SETA"
+                else -> null
+            }
+            var builder = annoteWrapper.newErrorAnnotation("SETV requires a numeric value. Use $replacement for ${type.simpleName} types")
+                    .range(setv)
+            if (replacement != null) {
+                builder = builder.withFix(CaosScriptReplaceWordFix(replacement.matchCase(setv.text), setv))
+            }
+            builder.create()
+            return
+        }
+        val lvalueCommand = lvalue.commandString.toUpperCase()
+        if (lvalueCommand == "CLAS" && variant == "C2") {
+            var builder = annoteWrapper.newErrorAnnotation("SETV CLAS command was replaced by SETV CLS2 (command) family (integer) genus (integer) species (integer)")
+                    .range(setv)
+                    .withFix(CaosScriptClasToCls2Fix(element, ))
+                    .create()
+        }
+    }
+    private fun annotateSets(variant:String, element:CaosScriptCAssignment, annoteWrapper: AnnotationHolderWrapper) {
+        val lvalue = element.lvalue
+                ?: return
+        val setv = element.commandToken
+                ?: return
+        if (!(variant != "C1" || variant != "C2")) {
+            val type = lvalue.varToken?.let {
+                CaosScriptVarDeducer.getInferredType(it)
+            } ?: lvalue.toCaosVar().let {
+                if (it is CaosVar.CaosCommandCall) {
+                    it.returnType ?: it.simpleType
+                } else
+                    it.simpleType
+            }
+            if (type.isNumberType || type.isAnyType)
+                return
+            val replacement = when {
+                type.isNumberType -> "SETV"
+                type.isAgentType -> "SETA"
+                else -> null
+            }
+            var builder = annoteWrapper.newErrorAnnotation("SETS requires a string value. Use $replacement for ${type.simpleName} types")
+                    .range(setv)
+            if (replacement != null) {
+                builder = builder.withFix(CaosScriptReplaceWordFix(replacement.matchCase(setv.text), setv))
+            }
+            builder.create()
+            return
+        }
+    }
+    private fun annotateSeta(variant:String, element:CaosScriptCAssignment, annoteWrapper: AnnotationHolderWrapper) {
+        val lvalue = element.lvalue
+                ?: return
+        val seta = element.commandToken
+                ?: return
+        if (!(variant != "C1" || variant != "C2")) {
+            val type = lvalue.varToken?.let {
+                CaosScriptVarDeducer.getInferredType(it)
+            } ?: lvalue.toCaosVar().let {
+                if (it is CaosVar.CaosCommandCall) {
+                    it.returnType ?: it.simpleType
+                } else
+                    it.simpleType
+            }
+            if (type.isNumberType || type.isAnyType)
+                return
+            val replacement = when {
+                type.isNumberType -> "SETV"
+                type.isAgentType -> "SETS"
+                else -> null
+            }?.matchCase(seta.text)
+            var builder = annoteWrapper.newErrorAnnotation("SETS requires a string value")
+                    .range(seta)
+            if (replacement != null) {
+                builder = builder.withFix(CaosScriptReplaceWordFix(replacement, seta))
+            }
+            builder.create()
+            return
+        } else {
+            var builder = annoteWrapper.newErrorAnnotation("SETA is invalid in [$variant]. Use SETV")
+                    .range(seta)
+                    .withFix(CaosScriptReplaceWordFix("SETV".matchCase(seta.text), seta))
+                    .create()
+        }
     }
 
     private fun annotateEqualityExpressionPlus(variant: String, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
