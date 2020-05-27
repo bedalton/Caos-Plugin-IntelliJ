@@ -665,7 +665,6 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getIndex(commandToken: CaosScriptIsCommandToken): Int {
-        LOGGER.info("Getting index of command token: ${commandToken.text} as 0")
         return 0
     }
 
