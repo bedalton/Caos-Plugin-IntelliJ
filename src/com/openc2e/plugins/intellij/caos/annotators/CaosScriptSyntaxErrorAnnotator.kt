@@ -1,7 +1,5 @@
 package com.openc2e.plugins.intellij.caos.annotators
 
-import com.openc2e.plugins.intellij.caos.psi.util.next
-import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -9,14 +7,16 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
+import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.openc2e.plugins.intellij.caos.deducer.CaosScriptVarDeducer
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.fixes.*
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.*
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.caos.utils.matchCase
@@ -27,13 +27,11 @@ import kotlin.math.floor
 class CaosScriptSyntaxErrorAnnotator : Annotator {
 
 
-    override fun annotate(elementIn: PsiElement, holder: AnnotationHolder) {
-        if (DumbService.isDumb(elementIn.project))
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        if (DumbService.isDumb(element.project))
             return
         val annotationWrapper = AnnotationHolderWrapper(holder)
-        val element = elementIn as? CaosScriptCompositeElement
-                ?: return
-        val variant = element.containingCaosFile?.variant?.toUpperCase()
+        val variant = (element.containingFile as? CaosScriptFile)?.variant?.toUpperCase()
                 ?: ""
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
@@ -54,16 +52,40 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
-            is CaosScriptSubroutineName -> annotateSubroutineName(element, annotationWrapper)
+            is CaosScriptSubroutineName -> annotateSubroutineName(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
+            is LeafPsiElement -> {
+                if (element.parent is PsiErrorElement)
+                    annotateErrorElement(variant, element, annotationWrapper)
+            }
         }
     }
 
-    private fun annotateSubroutineName(element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
-        if (!element.hasParentOfType(CaosScriptCommandCall::class.java))
-            return
+    private fun annotateErrorElement(variant: String, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+        val command = element.text
+        val commandUpperCase = element.text.toUpperCase()
+        LOGGER.info("ErrorElement: $command")
+        if (commandUpperCase == "CLAS" || commandUpperCase == "CLS2") {
+            val setv = "SETV".matchCase(command)
+            annotationWrapper
+                    .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.clas-is-lvalue-and-requires-setv", commandUpperCase))
+                    .range(element)
+                    .withFix(CaosScriptInsertBeforeFix("Insert '$setv' before $command", setv, element))
+                    .create()
+        }
+    }
+
+    private fun annotateSubroutineName(variant: String, element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
         val name = element.name
+        if (!element.hasParentOfType(CaosScriptCommandCall::class.java)) {
+            if ((variant == "C1" || variant == "C2") && name.length != 4) {
+                annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length"))
+                        .range(element)
+                        .create()
+            }
+            return
+        }
         val searchScope = GlobalSearchScope.fileScope(element.containingFile)
         val hasMatch = CaosScriptSubroutineIndex.instance[name, element.project, searchScope]
                 .isNotEmpty()
