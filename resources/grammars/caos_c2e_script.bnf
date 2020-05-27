@@ -6437,6 +6437,7 @@ quote_string_literal
 subroutine_name
 	::= all_tokens
 	|	WORD
+	|	incomplete
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
