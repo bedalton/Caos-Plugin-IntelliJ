@@ -207,6 +207,11 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getName(element:CaosScriptSubroutine) : String {
+        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name ?: ""
+    }
+
+    @JvmStatic
     fun setName(element: CaosScriptNamedGameVar, newName: String): PsiElement {
         val newNameElement = CaosScriptPsiElementFactory.createStringRValue(element.project, newName, '"')
                 ?: return element
