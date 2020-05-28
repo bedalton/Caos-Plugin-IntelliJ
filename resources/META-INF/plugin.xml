@@ -71,6 +71,8 @@
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptHelperActionAnnotator" />
 
     <!-- Inspections -->
     <localInspection language="CaosScript"
