@@ -14,12 +14,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
+import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage.instance) {
 
-    val variant: String
-        get() = CaosScriptProjectSettings.variant
         /*
         get() {
 
@@ -133,3 +132,7 @@ val VirtualFile.variant: String
                 ?: VariantFilePropertyPusher.readFromStorage(this)
                 ?: CaosScriptProjectSettings.variant
     }
+
+
+val CaosScriptFile?.variant: String
+    get() = CaosScriptProjectSettings.variant

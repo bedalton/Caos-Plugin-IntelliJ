@@ -14,6 +14,7 @@ import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -60,7 +61,7 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val eventElement = element as? CaosScriptEventNumberElement
                     ?: return emptyList()
-            val variant = element.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+            val variant = element.containingCaosFile.variant
             val typeList = CaosDefTypeDefinitionElementsByNameIndex
                     .Instance["EventNumbers", element.project]
                     .filter {

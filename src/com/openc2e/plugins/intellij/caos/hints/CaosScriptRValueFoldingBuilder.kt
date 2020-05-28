@@ -11,6 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -32,7 +33,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun getEventName(element:CaosScriptEventNumberElement):String? {
         val eventElement = element as? CaosScriptEventNumberElement
                 ?: return null
-        val variant = element.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+        val variant = element.containingCaosFile.variant
         val typeList = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance["EventNumbers", element.project]
                 .filter {
