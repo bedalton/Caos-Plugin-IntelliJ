@@ -7,6 +7,7 @@ import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.parentOfType
 import com.intellij.refactoring.suggested.endOffset
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
@@ -18,6 +19,7 @@ import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
+import com.openc2e.plugins.intellij.caos.utils.CaosAgentClassUtils
 
 enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boolean) : CaosScriptHintsProvider {
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
@@ -91,6 +93,20 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val rvalue = element as? CaosScriptRvalue
                     ?: return emptyList()
+            rvalue.getParentOfType(CaosScriptCAssignment::class.java)?.let{ assignment ->
+                if (assignment.commandString.toUpperCase() == "SETV") {
+                    val lvalue = assignment.lvalue?.text
+                    if (lvalue == "clas") {
+                        rvalue.expression?.intValue?.let {
+                            val agentClass = CaosAgentClassUtils.parseClas(it)
+                                    ?: return emptyList()
+                            return listOf(
+                                    InlayInfo("f:${agentClass.family} g:${agentClass.genus} s:${agentClass.species}", rvalue.endOffset)
+                            )
+                        }
+                    }
+                }
+            }
             val token = rvalue.commandToken
                     ?: return emptyList()
             val resolved = getCommand(token)
