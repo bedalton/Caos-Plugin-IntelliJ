@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.refactoring.suggested.startOffset
+import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.utils.EditorUtil
 
@@ -14,7 +15,7 @@ class CaosScriptInsertBeforeFix(private val fixText:String, private val wordText
 
     private val element = SmartPointerManager.createPointer(element)
 
-    override fun getFamilyName(): String = "CaosScript"
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun getText(): String = fixText
 

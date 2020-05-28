@@ -6,13 +6,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.util.*
 
 object CaosScriptExpandCommasIntentionAction : IntentionAction {
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = "CaosScript"
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
@@ -28,9 +29,7 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction {
         return false
     }
 
-    override fun getText(): String {
-        return "Place commands on separate lines"
-    }
+    override fun getText(): String = CaosBundle.message("caos.intentions.commands-on-new-line")
 
     override fun invoke(project: Project, editor: Editor?, fileIn: PsiFile?) {
         val bodyElements = fileIn?.getChildrenOfType(CaosScriptScriptBodyElement::class.java)

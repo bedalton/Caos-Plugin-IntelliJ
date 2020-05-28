@@ -14,7 +14,8 @@ import com.openc2e.plugins.intellij.caos.utils.document
 
 class CaosScriptTrimErrorSpaceBatchFix : IntentionAction, LocalQuickFix{
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.fixes.family-name")
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
