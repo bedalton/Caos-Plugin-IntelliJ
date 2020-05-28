@@ -33,6 +33,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     }
 }
 
+
 private val listOfNumberTypes = listOf(
         CaosExpressionValueType.INT,
         CaosExpressionValueType.FLOAT,
