@@ -84,6 +84,14 @@
                      shortName="ExpectedParameterType"
                      order="last"
     />
+    <localInspection language="CaosScript"
+                     implementationClass="com.openc2e.plugins.intellij.caos.inspections.CaosScriptCAssignmentInspection"
+                     level="ERROR"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Assigned value is of expected type"
+                     shortName="ExpectedAssigmentType"
+    />
     <!-- Indices -->
 
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService"
