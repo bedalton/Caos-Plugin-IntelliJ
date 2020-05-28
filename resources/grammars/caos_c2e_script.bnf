@@ -521,11 +521,13 @@ loop_statement
 			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
 			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			isEver
 			isUntil
 			getBlockType
+			getCommandString
 		]
 	}
 	;
@@ -6472,6 +6474,7 @@ c_endm ::= K_ENDM
 	implements = [
 		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
 		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		getReference

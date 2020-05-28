@@ -112,4 +112,19 @@ object CaosScriptPsiElementFactory {
         return createFileFromText(project, "\n").firstChild
     }
 
+    fun comma(project: Project): PsiElement {
+        return createFileFromText(project, "slim,slim")
+                .firstChild
+                .firstChild
+                .firstChild
+                .getChildOfType(CaosScriptSpaceLikeOrNewline::class.java)!!
+    }
+
+    fun spaceLikeOrNewlineSpace(project: Project): PsiElement {
+        return createFileFromText(project, "slim slim")
+                .firstChild
+                .firstChild
+                .firstChild
+                .getChildOfType(CaosScriptSpaceLikeOrNewline::class.java)!!
+    }
 }
