@@ -119,7 +119,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         }
     }
     object CaosVarNull : CaosVar("[NULL]", CaosExpressionValueType.NULL)
-    object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.NULL)
+    object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.UNKNOWN)
 }
 
 sealed class CaosNumber {
