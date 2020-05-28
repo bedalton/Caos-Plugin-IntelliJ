@@ -600,7 +600,7 @@ private repeat_body
    ;
 
 enum_next_statement
-	::= emum_header_command space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? (c_next|c_nscn)<<exitBlock>>
+	::= enum_header_command space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? (c_next|c_nscn)<<exitBlock>>
 	{
 		pin=1;
 		implements = [
@@ -615,7 +615,7 @@ enum_next_statement
 	}
 	;
 
-emum_header_command
+enum_header_command
 	::= c_enum space_like classifier
 	{
 		pin=1
@@ -983,8 +983,45 @@ c_else ::= K_ELSE
 	}
 	;
 
+c_rndv
+	::= c_kw_random space_like lvalue space_like expects_int space_like  expects_int
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptAssignmentStub"
+		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			commandToken="c_kw_random"
+			getCommandString
+			getArguments
+			getArgumentValues
+			getRndvIntRange
+			isRndvValuesInOrder
+		]
+	}
 
-
+c_kw_random
+	::= K_RNDV
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
 
 animation_string
    ::= OPEN_BRACKET animation_string_body? CLOSE_BRACKET
@@ -2363,6 +2400,7 @@ lvalue
 			getCommandToken
 			toCaosVar
 			getExpectedType
+			getInferredType
 		]
 	}
 	;
@@ -3140,7 +3178,6 @@ c_kw_l_d_d
 	::= <<isVariant "CV">>K_CHAR
 	|	<<isVariant "C3">>K_CHAR
 	|	<<isVariant "DS">>K_CHAR
-	|	K_RNDV
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
