@@ -172,7 +172,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return false
         val variant = (element.containingFile as? CaosScriptFile).variant
         var matches = CaosDefCommandElementsByNameIndex.Instance[commandString, element.project]
-                .filter { variant in it.variants) }
+                .filter { variant in it.variants }
         matches = when (parent) {
             is CaosScriptCommandCall -> matches.filter { it.isCommand }
             is CaosScriptRvalue -> matches.filter { it.isRvalue }
