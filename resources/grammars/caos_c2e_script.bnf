@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -987,17 +987,21 @@ c_rndv
 	::= c_kw_random space_like lvalue space_like expects_int space_like  expects_int
 	{
 		pin=1
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptAssignmentStub"
+		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptRndvStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsAssignment"
 		]
 		methods = [
 			commandToken="c_kw_random"
 			getCommandString
 			getArguments
 			getArgumentValues
+			getLvalue
+			minElement="/expects_int[0]"
+			maxElement="/expects_int[1]"
 			getRndvIntRange
 			isRndvValuesInOrder
 		]
@@ -1266,6 +1270,7 @@ private command_call_by_args
 	|	c_f_d_f
 	|	c_a_d_f_d_f
 	|	c_assignment
+	|	c_rndv
 	|	c_none
 	|	c_gsub
 	;
@@ -1283,6 +1288,7 @@ c_assignment
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsAssignment"
 		]
 		methods = [
 			getOp

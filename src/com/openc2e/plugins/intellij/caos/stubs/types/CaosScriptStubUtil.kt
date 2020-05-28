@@ -8,6 +8,8 @@ import com.openc2e.plugins.intellij.caos.deducer.CaosNumber.CaosFloatNumber
 import com.openc2e.plugins.intellij.caos.deducer.CaosNumber.CaosIntNumber
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.*
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosLiteral.*
+import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosNamedGameVar.EameVar
+import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosNamedGameVar.GameVar
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar.CaosNumberedVar.*
 import com.openc2e.plugins.intellij.caos.psi.api.CaosExpressionValueType
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
@@ -27,7 +29,16 @@ private const val BYTE_STRING = 8
 private const val INT = 9
 private const val FLOAT = 10
 private const val ANIMATION_STRING = 11
-private const val TOKEN = 12;
+private const val TOKEN = 12
+private const val RANGE = 13
+private const val C1_STRING = 14
+private const val MAME = 15
+private const val GAME = 16
+private const val EAME = 17
+private const val NAME = 18
+private const val NULL = 19
+private const val NONE = 20
+
 
 
 internal fun StubInputStream.readCaosVar() : CaosVar{
@@ -45,6 +56,14 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         FLOAT -> CaosFloat(readFloat())
         ANIMATION_STRING -> CaosAnimationString(value = readNameAsString() ?: "", animation = readAnimation())
         TOKEN -> CaosToken(value = readNameString() ?: "XXXX")
+        RANGE -> readCaosRange()
+        C1_STRING -> CaosC1String(readNameAsString() ?: "")
+        EAME -> EameVar(readNameAsString()?:"???")
+        GAME -> GameVar(readNameAsString()?:"???")
+        MAME -> CaosNamedGameVar.MameVar(readNameAsString()?:"???")
+        NAME -> CaosNamedGameVar.NameVar(readNameAsString()?:"???")
+        NULL -> CaosVarNull
+        NONE -> CaosVarNone
         else -> throw Exception("Unexpected caos var type '$value' encountered")
     }
 }
@@ -101,6 +120,10 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
             writeInt(STRING)
             writeName(caosVar.value)
         }
+        is CaosC1String -> {
+            writeInt(C1_STRING)
+            writeName(caosVar.value)
+        }
         is CaosByteString -> {
             writeInt(BYTE_STRING)
             writeName(caosVar.text)
@@ -124,6 +147,25 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
             writeInt(TOKEN)
             writeName(caosVar.value)
         }
+        is CaosIntRange -> writeCaosRange(caosVar)
+        is EameVar -> {
+            writeInt(EAME)
+            writeName(caosVar.name)
+        }
+        is GameVar -> {
+            writeInt(GAME)
+            writeName(caosVar.name)
+        }
+        is CaosNamedGameVar.MameVar -> {
+            writeInt(MAME)
+            writeName(caosVar.name)
+        }
+        is CaosNamedGameVar.NameVar -> {
+            writeInt(NAME)
+            writeName(caosVar.name)
+        }
+        is CaosVarNull -> writeInt(NULL)
+        is CaosVarNone -> writeInt(NONE)
     }
 }
 
@@ -212,10 +254,9 @@ internal inline fun <T> StubOutputStream.writeList(list:List<T>, writer:StubOutp
 
 internal inline fun <T:Any> StubInputStream.readList(reader:StubInputStream.()->T) : List<T> {
     val listSize = readInt()
-    val out:List<T> = (0 until listSize).mapNotNull {
+    return (0 until listSize).mapNotNull {
         reader()
     }
-    return out
 }
 
 internal fun StubOutputStream.writeStringList(list:List<String>) {
@@ -279,4 +320,22 @@ internal fun StubInputStream.readAnimation() : CaosAnimation? {
             CaosAnimation.Animation(poseList, repeats, repeatsFrom)
     }
     return CaosAnimation.ErrorAnimation(readNameAsString() ?: "UNDEFINED ERROR")
+}
+
+private fun StubOutputStream.writeCaosRange(range:CaosIntRange) {
+    writeInt(RANGE)
+    writeBoolean(range.min != null)
+    range.min?.let {
+        writeInt(it)
+    }
+    writeBoolean(range.max != null)
+    range.max?.let {
+        writeInt(it)
+    }
+}
+
+private fun StubInputStream.readCaosRange() : CaosIntRange {
+    val min = if (readBoolean()) readInt() else null
+    val max = if (readBoolean()) readInt() else null
+    return CaosIntRange(min, max)
 }
