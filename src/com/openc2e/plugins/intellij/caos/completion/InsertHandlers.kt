@@ -41,7 +41,7 @@ internal object GenerateClasIntegerAction : InsertHandler<LookupElement> {
     }
 }
 
-private class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(editor.project, true) {
+class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(editor.project, true) {
 
     private val family = JFormattedTextField().apply {
         value = ""
