@@ -87,13 +87,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
 
     private fun annotateSubroutineName(variant: String, element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
         val name = element.name
-        if (!element.hasParentOfType(CaosScriptCommandCall::class.java)) {
-            if ((variant == "C1" || variant == "C2") && name.length != 4) {
-                annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length"))
-                        .range(element)
-                        .create()
-            }
-            return
+        if ((variant == "C1" || variant == "C2") && name.length != 4) {
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length", variant))
+                    .range(element)
+                    .create()
         }
         val searchScope = GlobalSearchScope.fileScope(element.containingFile)
         val hasMatch = CaosScriptSubroutineIndex.instance[name, element.project, searchScope]
