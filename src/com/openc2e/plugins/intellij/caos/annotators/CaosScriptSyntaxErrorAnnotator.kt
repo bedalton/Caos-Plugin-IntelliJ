@@ -11,12 +11,12 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.openc2e.plugins.intellij.caos.deducer.CaosScriptInferenceUtil
-import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.fixes.*
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.util.*
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
@@ -32,7 +32,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (DumbService.isDumb(element.project))
             return
         val annotationWrapper = AnnotationHolderWrapper(holder)
-        val variant = (element.containingFile as? CaosScriptFile)?.variant?.toUpperCase()
+        val variant = (element.containingFile as? CaosScriptFile).variant.toUpperCase()
                 ?: ""
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
@@ -54,9 +54,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is CaosScriptSubroutineName -> annotateSubroutineName(variant, element, annotationWrapper)
-            is CaosScriptCAssignment -> annotateAssignment(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
+            is CaosScriptCRndv -> annotateRndv(variant, element, annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, annotationWrapper)
@@ -64,11 +64,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
     }
 
-    private fun annotateAssignment(variant: String, element: CaosScriptCAssignment, annotationWrapper: AnnotationHolderWrapper) {
-        val command = element.commandString.toUpperCase()
-        when(command) {
-            "SETV" -> annotateSetv(variant, element, annotationWrapper)
-        }
+    private fun annotateRndv(variant: String, element: CaosScriptCRndv, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant in VARIANT_OLD)
     }
 
     private fun annotateErrorElement(variant: String, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
@@ -114,109 +111,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         builder.create()
     }
 
-    private fun annotateSetv(variant:String, element:CaosScriptCAssignment, annoteWrapper: AnnotationHolderWrapper) {
-        val lvalue = element.lvalue
-                ?: return
-        val setv = element.commandToken
-                ?: return
-        if (!(variant != "C1" || variant != "C2")) {
-            val type = lvalue.varToken?.let {
-                CaosScriptInferenceUtil.getInferredType(it)
-            } ?: lvalue.toCaosVar().let {
-                if (it is CaosVar.CaosCommandCall) {
-                    it.returnType ?: it.simpleType
-                } else
-                    it.simpleType
-            }
-            if (type.isNumberType || type.isAnyType)
-                return
-            val replacement = when {
-                type.isStringType -> "SETS"
-                type.isAgentType -> "SETA"
-                else -> null
-            }
-            var builder = annoteWrapper.newErrorAnnotation("SETV requires a numeric value. Use $replacement for ${type.simpleName} types")
-                    .range(setv)
-            if (replacement != null) {
-                builder = builder.withFix(CaosScriptReplaceWordFix(replacement.matchCase(setv.text), setv))
-            }
-            builder.create()
-            return
-        }
-        val lvalueCommand = lvalue.commandString.toUpperCase()
-        if (lvalueCommand == "CLAS" && variant == "C2") {
-            var builder = annoteWrapper.newErrorAnnotation("SETV CLAS command was replaced by SETV CLS2 (command) family (integer) genus (integer) species (integer)")
-                    .range(setv)
-                    .withFix(CaosScriptClasToCls2Fix(element))
-                    .create()
-        }
-    }
-    private fun annotateSets(variant:String, element:CaosScriptCAssignment, annoteWrapper: AnnotationHolderWrapper) {
-        val lvalue = element.lvalue
-                ?: return
-        val setv = element.commandToken
-                ?: return
-        if (!(variant != "C1" || variant != "C2")) {
-            val type = lvalue.varToken?.let {
-                CaosScriptInferenceUtil.getInferredType(it)
-            } ?: lvalue.toCaosVar().let {
-                if (it is CaosVar.CaosCommandCall) {
-                    it.returnType ?: it.simpleType
-                } else
-                    it.simpleType
-            }
-            if (type.isNumberType || type.isAnyType)
-                return
-            val replacement = when {
-                type.isNumberType -> "SETV"
-                type.isAgentType -> "SETA"
-                else -> null
-            }
-            var builder = annoteWrapper.newErrorAnnotation("SETS requires a string value. Use $replacement for ${type.simpleName} types")
-                    .range(setv)
-            if (replacement != null) {
-                builder = builder.withFix(CaosScriptReplaceWordFix(replacement.matchCase(setv.text), setv))
-            }
-            builder.create()
-            return
-        }
-    }
-    private fun annotateSeta(variant:String, element:CaosScriptCAssignment, annoteWrapper: AnnotationHolderWrapper) {
-        val lvalue = element.lvalue
-                ?: return
-        val seta = element.commandToken
-                ?: return
-        if (!(variant != "C1" || variant != "C2")) {
-            val type = lvalue.varToken?.let {
-                CaosScriptInferenceUtil.getInferredType(it)
-            } ?: lvalue.toCaosVar().let {
-                if (it is CaosVar.CaosCommandCall) {
-                    it.returnType ?: it.simpleType
-                } else
-                    it.simpleType
-            }
-            if (type.isNumberType || type.isAnyType)
-                return
-            val replacement = when {
-                type.isNumberType -> "SETV"
-                type.isAgentType -> "SETS"
-                else -> null
-            }?.matchCase(seta.text)
-            var builder = annoteWrapper.newErrorAnnotation("SETS requires a string value")
-                    .range(seta)
-            if (replacement != null) {
-                builder = builder.withFix(CaosScriptReplaceWordFix(replacement, seta))
-            }
-            builder.create()
-            return
-        } else {
-            var builder = annoteWrapper.newErrorAnnotation("SETA is invalid in [$variant]. Use SETV")
-                    .range(seta)
-                    .withFix(CaosScriptReplaceWordFix("SETV".matchCase(seta.text), seta))
-                    .create()
-        }
-    }
-
     private fun annotateEqualityExpressionPlus(variant: String, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
@@ -235,7 +129,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateDoubleQuoteString(variant: String, quoteStringLiteral: CaosScriptQuoteStringLiteral, wrapper: AnnotationHolderWrapper) {
-        if (!(variant == "C1" || variant == "C2"))
+        if (variant !in VARIANT_OLD)
             return
         wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.out-of-variant-quote-string"))
                 .range(quoteStringLiteral)
@@ -255,7 +149,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                         .create()
             }
         }
-        if (variant == "C1" || variant == "C2")
+        if (variant in VARIANT_OLD)
             return
         wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.out-of-variant-c1-string"))
                 .range(element)
@@ -265,7 +159,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
 
 
     private fun annotateElseIfStatement(variant: String, element: CaosScriptElseIfStatement, annotationWrapper: AnnotationHolderWrapper) {
-        if (!(variant != "C1" || variant != "C2"))
+        if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.elif-not-available"))
                 .range(element.cElif)
@@ -301,7 +195,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateComment(variant: String, element: PsiComment, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant != "C1" && variant != "C2")
+        if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation("Comments are not allowed in version less than CV")
                 .range(element)
@@ -349,7 +243,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
 
         if (parent is CaosScriptEnumNextStatement) {
-            val enum = parent.emumHeaderCommand.cEnum.text.toUpperCase()
+            val enum = parent.enumHeaderCommand.cEnum.text.toUpperCase()
             val next = "NEXT".matchCase(element.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(element)
@@ -384,18 +278,18 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
         val cNscn = element.cNscn
         if (cNscn != null) {
-            val enum = element.emumHeaderCommand.cEnum.text
+            val enum = element.enumHeaderCommand.cEnum.text
             val next = "NEXT".matchCase(cNscn.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(cNscn)
                     .withFix(CaosScriptReplaceWordFix(next, cNscn))
                     .create()
         }
-        val header = element.emumHeaderCommand.cEnum
+        val header = element.enumHeaderCommand.cEnum
                 ?: return
         if (header.kEnum != null)
             return
-        if (!(variant == "C2" || variant == "C1"))
+        if (variant !in VARIANT_OLD)
             return
         header.kEpas?.let {
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", it.text.toUpperCase()))
@@ -517,7 +411,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             }
         }
         val variants: String = if (element.varX != null) {
-            if (variant != "C1" && variant != "C2")
+            if (variant !in VARIANT_OLD)
                 "C1,C2"
             else
                 return
@@ -527,7 +421,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             else
                 return
         } else if (element.obvX != null) {
-            if (variant != "C1" && variant != "C2") {
+            if (variant !in VARIANT_OLD) {
                 if (element.varIndex.orElse(100) < 3)
                     "C1,C2"
                 else
@@ -542,7 +436,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             else
                 return
         } else if (element.mvXx != null) {
-            if (variant == "C1" || variant == "C2")
+            if (variant in VARIANT_OLD)
                 "CV+"
             else
                 return
