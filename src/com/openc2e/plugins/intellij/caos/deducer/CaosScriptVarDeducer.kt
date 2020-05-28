@@ -22,7 +22,7 @@ object CaosScriptVarDeducer {
         if (element is CaosScriptNamedConstant) {
             return PsiTreeUtil.getParentOfType(element.reference.resolve(), CaosScriptConstantAssignment::class.java)
                     ?.constantValue?.let {
-                        it.int?.text?.toInt()?.let {
+                        it.int?.text?.toLong()?.let {
                             return CaosVar.CaosLiteral.CaosInt(it)
                         } ?: it.float?.text?.toFloat()?.let {
                             return CaosVar.CaosLiteral.CaosFloat(it)
