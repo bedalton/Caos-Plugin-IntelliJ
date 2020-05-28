@@ -75,6 +75,9 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction {
 
     private fun addLines(block:CaosScriptCodeBlock) {
         for (line in block.codeBlockLineList) {
+            line.doifStatement?.let {
+                expandDoIf(it)
+            }
             val next = line.lastChild.next
                     ?: continue
             replaceIfBlankOrComma(next)
