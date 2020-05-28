@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.caos.psi.util
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
@@ -105,6 +106,10 @@ object CaosScriptPsiElementFactory {
     private fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
         val script = "____X____EXPR__ $expr"
         return PsiTreeUtil.findChildOfType(createFileFromText(project, script).firstChild, CaosScriptRvalue::class.java)!!
+    }
+
+    fun newLine(project: Project): PsiElement {
+        return createFileFromText(project, "\n").firstChild
     }
 
 }
