@@ -17,8 +17,8 @@ class CaosScriptSubroutineNameReference(element:CaosScriptSubroutineName) : PsiR
             return false
         if (!myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java))
             return false
-        return (myElement.parent is CaosScriptSubroutine && element.parent is CaosScriptCGsub) ||
-                (myElement.parent is CaosScriptCGsub && element.parent is CaosScriptSubroutine)
+        return (myElement.parent?.parent is CaosScriptSubroutine && element.parent is CaosScriptCGsub) ||
+                (myElement.parent is CaosScriptCGsub && element.parent?.parent is CaosScriptSubroutine)
     }
 
     override fun resolve(): PsiElement? {
