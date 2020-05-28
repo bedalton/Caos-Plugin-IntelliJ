@@ -97,6 +97,18 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getCommandString(reps:CaosScriptRepeatStatement) : String {
+        return reps.repsHeader.cReps.text
+    }
+
+    @JvmStatic
+    fun getCommandString(element:CaosScriptLoopStatement) : String {
+        return element.cLoop.text
+    }
+
+
+
+    @JvmStatic
     fun getCommandToken(call: CaosScriptCommandCall): CaosScriptIsCommandToken? {
         val token = call.getChildOfType(CaosScriptIsCommandToken::class.java)
                 ?: call.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
@@ -707,6 +719,15 @@ object CaosScriptPsiImplUtil {
         return parent.arguments.indexOf(lastParent)
     }
 
+    @JvmStatic
+    fun getInferredType(varToken:CaosScriptIsVariable) : CaosExpressionValueType {
+        return CaosScriptInferenceUtil.getInferredType(varToken)
+    }
+
+    @JvmStatic
+    fun getInferredType(element:CaosScriptRvalue) : CaosExpressionValueType {
+        return CaosScriptInferenceUtil.getInferredType(element)
+    }
 
     @JvmStatic
     fun getArguments(command: CaosScriptCommandElement): List<CaosScriptArgument> {
