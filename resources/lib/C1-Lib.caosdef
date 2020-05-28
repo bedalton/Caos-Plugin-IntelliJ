@@ -1424,8 +1424,8 @@ RMEV (command) targ (agent);
 RMS# (integer);
 
 /*
- * Set a variable V0-V9 to random # between min# & max# inclusive (could use with [REPS]...[REPE]
- * for random # repeats)
+ * Set a variable V0-V9 to random # between min# & max# inclusive
+ * Could use with [REPS]...[REPE] for random # repeats
  * #Variables
  *
  * @param {var} (variable)
