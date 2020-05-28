@@ -1150,11 +1150,14 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getRndvIntRange(element:CaosScriptCRndv) : Pair<Int?,Int?> {
+        element.stub?.let {
+            return Pair(it.min, it.max)
+        }
         val val1 = try {
-            element.expectsIntList.getOrNull(0)?.text?.toInt()
+            element.minElement?.text?.toInt()
         } catch (e:Exception) {null}
         val val2 = try {
-            element.expectsIntList.getOrNull(0)?.text?.toInt()
+            element.maxElement?.text?.toInt()
         } catch (e:Exception) {null}
         return Pair(val1, val2)
     }

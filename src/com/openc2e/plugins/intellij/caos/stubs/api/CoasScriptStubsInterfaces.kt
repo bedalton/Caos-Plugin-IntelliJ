@@ -30,6 +30,12 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val argumentValues: List<CaosVar>
 }
 
+interface CaosScriptRndvStub : StubElement<CaosScriptCRndvImpl> {
+    val min:Int?
+    val max:Int?
+}
+
+
 interface CaosScriptArgumentStub {
     val index:Int
     val caosVar:CaosVar

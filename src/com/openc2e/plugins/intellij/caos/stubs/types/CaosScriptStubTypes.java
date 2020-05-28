@@ -73,6 +73,10 @@ public interface CaosScriptStubTypes {
     CaosScriptEventScriptStubType EVENT_SCRIPT = new CaosScriptEventScriptStubType("CaosScript_EVENT_SCRIPT");
 
     @NotNull
+    CaosScriptRndvStubType RNDV = new CaosScriptRndvStubType("CaosScript_C_RNDV");
+
+
+    @NotNull
     CaosScriptMacroStubType MACRO = new CaosScriptMacroStubType("CaosScript_MACRO");
 
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
