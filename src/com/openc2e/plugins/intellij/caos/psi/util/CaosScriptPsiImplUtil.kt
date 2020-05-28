@@ -336,7 +336,11 @@ object CaosScriptPsiImplUtil {
                 return CaosVar.CaosLiteral.CaosFloat(it.text.toFloat())
             }
             number.int?.let {
-                return CaosVar.CaosLiteral.CaosInt(it.text.toInt())
+                try {
+                    return CaosVar.CaosLiteral.CaosInt(it.text.toLong())
+                } catch (e:Exception) {
+                    return CaosVar.CaosLiteral.CaosInt(Long.MAX_VALUE)
+                }
             }
         }
 

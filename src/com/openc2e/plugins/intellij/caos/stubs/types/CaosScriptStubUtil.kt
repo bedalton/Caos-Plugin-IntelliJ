@@ -41,7 +41,7 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         LITERAL_VAL -> CaosLiteralVal
         STRING -> CaosString(readNameAsString() ?: "")
         BYTE_STRING -> CaosByteString(readNameString() ?: "", readList { readInt() }.filterNotNull())
-        INT -> CaosInt(readInt())
+        INT -> CaosInt(readLong())
         FLOAT -> CaosFloat(readFloat())
         ANIMATION_STRING -> CaosAnimationString(value = readNameAsString() ?: "", animation = readAnimation())
         TOKEN -> CaosToken(value = readNameString() ?: "XXXX")
@@ -108,7 +108,7 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
         }
         is CaosInt -> {
             writeInt(INT)
-            writeInt(caosVar.value)
+            writeLong(caosVar.value)
         }
         is CaosFloat -> {
             writeInt(FLOAT)

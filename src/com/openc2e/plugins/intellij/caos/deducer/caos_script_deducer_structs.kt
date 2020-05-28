@@ -97,7 +97,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         data class CaosString(val value:String) : CaosLiteral(value, CaosExpressionValueType.STRING)
         data class CaosC1String(val value:String) : CaosLiteral(value, CaosExpressionValueType.C1_STRING)
         data class CaosByteString(override val text:String, val value:List<Int>) : CaosLiteral(text, CaosExpressionValueType.BYTE_STRING)
-        data class CaosInt(val value:Int) : CaosLiteral("$value", CaosExpressionValueType.INT)
+        data class CaosInt(val value:Long) : CaosLiteral("$value", CaosExpressionValueType.INT)
         data class CaosFloat(val value:Float) : CaosLiteral("$value", CaosExpressionValueType.FLOAT)
         data class CaosAnimationString(val value:String, val animation:CaosAnimation?) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
         data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
