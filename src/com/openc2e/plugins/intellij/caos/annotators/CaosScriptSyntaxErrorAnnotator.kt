@@ -27,26 +27,20 @@ import kotlin.math.floor
 
 class CaosScriptSyntaxErrorAnnotator : Annotator {
 
-
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (DumbService.isDumb(element.project))
             return
         val annotationWrapper = AnnotationHolderWrapper(holder)
         val variant = (element.containingFile as? CaosScriptFile).variant.toUpperCase()
-                ?: ""
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
             is CaosScriptSpaceLike -> annotateExtraSpaces(element, annotationWrapper)
             is CaosScriptSymbolComma -> annotateExtraSpaces(element, annotationWrapper)
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationWrapper)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationWrapper)
-            is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationWrapper)
-            is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
             is CaosScriptCRetn -> annotateRetnCommand(variant, element, annotationWrapper)
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
-            is CaosScriptCNext -> annotateNext(element, annotationWrapper)
-            is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
             is CaosScriptToken -> annotateToken(element, annotationWrapper)
             is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, annotationWrapper)
             is CaosScriptC1String -> annotateC1String(variant, element, annotationWrapper)
@@ -54,9 +48,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is CaosScriptSubroutineName -> annotateSubroutineName(variant, element, annotationWrapper)
+            is CaosScriptCRndv -> annotateRndv(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
-            is CaosScriptCRndv -> annotateRndv(variant, element, annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, annotationWrapper)
@@ -65,7 +59,24 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateRndv(variant: String, element: CaosScriptCRndv, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant in VARIANT_OLD)
+        if (variant !in VARIANT_OLD)
+            return
+        val minMax = element.rndvIntRange
+        if (minMax.first < minMax.second)
+            return
+        if (minMax.first == minMax.second) {
+            annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same"))
+                    .range(element.commandToken)
+                    .create()
+            return
+        }
+        listOfNotNull(element.minElement, element.maxElement).forEach {
+            // Todo Infer min/max values from each variable value
+            annotationWrapper.newWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-out-of-order", variant))
+                    .range(it)
+                    .withFix(CaosScriptReorderRndvParameters(element))
+                    .create()
+        }
     }
 
     private fun annotateErrorElement(variant: String, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
@@ -202,63 +213,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateByteStringR(byteStringR: CaosScriptByteStringR, annotationWrapper: AnnotationHolderWrapper) {
-
-    }
-
     private fun annotateNewEqualityOps(variant: String, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid_eq_operator"))
                 .range(element)
                 .withFix(TransposeEqOp(element))
-                .create()
-    }
-
-    private fun annotateNext(element: CaosScriptCNext, annotationWrapper: AnnotationHolderWrapper) {
-        val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
-        if (parent == null) {
-            annotationWrapper.newErrorAnnotation("NEXT should not be used outside of enum")
-                    .range(element)
-                    .create()
-            return
-        }
-        if (parent is CaosScriptEnumSceneryStatement) {
-            val next = "NSCN".matchCase(element.text)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", "ESCN", "NSCN", "NEXT"))
-                    .range(element)
-                    .withFix(CaosScriptReplaceWordFix(next, element))
-                    .create()
-        }
-    }
-
-    private fun annotateNscn(variant: String, element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
-        val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
-
-        if (parent == null) {
-            annotationWrapper.newErrorAnnotation("NSCN should not be used outside of ESCN..NSCN enum")
-                    .range(element)
-                    .create()
-            return
-        }
-
-        if (parent is CaosScriptEnumNextStatement) {
-            val enum = parent.enumHeaderCommand.cEnum.text.toUpperCase()
-            val next = "NEXT".matchCase(element.text)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
-                    .range(element)
-                    .withFix(CaosScriptReplaceWordFix(next, element))
-                    .create()
-        } else if (variant != "C2") {
-            annotateNotAvailable(variant, element, annotationWrapper)
-        }
-    }
-
-    private fun annotateSceneryEnum(variant: String, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant == "C2")
-            return
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
-                .range(element.escnHeader.cEscn)
                 .create()
     }
 
@@ -275,127 +235,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
-        val cNscn = element.cNscn
-        if (cNscn != null) {
-            val enum = element.enumHeaderCommand.cEnum.text
-            val next = "NEXT".matchCase(cNscn.text)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
-                    .range(cNscn)
-                    .withFix(CaosScriptReplaceWordFix(next, cNscn))
-                    .create()
-        }
-        val header = element.enumHeaderCommand.cEnum
-                ?: return
-        if (header.kEnum != null)
-            return
-        if (variant !in VARIANT_OLD)
-            return
-        header.kEpas?.let {
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", it.text.toUpperCase()))
-                    .range(it)
-                    .create()
-            return
-        }
-        if (variant != "C1")
-            return
-        val badElement = header.kEsee ?: header.kEtch ?: header.kEpas
-        ?: return // return if enum type is ENUM
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
-                .range(badElement)
-                .create()
-    }
 
     private fun annotateExpressionList(element: CaosScriptExpressionList, annotationWrapper: AnnotationHolderWrapper) {
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.stray-expressions-are-not-allowed"))
                 .range(element)
                 .create()
-    }
-
-    private fun annotateNotAvailable(variant: String, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
-        val command = element.commandString
-        val commandType = element.getEnclosingCommandType()
-        val commands = CaosDefCommandElementsByNameIndex
-                .Instance[command, element.project]
-        var variants = commands
-                .flatMap { it.variants.filterNotNull() }
-                .toSet()
-                .toList()
-        if (variants.isEmpty()) {
-            annotationWrapper
-                    .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command", command))
-                    .range(element)
-                    .create()
-            return
-        }
-
-        if (variant !in variants) {
-            val variantString = getVariantString(variants)
-            val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variantString)
-            annotationWrapper
-                    .newErrorAnnotation(message)
-                    .range(element)
-                    .create()
-            return
-        }
-        // If command type cannot be determined, exit This means it was used as out of command expression
-        if (commandType == CaosCommandType.UNDEFINED)
-            return
-
-        // Filter commands by matching type (ie. Command, RValue, LValue)
-        val commandsOfType = commands
-                .filter {
-                    when (commandType) {
-                        CaosCommandType.COMMAND -> it.isCommand
-                        CaosCommandType.RVALUE -> it.isRvalue
-                        CaosCommandType.LVALUE -> it.isLvalue
-                        CaosCommandType.UNDEFINED -> false
-                    }
-                }
-        // Command variant of type exists, so exit
-        if (commandsOfType.any { it.isVariant(variant) })
-            return
-
-        variants = commandsOfType
-                .flatMap { it.variants }
-                .toSet()
-                .filterNotNull()
-        // Command variant of type does not exist, show error
-        val error = CaosBundle.message(
-                "caos.annotator.command-annotator.invalid-command-type-for-variant",
-                command.toUpperCase(),
-                commandType.value.toLowerCase(),
-                getVariantString(variants)
-        )
-        annotationWrapper
-                .newErrorAnnotation(error)
-                .range(element)
-                .create()
-    }
-
-    private fun getVariantString(variantsIn: List<String>): String {
-        val variants = sortVariants(variantsIn)
-        val numVariants = variants.size
-        return when {
-            numVariants == variants.intersect(listOf("C3", "DS")).size -> "C3+"
-            numVariants == variants.intersect(listOf("CV", "C3", "DS")).size -> "CV+"
-            numVariants == variants.intersect(listOf("C2", "CV", "C3", "DS")).size -> "C2+"
-            else -> variants.joinToString(",")
-        }
-    }
-
-    private fun sortVariants(variants: List<String>): List<String> {
-        return variants.sortedBy {
-            when (it.toLowerCase()) {
-                "c1" -> 1
-                "c2" -> 2
-                "cv" -> 3
-                "c3" -> 4
-                "ds" -> 5
-                "sm" -> 6
-                else -> 7
-            }
-        }
     }
 
     private fun annotateVarToken(variantIn: String, element: CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
@@ -460,8 +304,95 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     companion object {
-        private val VARIANT_OLD = listOf("C1", "C2")
+        internal val VARIANT_OLD = listOf("C1", "C2")
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
+
+        internal fun annotateNotAvailable(variant: String, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+            val command = element.commandString
+            val commandType = element.getEnclosingCommandType()
+            val commands = CaosDefCommandElementsByNameIndex
+                    .Instance[command, element.project]
+            var variants = commands
+                    .flatMap { it.variants.filterNotNull() }
+                    .toSet()
+                    .toList()
+            if (variants.isEmpty()) {
+                annotationWrapper
+                        .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command", command))
+                        .range(element)
+                        .create()
+                return
+            }
+
+            if (variant !in variants) {
+                val variantString = getVariantString(variants)
+                val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variantString)
+                annotationWrapper
+                        .newErrorAnnotation(message)
+                        .range(element)
+                        .create()
+                return
+            }
+            // If command type cannot be determined, exit This means it was used as out of command expression
+            if (commandType == CaosCommandType.UNDEFINED)
+                return
+
+            // Filter commands by matching type (ie. Command, RValue, LValue)
+            val commandsOfType = commands
+                    .filter {
+                        when (commandType) {
+                            CaosCommandType.COMMAND -> it.isCommand
+                            CaosCommandType.RVALUE -> it.isRvalue
+                            CaosCommandType.LVALUE -> it.isLvalue
+                            CaosCommandType.UNDEFINED -> false
+                        }
+                    }
+            // Command variant of type exists, so exit
+            if (commandsOfType.any { it.isVariant(variant) })
+                return
+
+            variants = commandsOfType
+                    .flatMap { it.variants }
+                    .toSet()
+                    .filterNotNull()
+            // Command variant of type does not exist, show error
+            val error = CaosBundle.message(
+                    "caos.annotator.command-annotator.invalid-command-type-for-variant",
+                    command.toUpperCase(),
+                    commandType.value.toLowerCase(),
+                    getVariantString(variants)
+            )
+            annotationWrapper
+                    .newErrorAnnotation(error)
+                    .range(element)
+                    .create()
+        }
+
+        private fun getVariantString(variantsIn: List<String>): String {
+            val variants = sortVariants(variantsIn)
+            val numVariants = variants.size
+            return when {
+                numVariants == variants.intersect(listOf("C3", "DS")).size -> "C3+"
+                numVariants == variants.intersect(listOf("CV", "C3", "DS")).size -> "CV+"
+                numVariants == variants.intersect(listOf("C2", "CV", "C3", "DS")).size -> "C2+"
+                else -> variants.joinToString(",")
+            }
+        }
+
+
+        private fun sortVariants(variants: List<String>): List<String> {
+            return variants.sortedBy {
+                when (it.toLowerCase()) {
+                    "c1" -> 1
+                    "c2" -> 2
+                    "cv" -> 3
+                    "c3" -> 4
+                    "ds" -> 5
+                    "sm" -> 6
+                    else -> 7
+                }
+            }
+        }
     }
 
 }
