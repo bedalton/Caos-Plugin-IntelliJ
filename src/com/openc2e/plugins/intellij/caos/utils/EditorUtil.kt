@@ -4,6 +4,7 @@ package com.openc2e.plugins.intellij.caos.utils
 
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.editor.Document
@@ -36,7 +37,7 @@ object EditorUtil {
     }
 
     fun deleteText(document:Document, range: TextRange) {
-        com.intellij.openapi.application.runWriteAction {
+        runWriteAction {
             document.deleteString(range.startOffset, range.endOffset)
         }
     }
@@ -86,6 +87,23 @@ object EditorUtil {
         runWriteAction(Runnable {
             document.insertString(offset, text)
         }, null, document)
+    }
+
+
+    fun replaceText(document: Document, range:TextRange, text: String) {
+        runWriteAction {
+            document.replaceString(range.startOffset, range.endOffset, text)
+        }
+    }
+
+
+    fun replaceText(editor: Editor, range:TextRange, text: String, moveCaretToEnd: Boolean = false) {
+        runWriteAction {
+            editor.document.replaceString(range.startOffset, range.endOffset, text)
+            if (moveCaretToEnd) {
+                editor.caretModel.moveToOffset(range.endOffset + text.length)
+            }
+        }
     }
 
     fun offsetCaret(insertionContext: InsertionContext, offset: Int) {
