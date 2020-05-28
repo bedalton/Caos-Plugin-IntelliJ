@@ -46,6 +46,17 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             resultSet.stopHere()
             return
         }
+
+        if (previous?.text?.toUpperCase() == "CLAS") {
+            val builderElement = LookupElementBuilder
+                    .create("")
+                    .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
+                    .withInsertHandler(GenerateClasIntegerAction)
+            resultSet.addElement(builderElement)
+            resultSet.stopHere()
+            return
+        }
+
         if (element.hasParentOfType(CaosScriptCGsub::class.java)) {
             addSubroutineNames(element, resultSet)
             resultSet.stopHere()

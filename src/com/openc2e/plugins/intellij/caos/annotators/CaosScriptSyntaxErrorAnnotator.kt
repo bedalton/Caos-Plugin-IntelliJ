@@ -150,7 +150,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (lvalueCommand == "CLAS" && variant == "C2") {
             var builder = annoteWrapper.newErrorAnnotation("SETV CLAS command was replaced by SETV CLS2 (command) family (integer) genus (integer) species (integer)")
                     .range(setv)
-                    .withFix(CaosScriptClasToCls2Fix(element, ))
+                    .withFix(CaosScriptClasToCls2Fix(element))
                     .create()
         }
     }
