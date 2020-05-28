@@ -17,9 +17,9 @@ import com.openc2e.plugins.intellij.caos.utils.matchCase
 
 class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
-    override fun getDisplayName(): String = "Expected parameter type"
+    override fun getDisplayName(): String = "Assigned value is of expected type"
     override fun getGroupDisplayName(): String = "CaosScript"
-    override fun getShortName(): String = "ExpectedParameterType"
+    override fun getShortName(): String = "ExpectedAssigmentType"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
             override fun visitCAssignment(o: CaosScriptCAssignment) {
