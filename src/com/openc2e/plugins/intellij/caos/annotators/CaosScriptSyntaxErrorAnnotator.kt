@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.search.GlobalSearchScope
-import com.openc2e.plugins.intellij.caos.deducer.CaosScriptVarDeducer
+import com.openc2e.plugins.intellij.caos.deducer.CaosScriptInferenceUtil
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.fixes.*
@@ -121,7 +121,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 ?: return
         if (!(variant != "C1" || variant != "C2")) {
             val type = lvalue.varToken?.let {
-                CaosScriptVarDeducer.getInferredType(it)
+                CaosScriptInferenceUtil.getInferredType(it)
             } ?: lvalue.toCaosVar().let {
                 if (it is CaosVar.CaosCommandCall) {
                     it.returnType ?: it.simpleType
@@ -158,7 +158,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 ?: return
         if (!(variant != "C1" || variant != "C2")) {
             val type = lvalue.varToken?.let {
-                CaosScriptVarDeducer.getInferredType(it)
+                CaosScriptInferenceUtil.getInferredType(it)
             } ?: lvalue.toCaosVar().let {
                 if (it is CaosVar.CaosCommandCall) {
                     it.returnType ?: it.simpleType
@@ -188,7 +188,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 ?: return
         if (!(variant != "C1" || variant != "C2")) {
             val type = lvalue.varToken?.let {
-                CaosScriptVarDeducer.getInferredType(it)
+                CaosScriptInferenceUtil.getInferredType(it)
             } ?: lvalue.toCaosVar().let {
                 if (it is CaosVar.CaosCommandCall) {
                     it.returnType ?: it.simpleType
@@ -508,7 +508,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val variant = variantIn.toUpperCase()
         if (variant == "C1") {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
-                val type = CaosScriptVarDeducer.getInferredType(element)
+                val type = CaosScriptInferenceUtil.getInferredType(element)
                 if (type == CaosExpressionValueType.C1_STRING || type == CaosExpressionValueType.BYTE_STRING || type == CaosExpressionValueType.STRING) {
                     annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed"))
                             .range(element)

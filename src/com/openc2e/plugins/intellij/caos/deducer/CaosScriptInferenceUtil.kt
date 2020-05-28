@@ -7,7 +7,7 @@ import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil
 
-object CaosScriptVarDeducer {
+object CaosScriptInferenceUtil {
 
     fun getInferredType(element: CaosScriptIsVariable): CaosExpressionValueType {
         return getInferredValue(element).let {
@@ -85,6 +85,14 @@ object CaosScriptVarDeducer {
             enclosingBlock = enclosingBlock.getParentOfType(CaosScriptCodeBlock::class.java)
         }
         return CaosVar.CaosVarNone
+    }
+
+    fun getInferredType(rvalue:CaosScriptRvalue) : CaosExpressionValueType {
+        val caosVar = rvalue.rvaluePrime?.let {
+            getFromRValuePrime(it)
+        } ?: rvalue.toCaosVar()
+        return (caosVar as? CaosVar.CaosCommandCall)?.returnType
+                ?: caosVar.simpleType
     }
 
     private fun getFromRValuePrime(prime: CaosScriptRvaluePrime): CaosVar? {
