@@ -4,6 +4,8 @@ import com.intellij.openapi.util.TextRange
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.psi.api.CaosExpressionValueType
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
+import kotlin.math.max
+import kotlin.math.min
 
 
 data class CaosScope(val range:TextRange, val blockType:CaosScriptBlockType, val enclosingScope:List<CaosScope>) {
@@ -101,6 +103,20 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         data class CaosFloat(val value:Float) : CaosLiteral("$value", CaosExpressionValueType.FLOAT)
         data class CaosAnimationString(val value:String, val animation:CaosAnimation?) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
         data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
+        data class CaosIntRange(private val minIn:Int?, private val maxIn:Int?) : CaosLiteral("[$minIn...$maxIn]", CaosExpressionValueType.INT) {
+            val min:Int? by lazy {
+                if (minIn == null || maxIn == null)
+                    min
+                else
+                    min(minIn, maxIn)
+            }
+            val max:Int? by lazy {
+                if (minIn == null || maxIn == null)
+                   max
+                else
+                    max(minIn, maxIn)
+            }
+        }
     }
     object CaosVarNull : CaosVar("[NULL]", CaosExpressionValueType.NULL)
     object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.NULL)
