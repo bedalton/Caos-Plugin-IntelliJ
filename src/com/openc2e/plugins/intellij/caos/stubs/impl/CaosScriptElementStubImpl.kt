@@ -42,6 +42,13 @@ data class CaosScriptRValueStubImpl(
 ) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
 
+data class CaosScriptRndvStubImpl(
+        val parent: StubElement<*>?,
+        override val min:Int?,
+        override val max:Int?
+) : StubBase<CaosScriptCRndvImpl>(parent, CaosScriptStubTypes.RNDV), CaosScriptRndvStub
+
+
 data class CaosScriptExpectsIntStubImpl(
         val parent:StubElement<*>?,
         override val index:Int,
