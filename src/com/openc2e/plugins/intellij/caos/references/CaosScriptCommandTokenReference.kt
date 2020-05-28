@@ -13,6 +13,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
@@ -59,7 +60,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         val type = myElement.getEnclosingCommandType()
         val formattedName = name?.replace(EXTRA_SPACE_REGEX, " ")
                 ?: return emptyList()
-        val variant = myElement.containingCaosFile?.variant
+        val variant = myElement.containingCaosFile.variant
         return CaosDefCommandElementsByNameIndex
                 .Instance[formattedName, myElement.project]
                 // Filter for type and variant

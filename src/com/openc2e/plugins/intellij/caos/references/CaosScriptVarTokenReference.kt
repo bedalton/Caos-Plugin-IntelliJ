@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNamedVar
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNamedVarAssignment
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVarToken
@@ -30,7 +31,7 @@ class CaosScriptVarTokenReference(element:CaosScriptVarToken) : PsiPolyVariantRe
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         val key = myElement.varGroup.value
-        val variant = myElement.containingCaosFile?.variant.nullIfEmpty()
+        val variant = myElement.containingCaosFile.variant.nullIfEmpty()
                 ?: return emptyArray()
         val commands = CaosDefCommandElementsByNameIndex
                 .Instance[key, element.project]

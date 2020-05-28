@@ -13,6 +13,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.documentation.CaosScriptPresentationUtil
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -176,7 +177,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptIsCommandToken, variants: List<String>, strict: Boolean): Boolean {
-        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant ?: ""
+        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile.variant
         if (thisVariant.isEmpty()) {
             return !strict
         }
@@ -185,7 +186,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptCompositeElement, variants: List<String>, strict: Boolean): Boolean {
-        val thisVariant = element.containingCaosFile?.variant ?: ""
+        val thisVariant = element.containingCaosFile.variant
         if (thisVariant.isEmpty())
             return !strict
         return thisVariant in variants
@@ -415,7 +416,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
-        val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+        val variant = expression.containingCaosFile.variant
         expression.stringValue?.let { stringValue ->
             if (variant !in listOf("C1", "C2")) {
                 return stringValue.split(" ").map { it.toInt() }.orEmpty()
@@ -427,7 +428,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getAnimation(expression: CaosScriptExpression): CaosAnimation? {
-        val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+        val variant = expression.containingCaosFile.variant
         val stringValue = expression.stringValue
                 ?: return null
         if (stringValue.isEmpty())
@@ -491,7 +492,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCreatureAnimation(expression: CaosScriptExpression): CaosAnimation? {
-        val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+        val variant = expression.containingCaosFile.variant
         val stringValue = expression.stringValue
                 ?: return null
         if (stringValue.isEmpty())
@@ -554,8 +555,7 @@ object CaosScriptPsiImplUtil {
             varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
             varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
             else -> {
-                val validTypes = when (varToken.containingCaosFile?.variant?.toUpperCase()) {
-                    null -> "???"
+                val validTypes = when (varToken.containingCaosFile.variant.toUpperCase()) {
                     "C1" -> "[varX,obvX]"
                     "C2" -> "[varX,vaXX,obvX,ovXX]"
                     else -> "[vaXX,ovXX,mvXX]"
@@ -727,6 +727,15 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getInferredType(element:CaosScriptRvalue) : CaosExpressionValueType {
         return CaosScriptInferenceUtil.getInferredType(element)
+    }
+
+    @JvmStatic
+    fun getInferredType(element:CaosScriptLvalue) : CaosExpressionValueType {
+        element.varToken?.let {
+            return CaosScriptInferenceUtil.getInferredType(it)
+        }
+        val caosVar = toCaosVar(element)
+        return (caosVar as? CaosVar.CaosCommandCall)?.returnType ?: caosVar.simpleType
     }
 
     @JvmStatic
@@ -1090,8 +1099,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get variant
-        val variant = element.containingCaosFile?.variant
-                ?: return null
+        val variant = element.containingCaosFile.variant
         // Find list in index
         val list = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[typeDef, element.project]
@@ -1130,8 +1138,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get variant
-        val variant = element.containingCaosFile?.variant
-                ?: return null
+        val variant = element.containingCaosFile.variant
         // Find list in index
         val list = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[typeDef, element.project]
@@ -1139,6 +1146,25 @@ object CaosScriptPsiImplUtil {
                 ?: return null
         // Get actual value for literal in list
         return list.keys.firstOrNull { it.key == element.text }
+    }
+
+    @JvmStatic
+    fun getRndvIntRange(element:CaosScriptCRndv) : Pair<Int?,Int?> {
+        val val1 = try {
+            element.expectsIntList.getOrNull(0)?.text?.toInt()
+        } catch (e:Exception) {null}
+        val val2 = try {
+            element.expectsIntList.getOrNull(0)?.text?.toInt()
+        } catch (e:Exception) {null}
+        return Pair(val1, val2)
+    }
+
+    @JvmStatic
+    fun isRndvValuesInOrder(element:CaosScriptCRndv, onNull:Boolean) : Boolean {
+        val values = getRndvIntRange(element)
+        val min = values.first ?: return onNull
+        val max = values.second ?: return onNull
+        return min < max
     }
 
 }

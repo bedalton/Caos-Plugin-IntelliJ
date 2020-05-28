@@ -7,6 +7,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -64,7 +65,7 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
     if (typeDef == null) {
         return null
     }
-    val variant = expression.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+    val variant = expression.containingCaosFile.variant
     return getListValue(variant, typeDef, expression.project, value)
 }
 
@@ -98,7 +99,7 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             .typedef
             ?: return null
 
-    val variant = valueOfType.containingCaosFile?.variant ?: CaosScriptProjectSettings.variant
+    val variant = valueOfType.containingCaosFile.variant
     return getListValue(variant, typeDef, valueOfType.project, key)
 }
 

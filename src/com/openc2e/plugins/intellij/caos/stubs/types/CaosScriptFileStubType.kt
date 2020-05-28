@@ -7,6 +7,7 @@ import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
 import com.openc2e.plugins.intellij.caos.stubs.impl.CaosScriptFileStubImpl

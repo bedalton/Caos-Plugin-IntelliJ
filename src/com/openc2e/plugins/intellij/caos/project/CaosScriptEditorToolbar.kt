@@ -14,6 +14,7 @@ import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.utils.CaosConstants
 import com.openc2e.plugins.intellij.caos.utils.copyAsOneLine
 import com.openc2e.plugins.intellij.caos.utils.getPsiFile

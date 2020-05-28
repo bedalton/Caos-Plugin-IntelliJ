@@ -11,6 +11,7 @@ import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.previous
@@ -169,9 +170,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         if (parent == null)
             return false
-        val variant = (element.containingFile as? CaosScriptFile)?.variant
+        val variant = (element.containingFile as? CaosScriptFile).variant
         var matches = CaosDefCommandElementsByNameIndex.Instance[commandString, element.project]
-                .filter { (variant == null || variant in it.variants) }
+                .filter { variant in it.variants) }
         matches = when (parent) {
             is CaosScriptCommandCall -> matches.filter { it.isCommand }
             is CaosScriptRvalue -> matches.filter { it.isRvalue }
