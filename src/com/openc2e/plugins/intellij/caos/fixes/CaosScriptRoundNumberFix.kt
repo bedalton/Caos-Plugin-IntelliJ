@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
+import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNumber
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiElementFactory
 import kotlin.math.ceil
@@ -21,7 +22,7 @@ class CaosScriptRoundNumberFix(element:CaosScriptNumber, float:Float, val roundD
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = "CaosScript"
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun isAvailable(p0: Project, p1: Editor?, p2: PsiFile?): Boolean {
         return pointer.element != null
@@ -29,9 +30,9 @@ class CaosScriptRoundNumberFix(element:CaosScriptNumber, float:Float, val roundD
 
     override fun getText(): String {
         return if (roundDown) {
-            "Round number down to $newValue"
+            CaosBundle.message("caos.fixes.round-number", "down", newValue)
         } else {
-            "Round number up to $newValue"
+            CaosBundle.message("caos.fixes.round-number", "up", newValue)
         }
     }
 
@@ -39,9 +40,7 @@ class CaosScriptRoundNumberFix(element:CaosScriptNumber, float:Float, val roundD
         val newElement = CaosScriptPsiElementFactory.createNumber(project, newValue)
                 .number
                 ?: return
-        pointer.element?.let { element->
-            element.replace(newElement)
-        }
+        pointer.element?.replace(newElement)
     }
 
 

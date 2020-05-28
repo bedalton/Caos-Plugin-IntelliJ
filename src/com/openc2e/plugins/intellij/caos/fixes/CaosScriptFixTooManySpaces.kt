@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.psi.util.next
 import com.openc2e.plugins.intellij.caos.psi.util.previous
@@ -19,18 +20,13 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
         return true
     }
 
-    override fun getFamilyName(): String {
-        return "Caos Script"
-    }
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return file is CaosScriptFile
     }
 
-    override fun getText(): String {
-        return "Remove extra spaces"
-    }
-
+    override fun getText(): String = CaosBundle.message("caos.fixes.remove-extra-spaces")
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (file == null)
             return
