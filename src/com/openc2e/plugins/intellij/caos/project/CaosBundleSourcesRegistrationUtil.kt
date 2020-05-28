@@ -29,12 +29,6 @@ object CaosBundleSourcesRegistrationUtil {
             }
             return
         }
-
-        val moduleScope = module.moduleContentWithDependenciesScope
-        if (FilenameIndex.getAllFilesByExt(module.project, "cos", moduleScope).isEmpty()) {
-            LOGGER.info("No CAOS files in project")
-            return
-        }
         runWriteAction {
             registerSourcesAsLibrary(module)
         }
@@ -75,7 +69,7 @@ object CaosBundleSourcesRegistrationUtil {
         // Check if same version
         if (isSourceCurrent(libraryPath, modifiableModel)) {
             LOGGER.info("Caos std-lib files are current")
-            //return true
+            return true
         }
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
                 ?: modifiableModel.createLibrary(LIBRARY_NAME, CaosLibraryType.LIBRARY)
