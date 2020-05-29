@@ -30,21 +30,23 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
         if (child1 !is AbstractBlock || child2 !is AbstractBlock) {
             return null
         }
+        val type = myNode.elementType
         val node1 = child1.node
         val type1 = node1.elementType
         val node2 = child2.node
+        val type2 = node2.elementType
+        val types = listOf(type, type1, type2)
+
+        if (commaTypes.intersect(types).isNotEmpty())
+            return noneSpace
         if (myNode.next?.isDirectlyPrecededByNewline().orFalse())
             Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, 0)
         if (node2.isDirectlyPrecededByNewline())
             return Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, 0)
-        val type2 = node2.elementType
         if (node1.next?.text.orEmpty().contains("\n")) {
             val lineFeeds = if (mySettings.KEEP_LINE_BREAKS) 1 else 0
             return Spacing.createSpacing(0, 0, lineFeeds, mySettings.KEEP_LINE_BREAKS, 0)
         }
-        if (type1 == CaosScriptTypes.CaosScript_COMMA || type2 == CaosScriptTypes.CaosScript_COMMA)
-            return noneSpace
-
         return when (node1.psi) {
             is CaosScriptExpectsValueOfType -> spaceAfterIsValueOfType(node2)
             is CaosScriptIsCommandToken -> spaceAfterIsCommandToken(node2)
@@ -56,7 +58,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
     }
 
     private fun spaceAfterIsCommandToken(node2: ASTNode): Spacing? {
-        if (node2.elementType == CaosScriptTypes.CaosScript_COMMA) {
+        if (node2.elementType in commaTypes) {
             return Spacing.createSpacing(0, 0, 0, false, 0)
         }
         if (node2.psi is CaosScriptExpectsValueOfType) {
@@ -66,12 +68,16 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
     }
 
     private fun spaceAfterIsValueOfType(node2: ASTNode): Spacing? {
-        if (node2.elementType == CaosScriptTypes.CaosScript_COMMA || node2.isDirectlyPrecededByNewline()) {
+        if (node2.elementType in commaTypes || node2.isDirectlyPrecededByNewline()) {
             return Spacing.createSpacing(0, 0, 0, false, 0)
         }
         if (node2.psi is CaosScriptExpectsValueOfType) {
             return Spacing.createSpacing(1, 1, 0, false, 0)
         }
         return null
+    }
+
+    companion object {
+        val commaTypes = listOf(CaosScriptTypes.CaosScript_COMMA, CaosScriptTypes.CaosScript_SYMBOL_COMMA, CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE)
     }
 }

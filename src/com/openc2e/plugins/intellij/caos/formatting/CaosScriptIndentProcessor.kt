@@ -22,10 +22,12 @@ class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, p
         if (firstChild?.elementType in CaosScriptTokenSets.BLOCK_ENDS) {
             return Indent.getNoneIndent()
         }
-        if (elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE) {
-            val parentBlock = node.psi.parent?.parent
-            if (parentBlock is CaosScriptMacro || parentBlock is CaosScriptEventScript)
+        val parent = node.psi.parent
+        if (parent is CaosScriptCodeBlock) {
+            val parentBlock = parent.parent
+            if (parentBlock is CaosScriptMacro || parentBlock is CaosScriptEventScript) {
                 return Indent.getNoneIndent()
+            }
             return Indent.getNormalIndent()
         } else if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent !is CaosScriptMacro) {
             return Indent.getNormalIndent()
