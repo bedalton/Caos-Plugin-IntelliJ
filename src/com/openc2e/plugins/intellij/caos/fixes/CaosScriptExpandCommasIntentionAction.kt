@@ -1,14 +1,18 @@
 package com.openc2e.plugins.intellij.caos.fixes
 
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.util.*
+import com.openc2e.plugins.intellij.caos.utils.document
 
 object CaosScriptExpandCommasIntentionAction : IntentionAction {
     override fun startInWriteAction(): Boolean = true
@@ -32,69 +36,16 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction {
     override fun getText(): String = CaosBundle.message("caos.intentions.commands-on-new-line")
 
     override fun invoke(project: Project, editor: Editor?, fileIn: PsiFile?) {
-        val bodyElements = fileIn?.getChildrenOfType(CaosScriptScriptBodyElement::class.java)
-                ?: return
-        for (element in bodyElements) {
-            if (element.eventScript != null) {
-                element.eventScript!!.let { eventScript ->
-                    eventScript.eventNumberElement?.next?.let { next ->
-                        replaceIfBlankOrComma(next)
-                    }
-                    eventScript.codeBlock?.let { block ->
-                        addLines(block)
-                    }
-                }
-            }
-            if (element.macro != null) {
-                addLines(element.macro!!.codeBlock)
-            }
+        val file = fileIn ?: return
+        val document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: fileIn.document
+        if (document != null) {
+            PsiDocumentManager.getInstance(project).commitDocument(document)
         }
-        CodeStyleManager.getInstance(project).reformat(fileIn)
-    }
-
-    private fun expandDoIf(doifStatement: CaosScriptDoifStatement) {
-        doifStatement.doifStatementStatement
-                .spaceLikeOrNewlineList
-                .forEach {
-                    replaceIfBlankOrComma(it)
-                }
-        doifStatement.doifStatementStatement.codeBlock?.let { addLines(it) }
-        doifStatement.elseIfStatementList.forEach { elseif ->
-            replaceIfBlankOrComma(elseif.spaceLikeOrNewline)
-            elseif.codeBlock?.let { addLines(it) }
+        val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
+        for (newLine in newLines) {
+            replaceIfBlankOrComma(newLine)
         }
-        doifStatement.elseStatement?.let {elseElement ->
-            replaceIfBlankOrComma(elseElement.spaceLikeOrNewline)
-            elseElement.codeBlock?.let {
-                addLines(it)
-            }
-        }
-    }
-
-
-    private fun addLines(block:CaosScriptCodeBlock) {
-        for (line in block.codeBlockLineList) {
-            line.doifStatement?.let {
-                expandDoIf(it)
-            }
-            val next = line.lastChild.next
-                    ?: continue
-            replaceIfBlankOrComma(next)
-            val hasCodeBlock = line.getChildOfType(CaosScriptHasCodeBlock::class.java)
-                    ?: continue
-            for (space in hasCodeBlock.getChildrenOfType(CaosScriptSpaceLikeOrNewline::class.java)) {
-                replaceIfBlankOrComma(space)
-            }
-            val codeBlockChild = hasCodeBlock
-                    .codeBlock
-                    ?: continue
-            codeBlockChild.previous?.let {
-                replaceIfBlankOrComma(it)
-            }
-            addLines(codeBlockChild)
-        }
-        block.previous?.let { replaceIfBlankOrComma(it) }
-        block.lastChild.next?.let{ replaceIfBlankOrComma(it) }
+        CodeStyleManager.getInstance(project).reformat(fileIn, true)
     }
 
     private fun replaceIfBlankOrComma(next:PsiElement?) {

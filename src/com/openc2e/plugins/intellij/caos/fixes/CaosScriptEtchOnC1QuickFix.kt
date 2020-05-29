@@ -12,6 +12,7 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
@@ -93,13 +94,15 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
     }
 
     private fun applyFix(document:Document, editor: Editor?, element:CaosScriptEnumNextStatement) {
+        val project = element.project
+        PsiDocumentManager.getInstance(project).commitDocument(document)
         val etch = element.enumHeaderCommand.commandToken.kEtch
                 ?: return
         val varNumber = getVarNumberToUse(element)
                 ?: return
         val insertionPoint = element.enumHeaderCommand.endOffset
-        val varText = "var$varNumber"
         val etchText = etch.text
+        val varText = "var$varNumber".matchCase(etchText)
         val doif = "DOIF".matchCase(etchText)
         val endi = "ENDI".matchCase(etchText)
         val enum = "ENUM".matchCase(etchText)
@@ -109,18 +112,22 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
         val replacement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, enum)
                 ?: return
         element.enumHeaderCommand.commandToken.replace(replacement)
-        val text = "$doif $touch $varText $targ $gt 0 " + element.codeBlock?.text + " $endi"
+        val lineDelim = if (element.text.contains("\n"))
+            "\n"
+        else
+            " "
+        val text = "$lineDelim$doif $touch $varText $targ $gt 0$lineDelim" + element.codeBlock?.text + "$lineDelim$endi"
         element.codeBlock?.textRange?.let {
             EditorUtil.deleteText(document, it)
         }
-        val project = element.project
+        val setv = "SETV".matchCase(etchText) + " $varText $targ$lineDelim"
         if (editor != null) {
-            EditorUtil.insertText(editor, text, insertionPoint, false)
+            EditorUtil.insertText(editor, setv, element.startOffset,false)
+            EditorUtil.insertText(editor, text, insertionPoint+setv.length, false)
         } else {
-            EditorUtil.insertText(project, document, text, insertionPoint)
+            EditorUtil.insertText(document, setv, element.startOffset)
+            EditorUtil.insertText(project, document, text, insertionPoint+setv.length)
         }
-
-        PsiDocumentManager.getInstance(project).commitDocument(document)
-        CodeStyleManager.getInstance(project).reformat(element, false)
+        CodeStyleManager.getInstance(project).reformat(element.parent, false)
     }
 }

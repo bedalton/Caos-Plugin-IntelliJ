@@ -48,11 +48,13 @@
                              implementationClass="com.openc2e.plugins.intellij.caos.references.CaosScriptUsagesProvider" />
     <!-- Formatting -->
     <lang.formatter language="CaosScript"
-                    implementationClass="com.openc2e.plugins.intellij.caos.formatting.CaosScriptFormattingModelBuilder"/>
+                    implementationClass="com.openc2e.plugins.intellij.caos.formatting.CaosScriptFormattingModelBuilder" />
 
     <!-- Code Style Settings -->
-    <codeStyleSettingsProvider implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptCodeStyleSettingsProvider"/>
-    <langCodeStyleSettingsProvider implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider"/>
+    <codeStyleSettingsProvider
+        implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptCodeStyleSettingsProvider" />
+    <langCodeStyleSettingsProvider
+        implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider" />
 
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory
@@ -70,7 +72,9 @@
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptEnumAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptEnumAnnotator"
+               order="first"
+    />
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <annotator language="CaosScript"
@@ -118,8 +122,10 @@
         language="CaosDef" />
 
     <!-- Documentation & Hints -->
-    <codeInsight.parameterNameHints language="CaosScript" implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
-    <documentationProvider implementation="com.openc2e.plugins.intellij.caos.documentation.CaosScriptDocumentationProvider" />
+    <codeInsight.parameterNameHints language="CaosScript"
+                                    implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
+    <documentationProvider
+        implementation="com.openc2e.plugins.intellij.caos.documentation.CaosScriptDocumentationProvider" />
     <!--lang.foldingBuilder language="CaosScript"
                          implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptRValueFoldingBuilder"/-->
 

@@ -3,22 +3,25 @@ package com.openc2e.plugins.intellij.caos.annotators
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
+import com.openc2e.plugins.intellij.caos.fixes.CaosScriptEtchOnC1QuickFix
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptReplaceWordFix
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.matchCase
 
-class CaosScriptEnumAnnotator : Annotator  {
+class CaosScriptEnumAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val variant = (element.containingFile as? CaosScriptFile).variant
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
+        LOGGER.info("Annotate variable enums statements. Type: ${element.javaClass.canonicalName}")
         when (element) {
+            is CaosScriptCEnum -> element.getParentOfType(CaosScriptEnumNextStatement::class.java)?.let { annotateBadEnumStatement(variant, it, annotationWrapper) }
             is CaosScriptCNext -> annotateNext(element, annotationWrapper)
             is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
             is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationWrapper)
-            is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)
         }
     }
 
@@ -57,8 +60,6 @@ class CaosScriptEnumAnnotator : Annotator  {
                     .range(element)
                     .withFix(CaosScriptReplaceWordFix(next, element))
                     .create()
-        } else if (variant != "C2") {
-            CaosScriptSyntaxErrorAnnotator.annotateNotAvailable(variant, element, annotationWrapper)
         }
     }
 
@@ -71,6 +72,7 @@ class CaosScriptEnumAnnotator : Annotator  {
     }
 
     private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
+        LOGGER.info("Annotating possibly bad enum statement")
         val cNscn = element.cNscn
         if (cNscn != null) {
             val enum = element.enumHeaderCommand.cEnum.text
@@ -81,7 +83,6 @@ class CaosScriptEnumAnnotator : Annotator  {
                     .create()
         }
         val header = element.enumHeaderCommand.cEnum
-                ?: return
         if (header.kEnum != null)
             return
         if (variant !in CaosScriptSyntaxErrorAnnotator.VARIANT_OLD)
@@ -96,8 +97,12 @@ class CaosScriptEnumAnnotator : Annotator  {
             return
         val badElement = header.kEsee ?: header.kEtch ?: header.kEpas
         ?: return // return if enum type is ENUM
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
+        LOGGER.info("Annotating bad enum ${badElement.text}")
+        var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
                 .range(badElement)
-                .create()
+        if (badElement.text.toUpperCase() == "ETCH") {
+            builder = builder.withFix(CaosScriptEtchOnC1QuickFix(element))
+        }
+        builder.create()
     }
 }

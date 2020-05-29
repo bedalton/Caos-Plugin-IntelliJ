@@ -109,7 +109,8 @@ object CaosScriptPsiElementFactory {
     }
 
     fun newLine(project: Project): PsiElement {
-        return createFileFromText(project, "\n").firstChild
+        val file = createFileFromText(project, "enum 0 0 0\nnext")
+        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first()
     }
 
     fun comma(project: Project): PsiElement {
