@@ -685,7 +685,7 @@ private escn_body
    ;
 
 doif_statement
-	::= doif_statement_statement (else_if_statement space_like_or_newline)* (else_statement space_like_or_newline)? c_endi<<exitBlock>>
+	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? space_like_or_newline c_endi<<exitBlock>>
 	{
 		pin=1
 		implements = [
@@ -695,7 +695,7 @@ doif_statement
 	;
 
 doif_statement_statement
-	::= c_doif space_like equality_expression space_like_or_newline <<enterBlock>>(do_if_body space_like_or_newline)?
+	::= c_doif space_like equality_expression (space_like_or_newline <<enterBlock>>do_if_body)?
 	{
 		pin=1
 		implements = [
@@ -709,7 +709,7 @@ doif_statement_statement
 
 
 else_if_statement
-	::= c_elif space_like equality_expression space_like_or_newline do_if_body?
+	::= c_elif space_like equality_expression (space_like_or_newline do_if_body)?
 	{
 		pin=1
 		implements = [
@@ -722,7 +722,7 @@ else_if_statement
 	;
 
 else_statement
-	::= c_else space_like_or_newline else_block
+	::= c_else (space_like_or_newline else_block)?
 	{
 		pin=1;
 		implements = [

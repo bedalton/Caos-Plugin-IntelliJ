@@ -362,19 +362,22 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     commandType.value.toLowerCase(),
                     getVariantString(variants)
             )
-            annotationWrapper
+            var builder = annotationWrapper
                     .newErrorAnnotation(error)
                     .range(element)
-                    .create()
+            if (variant in VARIANT_OLD) {
+                builder = builder
+                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before NORN", "SETV".matchCase(command), element))
+            }
+            builder.create()
         }
 
         private fun getVariantString(variantsIn: List<String>): String {
             val variants = sortVariants(variantsIn)
-            val numVariants = variants.size
             return when {
-                numVariants == variants.intersect(listOf("C3", "DS")).size -> "C3+"
-                numVariants == variants.intersect(listOf("CV", "C3", "DS")).size -> "CV+"
-                numVariants == variants.intersect(listOf("C2", "CV", "C3", "DS")).size -> "C2+"
+                4 == variants.intersect(listOf("C2", "CV", "C3", "DS")).size -> "C2+"
+                3 == variants.intersect(listOf("CV", "C3", "DS")).size -> "CV+"
+                2 == variants.intersect(listOf("C3", "DS")).size -> "C3+"
                 else -> variants.joinToString(",")
             }
         }
