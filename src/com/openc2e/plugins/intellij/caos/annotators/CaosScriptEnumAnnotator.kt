@@ -16,7 +16,6 @@ class CaosScriptEnumAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val variant = (element.containingFile as? CaosScriptFile).variant
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
-        LOGGER.info("Annotate variable enums statements. Type: ${element.javaClass.canonicalName}")
         when (element) {
             is CaosScriptCEnum -> element.getParentOfType(CaosScriptEnumNextStatement::class.java)?.let { annotateBadEnumStatement(variant, it, annotationWrapper) }
             is CaosScriptCNext -> annotateNext(element, annotationWrapper)
@@ -72,7 +71,6 @@ class CaosScriptEnumAnnotator : Annotator {
     }
 
     private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
-        LOGGER.info("Annotating possibly bad enum statement")
         val cNscn = element.cNscn
         if (cNscn != null) {
             val enum = element.enumHeaderCommand.cEnum.text
@@ -97,7 +95,6 @@ class CaosScriptEnumAnnotator : Annotator {
             return
         val badElement = header.kEsee ?: header.kEtch ?: header.kEpas
         ?: return // return if enum type is ENUM
-        LOGGER.info("Annotating bad enum ${badElement.text}")
         var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
                 .range(badElement)
         if (badElement.text.toUpperCase() == "ETCH") {
