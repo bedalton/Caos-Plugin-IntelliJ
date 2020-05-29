@@ -115,7 +115,7 @@ object CaosScriptInferenceUtil {
                 return value
             }
         }
-        return null
+        return rndvVal?.second
     }
 
     fun getInferredType(rvalue: CaosScriptRvalue): CaosExpressionValueType {
