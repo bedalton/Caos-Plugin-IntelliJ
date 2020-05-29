@@ -2,18 +2,19 @@ package com.openc2e.plugins.intellij.caos.formatting
 
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
-import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
-import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
-import com.openc2e.plugins.intellij.caos.psi.api.*
+import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCodeBlock
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEventScript
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptMacro
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
-import com.openc2e.plugins.intellij.caos.psi.util.elementType
-import com.openc2e.plugins.intellij.caos.psi.util.getParentOfType
+import com.openc2e.plugins.intellij.caos.psi.util.getNextNonEmptyNode
+import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptyNode
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
-import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.utils.orFalse
 import java.util.*
 
@@ -61,17 +62,22 @@ class CaosScriptBlock internal constructor(
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
         val elementType = myNode.elementType
-        val previousBlock = if (newIndex == 0 || subFormattedBlocks.isEmpty()) null else subFormattedBlocks[newIndex - 1]
-        val previousType = previousBlock?.node?.elementType
+        val previousType = myNode.getPreviousNonEmptyNode(true)?.elementType
         LOGGER.info("Get child attribute indent for type: $elementType. PrevType: $previousType")
-        val canIndent = previousType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_CODE_BLOCK_LINE || elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE
-        if (canIndent || previousBlock == null) {
-            val isMacroOrEventScript = myNode.psi.getSelfOrParentOfType(CaosScriptHasCodeBlock::class.java)
-                    ?.elementType
-                    ?.let { it == CaosScriptTypes.CaosScript_MACRO || it == CaosScriptTypes.CaosScript_EVENT_SCRIPT }
+        if (myNode.psi is CaosScriptHasCodeBlock)
+            return normalIndent
+        val canIndent = elementType == CaosScript_CODE_BLOCK_LINE
+                || previousType == CaosScript_CODE_BLOCK_LINE
+                || myNode.treeParent?.elementType == CaosScript_CODE_BLOCK_LINE
+                || myNode.psi is CaosScriptHasCodeBlock
+        if (canIndent || myNode.psi is CaosScriptHasCodeBlock) {
+            val isMacroOrEventScript = myNode.psi.getSelfOrParentOfType(CaosScriptCodeBlock::class.java)
+                    ?.parent
+                    ?.let { it is CaosScriptMacro || it is CaosScriptEventScript }
                     .orFalse()
-            if (!isMacroOrEventScript)
-                return normalIndent
+            if (isMacroOrEventScript)
+                return noneIndent
+            return normalIndent
         }
         if (elementType in CaosScriptTokenSets.BLOCK_ENDS)
             return noneIndent
