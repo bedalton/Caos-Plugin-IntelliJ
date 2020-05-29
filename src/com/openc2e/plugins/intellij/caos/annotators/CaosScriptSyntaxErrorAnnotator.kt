@@ -82,7 +82,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotateErrorElement(variant: String, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val command = element.text
         val commandUpperCase = element.text.toUpperCase()
-        LOGGER.info("ErrorElement: $command")
         if (commandUpperCase == "CLAS" || commandUpperCase == "CLS2") {
             val setv = "SETV".matchCase(command)
             annotationWrapper
