@@ -95,7 +95,6 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
 
     private fun applyFix(document:Document, editor: Editor?, element:CaosScriptEnumNextStatement) {
         val project = element.project
-        PsiDocumentManager.getInstance(project).commitDocument(document)
         val etch = element.enumHeaderCommand.commandToken.kEtch
                 ?: return
         val varNumber = getVarNumberToUse(element)
@@ -111,6 +110,7 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
         val gt = "GT".matchCase(etchText)
         val replacement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, enum)
                 ?: return
+        PsiDocumentManager.getInstance(project).commitDocument(document)
         element.enumHeaderCommand.commandToken.replace(replacement)
         val lineDelim = if (element.text.contains("\n"))
             "\n"
@@ -118,16 +118,22 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
             " "
         val text = "$lineDelim$doif $touch $varText $targ $gt 0$lineDelim" + element.codeBlock?.text + "$lineDelim$endi"
         element.codeBlock?.textRange?.let {
+            PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.deleteText(document, it)
         }
         val setv = "SETV".matchCase(etchText) + " $varText $targ$lineDelim"
         if (editor != null) {
+            PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.insertText(editor, setv, element.startOffset,false)
+            PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.insertText(editor, text, insertionPoint+setv.length, false)
         } else {
+            PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.insertText(document, setv, element.startOffset)
+            PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.insertText(project, document, text, insertionPoint+setv.length)
         }
+        PsiDocumentManager.getInstance(project).commitDocument(document)
         CodeStyleManager.getInstance(project).reformat(element.parent, false)
     }
 }
