@@ -98,8 +98,19 @@
                      displayName="Assigned value is of expected type"
                      shortName="ExpectedAssigmentType"
     />
-    <!-- Indices -->
 
+    <!-- Documentation & Hints -->
+    <codeInsight.parameterNameHints language="CaosScript"
+                                    implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
+    <documentationProvider
+        implementation="com.openc2e.plugins.intellij.caos.documentation.CaosScriptDocumentationProvider" />
+    <!--lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptRValueFoldingBuilder"/-->
+    <lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptStimFoldingBuilder"/>
+
+
+    <!-- Indices -->
     <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService"
                         serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexServiceImpl" />
     <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />
@@ -120,14 +131,6 @@
     <lang.findUsagesProvider
         implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider"
         language="CaosDef" />
-
-    <!-- Documentation & Hints -->
-    <codeInsight.parameterNameHints language="CaosScript"
-                                    implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
-    <documentationProvider
-        implementation="com.openc2e.plugins.intellij.caos.documentation.CaosScriptDocumentationProvider" />
-    <!--lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptRValueFoldingBuilder"/-->
 
     <!-- Bundled Definitions -->
     <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
