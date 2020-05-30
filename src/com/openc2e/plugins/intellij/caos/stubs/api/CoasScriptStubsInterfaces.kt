@@ -10,6 +10,7 @@ import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptNamedGameVarType
 
 interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
     val command:String
+    val commandUpper:String
     val commandTokens:List<String>
     val argumentValues:List<CaosVar>
     val numArguments:Int get() = argumentValues.size
@@ -23,11 +24,13 @@ interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
 interface CaosScriptLValueStub : StubElement<CaosScriptLvalueImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
+    val commandString:String?
 }
 
 interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
+    val commandString:String?
 }
 
 interface CaosScriptRndvStub : StubElement<CaosScriptCRndvImpl> {
@@ -78,6 +81,7 @@ interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
     val lvalue:CaosVar?
     val rvalue:CaosVar?
     val enclosingScope:CaosScope
+    val commandString:String
 }
 
 interface CaosScriptBlockStub {

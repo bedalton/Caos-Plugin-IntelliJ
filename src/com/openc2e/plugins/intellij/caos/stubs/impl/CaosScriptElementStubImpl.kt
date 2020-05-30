@@ -21,11 +21,14 @@ class CaosScriptSubroutineStubImpl(
 
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
-        override val commandTokens:List<String>,
+        override val command:String,
         override val argumentValues: List<CaosVar>
 ) : StubBase<CaosScriptCommandCallImpl>(parent, CaosScriptStubTypes.COMMAND_CALL), CaosScriptCommandCallStub {
-    override val command:String by lazy {
-        commandTokens.joinToString(" ")
+    override val commandUpper: String by lazy {
+        command.toUpperCase()
+    }
+    override val commandTokens: List<String> by lazy {
+        command.split(" ")
     }
 }
 
@@ -33,13 +36,22 @@ data class CaosScriptLValueStubImpl(
         val parent: StubElement<*>?,
         override val caosVar: CaosVar,
         override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub
+) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub {
+    override val commandString: String? by lazy {
+        (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()
+    }
+}
 
 data class CaosScriptRValueStubImpl(
         val parent: StubElement<*>?,
         override val caosVar: CaosVar,
         override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
+) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub {
+
+    override val commandString: String? by lazy {
+        (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()
+    }
+}
 
 
 data class CaosScriptRndvStubImpl(
@@ -169,7 +181,8 @@ class CaosScriptAssignmentStubImpl(
         override val operation:CaosOp,
         override val rvalue:CaosVar?,
         override val lvalue:CaosVar?,
-        override val enclosingScope:CaosScope
+        override val enclosingScope:CaosScope,
+        override val commandString: String
 ) : StubBase<CaosScriptCAssignmentImpl>(parent, CaosScriptStubTypes.VAR_ASSIGNMENT), CaosScriptAssignmentStub
 
 /*
