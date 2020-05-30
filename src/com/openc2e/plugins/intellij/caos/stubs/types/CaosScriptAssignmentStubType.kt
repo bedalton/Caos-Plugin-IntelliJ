@@ -26,6 +26,7 @@ class CaosScriptAssignmentStubType(debugName:String) : CaosScriptStubElementType
         stream.writeCaosVarSafe(stub.lvalue)
         stream.writeCaosVarSafe(stub.rvalue)
         stream.writeScope(stub.enclosingScope)
+        stream.writeName(stub.commandString)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosScriptAssignmentStub {
@@ -33,13 +34,15 @@ class CaosScriptAssignmentStubType(debugName:String) : CaosScriptStubElementType
         val operation = CaosOp.fromValue(stream.readInt())
         val lvalue = stream.readCaosVarSafe()
         val rvalue = stream.readCaosVarSafe()
+        val commandString = stream.readNameAsString() ?: UNDEF
         return CaosScriptAssignmentStubImpl (
                 parent = parent,
                 fileName = fileName,
                 operation = operation,
                 lvalue = lvalue,
                 rvalue = rvalue,
-                enclosingScope = stream.readScope()
+                enclosingScope = stream.readScope(),
+                commandString = commandString
         )
     }
 
@@ -50,7 +53,8 @@ class CaosScriptAssignmentStubType(debugName:String) : CaosScriptStubElementType
                 operation = element.op,
                 lvalue = element.lvalue?.toCaosVar(),
                 rvalue = element.expectsDecimal?.rvalue?.toCaosVar(),
-                enclosingScope = CaosScriptPsiImplUtil.getScope(element)
+                enclosingScope = CaosScriptPsiImplUtil.getScope(element),
+                commandString = element.commandString
         )
     }
 
