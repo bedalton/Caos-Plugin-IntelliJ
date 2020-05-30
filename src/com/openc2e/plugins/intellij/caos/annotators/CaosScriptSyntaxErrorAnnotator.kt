@@ -148,19 +148,18 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateC1String(variant: String, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
-        if (variant == "C1") {
+        if (variant in VARIANT_OLD) {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
-                wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed"))
+                wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
                         .range(element)
                         .create()
             } else if (element.getParentOfType(CaosScriptExpectsValueOfType::class.java)?.parent is CaosScriptCAssignment) {
-                wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.variable-string-assignments-not-allowed"))
+                wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.variable-string-assignments-not-allowed", variant))
                         .range(element)
                         .create()
             }
-        }
-        if (variant in VARIANT_OLD)
             return
+        }
         wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.out-of-variant-c1-string"))
                 .range(element)
                 .withFix(CaosScriptFixQuoteType(element, '"'))
@@ -247,7 +246,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
                 val type = CaosScriptInferenceUtil.getInferredType(element)
                 if (type == CaosExpressionValueType.C1_STRING || type == CaosExpressionValueType.BYTE_STRING || type == CaosExpressionValueType.STRING) {
-                    annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed"))
+                    annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
                             .range(element)
                             .create()
                 }
