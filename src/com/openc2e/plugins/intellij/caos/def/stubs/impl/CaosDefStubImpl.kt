@@ -55,7 +55,7 @@ class CaosDefTypeDefValueStubImpl(
 ) : StubBase<CaosDefTypeDefinitionImpl>(parent, CaosDefStubTypes.TYPE_DEFINITION_VALUE), CaosDefTypeDefValueStub
 
 
-data class CaosDefParameterStruct(val name: String, val type: CaosDefVariableTypeStruct, val comment: String? = null)
+data class CaosDefParameterStruct(val parameterNumber:Int, val name: String, val type: CaosDefVariableTypeStruct, val comment: String? = null)
 
 data class CaosDefReturnTypeStruct(val type: CaosDefVariableTypeStruct, val comment: String? = null)
 
