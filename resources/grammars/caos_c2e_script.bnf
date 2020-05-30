@@ -999,7 +999,6 @@ c_rndv
 			getCommandString
 			getArguments
 			getArgumentValues
-			getLvalue
 			minElement="/expects_int[0]"
 			maxElement="/expects_int[1]"
 			getRndvIntRange
