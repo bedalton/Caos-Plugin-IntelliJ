@@ -268,6 +268,7 @@ a_word
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			isVariant
 			getName
 			setName
@@ -372,6 +373,7 @@ c_scrp ::= K_SCRP
 	methods = [
 		getReference
 		getCommandString
+			getCommandStringUpper
 		getPresentation
 		isVariant
 		getName
@@ -419,6 +421,7 @@ subroutine_header
 		]
 		methods = [
 			getCommandString
+			getCommandStringUpper
 			commandToken="/c_subr"
 			getArguments
 			getArgumentValues
@@ -437,7 +440,8 @@ c_subr
 		methods = [
 			getReference
 			getCommandString
-		getPresentation
+			getCommandStringUpper
+			getPresentation
 			isVariant
 			getName
 			setName
@@ -456,6 +460,7 @@ cc_retn
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -474,6 +479,7 @@ c_retn
 		]
 		methods = [
    			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -528,6 +534,7 @@ loop_statement
 			isUntil
 			getBlockType
 			getCommandString
+			getCommandStringUpper
 		]
 	}
 	;
@@ -585,6 +592,7 @@ reps_header
 		]
 		methods = [
 			getCommandString
+			getCommandStringUpper
 			commandToken="/c_reps"
 			getArguments
 			getArgumentValues
@@ -626,6 +634,7 @@ enum_header_command
 		]
 		methods = [
 			getCommandString
+			getCommandStringUpper
 			commandToken="/c_enum"
 			getArguments
 			getArgumentValues
@@ -659,6 +668,7 @@ escn_header
 		]
 		methods = [
 			getCommandString
+			getCommandStringUpper
 			commandToken="/c_escn"
 			getArguments
 			getArgumentValues
@@ -760,6 +770,7 @@ c_loop
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -779,6 +790,7 @@ cEver
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -797,6 +809,7 @@ c_untl
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -814,6 +827,7 @@ c_reps ::= K_REPS
 	methods = [
 		getReference
 		getCommandString
+			getCommandStringUpper
 		getPresentation
 		isVariant
 		getName
@@ -831,6 +845,7 @@ c_repe ::= K_REPE
 	methods = [
 		getReference
 		getCommandString
+			getCommandStringUpper
 		getPresentation
 		isVariant
 		getName
@@ -852,6 +867,7 @@ c_enum
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -869,6 +885,7 @@ c_next ::= K_NEXT
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -886,6 +903,7 @@ c_escn ::= K_ESCN
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -904,6 +922,7 @@ c_nscn ::= K_NSCN
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -922,6 +941,7 @@ c_doif ::= K_DOIF
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -940,6 +960,7 @@ c_endi ::= K_ENDI
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -958,6 +979,7 @@ c_elif ::= K_ELIF
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -975,6 +997,7 @@ c_else ::= K_ELSE
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -997,6 +1020,7 @@ c_rndv
 		methods = [
 			commandToken="c_kw_random"
 			getCommandString
+			getCommandStringUpper
 			getArguments
 			getArgumentValues
 			minElement="/expects_int[0]"
@@ -1018,6 +1042,7 @@ c_kw_random
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -1176,12 +1201,15 @@ command_call ::= command_call_by_args // I think private values all have equal p
 		]
 		methods = [
 			getCommandString
+			getCommandStringUpper
 			getCommandToken
 			getArguments
 			getArgumentValues
 			getCommandTokens
 			getCommandTokens
 			getCommandElement
+			getCommandString
+			getCommandStringUpperUpper
 		]
 		//recoverWhile = command_recover
 	}
@@ -1293,6 +1321,7 @@ c_assignment
 			getOp
 			getCommandToken
 			getCommandString
+			getCommandStringUpper
 			getRVar
 			getLVar
 			getArguments
@@ -1317,6 +1346,7 @@ c_kw_assign_agent ::= K_SETA
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -1340,6 +1370,7 @@ c_kw_assign_string ::= K_SETS
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -1363,6 +1394,7 @@ c_gsub
 		]
 		methods = [
 			getCommandString
+			getCommandStringUpper
 			commandToken="/c_kw_gsub"
 			getArguments
 			getArgumentValues
@@ -1397,6 +1429,7 @@ c_kw_setv ::= K_SETV
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -1421,6 +1454,7 @@ c_kw_assign_number
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -1443,6 +1477,7 @@ c_kw_negv ::= K_NEGV
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2398,6 +2433,7 @@ lvalue
 		methods = [
 			getCommandToken
 			getCommandString
+			getCommandStringUpper
 			getArguments
 			getArgumentValues
 			isVariant
@@ -2425,6 +2461,7 @@ named_game_var
 		methods = [
 			commandToken="/caos_named_var_kw"
 			getCommandString
+			getCommandStringUpper
 			isVariant
 			toCaosVar
 			getKey
@@ -2602,6 +2639,7 @@ c_kw_none
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2710,6 +2748,7 @@ c_kw_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2770,6 +2809,7 @@ c_kw_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2792,6 +2832,7 @@ c_kw_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2820,6 +2861,7 @@ c_kw_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2848,6 +2890,7 @@ c_kw_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2867,6 +2910,7 @@ c_kw_l_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2887,6 +2931,7 @@ c_kw_d_d_f_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2909,6 +2954,7 @@ c_kw_d_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2929,6 +2975,7 @@ c_kw_bs
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -2987,6 +3034,7 @@ c_kw_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3036,6 +3084,7 @@ c_kw_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3058,6 +3107,7 @@ c_kw_d_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3092,6 +3142,7 @@ c_kw_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3111,6 +3162,7 @@ c_kw_s_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3131,6 +3183,7 @@ c_kw_d_s_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3152,6 +3205,7 @@ c_kw_d_d_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3171,6 +3225,7 @@ c_kw_d_v_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3192,6 +3247,7 @@ c_kw_l_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3226,6 +3282,7 @@ c_kw_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3245,6 +3302,7 @@ c_kw_f_f_f_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3264,6 +3322,7 @@ c_kw_cond
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3291,6 +3350,7 @@ c_kw_a
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3312,6 +3372,7 @@ c_targ
 		methods = [
 			getCommandToken
 			getCommandString
+			getCommandStringUpper
 			getScope
 			getRVar
 			getArguments
@@ -3330,6 +3391,7 @@ c_kw_targ
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3353,6 +3415,7 @@ c_kw_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3372,6 +3435,7 @@ c_kw_s_t
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3397,6 +3461,7 @@ c_kw_f_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3416,6 +3481,7 @@ c_kw_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3439,6 +3505,7 @@ c_kw_s_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3460,6 +3527,7 @@ c_kw_a_d_a_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3479,6 +3547,7 @@ c_kw_a_d_a_d_a_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3501,6 +3570,7 @@ c_kw_a_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3520,6 +3590,7 @@ c_kw_a_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3539,6 +3610,7 @@ c_kw_gsub
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3567,6 +3639,7 @@ c_kw_t
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3586,6 +3659,7 @@ c_kw_d_d_d_f_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3605,6 +3679,7 @@ c_kw_s_d_s_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3625,6 +3700,7 @@ c_kw_s_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3645,6 +3721,7 @@ c_kw_s_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3664,6 +3741,7 @@ c_kw_d_d_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3683,6 +3761,7 @@ c_kw_d_d_d_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3702,6 +3781,7 @@ c_kw_a_d_v_v_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3721,6 +3801,7 @@ c_kw_l_l_l_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3740,6 +3821,7 @@ c_kw_s_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3759,6 +3841,7 @@ c_kw_s_s_d_v_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3778,6 +3861,7 @@ c_kw_t_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3800,6 +3884,7 @@ c_kw_t_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3819,6 +3904,7 @@ c_kw_t_d_d_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3846,6 +3932,7 @@ c_kw_d_d_d_s_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3865,6 +3952,7 @@ c_kw_d_a_d_d_d_s_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3887,6 +3975,7 @@ c_kw_d_a_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3906,6 +3995,7 @@ c_kw_d_d_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3927,6 +4017,7 @@ c_kw_t_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3949,6 +4040,7 @@ c_kw_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3970,6 +4062,7 @@ c_kw_t_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -3989,6 +4082,7 @@ c_kw_a_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4008,6 +4102,7 @@ c_kw_d_s_d_d_d_d_d_bs_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4027,6 +4122,7 @@ c_kw_d_s_d_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4046,6 +4142,7 @@ c_kw_d_s_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4065,6 +4162,7 @@ c_kw_d_s_d_d_d_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4084,6 +4182,7 @@ c_kw_d_s_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4103,6 +4202,7 @@ c_kw_d_s_d_d_d_d_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4122,6 +4222,7 @@ c_kw_d_s_s_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4141,6 +4242,7 @@ c_kw_a_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4160,6 +4262,7 @@ c_kw_d_s_s_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4179,6 +4282,7 @@ c_kw_d_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4198,6 +4302,7 @@ c_kw_d_d_f_f_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4217,6 +4322,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4237,6 +4343,7 @@ c_kw_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4257,6 +4364,7 @@ c_kw_a_a
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4276,6 +4384,7 @@ c_kw_s_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4297,6 +4406,7 @@ c_kw_t_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4316,6 +4426,7 @@ c_kw_s_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4340,6 +4451,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4361,6 +4473,7 @@ c_kw_a_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4381,6 +4494,7 @@ c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4402,6 +4516,7 @@ c_kw_d_f_d_f_d_f_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4421,6 +4536,7 @@ c_kw_a_d_f_d_f_d_f_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4440,6 +4556,7 @@ c_kw_s_s_s_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4459,6 +4576,7 @@ c_kw_a_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4480,6 +4598,7 @@ c_kw_f_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4499,6 +4618,7 @@ c_kw_a_d_f_d_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4744,6 +4864,7 @@ r_kw_none
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4772,6 +4893,7 @@ r_kw_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4791,6 +4913,7 @@ r_kw_d_d_d_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4810,6 +4933,7 @@ r_kw_d_d_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4883,6 +5007,7 @@ r_kw_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4907,6 +5032,7 @@ r_kw_f_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4929,6 +5055,7 @@ r_kw_a_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4948,6 +5075,7 @@ r_kw_d_d_v_v_s_d_d_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -4973,6 +5101,7 @@ r_kw_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5008,6 +5137,7 @@ r_kw_s_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5033,6 +5163,7 @@ r_kw_a
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5061,6 +5192,7 @@ caos_named_var_kw
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5081,6 +5213,7 @@ r_kw_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5122,6 +5255,7 @@ r_kw_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5172,6 +5306,7 @@ r_kw_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5195,6 +5330,7 @@ r_kw_s_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5215,6 +5351,7 @@ r_kw_d_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5236,6 +5373,7 @@ r_kw_d_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5256,6 +5394,7 @@ r_kw_a_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5279,6 +5418,7 @@ r_kw_s_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5298,6 +5438,7 @@ r_kw_d_s_s_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5317,6 +5458,7 @@ r_kw_s_s_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5336,6 +5478,7 @@ r_kw_s_s_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5355,6 +5498,7 @@ r_kw_s_d_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5374,6 +5518,7 @@ r_kw_d_s_d_s_l
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5393,6 +5538,7 @@ r_kw_a_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5419,6 +5565,7 @@ r_kw_a_a
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5438,6 +5585,7 @@ r_kw_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5457,6 +5605,7 @@ r_kw_d_d_bs_bs
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5476,6 +5625,7 @@ r_kw_s_d_s
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5495,6 +5645,7 @@ r_kw_f_f_f_f
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5514,6 +5665,7 @@ r_kw_t
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5533,6 +5685,7 @@ r_kw_d_d_d_s_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5586,6 +5739,7 @@ l_kw_none
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5605,6 +5759,7 @@ l_kw_a_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5628,6 +5783,7 @@ l_kw_d_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5648,6 +5804,7 @@ l_kw_d_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5668,6 +5825,7 @@ l_kw_v
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -5687,6 +5845,7 @@ l_kw_d
 		methods = [
 			getReference
 			getCommandString
+			getCommandStringUpper
 			getPresentation
 			isVariant
 			getName
@@ -6521,6 +6680,7 @@ c_endm ::= K_ENDM
 	methods = [
 		getReference
 		getCommandString
+			getCommandStringUpper
 		getPresentation
 		isVariant
 		getName
@@ -6703,6 +6863,7 @@ rvalue
 		methods = [
 			getCommandToken
      		getCommandString
+			getCommandStringUpper
      		toCaosVar
 			getArguments
 			getArgumentValues
