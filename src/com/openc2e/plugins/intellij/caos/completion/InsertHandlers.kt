@@ -132,3 +132,10 @@ fun addKeyListener(textField: JTextField) {
         }
     })
 }
+
+
+object ReplaceTextWithValueInsertHandler : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
+        context.document.replaceString(context.startOffset, context.tailOffset, lookupEl.lookupString)
+    }
+}

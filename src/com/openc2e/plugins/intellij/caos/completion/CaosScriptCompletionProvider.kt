@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.parentOfType
 import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
@@ -42,8 +43,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             resultSet.stopHere()
             return
         }
+
         val previous = element.getPreviousNonEmptySibling(true)
-        if (previous != null && IS_NUMBER.matches(previous.text)) {
+        if (IS_NUMBER.matches( element.previous?.text ?:"")) {
             resultSet.stopHere()
             return
         }
@@ -74,7 +76,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
         val type = parent.getEnclosingCommandType()
-        LOGGER.info("Element: ${element.text} of type ${element.elementType} is of caos value type ${type.value.toLowerCase()}")
+        LOGGER.info("Element: ${element.text} of type ${element.elementType} is of caos value type ${type.value.toLowerCase()}. parent is ${parent.elementType}")
         val case = element.case
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
@@ -96,6 +98,15 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         resultSet.addAllElements(singleCommands)
         if (type != CaosCommandType.COMMAND)
             addVariableCompletions(variant, element, resultSet)
+        (element.getParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
+            CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
+        }
+        (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
+            val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpression::class.java)
+            if (equalityExpression != null) {
+                CaosScriptTypeDefValueCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
+            }
+        }
     }
 
     private fun addVariableCompletions(variant: String, element: PsiElement, resultSet: CompletionResultSet) {
