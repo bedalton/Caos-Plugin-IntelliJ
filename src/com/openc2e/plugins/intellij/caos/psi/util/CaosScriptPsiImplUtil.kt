@@ -14,7 +14,6 @@ import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.documentation.CaosScriptPresentationUtil
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptVarTokenGroup
@@ -50,6 +49,11 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getCommandStringUpper(word: CaosDefCommandWord): String {
+        return getCommandString(word).toUpperCase()
+    }
+
+    @JvmStatic
     fun getCommandToken(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
         return rvalue.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
                 ?: rvalue.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
@@ -61,11 +65,18 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getCommandToken(element: CaosScriptIsCommandToken): CaosScriptIsCommandToken {
+        return element
+    }
+
+    @JvmStatic
     fun getCommandString(command: CaosScriptCommandElement): String {
         return when (command.getEnclosingCommandType()) {
             CaosCommandType.COMMAND -> command
                     .getSelfOrParentOfType(CaosScriptCommandCall::class.java)
                     ?.let { getCommandString(it) }
+                    ?: command.getChildOfType(CaosScriptIsCommandToken::class.java)
+                            ?.let { getCommandString(it) }
             CaosCommandType.RVALUE -> command
                     .getSelfOrParentOfType(CaosScriptRvalue::class.java)
                     ?.let { getCommandString(it) }
@@ -77,13 +88,35 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandString(element: CaosScriptRvalue): String {
-        return (element.stub?.caosVar ?: element.toCaosVar()).text
+    fun getCommandStringUpper(command: CaosScriptCommandElement): String {
+        return command.commandString.toUpperCase()
     }
 
     @JvmStatic
-    fun getCommandString(element: CaosScriptLvalue): String {
-        return (element.stub?.caosVar ?: element.toCaosVar()).text
+    fun getCommandString(element: CaosScriptRvalue): String? {
+        return (element.stub?.caosVar ?: element.toCaosVar()).commandString
+                ?: return UNDEF
+    }
+
+    @JvmStatic
+    fun getCommandStringUpper(element: CaosScriptRvalue): String? {
+        return getCommandString(element)?.toUpperCase()
+    }
+
+    @JvmStatic
+    fun getCommandString(element: CaosScriptLvalue): String? {
+        return (element.stub?.caosVar ?: element.toCaosVar()).commandString
+                ?: UNDEF
+    }
+
+    @JvmStatic
+    fun getCommandStringUpper(element: CaosScriptLvalue): String? {
+        return getCommandString(element)?.toUpperCase()
+    }
+
+    @JvmStatic
+    fun getCommandStringUpper(element: CaosScriptIsCommandToken): String {
+        return element.text.toUpperCase()
     }
 
     @JvmStatic
@@ -98,16 +131,19 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandString(reps:CaosScriptRepeatStatement) : String {
+    fun getCommandStringUpper(element: CaosScriptCommandCall): String? {
+        return element.stub?.commandUpper ?: getCommandString(element).toUpperCase()
+    }
+
+    @JvmStatic
+    fun getCommandString(reps: CaosScriptRepeatStatement): String {
         return reps.repsHeader.cReps.text
     }
 
     @JvmStatic
-    fun getCommandString(element:CaosScriptLoopStatement) : String {
+    fun getCommandString(element: CaosScriptLoopStatement): String {
         return element.cLoop.text
     }
-
-
 
     @JvmStatic
     fun getCommandToken(call: CaosScriptCommandCall): CaosScriptIsCommandToken? {
@@ -220,8 +256,9 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getName(element:CaosScriptSubroutine) : String {
-        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name ?: element.subroutineHeader.subroutineName?.text ?: ""
+    fun getName(element: CaosScriptSubroutine): String {
+        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name
+        ?: element.subroutineHeader.subroutineName?.text ?: ""
     }
 
     @JvmStatic
@@ -351,7 +388,7 @@ object CaosScriptPsiImplUtil {
             number.int?.let {
                 try {
                     return CaosVar.CaosLiteral.CaosInt(it.text.toLong())
-                } catch (e:Exception) {
+                } catch (e: Exception) {
                     return CaosVar.CaosLiteral.CaosInt(Long.MAX_VALUE)
                 }
             }
@@ -720,17 +757,17 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getInferredType(varToken:CaosScriptIsVariable) : CaosExpressionValueType {
+    fun getInferredType(varToken: CaosScriptIsVariable): CaosExpressionValueType {
         return CaosScriptInferenceUtil.getInferredType(varToken)
     }
 
     @JvmStatic
-    fun getInferredType(element:CaosScriptRvalue) : CaosExpressionValueType {
+    fun getInferredType(element: CaosScriptRvalue): CaosExpressionValueType {
         return CaosScriptInferenceUtil.getInferredType(element)
     }
 
     @JvmStatic
-    fun getInferredType(element:CaosScriptLvalue) : CaosExpressionValueType {
+    fun getInferredType(element: CaosScriptLvalue): CaosExpressionValueType {
         element.varToken?.let {
             return CaosScriptInferenceUtil.getInferredType(it)
         }
@@ -1149,21 +1186,25 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getRndvIntRange(element:CaosScriptCRndv) : Pair<Int?,Int?> {
+    fun getRndvIntRange(element: CaosScriptCRndv): Pair<Int?, Int?> {
         element.stub?.let {
             return Pair(it.min, it.max)
         }
         val val1 = try {
             element.minElement?.text?.toInt()
-        } catch (e:Exception) {null}
+        } catch (e: Exception) {
+            null
+        }
         val val2 = try {
             element.maxElement?.text?.toInt()
-        } catch (e:Exception) {null}
+        } catch (e: Exception) {
+            null
+        }
         return Pair(val1, val2)
     }
 
     @JvmStatic
-    fun isRndvValuesInOrder(element:CaosScriptCRndv, onNull:Boolean) : Boolean {
+    fun isRndvValuesInOrder(element: CaosScriptCRndv, onNull: Boolean): Boolean {
         val values = getRndvIntRange(element)
         val min = values.first ?: return onNull
         val max = values.second ?: return onNull
@@ -1269,3 +1310,11 @@ val PsiElement.case: Case
         }
         return Case.UPPER_CASE
     }
+
+fun String?.nullIfUndef(): String? {
+    if (this == null || this == UNDEF)
+        return null
+    return this
+}
+
+val CaosScriptCommandLike.commandStringUpper: String get() = commandString.toUpperCase()
