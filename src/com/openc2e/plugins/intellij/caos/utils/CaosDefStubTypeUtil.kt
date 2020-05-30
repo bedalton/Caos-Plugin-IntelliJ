@@ -16,10 +16,12 @@ internal fun StubInputStream.readParameter() : CaosDefParameterStruct {
     val name = readNameAsString().nullIfEmpty() ?: "???"
     val type = readVariableType() ?: CaosDefPsiImplUtil.AnyTypeType
     val comment = readUTFFast().nullIfEmpty()
+    val parameterNumber = readInt()
     return CaosDefParameterStruct(
             name = name,
             type = type,
-            comment = comment
+            comment = comment,
+            parameterNumber = parameterNumber
     )
 }
 
@@ -27,7 +29,7 @@ internal fun StubOutputStream.writeParameter(parameter:CaosDefParameterStruct) {
     writeName(parameter.name)
     writeVariableType(parameter.type)
     writeUTFFast(parameter.comment ?: "")
-
+    writeInt(parameter.parameterNumber)
 }
 
 internal fun StubInputStream.readReturnType() : CaosDefReturnTypeStruct? {
