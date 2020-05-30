@@ -20,6 +20,8 @@ import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsValueOfType
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getParentOfType
+import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
+import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
@@ -55,33 +57,30 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
         val parameters = commandDef.parameterStructs
         val firstIndex = parameters
                 .sortedBy { it.parameterNumber }
-                .firstOrNull {
-                    it.name.toLowerCase().startsWith("chem")
+                .firstOrNull { parameter ->
+                    parameter.name.toLowerCase().startsWith("chem")
                 }
                 ?.parameterNumber
                 ?: return null
-        val start = arguments.getOrNull(firstIndex)
-                ?.startOffset
-                ?: return null
-        val end = arguments.lastOrNull()?.endOffset
-                ?: return null
-        val chemParameters = arguments.subList(firstIndex, arguments.lastIndex)
+        val chemParameters = arguments.subList(firstIndex, arguments.size)
         if (chemParameters.size % 2 != 0) {
-            LOGGER.info("Cannot fold STIM list, chemicals/amounts unequal")
+            LOGGER.info("Cannot fold STIM list, chemicals/amounts unequal paramterSize: ${chemParameters.joinToString { it.text }}")
             return null
         }
         val numParameters = chemParameters.size / 2
         val stringBuilder = StringBuilder()
         for (i in 0..numParameters) {
             val pos = i * 2
-
-            val expression = (arguments as? CaosScriptExpectsValueOfType)?.rvalue?.expression
+            val expression = (arguments as? CaosScriptExpectsValueOfType)
+                    ?.rvalue
+                    ?.expression
+            //Ignore blank input
             if (expression?.text == "255")
                 continue
+            // Get type def value.
             val value = expression?.getTypeDefValue()?.value
-                    ?: expression?.text?.let { " of $it" }
-                    ?: return null
-            stringBuilder.append(" +")
+                    ?: expression?.text?.let { "Chemical $it" }
+            stringBuilder.append(", +")
             val amount = arguments[pos + 1].toCaosVar()
             if (amount is CaosVar.CaosLiteral.CaosInt)
                 stringBuilder.append(amount.value).append(" ")
@@ -89,7 +88,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 stringBuilder.append(amount.value).append(" ")
             stringBuilder.append(value)
         }
-        return stringBuilder.toString().trim()
+        return stringBuilder.toString().trim(' ',',').nullIfEmpty()
     }
 
     private fun foldC3ChemCall(commandCall: CaosScriptCommandCall, commandDef: CaosDefCommandDefElement): String? {
@@ -106,17 +105,17 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     shouldFold(it)
                 }
                 .mapNotNull {
-                    getCommandCallFoldingRegion(it)
+                    getCommandCallFoldingRegion(it, group)
                 }
                 .toTypedArray()
     }
 
-    private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall): FoldingDescriptor? {
+    private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall, group:FoldingGroup): FoldingDescriptor? {
         if (!shouldFold(commandCall))
             return null
         val variant = commandCall.containingCaosFile.variant
         return when (variant) {
-            "C1", "C2" -> getC1StimFoldingDescriptor(commandCall)
+            "C1", "C2" -> getC1StimFoldingDescriptor(commandCall, group)
             else -> {
                 // TODO implement CV+ folding
                 null
@@ -125,8 +124,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
     }
 
-    private fun getC1StimFoldingDescriptor(commandCall: CaosScriptCommandCall): FoldingDescriptor? {
-        val group = FoldingGroup.newGroup("CaosScript_CHEM_LIST")
+    private fun getC1StimFoldingDescriptor(commandCall: CaosScriptCommandCall, group:FoldingGroup): FoldingDescriptor? {
         val resolved = commandCall.commandToken
                 ?.reference
                 ?.multiResolve(true)
@@ -139,7 +137,9 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
         val firstIndex = parameters
                 .sortedBy { it.parameterNumber }
                 .firstOrNull {
-                    it.name.toLowerCase().startsWith("chem")
+                    it.name.toLowerCase().let {
+                        it.startsWith("sign") || it.startsWith("chem")
+                    }
                 }
                 ?.parameterNumber
                 ?: return null
@@ -152,15 +152,11 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return true
+        return getPlaceholderText(node).isNotNullOrBlank()
     }
 
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
         return commandCall.commandString.toUpperCase().startsWith("STIM")
-    }
-
-    companion object {
-        private const val DEFAULT_TEXT = "..."
     }
 
 }
