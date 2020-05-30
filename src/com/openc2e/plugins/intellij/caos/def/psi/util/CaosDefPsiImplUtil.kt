@@ -164,6 +164,7 @@ object CaosDefPsiImplUtil {
         val parameterName = stub?.parameterName ?: getParameterName(parameter)
         val type = stub?.type ?: CaosDefVariableTypeStruct(type = getParameterType(parameter))
         return CaosDefParameterStruct(
+                parameterNumber = (parameter.parent as? CaosDefCommandDefElement)?.parameterList?.indexOf(parameter) ?: -1,
                 name = parameterName,
                 type = type,
                 comment = null
@@ -194,7 +195,18 @@ object CaosDefPsiImplUtil {
         val parameterName = getVariableName(parameterNameLink)
         val parameterTypeName = paramComment.docCommentVariableType?.toStruct()
         val comment = paramComment.docCommentParamText?.text
+        val parameterList = paramComment
+                .getParentOfType(CaosDefCommandDefElement::class.java)
+                ?.parameterList
+        val parameterNumber = parameterList
+                ?.firstOrNull {
+                    it.parameterName == parameterName
+                }?.let {
+                    parameterList.indexOf(it)
+                }
+                ?: -1
         return CaosDefParameterStruct(
+                parameterNumber = parameterNumber,
                 name = parameterName,
                 type = parameterTypeName ?: AnyTypeType,
                 comment = comment
