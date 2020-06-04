@@ -3,6 +3,7 @@ package com.openc2e.plugins.intellij.caos.completion
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
@@ -34,7 +35,7 @@ internal object GenerateClasIntegerAction : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
         LOGGER.info("Handling Insert")
         val position = context.editor.caretModel.currentCaret.offset
-        invokeLater {
+        invokeAndWaitIfNeeded {
             LOGGER.info("Invoking and Waiting")
             ClasForm(position, context.editor).showAndGet()
         }
@@ -43,22 +44,21 @@ internal object GenerateClasIntegerAction : InsertHandler<LookupElement> {
 
 class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(editor.project, true) {
 
+    val NUMBER_REGEX = "[0-9]+".toRegex();
+
     private val family = JFormattedTextField().apply {
         value = ""
         columns = 3
-        addKeyListener(this)
     }
 
     private val genus = JFormattedTextField().apply {
         value = ""
         columns = 3
-        addKeyListener(this)
     }
 
     val species = JFormattedTextField().apply {
         value = ""
         columns = 3
-        addKeyListener(this)
     }
 
     init {
@@ -107,8 +107,10 @@ class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(ed
     }
 
     private fun validate(field: JTextField): ValidationInfo? {
-        val errors = mutableListOf<String>()
-        val value = field.text.nullIfEmpty()?.let {
+        val text = field.text
+        if (!NUMBER_REGEX.matches(text))
+            return ValidationInfo("numeric value expected", field)
+        val value = text.nullIfEmpty()?.let {
             try {
                 it.toInt()
             } catch (e: Exception) {
@@ -124,15 +126,6 @@ class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(ed
     }
 
 }
-
-fun addKeyListener(textField: JTextField) {
-    textField.addKeyListener(object : KeyAdapter() {
-        override fun keyPressed(ke: KeyEvent) {
-            textField.isEditable = ke.keyChar in '0'..'9'
-        }
-    })
-}
-
 
 object ReplaceTextWithValueInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
