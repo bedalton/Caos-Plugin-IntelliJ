@@ -22,6 +22,7 @@ import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getParentOfType
 import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
+import kotlin.math.abs
 
 class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
@@ -69,9 +70,10 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
         val numParameters = chemParameters.size / 2
         val stringBuilder = StringBuilder()
-        for (i in 0..numParameters) {
+        for (i in 1..numParameters) {
             val pos = i * 2
-            val expression = (arguments as? CaosScriptExpectsValueOfType)
+            val argument = arguments[pos + 1]
+            val expression = (argument as? CaosScriptExpectsValueOfType)
                     ?.rvalue
                     ?.expression
             //Ignore blank input
@@ -79,13 +81,23 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 continue
             // Get type def value.
             val value = expression?.getTypeDefValue()?.value
-                    ?: expression?.text?.let { "Chemical $it" }
-            stringBuilder.append(", +")
-            val amount = arguments[pos + 1].toCaosVar()
-            if (amount is CaosVar.CaosLiteral.CaosInt)
+                    ?: argument.text
+                    ?: continue
+            val amount = arguments[pos + 2].toCaosVar()
+            if (amount is CaosVar.CaosLiteral.CaosInt) {
+                if (amount.value == 0L)
+                    continue
+                stringBuilder.append(", +")
                 stringBuilder.append(amount.value).append(" ")
-            else if (amount is CaosVar.CaosLiteral.CaosFloat)
+            }
+            else if (amount is CaosVar.CaosLiteral.CaosFloat) {
+                if (abs(amount.value) < 0.0001)
+                    continue
+                stringBuilder.append(", +")
                 stringBuilder.append(amount.value).append(" ")
+            } else {
+                stringBuilder.append(", +")
+            }
             stringBuilder.append(value)
         }
         return stringBuilder.toString().trim(' ',',').nullIfEmpty()
@@ -133,17 +145,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 ?.getParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return null
         val arguments = commandCall.arguments
-        val parameters = resolved.parameterStructs
-        val firstIndex = parameters
-                .sortedBy { it.parameterNumber }
-                .firstOrNull {
-                    it.name.toLowerCase().let {
-                        it.startsWith("sign") || it.startsWith("chem")
-                    }
-                }
-                ?.parameterNumber
-                ?: return null
-        val start = arguments.getOrNull(firstIndex)
+        val start = arguments.firstOrNull()
                 ?.startOffset
                 ?: return null
         val end = arguments.lastOrNull()?.endOffset
@@ -152,7 +154,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return getPlaceholderText(node).isNotNullOrBlank()
+        return true
     }
 
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
