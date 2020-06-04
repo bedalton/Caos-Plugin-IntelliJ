@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.inspections
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.lang.jvm.actions.expectedType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.openc2e.plugins.intellij.caos.annotators.AnnotationHolderWrapper
@@ -75,6 +76,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             expectedTypeSimple = CaosExpressionValueType.INT
         }
         if (actualType == expectedTypeSimple || fudge(actualType, expectedTypeSimple)) {
+            return
+        }
+
+        if (expectedTypeSimple == CaosExpressionValueType.TOKEN && element.text.length == 4) {
             return
         }
         val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
