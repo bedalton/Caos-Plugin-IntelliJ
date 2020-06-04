@@ -15,15 +15,14 @@ import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.utils.CaosConstants
-import com.openc2e.plugins.intellij.caos.utils.copyAsOneLine
-import com.openc2e.plugins.intellij.caos.utils.getPsiFile
-import com.openc2e.plugins.intellij.caos.utils.trimErrorSpaces
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.caos.utils.*
 import javax.swing.JPanel
 
 
 class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
 
+    private var variant:String? = null
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     init {
@@ -50,7 +49,6 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
     }
 }
 
-
 internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel {
     val toolbar = EditorToolbar()
     toolbar.panel.background = TRANSPARENT_COLOR
@@ -67,12 +65,27 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
         val selected = it.item as String
         if (caosFile.variant == selected || selected !in CaosConstants.VARAINTS)
             return@variant
+
         CaosScriptProjectSettings.setVariant(selected)
         //caosFile.variant = selected
         runWriteAction {
             com.intellij.psi.text.BlockSupport.getInstance(caosFile.project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
         }
         DaemonCodeAnalyzer.getInstance(caosFile.project).restart(caosFile)
+        toolbar.setDocsButtonEnabled(true)
+    }
+
+    toolbar.addDocsButtonClickListener {
+        val variant = toolbar.selectedVariant
+        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$variant-Lib.caosdef"
+        val virtualFile = CaosFileUtil.getPluginResourceFile(docRelativePath)
+        LOGGER.info("RelativePath: $docRelativePath. Path: ${virtualFile?.path}")
+        val file = virtualFile?.getPsiFile(caosFile.project)
+        if (file == null) {
+            toolbar.setDocsButtonEnabled(false)
+            return@addDocsButtonClickListener
+        }
+        file.navigate(true)
     }
     return toolbar.panel
 }

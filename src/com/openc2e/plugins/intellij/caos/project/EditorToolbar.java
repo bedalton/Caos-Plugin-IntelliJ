@@ -16,6 +16,7 @@ public class EditorToolbar {
     private JButton copyOneLine;
     private JButton trimSpaces;
     private JPanel panel;
+    private JButton docsButton;
 
     public JPanel getPanel() {
         return panel;
@@ -25,12 +26,24 @@ public class EditorToolbar {
         variant.addItemListener(itemListener);
     }
 
+    public void addDocsButtonClickListener(ActionListener actionListener) {
+        docsButton.addActionListener(actionListener);
+    }
+
+    public void setDocsButtonEnabled(boolean enabled) {
+        docsButton.setEnabled(enabled);
+    }
+
     public void selectVariant(String variantString) {
         variant.setSelectedItem(variantString);
     }
 
     public void selectVariant(int variantIndex) {
         variant.setSelectedIndex(variantIndex);
+    }
+
+    public String getSelectedVariant() {
+        return (String) variant.getSelectedItem();
     }
 
     public void addCopyOneLineListener(ActionListener actionListener) {
@@ -57,7 +70,7 @@ public class EditorToolbar {
      */
     private void $$$setupUI$$$() {
         panel = new JPanel();
-        panel.setLayout(new GridLayoutManager(1, 4, new Insets(0, 0, 0, 0), - 1, - 1));
+        panel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), - 1, - 1));
         panel.setBackground(new Color(- 1));
         variant = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
@@ -78,6 +91,9 @@ public class EditorToolbar {
         trimSpaces = new JButton();
         this.$$$loadButtonText$$$(trimSpaces, this.$$$getMessageFromBundle$$$("com/openc2e/plugins/intellij/caos-bundle", "caos.toolbar.trim-error-spaces"));
         panel.add(trimSpaces, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        docsButton = new JButton();
+        docsButton.setText("Docs");
+        panel.add(docsButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     private static Method $$$cachedGetBundleMethod$$$ = null;
