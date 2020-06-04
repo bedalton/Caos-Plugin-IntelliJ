@@ -2799,6 +2799,8 @@ c_kw_d_d
 	|	<<isVariant "DS">>K_TRAN
 	|	<<isVariant "C3">>K_TRAN
 	|	<<isVariant "CV">>K_TRAN
+	|	K_MVBY
+	|	K_MVTO
 	|	K_VOLM
 	{
 		implements = [
@@ -3446,10 +3448,8 @@ c_kw_s_t
 
 c_kw_f_f
 	::= K_FLTO
-	|	K_MVBY
 	|	K_MVFT
 	|	K_MVSF
-	|	K_MVTO
 	|	K_ROTN
 	|	K_VELO
 	{
