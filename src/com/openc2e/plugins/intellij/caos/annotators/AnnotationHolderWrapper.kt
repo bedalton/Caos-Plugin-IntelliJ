@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.orFalse
 import org.jetbrains.annotations.Contract
 
@@ -123,7 +124,7 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
 
     @Contract(pure = true)
     fun newFix(intentionAction: IntentionAction): FixBuilder {
-        return FixBuilder._createFixBuilder(this, FixBuilderData(intentionAction = intentionAction))
+        return FixBuilder._createFixBuilder(this, FixBuilderData(intentionAction = intentionAction, universal = intentionAction is LocalQuickFix))
     }
 
     @Contract(pure = true)
@@ -136,30 +137,36 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
         val range = data.range
                 ?: throw Exception("Cannot create annotation without range")
         val annotation = annotationHolder.createAnnotation(data.severity, data.range, data.message)
-        data.fixBuilderData.forEach {val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
+        data.fixBuilderData.forEach {
+            val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
             val union: FixUnion? = if (quickFix != null && intentionAction != null)
                 FixUnion(intentionAction = intentionAction, quickFix = quickFix)
             else
                 null
             if (it.batch.orFalse()) {
-                annotation.registerBatchFix(union!!, it.range, it.key)
+                if (union != null) {
+                    annotation.registerBatchFix(union, it.range, it.key)
+                } else {
+                    LOGGER.severe("Batch fix set for ${data.message}, but fix is not batch compatible")
+                }
             }
-            if (it.universal.orFalse())
-                annotation.registerUniversalFix(union!!, it.range, it.key)
-            if (!it.universal.orFalse() && it.batch.orFalse()) {
-                if (quickFix != null) {
-                    annotation.registerFix(quickFix, it.range, it.key, it.problemDescriptor!!)
-                } else if (intentionAction != null){
+            if (union != null) {
+                annotation.registerUniversalFix(union, it.range, it.key)
+            }
+            if (union == null && it.batch.orFalse()) {
+                if (intentionAction != null){
                     if (it.range != null) {
                         if (it.key != null) {
-                            annotation.registerFix(intentionAction!!, it.range, it.key)
+                            annotation.registerFix(intentionAction, it.range, it.key)
                         } else {
-                            annotation.registerFix(intentionAction!!, it.range)
+                            annotation.registerFix(intentionAction, it.range)
                         }
                     } else {
-                        annotation.registerFix(intentionAction!!)
+                        annotation.registerFix(intentionAction)
                     }
+                } else if (quickFix != null && it.problemDescriptor != null) {
+                    annotation.registerFix(quickFix, it.range, it.key, it.problemDescriptor)
                 } else {
                     throw Exception("Cannot create fix without any fixes")
                 }
