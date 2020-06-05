@@ -23,9 +23,9 @@ object SpaceAfterInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
         val position = context.editor.caretModel.currentCaret.offset
         if (EditorUtil.isTextAtOffset(context, " ") || EditorUtil.isTextAtOffset(context, "\n") || EditorUtil.isTextAtOffset(context, "\t"))
-            EditorUtil.insertText(context, " ", true)
+            return
+        EditorUtil.insertText(context, " ", true)
     }
-
 }
 
 
@@ -33,10 +33,8 @@ internal val GENERATE_CLAS_LOOKUP_STRING = "Generate CLAS value"
 
 internal object GenerateClasIntegerAction : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
-        LOGGER.info("Handling Insert")
         val position = context.editor.caretModel.currentCaret.offset
         invokeAndWaitIfNeeded {
-            LOGGER.info("Invoking and Waiting")
             ClasForm(position, context.editor).showAndGet()
         }
     }
@@ -67,7 +65,6 @@ class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(ed
     }
 
     override fun createCenterPanel(): JComponent? {
-        LOGGER.info("Creating center panel")
         val fieldsPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         }
