@@ -622,7 +622,7 @@ object CaosScriptPsiImplUtil {
             }
             return CaosVar.CaosCommandCall(it.text)
         }
-        LOGGER.info("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}")
+        LOGGER.warning("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}. File: ${lvalue.containingFile.name}, Line: ${lvalue.lineNumber}")
         return CaosVar.CaosLiteralVal
     }
 
@@ -847,33 +847,53 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getFamily(script: CaosScriptEventScript): Int {
-        return script.stub?.family ?: script.classifier?.family?.text?.toInt() ?: -1
+        return try {
+            script.stub?.family ?: script.classifier?.family?.text?.toInt() ?: -1
+        } catch(e:Exception) {
+            -1
+        }
     }
 
     @JvmStatic
     fun getGenus(script: CaosScriptEventScript): Int {
-        return script.stub?.genus ?: script.classifier?.genus?.text?.toInt() ?: -1
+        return try {
+            script.stub?.genus ?: script.classifier?.genus?.text?.toInt() ?: -1
+        } catch(e:Exception) {
+            -1
+        }
     }
 
     @JvmStatic
     fun getSpecies(script: CaosScriptEventScript): Int {
-        return script.stub?.species ?: script.classifier?.species?.text?.toInt() ?: -1
+        return try {
+            script.stub?.species ?: script.classifier?.species?.text?.toInt() ?: -1
+        } catch(e:Exception) {
+            -1
+        }
     }
 
     @JvmStatic
     fun getEventNumber(script: CaosScriptEventScript): Int {
-        return script.stub?.eventNumber ?: script.eventNumberElement?.text?.toInt() ?: -1
+        return try {
+            script.stub?.eventNumber ?: script.eventNumberElement?.text?.toInt() ?: -1
+        } catch(e:Exception) {
+            -1
+        }
     }
 
     @JvmStatic
     fun getValue(assignment: CaosScriptConstantAssignment): CaosNumber {
-        assignment.constantValue?.let { value ->
-            value.int?.let {
-                return CaosNumber.CaosIntNumber(it.text.toInt())
+        try {
+            assignment.constantValue?.let { value ->
+                value.int?.let {
+                    return CaosNumber.CaosIntNumber(it.text.toInt())
+                }
+                value.float?.let {
+                    return CaosNumber.CaosFloatNumber(it.text.toFloat())
+                }
             }
-            value.float?.let {
-                return CaosNumber.CaosFloatNumber(it.text.toFloat())
-            }
+        } catch (e:Exception) {
+
         }
         return CaosNumber.Undefined
     }
