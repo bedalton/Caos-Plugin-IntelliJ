@@ -6,7 +6,7 @@ import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 
-interface CaosScriptIsCommandToken : PsiNamedElement, CaosScriptCompositeElement {
+interface CaosScriptIsCommandToken : PsiNamedElement, CaosScriptCompositeElement, CaosScriptShouldBeLowerCase {
     fun isVariant(variants:List<String>, strict:Boolean) : Boolean
     val reference:CaosScriptCommandTokenReference
     val commandString:String
