@@ -48,7 +48,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun exitBlock(builder_: PsiBuilder?,
                   level: Int): Boolean {
-        blocks--
+        if (blocks > 0)
+            blocks--
         return true
     }
 
