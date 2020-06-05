@@ -8,11 +8,9 @@ import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
-import com.openc2e.plugins.intellij.caos.psi.util.elementType
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.caos.utils.orElse
 
@@ -77,7 +75,7 @@ private fun getListValue(variant: String, listName: String, project: Project, ke
     return list.keys.firstOrNull { it.key == key }
 }
 
-private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key:String): CaosDefTypeDefValueStruct? {
+private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key: String): CaosDefTypeDefValueStruct? {
     val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
             ?: return null
     val index = valueOfType.index
@@ -105,9 +103,11 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
 
 
 internal fun getCommand(element: CaosScriptCommandElement): CaosDefCommandDefElement? {
-    val commandTokens = element.commandToken?.reference?.multiResolve(true)?.mapNotNull {
-        (it.element as? CaosDefCompositeElement)?.getParentOfType(CaosDefCommandDefElement::class.java)
-    } ?: return null
+    val commandTokens = try {
+        element.commandToken?.reference?.multiResolve(true)?.mapNotNull {
+            (it.element as? CaosDefCompositeElement)?.getParentOfType(CaosDefCommandDefElement::class.java)
+        }
+    } catch (e:Exception) { null } ?: return null
     val numParameters = element.argumentsLength
     if (commandTokens.isEmpty())
         return null
@@ -134,7 +134,7 @@ internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosDefCommandD
             ?.argumentsLength
             .orElse(-1)
 
-    return if (numParameters >= 0){
+    return if (numParameters >= 0) {
         commandTokens.filter { it.parameterStructs.size == numParameters }.ifEmpty { null }?.first()
                 ?: commandTokens.filter { it.parameterStructs.size > numParameters }.ifEmpty { null }?.first()
                 ?: return null
