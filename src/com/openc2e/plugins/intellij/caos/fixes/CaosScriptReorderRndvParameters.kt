@@ -22,7 +22,7 @@ class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionActio
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.fixes.family-name")
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun applyFix(p0: Project, p1: ProblemDescriptor) {
         TODO("Not yet implemented")
