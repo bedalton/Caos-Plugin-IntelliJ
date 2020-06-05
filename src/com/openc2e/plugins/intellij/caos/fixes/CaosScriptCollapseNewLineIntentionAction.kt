@@ -41,7 +41,9 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         for (newLine in newLines) {
             replaceWithSpaceOrComma(newLine)
         }
-        CodeStyleManager.getInstance(project).reformat(fileIn, true)
+        runWriteAction {
+            CodeStyleManager.getInstance(project).reformat(fileIn, true)
+        }
     }
 
     private fun replaceWithSpaceOrComma(next: PsiElement?) {
