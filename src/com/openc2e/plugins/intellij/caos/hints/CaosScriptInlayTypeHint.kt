@@ -9,6 +9,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
@@ -19,10 +20,50 @@ import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.caos.utils.CaosAgentClassUtils
+import com.openc2e.plugins.intellij.caos.utils.orFalse
 
-enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boolean) : CaosScriptHintsProvider {
+enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
+
+    ATTRIBUTE_BITFLAGS_HINT("Show attributes from bitflag", true, 100) {
+        override fun isApplicable(element: PsiElement): Boolean {
+            return (element as? CaosScriptExpression)?.isInt.orFalse() && element.getPreviousNonEmptySibling(false)?.text?.toUpperCase() == "ATTR"
+        }
+
+        override fun provideHints(element: PsiElement): List<InlayInfo> {
+            val attr = (element as? CaosScriptExpression)?.intValue
+                    ?: return emptyList()
+            val variant = element.containingCaosFile.variant
+            val typeList = CaosDefTypeDefinitionElementsByNameIndex
+                    .Instance["Attributes", element.project]
+                    .filter {
+                        it.containingCaosDefFile.isVariant(variant)
+                    }
+                    .firstOrNull()
+                    ?: return emptyList()
+            val values = mutableListOf<String>()
+            for(key in typeList.keys) {
+                try {
+                    if (attr and key.key.toInt() > 0)
+                        values.add(key.value)
+                } catch (e:Exception) {}
+            }
+            return listOf(InlayInfo("(${values.joinToString()})", element.endOffset))
+        }
+
+        override fun getHintInfo(element: PsiElement): HintInfo? {
+            if (element !is CaosScriptExpression) {
+                return null
+            }
+            val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
+                    ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
+            return parent?.let {
+                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+            }
+        }
+    },
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
         override fun isApplicable(element: PsiElement): Boolean {
             return element is CaosScriptExpression
@@ -71,7 +112,10 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
                     ?: return emptyList()
             val value = typeList.getValueForKey(eventElement.text)
                     ?: return emptyList()
-            return listOf(InlayInfo("(${value.value})", eventElement.endOffset))
+            return listOf(
+                    InlayInfo("event", eventElement.startOffset),
+                    InlayInfo("(${value.value})", eventElement.endOffset)
+            )
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
@@ -102,7 +146,7 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
                             val agentClass = CaosAgentClassUtils.parseClas(it)
                                     ?: return emptyList()
                             return listOf(
-                                    InlayInfo("f:${agentClass.family} g:${agentClass.genus} s:${agentClass.species}", rvalue.endOffset)
+                                    InlayInfo("family:${agentClass.family} genus:${agentClass.genus} species:${agentClass.species}", rvalue.endOffset)
                             )
                         }
                     }
