@@ -71,13 +71,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             parent = parent.parent
         }
         if (parent == null) {
-            LOGGER.info("Parent of ${element.text} is not of a command type")
             resultSet.stopHere()
             return
         }
         val type = parent.getEnclosingCommandType()
-        LOGGER.info("Element: ${element.text} of type ${element.elementType} is of caos value type ${type.value.toLowerCase()}. parent is ${parent.elementType}")
         val case = element.case
+        val allowUppercase = variant !in listOf("C1", "C2")
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
                     if (it.commandName.toUpperCase() in SKIP_VAR_NAMES)
@@ -92,9 +91,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     }
                 }
                 .map {
-                    createCommandTokenLookupElement(element, case, it.commandName, it.isCommand, it.returnTypeString)
+                    createCommandTokenLookupElement(allowUppercase, element, case, it.commandName, it.isCommand, it.returnTypeString)
                 }
-        LOGGER.info("Adding: ${singleCommands.size} commands")
         resultSet.addAllElements(singleCommands)
         if (type != CaosCommandType.COMMAND)
             addVariableCompletions(variant, element, resultSet)
@@ -144,7 +142,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
-    private fun createCommandTokenLookupElement(element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, returnType: String, prefixIn: String? = null): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, returnType: String, prefixIn: String? = null): LookupElementBuilder {
         val tailText = if (isCommand)
             "command"
         else
@@ -153,7 +151,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             CaosScriptIcons.COMMAND
         else
             CaosScriptIcons.RVALUE
-        val command = if (case == Case.UPPER_CASE)
+        val command = if (case == Case.UPPER_CASE && allowUppercase)
             commandIn.toUpperCase()
         else
             commandIn.toLowerCase()
@@ -201,13 +199,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val scope = GlobalSearchScope.everythingScope(project)
         val subroutines = CaosScriptSubroutineIndex.instance.getAllInScope(project, scope)
                 .filter {
-                    LOGGER.info("Containing File: ${it.containingFile.name}")
                     file.name == (it.originalElement?.containingFile ?: it.containingFile)?.name
                 }
                 .mapNotNull { it.name.nullIfEmpty() }
                 .toSet()
-        LOGGER.info("Adding ${subroutines.size} subroutine names for completion.")
-        LOGGER.info("There are ${CaosScriptSubroutineIndex.instance.getAllKeys(project)} keys in subroutine key index")
         for(subr in subroutines) {
             val builder = LookupElementBuilder.create(subr)
             resultSet.addElement(builder)

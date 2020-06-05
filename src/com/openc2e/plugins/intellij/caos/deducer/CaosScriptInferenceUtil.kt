@@ -135,7 +135,6 @@ object CaosScriptInferenceUtil {
                                 ?.type
                                 ?.type
                                 ?.let {
-                                    LOGGER.info("Type found for ${prime.text}. Type: $it")
                                     CaosVar.CaosCommandCall(token.text, CaosExpressionValueType.fromSimpleName(it))
                                 }
                     }

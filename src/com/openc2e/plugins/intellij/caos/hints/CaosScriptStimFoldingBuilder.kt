@@ -65,7 +65,6 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 ?: return null
         val chemParameters = arguments.subList(firstIndex, arguments.size)
         if (chemParameters.size % 2 != 0) {
-            LOGGER.info("Cannot fold STIM list, chemicals/amounts unequal paramterSize: ${chemParameters.joinToString { it.text }}")
             return null
         }
         val numParameters = chemParameters.size / 2
