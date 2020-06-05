@@ -14,11 +14,12 @@ interface CaosScriptHintsProvider {
     fun getHintInfo(element:PsiElement) : HintInfo?
     val enabled:Boolean
     val option:Option
+    val priority:Int
 
 
     companion object {
         fun resolve(element: PsiElement): CaosScriptHintsProvider? =
-                values.find { it.isApplicable(element) }
+                values.sortedByDescending { it.priority }.find { it.isApplicable(element) }
 
         val values: Array<CaosScriptHintsProvider> =
                 arrayOf(*CaosScriptInlayTypeHint.values(), *CaosScriptInlayParameterHintsProvider.values())

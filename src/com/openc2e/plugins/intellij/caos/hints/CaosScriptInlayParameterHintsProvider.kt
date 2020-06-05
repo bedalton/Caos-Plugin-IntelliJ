@@ -13,7 +13,7 @@ import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptClassifier
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement
 
-enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean) : CaosScriptHintsProvider {
+enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
         override fun isApplicable(element: PsiElement): Boolean {
             return element is CaosScriptCommandElement || element is CaosScriptClassifier
