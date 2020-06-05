@@ -63,7 +63,6 @@ class CaosScriptBlock internal constructor(
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
         val elementType = myNode.elementType
         val previousType = myNode.getPreviousNonEmptyNode(true)?.elementType
-        LOGGER.info("Get child attribute indent for type: $elementType. PrevType: $previousType")
         if (myNode.psi is CaosScriptHasCodeBlock)
             return normalIndent
         val canIndent = elementType == CaosScript_CODE_BLOCK_LINE

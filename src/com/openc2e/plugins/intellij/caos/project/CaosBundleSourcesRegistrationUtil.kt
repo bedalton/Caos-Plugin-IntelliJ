@@ -50,7 +50,6 @@ object CaosBundleSourcesRegistrationUtil {
             }
             return false
         }
-        LOGGER.info("Registering Caos definitions")
         val rootModel = ModuleRootManager.getInstance(module).modifiableModel
         val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
         val libraryPath = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
@@ -68,7 +67,6 @@ object CaosBundleSourcesRegistrationUtil {
 
         // Check if same version
         if (isSourceCurrent(libraryPath, modifiableModel)) {
-            LOGGER.info("Caos std-lib files are current")
             return true
         }
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)

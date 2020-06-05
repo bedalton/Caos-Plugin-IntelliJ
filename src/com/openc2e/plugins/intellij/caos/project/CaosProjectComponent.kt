@@ -49,7 +49,7 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
             if (module != null) {
                 CaosBundleSourcesRegistrationUtil.register(module, project)
             } else {
-                LOGGER.info("Failed to locate CAOS module")
+                LOGGER.severe("Failed to locate CAOS module")
             }
         }
     }

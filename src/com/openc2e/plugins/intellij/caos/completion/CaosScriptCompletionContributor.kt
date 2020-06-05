@@ -9,7 +9,6 @@ class CaosScriptCompletionContributor : CompletionContributor() {
 
     init {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), CaosScriptCompletionProvider)
-        LOGGER.info("Adding completion contributor")
     }
 
 }
