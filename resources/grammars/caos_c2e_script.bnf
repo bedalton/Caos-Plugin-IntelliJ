@@ -395,7 +395,7 @@ private event_script_body
 	;
 
 subroutine
-	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? cc_retn
+	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? (cc_retn|c_retn<<exitBlock>>)
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
@@ -6586,6 +6586,7 @@ var_token
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsVariable"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptShouldBeLowerCase"
 		]
 		methods = [
 			getVarGroup
