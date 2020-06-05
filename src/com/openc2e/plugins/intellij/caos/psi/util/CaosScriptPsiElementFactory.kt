@@ -103,7 +103,7 @@ object CaosScriptPsiElementFactory {
         return null
     }
 
-    private fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
+    public fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
         val script = "____X____EXPR__ $expr"
         return PsiTreeUtil.findChildOfType(createFileFromText(project, script).firstChild, CaosScriptRvalue::class.java)!!
     }
