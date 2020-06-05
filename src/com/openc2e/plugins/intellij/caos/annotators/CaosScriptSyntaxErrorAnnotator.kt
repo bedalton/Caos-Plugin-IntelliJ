@@ -365,7 +365,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     .range(element)
             if (variant in VARIANT_OLD) {
                 builder = builder
-                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before NORN", "SETV".matchCase(command), element))
+                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before ${element.commandString.toUpperCase()}", "SETV".matchCase(command), element))
             }
             builder.create()
         }
