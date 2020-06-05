@@ -1,1 +1,20 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="100%" height="100%" viewBox="0 0 2138 2134" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"><rect id="Egg-Logo---With-Text" serif:id="Egg Logo - With Text" x="0.513" y="0" width="2133.33" height="2133.33" style="fill:none;"/><g><path d="M1067.18,115.411c375.989,0 681.244,709.834 681.244,1085.82c0,375.989 -305.255,681.244 -681.244,681.244c-375.989,0 -681.245,-305.255 -681.245,-681.244c0,-375.989 305.256,-1085.82 681.245,-1085.82Z" style="fill:#2faaf0;"/><path d="M1261.14,426.318c296.671,41.225 459.701,634.783 418.476,931.454c-41.226,296.671 -315.555,504.06 -612.226,462.835c-296.67,-41.225 -504.06,-315.554 -462.835,-612.225c41.226,-296.671 359.914,-823.289 656.585,-782.064Z" style="fill:#79cefe;"/><path d="M1340.17,905.516c193.161,51.929 251.946,458.76 200.017,651.921c-51.929,193.162 -250.911,307.825 -444.073,255.895c-193.161,-51.929 -307.824,-250.911 -255.895,-444.073c51.929,-193.161 306.789,-515.673 499.951,-463.743Z" style="fill:#fff;"/></g><g><rect x="0.513" y="1458.22" width="2133.33" height="675.112" style="fill:#3c8acd;fill-opacity:0.89;"/><text x="69.645px" y="2017.32px" style="font-family:'Gotham-Book', 'Gotham';font-weight:325;font-size:668.865px;fill:#fff;">CA<tspan x="1064.25px 1629.44px " y="2017.32px 2017.32px ">OS</tspan></text></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1194.27,0)">
+        <g id="Egg-Logo---Without-Text" serif:id="Egg Logo - Without Text" transform="matrix(1,0,0,1,1194.27,0)">
+            <rect x="0" y="0" width="512" height="512" style="fill:none;"/>
+            <g transform="matrix(1.04996,0,0,1.04996,-18.7836,12.731)">
+                <g transform="matrix(1.29072,0,0,1.29072,-1615.89,-42.1277)">
+                    <path d="M1450.27,54.099C1520.18,54.099 1576.94,186.087 1576.94,256C1576.94,325.913 1520.18,382.673 1450.27,382.673C1380.36,382.673 1323.6,325.913 1323.6,256C1323.6,186.087 1380.36,54.099 1450.27,54.099Z" style="fill:rgb(47,170,240);"/>
+                </g>
+                <g transform="matrix(1.01843,0.141521,-0.141521,1.01843,-1166.79,-158.023)">
+                    <path d="M1450.27,54.099C1520.18,54.099 1576.94,186.087 1576.94,256C1576.94,325.913 1520.18,382.673 1450.27,382.673C1380.36,382.673 1323.6,325.913 1323.6,256C1323.6,186.087 1380.36,54.099 1450.27,54.099Z" style="fill:rgb(121,206,254);"/>
+                </g>
+                <g transform="matrix(0.663096,0.178265,-0.178265,0.663096,-630.507,-77.0822)">
+                    <path d="M1450.27,54.099C1520.18,54.099 1576.94,186.087 1576.94,256C1576.94,325.913 1520.18,382.673 1450.27,382.673C1380.36,382.673 1323.6,325.913 1323.6,256C1323.6,186.087 1380.36,54.099 1450.27,54.099Z" style="fill:white;"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
