@@ -29,7 +29,7 @@ import com.openc2e.plugins.intellij.caos.utils.matchCase
 class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQuickFix, IntentionAction {
 
     private val pointer = SmartPointerManager.createPointer(element)
-    override fun getFamilyName(): String = CaosBundle.message("caos.fixes.family-name")
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
