@@ -23,7 +23,7 @@ class CaosScriptC1ClasToCls2Fix(element:CaosScriptCAssignment) : IntentionAction
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean
-            = element.element?.text?.toLowerCase() == "cls2"
+            = element.element?.lvalue?.commandStringUpper == "CLAS"
 
     override fun getText(): String = CaosBundle.message("caos.intentions.clas-to-cls2")
 
@@ -41,7 +41,7 @@ class CaosScriptC1ClasToCls2Fix(element:CaosScriptCAssignment) : IntentionAction
             return
         }
         element.document?.let {
-            applyFix(project, it, element)
+            applyFix(it, element)
         }
     }
 
@@ -55,17 +55,17 @@ class CaosScriptC1ClasToCls2Fix(element:CaosScriptCAssignment) : IntentionAction
                 ?: return null
         val clas = CaosAgentClassUtils.parseClas(clasInt)
                 ?: return null
+        val setv = "setv".matchCase(element.commandString)
         val clasText = "CLS2".matchCase(element.commandString)
-        return "$clasText ${clas.family} ${clas.genus} ${clas.species}"
+        return "$setv $clasText ${clas.family} ${clas.genus} ${clas.species}"
     }
 
-    private fun applyFix(project: Project, documentIn: Document?, element:PsiElement) {
+    private fun applyFix(documentIn: Document?, element: PsiElement) {
         val document = documentIn ?: return
         val scriptText = getScriptText()
                 ?: return
         val range = element.textRange
-        EditorUtil.deleteText(document, range)
-        EditorUtil.insertText(project, document, scriptText, range.startOffset)
+        EditorUtil.replaceText(document, range, scriptText)
     }
 
     private fun applyFix(editorIn: Editor?, element:PsiElement) {
