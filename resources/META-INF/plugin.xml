@@ -4,7 +4,23 @@
   <version>0.01</version>
 
   <description><![CDATA[
-    This plugin aims to provide a simple, proof-of-concept, editor for Caos scripts
+    This plugin aims to provide simple CAOS editing for a variety of creatures variants<br/>
+    Supports:<br/>
+    <ul>
+      <li>Creatures 1</li>
+      <li>Creatures 2</li>
+      <li>Creatures Village</li>
+      <li>Creatures 3</li>
+      <li>Docking Station</li>
+    </ul>
+    implemented
+    <ul>
+      <li>Syntax Highlighting</li>
+      <li>Basic completion</li>
+      <li>Definition reference</li>
+      <li>Parameter hints</li>
+      <li>Known value completion from list. (ie. Drives or Chemicals by name)</li>
+    </ul>
     ]]></description>
 
   <change-notes><![CDATA[
@@ -16,6 +32,7 @@
           <li>Syntax Highlighting</li>
           <li>Basic completion</li>
           <li>Definition reference</li>
+          <li>Parameter hints</li>
         </ul>
       </li>
     </ul>
@@ -76,7 +93,7 @@
                order="first"
     />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandCaseAnnotator" />
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptHelperActionAnnotator" />
 
