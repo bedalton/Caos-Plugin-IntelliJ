@@ -15,7 +15,6 @@ import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.*
 import javax.swing.JPanel
 
@@ -76,10 +75,9 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     }
 
     toolbar.addDocsButtonClickListener {
-        val variant = toolbar.selectedVariant
-        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$variant-Lib.caosdef"
+        val selectedVariant = toolbar.selectedVariant
+        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
         val virtualFile = CaosFileUtil.getPluginResourceFile(docRelativePath)
-        LOGGER.info("RelativePath: $docRelativePath. Path: ${virtualFile?.path}")
         val file = virtualFile?.getPsiFile(caosFile.project)
         if (file == null) {
             toolbar.setDocsButtonEnabled(false)
