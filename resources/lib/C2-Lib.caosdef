@@ -2064,7 +2064,6 @@ OVER (command);
 
 /*
  * OV00 to OV99 are variables specific to an agent. They are read from [TARG], the target agent.
- * You can also access these same variables via [OWNR] using MVxx.
  * @range(0 to 99)
  * #Variables
  *
