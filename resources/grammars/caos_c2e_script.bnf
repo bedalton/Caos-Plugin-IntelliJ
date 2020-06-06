@@ -1059,7 +1059,7 @@ animation_string
    ;
 
 private animation_string_body
-	::= INT ANIM_R?
+	::= INT+ ANIM_R?
 	{
 		pin = 2
 	}
@@ -6608,8 +6608,7 @@ number
 private string_literal
 	::= quote_string_literal
 	|   c1_string
-
-   ;
+	;
 
 c1_string
 	::= OPEN_BRACKET TEXT_LITERAL? CLOSE_BRACKET
