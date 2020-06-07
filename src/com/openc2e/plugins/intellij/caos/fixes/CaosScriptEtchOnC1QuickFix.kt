@@ -14,8 +14,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptEnumNextStatement
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptScriptBodyElement
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVarToken
@@ -41,7 +41,7 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
 
     private fun shouldProcess(enumNext:CaosScriptEnumNextStatement) : Boolean {
         val variant = enumNext.containingCaosFile.variant
-        return variant == "C1"
+        return variant == CaosVariant.C1
                 && enumNext.enumHeaderCommand.commandToken.kEtch != null
                 && enumNext.enumHeaderCommand.classifier?.species != null
                 && getVarNumberToUse(enumNext) != null
@@ -84,7 +84,6 @@ class CaosScriptEtchOnC1QuickFix (element:CaosScriptEnumNextStatement) : LocalQu
                 .mapNotNull {
                     it.varIndex
                 }.toSet()
-        var varNumber:Int?
         for(i in 0..9) {
             if (i !in varNumbersUsed) {
                 return i

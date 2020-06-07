@@ -5,6 +5,9 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCodeBlock
@@ -15,6 +18,7 @@ import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.caos.psi.util.getNextNonEmptyNode
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptyNode
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
+import com.openc2e.plugins.intellij.caos.settings.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.utils.orFalse
 import java.util.*
 
@@ -84,6 +88,8 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getIndent(): Indent? {
+        if ((node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1 || !CaosScriptProjectSettings.indent)
+            return Indent.getNoneIndent()
         return indentProcessor.getChildIndent(node)
     }
 

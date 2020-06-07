@@ -8,6 +8,7 @@ import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElemen
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -74,7 +75,7 @@ object CaosScriptTypeDefValueCompletionProvider {
         addListValues(resultSet, variant, typeDef, expression.project, expression.text, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
 
-    private fun addListValues(resultSet:CompletionResultSet, variant:String, listName: String, project: Project, string:String, addSpace:Boolean) {
+    private fun addListValues(resultSet:CompletionResultSet, variant:CaosVariant, listName: String, project: Project, string:String, addSpace:Boolean) {
         val values = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }

@@ -60,9 +60,14 @@
 
     <completion.contributor language="CaosScript"
                             implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
-    <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.CaosScriptEditorToolbar" />
+    <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.openc2e.plugins.intellij.caos.references.CaosScriptUsagesProvider" />
+
+    <!-- Project -->
+    <directoryProjectGenerator implementation="com.openc2e.plugins.intellij.caos.project.template.CaosScriptVariantTemplate"/>
+    <projectTemplatesFactory implementation="com.openc2e.plugins.intellij.caos.project.template.CaosScriptTemplateFactory"/>
+
     <!-- Formatting -->
     <lang.formatter language="CaosScript"
                     implementationClass="com.openc2e.plugins.intellij.caos.formatting.CaosScriptFormattingModelBuilder" />
@@ -150,7 +155,7 @@
         language="CaosDef" />
 
     <!-- Bundled Definitions -->
-    <library.type implementation="com.openc2e.plugins.intellij.caos.project.CaosLibraryType" id="CaosLibrary" />
+    <library.type implementation="com.openc2e.plugins.intellij.caos.project.library.CaosLibraryType" id="CaosLibrary" />
 
     <!-- Highlighting -->
     <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighter"

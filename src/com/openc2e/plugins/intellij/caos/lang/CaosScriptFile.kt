@@ -12,9 +12,8 @@ import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
+import com.openc2e.plugins.intellij.caos.settings.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage.instance) {
@@ -57,16 +56,16 @@ class CaosScriptFile(viewProvider: FileViewProvider)
 
     companion object {
         @JvmStatic
-        val VariantUserDataKey = Key<String>("com.openc2e.plugins.intellij.caos.SCRIPT_VARIANT_KEY")
+        val VariantUserDataKey = Key<CaosVariant>("com.openc2e.plugins.intellij.caos.SCRIPT_VARIANT_KEY")
 
     }
 }
 
-private class VariantFilePropertyPusher : FilePropertyPusher<String> {
+private class VariantFilePropertyPusher : FilePropertyPusher<CaosVariant> {
 
-    override fun getDefaultValue(): String = ""
+    override fun getDefaultValue(): CaosVariant = CaosScriptProjectSettings.variant
 
-    override fun getFileDataKey(): Key<String> {
+    override fun getFileDataKey(): Key<CaosVariant> {
         return CaosScriptFile.VariantUserDataKey
     }
 
@@ -74,20 +73,19 @@ private class VariantFilePropertyPusher : FilePropertyPusher<String> {
 
     override fun afterRootsChanged(p1: Project) {}
 
-    override fun getImmediateValue(project: Project, file: VirtualFile?): String? {
+    override fun getImmediateValue(project: Project, file: VirtualFile?): CaosVariant? {
         if (file == null)
-            return null;
+            return null
         return file.getUserData(CaosScriptFile.VariantUserDataKey)
-                ?: readFromStorage(file)
-                ?: ""
+                ?: readFromStorage(file)?.let { CaosVariant.fromVal(it) }
     }
 
-    override fun getImmediateValue(module: Module): String? {
+    override fun getImmediateValue(module: Module): CaosVariant? {
         return null
     }
 
-    override fun persistAttribute(project: Project, file: VirtualFile, variant: String) {
-        writeToStorage(file, variant)
+    override fun persistAttribute(project: Project, file: VirtualFile, variant: CaosVariant) {
+        writeToStorage(file, variant.code)
     }
 
     override fun acceptsDirectory(directory: VirtualFile, project: Project): Boolean {
@@ -126,13 +124,13 @@ private class VariantFilePropertyPusher : FilePropertyPusher<String> {
 
 }
 
-val VirtualFile.variant: String
+val VirtualFile.variant: CaosVariant
     get() {
         return getUserData(CaosScriptFile.VariantUserDataKey)
-                ?: VariantFilePropertyPusher.readFromStorage(this)
+                ?: VariantFilePropertyPusher.readFromStorage(this)?.let { CaosVariant.fromVal(it) }
                 ?: CaosScriptProjectSettings.variant
     }
 
 
-val CaosScriptFile?.variant: String
+val CaosScriptFile?.variant: CaosVariant
     get() = CaosScriptProjectSettings.variant

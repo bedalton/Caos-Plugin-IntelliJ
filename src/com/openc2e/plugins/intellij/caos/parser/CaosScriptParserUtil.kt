@@ -4,7 +4,7 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
 import com.intellij.psi.tree.IElementType
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
+import com.openc2e.plugins.intellij.caos.settings.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE
 import gnu.trove.TObjectLongHashMap
@@ -25,7 +25,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun isVariant(builder_: PsiBuilder,
                   level: Int, variant: String?): Boolean {
-        return CaosScriptProjectSettings.variant == variant
+        return CaosScriptProjectSettings.variant.code == variant
     }
 
     @JvmStatic

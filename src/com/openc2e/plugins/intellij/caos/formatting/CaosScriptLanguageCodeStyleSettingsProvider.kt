@@ -4,7 +4,8 @@ import com.intellij.lang.Language
 import com.intellij.psi.codeStyle.CodeStyleSettingsCustomizable
 import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.caos.settings.CaosScriptProjectSettings
 
 class CaosScriptLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {
 
@@ -13,7 +14,7 @@ class CaosScriptLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsPro
     }
 
     override fun getCodeSample(p0: SettingsType): String? {
-        return if (CaosScriptProjectSettings.isVariant("C1")) {
+        return if (CaosScriptProjectSettings.isVariant(CaosVariant.C1)) {
             """
             doif 10 lt 11
             setv var1 norn

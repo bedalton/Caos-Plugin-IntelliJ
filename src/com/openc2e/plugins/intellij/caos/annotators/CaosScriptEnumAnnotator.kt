@@ -7,9 +7,9 @@ import com.openc2e.plugins.intellij.caos.fixes.CaosScriptEtchOnC1QuickFix
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptReplaceWordFix
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.matchCase
 
 class CaosScriptEnumAnnotator : Annotator {
@@ -19,7 +19,7 @@ class CaosScriptEnumAnnotator : Annotator {
         when (element) {
             is CaosScriptCEnum -> element.getParentOfType(CaosScriptEnumNextStatement::class.java)?.let { annotateBadEnumStatement(variant, it, annotationWrapper) }
             is CaosScriptCNext -> annotateNext(element, annotationWrapper)
-            is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
+            is CaosScriptCNscn -> annotateNscn(element, annotationWrapper)
             is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationWrapper)
         }
     }
@@ -42,7 +42,7 @@ class CaosScriptEnumAnnotator : Annotator {
         }
     }
 
-    private fun annotateNscn(variant: String, element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNscn(element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
 
         if (parent == null) {
@@ -62,15 +62,15 @@ class CaosScriptEnumAnnotator : Annotator {
         }
     }
 
-    private fun annotateSceneryEnum(variant: String, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant == "C2")
+    private fun annotateSceneryEnum(variant: CaosVariant, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant == CaosVariant.C2)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
                 .range(element.escnHeader.cEscn)
                 .create()
     }
 
-    private fun annotateBadEnumStatement(variant: String, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateBadEnumStatement(variant: CaosVariant, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
         val cNscn = element.cNscn
         if (cNscn != null) {
             val enum = element.enumHeaderCommand.cEnum.text
@@ -91,7 +91,7 @@ class CaosScriptEnumAnnotator : Annotator {
                     .create()
             return
         }
-        if (variant != "C1")
+        if (variant != CaosVariant.C1)
             return
         val badElement = header.kEsee ?: header.kEtch ?: header.kEpas
         ?: return // return if enum type is ENUM

@@ -7,7 +7,6 @@ import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.parentOfType
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
@@ -16,10 +15,8 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.psi.util.getPreviousNonEmptySibling
 import com.openc2e.plugins.intellij.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.caos.utils.CaosAgentClassUtils
@@ -170,7 +167,7 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
                     ?.element
                     ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                     ?: return inlayInfo
-            val parameterStruct = containingCommand.parameterStructs?.getOrNull(index)
+            val parameterStruct = containingCommand.parameterStructs.getOrNull(index)
             if (parameterStruct != null) {
                 val parameterName = parameterStruct.name.toLowerCase()
                 val typeName = type.toLowerCase()

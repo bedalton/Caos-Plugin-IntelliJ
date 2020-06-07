@@ -13,6 +13,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.documentation.CaosScriptPresentationUtil
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -212,18 +213,18 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun isVariant(element: CaosScriptIsCommandToken, variants: List<String>, strict: Boolean): Boolean {
+    fun isVariant(element: CaosScriptIsCommandToken, variants: List<CaosVariant>, strict: Boolean): Boolean {
         val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile.variant
-        if (thisVariant.isEmpty()) {
+        if (thisVariant == CaosVariant.UNKNOWN) {
             return !strict
         }
         return thisVariant in variants
     }
 
     @JvmStatic
-    fun isVariant(element: CaosScriptCompositeElement, variants: List<String>, strict: Boolean): Boolean {
+    fun isVariant(element: CaosScriptCompositeElement, variants: List<CaosVariant>, strict: Boolean): Boolean {
         val thisVariant = element.containingCaosFile.variant
-        if (thisVariant.isEmpty())
+        if (thisVariant == CaosVariant.UNKNOWN)
             return !strict
         return thisVariant in variants
     }
@@ -455,7 +456,7 @@ object CaosScriptPsiImplUtil {
     fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
         val variant = expression.containingCaosFile.variant
         expression.stringValue?.let { stringValue ->
-            if (variant !in listOf("C1", "C2")) {
+            if (variant !in OLD_VARIANTS) {
                 return stringValue.split(" ").map { it.toInt() }.orEmpty()
             }
             return stringValue.toCharArray().map { it.toInt() }
@@ -470,7 +471,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
         if (stringValue.isEmpty())
             return CaosAnimation.Animation(emptyList(), false, null)
-        if (variant !in listOf("C1", "C2")) {
+        if (variant !in OLD_VARIANTS) {
             return getCVPlusAnimation(stringValue)
         }
         val charsRaw = stringValue.toCharArray().toList()
@@ -534,7 +535,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
         if (stringValue.isEmpty())
             return CaosAnimation.Animation(emptyList(), false, null)
-        if (variant !in listOf("C1", "C2")) {
+        if (variant !in OLD_VARIANTS) {
             return getCVPlusAnimation(stringValue)
         }
         val charsRawTemp = stringValue.toCharArray().toList()
@@ -592,9 +593,9 @@ object CaosScriptPsiImplUtil {
             varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
             varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
             else -> {
-                val validTypes = when (varToken.containingCaosFile.variant.toUpperCase()) {
-                    "C1" -> "[varX,obvX]"
-                    "C2" -> "[varX,vaXX,obvX,ovXX]"
+                val validTypes = when (varToken.containingCaosFile.variant) {
+                    CaosVariant.C1 -> "[varX,obvX]"
+                    CaosVariant.C2 -> "[varX,vaXX,obvX,ovXX]"
                     else -> "[vaXX,ovXX,mvXX]"
                 }
                 throw Exception("Unexpected caos variable encountered. Expected types are: $validTypes. Found '$text'")
@@ -1231,7 +1232,10 @@ object CaosScriptPsiImplUtil {
         return min < max
     }
 
+
 }
+
+private var OLD_VARIANTS = listOf(CaosVariant.C1, CaosVariant.C2)
 
 @Suppress("UNCHECKED_CAST")
 private fun <PsiT : PsiElement> CaosScriptCompositeElement.getSelfOrParentOfType(clazz: Class<PsiT>): PsiT? {

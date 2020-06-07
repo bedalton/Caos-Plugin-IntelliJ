@@ -12,10 +12,8 @@ import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElemen
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.caos.utils.isNotNullOrBlank
 
 class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {

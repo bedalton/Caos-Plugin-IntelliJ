@@ -13,6 +13,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefCommandDefinitionStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefCommandDefinitionStubImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.utils.*
 
 class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<CaosDefCommandDefinitionStub, CaosDefCommandDefElementImpl>(debugName) {
@@ -22,7 +23,7 @@ class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<C
     }
 
     override fun serialize(stub: CaosDefCommandDefinitionStub, stream: StubOutputStream) {
-        stream.writeList(stub.variants) { writeName(it) }
+        stream.writeList(stub.variants) { writeName(it.code) }
         stream.writeName(stub.namespace)
         stream.writeName(stub.command)
         stream.writeList(stub.parameters, StubOutputStream::writeParameter)
@@ -34,13 +35,13 @@ class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<C
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefCommandDefinitionStub {
-        val variants = stream.readList { readNameAsString() }.filterNotNull()
+        val variants = stream.readList { readNameAsString() }.filterNotNull().map { CaosVariant.fromVal(it) }
         val namespace = stream.readNameAsString()
         val command = stream.readNameAsString()
         val parameters = stream.readList(StubInputStream::readParameter).filterNotNull()
-        val isCommand = stream.readBoolean();
-        val rvalue = stream.readBoolean();
-        val lvalue = stream.readBoolean();
+        val isCommand = stream.readBoolean()
+        val rvalue = stream.readBoolean()
+        val lvalue = stream.readBoolean()
         val returnType = stream.readReturnType() ?: CaosDefReturnTypeStruct(
                 type = CaosDefPsiImplUtil.AnyTypeType,
                 comment = null
