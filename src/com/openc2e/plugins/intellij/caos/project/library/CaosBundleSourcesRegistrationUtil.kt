@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.project
+package com.openc2e.plugins.intellij.caos.project.library
 
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
@@ -9,7 +9,6 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.FilenameIndex
 import com.openc2e.plugins.intellij.caos.utils.CaosFileUtil
 import com.openc2e.plugins.intellij.caos.utils.contents
 import java.util.logging.Logger
@@ -82,7 +81,8 @@ object CaosBundleSourcesRegistrationUtil {
     private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {
         val versionString = newLibraryPath?.findFileByRelativePath("version.txt")?.contents
                 ?: return false
-        val oldVersionString = currentLibraryVersion(model) ?: ""
+        val oldVersionString = currentLibraryVersion(model)
+                ?: ""
         if (versionString == null)
             throw Exception("Caos definitions versions cannot be null")
         return versionString == oldVersionString

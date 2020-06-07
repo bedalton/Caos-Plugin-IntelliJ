@@ -18,7 +18,7 @@
  * Modified for plugin By: Daniel Badal
  *
  */
-package com.openc2e.plugins.intellij.caos.project
+package com.openc2e.plugins.intellij.caos.project.library
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.ProjectBundle

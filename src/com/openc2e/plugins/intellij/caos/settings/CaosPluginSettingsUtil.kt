@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.openc2e.plugins.intellij.caos.project
+package com.openc2e.plugins.intellij.caos.settings
 
 import com.intellij.ide.util.PropertiesComponent
 
@@ -66,52 +66,52 @@ object CaosPluginSettingsUtil {
 
     class StringSetting internal constructor(private val key: String, private val defaultValue: String) : Setting<String> {
         override var value: String?
-            get() = CaosPluginSettingsUtil.getValue(key, defaultValue)
+            get() = getValue(key, defaultValue)
             set(valueIn) {
                 val value = valueIn ?: defaultValue
-                CaosPluginSettingsUtil.setValue(key, value, defaultValue)
+                setValue(key, value, defaultValue)
             }
     }
 
     class IntegerSetting internal constructor(private val key: String, private val defaultValue: Int) : Setting<Int> {
 
         override var value: Int?
-            get() = CaosPluginSettingsUtil.getInt(key, defaultValue)
+            get() = getInt(key, defaultValue)
             set(valueIn) {
                 val value = valueIn ?: defaultValue
-                CaosPluginSettingsUtil.setValue(key, value, defaultValue)
+                setValue(key, value, defaultValue)
             }
     }
 
     class BooleanSetting internal constructor(private val key: String, private val defaultValue: Boolean) : Setting<Boolean> {
 
         override var value: Boolean?
-            get() = CaosPluginSettingsUtil.getBoolean(key, defaultValue)
+            get() = getBoolean(key, defaultValue)
             set(valueIn) {
                 val value = valueIn ?: defaultValue
-                CaosPluginSettingsUtil.setValue(key, value, defaultValue)
+                setValue(key, value, defaultValue)
             }
     }
 
     class FloatSetting internal constructor(private val key: String, private val defaultValue: Float) : Setting<Float> {
 
         override var value: Float?
-            get() = CaosPluginSettingsUtil.getFloat(key, defaultValue)
+            get() = getFloat(key, defaultValue)
             set(valueIn) {
                 val value = valueIn ?: defaultValue
-                CaosPluginSettingsUtil.setValue(key, value, defaultValue)
+                setValue(key, value, defaultValue)
             }
     }
 
     class AnnotationLevelSetting internal constructor(private val key: String, private val defaultValue: AnnotationLevel) : Setting<AnnotationLevel> {
         override var value: AnnotationLevel?
             get() {
-                val rawValue = CaosPluginSettingsUtil.getInt(key, defaultValue.value)
+                val rawValue = getInt(key, defaultValue.value)
                 return AnnotationLevel.getAnnotationLevel(rawValue)
             }
             set(valueIn) {
                 val value = valueIn ?: defaultValue
-                CaosPluginSettingsUtil.setValue(key, value.value, defaultValue.value)
+                setValue(key, value.value, defaultValue.value)
             }
     }
 

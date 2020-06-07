@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.project;
+package com.openc2e.plugins.intellij.caos.project.editor;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;

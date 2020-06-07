@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.project
+package com.openc2e.plugins.intellij.caos.project.editor
 
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
@@ -14,14 +14,16 @@ import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
+import com.openc2e.plugins.intellij.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
+import com.openc2e.plugins.intellij.caos.settings.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.utils.*
 import javax.swing.JPanel
 
 
 class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
 
-    private var variant:String? = null
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     init {
@@ -57,12 +59,12 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     toolbar.addTrimSpacesListener {
         caosFile.trimErrorSpaces()
     }
-    val variant = caosFile.variant.toUpperCase()
+    val variant = caosFile.variant
 
-    toolbar.selectVariant(CaosConstants.VARAINTS.indexOf(variant) + 1)
+    toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(variant) + 1)
     toolbar.addVariantListener variant@{
-        val selected = it.item as String
-        if (caosFile.variant == selected || selected !in CaosConstants.VARAINTS)
+        val selected = CaosVariant.fromVal(it.item as String)
+        if (caosFile.variant == selected || selected !in CaosConstants.VARIANTS)
             return@variant
 
         CaosScriptProjectSettings.setVariant(selected)
