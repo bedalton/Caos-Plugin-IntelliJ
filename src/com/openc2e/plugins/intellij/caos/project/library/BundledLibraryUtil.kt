@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.caos.project
+package com.openc2e.plugins.intellij.caos.project.library
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager

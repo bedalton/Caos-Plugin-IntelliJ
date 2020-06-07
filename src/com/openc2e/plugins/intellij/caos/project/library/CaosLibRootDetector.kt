@@ -18,7 +18,7 @@
  * modified by Daniel Badal - 2019
  */
 
-package com.openc2e.plugins.intellij.caos.project
+package com.openc2e.plugins.intellij.caos.project.library
 
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.roots.OrderRootType
