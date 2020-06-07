@@ -14,6 +14,7 @@ import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandDefElement
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandCall
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsValueOfType
@@ -47,8 +48,8 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 ?: return null
 
         return when (variant) {
-            "C1", "C2" -> foldC1ChemCall(commandCall, resolved)
-            "CV", "C3", "DS" -> foldC3ChemCall(commandCall, resolved)
+            CaosVariant.C1, CaosVariant.C2 -> foldC1ChemCall(commandCall, resolved)
+            CaosVariant.CV, CaosVariant.C3, CaosVariant.DS -> foldC3ChemCall(commandCall, resolved)
             else -> null
         }
     }
@@ -126,7 +127,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
             return null
         val variant = commandCall.containingCaosFile.variant
         return when (variant) {
-            "C1", "C2" -> getC1StimFoldingDescriptor(commandCall, group)
+            CaosVariant.C1, CaosVariant.C2 -> getC1StimFoldingDescriptor(commandCall, group)
             else -> {
                 // TODO implement CV+ folding
                 null

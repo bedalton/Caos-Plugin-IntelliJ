@@ -7,6 +7,7 @@ import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptLanguage
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptFileStub
@@ -21,7 +22,7 @@ class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, Ca
     }
 
     override fun getStubVersion(): Int {
-        return CAOS_SCRIPT_STUB_VERSION;
+        return CAOS_SCRIPT_STUB_VERSION
     }
 
     override fun getExternalId(): String {
@@ -32,15 +33,15 @@ class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, Ca
     override fun serialize(stub: CaosScriptFileStub, stream: StubOutputStream) {
         super.serialize(stub, stream)
         stream.writeName(stub.fileName)
-        stream.writeName(stub.variant)
+        stream.writeName(stub.variant.code)
     }
 
     @Throws(IOException::class)
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): CaosScriptFileStub {
         super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
-        val variant = stream.readNameAsString()
-        return CaosScriptFileStubImpl(null, fileName, variant ?: "")
+        val variant = stream.readNameAsString()?.let { CaosVariant.fromVal(it)} ?: CaosVariant.UNKNOWN
+        return CaosScriptFileStubImpl(null, fileName, variant)
     }
 
     override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {

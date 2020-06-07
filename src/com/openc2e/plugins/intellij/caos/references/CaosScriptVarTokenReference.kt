@@ -6,13 +6,11 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNamedVar
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNamedVarAssignment
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptVarToken
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
-import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 
 class CaosScriptVarTokenReference(element:CaosScriptVarToken) : PsiPolyVariantReferenceBase<CaosScriptVarToken>(element, TextRange.create(0, element.textLength)) {
 
@@ -31,8 +29,12 @@ class CaosScriptVarTokenReference(element:CaosScriptVarToken) : PsiPolyVariantRe
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         val key = myElement.varGroup.value
-        val variant = myElement.containingCaosFile.variant.nullIfEmpty()
-                ?: return emptyArray()
+        val variant = myElement.containingCaosFile.variant.let {
+            if (it != CaosVariant.UNKNOWN)
+                it
+            else
+                null
+        } ?: return emptyArray()
         val commands = CaosDefCommandElementsByNameIndex
                 .Instance[key, element.project]
                 .filter {

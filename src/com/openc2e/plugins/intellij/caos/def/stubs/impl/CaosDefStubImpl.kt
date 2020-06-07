@@ -5,6 +5,7 @@ import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.*
 import com.openc2e.plugins.intellij.caos.def.stubs.api.*
 import com.openc2e.plugins.intellij.caos.def.stubs.types.CaosDefStubTypes
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 
 
 class CaosDefCommandDefinitionStubImpl(
@@ -17,7 +18,7 @@ class CaosDefCommandDefinitionStubImpl(
         override val rvalue: Boolean,
         override val lvalue: Boolean,
         override val isCommand: Boolean,
-        override val variants:List<String>
+        override val variants:List<CaosVariant>
 ) : StubBase<CaosDefCommandDefElementImpl>(parent, CaosDefStubTypes.COMMAND_ELEMENT), CaosDefCommandDefinitionStub {
     override val commandWords:List<String> by lazy {
         command.split(" ")
@@ -76,5 +77,5 @@ data class CaosDefTypeDefValueStruct (
 class CaosDefDocCommentHashtagStubImpl(
         parent:StubElement<*>?,
         override val hashtag:String,
-        override val variants: List<String>
+        override val variants: List<CaosVariant>
 ) : StubBase<CaosDefDocCommentHashtagImpl>(parent, CaosDefStubTypes.HASHTAG), CaosDefDocCommentHashtagStub

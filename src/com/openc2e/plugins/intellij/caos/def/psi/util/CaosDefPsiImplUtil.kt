@@ -15,6 +15,7 @@ import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.references.CaosScriptCommandTokenReference
 import com.openc2e.plugins.intellij.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.caos.utils.substringFromEnd
@@ -31,22 +32,28 @@ object CaosDefPsiImplUtil {
     val AnyTypeType:CaosDefVariableTypeStruct = CaosDefVariableTypeStruct(type = AnyType)
 
     @JvmStatic
-    fun isVariant(header:CaosDefHeader, variant:String) : Boolean {
+    fun isVariant(header:CaosDefHeader, variant:CaosVariant) : Boolean {
         return variant in getVariants(header)
     }
 
     @JvmStatic
-    fun getVariants(header:CaosDefHeader) : List<String> {
-        return header.variantList.mapNotNull { it.variantCode.text.trim().nullIfEmpty() }
+    fun getVariants(header:CaosDefHeader) : List<CaosVariant> {
+        return header.variantList.mapNotNull { variantListItem ->
+            CaosVariant.fromVal(variantListItem.variantCode.text).let {
+            if (it != CaosVariant.UNKNOWN)
+                it
+            else
+                null
+        } }
     }
 
     @JvmStatic
-    fun isVariant(command:CaosDefCommandDefElement, variant:String) : Boolean {
+    fun isVariant(command:CaosDefCommandDefElement, variant: CaosVariant) : Boolean {
         return variant in getVariants(command)
     }
 
     @JvmStatic
-    fun getVariants(command:CaosDefCommandDefElement) : List<String> {
+    fun getVariants(command:CaosDefCommandDefElement) : List<CaosVariant> {
         return command.stub?.variants ?: (command.containingFile as CaosDefFile).variants
     }
 
@@ -388,7 +395,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getFullCommand(command:CaosDefCommandDefElement) : String {
-        val tokens = mutableListOf<String>(command.commandName, wrapParameterType(command.returnTypeString))
+        val tokens = mutableListOf(command.commandName, wrapParameterType(command.returnTypeString))
         for(param in command.parameterStructs) {
             tokens.add(param.name)
             tokens.add(wrapParameterType(param.type.type))
@@ -511,7 +518,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isVariant(element:CaosDefCommandWord, variants:List<String>, strict:Boolean) : Boolean {
+    fun isVariant(element:CaosDefCommandWord, variants: List<CaosVariant>, strict:Boolean) : Boolean {
         val thisVariants = element.containingCaosDefFile.variants
         if (thisVariants.isEmpty())
             return !strict
@@ -519,7 +526,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isVariant(element:CaosDefDocCommentHashtag, variants:List<String>, strict:Boolean) : Boolean {
+    fun isVariant(element:CaosDefDocCommentHashtag, variants: List<CaosVariant>, strict:Boolean) : Boolean {
         val thisVariants = getVariants(element)
         if (thisVariants.isEmpty())
             return !strict
@@ -527,7 +534,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVariants(element:CaosDefDocCommentHashtag) : List<String> {
+    fun getVariants(element:CaosDefDocCommentHashtag) : List<CaosVariant> {
         return element.stub?.variants ?: element.containingCaosDefFile.variants
     }
 

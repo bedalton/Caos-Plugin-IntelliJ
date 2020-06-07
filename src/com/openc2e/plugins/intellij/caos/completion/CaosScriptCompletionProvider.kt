@@ -7,15 +7,13 @@ import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.parentOfType
 import com.intellij.util.ProcessingContext
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
-import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.psi.util.*
 import com.openc2e.plugins.intellij.caos.utils.Case
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
@@ -31,7 +29,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val element = parameters.position
         val caosFile = element.containingFile.originalFile as? CaosScriptFile
                 ?: return
-        val variant = caosFile.variant.toUpperCase()
+        val variant = caosFile.variant
 
         val text = element.textWithoutCompletionIdString
         if (IS_NUMBER.matches(text)) {
@@ -76,12 +74,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         val type = parent.getEnclosingCommandType()
         val case = element.case
-        val allowUppercase = variant !in listOf("C1", "C2")
+        val allowUppercase = variant !in listOf(CaosVariant.C1, CaosVariant.C2)
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
                     if (it.commandName.toUpperCase() in SKIP_VAR_NAMES)
                         return@filter false
-                    if (!(variant.isBlank() || it.isVariant(variant)))
+                    if (!it.isVariant(variant))
                         return@filter false
                     when (type) {
                         CaosCommandType.COMMAND -> it.isCommand
@@ -107,26 +105,24 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
-    private fun addVariableCompletions(variant: String, element: PsiElement, resultSet: CompletionResultSet) {
-        when (variant) {
-            "C1" -> {
-                (0..2).forEach {
-                    resultSet.addElement(LookupElementBuilder.create("obv$it"))
-                }
-                (0..9).forEach {
-                    resultSet.addElement(LookupElementBuilder.create("var$it"))
-                }
+    private fun addVariableCompletions(variant: CaosVariant, element: PsiElement, resultSet: CompletionResultSet) {
+        if (variant == CaosVariant.C1) {
+            (0..2).forEach {
+                resultSet.addElement(LookupElementBuilder.create("obv$it"))
             }
-            "C2" -> {
-                (0..9).forEach {
-                    resultSet.addElement(LookupElementBuilder.create("obv$it"))
-                }
-                (0..9).forEach {
-                    resultSet.addElement(LookupElementBuilder.create("var$it"))
-                }
+            (0..9).forEach {
+                resultSet.addElement(LookupElementBuilder.create("var$it"))
             }
         }
-        if (variant != "C1" && element.text.substringBefore("zz").matches("[vom].*?".toRegex())) {
+        else if (variant == CaosVariant.C2) {
+            (0..9).forEach {
+                resultSet.addElement(LookupElementBuilder.create("obv$it"))
+            }
+            (0..9).forEach {
+                resultSet.addElement(LookupElementBuilder.create("var$it"))
+            }
+        }
+        if (variant != CaosVariant.C1 && element.text.substringBefore("zz").matches("[vom].*?".toRegex())) {
             val items = (0..99).map {
                 "$it".padStart(2, '0')
             }
@@ -134,7 +130,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 resultSet.addElement(LookupElementBuilder.create("va$it"))
                 resultSet.addElement(LookupElementBuilder.create("ov$it"))
             }
-            if (variant != "C2") {
+            if (variant != CaosVariant.C2) {
                 items.map {
                     resultSet.addElement(LookupElementBuilder.create("mv$it"))
                 }
@@ -172,7 +168,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         return builder
     }
 
-    fun needsSpaceAfter(element: PsiElement, commandString: String): Boolean {
+    private fun needsSpaceAfter(element: PsiElement, commandString: String): Boolean {
         var parent: PsiElement? = element.parent
         while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
             parent = parent.parent
@@ -193,7 +189,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         return matches.all { it.parameterStructs.size > 0 }
     }
 
-    fun addSubroutineNames(element:PsiElement, resultSet: CompletionResultSet) {
+    private fun addSubroutineNames(element:PsiElement, resultSet: CompletionResultSet) {
         val project = element.project
         val file = element.containingFile
         val scope = GlobalSearchScope.everythingScope(project)

@@ -5,8 +5,9 @@ import com.intellij.psi.tree.IStubFileElementType
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
 import com.openc2e.plugins.intellij.caos.def.stubs.types.CaosDefStubTypes
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 
-class CaosDefFileStubImpl(caosFile:CaosDefFile?, override val fileName:String, override val variants: List<String>) : PsiFileStubImpl<CaosDefFile>(caosFile), CaosDefFileStub {
+class CaosDefFileStubImpl(caosFile:CaosDefFile?, override val fileName:String, override val variants: List<CaosVariant>) : PsiFileStubImpl<CaosDefFile>(caosFile), CaosDefFileStub {
     override fun getType(): IStubFileElementType<out CaosDefFileStub> {
         return CaosDefStubTypes.FILE
     }

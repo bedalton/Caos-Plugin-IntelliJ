@@ -1,5 +1,7 @@
 package com.openc2e.plugins.intellij.caos.utils
 
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
+
 
 object CaosConstants {
     val BASE_TYPES = listOf(
@@ -14,13 +16,13 @@ object CaosConstants {
             "Dynamic"
     )
 
-    val VARAINTS = listOf(
-            "C1",
-            "C2",
-            "CV",
-            "C3",
-            "DS",
-            "SM"
+    val VARIANTS = listOf(
+            CaosVariant.C1,
+            CaosVariant.C2,
+            CaosVariant.CV,
+            CaosVariant.C3,
+            CaosVariant.DS,
+            CaosVariant.SM
     )
 
 }

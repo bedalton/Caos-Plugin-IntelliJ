@@ -2,12 +2,13 @@ package com.openc2e.plugins.intellij.caos.project
 
 import com.intellij.ProjectTopics
 import com.intellij.openapi.components.ProjectComponent
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.project.library.CaosBundleSourcesRegistrationUtil
+import com.openc2e.plugins.intellij.caos.project.library.CaosSdkProjectRootsChangeListener
 import com.openc2e.plugins.intellij.caos.utils.*
 import java.util.logging.Logger
 

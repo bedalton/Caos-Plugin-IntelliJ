@@ -16,9 +16,13 @@ import com.openc2e.plugins.intellij.caos.fixes.*
 import com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
-import com.openc2e.plugins.intellij.caos.psi.util.*
+import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
+import com.openc2e.plugins.intellij.caos.psi.util.getEnclosingCommandType
+import com.openc2e.plugins.intellij.caos.psi.util.next
+import com.openc2e.plugins.intellij.caos.psi.util.previous
 import com.openc2e.plugins.intellij.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.caos.utils.matchCase
 import com.openc2e.plugins.intellij.caos.utils.orElse
@@ -31,7 +35,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (DumbService.isDumb(element.project))
             return
         val annotationWrapper = AnnotationHolderWrapper(holder)
-        val variant = (element.containingFile as? CaosScriptFile).variant.toUpperCase()
+        val variant = (element.containingFile as? CaosScriptFile).variant
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
             is CaosScriptSpaceLike -> annotateExtraSpaces(element, annotationWrapper)
@@ -39,7 +43,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationWrapper)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationWrapper)
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
-            is CaosScriptCRetn -> annotateRetnCommand(variant, element, annotationWrapper)
+            is CaosScriptCRetn -> annotateRetnCommand(element, annotationWrapper)
             is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
             is CaosScriptToken -> annotateToken(element, annotationWrapper)
             is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, annotationWrapper)
@@ -53,12 +57,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
-                    annotateErrorElement(variant, element, annotationWrapper)
+                    annotateErrorElement(element, annotationWrapper)
             }
         }
     }
 
-    private fun annotateRndv(variant: String, element: CaosScriptCRndv, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateRndv(variant: CaosVariant, element: CaosScriptCRndv, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         val minMax = element.rndvIntRange
@@ -79,7 +83,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
     }
 
-    private fun annotateErrorElement(variant: String, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateErrorElement(element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val command = element.text
         val commandUpperCase = element.text.toUpperCase()
         if (commandUpperCase == "CLAS" || commandUpperCase == "CLS2") {
@@ -92,9 +96,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
     }
 
-    private fun annotateSubroutineName(variant: String, element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateSubroutineName(variant: CaosVariant, element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
         val name = element.name
-        if ((variant == "C1" || variant == "C2") && name.length != 4) {
+        if ((variant == CaosVariant.C1 || variant == CaosVariant.C2) && name.length != 4) {
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length", variant))
                     .range(element)
                     .create()
@@ -109,8 +113,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateNumber(variant: String, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant != "C1" || element.decimal == null)
+    private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant != CaosVariant.C1 || element.decimal == null)
             return
         val floatValue = element.text.toFloat()
         var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.float-value-not-allowed-in-variant"))
@@ -121,7 +125,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         builder.create()
     }
 
-    private fun annotateEqualityExpressionPlus(variant: String, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateEqualityExpressionPlus(variant: CaosVariant, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.compound-equality-operator-not-allowed"))
@@ -138,7 +142,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateDoubleQuoteString(variant: String, quoteStringLiteral: CaosScriptQuoteStringLiteral, wrapper: AnnotationHolderWrapper) {
+    private fun annotateDoubleQuoteString(variant: CaosVariant, quoteStringLiteral: CaosScriptQuoteStringLiteral, wrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.out-of-variant-quote-string"))
@@ -147,7 +151,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateC1String(variant: String, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
+    private fun annotateC1String(variant: CaosVariant, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
         if (variant in VARIANT_OLD) {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
                 wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
@@ -167,7 +171,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
 
-    private fun annotateElseIfStatement(variant: String, element: CaosScriptElseIfStatement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateElseIfStatement(variant: CaosVariant, element: CaosScriptElseIfStatement, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.elif-not-available"))
@@ -203,7 +207,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateComment(variant: String, element: PsiComment, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateComment(variant: CaosVariant, element: PsiComment, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation("Comments are not allowed in version less than CV")
@@ -211,7 +215,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateNewEqualityOps(variant: String, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNewEqualityOps(variant: CaosVariant, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid_eq_operator"))
@@ -220,7 +224,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateRetnCommand(variant: String, element: CaosScriptCRetn, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateRetnCommand(element: CaosScriptCRetn, annotationWrapper: AnnotationHolderWrapper) {
         if (!element.hasParentOfType(CaosScriptSubroutine::class.java)) {
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.retn-used-outside-of-subr"))
                     .range(element)
@@ -240,9 +244,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateVarToken(variantIn: String, element: CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
-        val variant = variantIn.toUpperCase()
-        if (variant == "C1") {
+    private fun annotateVarToken(variant: CaosVariant, element: CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant == CaosVariant.C1) {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
                 val type = CaosScriptInferenceUtil.getInferredType(element)
                 if (type == CaosExpressionValueType.C1_STRING || type == CaosExpressionValueType.BYTE_STRING || type == CaosExpressionValueType.STRING) {
@@ -258,7 +261,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             else
                 return
         } else if (element.vaXx != null) {
-            if (variant == "C1")
+            if (variant == CaosVariant.C1)
                 "C2+"
             else
                 return
@@ -268,12 +271,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     "C1,C2"
                 else
                     "C2"
-            } else if (variant == "C1" && element.varIndex.orElse(0) > 2)
+            } else if (variant == CaosVariant.C1 && element.varIndex.orElse(0) > 2)
                 "C2"
             else
                 return
         } else if (element.ovXx != null) {
-            if (variant == "C1")
+            if (variant == CaosVariant.C1)
                 "C2+"
             else
                 return
@@ -302,10 +305,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     companion object {
-        internal val VARIANT_OLD = listOf("C1", "C2")
+        internal val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
 
-        internal fun annotateNotAvailable(variant: String, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+        internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
             val command = element.commandString
             val commandType = element.getEnclosingCommandType()
             val commands = CaosDefCommandElementsByNameIndex
@@ -370,28 +373,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             builder.create()
         }
 
-        private fun getVariantString(variantsIn: List<String>): String {
-            val variants = sortVariants(variantsIn)
+        private fun getVariantString(variantsIn: List<CaosVariant>): String {
+            val variants = variantsIn.sortedBy { it.index }
             return when {
-                4 == variants.intersect(listOf("C2", "CV", "C3", "DS")).size -> "C2+"
-                3 == variants.intersect(listOf("CV", "C3", "DS")).size -> "CV+"
-                2 == variants.intersect(listOf("C3", "DS")).size -> "C3+"
+                4 == variants.intersect(listOf(CaosVariant.C2, CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "C2+"
+                3 == variants.intersect(listOf(CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "CV+"
+                2 == variants.intersect(listOf(CaosVariant.C3, CaosVariant.DS)).size -> "C3+"
                 else -> variants.joinToString(",")
-            }
-        }
-
-
-        private fun sortVariants(variants: List<String>): List<String> {
-            return variants.sortedBy {
-                when (it.toLowerCase()) {
-                    "c1" -> 1
-                    "c2" -> 2
-                    "cv" -> 3
-                    "c3" -> 4
-                    "ds" -> 5
-                    "sm" -> 6
-                    else -> 7
-                }
             }
         }
     }

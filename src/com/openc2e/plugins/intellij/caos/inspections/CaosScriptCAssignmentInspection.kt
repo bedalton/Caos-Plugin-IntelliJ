@@ -9,8 +9,8 @@ import com.openc2e.plugins.intellij.caos.fixes.CaosScriptC1ClasToCls2Fix
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptCls2ToClasFix
 import com.openc2e.plugins.intellij.caos.fixes.CaosScriptReplaceWordFix
 import com.openc2e.plugins.intellij.caos.lang.CaosBundle
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.project.CaosScriptProjectSettings
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.utils.matchCase
@@ -38,7 +38,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
     }
 
-    private fun annotateSetv(variant:String, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
+    private fun annotateSetv(variant: CaosVariant, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
         val lvalue = element.lvalue
                 ?: return
         if (variant in VARIANT_OLD) {
@@ -50,11 +50,11 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         annotateSetvNew(setv, lvalue, problemsHolder)
     }
 
-    private fun annotateSetvClassic(variant:String, element:CaosScriptCAssignment, lvalue:CaosScriptLvalue, problemsHolder: ProblemsHolder) {
+    private fun annotateSetvClassic(variant: CaosVariant, element:CaosScriptCAssignment, lvalue:CaosScriptLvalue, problemsHolder: ProblemsHolder) {
         val lvalueCommand = lvalue.commandString.toUpperCase()
-        if (variant == "C2" && lvalueCommand == "CLAS") {
+        if (variant == CaosVariant.C2 && lvalueCommand == "CLAS") {
             problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.command-annotator.setv-clas-replaced-in-c2"), CaosScriptC1ClasToCls2Fix(element))
-        } else if (variant == "C1" && lvalueCommand == "CLS2") {
+        } else if (variant == CaosVariant.C1 && lvalueCommand == "CLS2") {
             problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.command-annotator.setv-cl2-is-c2-only"), CaosScriptCls2ToClasFix(element))
         }
     }
@@ -71,7 +71,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         registerProblemWithFix(setv, "a numeric", type, replacement, problemsHolder)
     }
 
-    private fun annotateSets(variant:String, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
+    private fun annotateSets(variant: CaosVariant, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
         if (variant in VARIANT_OLD)
             return
         val lvalue = element.lvalue
@@ -92,7 +92,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
 
-    private fun annotateSeta(variant:String, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
+    private fun annotateSeta(variant: CaosVariant, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
         val lvalue = element.lvalue
                 ?: return
         val seta = element.commandToken
@@ -135,7 +135,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
     companion object {
-        private val VARIANT_OLD = listOf("C1", "C2")
+        private val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
     }
 
 }

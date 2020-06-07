@@ -4,12 +4,12 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.stubs.*
 import com.intellij.psi.tree.IStubFileElementType
-import com.intellij.util.io.StringRef
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefFileStub
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefFileStubImpl
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.utils.readList
 import com.openc2e.plugins.intellij.caos.utils.readNameAsString
 import com.openc2e.plugins.intellij.caos.utils.writeList
@@ -34,7 +34,7 @@ class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefL
         super.serialize(stub, stream)
         stream.writeName(stub.fileName)
         stream.writeList(stub.variants) {
-            writeName(it)
+            writeName(it.code)
         }
     }
 
@@ -42,7 +42,7 @@ class CaosDefFileStubType : IStubFileElementType<CaosDefFileStub>(NAME, CaosDefL
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): CaosDefFileStub {
         super.deserialize(stream, parentStub)
         val fileName = stream.readNameAsString()!!
-        val variants = stream.readList { readNameAsString() }.filterNotNull()
+        val variants = stream.readList { readNameAsString() }.filterNotNull().map { CaosVariant.fromVal(it) }
         return CaosDefFileStubImpl(null, fileName, variants)
     }
 

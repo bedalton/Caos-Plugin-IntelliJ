@@ -5,13 +5,14 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.openc2e.plugins.intellij.caos.def.indices.CaosDefHashTagsIndex
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentHashtag
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 
 class CaosDefDocCommentHashtagReference(hashtag: CaosDefDocCommentHashtag)
     : PsiPolyVariantReferenceBase<CaosDefDocCommentHashtag>(hashtag, TextRange.create(1, hashtag.name.length)) {
 
     private val hashtag by lazy { hashtag.name }
 
-    private val variants:List<String> by lazy {
+    private val variants:List<CaosVariant> by lazy {
         myElement.variants
     }
 

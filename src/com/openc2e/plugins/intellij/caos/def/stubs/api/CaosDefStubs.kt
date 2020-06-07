@@ -1,12 +1,12 @@
 package com.openc2e.plugins.intellij.caos.def.stubs.api
 
 import com.intellij.psi.stubs.StubElement
-import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefDocCommentHashtag
 import com.openc2e.plugins.intellij.caos.def.psi.impl.*
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 
 interface CaosDefCommandDefinitionStub : StubElement<CaosDefCommandDefElementImpl> {
     val namespace:String?
@@ -18,7 +18,7 @@ interface CaosDefCommandDefinitionStub : StubElement<CaosDefCommandDefElementImp
     val lvalue:Boolean
     val isCommand:Boolean
     val comment:String?
-    val variants:List<String>
+    val variants:List<CaosVariant>
 }
 
 interface CaosDefDocCommentStub : StubElement<CaosDefDocCommentImpl> {
@@ -31,7 +31,7 @@ interface CaosDefDocCommentStub : StubElement<CaosDefDocCommentImpl> {
 
 interface CaosDefDocCommentHashtagStub: StubElement<CaosDefDocCommentHashtagImpl> {
     val hashtag:String
-    val variants:List<String>
+    val variants:List<CaosVariant>
 }
 
 interface CaosDefTypeDefinitionStub : StubElement<CaosDefTypeDefinitionElementImpl> {

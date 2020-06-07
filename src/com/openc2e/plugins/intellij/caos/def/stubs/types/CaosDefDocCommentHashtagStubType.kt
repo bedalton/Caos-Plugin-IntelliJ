@@ -9,6 +9,7 @@ import com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService
 import com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefDocCommentHashtagImpl
 import com.openc2e.plugins.intellij.caos.def.stubs.api.CaosDefDocCommentHashtagStub
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefDocCommentHashtagStubImpl
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.psi.util.UNDEF
 import com.openc2e.plugins.intellij.caos.stubs.types.readStringList
 import com.openc2e.plugins.intellij.caos.stubs.types.writeStringList
@@ -22,12 +23,12 @@ class CaosDefDocCommentHashtagStubType(debugName:String) : CaosDefStubElementTyp
 
     override fun serialize(stub: CaosDefDocCommentHashtagStub, stream: StubOutputStream) {
         stream.writeName(stub.hashtag)
-        stream.writeStringList(stub.variants)
+        stream.writeStringList(stub.variants.map { it.code })
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosDefDocCommentHashtagStub {
         val name = stream.readNameAsString() ?: UNDEF
-        val variants = stream.readStringList()
+        val variants = stream.readStringList().map { CaosVariant.fromVal(it) }
         return CaosDefDocCommentHashtagStubImpl(
                 parent = parent,
                 hashtag = name,

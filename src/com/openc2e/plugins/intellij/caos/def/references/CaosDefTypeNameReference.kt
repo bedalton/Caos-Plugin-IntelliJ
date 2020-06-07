@@ -7,9 +7,7 @@ import com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElemen
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefTypeDefName
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefTypeDefinitionElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
-import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
-import com.openc2e.plugins.intellij.caos.utils.orFalse
 
 class CaosDefTypeNameReference(element: CaosDefTypeDefName) : PsiReferenceBase<CaosDefTypeDefName>(element, TextRange(1, element.textLength)) {
 

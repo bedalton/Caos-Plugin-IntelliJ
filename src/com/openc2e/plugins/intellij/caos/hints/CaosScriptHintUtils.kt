@@ -7,6 +7,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.psi.impl.containingCaosDefFile
 import com.openc2e.plugins.intellij.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.caos.def.stubs.impl.CaosDefTypeDefValueStruct
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
@@ -67,7 +68,7 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
     return getListValue(variant, typeDef, expression.project, value)
 }
 
-private fun getListValue(variant: String, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
+private fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
     val list = CaosDefTypeDefinitionElementsByNameIndex
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }

@@ -65,7 +65,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 .Instance[formattedName, myElement.project]
                 // Filter for type and variant
                 .filter {
-                    val isVariant = (variant == null || it.isVariant(variant))
+                    val isVariant = it.isVariant(variant)
                     if (!isVariant)
                         return@filter false
                     val isForElement = when (type) {
