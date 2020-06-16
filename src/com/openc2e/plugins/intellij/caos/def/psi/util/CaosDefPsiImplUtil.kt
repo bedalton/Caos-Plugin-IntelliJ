@@ -39,7 +39,8 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getVariants(header:CaosDefHeader) : List<CaosVariant> {
         return header.variantList.mapNotNull { variantListItem ->
-            CaosVariant.fromVal(variantListItem.variantCode.text).let {
+            val variantCode = variantListItem.variantCode.text.trim() // Needs trim as lexer adds space??
+            CaosVariant.fromVal(variantCode).let {
             if (it != CaosVariant.UNKNOWN)
                 it
             else

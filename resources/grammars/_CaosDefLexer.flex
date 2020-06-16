@@ -49,18 +49,18 @@ AT_RETURN=[@][rR][eE][tT][uU][rR][nN][sS]?
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
 TYPE_NOTE=[:]{ID}
 TYPE_DEF_KEY=[a-zA-Z0-9_#-]+
-TYPE_DEF_VALUE = ([^-\n]|-[^ ])+
+TYPE_DEF_VALUE=([^-\n]|-[^ ])+
 DEF_TEXT=[^\n]+
 INT=[-+]?[0-9]+
 TO=([.]{2,3}|[Tt][Oo])
 UNTIL=[uU][nN][tT][iI][lL]
-EXCLUSIVE = [!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
+EXCLUSIVE=[!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
 REGION=[#][^\n]+
-HASH_TAG= [#][A-Za-z][_A-Za-z0-9]*
-VARIABLE_LINK = [{]{ID}[}]
-AT_VARIANTS = [@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
-VARIANT_ID = [A-Za-z][A-Za-z0-9]
-VARIANT_NAME = [A-Za-z0-9 _]+
+HASH_TAG=[#][A-Za-z][_A-Za-z0-9]*
+VARIABLE_LINK=[{]{ID}[}]
+AT_VARIANTS=[@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
+VARIANT_ID=[A-Za-z][A-Za-z0-9]
+VARIANT_NAME=[A-Za-z0-9 _]+
 
 %state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE
 
@@ -189,6 +189,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
     "="							{ canDoName = true; return CaosDef_EQ; }
   	{VARIANT_ID}				{ return CaosDef_ID; }
     {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME_LITERAL; } else return CaosDef_ID;}
+	{WHITE_SPACE}              	{ return WHITE_SPACE; }
 	[^]							{ yybegin(IN_BODY); yypushback(1); }
 }
 
