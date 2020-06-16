@@ -88,8 +88,8 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
-        if (renameRegex.matches(newElementName))
-            return myElement.setName(newElementName)
+        //if (renameRegex.matches(newElementName))
+          //  return myElement.setName(newElementName)
         return myElement
     }
 
