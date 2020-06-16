@@ -570,7 +570,6 @@ BKDS (string) metaroomId (integer);
 BKGD (command) metaroomId (integer) background (string) transition (integer);
 
 /*
- * BKGD (string) META[ROOM]_ID (integer)
  * Returns the name of the background file currently shown by the given camera.
  * #Camera
  *
@@ -582,7 +581,6 @@ BKGD (command) metaroomId (integer) background (string) transition (integer);
 BKGD (string) metaroomId (integer);
 
 /*
- * BODY (command) SET_NUMBER (integer) LAYER (integer)
  * Similar to [WEAR], only puts the given set of clothes on every body part.
  * #Creatures
  *
@@ -593,7 +591,6 @@ BKGD (string) metaroomId (integer);
 BODY (command) setNumber (integer) layer (integer);
 
 /*
- * BODY (integer) BODY[PART] (integer)
  * Return the set number of the outfit the norn is wearing on the outer most layer or -1 if it is
  * not wearing anything
  * #Creatures
@@ -606,7 +603,6 @@ BODY (command) setNumber (integer) layer (integer);
 BODY (integer) bodypart (integer);
 
 /*
- * BOOT (command) SUBBOOT_NUMBER (integer) FOLDER_NUMBER_SUM (integer) CLEAR_WORLD (integer)
  * Loads in a list of numbered bootstrap folders contained within a folder called subboot.
  * Bootstraps folders numbers are powers of 2, sum the folder numbers to load those folders. There
  * is provision for more than one subboot folder, these should be uniquely numbered.
@@ -620,7 +616,6 @@ BODY (integer) bodypart (integer);
 BOOT (command) subbootNumber (integer) folderNumberSum (integer) clearWorld (integer);
 
 /*
- * BORN (command)
  * Signals the target creature as having been born - this sends a birth event, and sets the [TAGE]
  * ticking.
  * #Creatures
@@ -629,7 +624,6 @@ BOOT (command) subbootNumber (integer) folderNumberSum (integer) clearWorld (int
 BORN (command);
 
 /*
- * BRMI (command) META[ROOM]_[BASE], (integer) [ROOM]_[BASE] (integer)
  * Sets the Map's Metaroom and Room index bases for adding new rooms/metarooms.
  * #Camera
  *
@@ -731,7 +725,6 @@ BRN: SETN (command) lobeNumber (integer) neuronNumber (integer) stateNumber (int
 BRN: SETT (command) tractNumber (integer) lineNumber (integer) newValue (float);
 
 /*
- * BUZZ (command) INTERVAL (integer)
  * Sets the ideal interval in milliseconds between each tick. However fast the machine, it won't
  * tick quicker than this, but it might tick slower. You can find the actual time taken with [RACE].
  * Changing this from the default value of 50 midgame will damage profiling and seasons. Things
@@ -755,7 +748,6 @@ BUZZ (command) interval (integer);
 BUZZ (integer);
 
 /*
- * BVAR (integer)
  * Returns the variant number for target creature.
  * #Creatures
  *
@@ -774,7 +766,6 @@ BVAR (integer);
 BYIT (integer);
 
 /*
- * CABB (integer)
  * Returns relative position of bottom side of cabin.
  * #Vehicles
  *
@@ -784,7 +775,6 @@ BYIT (integer);
 CABB (integer);
 
 /*
- * CABL (integer)
  * Returns relative position of left side of cabin.
  * #Vehicles
  *
@@ -794,7 +784,6 @@ CABB (integer);
 CABL (integer);
 
 /*
- * CABN (command) [LEFT] (integer) TOP (integer) RIGHT (integer) BOTTOM (integer)
  * Set a vehicles cabin rectangle. The cabin is the area in which agents inside the vehicle are
  * kept. The rectangle is relative to the position of the vehicle. Default cabin is the bounding
  * rectangle of part 0. You might want to use [ATTR] to set attribute Greedy Cabin, on the vehicle.
@@ -810,7 +799,6 @@ CABL (integer);
 CABN (command) left (integer) top (integer) right (integer) bottom (integer);
 
 /*
- * CABP (command) PLANE (integer)
  * Set the plane that vehicle passengers are at. This is relative to the vehicle's plane.
  * #Vehicles
  *
@@ -820,7 +808,6 @@ CABN (command) left (integer) top (integer) right (integer) bottom (integer);
 CABP (command) plane (integer);
 
 /*
- * CABP (integer)
  * Returns the plane that passengers of the vehicle are at.
  * #Vehicles
  *
@@ -830,7 +817,6 @@ CABP (command) plane (integer);
 CABP (integer);
 
 /*
- * CABR (integer)
  * Returns relative position of right side of cabin.
  * #Vehicles
  *
@@ -840,7 +826,6 @@ CABP (integer);
 CABR (integer);
 
 /*
- * CABT (integer)
  * Returns relative position of topside of cabin.
  * #Vehicles
  *
@@ -850,7 +835,6 @@ CABR (integer);
 CABT (integer);
 
 /*
- * CABV (command) CABIN_[ROOM]_ID (integer)
  * Sets the room number which things in the cabin think they are in. By default, the value is -1,
  * and the room is the one underneath wherever the agent happens to be. Make sure you set this if
  * the vehicle ever remotely leaves the room system. This command effects values returned from
@@ -863,7 +847,6 @@ CABT (integer);
 CABV (command) cabinRoomId (integer);
 
 /*
- * CABV (integer)
  * Returns the cabin room number.
  * #Vehicles
  *
@@ -873,7 +856,6 @@ CABV (command) cabinRoomId (integer);
 CABV (integer);
 
 /*
- * CABW (command) CABIN_CAPACITY (integer)
  * Set the capacity or width of the cabin. This will determine how many passengers the cabin can
  * hold, each passenger will be on a separate plane within the cabin. Use [CABP] to set the plane of
  * the first agent relative to the cabin. The default width is zero, this means that the cabin
@@ -908,7 +890,6 @@ CACL (command) family (integer) genus (integer) species (integer) caIndex (integ
 CAGE (integer);
 
 /*
- * CALC (command)
  * Recalculates all the navigational CAs (warning: slow).
  * #Map
  *
@@ -916,7 +897,6 @@ CAGE (integer);
 CALC (command);
 
 /*
- * CALG (command) CATEGORY_ID (integer) CATEGORY_REPRESENTATIVE_ALGORITHM_ID (integer)
  * Choose how a creature ([TARG]) decides which particular object in a category to look at.
  * PICK_NEAREST_IN_X_DIRECTION=0, PICK_A_RANDOM_ONE=1, PICK_NEAREST_IN_CURRENT_[ROOM]=2,
  * PICK_NEAREST_TO_GROUND=3, PICK_RANDOM_NEAREST_IN_X_DIRECTION=4.
@@ -929,7 +909,6 @@ CALC (command);
 CALG (command) categoryId (integer) categoryRepresentativeAlgorithmId (integer);
 
 /*
- * CALG (integer) CATEGORY_ID (integer)
  * Find out which algorithm is currently being used for the creature [TARG] to decide which
  * particular object in a category to look at.
  * #Creatures
@@ -942,7 +921,6 @@ CALG (command) categoryId (integer) categoryRepresentativeAlgorithmId (integer);
 CALG (integer) categoryId (integer);
 
 /*
- * CALL (command) EVENT_NO (integer) PARAM_1 (anything) PARAM_2 (anything)
  * Calls a subroutine script on the owner with the specified event number. When that script
  * finishes the current script is resumed. No variables are shared between the two scripts so any
  * return values must go through OVs. The called script starts in the same [INST] state as the
@@ -962,8 +940,6 @@ CALG (integer) categoryId (integer);
 CALL (command) eventNo (integer) param1 (any) param2 (any);
 
 /*
- * CAOS (string) IN[LINE] (integer) STATE_TRANS (integer) P1 (anything) P2 (anything) COMMANDS
- * (string) THROWS (integer) CATCHES (integer) REPORT (variable)
  * Executes the specified CAOS commands instantly. The local environment ([_IT_] VAxx TARG OWNR
  * etc.) will be promoted to the script's environment if inline is non-zero. If state_trans is
  * non-zero, then [FROM] and [OWNR] are propogated, if zero, then the script is run orphaned. CAOS
@@ -994,7 +970,6 @@ CALL (command) eventNo (integer) param1 (any) param2 (any);
 CAOS (string) inline (integer) stateTrans (integer) p1 (any) p2 (any) commands (string) throws (integer) catches (integer) report (variable);
 
 /*
- * CARR (agent)
  * Returns the the agent currently holding the target, or [NULL] if there is none.
  * #AgentVars
  *
@@ -1004,7 +979,6 @@ CAOS (string) inline (integer) stateTrans (integer) p1 (any) p2 (any) commands (
 CARR (agent);
 
 /*
- * CATA (integer)
  * Returns the target's category. This either depends on its classifier as described in [CATI], or
  * is its own individual override set with [CATO].
  * #Agents
@@ -1015,7 +989,6 @@ CARR (agent);
 CATA (integer);
 
 /*
- * CATI (integer) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Return the category id for the given classifier. The catalogue tag "Agent Classifiers"
  * specifies these, and you can have more than 40. They are tested in order until the first match
  * is found. -1 is always returned if none match. Agents can override their classifier category
@@ -1032,7 +1005,6 @@ CATA (integer);
 CATI (integer) family (integer) genus (integer) species (integer);
 
 /*
- * CATO (command) CATEGORY (integer)
  * Change the target's category to the one specified. The default is -1 which means the category
  * is based on classifier and the catalogue as described in [CATI]. See also [CATX] and [CATA].
  * #Agents
@@ -1043,7 +1015,6 @@ CATI (integer) family (integer) genus (integer) species (integer);
 CATO (command) category (integer);
 
 /*
- * CATX (string) CATEGORY_ID (integer)
  * Returns the name of the given category. For example, "toy" or "bad bug". The catalogue tag
  * "Agent Categories" stores these. If the id is out of range, CATX returns an empty string.
  * #Agents
@@ -1056,7 +1027,6 @@ CATO (command) category (integer);
 CATX (string) categoryId (integer);
 
 /*
- * CHAR (command) STRING (variable) INDEX (integer) CHARACTER (integer)
  * Sets a character in a string. String indices begin at 1.
  * #Variables
  *
@@ -1068,7 +1038,6 @@ CATX (string) categoryId (integer);
 CHAR (command) string (variable) index (integer) character (integer);
 
 /*
- * CHAR (integer) STRING (string) INDEX (integer)
  * Returns a character from a string. String indicies begin at 1.
  * #Variables
  *
@@ -1081,7 +1050,6 @@ CHAR (command) string (variable) index (integer) character (integer);
 CHAR (integer) string (string) index (integer);
 
 /*
- * CHEM (command) CHEMICAL (integer) ADJUSTMENT (float)
  * Adjusts chemical (0 to 255) by concentration -1.0 to +1.0 in the target creature's bloodstream.
  * #Creatures
  *
@@ -1092,7 +1060,6 @@ CHAR (integer) string (string) index (integer);
 CHEM (command) chemical (integer) adjustment (float);
 
 /*
- * CHEM (float) CHEMICAL (integer)
  * Returns concentration (0.0 to 1.0) of chemical (1 to 255) in the target creature's bloodstream.
  * #Creatures
  *
@@ -1104,7 +1071,6 @@ CHEM (command) chemical (integer) adjustment (float);
 CHEM (float) chemical (integer);
 
 /*
- * CLAC (command) MESSAGE (integer)
  * Set the click action, which is the identifier of the message sent to the agent when it is
  * clicked on, provided attribute Activateable is set. Default is activate 1. Use -1 to prevent it
  * sending a message. Also overriden by [CLIK]. Remember that the early Message Numbers differ
@@ -1117,7 +1083,6 @@ CHEM (float) chemical (integer);
 CLAC (command) message (integer);
 
 /*
- * CLAC (integer)
  * This returns the CLAC action of the [TARG] object. If the [TARG] is in [CLIK] mode, then the return
  * value is -2. Otherwise it is the CLAC action.
  * #AgentInteractions
@@ -1128,7 +1093,6 @@ CLAC (command) message (integer);
 CLAC (integer);
 
 /*
- * CLIK (command) MESSAGE_1 (integer) MESSAGE_2 (integer) MESSAGE_3 (integer)
  * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
  * are ignored. Overriden by [CLAC].
  * #Input
@@ -1141,7 +1105,6 @@ CLAC (integer);
 CLIK (command) message1 (integer) message2 (integer) message3 (integer);
 
 /*
- * CLIK (integer) WHICH_VALUE (integer)
  * This returns the CLIK action of the [TARG] object. If the object is in [CLAC] mode, then it returns
  * -2, else the return values are as follows:
  * 0 -> Current click action number (1,2,3)
@@ -1158,7 +1121,6 @@ CLIK (command) message1 (integer) message2 (integer) message3 (integer);
 CLIK (integer) whichValue (integer);
 
 /*
- * CMRA (command) X (integer) Y (integer) PAN (integer)
  * Move current camera so top left corner of view is at world coordinate x y. Set pan 0 to jump
  * straight to location, pan 1 to smoothly scroll there (unless in a different meta room).
  * #Camera
@@ -1171,7 +1133,6 @@ CLIK (integer) whichValue (integer);
 CMRA (command) x (integer) y (integer) pan (integer);
 
 /*
- * CMRP (command) X (integer) Y (integer) PAN (integer)
  * Centre current camera on world coordinate x y. Set pan 0 to jump straight to location, pan 1 to
  * smoothly scroll there (unless in different meta room), and pan 2 to smoothly scroll only if the
  * destination is already visible.
@@ -1185,7 +1146,6 @@ CMRA (command) x (integer) y (integer) pan (integer);
 CMRP (command) x (integer) y (integer) pan (integer);
 
 /*
- * CMRT (command) PAN (integer)
  * Centre current camera on target. Set pan 0 to jump straight to location, pan 1 to smoothly
  * scroll there (unless in different meta room), and pan 2 to smoothly scroll only if the
  * destination is already visible.
@@ -1197,7 +1157,6 @@ CMRP (command) x (integer) y (integer) pan (integer);
 CMRT (command) pan (integer);
 
 /*
- * CMRX (integer)
  * Returns the x coordinate of the centre of the current camera.
  * #Camera
  *
@@ -1207,7 +1166,6 @@ CMRT (command) pan (integer);
 CMRX (integer);
 
 /*
- * CMRY (integer)
  * Returns the y coordinate of the centre of the current camera.
  * #Camera
  *
@@ -1217,7 +1175,6 @@ CMRX (integer);
 CMRY (integer);
 
 /*
- * CODE (integer)
  * Returns event script number currently being run by target. Returns -1 if not running anything.
  * #Debug
  *
@@ -1227,7 +1184,6 @@ CMRY (integer);
 CODE (integer);
 
 /*
- * CODF (integer)
  * Returns family of script currently being run by target. Returns -1 if not running anything.
  * #Debug
  *
@@ -1237,7 +1193,6 @@ CODE (integer);
 CODF (integer);
 
 /*
- * CODG (integer)
  * Returns genus of script currently being run by target. Returns -1 if not running anything.
  * #Debug
  *
@@ -1247,7 +1202,6 @@ CODF (integer);
 CODG (integer);
 
 /*
- * CODP (integer)
  * Returns the offset into the source code of the next instruction to be executed by the target.
  * Use [SORC] to get the source code. Returns -1 if not running anything.
  * #Debug
@@ -1258,7 +1212,6 @@ CODG (integer);
 CODP (integer);
 
 /*
- * CODS (integer)
  * Returns species of script currently being run by target. Returns -1 if not running anything.
  * #Debug
  *
@@ -1268,7 +1221,6 @@ CODP (integer);
 CODS (integer);
 
 /*
- * CORE (command) TOPY (float) BOTTOMY (float) LEFTX (float) RIGHTX (float)
  * Sets the bounding box of the physical core of the object [TARG]. May be set to smaller (or
  * larger) than the sprite's rectangle.
  * #Agents
@@ -1282,7 +1234,6 @@ CODS (integer);
 CORE (command) topy (float) bottomy (float) leftx (float) rightx (float);
 
 /*
- * COS_ (float) THETA (float)
  * Returns cosine of theta. Theta should be in degrees.
  * #Math
  *
@@ -1305,7 +1256,6 @@ COS_ (float) theta (float);
 CREA (integer) agent (agent);
 
 /*
- * DATE (integer)
  * Returns the day within the current season, from 0 to [GAME] "engine_LengthOfSeasonInDays" - 1.
  * See also [HIST DATE].
  * #Time
@@ -1316,7 +1266,6 @@ CREA (integer) agent (agent);
 DATE (integer);
 
 /*
- * DAYT (integer)
  * Returns the current day of the month
  * #Time
  *
@@ -1445,7 +1394,6 @@ DBG: TOCK (command);
 DBG: WTIK (command) newWorldTick (integer);
 
 /*
- * DBG# (string) VARIABLE (integer)
  * Dumps debug information for the virtual machine of target. Whatever the type of the variable, a
  * string is output.
  * Variable can be:
@@ -1469,7 +1417,6 @@ DBG: WTIK (command) newWorldTick (integer);
 DBG# (string) variable (integer);
 
 /*
- * DBGA (string) VARIABLE (integer)
  * Dumps debug information for target. Whatever the type of the variable, a string is output.
  * Variable can be:
  * 0 to 99 : agent variables OV00 to OV99
@@ -1484,7 +1431,6 @@ DBG# (string) variable (integer);
 DBGA (string) variable (integer);
 
 /*
- * DCOR (command) [CORE]_ON (integer)
  * Debug command to show the physical core of the [TARG] agent graphically.
  * #Agents
  *
@@ -1512,7 +1458,6 @@ DEAD (command);
 DEAD (integer);
 
 /*
- * DECN (integer)
  * Returns the current focus of decision id.
  * #Creatures
  *
@@ -1522,7 +1467,6 @@ DEAD (integer);
 DECN (integer);
 
 /*
- * DELE (command) VARIABLE_[NAME] (string)
  * Deletes the specified [EAME] variable.
  * #Variables
  *
@@ -1532,7 +1476,6 @@ DECN (integer);
 DELE (command) variableName (string);
 
 /*
- * DELG (command) VARIABLE_[NAME] (string)
  * Deletes the specified [GAME] variable.
  * #Variables
  *
@@ -1542,7 +1485,6 @@ DELE (command) variableName (string);
 DELG (command) variableName (string);
 
 /*
- * DELM (command) META[ROOM]_ID (integer)
  * Deletes the specified metaroom from the map.
  * #Map
  *
@@ -1552,7 +1494,6 @@ DELG (command) variableName (string);
 DELM (command) metaroomId (integer);
 
 /*
- * DELN (command) VARIABLE_[NAME] (anything)
  * Deletes the specified [NAME] variable on [TARG].
  * #Variables
  *
@@ -1562,7 +1503,6 @@ DELM (command) metaroomId (integer);
 DELN (command) variableName (any);
 
 /*
- * DELR (command) [ROOM]_ID (integer)
  * Deletes the specified room from the map.
  * #Map
  *
@@ -1572,7 +1512,6 @@ DELN (command) variableName (any);
 DELR (command) roomId (integer);
 
 /*
- * DELW (command) WORLD_[NAME] (string)
  * Deletes the specified world directory.
  * #World
  *
@@ -1582,7 +1521,6 @@ DELR (command) roomId (integer);
 DELW (command) worldName (string);
 
 /*
- * DFTX (float)
  * Returns X coordinate of creature's down foot.
  * #Creatures
  *
@@ -1592,7 +1530,6 @@ DELW (command) worldName (string);
 DFTX (float);
 
 /*
- * DFTY (float)
  * Returns Y coordinate of creature's down foot.
  * #Creatures
  *
@@ -1602,7 +1539,6 @@ DFTX (float);
 DFTY (float);
 
 /*
- * DIRN (command) DIRECTION (integer)
  * Change creature to face a different direction. North 0, South 1, East 2, West 3.
  * #Creatures
  *
@@ -1621,7 +1557,6 @@ DIRN (command) direction (integer);
 DIRN (integer);
 
 /*
- * DISQ (float) OTHER (agent)
  * Returns the square of the distance between the centre points of the target agent, and the other
  * agent. It is quicker to compare this square against a squared constant directly, or if you need
  * the actual distance use [SQRT].
@@ -1635,7 +1570,6 @@ DIRN (integer);
 DISQ (float) other (agent);
 
 /*
- * DIVV (command) VAR (variable) DIV (decimal)
  * Divides a variable by an integer or float, so var = var / div. Uses integer division if both
  * numbers are integers, or floating point division otherwise.
  * #Math
@@ -1647,7 +1581,6 @@ DISQ (float) other (agent);
 DIVV (command) var (variable) div (decimal);
 
 /*
- * DMAP (command) DEBUG_MAP (integer)
  * Set to 1 to turn the debug map image on, 0 to turn it off. The debug map includes vehicle cabin
  * lines.
  * #Map
@@ -1667,7 +1600,6 @@ DMAP (command) debugMap (integer);
 DOCA (command) noOfUpdates (integer);
 
 /*
- * DOIF (command) CONDITION (condition)
  * Execute a block of code if the condition is true. The code block ends at the next [ELSE], [ELIF] or
  * [ENDI]. A condition is composed of one or more comparisons joined by AND or OR. A comparison
  * compares two values with EQ, NE, GT, GE, LT, LE, or alternatively =, <>, >, >=, <, <=.
@@ -1691,7 +1623,6 @@ DOCA (command) noOfUpdates (integer);
 DOIF (command) condition (condition);
 
 /*
- * DOIN (command) NO_OF_INSTINCTS_TO_PROCESS (integer)
  * Make the creature [TARG] process N instincts.
  * #Brain
  *
@@ -1701,7 +1632,6 @@ DOIF (command) condition (condition);
 DOIN (command) noOfInstinctsToProcess (integer);
 
 /*
- * DONE (command)
  * Stops the targetted creature doing any involuntary actions.
  * #Creatures
  *
@@ -1709,7 +1639,6 @@ DOIN (command) noOfInstinctsToProcess (integer);
 DONE (command);
 
 /*
- * DOOR (command) [ROOM]_ID1 (integer) [ROOM]_ID2 (integer) PERMIABILITY (integer)
  * Sets the permiability of the door between two rooms. This is used for both CAs and physical
  * motion. See also [PERM].
  * #Map
@@ -1722,7 +1651,6 @@ DONE (command);
 DOOR (command) room1Id (integer) room2Id (integer) permiability (integer);
 
 /*
- * DOOR (integer) [ROOM]_ID1 (integer) [ROOM]_ID2 (integer)
  * Returns the door permiability between two rooms.
  * #Map
  *
@@ -1735,7 +1663,6 @@ DOOR (command) room1Id (integer) room2Id (integer) permiability (integer);
 DOOR (integer) room1Id (integer) room2Id (integer);
 
 /*
- * DOWN (integer)
  * Returns the value of the down constant.
  * #Map
  *
@@ -1745,7 +1672,6 @@ DOOR (integer) room1Id (integer) room2Id (integer);
 DOWN (integer);
 
 /*
- * DPAS (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Drop all passengers matching classifier.
  * #Variables
  *
@@ -1757,7 +1683,6 @@ DOWN (integer);
 DPAS (command) family (integer) genus (integer) species (integer);
 
 /*
- * DREA (command) DREAM (integer)
  * Set to 1 to make the creature fall asleep and dream, 0 to stop the creature dreaming. When
  * dreaming, a creature's instincts are processed. See also [ASLP].
  * #Creatures
@@ -1768,7 +1693,6 @@ DPAS (command) family (integer) genus (integer) species (integer);
 DREA (command) dream (integer);
 
 /*
- * DREA (integer)
  * Returns 1 if the creature is asleep and dreaming, 0 otherwise.
  * #Creatures
  *
@@ -1778,7 +1702,6 @@ DREA (command) dream (integer);
 DREA (integer);
 
 /*
- * DRIV (command) DRIVE (integer) ADJUSTMENT (float)
  * Adjusts the level of the given drive by the specified amount - can be positive or negative.
  * #Creatures
  *
@@ -1789,7 +1712,6 @@ DREA (integer);
 DRIV (command) drive (integer) adjustment (float);
 
 /*
- * DRIV (float) DRIVE (integer)
  * Returns the value (0.0 to 1.0) of the specified drive.
  * [DRV!] (integer)
  * Returns the id of the highest drive for the target creature.
@@ -1820,7 +1742,6 @@ DROP (command);
 DRV! (integer);
 
 /*
- * DSEE (command) CAN_SEE_ON (integer)
  * Debug command to show all the agents which can be seen by any creature.
  * #Agents
  *
@@ -1830,7 +1751,6 @@ DRV! (integer);
 DSEE (command) canSeeOn (integer);
 
 /*
- * EAME (variable) VARIABLE_[NAME] (string)
  * Very similar to [GAME] variables only they aren't saved or loaded with the world; they keep their
  * value between worlds for one session of the engine. The E in EAME stands for for Engine. See
  * the table of engine Eame Variables.
@@ -1845,7 +1765,6 @@ DSEE (command) canSeeOn (integer);
 EAME (variable) variableName (string);
 
 /*
- * EAMN (string) PREVIOUS (string)
  * Enumerates through [EAME] variable names, roughly as [GAMN] does through [GAME] variables. Start and
  * end with an empty string.
  * #Variables
@@ -1858,7 +1777,6 @@ EAME (variable) variableName (string);
 EAMN (string) previous (string);
 
 /*
- * ECON (command) AGENT (agent)
  * Starts an enumeration across all the agents in a connective system, where agent is any agent
  * within the connective system.
  * #Net
@@ -1869,7 +1787,6 @@ EAMN (string) previous (string);
 ECON (command) agent (agent);
 
 /*
- * ELAS (command) ELASTICITY (integer)
  * Set the elasticity percentage. An agent with elasticity 100 will bounce perfectly, one with
  * elasticity 0 won't bounce at all.
  * #Motion
@@ -1880,7 +1797,6 @@ ECON (command) agent (agent);
 ELAS (command) elasticity (integer);
 
 /*
- * ELAS (integer)
  * Return the elasticity percentage.
  * #Motion
  *
@@ -1890,7 +1806,6 @@ ELAS (command) elasticity (integer);
 ELAS (integer);
 
 /*
- * ELIF (command) CONDITION (condition)
  * ELseIF command to follow a [DOIF]. If the condition in a [DOIF] is false, each following ELIF
  * command will be evaluated in turn. Only the first true condition will have its code block
  * executed.
@@ -1902,7 +1817,6 @@ ELAS (integer);
 ELIF (command) condition (condition);
 
 /*
- * ELSE (command)
  * ELSE clause to follow [DOIF] and [ELIF](s). If nothing else matches, the ELSE block will be
  * executed.
  * #Flow
@@ -1911,7 +1825,6 @@ ELIF (command) condition (condition);
 ELSE (command);
 
 /*
- * EMID (string)
  * Returns a string containing all the metaroom ids in the world seperated by spaces.
  * #Map
  *
@@ -1931,7 +1844,6 @@ EMID (string);
 EMIT (command) caIndex (integer) amount (float);
 
 /*
- * ENDI (command)
  * Closes a [DOIF]...[ELIF]...[ELSE]... set.
  * #Flow
  *
@@ -1948,7 +1860,6 @@ ENDI (command);
 ENDM (command);
 
 /*
- * ENUM (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Iterate through each agent which conforms to the given classification, setting [TARG] to point to
  * each valid agent in turn. family, genus and/or species can be zero to act as wildcards. [NEXT]
  * terminates the block of code which is executed with each [TARG]. After an ENUM, [TARG] is set to
@@ -1963,7 +1874,6 @@ ENDM (command);
 ENUM (command) family (integer) genus (integer) species (integer);
 
 /*
- * EPAS (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Enumerate over owner vehicle's passengers which match the given classifier. Similar to [ENUM].
  * #Enums
  *
@@ -1975,7 +1885,6 @@ ENUM (command) family (integer) genus (integer) species (integer);
 EPAS (command) family (integer) genus (integer) species (integer);
 
 /*
- * ERID (string) META[ROOM]_ID (integer)
  * Returns a string containing all the room ids in the specified metaroom separated by spaces.
  * Returns all rooms in the world if metaroom_id is -1.
  * #Map
@@ -1988,7 +1897,6 @@ EPAS (command) family (integer) genus (integer) species (integer);
 ERID (string) metaroomId (integer);
 
 /*
- * ESEE (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * As [ENUM], except only enumerates through agents which [OWNR] can see. An agent can see another if
  * it is within [RNGE], its [PERM] allows it to see through all intervening walls, and for creatures
  * [ATTR] Invisible isn't set. See also [STAR] and [SEEE]. In install scripts, when there is no [OWNR],
@@ -2003,7 +1911,6 @@ ERID (string) metaroomId (integer);
 ESEE (command) family (integer) genus (integer) species (integer);
 
 /*
- * ETCH (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * As [ENUM], except only enumerates through agents which [OWNR] is touching. Agents are said to be
  * touching if their bounding rectangles overlap. See also [TTAR]. In install scripts, when there is
  * no [OWNR], [TARG] is used instead.
@@ -2017,7 +1924,6 @@ ESEE (command) family (integer) genus (integer) species (integer);
 ETCH (command) family (integer) genus (integer) species (integer);
 
 /*
- * ETIK (integer)
  * Returns the number of ticks since the engine was loaded in.
  * #Time
  *
@@ -2027,7 +1933,6 @@ ETCH (command) family (integer) genus (integer) species (integer);
 ETIK (integer);
 
 /*
- * EVER (command)
  * Forms the end of a [LOOP]..EVER loop, which just loops forever.
  * #Flow
  *
@@ -2035,7 +1940,6 @@ ETIK (integer);
 EVER (command);
 
 /*
- * EXPR (integer)
  * Returns the current facial expression index for the creature.
  * #Creatures
  *
@@ -2045,7 +1949,6 @@ EVER (command);
 EXPR (integer);
 
 /*
- * FACE (command) SET_NUMBER (integer)
  * Sets a facial expression on target creature.
  * #Creatures
  *
@@ -2064,7 +1967,6 @@ FACE (command) setNumber (integer);
 FACE (integer);
 
 /*
- * FACE (string)
  * Returns the name of the sprite file for the target creature's face. Currently automatically
  * gives you the youngest age version of the gallery but soon will work in the following way: If
  * you set the parameter to -1 you will get the name of the file the creature is currently using.
@@ -2080,7 +1982,6 @@ FACE (integer);
 FACE (string);
 
 /*
- * FADE (command)
  * Fade out a controlled sound.
  * #Sounds
  *
@@ -2088,7 +1989,6 @@ FACE (string);
 FADE (command);
 
 /*
- * FALL (integer)
  * Returns 1 if target is moving under the influence of gravity, or 0 if it is at rest.
  * #Motion
  *
@@ -2098,7 +1998,6 @@ FADE (command);
 FALL (integer);
 
 /*
- * FCUS (command)
  * Set keyboard focus to the current [PART] of the targetted agent. The part should be a [PAT: TEXT].
  * If you TARG NULL first, then no part will have the focus.
  * #CompoundAgents
@@ -2107,7 +2006,6 @@ FALL (integer);
 FCUS (command);
 
 /*
- * FDMP (command) DAMPING_FACTOR (float)
  * Damp forward velocity by this much each tick. The value is from 0.0 to 1.0 where 0.0 means no
  * damping, 1.0 maximum.
  * #Motion
@@ -2118,7 +2016,6 @@ FCUS (command);
 FDMP (command) dampingFactor (float);
 
 /*
- * FDMP (float)
  * Get current forwards damping. The value is from 0.0 to 1.0 where 0.0 means no damping, 1.0
  * maximum.
  * #Motion
@@ -2215,7 +2112,6 @@ FILE OFLU (command);
 FILE OOPE (command) directory (integer) filename (string) append (integer);
 
 /*
- * FLTO (command) SCREEN_X (float) SCREEN_Y (float)
  * Move the top left corner of target to either the given screen coordinates, or the given
  * coordinates relative to the agent it is [FREL] to. Useful for floating agents.
  * #Motion
@@ -2227,7 +2123,6 @@ FILE OOPE (command) directory (integer) filename (string) append (integer);
 FLTO (command) screenX (float) screenY (float);
 
 /*
- * FLTX (float)
  * This returns the X position of the [TARG] object's floating vector.
  * #Agents
  *
@@ -2237,7 +2132,6 @@ FLTO (command) screenX (float) screenY (float);
 FLTX (float);
 
 /*
- * FLTY (float)
  * This returns the Y position of the [TARG] object's floating vector.
  * #Agents
  *
@@ -2247,7 +2141,6 @@ FLTX (float);
 FLTY (float);
 
 /*
- * FMLY (integer)
  * Returns family of target. See also [GNUS], [SPCS].
  * #AgentAttributes
  *
@@ -2257,7 +2150,6 @@ FLTY (float);
 FMLY (integer);
 
 /*
- * FORF (command) CREATURE_TO_LEARN_ABOUT (agent)
  * Set the friends or foe lobe to learn from the creature.
  * #Creatures
  *
@@ -2267,7 +2159,6 @@ FMLY (integer);
 FORF (command) creatureToLearnAbout (agent);
 
 /*
- * FRAT (command) FRAME[RATE] (integer)
  * This command sets the frame rate on the [TARG] agent. If it is a compound agent, then the part
  * affected can be set with the [PART] command. Valid rates are from 1 to 255. 1 is Normal rate, 2
  * is half speed etc...
@@ -2279,7 +2170,6 @@ FORF (command) creatureToLearnAbout (agent);
 FRAT (command) framerate (integer);
 
 /*
- * FREL (command) RELATIVE (agent)
  * Sets an agent for target to float relative to. To make target actually float, you need to set
  * attribute Floatable as well. Set FREL to [NULL] to make the target float relative to the main
  * camera - this is the default. Use [FLTO] to set the relative position of the top left corner of
@@ -2292,7 +2182,6 @@ FRAT (command) framerate (integer);
 FREL (command) relative (agent);
 
 /*
- * FRIC (command) FRICTION (integer)
  * Set physics friction percentage, normally from 0 to 100. Speed is lost by this amount when an
  * agent slides along the floor.
  * #Motion
@@ -2303,7 +2192,6 @@ FREL (command) relative (agent);
 FRIC (command) friction (integer);
 
 /*
- * FRIC (integer)
  * Return physics friction percentage.
  * #Motion
  *
@@ -2313,8 +2201,6 @@ FRIC (command) friction (integer);
 FRIC (integer);
 
 /*
- * FRMT (command) [LEFT]_MARGIN (integer) TOP_MARGIN (integer) RIGHT_MARGIN (integer) BOTTOM_MARGIN
- * (integer) [LINE]_SPACING (integer) CHARACTER_SPACING (integer) JUSTIFICATION (integer)
  * Use this command to alter the appearance of the current text part. The line and character
  * spacing values are expressed in number of extra pixels to insert between characters. Values for
  * justification are 0 - Left, 1 - Right, 2 - Center, 4 - Bottom, 8 - Middle, 16 - Last Page
@@ -2334,7 +2220,6 @@ FRIC (integer);
 FRMT (command) leftMargin (integer) topMargin (integer) rightMargin (integer) bottomMargin (integer) lineSpacing (integer) characterSpacing (integer) justification (integer);
 
 /*
- * FROM (variable)
  * If we're processing a message, this is the [OWNR] who sent the message. [NULL] if the message was
  * sent from an injected script or an install script. If the message was sent over the network
  * using [NET: WRIT], then this contains the user id of the sender, as a string.
@@ -2347,7 +2232,6 @@ FRMT (command) leftMargin (integer) topMargin (integer) rightMargin (integer) bo
 FROM (variable);
 
 /*
- * FRSH (command)
  * Refreshes the main view port.
  * #Camera
  *
@@ -2355,7 +2239,6 @@ FROM (variable);
 FRSH (command);
 
 /*
- * FTOI (integer) NUMBER_TO_CONVERT (float)
  * Converts a floating-point value into its integer equivalent.
  * #Variables
  *
@@ -2367,7 +2250,6 @@ FRSH (command);
 FTOI (integer) numberToConvert (float);
 
 /*
- * FVEL (command) AMOUNT_IN_PIXELS (float)
  * Set forwards velocity.
  * #Motion
  *
@@ -2377,7 +2259,6 @@ FTOI (integer) numberToConvert (float);
 FVEL (command) amountInPixels (float);
 
 /*
- * FVEL (float)
  * Get current forwards velocity.
  * #Motion
  *
@@ -2387,7 +2268,6 @@ FVEL (command) amountInPixels (float);
 FVEL (float);
 
 /*
- * FVWM (string) [NAME] (string)
  * This returns a guaranteed-safe filename for use in world names, journal file names, etc.
  * #Files
  *
@@ -2399,7 +2279,6 @@ FVEL (float);
 FVWM (string) name (string);
 
 /*
- * GAIT (command) GAIT_NUMBER (integer)
  * Specifies the current gait for a creature. The gaits are genetically defined. It sets the gait
  * of the creature agent stored in [TARG].
  * #Agents
@@ -2410,7 +2289,6 @@ FVWM (string) name (string);
 GAIT (command) gaitNumber (integer);
 
 /*
- * GALL (command) SPRITE_FILE (string) FIRST_IMAGE (integer)
  * Changes the gallery (sprite file) used by an agent. This works for simple and compound agents
  * (using the current [PART]). The current [POSE] is kept the same in both galleries.
  * #AgentSprites
@@ -2422,7 +2300,6 @@ GAIT (command) gaitNumber (integer);
 GALL (command) spriteFile (string) firstImage (integer);
 
 /*
- * GALL (string)
  * Returns the gallery (sprite file) used by an agent. This works for simple and compound agents
  * (using the current [PART]).
  * #AgentSprites
@@ -2433,7 +2310,6 @@ GALL (command) spriteFile (string) firstImage (integer);
 GALL (string);
 
 /*
- * GAME (variable) VARIABLE_[NAME] (string)
  * A game variable is a global variable which can be referenced by name.
  * eg: SETV GAME "pi" 3.142
  * Game variables are stored as part of the world and so will be saved out in the world file. If a
@@ -2458,7 +2334,6 @@ GALL (string);
 GAME (variable) variableName (string);
 
 /*
- * GAMN (string) PREVIOUS (string)
  * Enumerates through game variable names. Pass in an empty string to find the first one, and then
  * the previous one to find the next. Empty string is returned at the end.
  * #Variables
@@ -2585,7 +2460,6 @@ GIDS ROOT (command);
 GIDS SPCS (command) family (integer) genus (integer) species (integer);
 
 /*
- * GMAP (integer) X (float) Y (float)
  * Returns the metaroom id at point x,y on the map. If the point is outside the room system, it
  * returns -1.
  * #Map
@@ -2599,7 +2473,6 @@ GIDS SPCS (command) family (integer) genus (integer) species (integer);
 GMAP (integer) x (float) y (float);
 
 /*
- * GNAM (string)
  * Returns the game name. For example "Creatures 3".
  * #Variables
  *
@@ -2609,7 +2482,6 @@ GMAP (integer) x (float) y (float);
 GNAM (string);
 
 /*
- * GNUS (integer)
  * Returns genus of target. See also [FMLY], [SPCS].
  * #AgentAttributes
  *
@@ -2619,7 +2491,6 @@ GNAM (string);
 GNUS (integer);
 
 /*
- * GOTO (command) DESTINATION (label)
  * Don't use this command. It jumps directly to a label defined by [SUBR]. This command is only here
  * because it is used implicitly by [DOIF] blocks. This is a really dangerous command to use
  * manually, because if you jump out of a block of code (eg a [LOOP]...[EVER] block), the stack frame
@@ -2646,7 +2517,6 @@ GOTO (command) destination (token);
 GPAS (command) family (integer) genus (integer) species (integer) rectToUse (integer);
 
 /*
- * GRAP (integer) X (float) Y (float)
  * Returns the room id at point x,y on the map. If the point is outside the room system, it
  * returns -1.
  * #Map
@@ -2660,7 +2530,6 @@ GPAS (command) family (integer) genus (integer) species (integer) rectToUse (int
 GRAP (integer) x (float) y (float);
 
 /*
- * GRID (integer) AGENT (agent) DIRECTION (integer)
  * Returns the ID of a room adjacent to the agent in the given direction. A straight line is drawn
  * from the centre of the agent until it hits a room. Directions are [LEFT], [RGHT], [_UP_], or [DOWN]. A
  * value of -1 is returned if no room can be found.
@@ -2675,7 +2544,6 @@ GRAP (integer) x (float) y (float);
 GRID (integer) agent (agent) direction (integer);
 
 /*
- * GRPL (command) RED (integer) GREEN (integer) BLUE (integer) MIN_Y (float) MAX_Y (float)
  * Add a line to a graph (previously created with [PAT: GRPH]). The first line you add will be line
  * 0.
  * #CompoundAgents
@@ -2701,7 +2569,6 @@ GRPL (command) red (integer) green (integer) blue (integer) minY (float) maxY (f
 GRPV (command) lineIndex (integer) value (float);
 
 /*
- * GSUB (command) DESTINATION (label)
  * Jumps to a subroutine defined by [SUBR]. Execution will continue at the instruction after the
  * GSUB when the subroutine hits a [RETN] command.
  * #Flow
@@ -2712,7 +2579,6 @@ GRPV (command) lineIndex (integer) value (float);
 GSUB (command) destination (token);
 
 /*
- * GTOS (string) SLOT (integer)
  * Returns the target's moniker in the given gene variable slot. This universally unique
  * identifier is the name of a genetics file. Slot 0 is a creature's actual genome. Other slots
  * are used in pregnant creatures, eggs and other places.
@@ -2726,7 +2592,6 @@ GSUB (command) destination (token);
 GTOS (string) slot (integer);
 
 /*
- * HAIR (command) S[TAGE] (integer)
  * Tidies or ruffles hair. Positive means tidy, negative untidy. There can be multiple stages of
  * tidiness or untidiness; the more extreme the value the tidier or untidier.
  * #Creatures
@@ -2737,7 +2602,6 @@ GTOS (string) slot (integer);
 HAIR (command) stage (integer);
 
 /*
- * HAND (command) [NAME]_FOR_THE_HAND (string)
  * Sets the name of the hand. Bt default this is 'hand'.
  * #Agents
  *
@@ -2747,7 +2611,6 @@ HAIR (command) stage (integer);
 HAND (command) nameForTheHand (string);
 
 /*
- * HAND (string)
  * This returns the name of the hand.
  * #Agents
  *
@@ -2757,7 +2620,6 @@ HAND (command) nameForTheHand (string);
 HAND (string);
 
 /*
- * HEAP (integer) INDEX (integer)
  * Returns heap and garbage collection information.
  * 0 - current allocated heap memory (development builds only)
  * 1 - total agents, including ones waiting to be garbage collected
@@ -2772,7 +2634,6 @@ HAND (string);
 HEAP (integer) index (integer);
 
 /*
- * HELD (agent)
  * Returns the item currently held by the target. For vehicles this returns a random carried agent
  * if carrying more than one. Consider using [EPAS] instead.
  * #AgentVars
@@ -2783,7 +2644,6 @@ HEAP (integer) index (integer);
 HELD (agent);
 
 /*
- * HELP (command)
  * Lists all command names to the output stream.
  * #Debug
  *
@@ -2791,7 +2651,6 @@ HELD (agent);
 HELP (command);
 
 /*
- * HGHT (integer)
  * Returns the height of target.
  * #AgentBounds
  *
@@ -2801,7 +2660,6 @@ HELP (command);
 HGHT (integer);
 
 /*
- * HHLD (agent)
  * Returns the creature currently holding hands with the pointer agent. [NULL] if no agent is
  * holding hands.
  * #Creatures
@@ -2812,7 +2670,6 @@ HGHT (integer);
 HHLD (agent);
 
 /*
- * HIRP (integer) [ROOM]_ID (integer) CA_INDEX (integer) DIRECTIONS (integer)
  * Returns id of the room adjacent to this one with the highest concentration of the given CA.
  * direction is 0 for left/right, 1 for any direction.
  * #Map
@@ -3277,7 +3134,6 @@ HIST YEAR (integer) worldTick (integer);
 HOTP (integer);
 
 /*
- * HOTS (agent)
  * Returns the agent nearest the screen under the hotspot of the pointer. For each agent, [TRAN]
  * decides whether this allows for transparent pixels. See also [HOTP], which does the same for
  * compound parts.
@@ -3289,7 +3145,6 @@ HOTP (integer);
 HOTS (agent);
 
 /*
- * IITT (agent)
  * Returns the target creature's current agent of attention. Compare [_IT_].
  * #AgentVars
  *
@@ -3299,7 +3154,6 @@ HOTS (agent);
 IITT (agent);
 
 /*
- * IMSK (command) MASK (integer)
  * Set the input event mask. Indicates which types of global input events the agent is interested
  * in, if any. For example, if the flag for "key up" events is set here, the agents "key up"
  * script will be run every time a key is released.
@@ -3320,7 +3174,6 @@ IITT (agent);
 IMSK (command) mask (integer);
 
 /*
- * IMSK (integer)
  * Returns the input event mask.
  * #Input
  *
@@ -3330,7 +3183,6 @@ IMSK (command) mask (integer);
 IMSK (integer);
 
 /*
- * INJR (command) ORGAN (integer) AMOUNT (integer)
  * Injures an organ, -1 to randomly choose the organ, 0 for the body organ.
  * #Creatures
  *
@@ -3341,7 +3193,6 @@ IMSK (integer);
 INJR (command) organ (integer) amount (integer);
 
 /*
- * INNF (float)
  * Retrieves a float from the input stream, delimited by white space. Defaults to 0.0 if no valid
  * data.
  * #Files
@@ -3352,7 +3203,6 @@ INJR (command) organ (integer) amount (integer);
 INNF (float);
 
 /*
- * INNI (integer)
  * Retrieves an integer from the input stream, delimited by white space. Defaults to 0 if no valid
  * data.
  * #Files
@@ -3363,7 +3213,6 @@ INNF (float);
 INNI (integer);
 
 /*
- * INNL (string)
  * Retrieves a line of text from the input stream.
  * #Files
  *
@@ -3384,7 +3233,6 @@ INNL (string);
 INOK (integer);
 
 /*
- * INS# (integer)
  * Number of instincts still queued to be processed.
  * #Creatures
  *
@@ -3394,7 +3242,6 @@ INOK (integer);
 INS# (integer);
 
 /*
- * INST (command)
  * This command indicates that the following commands should execute in a single tick - ie the
  * script cannot be interrupted by the script 'scheduler'. This can be important for certain tasks
  * which might leave an agent in an undefined (and dangerous) state if interrupted. The INST state
@@ -3407,7 +3254,6 @@ INS# (integer);
 INST (command);
 
 /*
- * ITOF (float) NUMBER_TO_CONVERT (integer)
  * Converts an integer value into its floating-point equivalent.
  * #Variables
  *
@@ -3419,7 +3265,6 @@ INST (command);
 ITOF (float) numberToConvert (integer);
 
 /*
- * JECT (command) COS_FILE (string) FLAGS (integer)
  * Injects a COS file from the bootstrap directory. The file is searched for (case insensitively)
  * in all bootstrap subdirectories. You must specify the file extension (it doesn't have to be
  * .cos). Flags is a combination of what you want to inject:
@@ -3449,7 +3294,6 @@ JECT (command) cosFile (string) flags (integer);
 KEYD (integer) keycode (integer);
 
 /*
- * KILL (command) AGENT (agent)
  * Destroys an agent. The pointer won't be destroyed. For creatures, you probably want to use [DEAD]
  * first.
  * #Agents
@@ -3469,7 +3313,6 @@ KILL (command) agent (agent);
 LEFT (integer);
 
 /*
- * LIKE (command) CREATURE_STATE_OPINION_ABOUT (agent)
  * State a personal opinion about a creature.
  * #Creatures
  *
@@ -3479,8 +3322,6 @@ LEFT (integer);
 LIKE (command) creatureStateOpinionAbout (agent);
 
 /*
- * LIMB (string) [BODY]_[PART] (integer) GENUS (integer) GENDER (integer) AGE (integer) VARIANT
- * (integer)
  * Returns the filename for the specified part of a creature. If the exact part isn't present, a
  * 'nearby' file which is on the disk is returned.
  * #Creatures
@@ -3497,8 +3338,6 @@ LIKE (command) creatureStateOpinionAbout (agent);
 LIMB (string) bodyPart (integer) genus (integer) gender (integer) age (integer) variant (integer);
 
 /*
- * LINE (command) X1 (integer) Y1 (integer) X2 (integer) Y2 (integer) R (integer) G (integer) B
- * (integer) STIPPLE_ON (integer) STIPPLE_OFF (integer)
  * Adds a line to target's drawing list. The line goes between the start and end points (world
  * coordinates) in the specified colour. Set stipple_on and stipple_off to 0 to draw a solid line,
  * or to the number of pixels to alternate for a stippled line. To clear all the lines for an
@@ -3519,7 +3358,6 @@ LIMB (string) bodyPart (integer) genus (integer) gender (integer) age (integer) 
 LINE (command) x1 (integer) y1 (integer) x2 (integer) y2 (integer) r (integer) g (integer) b (integer) stippleOn (integer) stippleOff (integer);
 
 /*
- * LINK (command) [ROOM]1 (integer) [ROOM]2 (integer) PERMIABILITY (integer)
  * Sets the permiability of the link between the rooms specified, creating the link if none exists
  * before. Set to 0 to close (destroy) the link. This is used for CAs. See also [DOOR].
  * #Map
@@ -3532,7 +3370,6 @@ LINE (command) x1 (integer) y1 (integer) x2 (integer) y2 (integer) r (integer) g
 LINK (command) room1 (integer) room2 (integer) permiability (integer);
 
 /*
- * LINK (integer) [ROOM]1 (integer) [ROOM]2 (integer)
  * Returns the permiability of the link between the rooms specified or 0 if no link exists.
  * #Map
  *
@@ -3545,7 +3382,6 @@ LINK (command) room1 (integer) room2 (integer) permiability (integer);
 LINK (integer) room1 (integer) room2 (integer);
 
 /*
- * LOAD (command) WORLD_[NAME] (string)
  * Loads the specified world at the start of the next tick. See also [QUIT] for important
  * information about using [INST]. See [BOOT] and engine_no_auxiliary_bootstrap_nnn for extra
  * information about bootstrapping a world.
@@ -3557,7 +3393,6 @@ LINK (integer) room1 (integer) room2 (integer);
 LOAD (command) worldName (string);
 
 /*
- * LOCI (command) [TYPE] (integer) ORGAN (integer) TISSUE (integer) ID (integer) NEW_VALUE (float)
  * Sets a biochemical locus value. See Receptor Locus Numbers and Emitter Locus Numbers
  * #Creatures
  *
@@ -3571,7 +3406,6 @@ LOAD (command) worldName (string);
 LOCI (command) type (integer) organ (integer) tissue (integer) id (integer) newValue (float);
 
 /*
- * LOCI (float) [TYPE] (integer) ORGAN (integer) TISSUE (integer) ID (integer)
  * Reads a biochemical locus value.
  * #Creatures
  *
@@ -3586,7 +3420,6 @@ LOCI (command) type (integer) organ (integer) tissue (integer) id (integer) newV
 LOCI (float) type (integer) organ (integer) tissue (integer) id (integer);
 
 /*
- * LOCK (command)
  * Prevent the current script being interrupted until [UNLK]. Normally, events other than timer
  * scripts interrupt (abort) currently running scripts. You can also use [INST] for similar,
  * stronger protection.
@@ -3596,7 +3429,6 @@ LOCI (float) type (integer) organ (integer) tissue (integer) id (integer);
 LOCK (command);
 
 /*
- * LOFT (integer) FILE[NAME] (string)
  * Declares that you have finished with a photograph image file taken by [SNAP]. If the file is in
  * use in a gallery, this function fails and returns 1. Otherwise it returns 0. The file will be
  * marked for the attic, and moved there later.
@@ -3610,7 +3442,6 @@ LOCK (command);
 LOFT (integer) filename (string);
 
 /*
- * LOOP (command)
  * Begin a LOOP..[UNTL] or LOOP..[EVER] loop.
  * #Flow
  *
@@ -3618,7 +3449,6 @@ LOFT (integer) filename (string);
 LOOP (command);
 
 /*
- * LORP (integer) [ROOM]_ID (integer) CA_INDEX (integer) DIRECTIONS (integer)
  * Returns id of the room adjacent to this one with the lowest concentration of the given CA.
  * direction is 0 for left/right, 1 for any direction.
  * #Map
@@ -3633,7 +3463,6 @@ LOOP (command);
 LORP (integer) roomId (integer) caIndex (integer) directions (integer);
 
 /*
- * LOWA (string) ANY_OLD (string)
  * Converts the given string into all lower case letters.
  * #Variables
  *
@@ -3645,7 +3474,6 @@ LORP (integer) roomId (integer) caIndex (integer) directions (integer);
 LOWA (string) anyOld (string);
 
 /*
- * LTCY (command) ACTION (integer) MIN (integer) MAX (integer)
  * Sets latency time on involuntary actions to a random value between min and max. After an
  * involuntary action occurs, the same action will not be able to kick in again until after that
  * many ticks. Min and max must range between 0 and 255.
@@ -3659,7 +3487,6 @@ LOWA (string) anyOld (string);
 LTCY (command) action (integer) min (integer) max (integer);
 
 /*
- * MAME (variable) VARIABLE_[NAME] (anything)
  * Machine variable version of [NAME]. Accesses the same variables, only via [OWNR] rather than [TARG].
  * This is the same difference as between [MVxx] and [OVxx].
  * #Variables
@@ -3673,7 +3500,6 @@ LTCY (command) action (integer) min (integer) max (integer);
 MAME (variable) variableName (any);
 
 /*
- * MANN (command) COMMAND (string)
  * Outputs help on the given command to the output stream.
  * #Debug
  *
@@ -3683,7 +3509,6 @@ MAME (variable) variableName (any);
 MANN (command) command (string);
 
 /*
- * MAPD (command) WIDTH (integer) HEIGHT (integer)
  * Sets the dimensions of the map. These are the maximum world coordinates. Metarooms are
  * rectangles within this area.
  * #Map
@@ -3695,7 +3520,6 @@ MANN (command) command (string);
 MAPD (command) width (integer) height (integer);
 
 /*
- * MAPH (integer)
  * Returns the total height of the map.
  * #Map
  *
@@ -3705,7 +3529,6 @@ MAPD (command) width (integer) height (integer);
 MAPH (integer);
 
 /*
- * MAPK (command)
  * Resets the map to be empty.
  * #Map
  *
@@ -3713,7 +3536,6 @@ MAPH (integer);
 MAPK (command);
 
 /*
- * MAPW (integer)
  * Returns the total width of the map.
  * #Map
  *
@@ -3723,7 +3545,6 @@ MAPK (command);
 MAPW (integer);
 
 /*
- * MATE (command)
  * Male creature mates with the IT agent - if IT is a female of the same genus! The female doesn't
  * need to be in reach. If successful, the sperm is transmitted to the female and there is a
  * chance of conception. If pregnancy occurs, gene slot 1 of the mother contains the genome of the
@@ -3734,7 +3555,6 @@ MAPW (integer);
 MATE (command);
 
 /*
- * MCLR (command) X (integer) Y (integer)
  * Clear the music for the metaroom at the given location.
  * #Sounds
  *
@@ -3745,7 +3565,6 @@ MATE (command);
 MCLR (command) x (integer) y (integer);
 
 /*
- * MEMX (command)
  * Windows only. Sends information about the memory allocated to the output stream. In order,
  * these are the Memory Load (unknown), Total Physical (size in bytes of physical memory),
  * Available Physical (free physical space), Total Page File (maximum possible size of page file),
@@ -3785,7 +3604,6 @@ MESG WRIT (command) agent (agent) messageId (integer);
 MESG WRT+ (command) agent (agent) messageId (integer) param1 (any) param2 (any) delay (integer);
 
 /*
- * META (command) META[ROOM]_ID (integer) CAMERA_X (integer) CAMERA_Y (integer) TRANSITION (integer)
  * Change the current camera (set with [SCAM]) to a new meta room. Moves the top left coordinate of
  * the camera to the given coordinates.
  * Transition can be:
@@ -3803,7 +3621,6 @@ MESG WRT+ (command) agent (agent) messageId (integer) param1 (any) param2 (any) 
 META (command) metaroomId (integer) cameraX (integer) cameraY (integer) transition (integer);
 
 /*
- * META (integer)
  * Returns the metaroom id that the current camera is looking at.
  * #Camera
  *
@@ -3813,7 +3630,6 @@ META (command) metaroomId (integer) cameraX (integer) cameraY (integer) transiti
 META (integer);
 
 /*
- * MIDI (command) MIDI_FILE (string)
  * Plays a MIDI file. Set to an empty string to stop the MIDI player.
  * #Sounds
  *
@@ -3823,7 +3639,6 @@ META (integer);
 MIDI (command) midiFile (string);
 
 /*
- * MIND (command) STATE (integer)
  * Enable (1) or disable (0) the creature's brain (unlike [ZOMB]# in that the brain actually stops
  * processing and it's output is frozen onto the one noun and verb).
  * #Creatures
@@ -3843,7 +3658,6 @@ MIND (command) state (integer);
 MIND (integer);
 
 /*
- * MIRA (command) ON_OFF (integer)
  * Tell the agent to draw the current sprite mirrored (send 1 as a parameter) or normally (send 0
  * as a parameter)
  * #AgentSprites
@@ -3854,7 +3668,6 @@ MIND (integer);
 MIRA (command) onOff (integer);
 
 /*
- * MIRA (integer)
  * Is the current sprite for this agent mirrored (returns 1) or not (returns 0)
  * #AgentSprites
  *
@@ -3864,7 +3677,6 @@ MIRA (command) onOff (integer);
 MIRA (integer);
 
 /*
- * MLOC (string) META[ROOM]_ID (integer)
  * Returns the location of the specified metaroom as a string formated as follows: x y width
  * height.
  * #Map
@@ -3877,7 +3689,6 @@ MIRA (integer);
 MLOC (string) metaroomId (integer);
 
 /*
- * MMSC (command) X (integer) Y (integer) TRACK_[NAME] (string)
  * Associates a music track with the meta room at the specified coordinates.
  * #Scripts
  *
@@ -3889,7 +3700,6 @@ MLOC (string) metaroomId (integer);
 MMSC (command) x (integer) y (integer) trackName (string);
 
 /*
- * MMSC (string) X (integer) Y (integer)
  * Returns the name of the music track played at the metaroom in the given location.
  * #Scripts
  *
@@ -3902,7 +3712,6 @@ MMSC (command) x (integer) y (integer) trackName (string);
 MMSC (string) x (integer) y (integer);
 
 /*
- * MODU (string)
  * Returns a string listed the loaded modules, and the display engine type. You can use [SINS] to
  * parse this for particular values.
  * #World
@@ -3913,7 +3722,6 @@ MMSC (string) x (integer) y (integer);
 MODU (string);
 
 /*
- * MODV (command) VAR (variable) MOD (integer)
  * Gives the remainder (or modulus) when a variable is divided by an integer, so var = var % mod.
  * Both values should to be integers.
  * #Math
@@ -3925,7 +3733,6 @@ MODU (string);
 MODV (command) var (variable) mod (integer);
 
 /*
- * MONT (integer)
  * Returns the month of the year
  * #Time
  *
@@ -3944,7 +3751,6 @@ MONT (integer);
 MOPX (integer);
 
 /*
- * MOPY (integer)
  * Returns y position of mouse in world coordinates.
  * #Input
  *
@@ -3954,7 +3760,6 @@ MOPX (integer);
 MOPY (integer);
 
 /*
- * MOTR (command) STATE (integer)
  * Enable (1) or disable (0) the creature's motor faculty, i.e. whether it sets the IT object and
  * fires off scripts.
  * #Creatures
@@ -3974,7 +3779,6 @@ MOTR (command) state (integer);
 MOTR (integer);
 
 /*
- * MOUS (command) BEHAVIOUR (integer)
  * Defines the behaviour of the mouse button for the default pointer behaviour - see [PURE].
  * 0 is normal
  * 1 means the right button does what the left button does
@@ -3987,7 +3791,6 @@ MOTR (integer);
 MOUS (command) behaviour (integer);
 
 /*
- * MOVS (integer)
  * Returns the movement status of the target.
  * 0 Autonomous
  * 1 Mouse driven
@@ -4002,7 +3805,6 @@ MOUS (command) behaviour (integer);
 MOVS (integer);
 
 /*
- * MOVX (float)
  * Returns horizontal mouse velocity.
  * #Input
  *
@@ -4012,7 +3814,6 @@ MOVS (integer);
 MOVX (float);
 
 /*
- * MOVY (float)
  * Returns vertical mouse velocity.
  * #Input
  *
@@ -4022,7 +3823,6 @@ MOVX (float);
 MOVY (float);
 
 /*
- * MOWS (integer)
  * Returns whether the lawn was cut last Sunday or not.
  * #Agents
  *
@@ -4032,7 +3832,6 @@ MOVY (float);
 MOWS (integer);
 
 /*
- * MSEC (integer)
  * Returns a time stamp measured in milliseconds. It is not specified when the time is measured
  * from; the stamp is only guaranteed to be consistent during one session.
  * #Time
@@ -4043,7 +3842,6 @@ MOWS (integer);
 MSEC (integer);
 
 /*
- * MTHX (float)
  * This returns the X position of the [TARG] creature's mouth attachment point in absolute (map)
  * coordinates.
  * #Agents
@@ -4054,7 +3852,6 @@ MSEC (integer);
 MTHX (float);
 
 /*
- * MTHY (float)
  * This returns the Y position of the [TARG] creature's mouth attachment point in absolute (map)
  * coordinates.
  * #Agents
@@ -4065,7 +3862,6 @@ MTHX (float);
 MTHY (float);
 
 /*
- * MTOA (agent) MONIKER (string)
  * Returns the agent which references the given moniker. The moniker could be stored in any of the
  * gene slots for that agent, including the special slot 0 for a creature. If the moniker is not
  * currently used in the game, then returns [NULL]. This command can be slow - use [MTOC] if possible.
@@ -4079,7 +3875,6 @@ MTHY (float);
 MTOA (agent) moniker (string);
 
 /*
- * MTOC (agent) MONIKER (string)
  * Returns the creature with the given moniker. If there is no agent alive with that moniker, then
  * returns [NULL]. See also [MTOA].
  * #Genetics
@@ -4092,7 +3887,6 @@ MTOA (agent) moniker (string);
 MTOC (agent) moniker (string);
 
 /*
- * MULV (command) VAR (variable) MUL (decimal)
  * Multiplies a variable by an integer or float, so var = var * mul.
  * #Math
  *
@@ -4103,7 +3897,6 @@ MTOC (agent) moniker (string);
 MULV (command) var (variable) mul (decimal);
 
 /*
- * MUTE (integer) ANDMASK (integer) EORMASK (integer)
  * This returns (and potentially sets) the mute values for the sound managers in the game.
  * Sensible settings for the parameters are as follows:
  * andMask	eorMask	returns
@@ -4126,7 +3919,6 @@ MULV (command) var (variable) mul (decimal);
 MUTE (integer) andmask (integer) eormask (integer);
 
 /*
- * MVBY (command) DELTA_X (float) DELTA_Y (float)
  * Move the target agent by relative distances, which can be negative or positive.
  * #Motion
  *
@@ -4147,7 +3939,6 @@ MVBY (command) deltaX (float) deltaY (float);
 MVFT (command) x (float) y (float);
 
 /*
- * MVSF (command) X (float) Y (float)
  * Move the target agent into a safe map location somewhere in the vicinity of x, y. Only works on
  * autonomous agents - see [MOVS]. Works like a safe [MVFT] for creatures.
  * #Motion
@@ -4159,7 +3950,6 @@ MVFT (command) x (float) y (float);
 MVSF (command) x (float) y (float);
 
 /*
- * MVTO (command) X (float) Y (float)
  * Move the top left corner of the target agent to the given world coordinates. Use [MVFT] instead
  * to move creatures.
  * #Motion
@@ -4184,7 +3974,6 @@ MVTO (command) x (float) y (float);
 MVXX (variable);
 
 /*
- * NAME (variable) VARIABLE_NAME (anything)
  * This is a named variable, similar to a [GAME] variable, only local to the target agent. See also
  * [MAME]. The "name" of the variable is not limited to strings, but can be anything stored in a
  * variable. i.e. integer, float, string, even an agent.
@@ -4199,7 +3988,6 @@ MVXX (variable);
 NAME (variable) variableName (any);
 
 /*
- * NAMN (command) PREVIOUS (variable)
  * Enumerates through [NAME] variable names, roughly as [GAMN] does through [GAME] variables. Start and
  * end with an empty string.
  * #Variables
@@ -4226,7 +4014,6 @@ NAMN (command) previous (variable);
 NCLS (agent) previous (agent) family (integer) genus (integer) species (integer);
 
 /*
- * NEGV (command) VAR (variable)
  * Reverse the sign of the given integer or float variable, so var = 0 - var.
  * #Math
  *
@@ -4600,8 +4387,6 @@ NEW: SIMP (command) family (integer) genus (integer) species (integer) spriteFil
 NEW: VHCL (command) family (integer) genus (integer) species (integer) spriteFile (string) imageCount (integer) firstImage (integer) plane (integer);
 
 /*
- * NEWC (command) FAMILY (integer) GENE_AGENT (agent) GENE_SLOT (integer) SEX (integer) VARIANT
- * (integer)
  * This version of [NEW: CREA] executes over a series of ticks, helping to prevent the pause caused
  * by the creation of a creature with the [NEW: CREA] command. However, it cannot be used in install
  * scripts (e.g. the bootstrap) and so [NEW: CREA] should be used for that.
@@ -4617,7 +4402,6 @@ NEW: VHCL (command) family (integer) genus (integer) species (integer) spriteFil
 NEWC (command) family (integer) geneAgent (agent) geneSlot (integer) sex (integer) variant (integer);
 
 /*
- * NEXT (command)
  * Closes an enumeration loop. The loop can begin with [ENUM], [ESEE], [ETCH] or [EPAS].
  * #Enumeration
  *
@@ -4625,7 +4409,6 @@ NEWC (command) family (integer) geneAgent (agent) geneSlot (integer) sex (intege
 NEXT (command);
 
 /*
- * NOHH (command)
  * Tell the creature to immediately stop holding hands with the pointer. Useful when you are about
  * to teleport a norn, it prevents the pointer from continuosly changing his position back to
  * where it was.
@@ -4635,7 +4418,6 @@ NEXT (command);
 NOHH (command);
 
 /*
- * NORN (command) CREATURE (agent)
  * Chooses the active creature. Script 120 (Selected Creature Changed) is then executed on all
  * agents which have it.
  * #Creatures
@@ -4646,7 +4428,6 @@ NOHH (command);
 NORN (command) creature (agent);
 
 /*
- * NORN (agent)
  * Returns the creature currently selected by the user.
  * #Creatures
  *
@@ -4656,7 +4437,6 @@ NORN (command) creature (agent);
 NORN (agent);
 
 /*
- * NOTV (command) VAR (variable)
  * Peform a bitwise NOT on an integer variable.
  * #Math
  *
@@ -4666,7 +4446,6 @@ NORN (agent);
 NOTV (command) var (variable);
 
 /*
- * NPGS (integer)
  * Returns the number of available pages for current text part.
  * #CompoundAgents
  *
@@ -4676,7 +4455,6 @@ NOTV (command) var (variable);
 NPGS (integer);
 
 /*
- * NUDE (command)
  * Removes all clothes from a creature. Any changed layer 0 will revert to drawing the body part
  * again. See [WEAR].
  * #Creatures
@@ -4685,7 +4463,6 @@ NPGS (integer);
 NUDE (command);
 
 /*
- * NULL (agent)
  * Returns a null agent pointer.
  * #AgentVars
  *
@@ -4695,7 +4472,6 @@ NUDE (command);
 NULL (agent);
 
 /*
- * NWLD (integer)
  * Returns the number of world directories.
  * #World
  *
@@ -4705,7 +4481,6 @@ NULL (agent);
 NWLD (integer);
 
 /*
- * OBST (float) DIRECTION (integer)
  * Returns the distance from the agent to the nearest wall that it might collide with in the given
  * direction. Directions are [LEFT], [RGHT], [_UP_], or [DOWN]. If the distance to the collsion is greater
  * than [RNGE] then a very large number is returned.
@@ -4719,7 +4494,6 @@ NWLD (integer);
 OBST (float) direction (integer);
 
 /*
- * OOWW (integer) MONIKER (string)
  * Returns the status of the moniker.
  * 0 - never existed, or history purged
  * 1 - genome referenced by a slot, for example an egg
@@ -4776,7 +4550,6 @@ ORDR TACT (command) speech (string);
 ORDR WRIT (command) creature (agent) speech (string);
 
 /*
- * ORGF (float) ORGAN_NUMBER (integer) DATA (integer)
  * Returns floating point data about the specified organ. The organ number is from 0 to [ORGN] - 1.
  * The data parameter specifies what information is returned:
  * 0 - Clock rate in updates per tick (as locus)
@@ -4801,7 +4574,6 @@ ORDR WRIT (command) creature (agent) speech (string);
 ORGF (float) organNumber (integer) data (integer);
 
 /*
- * ORGI (integer) ORGAN_NUMBER (integer) DATA (integer)
  * Returns integer data about the specified organ. The organ number is from 0 to [ORGN] - 1. The
  * data parameter specifies what information is returned:
  * 0 - receptor count
@@ -4818,7 +4590,6 @@ ORGF (float) organNumber (integer) data (integer);
 ORGI (integer) organNumber (integer) data (integer);
 
 /*
- * ORGN (integer)
  * Returns the number of organs in target creature.
  * #Creatures
  *
@@ -4828,7 +4599,6 @@ ORGI (integer) organNumber (integer) data (integer);
 ORGN (integer);
 
 /*
- * ORRV (command) VAR (variable) VALUE (integer)
  * Peform a bitwise OR on an integer variable, so var = var | value.
  * #Math
  *
@@ -4839,7 +4609,6 @@ ORGN (integer);
 ORRV (command) var (variable) value (integer);
 
 /*
- * OUTS (command) TEXT (string)
  * Sends a string to the output stream. When running a script, the stream is null and this command
  * does nothing. For an externally injected command, the data from the stream is returned to the
  * calling process. For the [CAOS] command, the text is returned as a string. You can use [FILE OOPE]
@@ -4852,7 +4621,6 @@ ORRV (command) var (variable) value (integer);
 OUTS (command) text (string);
 
 /*
- * OUTV (command) VALUE (decimal)
  * Similar to [OUTS] only outputs a float or integer as a decimal string.
  * #Files
  *
@@ -4862,7 +4630,6 @@ OUTS (command) text (string);
 OUTV (command) value (decimal);
 
 /*
- * OUTX (command) TEXT (string)
  * This sends the string text to the output stream. However it first transforms any escapes into
  * quoted escapes, and it also quotes the entire string for you.
  * e.g.:
@@ -4879,7 +4646,6 @@ OUTV (command) value (decimal);
 OUTX (command) text (string);
 
 /*
- * OVER (command)
  * Wait until the current agent/part's [ANIM]ation is over before continuing. Looping anims stop
  * this command terminating until the animation is changed to a non-looping one.
  * #AgentAnimation
@@ -4900,7 +4666,6 @@ OVER (command);
 OVXX (variable);
 
 /*
- * OWNR (agent)
  * Returns the agent who's virtual machine the script is running on. Returns [NULL] for injected or
  * install scripts.
  * #AgentVars
@@ -4911,7 +4676,6 @@ OVXX (variable);
 OWNR (agent);
 
 /*
- * PACE (float)
  * Returns the tick rate satisfaction factor.
  * Factor 1 - ticks are taking the time we would expect them to, which is set by [BUZZ].
  * Factor more than 1 - the engine is running too slowly.
@@ -4934,7 +4698,6 @@ OWNR (agent);
 PACE (float);
 
 /*
- * PAGE (command) PAGE (integer)
  * Sets current page for text part. The page number should be equal or greater than zero and less
  * than the number returned by [NPGS]. Use [PAT: TEXT] or [PAT: FIXD] to make a text part, and [PART] to
  * set the current part.
@@ -4946,7 +4709,6 @@ PACE (float);
 PAGE (integer);
 
 /*
- * PAGE (integer)
  * Returns the current page for current text part. See the PAGE command for more information.
  * #CompoundAgents
  *
@@ -4966,7 +4728,6 @@ PAGE (integer);
 PART (command) partId (integer);
 
 /*
- * PART (integer) PART_ID (integer)
  * Returns 1 if the given part number exists on the [TARG] agent and 0 if it does not.
  * #CompoundAgents
  *
@@ -5108,7 +4869,6 @@ PAT: MOVE (command) partId (integer) relX (decimal) relY (decimal);
 PAT: TEXT (command) partId (integer) spriteFile (string) firstImage (integer) relX (decimal) relY (decimal) relPlane (integer) messageId (integer) fontSprite (string);
 
 /*
- * PAUS (command) PAUSED (integer)
  * Stops the target agent from running - it'll freeze completely, scripts and physics. Set to 1 to
  * pause, 0 to run. You might want to use [WPAU] with this to implement a pause game option.
  * #Agents
@@ -5119,7 +4879,6 @@ PAT: TEXT (command) partId (integer) spriteFile (string) firstImage (integer) re
 PAUS (command) paused (integer);
 
 /*
- * PAUS (integer)
  * Returns 1 if the target agent is paused, or 0 otherwise.
  * #Agents
  *
@@ -5138,7 +4897,6 @@ PAUS (integer);
 PAWS (integer);
 
 /*
- * PCLS (agent) [NEXT] (agent) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Same as [NCLS], only cycles the other way.
  * #AgentVars
  *
@@ -5153,7 +4911,6 @@ PAWS (integer);
 PCLS (agent) next (agent) family (integer) genus (integer) species (integer);
 
 /*
- * PERM (command) PERMIABILITY (integer)
  * Value from 1 to 100. Sets which room boundaries the agent can pass through. The smaller the
  * PERM the more it can go through. [DOOR] sets the corresponding room boundary permiability. Also
  * used for [ESEE], to decide what it can see through.
@@ -5165,7 +4922,6 @@ PCLS (agent) next (agent) family (integer) genus (integer) species (integer);
 PERM (command) permiability (integer);
 
 /*
- * PERM (integer)
  * Returns the target's map permiability.
  * #Map
  *
@@ -5175,7 +4931,6 @@ PERM (command) permiability (integer);
 PERM (integer);
 
 /*
- * PLMD (command) TRACT_INDEX, (integer) FILE[NAME] (string)
  * Dumps out all the dendrite learned information of the specified tract to a file (will be
  * changed to sync with Palm).
  * #Creatures
@@ -5187,7 +4942,6 @@ PERM (integer);
 PLMD (command) tractIndex (integer) filename (string);
 
 /*
- * PLMU (command) TRACT_INDEX, (integer) FILE[NAME] (string)
  * Configures the dendrites in the specified tract with the data in the file (will be changed to
  * sync with Palm).
  * #Creatures
@@ -5199,7 +4953,6 @@ PLMD (command) tractIndex (integer) filename (string);
 PLMU (command) tractIndex (integer) filename (string);
 
 /*
- * PLNE (command) PLANE (integer)
  * Sets the target agent's principal drawing plane. The higher the value, the nearer the camera.
  * For compound agents, the principal plane is the one for the automatically made first part. The
  * plane of other parts is relative to this one.
@@ -5211,7 +4964,6 @@ PLMU (command) tractIndex (integer) filename (string);
 PLNE (command) plane (integer);
 
 /*
- * PLNE (integer)
  * Returns the screen depth plane of the principal part.
  * #AgentBounds
  *
@@ -5221,7 +4973,6 @@ PLNE (command) plane (integer);
 PLNE (integer);
 
 /*
- * PNTR (agent)
  * Returns the mouse pointer, which is also known as the hand.
  * #AgentVars
  *
@@ -5231,7 +4982,6 @@ PLNE (integer);
 PNTR (agent);
 
 /*
- * PNXT (integer) PREVIOUS_[PART] (integer)
  * Returns the next compound [PART] on an agent. Start by calling it with -1 to get the first part,
  * and it finishes by returning -1 when it reaches the end.
  * #CompoundAgents
@@ -5244,7 +4994,6 @@ PNTR (agent);
 PNXT (integer) previousPart (integer);
 
 /*
- * POSB (float)
  * Returns bottom position of target's bounding box.
  * #AgentBounds
  *
@@ -5254,7 +5003,6 @@ PNXT (integer) previousPart (integer);
 POSB (float);
 
 /*
- * POSE (command) POSE (integer)
  * Specify a frame in the sprite file for the target agent/part. Relative to any index specified
  * by [BASE].
  * #AgentSprites
@@ -5265,7 +5013,6 @@ POSB (float);
 POSE (integer);
 
 /*
- * POSE (integer)
  * Return the current POSE of the target agent/part, or -1 if invalid part.
  * #AgentSprites
  *
@@ -5275,7 +5022,6 @@ POSE (integer);
 POSE (integer);
 
 /*
- * POSL (float)
  * Returns left position of target's bounding box.
  * #AgentBounds
  *
@@ -5285,7 +5031,6 @@ POSE (integer);
 POSL (float);
 
 /*
- * POSR (float)
  * Returns right position of target's bounding box.
  * #AgentBounds
  *
@@ -5295,7 +5040,6 @@ POSL (float);
 POSR (float);
 
 /*
- * POST (float)
  * Returns top position of target's bounding box.
  * #AgentBounds
  *
@@ -5305,7 +5049,6 @@ POSR (float);
 POST (float);
 
 /*
- * POSX (float)
  * Returns X position of centre of target.
  * #AgentBounds
  *
@@ -5315,7 +5058,6 @@ POST (float);
 POSX (float);
 
 /*
- * POSY (float)
  * Returns Y position of centre of target.
  * #AgentBounds
  *
@@ -5632,7 +5374,6 @@ PRAY TEST (integer) resourceName (string);
 PROP (command) roomId (integer) caIndex (integer) caValue (float);
 
 /*
- * PROP (float) [ROOM]_ID (integer) CA_INDEX (integer)
  * Returns the value of a CA in a room.
  * #Map
  *
@@ -5796,7 +5537,6 @@ PRT: OZAP (command) id (integer);
 PRT: SEND (command) id (integer) data (any);
 
 /*
- * PSWD (command) PASSWORD (string)
  * Sets the password for the next world loaded. The world must be loaded (and saved) before it is
  * actually set.
  * #World
@@ -5807,7 +5547,6 @@ PRT: SEND (command) id (integer) data (any);
 PSWD (command) password (string);
 
 /*
- * PSWD (string) WORLDINDEX (integer)
  * Returns the password for the specified world. If the world is not password protected the return
  * value will be an empty string.
  * #World
@@ -5820,7 +5559,6 @@ PSWD (command) password (string);
 PSWD (string) worldindex (integer);
 
 /*
- * PTXT (command) TEXT (string)
  * Set string of current text part. Use [PAT: TEXT] or [PAT: FIXD] to make a text part, and [PART] to
  * set the current part.
  * In the original display engine, you can use special tags to set [TINT] colours for characters.
@@ -5837,7 +5575,6 @@ PSWD (string) worldindex (integer);
 PTXT (command) text (string);
 
 /*
- * PTXT (string)
  * Returns the string of the current text part. See the PTXT command for more information.
  * #CompoundAgents
  *
@@ -5847,7 +5584,6 @@ PTXT (command) text (string);
 PTXT (string);
 
 /*
- * PUHL (command) [POSE] (integer) X (integer) Y (integer)
  * Set the relative x and y coordinate of the handle that target is picked up by, for the given
  * pose. This pose is measured from the absolute base specified in the NEW: command, rather than
  * the relative base specified by the [BASE] command. Pose -1 sets the same point for all poses.
@@ -5861,7 +5597,6 @@ PTXT (string);
 PUHL (command) pose (integer) x (integer) y (integer);
 
 /*
- * PUHL (integer) [POSE] (integer) X_OR_Y (integer)
  * Returns the x or y coordinate of the handle that target is picked up by for the given pose.
  * x_or_y is 1 for x, 2 for y. The pose is measured from the absolute base specified in the NEW:
  * command, rather than the relative base specified by the [BASE] command.
@@ -5876,7 +5611,6 @@ PUHL (command) pose (integer) x (integer) y (integer);
 PUHL (integer) pose (integer) xOrY (integer);
 
 /*
- * PUPT (command) [POSE] (integer) X (integer) Y (integer)
  * Set the relative x and y coordinate of the place where target picks agents up, for the given
  * pose. This pose is measured from the absolute base specified in the NEW: command, rather than
  * the relative base specified by the [BASE] command. Pose -1 sets the same point for all poses. For
@@ -5891,7 +5625,6 @@ PUHL (integer) pose (integer) xOrY (integer);
 PUPT (command) pose (integer) x (integer) y (integer);
 
 /*
- * PUPT (integer) [POSE] (integer) X_OR_Y (integer)
  * Returns the x or y coordinate of the place where target picks agents up for the given pose.
  * x_or_y is 1 for x, 2 for y. The pose is measured from the absolute base specified in the NEW:
  * command, rather than the relative base specified by the [BASE] command.
@@ -5906,7 +5639,6 @@ PUPT (command) pose (integer) x (integer) y (integer);
 PUPT (integer) pose (integer) xOrY (integer);
 
 /*
- * PURE (command) VALUE (integer)
  * Enables or disables the default clicking and moving behaviour of the pointer. This default
  * behaviour is to implement [CLAC] and [CLIK], and to operate ports. Set to 1 to enable, 0 to
  * disable. When disabled, use [IMSK] to hook mouse events.
@@ -5927,7 +5659,6 @@ PURE (command) value (integer);
 PURE (integer);
 
 /*
- * QUIT (command)
  * Quits the engine at the start of the next tick, without saving any changes. Call [SAVE] first to
  * make it save the current world. If doing a sequence like "SAVE QUIT" or "SAVE LOAD menu", do it
  * in an [INST] section. Otherwise it will sometimes save between the two instructions, meaning it
@@ -5938,7 +5669,6 @@ PURE (integer);
 QUIT (command);
 
 /*
- * RACE (integer)
  * Returns the time in milliseconds which the last tick took overall. This differs from [PACE] in
  * that on fast machines it will have a minimum of 50 milliseconds, or the value set by [BUZZ]. It
  * accounts for all the time in the tick, including event handling and window processing.
@@ -5950,7 +5680,6 @@ QUIT (command);
 RACE (integer);
 
 /*
- * RAND (integer) VALUE1 (integer) VALUE2 (integer)
  * Returns a random integer between value1 and value2 inclusive of both values. You can use
  * negative values, and have them either way round.
  * #Variables
@@ -5964,8 +5693,6 @@ RACE (integer);
 RAND (integer) value1 (integer) value2 (integer);
 
 /*
- * RATE (command) [ROOM]_[TYPE] (integer) CA_INDEX (integer) GAIN (float) LOSS (float) DIFFUSION
- * (float)
  * Sets various rates for a CA (cellular automata) in a particular type of room. The values can be
  * from 0 to 1. Gain is the susceptibility to absorb from agents in the room, and loss is the
  * amount lost to the atmosphere. The diffusion is the amount it spreads to adjacent rooms.
@@ -5981,7 +5708,6 @@ RAND (integer) value1 (integer) value2 (integer);
 RATE (command) roomType (integer) caIndex (integer) gain (float) loss (float) diffusion (float);
 
 /*
- * RATE (string) [ROOM]_[TYPE] (integer) CA_INDEX (integer)
  * Returns a string containing gain, loss and diffusion rates for that combination of room type
  * and CA.
  * #Map
@@ -5995,7 +5721,6 @@ RATE (command) roomType (integer) caIndex (integer) gain (float) loss (float) di
 RATE (string) roomType (integer) caIndex (integer);
 
 /*
- * RCLR (command) X (integer) Y (integer)
  * Clear the music for the room at the given location.
  * #Sounds
  *
@@ -6006,7 +5731,6 @@ RATE (string) roomType (integer) caIndex (integer);
 RCLR (command) x (integer) y (integer);
 
 /*
- * READ (string) CATALOGUE_TAG (string) OFFSET (integer)
  * Returns a string from the catalogue. This is used for localisation. offset 0 is the first
  * string after the TAG command in the catalogue file. See also [REAN] and [WILD].
  * #Catalogue
@@ -6020,7 +5744,6 @@ RCLR (command) x (integer) y (integer);
 READ (string) catalogueTag (string) offset (integer);
 
 /*
- * REAF (command)
  * Refreshes the catalogue from files on disk, from the main catalogue directory and the world
  * catalogue directory. These are normally read in at startup, when a new world is read in, or
  * when the PRAY resources system installs a catalogue file. Use while developing [CAOS] programs to
@@ -6031,7 +5754,6 @@ READ (string) catalogueTag (string) offset (integer);
 REAF (command);
 
 /*
- * REAN (integer) CATALOGUE_TAG (string)
  * Returns the number of entries in the catalogue for the given tag. For the same tag, you can
  * [READ] values from 0 to one less than REAN returns.
  * #Catalogue
@@ -6044,7 +5766,6 @@ REAF (command);
 REAN (integer) catalogueTag (string);
 
 /*
- * REAQ (integer) CATALOGUE_TAG (string)
  * Returns 1 if the catalogue tag is present, 0 if not.
  * #Catalogue
  *
@@ -6056,7 +5777,6 @@ REAN (integer) catalogueTag (string);
 REAQ (integer) catalogueTag (string);
 
 /*
- * RELX (float) FIRST (agent) SECOND (agent)
  * Returns the relative X distance of the centre point of the second agent from the centre point
  * of the first.
  * #Motion
@@ -6070,7 +5790,6 @@ REAQ (integer) catalogueTag (string);
 RELX (float) first (agent) second (agent);
 
 /*
- * RELY (float) FIRST (agent) SECOND (agent)
  * Returns the relative Y distance of the centre point of the second agent from the centre point
  * of the first.
  * #Motion
@@ -6084,7 +5803,6 @@ RELX (float) first (agent) second (agent);
 RELY (float) first (agent) second (agent);
 
 /*
- * REPE (command)
  * Closes a [REPS] loop.
  * #Flow
  *
@@ -6092,7 +5810,6 @@ RELY (float) first (agent) second (agent);
 REPE (command);
 
 /*
- * REPS (command) COUNT (integer)
  * Loop through a block of code a number of times. Must have a matching [REPE] command to close the
  * block.
  * #Flow
@@ -6103,16 +5820,14 @@ REPE (command);
 REPS (command) count (integer);
 
 /*
- * RETN (command)
  * Return from subroutine. Do not use this instruction from inside a block of code (eg a
- * [LOOP]#..[EVER] or [ENUM]...[NEXT] etc...)! See [SUBR] and [GSUB].
+ * [LOOP]..[EVER] or [ENUM]...[NEXT] etc...)! See [SUBR] and [GSUB].
  * #Flow
  *
  */
 RETN (command);
 
 /*
- * RGAM (command)
  * Refresh all settings that are always read from game variables at start up e.g. the length of a
  * day. This allows you to change such setting on the fly.
  * #World
@@ -6121,7 +5836,6 @@ RETN (command);
 RGAM (command);
 
 /*
- * RGHT (integer)
  * Returns the value of the right constant.
  * #Map
  *
@@ -6131,7 +5845,6 @@ RGAM (command);
 RGHT (integer);
 
 /*
- * RLOC (string) [ROOM]_ID (integer)
  * Returns the location of the specified room as a string formated as follows: xLeft xRight
  * yLeftCeiling yRightCeiling yLeftFloor yRightFloor.
  * #Map
@@ -6144,7 +5857,6 @@ RGHT (integer);
 RLOC (string) roomId (integer);
 
 /*
- * RMSC (command) X (integer) Y (integer) TRACK_[NAME] (string)
  * Associates a music track with the room at the specified coordinates. This overrides any track
  * specified for the metaroom that the room is in.
  * #Scripts
@@ -6157,7 +5869,6 @@ RLOC (string) roomId (integer);
 RMSC (command) x (integer) y (integer) trackName (string);
 
 /*
- * RMSC (string) X (integer) Y (integer)
  * Returns the name of the music track played at the room in the given location.
  * #Scripts
  *
@@ -6170,7 +5881,6 @@ RMSC (command) x (integer) y (integer) trackName (string);
 RMSC (string) x (integer) y (integer);
 
 /*
- * RNGE (command) DISTANCE (float)
  * Sets the distance that the target can see and hear, and the distance used to test for potential
  * collisions. See also [ESEE], [OBST].
  * #AgentBounds
@@ -6181,7 +5891,6 @@ RMSC (string) x (integer) y (integer);
 RNGE (command) distance (float);
 
 /*
- * RNGE (float)
  * Returns the target's range. See [ESEE], [OBST].
  * #AgentBounds
  *
@@ -6191,7 +5900,6 @@ RNGE (command) distance (float);
 RNGE (float);
 
 /*
- * ROOM (integer) AGENT (agent)
  * Returns the id of the room containing the midpoint of the specified agent.
  * #Map
  *
@@ -6203,7 +5911,6 @@ RNGE (float);
 ROOM (integer) agent (agent);
 
 /*
- * ROTN (command) NO_OF_SPRITES_FOR_EACH_ROTATION (float) NO_OF_ROTATIONS (float)
  * For automatic change of sprite when the agent rotates the engine assumes that the sprite file
  * is stored with all the sprites for one rotation together starting with pointing north.
  * #Motion
@@ -6215,7 +5922,6 @@ ROOM (integer) agent (agent);
 ROTN (command) noOfSpritesForEachRotation (float) noOfRotations (float);
 
 /*
- * RPAS (command) VEHICLE (agent) PASSENGER (agent)
  * Specified vehicle drops the specified passenger.
  * #Vehicles
  *
@@ -6226,7 +5932,6 @@ ROTN (command) noOfSpritesForEachRotation (float) noOfRotations (float);
 RPAS (command) vehicle (agent) passenger (agent);
 
 /*
- * RTAR (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Randomly chooses an agent which matches the given classifier, and targets it.
  * #AgentVars
  *
@@ -6238,7 +5943,6 @@ RPAS (command) vehicle (agent) passenger (agent);
 RTAR (command) family (integer) genus (integer) species (integer);
 
 /*
- * RTIF (string) REAL_[TIME] (integer) FORMAT (string)
  * Takes a real world time, as returned by [RTIM] or [HIST RTIM] and converts it to a localised string
  * for display. The format string is made up of any text, with the following special codes:
  * %a - Abbreviated weekday name
@@ -6282,7 +5986,6 @@ RTAR (command) family (integer) genus (integer) species (integer);
 RTIF (string) realTime (integer) format (string);
 
 /*
- * RTIM (integer)
  * Returns the current real world time. This is measured in seconds since midnight, 1 January 1970
  * in UTC. To display, use [RTIF].
  * #Time
@@ -6293,7 +5996,6 @@ RTIF (string) realTime (integer) format (string);
 RTIM (integer);
 
 /*
- * RTYP (command) [ROOM]_ID (integer) [ROOM]_[TYPE] (integer)
  * Sets the type of a room. The meaning of the types depends on the game. [RATE] also uses the room
  * type.
  * #Map
@@ -6305,7 +6007,6 @@ RTIM (integer);
 RTYP (command) roomId (integer) roomType (integer);
 
 /*
- * RTYP (integer) [ROOM]_ID (integer)
  * Returns the type of a room, or -1 if not a valid room id.
  * #Map
  *
@@ -6317,7 +6018,6 @@ RTYP (command) roomId (integer) roomType (integer);
 RTYP (integer) roomId (integer);
 
 /*
- * SAVE (command)
  * Saves the current world at the start of the next tick. See also [QUIT] for important information
  * about using [INST].
  * #World
@@ -6326,7 +6026,6 @@ RTYP (integer) roomId (integer);
 SAVE (command);
 
 /*
- * SAYN (command)
  * Creature expresses need, by speaking.
  * #Creatures
  *
@@ -6334,7 +6033,6 @@ SAVE (command);
 SAYN (command);
 
 /*
- * SCAM (command) COMPOUNDAGENT (agent) PARTNUMBER (integer)
  * Sets the current camera to be used in subsequent camera macro commands. This uses the given
  * [TARG] and the given [PART] number. If you set this to [NULL] then the Main Camera will be used. This
  * is the default setting
@@ -6387,7 +6085,6 @@ SCOL (integer) andMask (integer) eorMask (integer) upSpeeds [byte_string] downSp
 SCRP (command) family (integer) genus (integer) species (integer) event (integer);
 
 /*
- * SCRX (command) FAMILY (integer) GENUS (integer) SPECIES (integer) EVENT (integer)
  * Remove specified script from the scriptorium.
  * #Scripts
  *
@@ -6400,7 +6097,6 @@ SCRP (command) family (integer) genus (integer) species (integer) event (integer
 SCRX (command) family (integer) genus (integer) species (integer) event (integer);
 
 /*
- * SDMP (command) DAMPING_FACTOR (float)
  * Damp sideways velocity by this much each tick. The value is from 0.0 to 1.0 where 0.0 means no
  * damping, 1.0 maximum.
  * #Motion
@@ -6411,7 +6107,6 @@ SCRX (command) family (integer) genus (integer) species (integer) event (integer
 SDMP (command) dampingFactor (float);
 
 /*
- * SDMP (float)
  * Get current sideways damping. The value is from 0.0 to 1.0 where 0.0 means no damping, 1.0
  * maximum.
  * #Motion
@@ -6422,7 +6117,6 @@ SDMP (command) dampingFactor (float);
 SDMP (float);
 
 /*
- * SEAN (integer)
  * Returns the current season. This can be
  * 0 - spring
  * 1 - summer
@@ -6449,7 +6143,6 @@ SEAN (integer);
 SEEE (integer) first (agent) second (agent);
 
 /*
- * SEEN (agent) CATEGORY (integer)
  * Returns the agent which the creature [TARG] has currently in mind for the category specified.
  * #Creatures
  *
@@ -6461,7 +6154,6 @@ SEEE (integer) first (agent) second (agent);
 SEEN (agent) category (integer);
 
 /*
- * SETA (command) VAR (variable) VALUE (agent)
  * Stores a reference to an agent in a variable.
  * #Variables
  *
@@ -6472,7 +6164,6 @@ SEEN (agent) category (integer);
 SETA (command) var (variable) value (agent);
 
 /*
- * SETS (command) VAR (variable) VALUE (string)
  * Sets a variable to a string value.
  * #Variables
  *
@@ -6483,7 +6174,6 @@ SETA (command) var (variable) value (agent);
 SETS (command) var (variable) value (string);
 
 /*
- * SETV (command) VAR (variable) VALUE (decimal)
  * Stores an integer or float in a variable.
  * #Variables
  *
@@ -6494,7 +6184,6 @@ SETS (command) var (variable) value (string);
 SETV (command) var (variable) value (decimal);
 
 /*
- * SEZZ (command) TEXT (string)
  * Makes the [TARG] agent speak the specified text with voice as set by [VOIS] or [VOIC]. If [TARG] is a
  * creature then it will be spoken properly (speech bubble et al).
  * #Creatures
@@ -6505,7 +6194,6 @@ SETV (command) var (variable) value (decimal);
 SEZZ (command) text (string);
 
 /*
- * SHOW (command) VISIBILITY (integer)
  * Set the parameter to 0 to hide the agent and to 1 to show the agent on camera. This removes or
  * adds the agent to the main camera and any remote cameras. A non-shown agent can still be
  * visible to creatures, and can still be clicked on or picked up. It just doesn't appear on the
@@ -6518,7 +6206,6 @@ SEZZ (command) text (string);
 SHOW (command) visibility (integer);
 
 /*
- * SIN_ (float) THETA (float)
  * Returns sine of theta. Theta should be in degrees.
  * #Variables
  *
@@ -6530,7 +6217,6 @@ SHOW (command) visibility (integer);
 SIN_ (float) theta (float);
 
 /*
- * SINS (integer) MAIN (string) INDEX_TO_SEARCH_[FROM] (integer) SEARCH (string)
  * Looks for the search string as an exact substring of the main string (string in string). Starts
  * searching at the given index into the main string - to find the first occurence, set this to 1.
  * String indices begin at 1. Returns the index of the position of the substring, if found, or -1
@@ -6548,7 +6234,6 @@ SIN_ (float) theta (float);
 SINS (integer) main (string) indexToSearchFrom (integer) search (string);
 
 /*
- * SLOW (command)
  * Turn off [INST] state.
  * #Scripts
  *
@@ -6556,8 +6241,6 @@ SINS (integer) main (string) indexToSearchFrom (integer) search (string);
 SLOW (command);
 
 /*
- * SNAP (command) FILE[NAME] (string) X_CENTRE (integer) Y_CENTRE (integer) WIDTH (integer) HEIGHT
- * (integer) [ZOOM]_FACTOR (integer)
  * This takes a photograph of the world at a particular place. The zoom parameter should be
  * between 0 and 100. 100 means at original size, 50 means half size etc. It makes a new image
  * file in the world images directory - you can use it to make agents and parts as with any image
@@ -6588,7 +6271,6 @@ SNAP (command) filename (string) xCentre (integer) yCentre (integer) width (inte
 SNAX (integer) filename (string);
 
 /*
- * SNDC (command) SOUND_FILE (string)
  * Plays a controlled sound effect emitted from the target. Updates volume and panning as the
  * agent moves.
  * #Sounds
@@ -6599,7 +6281,6 @@ SNAX (integer) filename (string);
 SNDC (command) soundFile (string);
 
 /*
- * SNDE (command) SOUND_FILE (string)
  * Play a sound effect audible as if emitted from target's current location.
  * #Sounds
  *
@@ -6609,7 +6290,6 @@ SNDC (command) soundFile (string);
 SNDE (command) soundFile (string);
 
 /*
- * SNDL (command) SOUND_FILE (string)
  * Play a sound effect as in [SNDC], only the sound is looped.
  * #Sounds
  *
@@ -6619,7 +6299,6 @@ SNDE (command) soundFile (string);
 SNDL (command) soundFile (string);
 
 /*
- * SNDQ (command) SOUND_FILE (string) DELAY (integer)
  * As [SNDE], only with a delay before playing.
  * #Sounds
  *
@@ -6630,7 +6309,6 @@ SNDL (command) soundFile (string);
 SNDQ (command) soundFile (string) delay (integer);
 
 /*
- * SORC (string) FAMILY (integer) GENUS (integer) SPECIES (integer) EVENT (integer)
  * Returns the source code for the specified script. Use the GIDS commands to find available
  * scripts.
  * #Scripts
@@ -6646,7 +6324,6 @@ SNDQ (command) soundFile (string) delay (integer);
 SORC (string) family (integer) genus (integer) species (integer) event (integer);
 
 /*
- * SORQ (integer) FAMILY (integer) GENUS (integer) SPECIES (integer) EVENT (integer)
  * Returns 1 if the script is in the scriptorium, or if there is a general event script for the
  * entire genus, or family. Returns 0 if there is no matching script.
  * #Scripts
@@ -6662,7 +6339,6 @@ SORC (string) family (integer) genus (integer) species (integer) event (integer)
 SORQ (integer) family (integer) genus (integer) species (integer) event (integer);
 
 /*
- * SOUL (command) FACULTYID (integer) ON (integer)
  * Enable (1) or disable (0) the update on the creature's faculty as given by type id as follows:
  * Sensory Faculty (0), Brain (1), Motor Faculty (2), Linguistic Faculty (3), Biochemistry (4),
  * Reproductive Faculty (5), Expressive Faculty (6), Music Faculty (7), Life Faculty (8)
@@ -6675,7 +6351,6 @@ SORQ (integer) family (integer) genus (integer) species (integer) event (integer
 SOUL (command) facultyid (integer) on (integer);
 
 /*
- * SOUL (integer) FACULTYID (integer)
  * Returns whether the creature faculty of the type specified is being processed or not.
  * #Creatures
  *
@@ -6687,7 +6362,6 @@ SOUL (command) facultyid (integer) on (integer);
 SOUL (integer) facultyid (integer);
 
 /*
- * SPAS (command) VEHICLE (agent) NEW_PASSENGER (agent)
  * Specified vehicle picks up the specified passenger.
  * #Variables
  *
@@ -6698,7 +6372,6 @@ SOUL (integer) facultyid (integer);
 SPAS (command) vehicle (agent) newPassenger (agent);
 
 /*
- * SPCS (integer)
  * Returns species of target. See also [FMLY], [GNUS].
  * #AgentAttributes
  *
@@ -6708,7 +6381,6 @@ SPAS (command) vehicle (agent) newPassenger (agent);
 SPCS (integer);
 
 /*
- * SPIN (command) AMOUNT_IN_FRACTION_OF_WHOLE_CIRCLE (float)
  * Rotate to a particular facing.
  * #Motion
  *
@@ -6718,7 +6390,6 @@ SPCS (integer);
 SPIN (command) amountInFractionOfWholeCircle (float);
 
 /*
- * SPIN (float)
  * Get current facing angle.
  * #Motion
  *
@@ -6739,7 +6410,6 @@ SPIN (float);
 SPNL (command) lobeMoniker (string) neuronId (integer) value (float);
 
 /*
- * SQRT (float) VALUE (float)
  * Calculates a square root.
  * #Math
  *
@@ -6751,7 +6421,6 @@ SPNL (command) lobeMoniker (string) neuronId (integer) value (float);
 SQRT (float) value (float);
 
 /*
- * STAR (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Randomly chooses an agent which matches the given classifier and can be seen by the owner of
  * the script. It then sets [TARG] to that agent. See [ESEE] for an explanation of seeing.
  * #AgentVars
@@ -6764,7 +6433,6 @@ SQRT (float) value (float);
 STAR (command) family (integer) genus (integer) species (integer);
 
 /*
- * STEP (command) FACULTYID (integer)
  * Does one update of the specified faculty (for faculty id see [SOUL]#).
  * #Creatures
  *
@@ -6774,11 +6442,11 @@ STAR (command) family (integer) genus (integer) species (integer);
 STEP (command) facultyid (integer);
 
 /*
- * Shout a stimulus to all creatures who can hear [OWNR]. The strength is a multiplier for the
- * stimulus. Set to 1 for a default stimulation, 2 for a stronger stimulation and so on. It is
- * important you use this, rather than send several stims, as it affects learning. Set strength to
- * 0 to prevent learning altogether, and send a strength 1 chemical change. See the table of
- * Stimulus Numbers.
+ * Shout a stimulus to all creatures who can hear [OWNR].
+ * The strength is a multiplier for the stimulus. Set to 1 for a default stimulation, 2 for a
+ * stronger stimulation and so on. It is important you use this, rather than send several stims,
+ * as it affects learning. Set strength to 0 to prevent learning altogether, and send a strength 1
+ * chemical change. See the table of Stimulus Numbers.
  * #Creatures
  *
  * @param {stimulus} (integer@Stimulus)
@@ -6820,7 +6488,6 @@ STIM TACT (command) stimulus (integer) strength (float);
 STIM WRIT (command) creature (agent) stimulus (integer) strength (float);
 
 /*
- * STOF (float) VALUE (string)
  * Converts a string in decimal to a floating point number. Characters in the string after an
  * initial number are quietly ignored. If there is no obvious number then zero is returned.
  * #Variables
@@ -6845,7 +6512,6 @@ STOF (float) value (string);
 STOI (integer) value (string);
 
 /*
- * STOP (command)
  * Stops running the current script. Compare [STPT].
  * #Scripts
  *
@@ -6853,7 +6519,6 @@ STOI (integer) value (string);
 STOP (command);
 
 /*
- * STPC (command)
  * Stops a controlled sound.
  * #Sounds
  *
@@ -6861,7 +6526,6 @@ STOP (command);
 STPC (command);
 
 /*
- * STPT (command)
  * Stops any currently running script in the target agent. See also [STOP].
  * #Scripts
  *
@@ -6869,7 +6533,6 @@ STPC (command);
 STPT (command);
 
 /*
- * STRK (command) LATENCY (integer) TRACK (string)
  * This triggers the music track specified. The track will play for at least latency seconds
  * before being overridden by room or metaroom music.
  * #Sounds
@@ -6892,7 +6555,6 @@ STRK (command) latency (integer) track (string);
 STRL (integer) string (string);
 
 /*
- * SUBR (command)
  * Defines the start of a subroutine. Specify a label after the SUBR command - the label is case
  * sensitive, and should start with a letter. If this instruction is hit during normal program
  * flow, it works as a [STOP] instruction. See [GSUB] and [RETN].
@@ -6902,7 +6564,6 @@ STRL (integer) string (string);
 SUBR (command);
 
 /*
- * SUBS (string) VALUE (string) START (integer) COUNT (integer)
  * Slices up a string, returning the substring starting at position start, with length count.
  * String indices begin at 1.
  * #Variables
@@ -6917,7 +6578,6 @@ SUBR (command);
 SUBS (string) value (string) start (integer) count (integer);
 
 /*
- * SUBV (command) VAR (variable) SUB (decimal)
  * Subtracts an integer or float from a variable, so var = var - sub.
  * #Math
  *
@@ -6928,7 +6588,6 @@ SUBS (string) value (string) start (integer) count (integer);
 SUBV (command) var (variable) sub (decimal);
 
 /*
- * SVEL (command) AMOUNT_IN_PIXELS (float)
  * Set sideways velocity.
  * #Motion
  *
@@ -6938,7 +6597,6 @@ SUBV (command) var (variable) sub (decimal);
 SVEL (command) amountInPixels (float);
 
 /*
- * SVEL (float)
  * Get current sideways velocity.
  * #Motion
  *
@@ -7013,7 +6671,6 @@ SWAY TACT (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
 SWAY WRIT (command) creature (agent) drive (integer) adjust (float) drive2 (integer) adjust2 (float) drive3 (integer) adjust3 (float) drive4 (integer) adjust4 (float);
 
 /*
- * TACK (agent)
  * Returns the agent currently being [DBG: TACK]ed.
  * #Debug
  *
@@ -7023,7 +6680,6 @@ SWAY WRIT (command) creature (agent) drive (integer) adjust (float) drive2 (inte
 TACK (agent);
 
 /*
- * TAGE (integer)
  * Returns the age in ticks since the target creature was [BORN]. Ticking stops when the creature
  * dies - see [DEAD].
  * #Creatures
@@ -7034,7 +6690,6 @@ TACK (agent);
 TAGE (integer);
 
 /*
- * TAN_ (float) THETA (float)
  * Returns tangent of theta. Theta should be in degrees. Watch out for those nasty discontinuities
  * at 90 and 270.
  * #Math
@@ -7047,7 +6702,6 @@ TAGE (integer);
 TAN_ (float) theta (float);
 
 /*
- * TARG (command) AGENT (agent)
  * This sets the TARG variable to the agent specified.
  * #AgentVars
  *
@@ -7057,7 +6711,6 @@ TAN_ (float) theta (float);
 TARG (command) agent (agent);
 
 /*
- * TARG (agent)
  * Returns current target, on whom many commands act.
  * #AgentVars
  *
@@ -7067,7 +6720,6 @@ TARG (command) agent (agent);
 TARG (agent);
 
 /*
- * TCOR (integer) TOPY (float) BOTTOMY (float) LEFTX (float) RIGHTX (float)
  * Tests setting the bounding box of the physical core of the object [TARG]. May be set to smaller
  * (or larger) than the sprite's rectangle. Returns 1 if OK to set (using [CORE]), 0 if not.
  * #AgentBounds
@@ -7083,7 +6735,6 @@ TARG (agent);
 TCOR (integer) topy (float) bottomy (float) leftx (float) rightx (float);
 
 /*
- * TICK (command) TICK_[RATE] (integer)
  * Start agent timer, calling Timer script every tick_rate ticks. Set to 0 to turn off the timer.
  * #Agents
  *
@@ -7093,7 +6744,6 @@ TCOR (integer) topy (float) bottomy (float) leftx (float) rightx (float);
 TICK (command) tickRate (integer);
 
 /*
- * TICK (integer)
  * Returns the current timer rate set by the command TICK.
  * #Agents
  *
@@ -7118,8 +6768,6 @@ TICK (integer);
 TIME (integer);
 
 /*
- * TINO (command) RED_[TINT] (integer) GREEN_[TINT] (integer) BLUE_[TINT] (integer) ROTATION (integer)
- * SWAP (integer)
  * Like [TINT] but only tints the current frame. The other frames are no longer available in the
  * gallery, it becomes a one frame sprite file. Original display engine only.
  * #AgentSprites
@@ -7134,8 +6782,6 @@ TIME (integer);
 TINO (command) redTint (integer) greenTint (integer) blueTint (integer) rotation (integer) swap (integer);
 
 /*
- * TINT (command) RED_TINT (integer) GREEN_TINT (integer) BLUE_TINT (integer) ROTATION (integer)
- * SWAP (integer)
  * This tints the [TARG] agent with the r,g,b tint and applies the colour rotation and swap as per
  * pigment bleed genes. Specify the [PART] first for compound agents. The tinted agent or part now
  * uses a cloned gallery, which means it takes up more memory, and the save world files are
@@ -7170,7 +6816,6 @@ TINT (command) redTint (integer) greenTint (integer) blueTint (integer) rotation
 TINT (integer) attribute (integer);
 
 /*
- * TMVB (integer) DELTA_X (float) DELTA_Y (float)
  * Similar to [TMVT] only tests a [MVBY].
  * #Motion
  *
@@ -7208,7 +6853,6 @@ TMVF (integer) x (float) y (float);
 TMVT (integer) x (float) y (float);
 
 /*
- * TNTW (command) INDEX (integer)
  * This tints the [TARG] agent with the global tint manager at index. Specify the [PART] first for
  * compound agents. See also [TINT].
  * #World
@@ -7219,7 +6863,6 @@ TMVT (integer) x (float) y (float);
 TNTW (command) index (integer);
 
 /*
- * TORX (float) [ROOM]_ID (integer)
  * Returns relative X position of the centre of the given room from target's top left corner.
  * #Map
  *
@@ -7231,7 +6874,6 @@ TNTW (command) index (integer);
 TORX (float) roomId (integer);
 
 /*
- * TORY (float) [ROOM]_ID (integer)
  * Returns relative Y position of the centre of the given room from target's top left corner.
  * #Map
  *
@@ -7243,7 +6885,6 @@ TORX (float) roomId (integer);
 TORY (float) roomId (integer);
 
 /*
- * TOTL (integer) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Counts the number of agents in the world matching the classifier.
  * #Agents
  *
@@ -7257,7 +6898,6 @@ TORY (float) roomId (integer);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
- * TOUC (command)
  * Make creature reach out to touch the IT agent. Blocks the script until the creature either
  * reaches the agent, or it's fully stretched and still can't.
  * #Creatures
@@ -7266,7 +6906,6 @@ TOTL (integer) family (integer) genus (integer) species (integer);
 TOUC (command);
 
 /*
- * TOUC (integer) FIRST (agent) SECOND (agent)
  * Returns 1 if the two specified agents are touching, or 0 if they are not. Agents are said to be
  * touching if their bounding rectangles overlap.
  * #Agents
@@ -7280,7 +6919,6 @@ TOUC (command);
 TOUC (integer) first (agent) second (agent);
 
 /*
- * TRAN (command) TRANSPARENCY (integer) [PART]_NO (integer)
  * Sets pixel transparency awareness. 1 for pixel perfect, so transparent parts of the agent can't
  * be clicked. 0 to allow anywhere on the agent rectangle to be clicked. See also the option
  * parameter on [PAT: BUTT] which overrides this.
@@ -7293,7 +6931,6 @@ TOUC (integer) first (agent) second (agent);
 TRAN (command) transparency (integer) partNo (integer);
 
 /*
- * TRAN (integer) XPOS (integer) YPOS (integer)
  * Test for a transparent pixel, returns 1 if the given x y position coincides with a transparent
  * pixel on the [TARG] agent, otherwise it will return 0. This does not work for creatures.
  * #AgentSprites
@@ -7307,7 +6944,6 @@ TRAN (command) transparency (integer) partNo (integer);
 TRAN (integer) xpos (integer) ypos (integer);
 
 /*
- * TRCK (command) AGENT (agent) X% (integer) Y% (integer) STYLE (integer) TRANSITION (integer)
  * Camera follows the given agent. Set to [NULL] to stop tracking. x% and y% are percentages (0-100)
  * of the screen size. They describe a rectangle centred on the screen which the target stays
  * within.
@@ -7330,7 +6966,6 @@ TRAN (integer) xpos (integer) ypos (integer);
 TRCK (command) agent (agent) x% (integer) y% (integer) style (integer) transition (integer);
 
 /*
- * TRCK (agent)
  * Returns the agent being tracked by the camera, if any.
  * #Camera
  *
@@ -7340,7 +6975,6 @@ TRCK (command) agent (agent) x% (integer) y% (integer) style (integer) transitio
 TRCK (agent);
 
 /*
- * TTAR (command) FAMILY (integer) GENUS (integer) SPECIES (integer)
  * Randomly chooses an agent which matches the given classifier and is touching the owner of the
  * script. It then sets [TARG] to that agent. See [ETCH].
  * #AgentVars
@@ -7353,7 +6987,6 @@ TRCK (agent);
 TTAR (command) family (integer) genus (integer) species (integer);
 
 /*
- * TWIN (agent) ORIGINAL (agent) AGENT_[NULL] (integer)
  * Clones an agent, and returns the replica. If agent_null is set to 1 the agents that this agent
  * points to (in [OVxx], or [VAxx] in its running script) are set to [NULL] in the clone. If agent_null
  * is 0, then the clone points to the same agents as the original. When using agent_null 1, you
@@ -7392,7 +7025,6 @@ TWIN (agent) original (agent) agentNull (integer);
 TYPE (integer) something (any);
 
 /*
- * UCLN (command)
  * Make sure that an agent isn't cloned anymore, this releases the memory taken up by [TINT]ing it.
  * Agents are usually cloned for purposes such as tinting. Don't forget to set the relevant [PART]
  * number for compound agents.
@@ -7402,7 +7034,6 @@ TYPE (integer) something (any);
 UCLN (command);
 
 /*
- * UFOS (string)
  * This returns the equivalent of "uname -a" on compatible systems, or a description of your
  * operating system on others. This is a descriptive string and should not be taken as fixed
  * format, or parseable.
@@ -7414,7 +7045,6 @@ UCLN (command);
 UFOS (string);
 
 /*
- * UFTX (float)
  * Returns X coordinate of creature's up foot.
  * #Creatures
  *
@@ -7424,7 +7054,6 @@ UFOS (string);
 UFTX (float);
 
 /*
- * UFTY (float)
  * Returns Y coordinate of creature's up foot.
  * #Creatures
  *
@@ -7434,7 +7063,6 @@ UFTX (float);
 UFTY (float);
 
 /*
- * UNCS (command) UNCONSCIOUS (integer)
  * Make the creature conscious or unconscious. 0 for conscious, 1 for unconscious.
  * #Creatures
  *
@@ -7456,7 +7084,6 @@ UNCS (command) unconscious (integer);
 UNID (integer);
 
 /*
- * UNLK (command)
  * End the [LOCK] section.
  * #Scripts
  *
@@ -7474,7 +7101,6 @@ UNLK (command);
 UNTL (command) condition (condition);
 
 /*
- * UPPA (string) ANY_OLD (string)
  * Converts the given string into all upper case letters.
  * #Variables
  *
@@ -7535,7 +7161,6 @@ URGE TACT (command) nounStim (float) verbId (integer) verbStim (float);
 URGE WRIT (command) creature (agent) nounId (integer) nounStim (float) verbId (integer) verbStim (float);
 
 /*
- * VARC (command) VIEW_ARC_SIZE (float)
  * [not implemented yet]
  * #Motion
  *
@@ -7545,7 +7170,6 @@ URGE WRIT (command) creature (agent) nounId (integer) nounStim (float) verbId (i
 VARC (command) viewArcSize (float);
 
 /*
- * VARC (float)
  * [not implemented yet]
  * #Motion
  *
@@ -7566,7 +7190,6 @@ VARC (float);
 VAXX (variable);
 
 /*
- * VECX (float) ANGLE (float)
  * Returns a normalised vector for the given angle (X coordinate).
  * #Motion
  *
@@ -7578,7 +7201,6 @@ VAXX (variable);
 VECX (float) angle (float);
 
 /*
- * VECY (float) ANGLE (float)
  * Returns a normalised vector for the given angle (Y coordinate).
  * #Motion
  *
@@ -7590,7 +7212,6 @@ VECX (float) angle (float);
 VECY (float) angle (float);
 
 /*
- * VELO (command) X_VELOCITY (float) Y_VELOCITY (float)
  * Set velocity, measured in pixels per tick.
  * #Motion
  *
@@ -7601,7 +7222,6 @@ VECY (float) angle (float);
 VELO (command) xVelocity (float) yVelocity (float);
 
 /*
- * VELX (variable)
  * Horizontal velocity in pixels per tick - floating point.
  * #Motion
  *
@@ -7612,7 +7232,6 @@ VELO (command) xVelocity (float) yVelocity (float);
 VELX (variable);
 
 /*
- * VELY (variable)
  * Vertical velocity in pixels per tick - floating point.
  * #Motion
  *
@@ -7623,7 +7242,6 @@ VELX (variable);
 VELY (variable);
 
 /*
- * VISI (integer) CHECKALLCAMERAS (integer)
  * Checks if the agent, or any of its parts, is on screen and returns 1 if it is or 0 if it is
  * not. Set to 0 to check if the agent is on the main camera. Set to 1 to check if the agent is on
  * the main camera or any remote cameras
@@ -7637,7 +7255,6 @@ VELY (variable);
 VISI (integer) checkallcameras (integer);
 
 /*
- * VMJR (integer)
  * Returns the major version number of the engine.
  * #Variables
  *
@@ -7647,7 +7264,6 @@ VISI (integer) checkallcameras (integer);
 VMJR (integer);
 
 /*
- * VMNR (integer)
  * Returns the minor version number of the engine.
  * #Variables
  *
@@ -7657,7 +7273,6 @@ VMJR (integer);
 VMNR (integer);
 
 /*
- * VOCB (command)
  * Learn all vocabulary instantly.
  * #Creatures
  *
@@ -7665,7 +7280,6 @@ VMNR (integer);
 VOCB (command);
 
 /*
- * VOIC (command) GENUS (integer) GENDER (integer) AGE (integer)
  * This sets the [TARG] agent's voice to the specified creature voice, using standard cascade
  * techniques to select the nearest match. On failure, "DefaultVoice" will be reloaded. Use [SEZZ]
  * to actually say something.
@@ -7679,7 +7293,6 @@ VOCB (command);
 VOIC (command) genus (integer) gender (integer) age (integer);
 
 /*
- * VOIS (command) VOICE_[NAME] (string)
  * Sets the [TARG] agent's voice to the specified value. The voice name must be valid in the
  * catalogue. If it fails, then "DefaultVoice" will be reloaded. Use [SEZZ] to actually say
  * something.
@@ -7691,7 +7304,6 @@ VOIC (command) genus (integer) gender (integer) age (integer);
 VOIS (command) voiceName (string);
 
 /*
- * VOIS (string)
  * This returns the voice name for the [TARG] agent. (Unless it has been serialised in :( In which
  * case it returns "Lozenged" if the agent had a voice before the save, or "" as normal if the
  * agent can't speak.)
@@ -7703,7 +7315,6 @@ VOIS (command) voiceName (string);
 VOIS (string);
 
 /*
- * VOLM (command) CHANNEL (integer) VOLUME (integer)
  * Set overall the volume of the sound effects (channel 0), the [MIDI] (channel 1) or the generated
  * music (channel 2). Values range from -10000 (silent) to 0 (loudest).
  * #Sounds
@@ -7715,7 +7326,6 @@ VOIS (string);
 VOLM (command) channel (integer) volume (integer);
 
 /*
- * VOLM (integer) CHANNEL (integer)
  * Returns the overall the volume of the sound effects (channel 0), the [MIDI] (channel 1) or the
  * generated music (channel 2). Values range from -10000 (silent) to 0 (loudest). Currently not
  * supported for [MIDI].
@@ -7740,7 +7350,6 @@ VOLM (integer) channel (integer);
 VTOS (string) value (decimal);
 
 /*
- * WAIT (command) TICKS (integer)
  * Block the script for the specified number of ticks. This command does an implicit [SLOW].
  * Sounds
  * #Scripts
@@ -7751,7 +7360,6 @@ VTOS (string) value (decimal);
 WAIT (command) ticks (integer);
 
 /*
- * WALK (command)
  * Sets creature walking indefinitely. Chooses a walking gait according to chemo-receptors. Always
  * means ignore IT and walk in the current direction set by [DIRN].
  * #Creatures
@@ -7770,7 +7378,6 @@ WALK (command);
 WALL (integer);
 
 /*
- * WDOW (command)
  * Toggle full screen mode.
  * #Camera
  *
@@ -7787,7 +7394,6 @@ WDOW (command);
 WDOW (integer);
 
 /*
- * WDTH (integer)
  * Returns the width of target.
  * #AgentBounds
  *
@@ -7797,7 +7403,6 @@ WDOW (integer);
 WDTH (integer);
 
 /*
- * WEAR (command) [BODY]_ID (integer) SET_NUMBER (integer) LAYER (integer)
  * Sets a layer of clothing on part of the creature. The set_number is the type of clothing to put
  * on from the overlay file - think of it as an outfit number. layer 0 is the actual body of the
  * creature, so unless you want to replace the body part itself use a higher layer. Higher layers
@@ -7813,7 +7418,6 @@ WDTH (integer);
 WEAR (command) bodyId (integer) setNumber (integer) layer (integer);
 
 /*
- * WEBB (command) HTTP_URL (string)
  * Launches an external URL in the user's browser. The game engine adds http:// at the beginning
  * to prevent malicious launching of programs, so you just need to specify the domain name and
  * path.
@@ -7825,8 +7429,6 @@ WEAR (command) bodyId (integer) setNumber (integer) layer (integer);
 WEBB (command) httpUrl (string);
 
 /*
- * WILD (string) FAMILY (integer) GENUS (integer) SPECIES (integer) TAG_STUB (string) OFFSET
- * (integer)
  * Searches for a catalogue tag based on the given classifier, and returns the string at the given
  * offset. See also [READ]. As an example, with a tag_stub of "Agent Help" and a classifier 3 7 11
  * it would first look for the tag "Agent Help 3 7 11". If that wasn't present, it would go
@@ -7846,7 +7448,6 @@ WEBB (command) httpUrl (string);
 WILD (string) family (integer) genus (integer) species (integer) tagStub (string) offset (integer);
 
 /*
- * WNAM (string)
  * Returns the name of the currently loaded world.
  * #World
  *
@@ -7856,7 +7457,6 @@ WILD (string) family (integer) genus (integer) species (integer) tagStub (string
 WNAM (string);
 
 /*
- * WNDB (integer)
  * Returns world coordinates of bottom of current camera window.
  * #Camera
  *
@@ -7866,7 +7466,6 @@ WNAM (string);
 WNDB (integer);
 
 /*
- * WNDH (integer)
  * Returns height of current camera window.
  * #Camera
  *
@@ -7876,7 +7475,6 @@ WNDB (integer);
 WNDH (integer);
 
 /*
- * WNDL (integer)
  * Returns world coordinates of left of current camera window.
  * #Camera
  *
@@ -7886,7 +7484,6 @@ WNDH (integer);
 WNDL (integer);
 
 /*
- * WNDR (integer)
  * Returns world coordinates of right of current camera window.
  * #Camera
  *
@@ -7896,7 +7493,6 @@ WNDL (integer);
 WNDR (integer);
 
 /*
- * WNDT (integer)
  * Returns world coordinates of top of current camera window.
  * #Camera
  *
@@ -7906,7 +7502,6 @@ WNDR (integer);
 WNDT (integer);
 
 /*
- * WNDW (integer)
  * Returns width of current camera window.
  * #Camera
  *
@@ -7916,7 +7511,6 @@ WNDT (integer);
 WNDW (integer);
 
 /*
- * WNTI (integer) WORLD (string)
  * This returns the index of the world. If you pass in a world name which is not within the
  * system, -1 is returned.
  * #World
@@ -7949,7 +7543,6 @@ WNTI (integer) world (string);
 WOLF (integer) kangaMask (integer) eeyoreMask (integer);
 
 /*
- * WPAU (command) PAUSED (integer)
  * Stops world ticks from running. Days, seasons and years won't change and any delayed messages
  * are paused, as are CAs and some sound effects. Set to 1 to pause, 0 to run. Use along with
  * [PAUS].
@@ -7961,7 +7554,6 @@ WOLF (integer) kangaMask (integer) eeyoreMask (integer);
 WPAU (command) paused (integer);
 
 /*
- * WPAU (integer)
  * Returns 1 if world ticks are paused, or 0 otherwise.
  * #Time
  *
@@ -7971,7 +7563,6 @@ WPAU (command) paused (integer);
 WPAU (integer);
 
 /*
- * WRLD (command) WORLD_[NAME] (string)
  * Creates a new world directory for the specified world.
  * #World
  *
@@ -7981,7 +7572,6 @@ WPAU (integer);
 WRLD (command) worldName (string);
 
 /*
- * WRLD (string) WORLD_INDEX (integer)
  * Returns the name of the world specified by world_index which must be in the range 0 to
  * ([NWLD]-1).
  * #World
@@ -7994,7 +7584,6 @@ WRLD (command) worldName (string);
 WRLD (string) worldIndex (integer);
 
 /*
- * WTIK (integer)
  * Returns the number of ticks since the world was first made. For debugging purposes only you can
  * change this value with [DBG: WTIK].
  * #Time
@@ -8005,8 +7594,6 @@ WRLD (string) worldIndex (integer);
 WTIK (integer);
 
 /*
- * WTNT (command) INDEX (integer) RED_[TINT] (integer) GREEN_[TINT] (integer) BLUE_[TINT] (integer)
- * ROTATION (integer) SWAP (integer)
  * This sets up the world (global) tint table. The index is the number associated with the tint
  * table - (keep it small please) and the r,g,b is the tint level. Rotation and Swap work as for
  * pigment bleed genes.
@@ -8023,9 +7610,7 @@ WTIK (integer);
 WTNT (command) index (integer) redTint (integer) greenTint (integer) blueTint (integer) rotation (integer) swap (integer);
 
 /*
- * WUID (string)
  * Returns the unique identifier of the currently loaded world.
- *
  * #World
  *
  * @rvalue
@@ -8034,7 +7619,6 @@ WTNT (command) index (integer) redTint (integer) greenTint (integer) blueTint (i
 WUID (string);
 
 /*
- * YEAR (integer)
  * Returns the number of game years elapsed. The [GAME] variable engine_NumberOfSeasons sets the
  * year length. See also [HIST YEAR].
  * #Time
@@ -8045,7 +7629,6 @@ WUID (string);
 YEAR (integer);
 
 /*
- * ZOMB (command) ZOMBIE (integer)
  * Make or undo the creature's zombification factor. 1 makes creatures zombies: in a zombie state
  * creatures won't process any decision scripts but they will respond to [ANIM]s and [POSE]s. 0
  * umzombifies.
@@ -8057,7 +7640,6 @@ YEAR (integer);
 ZOMB (command) zombie (integer);
 
 /*
- * ZOMB (integer)
  * Returns 1 if the creature is zombified (has its brain to motor link severed), 0 otherwise.
  * #Creatures
  *
@@ -8067,7 +7649,6 @@ ZOMB (command) zombie (integer);
 ZOMB (integer);
 
 /*
- * ZOOM (command) PIXELS (integer) X (integer) Y (integer)
  * Zoom in on the specified position by a negative amount of pixels or out by positive amount of
  * pixels. If you send -1 as the x and y coordinates then the camera zooms in on the exising view
  * port centre. This only applies to remote cameras.

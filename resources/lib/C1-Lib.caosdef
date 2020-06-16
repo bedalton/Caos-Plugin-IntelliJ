@@ -609,7 +609,7 @@ DRV! (integer);
 EDIT (agent);
 
 /*
- * Attach [TARG] obj to mouse (even if it's not carryable) so that user can position it.
+ * Attach [TARG] object to mouse (even if it's not carryable) so that user can position it.
  * Used by Object Editor to allow NEW: objects to be positioned
  * This causes the TaskSwitcher to make this object follow the mouse until a mouse button is
  * pressed
@@ -713,7 +713,7 @@ FIRE (command) x (integer) y (integer) amount (integer);
 FMLY (integer);
 
 /*
- * obj who caused event leading to this script
+ * object who caused event leading to this script
  * #AgentVars
  *
  * @rvalue
@@ -722,7 +722,7 @@ FMLY (integer);
 FROM (agent);
 
 /*
- *
+ * Number of ground level data on map
  * #Map
  *
  * @rvalue
@@ -835,10 +835,11 @@ INST (command);
 KILL (command) agent (agent);
 
 /*
- * Attach a CompoundObj's activation function (ACT1=0, ACT2=1...) to a given hotspot
+ * Attach a Compound object's activation function (ACT1=0, ACT2=1...) to a given hotspot
  * (eg. to make hotspot# 0 into a Deactivate button, use #{KNOB 2 0}) set KNOB {activationfn} to
  * -1 to disable an action button
- * knobs 0-2 are act1,act2,deac for creature; knobs 3-5 are act1,act2,deac for hand.
+ * knobs 0-2 are activate 1, activate 2, deactivate for creature; knobs 3-5 are activate
+ * 1,activate 2, deactivate for hand.
  * #AgentInteractions
  *
  * @param {function} (integer)
@@ -930,7 +931,7 @@ MATE (command);
 MCRT (command) x (integer) y (integer);
 
 /*
- * Send message to all creatures that can hear [OWNR] obj
+ * Send message to all creatures that can hear [OWNR] object
  * #Agents
  *
  * @param {message} (integer@MessageNumbers)
@@ -1013,21 +1014,21 @@ MULV (command) var (variable) mul (integer);
  * yd	int	relative-y move amount
  * #Motion
  *
- * @param {deltaX} (float)
- * @param {deltaY} (float)
+ * @param {deltaX} (integer)
+ * @param {deltaY} (integer)
  *
  */
-MVBY (command) deltaX (float) deltaY (float);
+MVBY (command) deltaX (integer) deltaY (integer);
 
 /*
  * move object to absolute location and redraw
  * #Motion
  *
- * @param {x} (float)
- * @param {y} (float)
+ * @param {x} (integer)
+ * @param {y} (integer)
  *
  */
-MVTO (command) x (float) y (float);
+MVTO (command) x (integer) y (integer);
 
 /*
  * Negates the {var} value
@@ -1238,7 +1239,7 @@ NORN (agent);
 OBJP (agent);
 
 /*
- * OBV0 to OBV2 are variables specific to an agent. They are read from [TARG], the target agent.
+ * OBV0 to OBV2 are variables specific to an agent. They are read from [TARG] (the target agent)
  * @range(0 to 2)
  * #Variables
  *
@@ -1288,7 +1289,7 @@ OWNR (agent);
 PART (command) partId (integer);
 
 /*
- * Preload sound into sound cache if [TARG] obj is visible or just off screen
+ * Preload sound into sound cache if [TARG] object is visible or just off screen
  * #Sounds
  *
  * @param {filename} (token) - 4 letter filename token
@@ -1324,8 +1325,7 @@ POIN (command);
 POSB (integer);
 
 /*
- * [TARG] obj's (and curr [PART]'s) current pose
- * === [TARG] CompoundObject, Vehicle and Lift Operands ===
+ * [TARG] object's (and current [PART]'s) current pose
  * #AgentSprites
  *
  * @rvalue
@@ -1334,8 +1334,8 @@ POSB (integer);
 POSE (integer);
 
 /*
- * stop any animation of DEST obj's entity, and set it to POSE# n (pose, not abs image#. ie. same
- * effect as using [ANIM] [n])
+ * Stop any animation of DEST object's entity, and set it to POSE number {n} (pose, not
+ * absolute image number. ie. same effect as using [ANIM] [n])
  * CREATURE: Will continue with next instruction ONLY when target pose has been reached.
  * #AgentSprites
  *
@@ -1558,7 +1558,7 @@ SETV (command) var (variable) value (any);
 SLIM (command);
 
 /*
- * Start *controlled* sound if [TARG] obj is visible.
+ * Start *controlled* sound if [TARG] object is visible.
  * Change volume according to distance from screen
  * #Sounds
  *
@@ -1568,8 +1568,9 @@ SLIM (command);
 SNDC (command) filename (token);
 
 /*
- * Play sound effect if [TARG] obj is visible on screen. Change volume according to distance from
- * screen. This replaced [SNDV] and doesn't require []'s
+ * Play sound effect if [TARG] object is visible on screen.
+ * Change volume according to distance from screen.
+ * This replaced [SNDV] and doesn't require surrounding brackets( ie. [])
  * #Sounds
  *
  * @param {filename} (token) - 4 letter sound token
@@ -1587,7 +1588,7 @@ SNDE (command) filename (token);
 SNDF (command) function (token);
 
 /*
- * Start controlled *loop* if [TARG] obj is visible. Change volume according to distance from
+ * Start controlled *loop* if [TARG] object is visible. Change volume according to distance from
  * screen
  * #Sounds
  *
@@ -1597,7 +1598,7 @@ SNDF (command) function (token);
 SNDL (command) filename (token);
 
 /*
- * Play sound effect after a short {delay} if [TARG] obj is visible on screen
+ * Play sound effect after a short {delay} if [TARG] object is visible on screen
  * Change volume according to distance from screen
  * #Sounds
  *
@@ -1619,8 +1620,9 @@ SNDQ (command) filename (token) delay (integer);
 SNDS (integer);
 
 /*
- * Play sound if [TARG] obj is visible on screen Change volume according to distance from screen
- * Now replaced by [SNDE] (sound effect) which doesn't require []'s
+ * Play sound if [TARG] object is visible on screen
+ * Change volume according to distance from screen
+ * Now replaced by [SNDE] (sound effect) which doesn't require surrounding brackets (ie. []'s)
  * #Sounds
  *
  * @param {filename} [string] - filename WITHOUT.WAV suffix
@@ -1657,8 +1659,8 @@ SPAS (command) vehicle (agent) newPassenger (agent);
 SPCS (integer);
 
 /*
- * Set up a CompoundObj hotspot, for users/creatures to click on (See [KNOB] for how to assign a
- * hotspot to an activation function)
+ * Set up a compound object hotspot, for users/creatures to click on (See [KNOB] for how to assign
+ * a hotspot to an activation function)
  * #AgentInteractions
  *
  * @param {spot} (integer[0 to 5]) - hotspot# 0-5, ltrb = coords of hotspot on object RELATIVE to part[0]
@@ -1671,7 +1673,11 @@ SPCS (integer);
 SPOT (command) spot (integer) left (integer) top (integer) right (integer) bottom (integer);
 
 /*
- *
+ * Shout the list of stimulus_items to all within earshot
+ * significance – amount to nudge the Source lobe neurone by, this decides the significance of
+ * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
+ * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
+ * remaining values should be set to 0
  * #Creatures
  *
  * @param {significance} (integer) - amount to nudge significance neurone by
@@ -1691,7 +1697,11 @@ SPOT (command) spot (integer) left (integer) top (integer) right (integer) botto
 STIM SHOU (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
- *
+ * Send a stimulus to all creatures who can see [OWNR].
+ * significance – amount to nudge the Source lobe neurone by, this decides the significance of
+ * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
+ * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
+ * remaining values should be set to 0
  * #Creatures
  *
  * @param {significance} (integer) - amount to nudge significance neurone by
@@ -1711,7 +1721,11 @@ STIM SHOU (command) significance (integer) input (integer) intensity (integer) f
 STIM SIGN (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
- *
+ * Send a stimulus to all creatures who are touching [OWNR].
+ * significance – amount to nudge the Source lobe neurone by, this decides the significance of
+ * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
+ * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
+ * remaining values should be set to 0
  * #Creatures
  *
  * @param {significance} (integer) - amount to nudge significance neurone by
@@ -1731,7 +1745,12 @@ STIM SIGN (command) significance (integer) input (integer) intensity (integer) f
 STIM TACT (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
- *
+ * Send stimulus to a specific creature.
+ * {significance} – amount to nudge the Source lobe neurone by, this decides the significance of
+ * the object.
+ * {input} – which neurone in the General Sense lobe to fire (or 255 for none)
+ * List 4 chemicals to emit and the amounts.
+ * If less than 4 chemicals are required then the remaining values should be set to 0
  * #Creatures
  *
  * @param {agent} (agent) - ie. [TARG], [OWNR], [FROM] or [NORN]
@@ -1779,7 +1798,7 @@ STM# SIGN (command) stimulus (integer);
 STM# TACT (command) stimulus (integer);
 
 /*
- *
+ * Send {stimulus} to the specified {object}
  * #Creatures
  *
  * @param {agent} (agent)
@@ -1975,7 +1994,8 @@ TCAR (agent);
 TELE (command) x (integer) y (integer);
 
 /*
- * air temperature near [TARG] obj (-3 to +3)
+ * Air temperature near [TARG] object
+ * range (-3 to +3)
  * #Map
  *
  * @rvalue
@@ -2099,7 +2119,6 @@ VARX (variable);
 VRSN (command) version (integer);
 
 /*
- *
  * Get Creatures Build ID. Ie. #{setv var1 vrsn}
  * #World
  *
@@ -2138,7 +2157,7 @@ WAIT (command) ticks (integer);
 WALK (command);
 
 /*
- * retn obj's width
+ * return objects's width
  * #AgentBounds
  *
  * @rvalue
@@ -2147,7 +2166,8 @@ WALK (command);
 WDTH (integer);
 
 /*
- * wind speed/dir near [TARG] obj (-3 to +3)
+ * Wind speed/direction near [TARG] object
+ * Range (-3 to +3)
  * #Map
  *
  * @rvalue

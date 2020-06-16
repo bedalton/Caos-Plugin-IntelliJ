@@ -931,7 +931,7 @@ DEAD (integer);
 DELN (command) room (integer) direction (integer);
 
 /*
- * Delete Room. Remove the room from the map.
+ * Remove the room from the map.
  * #Map
  *
  * @param {roomId} (integer)
@@ -1734,22 +1734,22 @@ MUSC (integer) property (integer);
  * Move object by relative amount and redraw.
  * #Motion
  *
- * @param {deltaX} (float)
- * @param {deltaY} (float)
+ * @param {deltaX} (integer)
+ * @param {deltaY} (integer)
  *
  */
-MVBY (command) deltaX (float) deltaY (float);
+MVBY (command) deltaX (integer) deltaY (integer);
 
 /*
  * Move object to absolute location and redraw
  * Note: Should not be used on a creature that has had its limit set.
  * #Motion
  *
- * @param {x} (float)
- * @param {y} (float)
+ * @param {x} (integer)
+ * @param {y} (integer)
  *
  */
-MVTO (command) x (float) y (float);
+MVTO (command) x (integer) y (integer);
 
 /*
  * {value1} = -{value1}
@@ -2014,7 +2014,7 @@ OBST (integer) direction (integer);
 OBSV (integer) direction (integer);
 
 /*
- * OBV0 to OBV9 are variables specific to an agent. They are read from [TARG], the target agent.
+ * OBV0 to OBV9 are variables specific to an agent. They are read from [TARG] (the target agent)
  * @range(0 to 9)
  * #Variables
  *
@@ -2847,7 +2847,7 @@ STAR (command) family (integer) genus (integer) species (integer);
 STIM SHOU (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
- * Shout the list of stimulus_items to all who can see object
+ * Send a stimulus to all creatures who can see [OWNR].
  * significance – amount to nudge the Source lobe neurone by, this decides the significance of
  * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
  * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
@@ -2871,7 +2871,7 @@ STIM SHOU (command) significance (integer) input (integer) intensity (integer) f
 STIM SIGN (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
- * Shout the list of stimulus_items touching object
+ * Send a stimulus to all creatures who are touching [OWNR].
  * significance – amount to nudge the Source lobe neurone by, this decides the significance of
  * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
  * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
@@ -2895,11 +2895,12 @@ STIM SIGN (command) significance (integer) input (integer) intensity (integer) f
 STIM TACT (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
 
 /*
- * Shout the list of stimulus_items to specific object
- * significance – amount to nudge the Source lobe neurone by, this decides the significance of
- * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
- * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
- * remaining values should be set to 0
+ * Send stimulus to a specific creature.
+ * Significance – amount to nudge the Source lobe neurone by, this decides the significance of
+ * the object.
+ * Input – which neurone in the General Sense lobe to fire (or 255 for none)
+ * List 4 chemicals to emit and the amounts.
+ * If less than 4 chemicals are required then the remaining values should be set to 0
  * #Creatures
  *
  * @param {agent} (agent)
@@ -3265,7 +3266,6 @@ TOUC (integer) first (agent) second (agent);
 TRIG (command) lobe (integer) cell (integer) amount (integer);
 
 /*
- * UNCS (integer)
  * Returns 1 if the creature is unconscious, 0 otherwise.
  * #Creatures
  *
@@ -4015,7 +4015,7 @@ YVEC (integer);
 
 @Unconscious {
 	0 = Conscious
-	1 = Unconcious
+	1 = Unconscious
 }
 
 @WallDirection {
@@ -4027,159 +4027,85 @@ YVEC (integer);
 }
 
 @Words {
-	1 = Pain
-	2 = Need for Pleasure
-	3 = Hunger
-	4 = Coldness
-	5 = Hotness
-	6 = Tiredness
-	7 = Sleepiness
-	8 = Loneliness
-	9 = Crowded
-	10 = Fear
-	11 = Boredom
-	12 = Anger
-	13 = Sex Drive
-	14 = Injury
-	15 = Suffocation
-	16 = Thirst
-	17 = Stress
-	18 = Pain Increase
-	19 = Need for Pleasure Increase
-	20 = Hunger Increase
-	21 = Coldness Increase
-	22 = Hotness Increase
-	23 = Tiredness Increase
-	24 = Sleepiness Increase
-	25 = Loneliness Increase
-	26 = Crowded Increase
-	27 = Fear Increase
-	28 = Boredom Increase
-	29 = Anger Increase
-	30 = Sex Drive Increase
-	31 = Injury Increase
-	32 = Suffocation Increase
-	33 = Thirst Increase
-	34 = Stress Increase
-	35 = Pain Decrease (Endorphin)
-	36 = Need for Pleasure Decrease
-	37 = Hunger Decrease (Saccharin)
-	38 = Coldness Decrease
-	39 = Hotness Decrease
-	40 = Tiredness Decrease
-	41 = Sleepiness Decrease
-	42 = Loneliness Decrease
-	43 = Crowded Decrease
-	44 = Fear Decrease
-	45 = Boredom Decrease
-	46 = Anger Decrease
-	47 = Sex Drive Decrease
-	48 = Injury Decrease
-	49 = Suffocation Decrease
-	50 = Thirst Decrease
-	51 = Stress Decrease
-	52 = Reward
-	53 = Punishment
-	54 = Reinforcement
-	55 = ConASH
-	56 = DecASH1
-	57 = Reward Echo
-	58 = Punish Echo
-	59 = DecASH2
-	68 = Lactate
-	69 = Pyruvate
-	70 = Glucose
-	71 = Fatty Acid
-	72 = Glycogen
-	73 = Starch
-	74 = Fat
-	75 = Adipose Tissue
-	76 = Ageing
-	77 = Muscle Tissue
-	78 = Triglyceride
-	79 = Protein
-	80 = Amino Acid
-	90 = Carbon Dioxide
-	91 = 92
-	Urea = 93
-	Ammoni = 94
-	95 = Oxygen
-	96 = Air
-	97 = Water
-	98 = Energy
-	104 = Bilin
-	105 = Oestrogen
-	106 = Testosterone
-	107 = Gonadotrophin
-	108 = Progesterone
-	109 = Inhibin
-	110 = LH
-	111 = FSH
-	112 = Steroidone
-	113 = Cholesterol
-	114 = Arousal Potential
-	115 = Mating Pheramone
-	116 = Species Pheramone
-	117 = Parent Pheramone
-	118 = Child Pheramone
-	119 = Sibling Pheramone
-	120 = Opposite Sex Pheramone
-	121 = Norn Smell
-	122 = grendel smell
-	123 = ettin smell
-	140 = Heavy Metals
-	141 = Cyanide
-	142 = 143
-	Bellad = 144
-	Geddon = 145
-	Glycot = 146
-	Fullne = 147
-	148 = 149
-	150 = Vitamin E
-	151 = Vitamin C
-	152 = Bile Acid
-	153 = Insulin Shots
-	154 = Glycogen Synthetase
-	155 = Dehydrogenase
-	156 = Prostaglandin
-	157 = EDTA
-	158 = Sodium thiosulphite
-	159 = Arnica
-	168 = Tyrosine
-	169 = Triptophan
-	170 = Alcohol
-	171 = Dancing
-	172 = Adrenaline
-	173 = Hexokinase
-	174 = Activase
-	175 = Turnase
-	176 = Collapsase
-	177 = downatrophin
-	178 = upatrophin
-	232 = Histamine A
-	233 = Histamine B
-	234 = Sleep toxin
-	235 = Fever toxin
-	236 = unknown toxin
-	237 = unknown toxin
-	238 = unknown toxin
-	239 = unknown toxin
-	240 = Antibody 0
-	241 = Antibody 1
-	242 = Antibody 2
-	243 = Antibody 3
-	244 = Antibody 4
-	245 = Antibody 5
-	246 = Antibody 6
-	247 = Antibody 7
-	248 = Antigen 0
-	249 = Antigen 1
-	250 = Antigen 2
-	251 = Antigen 3
-	252 = Antigen 4
-	253 = Antigen 5
-	254 = Antigen 6
-	255 = Antigen 7
+	0 = stay
+	1 = push
+	2 = pull
+	3 = stop
+	4 = come
+	5 = run
+	6 = get
+	7 = drop
+	8 = why
+	9 = rest
+	10 = left
+	11 = right
+	12 = eat
+	13 = hit
+	16 = me
+	17 = hand
+	18 = button
+	19 = nature
+	20 = plant
+	21 = egg
+	22 = food
+	23 = drink
+	24 = dispensor
+	25 = implement
+	26 = cliff edge
+	27 = detritus
+	28 = medicine
+	29 = toy
+	30 = weather
+	31 = badplant
+	32 = nest
+	33 = badbug
+	34 = bug
+	35 = badcritter
+	36 = critter
+	37 = seed
+	38 = leaf
+	39 = root
+	40 = flower
+	41 = fruit
+	42 = mover
+	43 = lift
+	44 = computer
+	45 = mediabox
+	46 = message
+	47 = leftright
+	48 = incubator
+	49 = teleporter
+	51 = machine
+	52 = Norn
+	53 = Grendel
+	54 = Ettin
+	55 = Shee
+	56 = pain
+	57 = sad
+	58 = hungry
+	59 = cold
+	60 = hot
+	61 = tired
+	62 = sleepy
+	63 = lonely
+	64 = crowded
+	65 = scared
+	66 = bored
+	67 = angry
+	68 = friendly
+	69 = hurt
+	70 = choking
+	71 = thirsty
+	72 = stressed
+	73 = yes
+	74 = no
+	75 = look
+	76 = what
+	77 = very
+	78 = really
+	79 = seriously
+	80 = intensely
+	81 = extremely
 }
 
 @YesNo {
