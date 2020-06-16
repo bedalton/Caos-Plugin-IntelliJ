@@ -4916,7 +4916,6 @@ RATE (command) roomType (integer) caIndex (integer) gain (float) loss (float) di
 RATE (string) roomType (integer) caIndex (integer);
 
 /*
- * RCLR (command) X (integer) Y (integer)
  * Clear the music for the room at the given location.
  * #Sounds
  *
