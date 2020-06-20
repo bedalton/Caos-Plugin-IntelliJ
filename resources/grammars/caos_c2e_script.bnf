@@ -395,7 +395,7 @@ private event_script_body
 	;
 
 subroutine
-	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? (cc_retn|c_retn<<exitBlock>>)
+	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? (cc_retn|c_retn)
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
@@ -470,7 +470,7 @@ cc_retn
 	;
 
 c_retn
-	::= K_RETN
+	::= K_CRETN
 	{
 		implements = [
    			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -520,8 +520,7 @@ expression_list
 	}
 
 loop_statement
-   ::= c_loop space_like_or_newline <<enterBlock>> loop_body? space_like_or_newline loop_terminator<<exitBlock>>
-	{
+   ::= c_loop space_like_or_newline loop_body? space_like_or_newline loop_terminator{
 		pin=1
 		implements = [
 			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -566,8 +565,7 @@ private loop_body
 	;
 
 repeat_statement
-	::= reps_header space_like_or_newline <<enterBlock>>(repeat_body space_like_or_newline)? c_repe<<exitBlock>>
-	{
+	::= reps_header space_like_or_newline(repeat_body space_like_or_newline)? c_repe{
 		pin=1
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -608,8 +606,7 @@ private repeat_body
    ;
 
 enum_next_statement
-	::= enum_header_command space_like_or_newline <<enterBlock>>(enum_body space_like_or_newline)? (c_next|c_nscn)<<exitBlock>>
-	{
+	::= enum_header_command space_like_or_newline(enum_body space_like_or_newline)? (c_next|c_nscn){
 		pin=1;
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -643,8 +640,7 @@ enum_header_command
 	;
 
 enum_scenery_statement
-   ::= escn_header space_like_or_newline <<enterBlock>>(escn_body space_like_or_newline)? (c_nscn|c_next)<<exitBlock>>
-   {
+   ::= escn_header space_like_or_newline(escn_body space_like_or_newline)? (c_nscn|c_next){
 		pin=1;
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -695,7 +691,7 @@ private escn_body
    ;
 
 doif_statement
-	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? space_like_or_newline c_endi<<exitBlock>>
+	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? space_like_or_newline (c_endi)
 	{
 		pin=1
 		implements = [
@@ -705,7 +701,7 @@ doif_statement
 	;
 
 doif_statement_statement
-	::= c_doif space_like equality_expression (space_like_or_newline <<enterBlock>>do_if_body)?
+	::= c_doif space_like equality_expression (space_like_or_newlinedo_if_body)?
 	{
 		pin=1
 		implements = [
@@ -5351,6 +5347,7 @@ r_kw_d_d
 r_kw_s
 	::= K_FVWM
 	|	K_GAMN
+	|	K_EAMN
 	|	K_HIST space_like (K_COUN|incomplete)
 	|	K_HIST space_like (K_CROS|incomplete)
 	|	K_HIST space_like (K_GEND|incomplete)
