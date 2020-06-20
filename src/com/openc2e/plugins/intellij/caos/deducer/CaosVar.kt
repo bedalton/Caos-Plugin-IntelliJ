@@ -19,6 +19,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
     sealed class CaosNamedGameVar(val name:String, val type: CaosScriptNamedGameVarType) : CaosVar("${type.token} \"$name\"", CaosExpressionValueType.VARIABLE), CaosScriptIsVariableVar {
         class MameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.MAME)
         class GameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.GAME)
+        class C2GameVar(first:Int, second:Int) : CaosNamedGameVar("$first $second", CaosScriptNamedGameVarType.GAME)
         class EameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.EAME)
         class NameVar(name:String) : CaosNamedGameVar(name, CaosScriptNamedGameVarType.NAME)
     }

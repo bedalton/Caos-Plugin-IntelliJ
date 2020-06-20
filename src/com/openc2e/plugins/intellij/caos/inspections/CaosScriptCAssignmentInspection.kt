@@ -13,7 +13,6 @@ import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
-import com.openc2e.plugins.intellij.caos.utils.matchCase
 
 class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
@@ -31,23 +30,38 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
     private fun annotateAssignment(element: CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
         val variant = element.containingCaosFile.variant
+        val type = getType(element)
+                ?: return
         when(element.commandString.toUpperCase()) {
-            "SETV" -> annotateSetv(variant, element, problemsHolder)
-            "SETA" -> annotateSeta(variant, element, problemsHolder)
-            "SETS" -> annotateSets(variant, element, problemsHolder)
+            "SETV" -> annotateSetv(variant, element, type, problemsHolder)
+            "SETA" -> annotateSeta(variant, element, type, problemsHolder)
+            "SETS" -> annotateSets(variant, element, type, problemsHolder)
         }
     }
 
-    private fun annotateSetv(variant: CaosVariant, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
-        val lvalue = element.lvalue
-                ?: return
+    private fun getType(element:CaosScriptCAssignment) : CaosExpressionValueType? {
+        val rvalue = element.getChildrenOfType(CaosScriptArgument::class.java).getOrNull(1) as? CaosScriptRvalue
+                ?: return null
+        return rvalue.varToken?.let {
+            CaosScriptInferenceUtil.getInferredType(it)
+        } ?: rvalue.toCaosVar().let {
+            if (it is CaosVar.CaosCommandCall) {
+                it.returnType ?: it.simpleType
+            } else
+                it.simpleType
+        }
+    }
+
+    private fun annotateSetv(variant: CaosVariant, element:CaosScriptCAssignment, actualType:CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (variant in VARIANT_OLD) {
+            val lvalue = element.lvalue
+                    ?: return
             annotateSetvClassic(variant, element, lvalue, problemsHolder)
             return
         }
         val setv = element.commandToken
                 ?: return
-        annotateSetvNew(setv, lvalue, problemsHolder)
+        annotateSetvNew(setv, actualType, problemsHolder)
     }
 
     private fun annotateSetvClassic(variant: CaosVariant, element:CaosScriptCAssignment, lvalue:CaosScriptLvalue, problemsHolder: ProblemsHolder) {
@@ -59,79 +73,62 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
     }
 
-    private fun annotateSetvNew(setv: CaosScriptIsCommandToken, lvalue: CaosScriptLvalue, problemsHolder: ProblemsHolder) {
-        val type = lvalue.inferredType
+    private fun annotateSetvNew(setv: CaosScriptIsCommandToken, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (type.isNumberType || type.isAnyType)
             return
-        val replacement = when {
-            type.isStringType -> "SETS"
-            type.isAgentType -> "SETA"
-            else -> null
-        }
-        registerProblemWithFix(setv, "a numeric", type, replacement, problemsHolder)
+        annotateUnexpectedType(setv, CaosExpressionValueType.DECIMAL, type, problemsHolder)
     }
 
-    private fun annotateSets(variant: CaosVariant, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
+    private fun annotateSets(variant: CaosVariant, element:CaosScriptCAssignment, type:CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (variant in VARIANT_OLD)
             return
-        val lvalue = element.lvalue
-                ?: return
         val commandToken = element.commandToken
                 ?: return
-
-        // Get and validate actual value type
-        val type = lvalue.inferredType
-        if (type.isStringType)
-            return
-        val replacement = when {
-            type.isNumberType -> "SETV"
-            type.isAgentType -> "SETA"
-            else -> null
-        }?.matchCase(commandToken.text)
-        registerProblemWithFix(commandToken, "a string", type, replacement, problemsHolder)
+        annotateUnexpectedType(commandToken, CaosExpressionValueType.STRING, type, problemsHolder)
     }
 
 
-    private fun annotateSeta(variant: CaosVariant, element:CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
-        val lvalue = element.lvalue
+    private fun annotateSeta(variant: CaosVariant, element:CaosScriptCAssignment, type:CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+        if (variant in VARIANT_OLD)
+            return
+        val commandToken = element.commandToken
                 ?: return
-        val seta = element.commandToken
-                ?: return
-        if (variant in VARIANT_OLD) {
-            problemsHolder.registerProblem(element, CaosBundle.message("caos.inspections.assignments.invalid-seta-not-available", variant), CaosScriptReplaceWordFix("SETV".matchCase(seta.text), seta))
-        }
-        annotateSetaNewVariants(seta, lvalue, problemsHolder)
+        annotateUnexpectedType(commandToken, CaosExpressionValueType.AGENT, type, problemsHolder)
     }
 
-    private fun annotateSetaNewVariants(seta:CaosScriptIsCommandToken, lvalue:CaosScriptLvalue, problemsHolder: ProblemsHolder) {
-        val type = lvalue.varToken?.let {
-            CaosScriptInferenceUtil.getInferredType(it)
-        } ?: lvalue.toCaosVar().let {
-            if (it is CaosVar.CaosCommandCall) {
-                it.returnType ?: it.simpleType
-            } else
-                it.simpleType
-        }
-        if (type.isAgentType)
+    private fun annotateUnexpectedType(element:CaosScriptIsCommandToken, expectedType:CaosExpressionValueType, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+        if (actualType == expectedType)
             return
         val replacement = when {
-            type.isNumberType -> "SETV"
-            type.isStringType -> "SETS"
+            actualType.isNumberType -> "SETV"
+            actualType.isStringType -> "SETS"
+            actualType.isAgentType -> "SETA"
             else -> null
-        }?.matchCase(seta.text)
-        registerProblemWithFix(seta, "an agent", type, replacement, problemsHolder)
+        }
+        val typeName = if (expectedType.isNumberType) {
+            "a numeric"
+        } else if (expectedType.isStringType) {
+            "a string"
+        } else if (expectedType.isAgentType) {
+            "an agent"
+        } else {
+            return
+        }
+        registerProblemWithFix(element, typeName, actualType, replacement, problemsHolder )
     }
 
     private fun registerProblemWithFix(targetElement:CaosScriptIsCommandToken, expectedType:String, actualType:CaosExpressionValueType, replacement:String?, problemsHolder: ProblemsHolder) {
+        if (actualType.isAnyType || actualType == CaosExpressionValueType.VARIABLE)
+            return
         // Create message using suggestion text if any
-        var message = CaosBundle.message("caos.inspections.assignments.wrong-type", targetElement.commandString.toUpperCase(), expectedType)
+        var message = CaosBundle.message("caos.inspections.assignments.wrong-type", targetElement.commandString.toUpperCase(), expectedType, actualType.simpleName)
         if (replacement != null) {
-            message += " " + CaosBundle.message("caos.inspections.assignments.use-replacement", replacement, actualType.simpleName)
+            message += ". " + CaosBundle.message("caos.inspections.assignments.use-replacement", replacement, actualType.simpleName)
         }
         val replacementFix = replacement?.let {
             listOf(CaosScriptReplaceWordFix(replacement, targetElement))
         }.orEmpty().toTypedArray()
-        problemsHolder.registerProblem(targetElement, CaosBundle.message("caos.inspections.assignments.seta-requires-agent", actualType.simpleName), *replacementFix)
+        problemsHolder.registerProblem(targetElement, message, *replacementFix)
     }
 
     companion object {
