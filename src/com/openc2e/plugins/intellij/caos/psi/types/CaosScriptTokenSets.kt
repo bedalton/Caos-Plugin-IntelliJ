@@ -98,6 +98,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_ENDM,
                 CaosScript_K_ENUM,
                 CaosScript_K_ESCN,
+                CaosScript_K_EPAS,
                 CaosScript_K_ETCH,
                 CaosScript_K_ESEE,
                 CaosScript_K_EVER,
