@@ -20,7 +20,7 @@ import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
 
 	private int braceDepth;
 	private static final List<Character> BYTE_STRING_CHARS = CaosScriptArrayUtils.toList("0123456789 R".toCharArray());
-
+	protected int blockDepth = 0;
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -48,21 +48,6 @@ import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
 %unicode
 
 NEWLINE=\n
-ENDM=[eE][nN][dD][mM]
-SUBR=[sS][uU][bB][rR]
-RETN=[Rr][Ee][Tt][Nn]
-REPS=[rR][eE][pP][sS]
-REPE=[rR][eE][pP][eE]
-LOOP=[lL][oO][oO][pP]
-UNTL=[uU][nN][tT][lL]
-EVER=[eE][vV][eE][rR]
-ENUM=[eE][nN][uU][mM]
-NEXT=[nN][eE][xX][tT]
-DOIF=[dD][oO][iI][fF]
-ELIF=[Ee][Ll][iI][fF]
-ELSE=[eE][lL][sS][eE]
-ENDI=[eE][nN][dD][iI]
-SCRP=[sS][cC][rR][pP]
 VARx=[Vv][Aa][Rr][0-9]
 VAxx=[Vv][Aa][0-9][0-9]
 OBVx=[Oo][Bb][Vv][0-9]
@@ -159,21 +144,6 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{N_CONST}				{ return CaosScript_N_CONST; }
 	{N_VAR}				 	{ return CaosScript_N_VAR; }
 	{NEWLINE}              	{ yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
-	{ENDM}                 	{ return CaosScript_K_ENDM; }
-	{SUBR}                 	{ return CaosScript_K_SUBR; }
-	{RETN}				 	{ return CaosScript_K_RETN; }
-	{REPS}                 	{ return CaosScript_K_REPS; }
-	{REPE}                 	{ return CaosScript_K_REPE; }
-	{LOOP}                 	{ return CaosScript_K_LOOP; }
-	{UNTL}                 	{ return CaosScript_K_UNTL; }
-	{EVER}                 	{ return CaosScript_K_EVER; }
-	{ENUM}                 	{ return CaosScript_K_ENUM; }
-	{NEXT}                 	{ return CaosScript_K_NEXT; }
-	{DOIF}                 	{ return CaosScript_K_DOIF; }
-	{ELIF}                 	{ return CaosScript_K_ELIF; }
-	{ELSE}                 	{ return CaosScript_K_ELSE; }
-	{ENDI}                 	{ return CaosScript_K_ENDI; }
-	{SCRP}                 	{ return CaosScript_K_SCRP; }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }
 	{MVxx}				 	{ return CaosScript_MV_XX; }
@@ -260,23 +230,23 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Ee][Nn][Dd][Mm]       	{ return CaosScript_K_ENDM; }
 	[Ss][Uu][Bb][Rr]       	{ return CaosScript_K_SUBR; }
 	[Gg][Ss][Uu][Bb]       	{ return CaosScript_K_GSUB; }
-	[Rr][Ee][Tt][Nn]       	{ return CaosScript_K_RETN; }
-	[Rr][Ee][Pp][Ss]       	{ return CaosScript_K_REPS; }
-	[Rr][Ee][Pp][Ee]       	{ return CaosScript_K_REPE; }
-	[Ll][Oo][Oo][Pp]       	{ return CaosScript_K_LOOP; }
-	[Uu][Nn][Tt][Ll]       	{ return CaosScript_K_UNTL; }
-	[Ee][Nn][Uu][Mm]       	{ return CaosScript_K_ENUM; }
-	[Ee][Ss][Ee][Ee]       	{ return CaosScript_K_ESEE; }
-	[Ee][Tt][Cc][Hh]       	{ return CaosScript_K_ETCH; }
-	[Nn][Ee][Xx][Tt]       	{ return CaosScript_K_NEXT; }
-	[Ee][Ss][Cc][Nn]       	{ return CaosScript_K_ESCN; }
-	[Nn][Ss][Cc][Nn]       	{ return CaosScript_K_NSCN; }
+	[Rr][Ee][Tt][Nn]       	{ return blockDepth > 0 ? CaosScript_K_CRETN : CaosScript_K_RETN; }
+	[Rr][Ee][Pp][Ss]       	{ blockDepth++; return CaosScript_K_REPS; }
+	[Rr][Ee][Pp][Ee]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_REPE; }
+	[Ll][Oo][Oo][Pp]       	{ blockDepth++; return CaosScript_K_LOOP; }
+	[Uu][Nn][Tt][Ll]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_UNTL; }
+	[Ee][Nn][Uu][Mm]       	{ blockDepth++; return CaosScript_K_ENUM; }
+	[Ee][Ss][Ee][Ee]       	{ blockDepth++; return CaosScript_K_ESEE; }
+	[Ee][Tt][Cc][Hh]       	{ blockDepth++; return CaosScript_K_ETCH; }
+	[Nn][Ee][Xx][Tt]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_NEXT; }
+	[Ee][Ss][Cc][Nn]       	{ blockDepth++; return CaosScript_K_ESCN; }
+	[Nn][Ss][Cc][Nn]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_NSCN; }
 	[Rr][Tt][Aa][Rr]       	{ return CaosScript_K_RTAR; }
 	[Ss][Tt][Aa][Rr]       	{ return CaosScript_K_STAR; }
 	[Ii][Nn][Ss][Tt]       	{ return CaosScript_K_INST; }
 	[Ss][Ll][Oo][Ww]       	{ return CaosScript_K_SLOW; }
-	[Ee][Vv][Ee][Rr]       	{ return CaosScript_K_EVER; }
-	[Dd][Oo][Ii][Ff]       	{ return CaosScript_K_DOIF; }
+	[Ee][Vv][Ee][Rr]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_EVER; }
+	[Dd][Oo][Ii][Ff]       	{ blockDepth++; return CaosScript_K_DOIF; }
 	[Ee][Ll][Ss][Ee]       	{ return CaosScript_K_ELSE; }
 	[Ee][Nn][Dd][Ii]       	{ return CaosScript_K_ENDI; }
 	[Ww][Aa][Ii][Tt]       	{ return CaosScript_K_WAIT; }
