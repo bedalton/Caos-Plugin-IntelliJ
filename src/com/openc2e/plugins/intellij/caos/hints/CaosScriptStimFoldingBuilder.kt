@@ -64,6 +64,8 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 }
                 ?.parameterNumber
                 ?: return null
+        if (firstIndex >= arguments.size)
+            return null
         val chemParameters = arguments.subList(firstIndex, arguments.size)
         if (chemParameters.size % 2 != 0) {
             return null
