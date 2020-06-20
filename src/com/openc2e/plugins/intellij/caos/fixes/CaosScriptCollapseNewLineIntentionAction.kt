@@ -13,6 +13,7 @@ import com.openc2e.plugins.intellij.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiElementFactory
 import com.openc2e.plugins.intellij.caos.psi.util.lineNumber
+import com.openc2e.plugins.intellij.caos.psi.util.next
 import com.openc2e.plugins.intellij.caos.utils.document
 
 class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction {
@@ -49,14 +50,19 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
     private fun replaceWithSpaceOrComma(next: PsiElement?) {
         if (next == null)
             return
-        if ((next.text != "\n" && next.text.contains('\n')) || next.text == collapseChar.char)
+        if ((next.text != "\n" && !next.text.contains('\n')) || next.text == collapseChar.char)
             return
         val element = if (collapseChar == CollapseChar.SPACE)
             CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(next.project)
         else
             CaosScriptPsiElementFactory.comma(next.project)
         next.replace(element)
-
+        var superNext = next.next
+                ?: return
+        while(superNext.text.contains("\n") || superNext.text.contains(collapseChar.char)) {
+            superNext.delete()
+            superNext = superNext.next ?: return
+        }
     }
 
 }

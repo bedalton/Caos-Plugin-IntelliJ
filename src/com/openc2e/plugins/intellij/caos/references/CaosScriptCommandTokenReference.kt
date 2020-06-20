@@ -14,6 +14,9 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.lang.variant
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsInt
+import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsQuoteString
 import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
@@ -24,7 +27,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
 
     private val renameRegex: Regex = "[a-zA-Z_][a-zA-Z_#!:]{3}".toRegex()
 
-    private val name:String? by lazy {
+    private val name: String? by lazy {
         element.name
     }
 
@@ -61,7 +64,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         val formattedName = name?.replace(EXTRA_SPACE_REGEX, " ")
                 ?: return emptyList()
         val variant = myElement.containingCaosFile.variant
-        return CaosDefCommandElementsByNameIndex
+        val matches = CaosDefCommandElementsByNameIndex
                 .Instance[formattedName, myElement.project]
                 // Filter for type and variant
                 .filter {
@@ -82,14 +85,31 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                     }
                     isForElement
                 }
-                .mapNotNull {
-                    it.command.commandWordList.getOrNull(0)
-                }
+        if (matches.size <= 1)
+            return matches
+                    .mapNotNull {
+                        it.command.commandWordList.getOrNull(0)
+                    }
+        val parentArgument = myElement.getParentOfType(CaosScriptArgument::class.java)
+                ?: return matches
+                        .mapNotNull {
+                            it.command.commandWordList.getOrNull(0)
+                        }
+        val out = if (parentArgument is CaosScriptExpectsInt) {
+            matches.filter { it.returnTypeString.toLowerCase().startsWith("int") }
+        } else if (parentArgument is CaosScriptExpectsQuoteString) {
+            matches.filter { it.returnTypeString.toLowerCase() == "string"}
+        } else {
+            matches
+        }
+        return out.mapNotNull {
+            it.command.commandWordList.getOrNull(0)
+        }
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
         //if (renameRegex.matches(newElementName))
-          //  return myElement.setName(newElementName)
+        //  return myElement.setName(newElementName)
         return myElement
     }
 

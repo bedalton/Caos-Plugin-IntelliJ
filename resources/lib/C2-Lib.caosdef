@@ -1241,10 +1241,10 @@ FRZN (integer);
  * @rvalue
  * @param {category} (integer)
  * @param {variable} (integer)
- * @return [string]
+ * @return (variable)
  *
  */
-GAME [string] category (integer) variable (integer);
+GAME (variable) category (integer) variable (integer);
 
 /*
  * Returns the object's genus
@@ -1546,6 +1546,7 @@ LITE (integer);
  * Sub Language of Windows desktop. Values are in hexidecimal
  * #World
  *
+ * @rvalue
  * @return (string)
  */
 LNG+ (string);

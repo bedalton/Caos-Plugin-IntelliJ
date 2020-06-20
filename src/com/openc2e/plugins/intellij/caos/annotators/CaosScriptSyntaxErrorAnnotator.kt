@@ -69,7 +69,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (minMax.first < minMax.second)
             return
         if (minMax.first == minMax.second) {
-            annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same"))
+            annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same", minMax.first))
                     .range(element.commandToken)
                     .create()
             return

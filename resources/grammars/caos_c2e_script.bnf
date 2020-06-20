@@ -1079,12 +1079,16 @@ private byte_string_body
 	}
 	;
 
-byte_string_pose_list
-	::= INT (space_like INT)*
+private byte_string_pose_list
+	::= byte_string_pose_element (!(<<isVariant "C1">>|<<isVariant "C2">>)(space_like byte_string_pose_element)*)
+	;
+
+byte_string_pose_element
+	::= INT
 	;
 
 byte_string_r
-	::= space_like? ANIM_R
+	::= (<<isVariant "C1">>|<<isVariant "C2">>)space_like? ANIM_R
 	;
 
 
@@ -1133,7 +1137,7 @@ expression
 	|	vars
 	|	named_constant
 	|	number
-	|	token
+	|	<<inMode "allowToken">>token
 	|	incomplete
 	{
 		methods = [
@@ -1217,7 +1221,6 @@ command_call ::= command_call_by_args // I think private values all have equal p
 
 private command_call_by_args
 	::= c_targ
-	|	c_d
 	|	c_d_d
 	|	c_l
 	|	c_f
@@ -1299,6 +1302,7 @@ private command_call_by_args
 	|	c_assignment
 	|	c_rndv
 	|	c_none
+	|	c_d
 	|	c_gsub
 	;
 
@@ -2122,7 +2126,10 @@ private c_a_d_f_d_f ::= c_kw_a_d_f_d_f space_like expects_agent space_like expec
 	;
 
 rvalue_prime
-	::= r_none
+	::= r_cv_char
+	|	r_cv_tran
+	|	r_c3_char
+	|	r_c3_tran
 	|	r_f
 	|	r_d_d_d_d_s
 	|	r_d_d_d_d_d_d_d
@@ -2154,10 +2161,36 @@ rvalue_prime
 	|	r_f_f_f_f
 	|	r_t
 	|	r_d_d_d_s_d
+	| 	r_none
 	;
 
+private r_cv_char
+	::= r_kw_cv_char space_like lvalue space_like expects_int space_like expects_int
+	|	r_kw_cv_char space_like expects_string space_like expects_int
+	|	r_kw_cv_char
+	{
+		pin(".*") = 3
+	}
+	;
 
-
+private r_cv_tran
+	::= r_kw_cv_tran space_like expects_int (space_like expects_int)?
+	{
+		pin(".*") = 3
+	}
+	;
+private r_c3_tran
+	::= r_kw_c3_tran space_like expects_int space_like expects_int
+	{
+		pin(".*") = 3
+	}
+	;
+private r_c3_char
+	::= r_kw_c3_char space_like expects_string space_like expects_int
+	{
+		pin(".*") = 3
+	}
+	;
 private r_none ::= r_kw_none
 	{
 		pin=1
@@ -2543,6 +2576,7 @@ c_kw_none
 	|	K_CALC
 	|	K_CAMN
 	|	K_CBRG
+	|	K_DEAD
 	|	K_DBG_COL space_like (K_CPRO|incomplete)
 	|	K_DBG_COL space_like (K_FLSH|incomplete)
 	|	K_DBG_COL space_like (K_PAWS|incomplete)
@@ -2586,7 +2620,6 @@ c_kw_none
 	|	K_HELP
 	|	K_INST
 	|	K_ISCR
-	|	K_LNG_PLUS
 	|	K_LOCK
 	|	K_LOOP
 	|	K_MAPK
@@ -2675,12 +2708,13 @@ c_kw_d
 	|	K_DBG_COL space_like (K_OUTV|incomplete)
 	|	K_DBG_COL space_like (K_WTIK|incomplete)
 	|	K_DCOR
-	|	K_DDE_COL space_like (K_GETB|incomplete)
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ALLR
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_EMTR
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RCTN
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RPTY
 	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_FMLY
+	|	K_DDE_COL space_like (K_GETB|incomplete)
+	|	K_DDE_COL space_like (K_GETB|incomplete)
 	|	K_DDE_COL space_like (K_LNEU|incomplete)
 	|	K_DDE_COL space_like (K_WORD|incomplete)
 	|	K_DELM
@@ -4631,6 +4665,7 @@ r_kw_none
 	::= K_CD_ space_like (K_FRQH|incomplete)
 	|	K_CD_ space_like (K_FRQL|incomplete)
 	|	K_CD_ space_like (K_FRQM|incomplete)
+	|	K_CLAS
 	|	K_IT_
 	|	K_P1_
 	|	K_P2_
@@ -4662,7 +4697,6 @@ r_kw_none
 	|	K_CAGE
 	|	K_CARR
 	|	K_CATA
-	|	<<isVariant "CV">>K_CHAR
 	|	K_CLAC
 	|	K_CMRX
 	|	K_CMRY
@@ -4724,6 +4758,7 @@ r_kw_none
 	|	K_INTR
 	|	K_LACB
 	|	K_LANG
+	|	K_LNG_PLUS
 	|	K_LEFT
 	|	<<isVariant "C2">>K_LIMB
 	|	<<isVariant "C1">>K_LIMB
@@ -4835,6 +4870,7 @@ r_kw_none
 	|	K_WALL
 	|	K_WDOW
 	|	K_WDTH
+	|	K_WIND
 	|	K_WINH
 	|	K_WINW
 	|	K_WLDH
@@ -4855,6 +4891,7 @@ r_kw_none
 	|	K_YEAR
 	|	K_YVEC
 	|	K_ZOMB
+	|	K_CAMN
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -5199,6 +5236,53 @@ caos_named_var_kw
 			setName
 		]
 	}
+	;
+
+r_kw_cv_char
+	::= <<isVariant "CV">> K_CHAR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+r_kw_cv_tran
+    	::= <<isVariant "CV">> K_TRAN
+    	{
+    		implements = [
+    			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+    			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+    			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+    		]
+    		methods = [
+    			getReference
+    			getCommandString
+    			getCommandStringUpper
+    			getPresentation
+    			isVariant
+    			getName
+    			setName
+    		]
+    	}
+    	;
+
+r_kw_c3_tran
+	::= (!<<isVariant "CV">>) K_TRAN
+	;
+
+r_kw_c3_char
+	::= (!<<isVariant "CV">>) K_CHAR
 	;
 
 r_kw_v
@@ -6689,7 +6773,7 @@ c_endm ::= K_ENDM
 }
 ;
 
-expects_token ::= rvalue
+expects_token ::= <<enterMode "allowToken">>rvalue <<exitMode "allowToken">>
 	{
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpectsTokenStub"
 		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -6964,6 +7048,22 @@ event_number_element
 	::= INT
 	;
 
+private follows_dde_putb
+	::=	K_ALLR
+	|	K_RPTY
+	|	K_RRCT
+	|	K_NEWV
+	|	K_LVOB
+	|	K_BIOC
+	|	K_ORGN
+	|	K_EMTR
+	|	K_RCTN
+	|	K_DATA
+	|	K_CNAM
+	|	K_CTIM
+	|	K_MONK
+	|	K_OVVD
+	;
 
 incomplete ::= ID;
 

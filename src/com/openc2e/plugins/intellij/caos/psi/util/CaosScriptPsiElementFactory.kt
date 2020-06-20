@@ -71,10 +71,9 @@ object CaosScriptPsiElementFactory {
 
     private val TOKEN_NAME_REGEX = "[a-zA-Z_0-9]*".toRegex()
     fun createTokenElement(project: Project, newNameString: String): CaosScriptToken? {
-        val script = "setv var0 tokn $newNameString"
-        val commandCall = getCommandCall(project, script)
-                ?: return null
-        return commandCall.expectsDecimal?.rvalue?.expression?.token
+        val script = "sndf $newNameString"
+        val file = createFileFromText(project, script);
+        return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
     }
 
     fun createStringRValue(project: Project, newNameString: String, start:Char, end:Char = start): CaosScriptRvalue {
