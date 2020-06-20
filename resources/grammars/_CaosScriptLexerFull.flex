@@ -248,7 +248,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Ee][Vv][Ee][Rr]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_EVER; }
 	[Dd][Oo][Ii][Ff]       	{ blockDepth++; return CaosScript_K_DOIF; }
 	[Ee][Ll][Ss][Ee]       	{ return CaosScript_K_ELSE; }
-	[Ee][Nn][Dd][Ii]       	{ return CaosScript_K_ENDI; }
+	[Ee][Nn][Dd][Ii]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_ENDI; }
 	[Ww][Aa][Ii][Tt]       	{ return CaosScript_K_WAIT; }
 	[Aa][Nn][Ii][Mm]       	{ return CaosScript_K_ANIM; }
 	[Oo][Vv][Ee][Rr]       	{ return CaosScript_K_OVER; }

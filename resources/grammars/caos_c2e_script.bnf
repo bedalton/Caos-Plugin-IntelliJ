@@ -395,7 +395,7 @@ private event_script_body
 	;
 
 subroutine
-	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? (cc_retn|c_retn)
+	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? c_retn
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
@@ -449,28 +449,8 @@ c_subr
 	}
 	;
 
-cc_retn
-	::= K_RETN
-	{
-		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getCommandStringUpper
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
 c_retn
-	::= K_CRETN
+	::= K_RETN
 	{
 		implements = [
    			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -701,7 +681,7 @@ doif_statement
 	;
 
 doif_statement_statement
-	::= c_doif space_like equality_expression (space_like_or_newlinedo_if_body)?
+	::= c_doif space_like equality_expression (space_like_or_newline do_if_body)?
 	{
 		pin=1
 		implements = [
@@ -2658,7 +2638,7 @@ c_kw_none
 	|	K_WALK
 	|	K_WDOW
 	|	K_WIND
-	|	<<insideBlock>> c_retn
+	|	K_CRETN
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
@@ -2709,7 +2689,6 @@ c_kw_d
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RCTN
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RPTY
 	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_FMLY
-	|	K_DDE_COL space_like (K_GETB|incomplete)
 	|	K_DDE_COL space_like (K_GETB|incomplete)
 	|	K_DDE_COL space_like (K_LNEU|incomplete)
 	|	K_DDE_COL space_like (K_WORD|incomplete)
@@ -6034,6 +6013,7 @@ all_tokens
 	|	K_RCLR
 	|	K_REAF
 	|	K_REPE
+	| 	K_CRETN
 	|	K_RETN
 	|	K_RGAM
 	|	K_RMS_NUM

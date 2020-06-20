@@ -16,7 +16,7 @@ class CaosScriptTokenSets {
                 CaosScript_C_ELIF,
                 CaosScript_C_ELSE,
                 CaosScript_C_ENDI,
-                CaosScript_CC_RETN,
+                CaosScript_C_RETN,
                 CaosScript_C_ENUM,
                 CaosScript_C_NEXT,
                 CaosScript_C_ESCN,
@@ -110,7 +110,8 @@ class CaosScriptTokenSets {
                 CaosScript_K_RETN,
                 CaosScript_K_SUBR,
                 CaosScript_K_SCRP,
-                CaosScript_K_UNTL
+                CaosScript_K_UNTL,
+                CaosScript_K_CRETN
         )
 
         @JvmStatic
