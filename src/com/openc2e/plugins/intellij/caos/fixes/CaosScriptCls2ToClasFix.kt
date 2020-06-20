@@ -41,7 +41,7 @@ class CaosScriptCls2ToClasFix(element:CaosScriptCAssignment) : IntentionAction, 
             return
         }
         element.document?.let {
-            applyFix(project, it, element)
+            applyFix(it, element)
         }
     }
 
@@ -66,7 +66,7 @@ class CaosScriptCls2ToClasFix(element:CaosScriptCAssignment) : IntentionAction, 
         }
     }
 
-    private fun applyFix(project: Project, documentIn: Document?, element:PsiElement) {
+    private fun applyFix(documentIn: Document?, element: PsiElement) {
         val document = documentIn ?: return
         val scriptText = getScriptText()
                 ?: return
