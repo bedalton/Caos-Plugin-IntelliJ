@@ -14,10 +14,7 @@ import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.caos.lang.variant
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsInt
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptExpectsQuoteString
-import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken
+import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.caos.psi.util.CaosCommandType
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
@@ -97,6 +94,10 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                         }
         val out = if (parentArgument is CaosScriptExpectsInt) {
             matches.filter { it.returnTypeString.toLowerCase().startsWith("int") }
+        } else if (parentArgument is CaosScriptExpectsDecimal) {
+            matches.filter { it.returnTypeString.toLowerCase() == "decimal" || it.returnTypeString.toLowerCase().startsWith("int") || it.returnTypeString.toLowerCase() == "float" }
+        } else if (parentArgument is CaosScriptExpectsFloat) {
+            matches.filter { it.returnTypeString.toLowerCase() == "decimal" || it.returnTypeString.toLowerCase().startsWith("int") || it.returnTypeString.toLowerCase() == "float" }
         } else if (parentArgument is CaosScriptExpectsQuoteString) {
             matches.filter { it.returnTypeString.toLowerCase() == "string"}
         } else {
