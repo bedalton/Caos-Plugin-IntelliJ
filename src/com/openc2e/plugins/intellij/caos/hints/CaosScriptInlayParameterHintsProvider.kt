@@ -34,8 +34,9 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
                     ?: return mutableListOf()
             val skipLast = skipLast(commandElement)
             val parameters = getParametersAsStrings(referencedCommand.parameterStructs, skipLast)
-            return commandElement.arguments.mapIndexed{ i, it ->
-                InlayInfo(parameters[i] + ":", it.startOffset)
+            return commandElement.arguments.mapIndexedNotNull{ i, it ->
+                parameters.getOrNull(i)?.let { parameter -> InlayInfo("$parameter:", it.startOffset) }
+
             }.toMutableList()
         }
 
