@@ -257,10 +257,12 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getName(element: CaosScriptNamedGameVar): String? {
         val value = element.key
+                ?: return null
         if (value is CaosVar.CaosLiteral.CaosString) {
             return value.value
+        } else {
+            return value.text
         }
-        return null
     }
 
     @JvmStatic
