@@ -126,6 +126,28 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
             }
         }
     },
+    DDE_PIC_DIMENSIONS("Show DDE: PICT dimensions", true) {
+
+        override fun isApplicable(element: PsiElement): Boolean {
+            return element is CaosScriptPictDimensionLiteral
+        }
+
+        override fun provideHints(element: PsiElement): List<InlayInfo> {
+            val dimensions = element as? CaosScriptPictDimensionLiteral
+                    ?: return emptyList()
+            val text = dimensions.dimensions.let {
+                "${it.first}x${it.second}"
+            }
+            return listOf(InlayInfo(text, element.endOffset))
+        }
+
+        override fun getHintInfo(element: PsiElement): HintInfo? {
+            if (element !is CaosScriptPictDimensionLiteral) {
+                return null
+            }
+            return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosDefLanguage.instance)
+        }
+    },
     RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {

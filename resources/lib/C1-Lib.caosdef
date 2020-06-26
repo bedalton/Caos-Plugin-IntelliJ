@@ -443,12 +443,19 @@ DDE: NEGG (command);
 DDE: PANC (command);
 
 /*
- * take snapshot of the current subject create a standard windows bmp pass file name back to
- * client
+ * Take a snapshot with current camera position, given the picture with the dimensions, and returns a *.spr image name
+ * Picture dimensions are specified as a three letter token. With first char representing the width and the third the height.
+ * The middle char can be anything, but usually the '|' pipe character.
+ * The returned SPR file is generated without a valid SPR header. Header must be added manually
  * #Debug
  *
+ * @credit to the Shee's Lost Knowledge blog for their DDE: PICT post
+ * @see http://sheeslostknowledge.blogspot.com/2014/12/repairing-and-understanding-lost-dde.html
+ *
+ * @param {dimensions} (token[3])
+ *
  */
-DDE: PICT (command);
+DDE: PICT (command) dimensions (token);
 
 /*
  * write from string to location determined by option token

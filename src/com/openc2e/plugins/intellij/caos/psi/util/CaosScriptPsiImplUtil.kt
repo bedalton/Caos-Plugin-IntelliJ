@@ -1308,7 +1308,32 @@ object CaosScriptPsiImplUtil {
         return min < max
     }
 
+    @JvmStatic
+    fun getWidth(dimensions:CaosScriptPictDimensionLiteral) : Int {
+        dimensions.text.toCharArray().let {
+            if (it.isEmpty())
+                return -1
+            return it[0].toInt()
+        }
+    }
 
+    @JvmStatic
+    fun getHeight(dimensions:CaosScriptPictDimensionLiteral) : Int {
+        dimensions.text.toCharArray().let {
+            if (it.size < 3)
+                return -1
+            return it[2].toInt()
+        }
+    }
+
+    @JvmStatic
+    fun getDimensions(dimensions: CaosScriptPictDimensionLiteral) : Pair<Int,Int> {
+        dimensions.text.toCharArray().let {
+            if (it.size < 3)
+                return Pair(-1,-1)
+            return Pair(it[0].toInt(), it[2].toInt())
+        }
+    }
 }
 
 private var OLD_VARIANTS = listOf(CaosVariant.C1, CaosVariant.C2)

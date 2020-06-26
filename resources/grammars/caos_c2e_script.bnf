@@ -247,6 +247,7 @@
 		CLOSE_BRACKET = ']';
 		COMMA = ',';
 		ANIM_R = "R"
+		PICT_DIMENSION = "#|#";
 
 
 	]
@@ -1114,6 +1115,7 @@ expression
 	|	named_constant
 	|	number
 	|	<<inMode "allowToken">>token
+	|	pict_dimension_literal
 	|	incomplete
 	{
 		methods = [
@@ -1135,6 +1137,16 @@ expression
 	}
 	;
 
+pict_dimension_literal
+	::= PICT_DIMENSION
+	{
+		methods = [
+			getWidth
+			getHeight
+			getDimensions
+		]
+	}
+	;
 
 equality_expression
    ::= equality_expression_prime (space_like equality_expression_plus)*
@@ -1280,6 +1292,7 @@ private command_call_by_args
 	|	c_none
 	|	c_d
 	|	c_gsub
+	|	c_pict
 	;
 
 
@@ -2101,6 +2114,17 @@ private c_a_d_f_d_f ::= c_kw_a_d_f_d_f space_like expects_agent space_like expec
 	}
 	;
 
+private c_pict ::= c_kw_pict space_like expects_pict_dimension
+	{
+		pin=1
+	}
+	;
+
+expects_pict_dimension
+	::= rvalue
+	;
+
+
 rvalue_prime
 	::= r_cv_char
 	|	r_cv_tran
@@ -2578,7 +2602,6 @@ c_kw_none
 	|	K_DDE_COL space_like (K_NACT|incomplete)
 	|	K_DDE_COL space_like (K_NEGG|incomplete)
 	|	K_DDE_COL space_like (K_PANC|incomplete)
-	|	K_DDE_COL space_like (K_PICT|incomplete)
 	|	K_DONE
 	|	<<isVariant "C2">>K_DPAS
 	|	<<isVariant "C1">>K_DPAS
@@ -2656,7 +2679,25 @@ c_kw_none
 		]
 	}
 	;
-
+c_kw_pict
+	::= K_DDE_COL space_like (K_PICT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
 c_kw_d
 	::= K_CD_ space_like (K_PAWS|incomplete)
 	|	K_AERO

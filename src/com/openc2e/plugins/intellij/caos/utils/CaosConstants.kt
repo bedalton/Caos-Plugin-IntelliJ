@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.caos.utils
 
 import com.openc2e.plugins.intellij.caos.lang.CaosVariant
 
+val NUMBER_REGEX = "[0-9]+".toRegex();
 
 object CaosConstants {
     val BASE_TYPES = listOf(
