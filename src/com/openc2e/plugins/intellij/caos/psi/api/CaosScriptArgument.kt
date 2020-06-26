@@ -24,6 +24,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     ANIMATION(17, "[anim]"),
     HEXADECIMAL(18, "hexadecimal"),
     NULL(0, "NULL"),
+    PICT_DIMENSION(19, "pict-dimensions"),
     UNKNOWN(-1, "UNKNOWN");
 
     companion object {

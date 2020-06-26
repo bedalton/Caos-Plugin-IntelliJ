@@ -75,7 +75,7 @@ CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT
 %%
 
 <START_OF_LINE> {
@@ -131,6 +131,12 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{VAxx}				 	{ return CaosScript_VA_XX; }
 	" "+				 	{ return WHITE_SPACE; }
 	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
+}
+
+<IN_PICT> {
+	[^\s ,\n][^\s ,\n][^\s ,\n] { yybegin(IN_LINE); return CaosScript_PICT_DIMENSION; }
+	\s+				 	 	{ return CaosScript_SPACE_; }
+    [^]						{ yybegin(IN_LINE); }
 }
 
 <IN_LINE> {
@@ -439,7 +445,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Gg][Nn][Dd][#]        	{ return CaosScript_K_GND_NUM; }
 	[Gg][Nn][Dd][Ww]       	{ return CaosScript_K_GNDW; }
 	[Pp][Uu][Tt][Bb]       	{ return CaosScript_K_PUTB; }
-	[Pp][Ii][Cc][Tt]       	{ return CaosScript_K_PICT; }
+	[Pp][Ii][Cc][Tt]       	{ yybegin(IN_PICT); return CaosScript_K_PICT; }
 	[Cc][Mm][Nn][Dd]       	{ return CaosScript_K_CMND; }
 	[Ww][Pp][Oo][Ss]       	{ return CaosScript_K_WPOS; }
 	[Cc][Aa][Mm][Tt]       	{ return CaosScript_K_CAMT; }

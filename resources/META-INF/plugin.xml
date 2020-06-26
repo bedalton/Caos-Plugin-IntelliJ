@@ -184,6 +184,13 @@
     <enterBetweenBracesDelegate language="CaosDef"
                                 implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
+
+    <!-- ======================== -->
+    <!-- ====== SPR Files ======= -->
+    <!-- ======================== -->
+    <fileType name="SPR file" implementationClass="com.openc2e.plugins.intellij.caos.sprites.spr.SprFileType" fieldName="INSTANCE"
+              language="CreaturesSPR" extensions="spr"/>
+    <fileEditorProvider implementation="com.openc2e.plugins.intellij.caos.sprites.spr.SprFileEditorProvider"/>
     <!-- Add your extensions here -->
   </extensions>
 

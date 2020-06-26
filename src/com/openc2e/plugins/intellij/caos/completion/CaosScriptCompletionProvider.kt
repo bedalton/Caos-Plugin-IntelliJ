@@ -58,6 +58,16 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
+        if (previous?.text?.toUpperCase() == "DDE: PICT") {
+            val builderElement = LookupElementBuilder
+                    .create("")
+                    .withPresentableText(GENERATE_DDE_PICT_LOOKUP_STRING)
+                    .withInsertHandler(GeneratePictDimensionsAction)
+            resultSet.addElement(builderElement)
+            resultSet.stopHere()
+            return
+        }
+
         if (element.hasParentOfType(CaosScriptCGsub::class.java)) {
             addSubroutineNames(element, resultSet)
             resultSet.stopHere()

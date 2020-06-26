@@ -47,6 +47,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
                     max(minIn, maxIn)
             }
         }
+        data class CaosPictDimension(val width:Int, val height:Int) : CaosLiteral("${width}x${height}", CaosExpressionValueType.PICT_DIMENSION)
     }
     object CaosVarNull : CaosVar("[NULL]", CaosExpressionValueType.NULL)
     object CaosVarNone : CaosVar("{NONE}", CaosExpressionValueType.UNKNOWN)

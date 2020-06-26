@@ -38,6 +38,7 @@ private const val EAME = 17
 private const val NAME = 18
 private const val NULL = 19
 private const val NONE = 20
+private const val PICT_DIMENSIONS = 21;
 
 
 
@@ -64,6 +65,7 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         NAME -> CaosNamedGameVar.NameVar(readNameAsString()?:"???")
         NULL -> CaosVarNull
         NONE -> CaosVarNone
+        PICT_DIMENSIONS -> CaosVar.CaosLiteral.CaosPictDimension(readInt(), readInt())
         else -> throw Exception("Unexpected caos var type '$value' encountered")
     }
 }
@@ -166,6 +168,11 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
         }
         is CaosVarNull -> writeInt(NULL)
         is CaosVarNone -> writeInt(NONE)
+        is CaosVar.CaosLiteral.CaosPictDimension -> {
+            writeInt(PICT_DIMENSIONS)
+            writeInt(caosVar.width)
+            writeInt(caosVar.height)
+        }
     }
 }
 
