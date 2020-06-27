@@ -12,6 +12,7 @@
       <entry name="!?*.clj" />
       <entry name="?*.caosdef" />
       <entry name="?*.properties" />
+      <entry name="?*.dta" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="8">
       <module name="CaosPlugin" target="8" />

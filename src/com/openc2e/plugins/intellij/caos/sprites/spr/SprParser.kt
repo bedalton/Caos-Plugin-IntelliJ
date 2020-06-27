@@ -2,9 +2,7 @@ package com.openc2e.plugins.intellij.caos.sprites.spr
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.caos.psi.util.LOGGER
-import com.openc2e.plugins.intellij.caos.utils.uByte
-import com.openc2e.plugins.intellij.caos.utils.uInt
-import com.openc2e.plugins.intellij.caos.utils.uShort
+import com.openc2e.plugins.intellij.caos.utils.*
 import java.awt.Color
 import java.awt.Image
 import java.awt.image.BufferedImage
@@ -23,83 +21,80 @@ object SprParser {
         val rawBytes = file.contentsToByteArray()
         val numRawBytes = rawBytes.size
         val bytesBuffer = ByteBuffer.wrap(rawBytes)
-        val numImages = bytesBuffer.uShort
+        val numImages = bytesBuffer.uInt16BE
+        LOGGER.info("Number of Images: <$numImages>")
         val rawData = (0 until numImages).map {
-            val offsetForData = bytesBuffer.uInt
+            val offsetForData = bytesBuffer.uInt32BE
             if (offsetForData < 0) {
                 LOGGER.info("OffsetForData returned negative number. $offsetForData")
                 return@map null
             }
-            val width = bytesBuffer.uShort
-            val height = bytesBuffer.uShort
+            val width = bytesBuffer.uInt16BE
+            val height = bytesBuffer.uInt16BE
             if (width < 1 || height < 1) {
                 LOGGER.info("OffsetForData Width Height invalid. <${width}x${height}>")
                 return@map null
             }
             val numBytes = width * height
-            val endByte = (offsetForData + (width * height) + 1)
+            val endByte = (offsetForData + (width * height))
             if (numRawBytes < endByte || endByte < 0) {
-                LOGGER.info("Invalid byte range requested. Total Bytes: ${numRawBytes}; Offset: $offsetForData, Width:$width, Height:$height; EndBye: ${(offsetForData + (width * height) + 1)}")
+                LOGGER.info("Invalid byte range requested. Total Bytes: ${numRawBytes}; Offset: $offsetForData, Width:$width, Height:$height; EndByte: $endByte}")
                 return@map null
             }
-
-            val bytes = ByteArray(numBytes)
-            bytesBuffer.get(bytes, offsetForData.toInt(), numBytes)
-            SpriteData(width = width.toInt(), height = height.toInt(), bytes = bytes)
+            SpriteData(offset = offsetForData, width = width, height = height)
         }
-        return rawData.map {
-            LOGGER.info("ImageData: $it")
-            if (it == null)
+        return rawData.map { imageData ->
+            LOGGER.info("ImageData: $imageData")
+            if (imageData == null)
                 null
-            else
-                parseImage(it.width, it.height, it.bytes)
+            else {
+                bytesBuffer.position(imageData.offset.toInt())
+                val pixels = (0 until (imageData.width * imageData.height)).map pixels@{_ ->
+                    bytesBuffer.uInt8.let {
+                        if (it < 0 || it > 256) {
+                            LOGGER.info("Color value '$it' is invalid")
+                            return@pixels 0
+                        }
+                        colors[it]
+                    }
+                }
+                parseImage(imageData.width, imageData.height, pixels)
+            }
         }
     }
 
-    private fun parseImage(width:Int, height:Int, bytes:ByteArray) : BufferedImage? {
-        if (width * height != bytes.size) {
-            LOGGER.info("Failed to parse image. Bytes does not equal width * height. Expected: <${width * height}>; Found: <${bytes.size}>")
-            return null
-        }
+    private fun parseImage(width:Int, height:Int, pixels:List<Int>) : BufferedImage? {
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
-        (0..height).map {y ->
-            (0..width).map { x ->
-                val colorIndex = bytes[x*y].toInt()
-                bufferedImage.setRGB(x,y,colors[colorIndex])
+        val alphaRaster = bufferedImage.alphaRaster
+        val black = Color(0,0,0).rgb
+        val solid = intArrayOf(255,255,255,255)
+        val transparent = intArrayOf(0,0,0,0)
+        (0 until height).map {y ->
+            val base = y * width
+            (0 until width).mapIndexed { i, x ->
+                val rgb = pixels[base+i]
+                bufferedImage.setRGB(x,y,rgb)
+                val alpha = if (rgb == black) transparent else solid
+                alphaRaster.setPixel(x,y,alpha)
             }
         }
         return bufferedImage
     }
     private val colors:List<Int> by lazy {
-        val pathToPalette = javaClass.getResource("support/palette.dta").toExternalForm()
-        val bytes = File(pathToPalette).readBytes()
-        (0..256).map {
+        val pathToPalette = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath("support/palette.dta")
+        if (pathToPalette == null) {
+            LOGGER.info("Path to palette is null")
+            return@lazy (0..(255*3)).map { 128 }
+        }
+        val bytes = pathToPalette.contentsToByteArray()
+        (0..255).map {
             val start = it * 3
             val r = bytes[start] * 4
             val g = bytes[start+1] * 4
             val b = bytes[start+2] * 4
-            val alpha = if (r == 0 && g == 0 && b == 0) 0 else 1
-            Color(r,g,b,alpha).rgb
+            Color(r,g,b).rgb
         }
     }
 }
 
-data class SpriteData(val width:Int, val height:Int, val bytes:ByteArray) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is SpriteData) return false
-
-        if (width != other.width) return false
-        if (height != other.height) return false
-        if (!bytes.contentEquals(other.bytes)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = width.hashCode()
-        result = 31 * result + height
-        result = 31 * result + bytes.contentHashCode()
-        return result
-    }
-}
+data class SpriteData(val offset:Long, val width:Int, val height:Int)
