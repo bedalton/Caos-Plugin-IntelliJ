@@ -22,29 +22,27 @@ object SprParser {
         val numRawBytes = rawBytes.size
         val bytesBuffer = ByteBuffer.wrap(rawBytes)
         val numImages = bytesBuffer.uInt16BE
-        LOGGER.info("Number of Images: <$numImages>")
         val rawData = (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32BE
             if (offsetForData < 0) {
-                LOGGER.info("OffsetForData returned negative number. $offsetForData")
+                LOGGER.severe("OffsetForData returned negative number. $offsetForData")
                 return@map null
             }
             val width = bytesBuffer.uInt16BE
             val height = bytesBuffer.uInt16BE
             if (width < 1 || height < 1) {
-                LOGGER.info("OffsetForData Width Height invalid. <${width}x${height}>")
+                LOGGER.severe("OffsetForData Width Height invalid. <${width}x${height}>")
                 return@map null
             }
             val numBytes = width * height
             val endByte = (offsetForData + (width * height))
             if (numRawBytes < endByte || endByte < 0) {
-                LOGGER.info("Invalid byte range requested. Total Bytes: ${numRawBytes}; Offset: $offsetForData, Width:$width, Height:$height; EndByte: $endByte}")
+                LOGGER.severe("Invalid byte range requested. Total Bytes: ${numRawBytes}; Offset: $offsetForData, Width:$width, Height:$height; EndByte: $endByte}")
                 return@map null
             }
             SpriteData(offset = offsetForData, width = width, height = height)
         }
         return rawData.map { imageData ->
-            LOGGER.info("ImageData: $imageData")
             if (imageData == null)
                 null
             else {

@@ -101,6 +101,8 @@
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandCaseAnnotator" />
     <annotator language="CaosScript"
                implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptHelperActionAnnotator" />
+    <annotator language="CaosScript"
+               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptGhostElementAnnotator" />
 
     <!-- Inspections -->
     <localInspection language="CaosScript"

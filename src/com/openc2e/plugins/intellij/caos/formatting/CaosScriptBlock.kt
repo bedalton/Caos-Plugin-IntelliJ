@@ -65,6 +65,9 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
+        if ((node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
+            return noneIndent
+        }
         val elementType = myNode.elementType
         val previousType = myNode.getPreviousNonEmptyNode(true)?.elementType
         if (myNode.psi is CaosScriptHasCodeBlock)

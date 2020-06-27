@@ -340,7 +340,6 @@ private caos_element
 	|	command_call
 	|	incomplete
 	| 	comment
-	//|	expression_list
 	;
 
 
@@ -396,7 +395,7 @@ private event_script_body
 	;
 
 subroutine
-	::= subroutine_header space_like_or_newline (subroutine_body space_like_or_newline)? c_retn
+	::= subroutine_header (space_like_or_newline subroutine_body)? (space_like_or_newline c_retn)?
 	{
 		pin=1
 		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
@@ -493,15 +492,9 @@ private control_statement
    |	doif_statement
    ;
 
-expression_list
-	::= expression (!new_line_like space_like expression)* space_like?
-	{
-		pin(".*")=1
-		//recoverWhile=expression_list_recover
-	}
-
 loop_statement
-   ::= c_loop space_like_or_newline loop_body? space_like_or_newline loop_terminator{
+   ::= c_loop space_like_or_newline loop_body? (space_like_or_newline loop_terminator)?
+   {
 		pin=1
 		implements = [
 			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -546,7 +539,8 @@ private loop_body
 	;
 
 repeat_statement
-	::= reps_header space_like_or_newline(repeat_body space_like_or_newline)? c_repe{
+	::= reps_header (space_like_or_newline repeat_body)? (space_like_or_newline c_repe)?
+	{
 		pin=1
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -587,7 +581,7 @@ private repeat_body
    ;
 
 enum_next_statement
-	::= enum_header_command space_like_or_newline(enum_body space_like_or_newline)? (c_next|c_nscn){
+	::= enum_header_command (space_like_or_newline enum_body)? (space_like_or_newline (c_next|c_nscn))? {
 		pin=1;
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -621,7 +615,7 @@ enum_header_command
 	;
 
 enum_scenery_statement
-   ::= escn_header space_like_or_newline(escn_body space_like_or_newline)? (c_nscn|c_next){
+   ::= escn_header (space_like_or_newline escn_body)? (space_like_or_newline (c_nscn|c_next))? {
 		pin=1;
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
@@ -672,7 +666,7 @@ private escn_body
    ;
 
 doif_statement
-	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? space_like_or_newline (c_endi)
+	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? (space_like_or_newline c_endi)?
 	{
 		pin=1
 		implements = [
@@ -1085,7 +1079,7 @@ space_like_or_newline
 
 new_line_like
 	::= symbol_comma
-	|	NEWLINE
+	|	NEWLINE+
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -1401,9 +1395,9 @@ private expects_decimal_or_int ::=
 
 	;
 
-private c_setv ::= c_kw_setv space_like lvalue space_like setv_prime
+private c_setv ::= (c_kw_setv space_like)? lvalue space_like setv_prime
 	{
-		pin = 1
+		pin = 2
 	}
 	;
 
