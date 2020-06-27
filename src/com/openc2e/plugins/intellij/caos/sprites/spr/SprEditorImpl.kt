@@ -26,7 +26,7 @@ class SprEditorImpl : UserDataHolderBase, FileEditor {
     }
 
     override fun getComponent(): JComponent {
-        return SprImageView(myFile)
+        return SprFileEditor(myFile).`$$$getRootComponent$$$`()
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
