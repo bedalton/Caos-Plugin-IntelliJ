@@ -79,7 +79,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 %%
 
 <START_OF_LINE> {
-	\s+				 	 	{ return WHITE_SPACE; }
+	\s+				 	 	{ return CaosScript_SPACE_; }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }

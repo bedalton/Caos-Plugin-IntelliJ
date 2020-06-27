@@ -14,6 +14,7 @@ import com.openc2e.plugins.intellij.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiElementFactory
 import com.openc2e.plugins.intellij.caos.psi.util.lineNumber
 import com.openc2e.plugins.intellij.caos.psi.util.next
+import com.openc2e.plugins.intellij.caos.utils.EditorUtil
 import com.openc2e.plugins.intellij.caos.utils.document
 
 class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction {
@@ -32,15 +33,17 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
     override fun getText(): String = collapseChar.text
 
-    override fun invoke(project: Project, editor: Editor?, fileIn: PsiFile?) {
+    override fun invoke(project: Project, editor: Editor, fileIn: PsiFile?) {
         val file = fileIn ?: return
         val document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: fileIn.document
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
+
         val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
         for (newLine in newLines) {
-            replaceWithSpaceOrComma(newLine)
+            if (newLine.isValid)
+                replaceWithSpaceOrComma(newLine)
         }
         runWriteAction {
             CodeStyleManager.getInstance(project).reformat(fileIn, true)

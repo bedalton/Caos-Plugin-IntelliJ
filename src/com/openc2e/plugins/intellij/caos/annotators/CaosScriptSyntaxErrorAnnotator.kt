@@ -44,7 +44,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationWrapper)
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
             is CaosScriptCRetn -> annotateRetnCommand(element, annotationWrapper)
-            is CaosScriptExpressionList -> annotateExpressionList(element, annotationWrapper)
             is CaosScriptToken -> annotateToken(element, annotationWrapper)
             is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, annotationWrapper)
             is CaosScriptC1String -> annotateC1String(variant, element, annotationWrapper)
@@ -189,6 +188,19 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotateExtraSpaces(element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val nextText = element.next?.text ?: ""
         val prevText = element.previous?.text ?: ""
+        if (prevText.contains("\n")) {
+            if ((element.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
+                annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.c1-leading-spaces"))
+                        .range(element)
+                        .withFix(CaosScriptFixTooManySpaces(element))
+                        .newFix(CaosScriptTrimErrorSpaceBatchFix())
+                        .range(element.containingFile.textRange)
+                        .key(CaosScriptTrimErrorSpaceBatchFix.HIGHLIGHT_DISPLAY_KEY)
+                        .registerFix()
+                        .create()
+                return
+            }
+        }
         val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
         if (element.text.length == 1 && !nextIsCommaOrSpace)
@@ -234,13 +246,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             return
         annotationWrapper.newAnnotation(HighlightSeverity.ERROR, CaosBundle.message("caos.annotator.command-annotator.loop-should-not-be-jumped-out-of"))
                 .range(element.textRange)
-                .create()
-    }
-
-
-    private fun annotateExpressionList(element: CaosScriptExpressionList, annotationWrapper: AnnotationHolderWrapper) {
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.stray-expressions-are-not-allowed"))
-                .range(element)
                 .create()
     }
 

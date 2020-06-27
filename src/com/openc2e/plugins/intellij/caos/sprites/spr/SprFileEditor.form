@@ -33,6 +33,16 @@
             <constraints/>
             <properties/>
           </component>
+          <component id="79983" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Scale"/>
+            </properties>
+          </component>
+          <component id="c1741" class="javax.swing.JComboBox" binding="scale" custom-create="true">
+            <constraints/>
+            <properties/>
+          </component>
         </children>
       </grid>
     </children>

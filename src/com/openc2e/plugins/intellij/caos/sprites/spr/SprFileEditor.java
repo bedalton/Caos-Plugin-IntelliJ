@@ -11,11 +11,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.Objects;
 
 public class SprFileEditor {
     private JPanel main;
     private JList<Image> imageList;
     private JComboBox backgroundColor;
+    private JComboBox scale;
     private final VirtualFile virtualFile;
     private final List<Image> images;
     public static final String TRANSPARENT = "Transparent";
@@ -64,6 +66,12 @@ public class SprFileEditor {
             imageList.updateUI();
         });
         imageList.updateUI();
+        scale.addItemListener((e) -> {
+            final String value = (String) Objects.requireNonNull(scale.getSelectedItem());
+            final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
+            SpriteCellRenderer.INSTANCE.setScale(newScale);
+            imageList.updateUI();
+        });
     }
 
     /**
@@ -87,6 +95,10 @@ public class SprFileEditor {
         label1.setText("Background Color");
         panel1.add(label1);
         panel1.add(backgroundColor);
+        final JLabel label2 = new JLabel();
+        label2.setText("Scale");
+        panel1.add(label2);
+        panel1.add(scale);
     }
 
     /**
@@ -108,6 +120,16 @@ public class SprFileEditor {
                 RED,
                 GREEN,
                 BLUE
+        });
+        scale = new ComboBox(new String[]{
+                "1x",
+                "1.25x",
+                "1.5x",
+                "2x",
+                "2.5x",
+                "3x",
+                "4x",
+                "5x"
         });
 
     }

@@ -4,6 +4,9 @@ import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
+import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.caos.lang.variant
 import com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes
 import com.openc2e.plugins.intellij.caos.psi.api.*
 import com.openc2e.plugins.intellij.caos.psi.types.CaosScriptTokenSets
@@ -12,7 +15,7 @@ import com.openc2e.plugins.intellij.caos.psi.util.previous
 
 class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, private val caosSettings: CaosScriptCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
-        if (!caosSettings.INDENT_BLOCKS)
+        if (!caosSettings.INDENT_BLOCKS || (node.psi?.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1)
             return Indent.getNoneIndent()
         val elementType = node.elementType
         var firstChild: ASTNode? = node
