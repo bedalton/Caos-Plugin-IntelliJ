@@ -198,8 +198,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                         .key(CaosScriptTrimErrorSpaceBatchFix.HIGHLIGHT_DISPLAY_KEY)
                         .registerFix()
                         .create()
-                return
             }
+            return
         }
         val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)

@@ -7,16 +7,17 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
+import com.openc2e.plugins.intellij.caos.sprites.spr.def.SprDefEditorImpl
 
 
 class SprFileEditorProvider : FileEditorProvider, DumbAware {
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
-        return file.extension == "spr"
+        return file.extension == "spr" || file.extension == "sprdef"
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
-        return SprEditorImpl(project, file)
+        return if (file.extension == "sprdef") SprDefEditorImpl(project, file) else SprEditorImpl(project, file)
     }
 
     override fun disposeEditor(editor: FileEditor) {

@@ -10,27 +10,6 @@ import java.awt.*
 import java.awt.image.BufferedImage
 import javax.swing.*
 
-
-class SprImageView(file:VirtualFile) : JPanel() {
-    private val images:List<Image?> by lazy {
-        SprParser.parseSprite(file)
-    }
-
-    init {
-        layout = GridLayoutManager(1, 1, Insets(0, 0, 0, 0), -1, -1)
-        background = Color(255,0,0)
-        val scrollList = JBScrollPane()
-        scrollList.background = Color(0,255,0)
-        val listView = JBList<Image>(images)
-        listView.background = Color(0,0,255)
-        listView.cellRenderer = SpriteCellRenderer
-        listView.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
-        scrollList.add(listView)
-        add(scrollList, GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false))
-    }
-
-}
-
 object SpriteCellRenderer : ListCellRenderer<Image> {
     var color:Color = DEFAULT_COLOR
     var fontColor = Color.BLACK

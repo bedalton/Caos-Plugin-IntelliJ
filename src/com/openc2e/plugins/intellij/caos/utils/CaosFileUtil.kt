@@ -8,15 +8,17 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.JarFileSystem
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.*
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.util.indexing.FileBasedIndex
 import com.openc2e.plugins.intellij.caos.lang.CaosScriptFile
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -119,3 +121,22 @@ fun CaosScriptFile.copyAsOneLine() {
     }
 }
 
+fun findFileBySharedModuleAndRelativePath(project: Project, baseFile: VirtualFile, fileRelativePath: String): VirtualFile? {
+    val relativePath = if (fileRelativePath.startsWith("/")) fileRelativePath else "/$fileRelativePath"
+    val fileTypes: Set<FileType> = setOf(FileTypeManager.getInstance().getFileTypeByFileName(relativePath))
+    val fileList: MutableList<VirtualFile> = mutableListOf()
+    val module = ModuleUtil.findModuleForFile(baseFile, project)
+            ?: return null
+    val file= module.moduleFile?.findFileByRelativePath(fileRelativePath)
+    if (file != null)
+        return file
+    val path = module.moduleFilePath + fileRelativePath
+    return LocalFileSystem.getInstance().findFileByPath(path)
+}
+
+fun findFileByRelativePath(project: Project, baseFile: VirtualFile, fileRelativePath: String): VirtualFile? {
+    val relativePath = if (fileRelativePath.startsWith("/")) fileRelativePath else "/$fileRelativePath"
+    val fileTypes: Set<FileType> = setOf(FileTypeManager.getInstance().getFileTypeByFileName(relativePath))
+    val fileList: MutableList<VirtualFile> = mutableListOf()
+    return VfsUtilCore.findRelativeFile(fileRelativePath, baseFile)
+}

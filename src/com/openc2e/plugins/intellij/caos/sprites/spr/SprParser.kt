@@ -78,7 +78,7 @@ object SprParser {
         }
         return bufferedImage
     }
-    private val colors:List<Int> by lazy {
+    internal val colors:List<Int> by lazy {
         val pathToPalette = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath("support/palette.dta")
 
         if (pathToPalette == null) {
