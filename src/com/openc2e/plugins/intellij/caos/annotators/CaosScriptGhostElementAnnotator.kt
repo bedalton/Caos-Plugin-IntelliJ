@@ -58,7 +58,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
 
     private fun <PsiT:PsiElement> annotate(element:PsiT, expectedTokens:List<String>, annotationWrapper: AnnotationHolderWrapper) {
         for(expectedToken in expectedTokens) {
-            if (element.lastChild.text.toUpperCase().endsWith(expectedToken))
+            if (element.lastChild.text.toUpperCase().contains(expectedToken))
                 return
         }
         for(expectedToken in expectedTokens) {
