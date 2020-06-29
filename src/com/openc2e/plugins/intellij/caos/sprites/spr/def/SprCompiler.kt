@@ -98,6 +98,7 @@ object SprCompiler {
         return buffer.toByteArray()
     }
 
+    @JvmStatic
     fun compileForPreview(image:BufferedImage) : BufferedImage {
         val outImage = BufferedImage(image.width, image.height, ColorSpace.TYPE_RGB)
         val width = image.width
