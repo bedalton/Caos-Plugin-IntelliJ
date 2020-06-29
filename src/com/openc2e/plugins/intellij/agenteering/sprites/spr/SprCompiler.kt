@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.agenteering.sprites.spr.def
+package com.openc2e.plugins.intellij.agenteering.sprites.spr
 
 import com.intellij.util.io.toByteArray
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.LOGGER
