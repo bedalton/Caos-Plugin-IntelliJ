@@ -196,7 +196,7 @@ BBD: SHOW (command) show (integer);
  * #Blackboard
  *
  * @param {index} (integer)
- * @param {conceptId} (integer)
+ * @param {conceptId} (integer@BlackBoardWords)
  * @param {text} [string]
  *
  */
@@ -443,19 +443,12 @@ DDE: NEGG (command);
 DDE: PANC (command);
 
 /*
- * Take a snapshot with current camera position, given the picture with the dimensions, and returns a *.spr image name
- * Picture dimensions are specified as a three letter token. With first char representing the width and the third the height.
- * The middle char can be anything, but usually the '|' pipe character.
- * The returned SPR file is generated without a valid SPR header. Header must be added manually
+ * take snapshot of the current subject create a standard windows bmp pass file name back to
+ * client
  * #Debug
  *
- * @credit to the Shee's Lost Knowledge blog for their DDE: PICT post
- * @see http://sheeslostknowledge.blogspot.com/2014/12/repairing-and-understanding-lost-dde.html
- *
- * @param {dimensions} (token[3])
- *
  */
-DDE: PICT (command) dimensions (token);
+DDE: PICT (command);
 
 /*
  * write from string to location determined by option token
@@ -1961,7 +1954,7 @@ SYS: WRLD (command) filename [string];
 SYS: WTOP (command);
 
 /*
- * return curr targ object* as integer
+ * return current TARG object as integer
  * #AgentVars
  *
  * @rvalue
@@ -2271,6 +2264,61 @@ YVEC (integer);
 	5 = Activate 1 & Deactivate
 	6 = Activate 2 & Deactivate
 	7 = Activate 1,2,Deactivate
+}
+
+@BlackBoardWords {
+	0 = Stay (just look)
+	1 = Push
+	2 = Pull
+	3 = Stop
+	4 = Come
+	5 = Run
+	6 = Get
+	7 = Drop
+	8 = Think (say need)
+	9 = Sleep
+	10 = Left
+	11 = Right
+	16 = <Creature's Name>
+	17 = <hand name> - Classifier: 2 1 x
+	18 = Call(lift call button) - Classifier 2 2 x
+	19 = Water - Classifier: 2 3 x
+	20 = Plant (or herb) - Class: 2 4 x
+	21 = Egg - Class: 2 5 x
+	22 = Food - Class: 2 6 x
+	23 = Drink - Class: 2 7 x
+	24 = Vendor - Class: 2 8 x
+	25 = Music - Class: 2 9 x
+	26 = Animal - Class: 2 10 x
+	27 = Fire - Class: 2 11 x
+	28 = Shower/clock - Class: 2 12 x
+	29 = Toy - Class: 2 13 x
+	30 = Big Toy - Class: 2 14 x
+	31 = Weed - Class: 2 15 x
+	42 = Mover - Class: 3 1 x
+	43 = Lift - Class: 3 2 x
+	44 = Computer - Class: 3 3 x
+	45 = Fun (projector) - Class: 3 4 x
+	46 = Bang (cannon) - Class: 3 5 x
+	52 = Norn - Class: 4 1 x
+	53 = Grendel - Class: 4 2 x
+	56 = Hurt
+	57 = Sad
+	58 = Hungry
+	59 = Cold
+	60 = Hot
+	61 = Tired
+	62 = Sleepy
+	63 = Lonely
+	64 = Cramped
+	65 = Afraid
+	66 = Bored
+	67 = Angry
+	68 = Amorous
+	72 = Yes - Reward creature
+	73 = No - Punish creature
+	74 = Look - Helps focus attention on hand or whatever hand is holding or pointing at.
+	75 = What - Say whatever action and/or object creature is thinking about.
 }
 
 @bool {
