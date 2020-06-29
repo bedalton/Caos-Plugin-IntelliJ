@@ -6,24 +6,22 @@ import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
 import java.io.File
 
-internal val SprImageDataFlavor = DataFlavor(java.awt.datatransfer.DataFlavor.javaJVMLocalObjectMimeType +
-";class=\"" + SprDefImageData::class.java.name + "\"");
+internal val SprImageDataFlavor = DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
+";class=\"" + java.awt.List::class.java.name + "\"");
 
 
-class SprImageDataTransferable(val data: SprDefImageData) : Transferable {
-    val file:File? by lazy {
-        data.virtualFile?.let {
-            VfsUtilCore.virtualToIoFile(it)
+class SprImageDataTransferable(val data: List<SprDefImageData>) : Transferable {
+    val file:List<File?> by lazy {
+        data.map {
+            it.virtualFile?.let {
+                VfsUtilCore.virtualToIoFile(it)
+            }
         }
     }
     override fun getTransferData(flavor: DataFlavor?): Any {
         when (flavor) {
             SprImageDataFlavor -> data
-            DataFlavor.javaFileListFlavor,
-            DataFlavor.imageFlavor -> if (data is SprDefImageData.SprDefImage)
-                data.bufferedImage
             DataFlavor.javaFileListFlavor -> file
-            DataFlavor.stringFlavor -> file?.absolutePath ?: "::${data.relativePath}"
             else -> throw UnsupportedFlavorException(flavor)
         }
         return data
@@ -36,11 +34,8 @@ class SprImageDataTransferable(val data: SprDefImageData) : Transferable {
     override fun getTransferDataFlavors(): Array<DataFlavor> {
         val flavors = mutableListOf<DataFlavor>(
                 SprImageDataFlavor,
-                DataFlavor.javaFileListFlavor,
-                DataFlavor.stringFlavor
+                DataFlavor.javaFileListFlavor
         )
-        if (data is SprDefImageData.SprDefImage)
-            flavors += DataFlavor.imageFlavor
         return flavors.toTypedArray()
     }
 }

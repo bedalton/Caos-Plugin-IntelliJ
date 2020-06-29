@@ -139,7 +139,7 @@ sealed class SprDefParseResult {
 }
 
 sealed class SprDefImageData(val index:Int, val relativePath:String, val virtualFile: VirtualFile?) {
-    class SprDefImageError(index:Int, relativePath:String, val error:String, virtualFile: VirtualFile) : SprDefImageData(index, relativePath, virtualFile)
+    class SprDefImageError(index:Int, relativePath:String, val error:String, virtualFile: VirtualFile?) : SprDefImageData(index, relativePath, virtualFile)
     class SprDefMissingImage(index:Int, relativePath:String, virtualFile: VirtualFile?) : SprDefImageData(index, relativePath, virtualFile)
     class SprDefImage(index:Int, relativePath:String, val bufferedImage: BufferedImage, virtualFile: VirtualFile) : SprDefImageData(index, relativePath, virtualFile)
 }
