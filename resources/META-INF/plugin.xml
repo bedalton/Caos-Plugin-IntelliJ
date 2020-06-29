@@ -192,6 +192,8 @@
     <!-- ======================== -->
     <fileType name="SPR file" implementationClass="com.openc2e.plugins.intellij.caos.sprites.spr.SprFileType" fieldName="INSTANCE"
               language="CreaturesSPR" extensions="spr"/>
+    <fileType name="SPR Definitions file" implementationClass="com.openc2e.plugins.intellij.caos.sprites.spr.def.SprDefFileType" fieldName="INSTANCE"
+              language="CreaturesSprDef" extensions="sprdef"/>
     <fileEditorProvider implementation="com.openc2e.plugins.intellij.caos.sprites.spr.SprFileEditorProvider"/>
     <!-- Add your extensions here -->
   </extensions>

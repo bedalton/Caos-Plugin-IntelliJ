@@ -1,20 +1,32 @@
 package com.openc2e.plugins.intellij.caos.sprites.spr.def;
 
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.openc2e.plugins.intellij.caos.sprites.spr.def.SprDefParseResult.SprDefParseData;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class SprDefFileEditor {
     private JPanel main;
@@ -150,7 +162,8 @@ public class SprDefFileEditor {
         dndList.setDropMode(DropMode.INSERT);
         dndList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         dndList.setTransferHandler(new TransferHandler() {
-            private int index;
+            private int[] selectedIndices;
+            private int insertIndex;
             private boolean beforeIndex = false; //Start with `false` therefore if it is removed from or added to the list it still works
 
             @Override
@@ -160,40 +173,51 @@ public class SprDefFileEditor {
 
             @Override
             public Transferable createTransferable(JComponent comp) {
-                index = dndList.getSelectedIndex();
-                return new SprImageDataTransferable(dndList.getSelectedValue());
+                selectedIndices = dndList.getSelectedIndices();
+                return new SprImageDataTransferable(dndList.getSelectedValuesList());
             }
 
             @Override
             public void exportDone(JComponent comp, Transferable trans, int action) {
+                int movement = (int) Arrays.stream(selectedIndices).filter((i) -> i > insertIndex).count();
                 if (action == MOVE) {
-                    if (beforeIndex)
-                        images.remove(index + 1);
-                    else
-                        images.remove(index);
+                    for (int index : selectedIndices) {
+                        if (beforeIndex) {
+                            images.remove(index + movement);
+                        } else {
+                            images.remove(index);
+                        }
+                    }
+                    selectedIndices = new int[0];
                 }
             }
 
             @Override
-            public boolean canImport(TransferHandler.TransferSupport support) {
-                return support.isDataFlavorSupported(SprImageDataTransferableKt.getSprImageDataFlavor());
+            public boolean canImport(TransferSupport support) {
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor) || support.isDataFlavorSupported(SprImageDataTransferableKt.getSprImageDataFlavor());
             }
 
             @Override
-            public boolean importData(TransferHandler.TransferSupport support) {
-                try {
-                    SprDefImageData data = (SprDefImageData) support.getTransferable().getTransferData(SprImageDataTransferableKt.getSprImageDataFlavor());
-                    JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
-                    images.add(dl.getIndex(), data);
-                    beforeIndex = dl.getIndex() < index;
-                    return true;
-                } catch (UnsupportedFlavorException | IOException e) {
-                    e.printStackTrace();
+            public boolean importData(TransferSupport support) {
+                List<SprDefImageData> data = SprDefEditorUtil.parseTransferable(project, virtualFile, support.getTransferable(), images.size());
+                if (data == null) {
+                    return false;
                 }
-
-                return false;
+                JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
+                images.addAll(dl.getIndex(), data);
+                insertIndex = dl.getIndex();
+                return true;
             }
         });
+    }
+
+    private void writeVirtualFileContents() {
+
+    }
+
+    public void addImages(List<SprDefImageData> images) {
+        images.addAll(images);
+        imageList.updateUI();
     }
 
     public List<SprDefImageData> getImageData() {
