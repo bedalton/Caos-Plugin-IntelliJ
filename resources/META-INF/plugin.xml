@@ -1,5 +1,5 @@
 <idea-plugin>
-  <id>com.openc2e.plugins.intellij.caos</id>
+  <id>com.openc2e.plugins.intellij.agenteering.caos</id>
   <name>Creatures Caos Script</name>
   <version>0.01</version>
 
@@ -54,59 +54,59 @@
     <!-- ===== CAOS Script ====== -->
     <!-- ======================== -->
     <!-- LANG -->
-    <fileTypeFactory implementation="com.openc2e.plugins.intellij.caos.lang.CaosScriptFileTypeFactory" />
-    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserDefinition"
+    <fileTypeFactory implementation="com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
+    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
                            language="CaosScript" />
 
     <completion.contributor language="CaosScript"
-                            implementationClass="com.openc2e.plugins.intellij.caos.completion.CaosScriptCompletionContributor" />
-    <editorNotificationProvider implementation="com.openc2e.plugins.intellij.caos.project.editor.CaosScriptEditorToolbar" />
+                            implementationClass="com.openc2e.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
+    <editorNotificationProvider implementation="com.openc2e.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
-                             implementationClass="com.openc2e.plugins.intellij.caos.references.CaosScriptUsagesProvider" />
+                             implementationClass="com.openc2e.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider" />
 
     <!-- Project -->
-    <directoryProjectGenerator implementation="com.openc2e.plugins.intellij.caos.project.template.CaosScriptVariantTemplate"/>
-    <projectTemplatesFactory implementation="com.openc2e.plugins.intellij.caos.project.template.CaosScriptTemplateFactory"/>
+    <directoryProjectGenerator implementation="com.openc2e.plugins.intellij.agenteering.caos.project.template.CaosScriptVariantTemplate"/>
+    <projectTemplatesFactory implementation="com.openc2e.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory"/>
 
     <!-- Formatting -->
     <lang.formatter language="CaosScript"
-                    implementationClass="com.openc2e.plugins.intellij.caos.formatting.CaosScriptFormattingModelBuilder" />
+                    implementationClass="com.openc2e.plugins.intellij.agenteering.caos.formatting.CaosScriptFormattingModelBuilder" />
 
     <!-- Code Style Settings -->
     <codeStyleSettingsProvider
-        implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptCodeStyleSettingsProvider" />
+        implementation="com.openc2e.plugins.intellij.agenteering.caos.formatting.CaosScriptCodeStyleSettingsProvider" />
     <langCodeStyleSettingsProvider
-        implementation="com.openc2e.plugins.intellij.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider" />
+        implementation="com.openc2e.plugins.intellij.agenteering.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider" />
 
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory
-        implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
+        implementationClass="com.openc2e.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
         language="CaosScript"
         key="CaosScript"
     />
-    <colorSettingsPage implementation="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptColorSettingsPage" />
+    <colorSettingsPage implementation="com.openc2e.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.highlighting.CaosScriptHighlighterAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml" />
 
     <!-- Annotators -->
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptEnumAnnotator"
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.annotators.CaosScriptEnumAnnotator"
                order="first"
     />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptCommandCaseAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.annotators.CaosScriptCommandCaseAnnotator" />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptHelperActionAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
     <annotator language="CaosScript"
-               implementationClass="com.openc2e.plugins.intellij.caos.annotators.CaosScriptGhostElementAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.annotators.CaosScriptGhostElementAnnotator" />
 
     <!-- Inspections -->
     <localInspection language="CaosScript"
-                     implementationClass="com.openc2e.plugins.intellij.caos.inspections.CaosScriptTypesInspection"
+                     implementationClass="com.openc2e.plugins.intellij.agenteering.caos.inspections.CaosScriptTypesInspection"
                      level="WARNING"
                      groupName="CaosScript"
                      enabledByDefault="true"
@@ -115,7 +115,7 @@
                      order="last"
     />
     <localInspection language="CaosScript"
-                     implementationClass="com.openc2e.plugins.intellij.caos.inspections.CaosScriptCAssignmentInspection"
+                     implementationClass="com.openc2e.plugins.intellij.agenteering.caos.inspections.CaosScriptCAssignmentInspection"
                      level="ERROR"
                      groupName="CaosScript"
                      enabledByDefault="true"
@@ -125,76 +125,76 @@
 
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
-                                    implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptInlayHintsProvider" />
+                                    implementationClass="com.openc2e.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
     <documentationProvider
-        implementation="com.openc2e.plugins.intellij.caos.documentation.CaosScriptDocumentationProvider" />
+        implementation="com.openc2e.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider" />
     <!--lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptRValueFoldingBuilder"/-->
+                         implementationClass="com.openc2e.plugins.intellij.agenteering.caos.hints.CaosScriptRValueFoldingBuilder"/-->
     <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.openc2e.plugins.intellij.caos.hints.CaosScriptStimFoldingBuilder"/>
+                         implementationClass="com.openc2e.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder"/>
 
 
     <!-- Indices -->
-    <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexService"
-                        serviceImplementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptIndexServiceImpl" />
-    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptConstAssignmentIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptNamedVarAssignmentIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptNamedVarUseIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptSubroutineIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.indices.CaosScriptVarAssignmentIndex" />
+    <applicationService serviceInterface="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
+                        serviceImplementation="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl" />
+    <stubElementTypeHolder class="com.openc2e.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptConstAssignmentIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarAssignmentIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarUseIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
     <!-- ======================== -->
     <!-- LANG -->
-    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserDefinition"
+    <lang.parserDefinition implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParserDefinition"
                            language="CaosDef" />
     <completion.contributor language="CaosDef"
-                            implementationClass="com.openc2e.plugins.intellij.caos.def.contributor.CaosDefCompletionContributor" />
+                            implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.contributor.CaosDefCompletionContributor" />
     <lang.findUsagesProvider
-        implementationClass="com.openc2e.plugins.intellij.caos.def.references.CaosDefUsagesProvider"
+        implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.references.CaosDefUsagesProvider"
         language="CaosDef" />
 
     <!-- Bundled Definitions -->
-    <library.type implementation="com.openc2e.plugins.intellij.caos.project.library.CaosLibraryType" id="CaosLibrary" />
+    <library.type implementation="com.openc2e.plugins.intellij.agenteering.caos.project.library.CaosLibraryType" id="CaosLibrary" />
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighter"
+    <syntaxHighlighter implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighter"
                        key="CaosDef" />
     <lang.syntaxHighlighterFactory
-        implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
+        implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
         language="CaosDef" />
     <annotator language="CaosDef"
-               implementationClass="com.openc2e.plugins.intellij.caos.def.highlighting.CaosDefHighlighterAnnotator" />
+               implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.highlighting.CaosDefHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDarcula.xml" />
 
 
     <!-- Indices -->
-    <stubElementTypeHolder class="com.openc2e.plugins.intellij.caos.stubs.types.CaosScriptStubTypes" />
-    <applicationService serviceInterface="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexService"
-                        serviceImplementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefStubIndexServiceImpl" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefCommandElementsByNameIndex" />
-    <stubIndex implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefHashTagsIndex" />
+    <stubElementTypeHolder class="com.openc2e.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
+    <applicationService serviceInterface="com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
+                        serviceImplementation="com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex" />
+    <stubIndex implementation="com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex" />
     <stubIndex
-        implementation="com.openc2e.plugins.intellij.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
+        implementation="com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
 
     <!-- Formatting -->
     <lang.braceMatcher language="CaosDef"
-                       implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefBraceMatcher" />
+                       implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.format.CaosDefBraceMatcher" />
     <enterBetweenBracesDelegate language="CaosDef"
-                                implementationClass="com.openc2e.plugins.intellij.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
+                                implementationClass="com.openc2e.plugins.intellij.agenteering.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
 
     <!-- ======================== -->
     <!-- ====== SPR Files ======= -->
     <!-- ======================== -->
-    <fileType name="SPR file" implementationClass="com.openc2e.plugins.intellij.caos.sprites.spr.SprFileType" fieldName="INSTANCE"
+    <fileType name="SPR file" implementationClass="com.openc2e.plugins.intellij.agenteering.sprites.spr.SprFileType" fieldName="INSTANCE"
               language="CreaturesSPR" extensions="spr"/>
-    <fileType name="SPR Definitions file" implementationClass="com.openc2e.plugins.intellij.caos.sprites.spr.def.SprDefFileType" fieldName="INSTANCE"
+    <fileType name="SPR Definitions file" implementationClass="com.openc2e.plugins.intellij.agenteering.sprites.spr.def.SprDefFileType" fieldName="INSTANCE"
               language="CreaturesSprDef" extensions="sprdef"/>
-    <fileEditorProvider implementation="com.openc2e.plugins.intellij.caos.sprites.spr.SprFileEditorProvider"/>
+    <fileEditorProvider implementation="com.openc2e.plugins.intellij.agenteering.sprites.spr.SprFileEditorProvider"/>
     <!-- Add your extensions here -->
   </extensions>
 
@@ -204,7 +204,7 @@
 
   <project-components>
     <component>
-      <implementation-class>com.openc2e.plugins.intellij.caos.project.CaosProjectComponent</implementation-class>
+      <implementation-class>com.openc2e.plugins.intellij.agenteering.caos.project.CaosProjectComponent</implementation-class>
     </component>
   </project-components>
 </idea-plugin>

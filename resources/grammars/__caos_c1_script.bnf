@@ -1,18 +1,18 @@
 {
-	parserClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParser"
-	parserUtilClass="com.openc2e.plugins.intellij.caos.parser.CaosScriptParserUtil"
-	implements="com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptCompositeElementImpl"
-	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes"
+	parserClass="com.openc2e.plugins.intellij.agenteering.caos.parser.CaosScriptParser"
+	parserUtilClass="com.openc2e.plugins.intellij.agenteering.caos.parser.CaosScriptParserUtil"
+	implements="com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+	extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes"
 	elementTypePrefix="CaosScript_"
-	elementTypeClass="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementType"
-	tokenTypeClass="com.openc2e.plugins.intellij.caos.lexer.CaosScriptTokenType"
+	elementTypeClass="com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTokenType"
 	psiClassPrefix="CaosScript"
 	psiImplClassSuffix="Impl"
-	psiPackage="com.openc2e.plugins.intellij.caos.psi.api"
-	psiImplPackage="com.openc2e.plugins.intellij.caos.psi.impl"
-	elementTypeFactory("command|command_call|command_token|expression|var_token|subroutine|c_targ|constant_assignment|named_var|rvalue|lvalue")="com.openc2e.plugins.intellij.caos.psi.types.CaosScriptElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.caos.psi.util.CaosScriptPsiImplUtil"
+	psiPackage="com.openc2e.plugins.intellij.agenteering.caos.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.agenteering.caos.psi.impl"
+	elementTypeFactory("command|command_call|command_token|expression|var_token|subroutine|c_targ|constant_assignment|named_var|rvalue|lvalue")="com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
 	name("space.*") = "space or comma"
@@ -243,7 +243,7 @@ script_body_element
 	|	macro
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getBlockType
@@ -255,11 +255,11 @@ macro
 	::= macro_code_block space_like_or_newline script_terminator?
 	{
 
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptMacroStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptMacroStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getBlockType
@@ -283,7 +283,7 @@ code_block
 	{
 		pin=1
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 	}
 	;
@@ -303,11 +303,11 @@ event_script
 	::= c_scrp space_like classifier space_like event_number space_like_or_newline (<<enterMode "eventScript">>event_script_body space_like_or_newline)? <<exitMode "eventScript">>script_terminator
 	{
 		pin=1
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptScrpStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptScrpStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getBlockType
@@ -318,9 +318,9 @@ event_script
 c_scrp ::= K_SCRP
 {
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		getReference
@@ -337,8 +337,8 @@ private event_script_body
 	::= code_block
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 		]
 		recoverWhile=event_script_body_recover
 	}
@@ -352,10 +352,10 @@ subroutine
 	::= c_subr space_like subroutine_name space_like_or_newline (subroutine_body space_like_or_newline)? cc_retn
 	{
 		pin=1
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptSubroutineStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 		]
 		methods = [
 			getBlockType
@@ -367,9 +367,9 @@ c_subr
 	::= K_SUBR
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -385,9 +385,9 @@ cc_retn
 	::= K_RETN
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -439,9 +439,9 @@ loop_statement
 	{
 		pin=1
 		implements = [
-			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
 		]
 		methods = [
 			isEver
@@ -486,9 +486,9 @@ repeat_statement
 	{
 		pin=1
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
 		]
 
 		methods = [
@@ -516,9 +516,9 @@ enum_next_statement
 	{
 		pin=1;
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
 		]
 		methods = [
 			codeBlock="code_block"
@@ -533,9 +533,9 @@ enum_scenery_statement
    {
 		pin=1;
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptNoJump"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
 		]
 		methods = [
 			getBlockType
@@ -548,8 +548,8 @@ private enum_body
    ::= code_block
    {
       implements = [
-         "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-         "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+         "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+         "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
       ]
       recoverWhile=enum_body_recover
    }
@@ -575,7 +575,7 @@ doif_statement
 	{
 		pin=1
 		implements = [
-			 "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 	}
 	;
@@ -585,7 +585,7 @@ doif_statement_statement
 	{
 		pin=1
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 		]
 		methods = [
 			getBlockType
@@ -599,7 +599,7 @@ else_if_statement
 	{
 		pin=1
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 		]
 		methods = [
 			getBlockType
@@ -612,7 +612,7 @@ else_statement
 	{
 		pin=1;
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 		]
 		methods = [
 			getBlockType
@@ -646,9 +646,9 @@ c_loop
 	::= K_LOOP
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -664,9 +664,9 @@ cEver
 	::= K_EVER
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -681,9 +681,9 @@ c_untl
 	::= K_UNTL
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -697,9 +697,9 @@ c_untl
 c_reps ::= K_REPS
 {
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		getReference
@@ -713,9 +713,9 @@ c_reps ::= K_REPS
 c_repe ::= K_REPE
 {
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		getReference
@@ -732,9 +732,9 @@ c_enum
 	| 	K_ETCH
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -748,9 +748,9 @@ c_enum
 c_next ::= K_NEXT
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -764,9 +764,9 @@ c_next ::= K_NEXT
 c_escn ::= K_ESCN
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -781,9 +781,9 @@ c_escn ::= K_ESCN
 c_nscn ::= K_NSCN
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -798,9 +798,9 @@ c_nscn ::= K_NSCN
 c_doif::=K_DOIF
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -815,9 +815,9 @@ c_doif::=K_DOIF
 c_endi ::= K_ENDI
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -832,9 +832,9 @@ c_endi ::= K_ENDI
 c_elif ::= K_ELIF
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -848,9 +848,9 @@ c_elif ::= K_ELIF
 c_else ::= K_ELSE
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getReference
@@ -885,11 +885,11 @@ command_call
 	|   c_commands_r
 	{
 		pin=2
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptCommandCallStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCommandCallStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getCommandString
@@ -908,8 +908,8 @@ c_commands_rrrrrrrrrrrrr ::= c_kw_rrrrrrrrrrrrr space_like rvalue space_like rva
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrrrrrrrrrrrr"
@@ -922,8 +922,8 @@ c_commands_rrrrrrrrrrrr ::= c_kw_rrrrrrrrrrrr space_like rvalue space_like rvalu
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrrrrrrrrrrr"
@@ -936,8 +936,8 @@ c_commands_trrrrr ::= c_kw_trrrrr space_like token space_like rvalue space_like 
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_trrrrr"
@@ -950,8 +950,8 @@ c_commands_rrrrrr ::= c_kw_rrrrrr space_like rvalue space_like rvalue space_like
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrrrrr"
@@ -964,8 +964,8 @@ c_commands_trrrr ::= c_kw_trrrr space_like token space_like rvalue space_like rv
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_trrrr"
@@ -978,8 +978,8 @@ c_commands_rrrrr ::= c_kw_rrrrr space_like rvalue space_like rvalue space_like r
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrrrr"
@@ -992,8 +992,8 @@ c_commands_trrr ::= c_kw_trrr space_like token space_like rvalue space_like rval
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_trrr"
@@ -1006,8 +1006,8 @@ c_commands_rrrr ::= c_kw_rrrr space_like rvalue space_like rvalue space_like rva
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrrr"
@@ -1020,8 +1020,8 @@ c_commands_rrl ::= c_kw_rrl space_like rvalue space_like rvalue space_like lvalu
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrl"
@@ -1034,8 +1034,8 @@ c_commands_trr ::= c_kw_trr space_like token space_like rvalue space_like rvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_trr"
@@ -1048,8 +1048,8 @@ c_commands_lrr ::= c_kw_lrr space_like lvalue space_like rvalue space_like rvalu
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_lrr"
@@ -1062,8 +1062,8 @@ c_commands_rrr ::= c_kw_rrr space_like rvalue space_like rvalue space_like rvalu
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rrr"
@@ -1076,11 +1076,11 @@ c_assignment ::= c_kw_assignment space_like lvalue space_like rvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
-	stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptAssignmentStub"
-	extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+	stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptAssignmentStub"
+	extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 	methods = [
 		commandToken="/c_kw_assignment"
 		getRvalueString
@@ -1094,8 +1094,8 @@ c_commands_rr ::= c_kw_rr space_like rvalue space_like rvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_rr"
@@ -1108,8 +1108,8 @@ c_commands_tr ::= c_kw_tr space_like token space_like rvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_tr"
@@ -1122,8 +1122,8 @@ c_commands_no_args ::= c_kw_no_args
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_no_args"
@@ -1136,8 +1136,8 @@ c_commands_l ::= c_kw_l space_like lvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_l"
@@ -1150,8 +1150,8 @@ c_commands_t ::= c_kw_t space_like token
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_t"
@@ -1164,8 +1164,8 @@ c_targ
 	::= K_TARG space_like rvalue
 	{
 		pin=1
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptTargStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTargStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		methods = [
 			getTargetString
 		]
@@ -1176,8 +1176,8 @@ c_commands_r ::= c_kw_r space_like rvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/c_kw_r"
@@ -1205,8 +1205,8 @@ rvalue
 	|	expression
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			getCommandToken
@@ -1221,8 +1221,8 @@ r_rvalue_rrr ::= r_kw_rrr space_like rvalue space_like rvalue space_like rvalue
 {
 	pin=1
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/r_kw_rrr"
@@ -1235,8 +1235,8 @@ r_rvalue_no_args ::= r_kw_no_args
 {
 	pin=1
 	implements = [
-	  "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+	  "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/r_kw_no_args"
@@ -1249,8 +1249,8 @@ r_rvalue_rr ::= r_kw_rr space_like rvalue space_like rvalue
 {
 	pin=1
 	implements = [
-	  "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+	  "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		commandToken="/r_kw_rr"
@@ -1263,8 +1263,8 @@ r_rvalue_r ::= r_kw_r space_like rvalue
 {
    pin=1
    implements = [
-      "com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+      "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
    ]
    methods = [
 		commandToken="/r_kw_r"
@@ -1277,8 +1277,8 @@ r_rvalue_t ::= r_kw_t space_like token
 {
    pin=1
    implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
    ]
    methods = [
 		commandToken="/r_kw_t"
@@ -1293,9 +1293,9 @@ lvalue
 	{
 		pin=1
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptArgument"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
 			commandToken="/l_kw_no_args"
@@ -1312,10 +1312,10 @@ c_kw_rrrrrrrrrrrrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
    		]
    		methods = [
 			getReference
@@ -1334,10 +1334,10 @@ c_kw_rrrrrrrrrrrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1354,10 +1354,10 @@ c_kw_trrrrr
 	{
 		pin = 3;
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
 		]
 		methods = [
 			getReference
@@ -1374,10 +1374,10 @@ c_kw_rrrrrr
    {
    		pin = 1;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1394,10 +1394,10 @@ c_kw_trrrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1415,10 +1415,10 @@ c_kw_rrrrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1437,10 +1437,10 @@ c_kw_trrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1461,10 +1461,10 @@ c_kw_rrrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1481,10 +1481,10 @@ c_kw_rrl
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1502,10 +1502,10 @@ c_kw_trr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1522,10 +1522,10 @@ c_kw_lrr
    {
    		pin = 1;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1548,10 +1548,10 @@ c_kw_rrr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1575,10 +1575,10 @@ c_kw_assignment
    {
    		pin = 1;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1606,10 +1606,10 @@ c_kw_rr
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1625,10 +1625,10 @@ c_kw_tr
    ::= K_SNDQ
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1681,10 +1681,10 @@ c_kw_no_args
    {
    		pin = 3;
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1699,9 +1699,9 @@ c_kw_no_args
 c_iscr ::= K_ISCR
 {
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		getReference
@@ -1716,9 +1716,9 @@ c_retn
 	::= K_RETN
 	{
 		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
    			getCommandString
@@ -1734,10 +1734,10 @@ c_kw_l
    ::= K_NEGV
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1762,10 +1762,10 @@ c_kw_t
    |   K_SNDL
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1812,10 +1812,10 @@ c_kw_r
 	{
 		pin = 3;
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
 		]
 		methods = [
 			getReference
@@ -1832,10 +1832,10 @@ r_kw_rrr
    ::= K_TOTL
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1904,10 +1904,10 @@ r_kw_no_args
    |   K_YVEC
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1924,10 +1924,10 @@ r_kw_rr
    |   K_TOUC
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1945,10 +1945,10 @@ r_kw_r
    |   K_GRND
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1964,10 +1964,10 @@ r_kw_t
    ::= K_TOKN
    {
    		implements = [
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
    		]
    		methods = [
    			getReference
@@ -1994,10 +1994,10 @@ l_kw_no_args
 	|   K_CLAS
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
-   			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
 		]
 		methods = [
 			getReference
@@ -2045,10 +2045,10 @@ private expression
    |	byte_string
    |   	expression_prime
    {
-   		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptExpressionStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+   		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpressionStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getType
@@ -2091,10 +2091,10 @@ var_token
 	|	VAR_X
 	|	MV_XX
 	{
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptVarTokenStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptVarTokenStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getVarGroup
@@ -2328,7 +2328,7 @@ subroutine_name
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 		methods = [
 			getName
@@ -2530,8 +2530,8 @@ token
 	|	WORD
 	{
 		implements = [
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-			"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 		]
 		methods = [
 			isVariant
@@ -2550,9 +2550,9 @@ script_terminator
 c_endm ::= K_ENDM
 {
 	implements = [
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptIsCommandToken"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCompositeElement"
-		"com.openc2e.plugins.intellij.caos.psi.api.CaosScriptCommandLike"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 	]
 	methods = [
 		getReference
@@ -2568,8 +2568,8 @@ constant_assignment
 	::= K_CONST ID EQ_SPACE INT
 	{
 		pin=1
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptConstantAssignmentStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptConstantAssignmentStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		methods = [
 			getNumberValue
 			name="/ID"
@@ -2585,8 +2585,8 @@ named_constant
 named_var
 	::= N_VAR
 	{
-		stubClass="com.openc2e.plugins.intellij.caos.stubs.api.CaosScriptNamedVarStub"
-		extends="com.openc2e.plugins.intellij.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		methods = [
 			getScope
 			getVarName
