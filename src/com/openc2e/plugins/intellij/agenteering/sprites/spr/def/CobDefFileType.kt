@@ -5,13 +5,13 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import javax.swing.Icon
 
 
-class SprDefFileType private constructor() : LanguageFileType(SprDefLanguage) {
+class CobDefFileType private constructor() : LanguageFileType(CobDefLanguage) {
     override fun getName(): String {
-        return "SPR Definitions file"
+        return "C1 Cob Definition"
     }
 
     override fun getDescription(): String {
-        return "Creatures 1 Sprite Definitions File"
+        return "Creatures 1 COB Definitions File"
     }
 
     override fun getDefaultExtension(): String {
@@ -24,8 +24,8 @@ class SprDefFileType private constructor() : LanguageFileType(SprDefLanguage) {
 
     companion object {
         @JvmStatic
-        val INSTANCE = SprDefFileType()
+        val INSTANCE = CobDefFileType()
         @JvmStatic
-        val DEFAULT_EXTENSION = "sprdef"
+        val DEFAULT_EXTENSION = "cobdef"
     }
 }

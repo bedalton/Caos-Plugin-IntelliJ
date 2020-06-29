@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.agenteering.caos.utils.*
+import com.openc2e.plugins.intellij.agenteering.sprites.spr.SprCompiler
 import com.openc2e.plugins.intellij.agenteering.sprites.spr.def.SprCompileResult.SprCompileResultBad
 import com.openc2e.plugins.intellij.agenteering.sprites.spr.def.SprCompileResult.SprCompileResultOK
 import com.openc2e.plugins.intellij.agenteering.sprites.spr.def.SprDefImageData.SprDefImage

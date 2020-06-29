@@ -1,0 +1,151 @@
+{
+	parserClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.CobDefParser"
+	implements="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.SprDefCompositeElement"
+	extends="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.impl.SprDefCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.agenteering.plugins.intellij.cobs.lexer.SprDefTypes"
+	elementTypePrefix="SprDef_"
+	elementTypeClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.types.SprDefElementType"
+	tokenTypeClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.lexer.SprDefTokenType"
+	psiClassPrefix="SprDef"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api"
+	psiImplPackage="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.impl"
+	elementTypeFactory("sprite_name")="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.types.CobDefElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.util.SprDefPsiImplUtil"
+	generateTokenAccessors=true
+	tokens = [
+		SPR_TAG = "regexp:[#][Ss][Pp][Rr]([Ii][Tt][Ee])?";
+		INSTALL_SCRIPT_TAG = "regexp:[#][Ii][Nn][Ss][Tt]([Aa][Ll][Ll])?";
+		SCRIPT_TAG = "regexp:[#][Ss][Cc][Rr]([Ii][Pp][Tt][Ss]|[Pp])?";
+		TOKEN = "regexp:[a-zA-Z0-9_][a-zA-Z0-9_][a-zA-Z0-9_][a-zA-Z0-9_]";
+		END = "regexp:[#][Ee][Nn][Dd]";
+		INT = "regexp:[0-9]+";
+		space = "regexp:[ ]";
+		LOCAL_FILE_ROOT = "regexp:[.][/]";
+		MODULE_FILE_ROOT = "regexp:[Mm][Oo][Dd]([Uu][Ll][Ee])?";
+		PROJECT_FILE_ROOT = "regexp:[Pp][Rr][Oo][Jj]([Ee][Cc][Tt])?";
+		PICTURE_TAG = "regexp:[Pp][Ii][Cc][Tt][Uu][Rr][Ee]";
+		QUANTITY_TAG = "regexp:[Qq][Tt][Yy]|[Qq][Uu][Aa][Nn][Tt][Ii][Tt][Yy]"
+		EXPIRATION_TAG = "regexp:[#][Ee][Xx][Pp]([Ii][Rr][Aa][Tt][Ii][Oo][Nn])?"
+		COLON = ":";
+		EQ = "="
+		DIRECTORY_LOCAL = "./";
+		NEWLINE = "\n";
+		FILE_PATH = "regexp:[^\n]"
+	]
+}
+
+
+cob
+	::= (!<<eof>> file_element)*
+	;
+
+private file_element
+	::= sprite_def
+	|	script_def
+	|	inst_script_def
+	;
+
+
+sprite_def
+	::= SPR_DEF_TAG EQ sprite_name files? END?
+	{
+		pin=1
+		implements = [
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
+		]
+		methods = [
+			getFiles
+			allFilesExist
+			missingFiles
+		]
+	}
+	;
+
+script_def
+	::= SCRIPT_TAG NEWLINE files? (NEWLINE END)?
+	{
+		pin=1
+		implements = [
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
+		]
+		methods = [
+			getFiles
+			allFilesExist
+			missingFiles
+		]
+	}
+	;
+
+inst_script_def
+	::= INSTALL_SCRIPT_TAG NEWLINE files? (NEWLINE END)?
+	{
+		pin=1
+		implements = [
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
+		]
+		methods = [
+			getFiles
+			allFilesExist
+			missingFiles
+		]
+	}
+	;
+
+private files
+	::= (NEWLINE file)+
+	;
+
+file
+	::= project_file
+	|	module_file
+	|	local_file
+	{
+		methods = [
+			resolveToFile
+		]
+	}
+	;
+
+project_file
+	::= PROJECT_FILE_ROOT file
+	{
+		pin=1
+		implements = [
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+		]
+	}
+	;
+
+module_file
+	::= MODULE_FILE_ROOT file
+	{
+		pin=1
+		implements = [
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+		]
+	}
+	;
+
+local_file
+	::= LOCAL_FILE_ROOT file
+	{
+		pin=1
+		implements = [
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+		]
+	}
+	;
+
+sprite_name
+	::= TOKEN
+	{
+		extends = "com.openc2e.agenteering.plugins.intellij.cobs.parser.psi."
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+		]
+	}
+	;
+
+

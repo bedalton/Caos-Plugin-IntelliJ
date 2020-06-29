@@ -4,6 +4,7 @@ import com.intellij.openapi.fileTypes.FileTypeConsumer;
 import com.intellij.openapi.fileTypes.FileTypeFactory;
 import com.openc2e.plugins.intellij.agenteering.caos.def.lang.CaosDefFileType;
 import com.openc2e.plugins.intellij.agenteering.sprites.spr.SprFileType;
+import com.openc2e.plugins.intellij.agenteering.sprites.spr.def.CobDefFileType;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
@@ -15,5 +16,6 @@ public class CaosScriptFileTypeFactory extends FileTypeFactory {
         fileTypeConsumer.consume(CaosScriptFileType.INSTANCE, CaosScriptFileType.DEFAULT_EXTENSION);
         fileTypeConsumer.consume(CaosDefFileType.INSTANCE, CaosDefFileType.DEFAULT_EXTENSION);
         fileTypeConsumer.consume(SprFileType.getINSTANCE(), SprFileType.Companion.getDEFAULT_EXTENSION());
+        fileTypeConsumer.consume(CobDefFileType.getINSTANCE(), CobDefFileType.Companion.getDEFAULT_EXTENSION());
     }
 }
