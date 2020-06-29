@@ -1,15 +1,12 @@
-package com.openc2e.plugins.intellij.caos.lexer;
+package com.openc2e.plugins.intellij.agenteering.caos.lexer;
 
-import com.intellij.lexer.FlexLexer;
-import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 
 import java.util.List;
-import java.util.Arrays;import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static com.openc2e.plugins.intellij.caos.lexer.CaosScriptTypes.*;
-import com.openc2e.plugins.intellij.caos.utils.CaosScriptArrayUtils;
+import static com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*;
+import com.openc2e.plugins.intellij.agenteering.caos.utils.CaosScriptArrayUtils;
 %%
 
 %{

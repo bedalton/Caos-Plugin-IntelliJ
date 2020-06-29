@@ -1,18 +1,18 @@
 {
-	parserClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParser"
-	parserUtilClass="com.openc2e.plugins.intellij.caos.def.parser.CaosDefParserUtil"
-	implements="com.openc2e.plugins.intellij.caos.def.psi.api.CaosDefCompositeElement"
-	extends="com.openc2e.plugins.intellij.caos.def.psi.impl.CaosDefCompositeElementImpl"
-	elementTypeHolderClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes"
+	parserClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParser"
+	parserUtilClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParserUtil"
+	implements="com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+	extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes"
 	elementTypePrefix="CaosDef_"
-	elementTypeClass="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementType"
-	tokenTypeClass="com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTokenType"
+	elementTypeClass="com.openc2e.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTokenType"
 	psiClassPrefix="CaosDef"
 	psiImplClassSuffix="Impl"
-	psiPackage="com.openc2e.plugins.intellij.caos.def.psi.api"
-	psiImplPackage="com.openc2e.plugins.intellij.caos.def.psi.impl"
-	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition")="com.openc2e.plugins.intellij.caos.def.psi.types.CaosDefElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.caos.def.psi.util.CaosDefPsiImplUtil"
+	psiPackage="com.openc2e.plugins.intellij.agenteering.caos.def.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl"
+	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition")="com.openc2e.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil"
 	generateTokenAccessors=true
 	tokens = [
 		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
@@ -54,7 +54,7 @@
 
 		EQ = "regexp:==|[eE][qQ]";
 		NEQ = "regexp:!=|[nN]][eE]";
-		
+
 
 		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
 		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
