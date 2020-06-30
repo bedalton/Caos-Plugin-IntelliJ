@@ -8,6 +8,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCGsub
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
+import com.openc2e.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
 
 class CaosScriptSubroutineNameReference(element:CaosScriptSubroutineName) : PsiReferenceBase<CaosScriptSubroutineName>(element, TextRange.create(0, element.textLength)) {
 
@@ -22,13 +23,13 @@ class CaosScriptSubroutineNameReference(element:CaosScriptSubroutineName) : PsiR
 
     override fun resolve(): PsiElement? {
         if (myElement.parent !is CaosScriptSubroutine)
-            return null;
+            return null
         return CaosScriptSubroutineIndex.instance[myElement.name, myElement.project].firstOrNull {
             myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
         }
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
-        return myElement.setName(newElementName);
+        return myElement.setName(newElementName)
     }
 }

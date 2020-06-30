@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import com.openc2e.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.openc2e.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.*
 
 object CaosDefPsiElementFactory {
 
@@ -17,7 +18,7 @@ object CaosDefPsiElementFactory {
     }
 
     fun getVariableNameElement(project:Project, variableName: String) : CaosDefVariableName {
-        val file= createFileFromText(project, "TEMP (null) $variableName (null)");
+        val file= createFileFromText(project, "TEMP (null) $variableName (null)")
         val command =  file.firstChild as CaosDefCommandDefElement
         return command.parameterList.first().variableName
     }
@@ -31,7 +32,7 @@ object CaosDefPsiElementFactory {
     }
 
     fun getCommandWordElement(project: Project, newNameString: String): CaosDefCommandWord {
-        val file= createFileFromText(project, "$newNameString (null)");
+        val file= createFileFromText(project, "$newNameString (null)")
         val command =  file.firstChild as CaosDefCommandDefElement
         return command.command.commandWordList[0]
     }
@@ -56,7 +57,7 @@ object CaosDefPsiElementFactory {
              * #$newHashTag
              */
         """.trimIndent()
-        val comment = createComment(project, commentText);
+        val comment = createComment(project, commentText)
         return comment.docCommentHashtagList[0]
     }
 

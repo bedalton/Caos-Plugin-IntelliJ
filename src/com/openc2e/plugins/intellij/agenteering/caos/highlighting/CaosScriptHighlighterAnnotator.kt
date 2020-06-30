@@ -43,10 +43,6 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 .create()
     }
 
-    private fun isCommandKeyword(element:PsiElement) : Boolean {
-        return element is CaosScriptIsCommandKeywordToken
-    }
-
     /**
      * Helper function to add color and style to a given element
      */

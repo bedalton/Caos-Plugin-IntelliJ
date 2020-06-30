@@ -83,7 +83,7 @@ object CaosBundleSourcesRegistrationUtil {
                 ?: return false
         val oldVersionString = currentLibraryVersion(model)
                 ?: ""
-        if (versionString == null)
+        if (versionString.isEmpty())
             throw Exception("Caos definitions versions cannot be null")
         return versionString == oldVersionString
     }

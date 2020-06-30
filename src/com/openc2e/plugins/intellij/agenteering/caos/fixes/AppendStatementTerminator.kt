@@ -10,6 +10,7 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.next
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.previous

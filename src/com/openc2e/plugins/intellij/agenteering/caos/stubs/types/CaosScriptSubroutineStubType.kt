@@ -11,6 +11,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutin
 import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptSubroutineImpl
 import com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineStub
 import com.openc2e.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptSubroutineStubImpl
+import com.openc2e.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.agenteering.caos.utils.readNameAsString
 
 class CaosScriptSubroutineStubType(debugName:String) : CaosScriptStubElementType<CaosScriptSubroutineStub, CaosScriptSubroutineImpl>(debugName) {
@@ -32,7 +33,7 @@ class CaosScriptSubroutineStubType(debugName:String) : CaosScriptStubElementType
     override fun createStub(element: CaosScriptSubroutineImpl, parent: StubElement<*>): CaosScriptSubroutineStub {
         return CaosScriptSubroutineStubImpl(
                 parent = parent,
-                name = element.name ?: ""
+                name = element.name
         )
     }
 

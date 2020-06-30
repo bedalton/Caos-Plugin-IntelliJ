@@ -22,7 +22,7 @@ class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
 
     override fun createNewLibrary(parentComponent: JComponent, contextDirectory: VirtualFile?, project: Project): NewLibraryConfiguration? {
         return LibraryTypeService.getInstance()
-                .createLibraryFromFiles(createLibraryRootsComponentDescriptor(), parentComponent, contextDirectory, this, project);
+                .createLibraryFromFiles(createLibraryRootsComponentDescriptor(), parentComponent, contextDirectory, this, project)
     }
 
     override fun createLibraryRootsComponentDescriptor(): LibraryRootsComponentDescriptor {
@@ -46,7 +46,7 @@ class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
         }
 
         val INSTANCE: CaosLibraryType by lazy {
-            LibraryType.EP_NAME.findExtension(CaosLibraryType::class.java)!!
+            EP_NAME.findExtension(CaosLibraryType::class.java)!!
         }
     }
 }

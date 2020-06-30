@@ -20,6 +20,6 @@ class CaosScriptTemplateFactory : ProjectTemplatesFactory() {
     }
 
     companion object {
-        private val GROUP_NAME = "Caos Script";
+        private const val GROUP_NAME = "Caos Script"
     }
 }

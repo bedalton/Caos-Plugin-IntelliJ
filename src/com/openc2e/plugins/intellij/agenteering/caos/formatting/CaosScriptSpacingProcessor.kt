@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.agenteering.caos.formatting;
+package com.openc2e.plugins.intellij.agenteering.caos.formatting
 
 import com.intellij.formatting.Block
 import com.intellij.formatting.Spacing

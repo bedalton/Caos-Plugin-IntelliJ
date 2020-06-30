@@ -4,6 +4,6 @@ import com.intellij.lexer.FlexAdapter;
 
 public class CaosScriptLexerAdapter extends FlexAdapter {
     public CaosScriptLexerAdapter() {
-            super(new _CaosScriptLexer());
+            super(new _CaosScriptLexer(false));
         }
 }

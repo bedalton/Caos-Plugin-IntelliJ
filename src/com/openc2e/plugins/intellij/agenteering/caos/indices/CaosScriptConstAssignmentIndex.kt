@@ -10,7 +10,7 @@ class CaosScriptConstAssignmentIndex : CaosStringIndexBase<CaosScriptConstantAss
 
     companion object {
         val KEY: StubIndexKey<String, CaosScriptConstantAssignment> = IndexKeyUtil.create(CaosScriptConstAssignmentIndex::class.java)
-        const val VERSION = 0;
+        const val VERSION = 0
         val instance = CaosScriptConstAssignmentIndex()
     }
 

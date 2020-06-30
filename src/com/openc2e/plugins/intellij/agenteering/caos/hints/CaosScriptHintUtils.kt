@@ -9,10 +9,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.argumentsLength
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType

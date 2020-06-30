@@ -9,6 +9,12 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
+import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
 
 class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {

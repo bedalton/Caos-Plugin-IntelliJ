@@ -37,7 +37,7 @@ object SprParser {
                 return@map null
             }
             val numBytes = width * height
-            val endByte = (offsetForData + (width * height))
+            val endByte = (offsetForData + numBytes)
             if (numRawBytes < endByte || endByte < 0) {
                 LOGGER.severe("Invalid byte range requested. Total Bytes: ${numRawBytes}; Offset: $offsetForData, Width:$width, Height:$height; EndByte: $endByte}")
                 return@map null

@@ -1,7 +1,6 @@
 package com.openc2e.plugins.intellij.agenteering.caos.def.indices
 
 import com.intellij.psi.stubs.StubIndexKey
-import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefDocCommentHashtag
 import com.openc2e.plugins.intellij.agenteering.caos.indices.CaosStringIndexBase
 import com.openc2e.plugins.intellij.agenteering.caos.indices.IndexKeyUtil

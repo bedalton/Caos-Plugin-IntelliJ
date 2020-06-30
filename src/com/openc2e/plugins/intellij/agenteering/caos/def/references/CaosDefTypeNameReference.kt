@@ -6,14 +6,20 @@ import com.intellij.psi.PsiReferenceBase
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefName
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.variantsIntersect
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.variants
 
 class CaosDefTypeNameReference(element: CaosDefTypeDefName) : PsiReferenceBase<CaosDefTypeDefName>(element, TextRange(1, element.textLength)) {
 
+    private val variants by lazy {
+        myElement.containingCaosDefFile.variants
+    }
 
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element !is CaosDefTypeDefName)
             return false
-        return element.name == myElement.name && element.containingCaosDefFile.variants.intersect(element.containingCaosDefFile.variants).isNotEmpty()
+        return element.name == myElement.name && element.variantsIntersect(variants)
     }
 
 
@@ -22,7 +28,7 @@ class CaosDefTypeNameReference(element: CaosDefTypeDefName) : PsiReferenceBase<C
             return null
         return CaosDefTypeDefinitionElementsByNameIndex.Instance[element.name, element.project]
                 .firstOrNull {
-                    it.containingFile == element.containingFile
+                    it.variantsIntersect(variants) && it.containingFile == element.containingFile
                 }
                 ?.typeDefName
     }

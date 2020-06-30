@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.openc2e.plugins.intellij.agenteering.caos.utils
 
 import java.nio.ByteBuffer
@@ -69,6 +71,7 @@ fun ByteBuffer.writeUInt32(u: Long) {
     this.putInt(u.toInt())
 }
 
+@Suppress("CAST_NEVER_SUCCEEDS")
 fun ByteBuffer.writeUInt32BE(u: Long) {
     assert(u >= 0 && u <= 1L shl 32) { "The given long is not in the range of uint32 ($u)" }
     this.writeUInt16BE(u.toInt() and 0xFFFF)
@@ -76,30 +79,30 @@ fun ByteBuffer.writeUInt32BE(u: Long) {
 }
 
 
-fun ByteBuffer.writeUInt24(i: Int) {
-    var i = i
+fun ByteBuffer.writeUInt24(iIn:Int) {
+    var i = iIn
     i = i and 0xFFFFFF
     this.writeUInt16(i shr 8)
     this.writeUInt8(i)
 }
 
 
-fun ByteBuffer.writeUInt16(i: Int) {
-    var i = i
+fun ByteBuffer.writeUInt16(iIn:Int) {
+    var i = iIn
     i = i and 0xFFFF
     this.writeUInt8(i shr 8)
     this.writeUInt8(i and 0xFF)
 }
 
-fun ByteBuffer.writeUInt16BE(i: Int) {
-    var i = i
+fun ByteBuffer.writeUInt16BE(iIn:Int) {
+    var i = iIn
     i = i and 0xFFFF
     this.writeUInt8(i and 0xFF)
     this.writeUInt8(i shr 8)
 }
 
-fun ByteBuffer.writeUInt8(i: Int) {
-    var i = i
+fun ByteBuffer.writeUInt8(iIn:Int) {
+    var i = iIn
     i = i and 0xFF
     this.put(i.toByte())
 }

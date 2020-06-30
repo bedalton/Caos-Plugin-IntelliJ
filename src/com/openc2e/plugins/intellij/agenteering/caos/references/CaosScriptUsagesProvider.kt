@@ -7,10 +7,7 @@ import com.intellij.psi.PsiElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.elementType
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType

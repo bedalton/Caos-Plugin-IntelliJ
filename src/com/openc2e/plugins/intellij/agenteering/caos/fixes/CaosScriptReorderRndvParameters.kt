@@ -13,6 +13,8 @@ import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
 import com.openc2e.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.openc2e.plugins.intellij.agenteering.caos.utils.document
+import com.openc2e.plugins.intellij.agenteering.caos.utils.editor
 
 class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionAction, LocalQuickFix {
 

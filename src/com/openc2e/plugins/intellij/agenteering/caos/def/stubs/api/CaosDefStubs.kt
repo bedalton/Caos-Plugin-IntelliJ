@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api
 
 import com.intellij.psi.stubs.StubElement
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.*
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct

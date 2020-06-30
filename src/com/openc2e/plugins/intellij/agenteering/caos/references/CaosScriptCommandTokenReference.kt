@@ -14,16 +14,13 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandW
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 
 class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
-
-    private val renameRegex: Regex = "[a-zA-Z_][a-zA-Z_#!:]{3}".toRegex()
 
     private val name: String? by lazy {
         element.name

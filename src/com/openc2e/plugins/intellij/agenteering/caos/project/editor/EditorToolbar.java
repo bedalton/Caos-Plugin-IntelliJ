@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import java.util.ResourceBundle;
 
 public class EditorToolbar {
-    private JComboBox variant;
+    private JComboBox<String> variant;
     private JButton copyOneLine;
     private JButton trimSpaces;
     private JPanel panel;

@@ -8,6 +8,9 @@ import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
 import com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
 import com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 

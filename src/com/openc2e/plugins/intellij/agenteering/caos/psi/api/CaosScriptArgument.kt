@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.agenteering.caos.psi.api
 
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
     val index: Int

@@ -4,7 +4,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 
 object CaosScriptAssignmentValuesDeducer {
 
-    fun getMinMaxValues(element:CaosScriptVarToken) : Pair<Int,Int>? {
+    fun getMinMaxValues(@Suppress("UNUSED_PARAMETER") element:CaosScriptVarToken) : Pair<Int,Int>? {
         // TODO
         return null
     }

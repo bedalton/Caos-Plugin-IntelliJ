@@ -18,15 +18,15 @@ import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.next
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.previous
+import com.openc2e.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.agenteering.caos.utils.matchCase
+import com.openc2e.plugins.intellij.agenteering.caos.utils.orElse
 import kotlin.math.abs
 import kotlin.math.floor
 

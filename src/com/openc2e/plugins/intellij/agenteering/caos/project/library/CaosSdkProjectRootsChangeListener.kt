@@ -7,12 +7,7 @@ import java.util.logging.Logger
 
 object CaosSdkProjectRootsChangeListener : ModuleRootListener {
 
-    val LOGGER = Logger.getLogger("#"+ CaosSdkProjectRootsChangeListener::class.java)
-
-    override fun beforeRootsChange(event: ModuleRootEvent) {
-        super.beforeRootsChange(event)
-
-    }
+    val LOGGER: Logger = Logger.getLogger("#"+ CaosSdkProjectRootsChangeListener::class.java)
 
     override fun rootsChanged(event: ModuleRootEvent) {
         super.rootsChanged(event)

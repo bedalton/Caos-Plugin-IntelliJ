@@ -30,7 +30,7 @@ import com.intellij.openapi.vfs.VirtualFileVisitor
 import java.util.*
 
 /**
- * @author: Fedor.Korotkov
+ * @adapted from code by Fedor.Korotkov
  */
 class CaosLibRootDetector internal constructor(rootType: OrderRootType, presentableRootTypeName: String) : RootDetector(rootType, false, presentableRootTypeName) {
 
@@ -50,7 +50,7 @@ class CaosLibRootDetector internal constructor(rootType: OrderRootType, presenta
                 override fun visitFile(thisFile: VirtualFile): Boolean {
                     progressIndicator?.checkCanceled()
                     if (!thisFile.isDirectory)
-                        return false;
+                        return false
                     return true
                 }
             })

@@ -6,7 +6,7 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 
 object CaosScriptPsiElementFactory {
 
@@ -15,8 +15,6 @@ object CaosScriptPsiElementFactory {
     private fun createFileFromText(project: Project, text: String): CaosScriptFile {
         return PsiFileFactory.getInstance(project).createFileFromText("dummy.caosdef", CaosScriptLanguage.instance, text) as CaosScriptFile
     }
-
-    val COMMAND_NAME_REGEX = "[a-zA-Z0-9_]{3}[a-zA-Z0-9_:+#$!]"
 
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
         if (!SUBROUTINE_NAME_REGEX.matches(newNameString))
@@ -39,17 +37,15 @@ object CaosScriptPsiElementFactory {
     private val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
 
 
-    fun createNamedVar(project: Project, newNameString: String): CaosScriptNamedVar? {
-        if (!NAMED_VAR_REGEX.matches(newNameString))
+    fun createNamedVar(project: Project, newNameStringIn: String): CaosScriptNamedVar? {
+        if (!NAMED_VAR_REGEX.matches(newNameStringIn))
             return null
-        val script = if (newNameString.startsWith("$"))
-            "* $newNameString = var0"
+        val newNameString = if (!newNameStringIn.startsWith("$"))
+            newNameStringIn
         else
-            "* $$newNameString = var0"
-        val file = createFileFromText(project, script)
-        val comment = file.firstChild?.firstChild as? CaosScriptComment
-                ?: throw RuntimeException("Failed to find expected comment in caos element factory script")
-        return null//comment.namedVarAssignment?.namedVar
+            "$${newNameStringIn}"
+        val script = createRValue(project, newNameString)
+        return script.expression?.namedVar
 
     }
 
@@ -59,19 +55,19 @@ object CaosScriptPsiElementFactory {
         if (!NAMED_CONST_REGEX.matches(newNameString))
             return null
         val script = if (newNameString.startsWith("#"))
-            "* $newNameString = 10"
+            newNameString
         else
-            "* #$newNameString = 10"
-        val file = createFileFromText(project, script)
-        val comment = file.firstChild?.firstChild as? CaosScriptComment
-                ?: throw RuntimeException("Failed to find expected comment in caos element factory script")
-        return null//comment.constantAssignment?.namedConstant
+            "#$newNameString"
+        val file = createRValue(project, script)
+        return file.expression?.namedConstant
     }
 
     private val TOKEN_NAME_REGEX = "[a-zA-Z_0-9]*".toRegex()
     fun createTokenElement(project: Project, newNameString: String): CaosScriptToken? {
+        if (!TOKEN_NAME_REGEX.matches(newNameString))
+            return null
         val script = "sndf $newNameString"
-        val file = createFileFromText(project, script);
+        val file = createFileFromText(project, script)
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
     }
 
@@ -101,7 +97,7 @@ object CaosScriptPsiElementFactory {
         return null
     }
 
-    public fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
+    private fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
         val script = "____X____EXPR__ $expr"
         return PsiTreeUtil.findChildOfType(createFileFromText(project, script).firstChild, CaosScriptRvalue::class.java)!!
     }

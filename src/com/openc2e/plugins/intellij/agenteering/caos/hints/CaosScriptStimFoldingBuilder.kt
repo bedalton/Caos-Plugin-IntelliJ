@@ -10,11 +10,16 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.openc2e.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import kotlin.math.abs
 
@@ -120,8 +125,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall, group:FoldingGroup): FoldingDescriptor? {
         if (!shouldFold(commandCall))
             return null
-        val variant = commandCall.containingCaosFile.variant
-        return when (variant) {
+        return when (commandCall.containingCaosFile.variant) {
             CaosVariant.C1, CaosVariant.C2 -> getC1StimFoldingDescriptor(commandCall, group)
             else -> {
                 // TODO implement CV+ folding
@@ -132,13 +136,6 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     }
 
     private fun getC1StimFoldingDescriptor(commandCall: CaosScriptCommandCall, group:FoldingGroup): FoldingDescriptor? {
-        val resolved = commandCall.commandToken
-                ?.reference
-                ?.multiResolve(true)
-                ?.firstOrNull()
-                ?.element
-                ?.getParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return null
         val arguments = commandCall.arguments
         val start = arguments.firstOrNull()
                 ?.startOffset

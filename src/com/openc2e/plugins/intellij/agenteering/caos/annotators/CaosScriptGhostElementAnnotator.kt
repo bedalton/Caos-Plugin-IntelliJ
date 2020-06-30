@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.refactoring.suggested.endOffset
 import com.openc2e.plugins.intellij.agenteering.caos.fixes.AppendStatementTerminator
 import com.openc2e.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.next
 import com.openc2e.plugins.intellij.agenteering.caos.utils.matchCase
 
