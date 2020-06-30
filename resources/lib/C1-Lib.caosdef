@@ -215,15 +215,15 @@ BHVR (command) click (integer) touch (integer);
 /*
  * vehicle's collision data
  * @HitBits:bitflags {
- * B0=Hit Left
- * B1=Hit Right
- * B2=Hit Top
- * B3=Hit Bottom
+ * 	1=Hit Left
+ * 	2=Hit Right
+ * 	4=Hit Top
+ * 	8=Hit Bottom
  * }
  * #Vehicles
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Bump)
  */
 BUMP (integer);
 
@@ -2236,7 +2236,7 @@ YVEC (integer);
 	5 = Adult
 }
 
-@Attributes {
+@Attributes:BitFlags {
 	1 = Carryable - Creature can pick up object
 	2 = Mousable - Mouse can pick up object
 	4 = Activatable - Can be activated with mouse
@@ -2324,6 +2324,13 @@ YVEC (integer);
 @bool {
 	0 = False
 	1 = True
+}
+
+@Bump:BitFlags {
+	1 = Left
+	2 = Right
+	4 = Top
+	8 = Bottom
 }
 
 @Chemicals {
