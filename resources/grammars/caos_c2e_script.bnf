@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.openc2e.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.openc2e.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var")="com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime")="com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -1146,6 +1146,13 @@ equality_expression
    ::= equality_expression_prime (space_like equality_expression_plus)*
    {
    		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
+		]
+		methods = [
+			first="/expression[0]"
+			second="/expression[1]"
+		]
    }
    ;
 
@@ -1167,6 +1174,13 @@ equality_expression_plus
 	::=  equality_join space_like equality_expression_prime
 	{
 		pin(".*")=1
+		methods = [
+			first="/expression[0]"
+			second="/expression[1]"
+		]
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
+		]
 	}
 	;
 
@@ -2156,6 +2170,23 @@ rvalue_prime
 	|	r_t
 	|	r_d_d_d_s_d
 	| 	r_none
+	{
+   		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+     		getCommandString
+			getCommandStringUpper
+     		toCaosVar
+			getArguments
+			getArgumentValues
+     		getInferredType
+		]
+	}
 	;
 
 private r_cv_char

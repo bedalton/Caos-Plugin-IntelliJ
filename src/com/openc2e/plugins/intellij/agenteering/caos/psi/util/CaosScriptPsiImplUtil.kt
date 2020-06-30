@@ -57,8 +57,13 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandToken(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
-        return rvalue.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
+        return rvalue.rvaluePrime?.commandToken
                 ?: rvalue.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
+    }
+
+    @JvmStatic
+    fun getCommandToken(rvaluePrime: CaosScriptRvaluePrime): CaosScriptIsCommandToken? {
+        return rvaluePrime.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
 
     @JvmStatic
@@ -69,6 +74,14 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandToken(element: CaosScriptIsCommandToken): CaosScriptIsCommandToken {
         return element
+    }
+
+    @JvmStatic
+    fun getInferredType(element:CaosScriptRvaluePrime) : CaosExpressionValueType {
+        return CaosScriptInferenceUtil.getFromRValuePrime(element)?.let {
+            (it as? CaosVar.CaosCommandCall)?.returnType
+                    ?: it.simpleType
+        } ?: CaosExpressionValueType.UNKNOWN
     }
 
     @JvmStatic
@@ -179,11 +192,6 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandTokens(command: CaosScriptCommandElement): List<String> {
-        return command.commandString.split(" ")
-    }
-
-    @JvmStatic
     fun getCommandString(commandToken: CaosScriptIsCommandToken): String {
         return commandToken.text
     }
@@ -257,11 +265,10 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getName(element: CaosScriptNamedGameVar): String? {
         val value = element.key
-                ?: return null
-        if (value is CaosVar.CaosLiteral.CaosString) {
-            return value.value
+        return if (value is CaosVar.CaosLiteral.CaosString) {
+            value.value
         } else {
-            return value.text
+            value.text
         }
     }
 
@@ -273,8 +280,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun setName(element: CaosScriptNamedGameVar, newName: String): PsiElement {
-        val newNameElement = CaosScriptPsiElementFactory.createStringRValue(element.project, newName, '"')
-                ?: return element
+        val newNameElement = CaosScriptPsiElementFactory
+                .createStringRValue(element.project, newName, '"')
         return element.expectsValue?.rvalue?.replace(newNameElement) ?: element
     }
 
@@ -396,10 +403,10 @@ object CaosScriptPsiImplUtil {
                 return CaosVar.CaosLiteral.CaosFloat(it.text.toFloat())
             }
             number.int?.let {
-                try {
-                    return CaosVar.CaosLiteral.CaosInt(it.text.toLong())
+                return try {
+                    CaosVar.CaosLiteral.CaosInt(it.text.toLong())
                 } catch (e: Exception) {
-                    return CaosVar.CaosLiteral.CaosInt(Long.MAX_VALUE)
+                    CaosVar.CaosLiteral.CaosInt(Long.MAX_VALUE)
                 }
             }
         }
@@ -431,8 +438,9 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    private fun toCaosVar(rvaluePrime: CaosScriptRvaluePrime): CaosVar {
-        return rvaluePrime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let {
+    fun toCaosVar(rvaluePrime: CaosScriptRvaluePrime): CaosVar {
+        rvaluePrime.stub?.caosVar?.let { return it }
+        return rvaluePrime.commandToken?.let {
             val commandString = it.commandString
             if (commandString.toLowerCase() == "null")
                 return CaosVar.CaosVarNull
@@ -524,10 +532,10 @@ object CaosScriptPsiImplUtil {
         val poses: List<Int>
         val repeats = charsRaw.last().toUpperCase() == 'R'
         val repeatsFrom = if (repeats) 0 else null
-        if (repeats) {
-            poses = charsRaw.subList(0, charsRaw.lastIndex).map { it.toInt() }
+        poses = if (repeats) {
+            charsRaw.subList(0, charsRaw.lastIndex).map { it.toInt() }
         } else {
-            poses = charsRaw.map { it.toInt() }
+            charsRaw.map { it.toInt() }
         }
         return CaosAnimation.Animation(poses, repeats, repeatsFrom)
     }
@@ -537,7 +545,7 @@ object CaosScriptPsiImplUtil {
             return null
         }
         val posesRaw = stringValue.split(" ").map { it.toInt() }
-        var repeats: Boolean = false
+        var repeats = false
         var repeatsFrom: Int? = null
         when (posesRaw.size) {
             0 -> return CaosAnimation.Animation(emptyList(), false, null)
@@ -589,7 +597,7 @@ object CaosScriptPsiImplUtil {
         }
         val charsRawTemp = stringValue.toCharArray().toList()
         val repeats = charsRawTemp.last().toUpperCase() == 'R'
-        var repeatsFrom = if (repeats) 0 else null
+        val repeatsFrom = if (repeats) 0 else null
         val charsRaw = if (repeats) {
             charsRawTemp.subList(0, charsRawTemp.lastIndex)
         } else {
@@ -699,7 +707,9 @@ object CaosScriptPsiImplUtil {
             }
             return CaosVar.CaosCommandCall(it.text)
         }
-        LOGGER.warning("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}. File: ${lvalue.containingFile.name}, Line: ${lvalue.lineNumber}")
+        if (lvalue.incomplete != null) {
+            LOGGER.warning("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}. File: ${lvalue.containingFile.name}, Line: ${lvalue.lineNumber}")
+        }
         return CaosVar.CaosLiteralVal
     }
 
@@ -824,9 +834,7 @@ object CaosScriptPsiImplUtil {
             lastParent = lastParent.parent
         }
         val parent = lastParent?.parent as? CaosScriptCommandElement
-        if (parent == null) {
-            return 0
-        }
+                ?: return 0
         if (lastParent !is CaosScriptArgument) {
             return 0
         }

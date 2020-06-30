@@ -7,6 +7,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosOp
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosScope
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
 import com.openc2e.plugins.intellij.agenteering.caos.stubs.api.*
@@ -15,8 +16,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubT
 class CaosScriptSubroutineStubImpl(
         parent:StubElement<*>?,
         override val name:String
-) : StubBase<CaosScriptSubroutineImpl>(parent, CaosScriptStubTypes.SUBROUTINE), CaosScriptSubroutineStub {
-}
+) : StubBase<CaosScriptSubroutineImpl>(parent, CaosScriptStubTypes.SUBROUTINE), CaosScriptSubroutineStub
 
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
@@ -46,6 +46,17 @@ data class CaosScriptRValueStubImpl(
         override val caosVar: CaosVar,
         override val argumentValues: List<CaosVar>
 ) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub {
+
+    override val commandString: String? by lazy {
+        (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()
+    }
+}
+
+data class CaosScriptRValuePrimeStubImpl(
+        val parent: StubElement<*>?,
+        override val caosVar: CaosVar,
+        override val argumentValues: List<CaosVar>
+) : StubBase<CaosScriptRvaluePrimeImpl>(parent, CaosScriptStubTypes.RVALUE_PRIME),  CaosScriptRValuePrimeStub {
 
     override val commandString: String? by lazy {
         (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()

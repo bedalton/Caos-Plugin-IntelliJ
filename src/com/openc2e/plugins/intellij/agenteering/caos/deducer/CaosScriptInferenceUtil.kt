@@ -1,6 +1,7 @@
 package com.openc2e.plugins.intellij.agenteering.caos.deducer
 
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
@@ -117,14 +118,12 @@ object CaosScriptInferenceUtil {
     }
 
     fun getInferredType(rvalue: CaosScriptRvalue): CaosExpressionValueType {
-        val caosVar = rvalue.rvaluePrime?.let {
-            getFromRValuePrime(it)
-        } ?: rvalue.toCaosVar()
+        val caosVar = rvalue.rvaluePrime?.toCaosVar() ?: rvalue.toCaosVar()
         return (caosVar as? CaosVar.CaosCommandCall)?.returnType
                 ?: caosVar.simpleType
     }
 
-    private fun getFromRValuePrime(prime: CaosScriptRvaluePrime): CaosVar? {
+    fun getFromRValuePrime(prime: CaosScriptRvaluePrime): CaosVar? {
         return prime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let { token ->
             token.reference.multiResolve(true)
                     .mapNotNull { resolved ->

@@ -80,4 +80,5 @@ public interface CaosScriptStubTypes {
     CaosScriptMacroStubType MACRO = new CaosScriptMacroStubType("CaosScript_MACRO");
 
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
+    CaosScriptRValuePrimeStubType RVALUE_PRIME = new CaosScriptRValuePrimeStubType("CaosScript_RVALUE_PRIME");
 }

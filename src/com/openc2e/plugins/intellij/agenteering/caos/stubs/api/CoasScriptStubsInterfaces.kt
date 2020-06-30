@@ -4,6 +4,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
 
@@ -31,6 +32,13 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val argumentValues: List<CaosVar>
     val commandString:String?
 }
+
+interface CaosScriptRValuePrimeStub : StubElement<CaosScriptRvaluePrimeImpl> {
+    val caosVar:CaosVar
+    val argumentValues: List<CaosVar>
+    val commandString:String?
+}
+
 
 interface CaosScriptRndvStub : StubElement<CaosScriptCRndvImpl> {
     val min:Int?

@@ -13,6 +13,7 @@ public class CaosScriptElementTypeFactory {
                 "CaosScript_COMMAND_CALL" -> CaosScriptStubTypes.COMMAND_CALL
                 "CaosScript_VAR_TOKEN" -> CaosScriptStubTypes.VAR_TOKEN
                 "CaosScript_RVALUE" -> CaosScriptStubTypes.RVALUE
+                "CaosScript_RVALUE_PRIME" -> CaosScriptStubTypes.RVALUE_PRIME
                 "CaosScript_LVALUE" -> CaosScriptStubTypes.LVALUE
                 "CaosScript_C_ASSIGNMENT" -> CaosScriptStubTypes.VAR_ASSIGNMENT
                 "CaosScript_NAMED_VAR" -> CaosScriptStubTypes.NAMED_VAR
