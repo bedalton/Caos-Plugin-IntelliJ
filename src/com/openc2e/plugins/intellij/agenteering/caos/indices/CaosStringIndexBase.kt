@@ -13,7 +13,7 @@ import java.util.regex.Pattern
 abstract class CaosStringIndexBase<PsiT : PsiElement>
 /**
  * Const
- * @param elementClass the psi element class for this elements in this index
+ * @param indexedElementClass the psi element class for this elements in this index
  */
 internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubIndexExtension<PsiT>() {
 

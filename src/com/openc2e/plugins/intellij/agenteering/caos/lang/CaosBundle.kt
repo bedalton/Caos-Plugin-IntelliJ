@@ -9,6 +9,7 @@ object CaosBundle {
     private const val BUNDLE = "com.openc2e.plugins.intellij.caos-bundle"
     private val bundle: ResourceBundle by lazy { ResourceBundle.getBundle(BUNDLE) }
 
+    @Suppress("DEPRECATION")
     @JvmStatic
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
             CommonBundle.message(bundle, key, *params)

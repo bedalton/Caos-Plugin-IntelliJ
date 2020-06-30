@@ -9,6 +9,9 @@ import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
@@ -81,6 +84,8 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
         val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
         val virtualFile = CaosFileUtil.getPluginResourceFile(docRelativePath)
         val file = virtualFile?.getPsiFile(caosFile.project)
+                ?: FilenameIndex.getFilesByName(caosFile.project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
+                        .firstOrNull()
         if (file == null) {
             toolbar.setDocsButtonEnabled(false)
             return@addDocsButtonClickListener

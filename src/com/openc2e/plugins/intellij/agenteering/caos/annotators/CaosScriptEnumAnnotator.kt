@@ -9,7 +9,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.utils.matchCase
 
 class CaosScriptEnumAnnotator : Annotator {

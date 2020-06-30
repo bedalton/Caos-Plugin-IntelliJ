@@ -10,7 +10,7 @@ class CaosScriptSubroutineIndex : CaosStringIndexBase<CaosScriptSubroutine>(Caos
 
     companion object {
         val KEY: StubIndexKey<String, CaosScriptSubroutine> = IndexKeyUtil.create(CaosScriptSubroutineIndex::class.java)
-        const val VERSION = 0;
+        const val VERSION = 0
         val instance = CaosScriptSubroutineIndex()
     }
 

@@ -15,7 +15,7 @@ class CaosScriptModuleType(id: String) : ModuleType<CaosScriptModuleBuilder>(id)
     }
 
     override fun getDescription(): String {
-        return "";
+        return ""
     }
 
     override fun getNodeIcon(p0: Boolean): Icon {

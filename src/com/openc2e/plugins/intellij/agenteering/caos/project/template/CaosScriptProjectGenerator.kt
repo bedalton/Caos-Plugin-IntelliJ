@@ -11,10 +11,7 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
  * @author Sergey Simonchik
  */
 abstract class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjectGeneratorInfo>() {
-    /**
-     * Always returns [ValidationResult.OK].
-     * Real validation should be done in [WebProjectGenerator.GeneratorPeer.validate].
-     */
+
     override fun validate(baseDirPath: String): ValidationResult {
         return ValidationResult.OK
     }

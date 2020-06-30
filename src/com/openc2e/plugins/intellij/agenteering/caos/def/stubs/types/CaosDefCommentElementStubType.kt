@@ -28,8 +28,8 @@ class CaosDefCommentElementStubType(debugName:String) : CaosDefStubElementType<C
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefDocCommentStub {
         val parameters = stream.readList(StubInputStream::readParameter).filterNotNull()
-        val rvalue = stream.readBoolean();
-        val lvalue = stream.readBoolean();
+        val rvalue = stream.readBoolean()
+        val lvalue = stream.readBoolean()
         val returnType = stream.readReturnType() ?: CaosDefReturnTypeStruct(
                 type = CaosDefPsiImplUtil.AnyTypeType,
                 comment = null

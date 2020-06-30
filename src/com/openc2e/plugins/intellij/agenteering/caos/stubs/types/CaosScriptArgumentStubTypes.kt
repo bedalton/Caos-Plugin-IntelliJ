@@ -3,6 +3,7 @@ package com.openc2e.plugins.intellij.agenteering.caos.stubs.types
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.*
 import com.openc2e.plugins.intellij.agenteering.caos.stubs.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.stubs.impl.*
 

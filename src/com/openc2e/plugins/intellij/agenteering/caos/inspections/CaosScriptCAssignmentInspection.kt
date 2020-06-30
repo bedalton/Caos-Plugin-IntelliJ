@@ -10,7 +10,9 @@ import com.openc2e.plugins.intellij.agenteering.caos.fixes.CaosScriptCls2ToClasF
 import com.openc2e.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 
 class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
@@ -30,14 +32,14 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         val variant = element.containingCaosFile.variant
         val type = getType(element)
                 ?: return
-        when(element.commandString.toUpperCase()) {
+        when (element.commandString.toUpperCase()) {
             "SETV" -> annotateSetv(variant, element, type, problemsHolder)
             "SETA" -> annotateSeta(variant, element, type, problemsHolder)
             "SETS" -> annotateSets(variant, element, type, problemsHolder)
         }
     }
 
-    private fun getType(element:CaosScriptCAssignment) : CaosExpressionValueType? {
+    private fun getType(element: CaosScriptCAssignment): CaosExpressionValueType? {
         val rvalue = element.getChildrenOfType(CaosScriptArgument::class.java).getOrNull(1) as? CaosScriptRvalue
                 ?: return null
         return rvalue.varToken?.let {
@@ -50,7 +52,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
     }
 
-    private fun annotateSetv(variant: CaosVariant, element:CaosScriptCAssignment, actualType:CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSetv(variant: CaosVariant, element: CaosScriptCAssignment, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (variant in VARIANT_OLD) {
             val lvalue = element.lvalue
                     ?: return
@@ -62,7 +64,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         annotateSetvNew(setv, actualType, problemsHolder)
     }
 
-    private fun annotateSetvClassic(variant: CaosVariant, element:CaosScriptCAssignment, lvalue:CaosScriptLvalue, problemsHolder: ProblemsHolder) {
+    private fun annotateSetvClassic(variant: CaosVariant, element: CaosScriptCAssignment, lvalue: CaosScriptLvalue, problemsHolder: ProblemsHolder) {
         val lvalueCommand = lvalue.commandString.toUpperCase()
         if (variant == CaosVariant.C2 && lvalueCommand == "CLAS") {
             problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.command-annotator.setv-clas-replaced-in-c2"), CaosScriptC1ClasToCls2Fix(element))
@@ -77,7 +79,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         annotateUnexpectedType(setv, CaosExpressionValueType.DECIMAL, type, problemsHolder)
     }
 
-    private fun annotateSets(variant: CaosVariant, element:CaosScriptCAssignment, type:CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSets(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (variant in VARIANT_OLD)
             return
         val commandToken = element.commandToken
@@ -86,7 +88,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
 
-    private fun annotateSeta(variant: CaosVariant, element:CaosScriptCAssignment, type:CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSeta(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (variant in VARIANT_OLD)
             return
         val commandToken = element.commandToken
@@ -94,7 +96,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         annotateUnexpectedType(commandToken, CaosExpressionValueType.AGENT, type, problemsHolder)
     }
 
-    private fun annotateUnexpectedType(element:CaosScriptIsCommandToken, expectedType:CaosExpressionValueType, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateUnexpectedType(element: CaosScriptIsCommandToken, expectedType: CaosExpressionValueType, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (actualType == expectedType)
             return
         val replacement = when {
@@ -103,19 +105,16 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
             actualType.isAgentType -> "SETA"
             else -> null
         }
-        val typeName = if (expectedType.isNumberType) {
-            "a numeric"
-        } else if (expectedType.isStringType) {
-            "a string"
-        } else if (expectedType.isAgentType) {
-            "an agent"
-        } else {
-            return
+        val typeName = when {
+            expectedType.isNumberType -> "a numeric"
+            expectedType.isStringType -> "a string"
+            expectedType.isAgentType -> "an agent"
+            else -> return
         }
-        registerProblemWithFix(element, typeName, actualType, replacement, problemsHolder )
+        registerProblemWithFix(element, typeName, actualType, replacement, problemsHolder)
     }
 
-    private fun registerProblemWithFix(targetElement:CaosScriptIsCommandToken, expectedType:String, actualType:CaosExpressionValueType, replacement:String?, problemsHolder: ProblemsHolder) {
+    private fun registerProblemWithFix(targetElement: CaosScriptIsCommandToken, expectedType: String, actualType: CaosExpressionValueType, replacement: String?, problemsHolder: ProblemsHolder) {
         if (actualType.isAnyType || actualType == CaosExpressionValueType.VARIABLE)
             return
         // Create message using suggestion text if any

@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl
 
 import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.stubs.StubElement
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.*
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubTypes
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant

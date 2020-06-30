@@ -7,7 +7,6 @@ import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider
 import com.intellij.codeInsight.hints.Option
 import com.intellij.psi.PsiElement
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 
 
 class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {

@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.agenteering.caos.fixes;
+package com.openc2e.plugins.intellij.agenteering.caos.fixes
 
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix

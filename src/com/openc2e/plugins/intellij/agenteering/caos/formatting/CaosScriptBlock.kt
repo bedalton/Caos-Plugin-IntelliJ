@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.openc2e.plugins.intellij.agenteering.caos.formatting
 
 import com.intellij.formatting.*
@@ -8,8 +10,7 @@ import com.intellij.psi.formatter.common.AbstractBlock
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
-import com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
+import com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK_LINE
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
@@ -18,7 +19,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSe
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.openc2e.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import java.util.*
+import com.openc2e.plugins.intellij.agenteering.caos.utils.orFalse
 
 
 class CaosScriptBlock internal constructor(
@@ -27,14 +28,6 @@ class CaosScriptBlock internal constructor(
         alignment: Alignment?,
         val settings: CommonCodeStyleSettings
 ) : AbstractBlock(node, wrap, alignment) {
-
-    private val subFormattedBlocks by lazy {
-        val mySubObjJFormattedBlocks = mutableListOf<CaosScriptBlock>()
-        for (block in subBlocks) {
-            mySubObjJFormattedBlocks.add(block as CaosScriptBlock)
-        }
-        if (!mySubObjJFormattedBlocks.isNotEmpty()) mySubObjJFormattedBlocks else EMPTY
-    }
 
     private val spacingProcessor: CaosScriptSpacingProcessor by lazy {
         CaosScriptSpacingProcessor(node, settings)
@@ -45,7 +38,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun buildChildren(): List<Block> {
-        val blocks: MutableList<Block> = ArrayList<Block>()
+        val blocks: MutableList<Block> = mutableListOf()
         var child: ASTNode? = myNode.firstChildNode
         while (child != null) {
             if (child.text.trim().isNotBlank()) {
@@ -103,7 +96,6 @@ class CaosScriptBlock internal constructor(
     }
 
     companion object {
-        private val EMPTY: List<CaosScriptBlock> = emptyList()
         private val normalIndent = ChildAttributes(Indent.getNormalIndent(), null)
         private val noneIndent = ChildAttributes(Indent.getNoneIndent(), null)
     }

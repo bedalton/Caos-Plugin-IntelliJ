@@ -10,6 +10,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSe
 import com.openc2e.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import gnu.trove.TObjectLongHashMap
 
+@Suppress("UNUSED_PARAMETER", "unused")
 object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val MODES_KEY = Key.create<TObjectLongHashMap<String>>("MODES_KEY")
     private val CAOS_VARIANT = Key.create<String>("CAOS_VARIANT")
@@ -68,12 +69,10 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                  level: Int, mode: String): Boolean {
         val flags = getParsingModes(builder_)
         val count = flags!![mode]
-        if (count == 1L) {
-            flags.remove(mode)
-        } else if (count > 1) {
-            flags.put(mode, count - 1)
-        } else {
-            builder_.error("Could not exit inactive '" + mode + "' mode at offset " + builder_.currentOffset)
+        when {
+            count == 1L -> flags.remove(mode)
+            count > 1 -> flags.put(mode, count - 1)
+            else -> builder_.error("Could not exit inactive '" + mode + "' mode at offset " + builder_.currentOffset)
         }
         return true
     }
@@ -97,17 +96,9 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun endOfBlockNext(builder_: PsiBuilder,
-                       level: Int) : Boolean {
-        val lookAhead = builder_.lookAhead(1)
-                ?: return true
-        return lookAhead in blockEnds
-    }
-
-    @JvmStatic
     fun eol(builder_: PsiBuilder, level: Int): Boolean {
         val text = builder_.tokenText
-        return text != null && text.contains("\n") || eof(builder_, level)
+        return (text != null && text.contains("\n")) || eof(builder_, level)
     }
 
     @JvmStatic

@@ -8,8 +8,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosNumber.CaosFloa
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosNumber.CaosIntNumber
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar.*
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.*
-import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosNamedGameVar.EameVar
-import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosNamedGameVar.GameVar
+import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosNamedGameVar.*
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosNumberedVar.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.openc2e.plugins.intellij.agenteering.caos.utils.nullIfEmpty
@@ -39,6 +38,7 @@ private const val NAME = 18
 private const val NULL = 19
 private const val NONE = 20
 private const val PICT_DIMENSIONS = 21;
+private const val C2_GAME = 22;
 
 
 
@@ -61,11 +61,12 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         C1_STRING -> CaosC1String(readNameAsString() ?: "")
         EAME -> EameVar(readNameAsString()?:"???")
         GAME -> GameVar(readNameAsString()?:"???")
-        MAME -> CaosNamedGameVar.MameVar(readNameAsString()?:"???")
-        NAME -> CaosNamedGameVar.NameVar(readNameAsString()?:"???")
+        MAME -> MameVar(readNameAsString()?:"???")
+        NAME -> NameVar(readNameAsString()?:"???")
         NULL -> CaosVarNull
         NONE -> CaosVarNone
-        PICT_DIMENSIONS -> CaosVar.CaosLiteral.CaosPictDimension(readInt(), readInt())
+        PICT_DIMENSIONS -> CaosPictDimension(readInt(), readInt())
+        C2_GAME -> C2GameVar(readInt(), readInt())
         else -> throw Exception("Unexpected caos var type '$value' encountered")
     }
 }
@@ -158,20 +159,25 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
             writeInt(GAME)
             writeName(caosVar.name)
         }
-        is CaosNamedGameVar.MameVar -> {
+        is MameVar -> {
             writeInt(MAME)
             writeName(caosVar.name)
         }
-        is CaosNamedGameVar.NameVar -> {
+        is NameVar -> {
             writeInt(NAME)
             writeName(caosVar.name)
         }
         is CaosVarNull -> writeInt(NULL)
         is CaosVarNone -> writeInt(NONE)
-        is CaosVar.CaosLiteral.CaosPictDimension -> {
+        is CaosPictDimension -> {
             writeInt(PICT_DIMENSIONS)
             writeInt(caosVar.width)
             writeInt(caosVar.height)
+        }
+        is C2GameVar -> {
+            writeInt(C2_GAME)
+            writeInt(caosVar.first)
+            writeInt(caosVar.second)
         }
     }
 }

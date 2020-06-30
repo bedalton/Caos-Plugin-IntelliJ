@@ -13,11 +13,12 @@ import com.openc2e.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutin
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.*
 import com.openc2e.plugins.intellij.agenteering.caos.utils.Case
 import com.openc2e.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.openc2e.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
+import com.openc2e.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import icons.CaosScriptIcons
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {

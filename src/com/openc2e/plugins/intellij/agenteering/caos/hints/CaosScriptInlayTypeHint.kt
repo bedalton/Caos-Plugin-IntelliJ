@@ -12,29 +12,68 @@ import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
-import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.isVariant
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
+import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement
 import com.openc2e.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
+import com.openc2e.plugins.intellij.agenteering.caos.utils.orFalse
 
 enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
 
     ATTRIBUTE_BITFLAGS_HINT("Show attributes from bitflag", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptExpression)?.isInt.orFalse() && element.getPreviousNonEmptySibling(false)?.text?.toUpperCase() == "ATTR"
+            return (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
+        }
+
+        private fun usesBitFlags(element:CaosScriptExpression) : Boolean {
+            val parent = element.parent
+            val rvaluePrime = when {
+                parent is CaosScriptComparesEqualityElement -> (if (parent.first == element) parent.second else parent.first).rvaluePrime
+                parent is CaosScriptRvalue -> parent.rvaluePrime
+                else -> null
+            } ?: return false
+            rvaluePrime.commandStringUpper.let {
+                if (it == "ATTR" || it == "BUMP")
+                    return true
+            }
+            return getTypeList(element) != null
+        }
+
+        private fun getTypeList(element:CaosScriptExpression) : CaosDefTypeDefinitionElement? {
+            val parent = element.parent
+            val rvaluePrime = when {
+                parent is CaosScriptComparesEqualityElement -> (if (parent.first == element) parent.second else parent.first).rvaluePrime
+                parent is CaosScriptRvalue -> parent.rvaluePrime
+                else -> null
+            } ?: return null
+            val token = rvaluePrime.commandToken
+                    ?: return null
+            val typeDef = token.reference.resolve()
+                    ?.getParentOfType(CaosDefCommandDefElement::class.java)
+                    ?.returnTypeStruct
+                    ?.type
+                    ?.typedef
+                    ?: return null
+            val variant = element.containingCaosFile.variant
+            return CaosDefTypeDefinitionElementsByNameIndex
+                    .Instance[typeDef, element.project].firstOrNull {
+                it.isVariant(variant) && it.typeNote?.text?.toLowerCase() == "bitflags"
+            }
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            val attr = (element as? CaosScriptExpression)?.intValue
+            val expression = element as? CaosScriptExpression
                     ?: return emptyList()
-            val variant = element.containingCaosFile.variant
-            val typeList = CaosDefTypeDefinitionElementsByNameIndex
-                    .Instance["Attributes", element.project]
-                    .filter {
-                        it.containingCaosDefFile.isVariant(variant)
-                    }
-                    .firstOrNull()
+            val attr = expression.intValue
+                    ?: return emptyList()
+            val typeList = getTypeList(expression)
                     ?: return emptyList()
             val values = mutableListOf<String>()
             for(key in typeList.keys) {

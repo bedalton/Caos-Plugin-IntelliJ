@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.openc2e.plugins.intellij.agenteering.caos.utils.document

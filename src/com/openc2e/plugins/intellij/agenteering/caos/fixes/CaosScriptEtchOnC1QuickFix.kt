@@ -11,11 +11,15 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.openc2e.plugins.intellij.agenteering.caos.utils.EditorUtil
 import com.openc2e.plugins.intellij.agenteering.caos.utils.document

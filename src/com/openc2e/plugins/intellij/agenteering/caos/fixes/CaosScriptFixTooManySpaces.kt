@@ -13,9 +13,6 @@ import com.openc2e.plugins.intellij.agenteering.caos.utils.document
 import com.openc2e.plugins.intellij.agenteering.caos.utils.orFalse
 
 class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionAction {
-    private val spacesText = spaces.text
-    private val WHITE_SPACE_OR_COMMAS = "[ ,\t]+".toRegex()
-
     override fun startInWriteAction(): Boolean {
         return true
     }
@@ -32,7 +29,7 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
             return
         var hasComma = false
         var hasNewline = false
-        val siblings = mutableListOf<PsiElement>(spaces)
+        val siblings = mutableListOf(spaces)
         var sibling = spaces.previous
         while (sibling != null && WHITE_SPACE_OR_COMMAS.matches(sibling.text)) {
             if (sibling.text.contains(","))
@@ -64,15 +61,17 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
         if (siblings.isEmpty())
             return
         val hasNext = sibling?.text?.trim()?.isNotEmpty().orFalse()
-        val replacement = if (hasNewline)
-            ""
-        else if (hasComma)
-            ","
-        else if (hasNext)
-            " "
-        else
-            ""
+        val replacement = when {
+            hasNewline -> ""
+            hasComma -> ","
+            hasNext -> " "
+            else -> ""
+        }
         file.document?.replaceString(siblings.first().textRange.startOffset, siblings.last().textRange.endOffset, replacement)
+    }
+
+    companion object {
+        private val WHITE_SPACE_OR_COMMAS = "[ ,\t]+".toRegex()
     }
 
 }

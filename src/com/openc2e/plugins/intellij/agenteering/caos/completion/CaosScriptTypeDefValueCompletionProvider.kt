@@ -6,14 +6,16 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
+import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.openc2e.plugins.intellij.agenteering.caos.utils.matchCase
 
 object CaosScriptTypeDefValueCompletionProvider {
 

@@ -10,7 +10,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.openc2e.plugins.intellij.agenteering.caos.utils.EditorUtil
 import com.openc2e.plugins.intellij.agenteering.caos.utils.document
 

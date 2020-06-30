@@ -8,6 +8,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandD
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.openc2e.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 
 class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
     override fun getDocumentationElementForLookupItem(psiManager: PsiManager, `object`: Any, element: PsiElement): PsiElement? {

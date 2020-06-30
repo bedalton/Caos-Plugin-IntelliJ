@@ -12,7 +12,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLik
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 
-class CaosScriptFixQuoteType(element:PsiElement, val quoteStart:Char, val quoteEnd:Char = quoteStart) : IntentionAndQuickFixAction() {
+class CaosScriptFixQuoteType(element:PsiElement, private val quoteStart:Char, private val quoteEnd:Char = quoteStart) : IntentionAndQuickFixAction() {
     private val pointer = SmartPointerManager.createPointer(element)
 
     override fun getName(): String = CaosBundle.message("caos.fixes.fix-quote-type")

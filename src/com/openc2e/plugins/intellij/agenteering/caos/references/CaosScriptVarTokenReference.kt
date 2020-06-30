@@ -7,8 +7,10 @@ import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedVar
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
+import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 
 class CaosScriptVarTokenReference(element:CaosScriptVarToken) : PsiPolyVariantReferenceBase<CaosScriptVarToken>(element, TextRange.create(0, element.textLength)) {
 

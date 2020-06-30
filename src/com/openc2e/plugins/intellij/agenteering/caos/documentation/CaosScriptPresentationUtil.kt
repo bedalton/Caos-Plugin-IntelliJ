@@ -22,8 +22,7 @@ object CaosScriptPresentationUtil {
             }
 
             override fun getIcon(b: Boolean): Icon {
-                val commandType = element.getEnclosingCommandType()
-                return when (commandType) {
+                return when (element.getEnclosingCommandType()) {
                     CaosCommandType.COMMAND -> CaosScriptIcons.COMMAND
                     CaosCommandType.RVALUE -> CaosScriptIcons.RVALUE
                     CaosCommandType.LVALUE -> CaosScriptIcons.LVALUE

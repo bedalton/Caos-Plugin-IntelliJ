@@ -39,7 +39,7 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
         //if (tokenType == CaosDef_AT_TAG)
           //  attrKey = DOC_COMMENT_TAG
         if (tokenType == CaosDef_HASH_TAG)
-            attrKey = DOC_COMMENT_HASHTAG;
+            attrKey = DOC_COMMENT_HASHTAG
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS
     }
 

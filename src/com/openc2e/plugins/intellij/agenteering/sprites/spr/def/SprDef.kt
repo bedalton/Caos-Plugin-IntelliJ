@@ -69,7 +69,6 @@ object SprDef {
             val errorMessage = "Cannot compile sprite.$missingMessage$invalidMessage"
             return SprCompileResultBad(sprDefFile, errorMessage)
         }
-        val fileName = data.fileName
         val spriteName = data.spriteName
         val images = data.images
 
@@ -109,7 +108,7 @@ object SprDef {
         val images = (1 .. lines.lastIndex).map { index ->
             val relativePath = lines[index]
             val imageFile = (if (relativePath.startsWith(REL_PREFIX))
-                findFileByRelativePath(project, sprDefFile, relativePath.substring(REL_PREFIX.length))
+                findFileByRelativePath(sprDefFile, relativePath.substring(REL_PREFIX.length))
             else
                 findFileBySharedModuleAndRelativePath(project, sprDefFile, relativePath))
             if (imageFile == null || !imageFile.exists())

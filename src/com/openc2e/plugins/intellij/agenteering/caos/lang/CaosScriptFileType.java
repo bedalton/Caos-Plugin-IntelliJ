@@ -30,7 +30,7 @@ public class CaosScriptFileType extends LanguageFileType {
     @NotNull
     @Override
     public String getDescription() {
-        return "A Creatures Caos script";
+        return "A creatures caos script";
     }
 
     @NotNull
