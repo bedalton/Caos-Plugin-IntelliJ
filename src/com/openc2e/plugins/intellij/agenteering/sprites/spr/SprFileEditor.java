@@ -13,8 +13,8 @@ import java.util.Objects;
 public class SprFileEditor {
     private JPanel main;
     private JList<Image> imageList;
-    private JComboBox backgroundColor;
-    private JComboBox scale;
+    private JComboBox<String> backgroundColor;
+    private JComboBox<String> scale;
     private final VirtualFile virtualFile;
     private final List<Image> images;
     public static final String TRANSPARENT = "Transparent";
