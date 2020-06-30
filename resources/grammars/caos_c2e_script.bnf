@@ -23,7 +23,8 @@
 	name("expects.*") = "value";
 	name("l_.*") = "variable";
 	name("lvalue") = "variable";
-	name("rvalue.*") = "value";
+	name("rvalue") = "value";
+	name("expression") = "value"
 	name("K_.*") = "command"
 	name("eq_op.*") = "EQ|NE|etc.."
 	name("word_factory_element") = ""
