@@ -2,6 +2,7 @@ package com.openc2e.plugins.intellij.agenteering.caos.lexer;
 
 import com.intellij.psi.tree.IElementType;
 
+import com.intellij.lexer.FlexLexer;
 import java.util.List;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
@@ -11,10 +12,11 @@ import com.openc2e.plugins.intellij.agenteering.caos.utils.CaosScriptArrayUtils;
 
 %{
 
-  	public _CaosScriptLexer() {
+  	public _CaosScriptLexer(boolean plusPlus) {
 		this((java.io.Reader)null);
+		this.plusPlus = plusPlus;
 	}
-
+	private boolean plusPlus;
 	private int braceDepth;
 	private static final List<Character> BYTE_STRING_CHARS = CaosScriptArrayUtils.toList("0123456789 R".toCharArray());
 	protected int blockDepth = 0;
