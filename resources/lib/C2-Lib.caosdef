@@ -303,17 +303,17 @@ BHVR (command) click (integer) touch (integer);
  * utilise this a vehicle must move use [XVEC] and [YVEC] (rather than [VELX] and [VELY]) and have [ATTR]
  * set up to respond to boundaries.
  * The values returned are from a bit-field where:
- * \bit0 = hit left (1)
- * \bit1 = hit right (2)
- * \bit2 = hit top (4)
- * \bit3 = hit bottom (8)
+ * 	1 = hit left
+ * 	2 = hit right
+ * 	4 = hit top
+ * 	8 = hit bottom
  * So, for example: a value of 1 corresponds to having hit a wall to the left; a value of 4
  * corresponds to having hit a ceiling; a value of 5 corresponds to having hit a ceiling and a
  * wall to the left (sum of ceiling=4, left=1)
  * #Vehicles
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Bump)
  */
 BUMP (integer);
 
@@ -3535,6 +3535,13 @@ YVEC (integer);
 @bool {
 	0 = false
 	1 = true
+}
+
+@Bump {
+	1 = Left
+	2 = Right
+	4 = Top
+	8 = Bottom
 }
 
 @CardinalDirection {
