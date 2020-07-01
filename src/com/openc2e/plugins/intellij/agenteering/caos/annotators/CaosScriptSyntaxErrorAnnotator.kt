@@ -55,6 +55,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptCRndv -> annotateRndv(variant, element, annotationWrapper)
             is PsiComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
+            is CaosScriptSpaceLikeOrNewline -> if (element.parent == element.containingFile) {
+                simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
+            }
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(element, annotationWrapper)

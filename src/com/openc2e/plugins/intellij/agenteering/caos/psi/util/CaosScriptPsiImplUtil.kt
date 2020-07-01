@@ -36,7 +36,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandElement(call: CaosScriptCommandCall): CaosScriptCommandElement? {
-        return call
+        return call.firstChild as? CaosScriptCommandElement ?: call
     }
 
     @JvmStatic
@@ -168,6 +168,9 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandToken(call: CaosScriptCommandCall): CaosScriptIsCommandToken? {
+        if (call.firstChild is CaosScriptCommandElement) {
+            return (call.firstChild as CaosScriptCommandElement).commandToken
+        }
         val token = call.getChildOfType(CaosScriptIsCommandToken::class.java)
                 ?: call.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
         if (token == null) {
