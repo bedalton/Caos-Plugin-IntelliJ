@@ -118,7 +118,7 @@ public class SprFileEditor {
                 GREEN,
                 BLUE
         });
-        scale = new ComboBox(new String[]{
+        scale = new ComboBox<>(new String[]{
                 "1x",
                 "1.25x",
                 "1.5x",
