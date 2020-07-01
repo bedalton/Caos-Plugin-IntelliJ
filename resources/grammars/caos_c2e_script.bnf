@@ -2872,7 +2872,6 @@ c_kw_d_d
 	|	K_SYS_COL space_like (K_CMRP|incomplete)
 	|	K_SYS_COL space_like (K_GRND|incomplete)
 	|	K_TELE
-	|	<<isVariant "DS">>K_TRAN
 	|	<<isVariant "C3">>K_TRAN
 	|	<<isVariant "CV">>K_TRAN
 	|	K_MVBY
@@ -3313,8 +3312,7 @@ c_kw_d_v_v
 	;
 
 c_kw_l_d_d
-	::= <<isVariant "CV">>K_CHAR
-	|	<<isVariant "C3">>K_CHAR
+	::= <<isVariant "C3">>K_CHAR
 	|	<<isVariant "DS">>K_CHAR
 	{
 		implements = [
@@ -5071,7 +5069,6 @@ r_kw_d
 	|	K_TINT
 	|	K_TORX
 	|	K_TORY
-	|	<<isVariant "CV">>K_TRAN
 	|	K_VISI
 	|	K_VOLM
 	|	K_VTOS
@@ -5190,8 +5187,7 @@ r_kw_d_d_d
 	;
 
 r_kw_s_d
-	::= <<isVariant "CV">>K_CHAR
-	|	<<isVariant "C3">>K_CHAR
+	::= <<isVariant "C3">>K_CHAR
 	|	<<isVariant "DS">>K_CHAR
 	|	K_HIST space_like (K_CAGE|incomplete)
 	|	K_HIST space_like (K_FOTO|incomplete)
@@ -5367,9 +5363,6 @@ r_kw_d_d
 	|	K_RMSC
 	|	<<isVariant "C1">>K_ROOM
 	|	<<isVariant "C2">>K_ROOM
-	|	<<isVariant "CV">>K_TRAN
-	|	<<isVariant "C3">>K_TRAN
-	|	<<isVariant "DS">>K_TRAN
 	|	K_WEAR
 	|	K_WOLF
 	{
