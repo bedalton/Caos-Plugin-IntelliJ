@@ -5,6 +5,8 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.openc2e.plugins.intellij.agenteering.caos.deducer.*
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
@@ -1345,6 +1347,29 @@ object CaosScriptPsiImplUtil {
             return Pair(it[0].toInt(), it[2].toInt())
         }
     }
+
+    @JvmStatic
+    fun getLastAssignment(varToken:CaosScriptVarToken) : CaosScriptIsCommandToken? {
+        val lastPos = varToken.startOffset
+        val text = varToken.text
+        val scope = varToken.getParentOfType(CaosScriptHasCodeBlock::class.java)?.scope()
+        val assignment = PsiTreeUtil.collectElementsOfType(varToken.containingFile, CaosScriptCAssignment::class.java).filter {
+            it.endOffset < lastPos && it.lvalue?.text == text && it.sharesScope(scope)
+        }.maxBy {
+            it.startOffset
+        } ?: return null
+        val assignmentToken = assignment.commandStringUpper
+        if (assignmentToken in varTokenAssignmentSearchTerminatingOperands) {
+            return null
+        }
+        val rvalue = (assignment.arguments.lastOrNull() as? CaosScriptExpectsValueOfType)?.rvalue
+                ?: return null
+        rvalue.rvaluePrime?.let { return it.commandToken }
+        return rvalue.varToken?.let  {
+            getLastAssignment(it)
+        }
+    }
+
 }
 
 private var OLD_VARIANTS = listOf(CaosVariant.C1, CaosVariant.C2)
@@ -1453,4 +1478,22 @@ fun String?.nullIfUndef(): String? {
     return this
 }
 
+private val varTokenAssignmentSearchTerminatingOperands = listOf(
+        "MULV",
+        "DIVV",
+        "MODV",
+        "SETA",
+        "SETS"
+)
+
 val CaosScriptCommandLike.commandStringUpper: String get() = commandString.toUpperCase()
+
+fun CaosScriptCompositeElement.sharesScope(otherScope:CaosScope?) : Boolean {
+    return scope.sharesScope(otherScope)
+}
+
+fun CaosScriptCompositeElement.sharesScope(other:CaosScriptCompositeElement) : Boolean {
+    return scope.sharesScope(other.scope)
+}
+
+val CaosScriptCompositeElement.scope: CaosScope? get() = (this as? CaosScriptHasCodeBlock ?: this.getParentOfType(CaosScriptHasCodeBlock::class.java))?.scope()

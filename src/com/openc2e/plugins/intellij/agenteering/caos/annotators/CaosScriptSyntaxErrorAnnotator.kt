@@ -68,11 +68,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotateRndv(variant: CaosVariant, element: CaosScriptCRndv, annotationWrapper: AnnotationHolderWrapper) {
         if (variant !in VARIANT_OLD)
             return
-        val minMax = element.rndvIntRange
-        if (minMax.first < minMax.second)
+        val minMax:Pair<Int?, Int?> = element.rndvIntRange
+        val min = minMax.first ?: return
+        val max = minMax.second ?: return
+        if (min < max)
             return
         if (minMax.first == minMax.second) {
-            annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same", minMax.first))
+            annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same", min))
                     .range(element.commandToken)
                     .create()
             return

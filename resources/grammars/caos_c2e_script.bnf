@@ -2197,13 +2197,16 @@ rvalue_prime
 private r_cv_char
 	::= <<expects 'NUMBER'>> kw_cv_char space_like expects_string space_like expects_int
 	|	<<expects 'STRING'>>kw_cv_char
-	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>) kw_cv_char (space_like expects_int space_like expects_int)?
+	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>) kw_cv_char (space_like expects_string space_like expects_int)?
 	;
 
 private r_cv_tran
 	::= <<expects 'NUMBER'>> r_kw_cv_tran space_like expects_int space_like expects_int
 	|	<<expects 'STRING'>>r_kw_cv_tran space_like expects_int
 	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>)r_kw_cv_tran space_like expects_int (space_like expects_int)?
+	{
+		pin(".*")= 5
+	}
 	;
 
 private r_none ::= r_kw_none
@@ -6693,6 +6696,7 @@ var_token
 			getVarIndex
 			getReference
 			getInferredType
+			getLastAssignment
 		]
 	}
 	;

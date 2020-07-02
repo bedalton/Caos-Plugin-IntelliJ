@@ -9,6 +9,32 @@ data class CaosScope(val range:TextRange, val blockType:CaosScriptBlockType, val
     val endOffset:Int get() = range.endOffset
 }
 
+fun CaosScope?.sharesScope(otherScope: CaosScope?) : Boolean {
+    if (this == null) {
+        return otherScope == null
+    }
+    if (otherScope == null)
+        return false
+    if (this == otherScope) {
+        return true
+    }
+    val thisEnclosingScopes = enclosingScope
+    val otherEnclosingScope = otherScope.enclosingScope
+    for(i in enclosingScope.indices) {
+        val parentScope = enclosingScope[i]
+        val otherParentScope = otherEnclosingScope[i]
+        if (parentScope != otherParentScope) {
+            return when (blockType) {
+                CaosScriptBlockType.DOIF -> otherParentScope.blockType == CaosScriptBlockType.DOIF
+                CaosScriptBlockType.ELIF -> otherParentScope.blockType == CaosScriptBlockType.ELIF
+                CaosScriptBlockType.ELSE -> otherParentScope.blockType == CaosScriptBlockType.ELSE
+                else -> true
+            }
+        }
+    }
+    return true
+}
+
 fun rootScope(file:CaosScriptFile) : CaosScope {
     return CaosScope(file.textRange, CaosScriptBlockType.MACRO, emptyList())
 }
