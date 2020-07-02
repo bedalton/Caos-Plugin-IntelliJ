@@ -177,8 +177,10 @@ BBD: EDIT (command) n (integer);
  * language computer to change the picture.
  * #Blackboard
  *
+ * @param {n} (integer)
+ *
  */
-BBD: EMIT (command);
+BBD: EMIT (command) n (integer);
 
 /*
  * draws the current text string text[Obv[0]] onto part0 (if n=1) or wipes text from bbd (if n=0)
@@ -447,8 +449,10 @@ DDE: PANC (command);
  * client
  * #Debug
  *
+ * @param {dimensions} (pict_dimension) - Three chars literal with char 1 and 3 representing dimensions and char 2 a delimiter usually "|"
+ *
  */
-DDE: PICT (command);
+DDE: PICT (command) dimensions (pict_dimension);
 
 /*
  * write from string to location determined by option token

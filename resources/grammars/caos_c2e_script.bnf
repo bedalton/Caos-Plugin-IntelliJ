@@ -2584,7 +2584,6 @@ c_kw_none
 	|	K_APPR
 	|	K_ASEA
 	|	K_BANG
-	|	<<isVariant 'C1'>>K_BBD_COL space_like (K_EMIT|incomplete)
 	|	K_BORN
 	|	K_BRN_COL space_like (K_DMPB|incomplete)
 	|	K_CAGE
@@ -2722,7 +2721,7 @@ c_kw_d
 	|	K_ATTR
 	|	K_BASE
 	|	K_BBD_COL space_like (K_EDIT|incomplete)
-	|	<<isVariant 'C2'>>K_BBD_COL space_like (K_EMIT|incomplete)
+	|	K_BBD_COL space_like (K_EMIT|incomplete)
 	|	K_BBD_COL space_like (K_SHOW|incomplete)
 	|	<<isVariant 'C3'>>K_BHVR
 	|	<<isVariant 'DS'>>K_BHVR
