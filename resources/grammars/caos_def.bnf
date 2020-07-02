@@ -25,10 +25,10 @@
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
 		EQ = "=";
 		COMMA = ',';
+		COLON = ':';
 		SEMI = ';'
 		SINGLE_QUO = "'";
 		DOUBLE_QUO = '"';
-		COLON = ':';
 		OPEN_PAREN = '(';
 		CLOSE_PAREN = ")";
 		space = "regexp:\s+";
@@ -117,7 +117,7 @@ private arguments_list_recover
 
 
 type_definition_element
-	::= type_def_name type_note? type_definition_body
+	::= type_def_name (COLON type_note)? type_definition_body
 	{
 		pin=1;
 		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefinitionStub"
@@ -460,12 +460,12 @@ doc_comment_variable_type
 
 private variable_type_tail
 	::= type_def_name
-	|	type_note
+	|	COLON type_note
 	|	variable_tail_limits
 	;
 
 type_note
-	::= TYPE_NOTE_LITERAL
+	::= ID | TYPE_DEF_KEY // Typedef key overrides ID in some lexer contexts
 	;
 
 private variable_tail_limits

@@ -36,7 +36,7 @@ class CaosScriptRndvStubType(debugName:String) : CaosScriptStubElementType<CaosS
     }
 
     override fun createStub(element: CaosScriptCRndvImpl, parent: StubElement<*>?): CaosScriptRndvStub {
-        val minMax = element.rndvIntRange
+        val minMax:Pair<Int?, Int?> = element.rndvIntRange
         return CaosScriptRndvStubImpl(parent, minMax.first, minMax.second)
     }
 

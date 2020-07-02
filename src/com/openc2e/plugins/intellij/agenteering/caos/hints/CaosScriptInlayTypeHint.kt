@@ -19,51 +19,47 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
 import com.openc2e.plugins.intellij.agenteering.caos.psi.api.*
 import com.openc2e.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.openc2e.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.openc2e.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
-import com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement
 import com.openc2e.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.openc2e.plugins.intellij.agenteering.caos.utils.orFalse
 
-enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
 
-    ATTRIBUTE_BITFLAGS_HINT("Show attributes from bitflag", true, 100) {
+enum class CaosScriptInlayTypeHint(description: String, override val enabled: Boolean, override val priority: Int = 0) : CaosScriptHintsProvider {
+
+    ATTRIBUTE_BITFLAGS_HINT("Show bit flag for outer expression", true, 100) {
+
+
         override fun isApplicable(element: PsiElement): Boolean {
             return (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
         }
 
-        private fun usesBitFlags(element:CaosScriptExpression) : Boolean {
+        private fun usesBitFlags(element: CaosScriptExpression): Boolean {
             val parent = element.parent
-            val rvaluePrime = when {
-                parent is CaosScriptComparesEqualityElement -> (if (parent.first == element) parent.second else parent.first).rvaluePrime
-                parent is CaosScriptRvalue -> parent.rvaluePrime
+            val caosCommandToken = when {
+                parent is CaosScriptComparesEqualityElement -> getCommandTokenFromEquality(parent, element)
+                parent.parent.parent is CaosScriptCommandElement -> getCommandTokenFromCommand(parent.parent.parent as CaosScriptCommandElement, element)
                 else -> null
             } ?: return false
-            rvaluePrime.commandStringUpper.let {
+            caosCommandToken.commandString.toUpperCase().let {
                 if (it == "ATTR" || it == "BUMP")
                     return true
             }
-            return getTypeList(element) != null
+            return getTypeList(caosCommandToken) != null
         }
 
-        private fun getTypeList(element:CaosScriptExpression) : CaosDefTypeDefinitionElement? {
-            val parent = element.parent
-            val rvaluePrime = when {
-                parent is CaosScriptComparesEqualityElement -> (if (parent.first == element) parent.second else parent.first).rvaluePrime
-                parent is CaosScriptRvalue -> parent.rvaluePrime
-                else -> null
-            } ?: return null
-            val token = rvaluePrime.commandToken
-                    ?: return null
+        private fun getTypeList(token: CaosScriptIsCommandToken): CaosDefTypeDefinitionElement? {
             val typeDef = token.reference.resolve()
                     ?.getParentOfType(CaosDefCommandDefElement::class.java)
                     ?.returnTypeStruct
                     ?.type
                     ?.typedef
                     ?: return null
-            val variant = element.containingCaosFile.variant
+            val variant = token.containingCaosFile.variant
             return CaosDefTypeDefinitionElementsByNameIndex
-                    .Instance[typeDef, element.project].firstOrNull {
+                    .Instance[typeDef, token.project].firstOrNull {
+                LOGGER.info("Checking typedef: ${it.typeName}, typeNote: ${it.typeNote?.text?.toLowerCase()}")
                 it.isVariant(variant) && it.typeNote?.text?.toLowerCase() == "bitflags"
             }
         }
@@ -73,14 +69,21 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
                     ?: return emptyList()
             val attr = expression.intValue
                     ?: return emptyList()
-            val typeList = getTypeList(expression)
+            val parent = element.parent
+            val commandToken = when {
+                parent is CaosScriptComparesEqualityElement -> getCommandTokenFromEquality(parent, element)
+                parent.parent.parent is CaosScriptCommandElement -> getCommandTokenFromCommand(parent.parent.parent as CaosScriptCommandElement, expression)
+                else -> null
+            } ?: return emptyList()
+            val typeList = getTypeList(commandToken)
                     ?: return emptyList()
             val values = mutableListOf<String>()
-            for(key in typeList.keys) {
+            for (key in typeList.keys) {
                 try {
                     if (attr and key.key.toInt() > 0)
                         values.add(key.value)
-                } catch (e:Exception) {}
+                } catch (e: Exception) {
+                }
             }
             return listOf(InlayInfo("(${values.joinToString()})", element.endOffset))
         }
@@ -109,8 +112,19 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
             if (element !is CaosScriptExpression)
                 return list
             val typeDefValue = element.getTypeDefValue()
-                    ?: return list
-            list.add(InlayInfo("("+typeDefValue.value+")", element.endOffset))
+                    ?: (element.parent?.parent?.parent as? CaosScriptCommandElement)?.let letCommand@{
+                        val commandDef = getCommandTokenFromCommand(it, element)
+                                ?.reference
+                                ?.multiResolve(true)
+                                ?.firstOrNull()
+                                ?.element
+                                ?.getParentOfType(CaosDefCommandDefElement::class.java)
+                                ?: return@letCommand null
+
+                        val typeDef = commandDef.returnTypeStruct?.type?.typedef ?: return@letCommand null
+                        getListValue(element.containingCaosFile.variant, typeDef, element.project, element.text)
+                    } ?: return list
+            list.add(InlayInfo("(" + typeDefValue.value + ")", element.endOffset))
             return list
         }
 
@@ -137,10 +151,9 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
             val variant = element.containingCaosFile.variant
             val typeList = CaosDefTypeDefinitionElementsByNameIndex
                     .Instance["EventNumbers", element.project]
-                    .filter {
+                    .firstOrNull {
                         it.containingCaosDefFile.isVariant(variant)
                     }
-                    .firstOrNull()
                     ?: return emptyList()
             val value = typeList.getValueForKey(eventElement.text)
                     ?: return emptyList()
@@ -192,7 +205,7 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val rvalue = element as? CaosScriptRvalue
                     ?: return emptyList()
-            rvalue.getParentOfType(CaosScriptCAssignment::class.java)?.let{ assignment ->
+            (rvalue.parent.parent as? CaosScriptCAssignment)?.let { assignment ->
                 if (assignment.commandString.toUpperCase() == "SETV") {
                     val lvalue = assignment.lvalue?.text
                     if (lvalue == "clas") {
@@ -245,5 +258,32 @@ enum class CaosScriptInlayTypeHint(description:String, override val enabled: Boo
             }
         }
     };
+
     override val option: Option = Option("SHOW_${this.name}", description, enabled)
+}
+
+
+private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expression: CaosScriptExpression): CaosScriptIsCommandToken? {
+    if (command is CaosScriptCAssignment) {
+        if (expression.parent.parent is CaosScriptLvalue) {
+            return null
+        }
+        val lvalue = command.lvalue
+                ?: return null
+        return lvalue.varToken?.lastAssignment
+                ?: command.lvalue?.commandToken
+    }
+    val argument = expression.parent.parent as? CaosScriptArgument
+            ?: return null
+    if (argument.parent != command) {
+        LOGGER.severe("Expression command pair mismatch in command ${command.text} with expression: ${expression.text}")
+        return null
+    }
+    return command.commandToken
+}
+
+
+private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptExpression): CaosScriptIsCommandToken? {
+    val other = if (parent.first == expression) parent.second else parent.first
+    return other.varToken?.lastAssignment ?: other.rvaluePrime?.commandToken
 }

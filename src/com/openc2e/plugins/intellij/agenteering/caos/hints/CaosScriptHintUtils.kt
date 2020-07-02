@@ -68,7 +68,7 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
     return getListValue(variant, typeDef, expression.project, value)
 }
 
-private fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
+internal fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
     val list = CaosDefTypeDefinitionElementsByNameIndex
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
@@ -108,7 +108,9 @@ internal fun getCommand(element: CaosScriptCommandElement): CaosDefCommandDefEle
         element.commandToken?.reference?.multiResolve(true)?.mapNotNull {
             (it.element as? CaosDefCompositeElement)?.getParentOfType(CaosDefCommandDefElement::class.java)
         }
-    } catch (e:Exception) { null } ?: return null
+    } catch (e: Exception) {
+        null
+    } ?: return null
     val numParameters = element.argumentsLength
     if (commandTokens.isEmpty())
         return null
