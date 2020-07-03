@@ -3,6 +3,7 @@ package com.openc2e.plugins.intellij.agenteering.caos.utils
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
@@ -97,13 +98,25 @@ internal fun StubOutputStream.writeTypeDefValue(value:CaosDefTypeDefValueStruct)
     writeName(value.key)
     writeName(value.value)
     writeUTFFast(value.description ?: "")
+    val equality = when (value.equality) {
+        TypeDefEq.EQUAL -> 0
+        TypeDefEq.GREATER_THAN -> 1
+        TypeDefEq.NOT_EQUAL -> 2
+    }
+    writeInt(equality)
 }
 
 internal fun StubInputStream.readTypeDefValue() : CaosDefTypeDefValueStruct? {
     val key = readNameAsString().nullIfEmpty()
     val value = readNameString() ?: CaosDefPsiImplUtil.UnknownReturn
     val comment = readUTFFast().nullIfEmpty()
+    val equality = when (val eq= readInt()) {
+        0 -> TypeDefEq.EQUAL
+        1 -> TypeDefEq.GREATER_THAN
+        2 -> TypeDefEq.NOT_EQUAL
+        else -> throw Exception("Invalid value passed to type def equality. Error Value: '$eq'")
+    }
     if (key == null)
         return null
-    return CaosDefTypeDefValueStruct(key = key, value = value, description = comment)
+    return CaosDefTypeDefValueStruct(key = key, value = value, description = comment, equality = equality)
 }

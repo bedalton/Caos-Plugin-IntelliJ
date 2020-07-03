@@ -1258,7 +1258,7 @@ object CaosScriptPsiImplUtil {
             when (it.equality) {
                 TypeDefEq.EQUAL -> it.key == element.text
                 TypeDefEq.NOT_EQUAL -> it.key != element.text
-                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.toInt() } catch (e:Exception) { false }
+                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
             }
         }
     }
@@ -1303,7 +1303,7 @@ object CaosScriptPsiImplUtil {
             when (it.equality) {
                 TypeDefEq.EQUAL -> it.key == element.text
                 TypeDefEq.NOT_EQUAL -> it.key != element.text
-                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.toInt() } catch (e:Exception) { false }
+                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
             }
         }
     }

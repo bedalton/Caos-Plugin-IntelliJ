@@ -78,7 +78,7 @@ internal fun getListValue(variant: CaosVariant, listName: String, project: Proje
         when (it.equality) {
             TypeDefEq.EQUAL -> it.key == key
             TypeDefEq.NOT_EQUAL -> it.key != key
-            TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.toInt() } catch (e:Exception) { false }
+            TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
         }
     }
 }
