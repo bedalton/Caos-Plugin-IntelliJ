@@ -7,6 +7,7 @@ import com.intellij.psi.stubs.StubOutputStream
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefTypeDefinitionImpl
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefValueStub
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStubImpl
 import com.openc2e.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.openc2e.plugins.intellij.agenteering.caos.utils.readNameAsString
@@ -21,26 +22,44 @@ class CaosDefTypeDefValueStubType(debugName:String) : CaosDefStubElementType<Cao
         stream.writeName(stub.key)
         stream.writeName(stub.value)
         stream.writeUTFFast(stub.description ?: "")
+        val equality = when (stub.equality) {
+            TypeDefEq.EQUAL -> 0
+            TypeDefEq.GREATER_THAN -> 1
+            TypeDefEq.NOT_EQUAL -> 2
+        }
+        stream.writeInt(equality)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefTypeDefValueStub {
         val key = stream.readNameAsString() ?: CaosDefPsiImplUtil.UnknownReturn
         val value = stream.readNameAsString() ?: CaosDefPsiImplUtil.UnknownReturn
         val description = stream.readUTFFast().nullIfEmpty()
+        val equality = when (stream.readInt()) {
+            0 -> TypeDefEq.EQUAL
+            1 -> TypeDefEq.GREATER_THAN
+            2 -> TypeDefEq.NOT_EQUAL
+            else -> throw Exception("Invalid equals value encountered")
+        }
         return CaosDefTypeDefValueStubImpl(
                 parent = parent,
                 key = key,
                 value = value,
-                description = description
+                description = description,
+                equality = equality
         )
     }
 
     override fun createStub(element: CaosDefTypeDefinitionImpl, parent: StubElement<*>): CaosDefTypeDefValueStub {
+        var key = element.key
+        if (key.length > 1 && (key.startsWith(">") || key.startsWith("!"))) {
+            key = key.substring(1)
+        }
         return CaosDefTypeDefValueStubImpl(
                 parent = parent,
-                key = element.key,
+                key = key,
                 value = element.value,
-                description = element.description
+                description = element.description,
+                equality = element.equality
         )
     }
 

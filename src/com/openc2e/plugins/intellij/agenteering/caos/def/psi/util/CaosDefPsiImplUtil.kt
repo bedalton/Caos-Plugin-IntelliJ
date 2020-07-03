@@ -349,7 +349,7 @@ object CaosDefPsiImplUtil {
             when (it.equality) {
                 TypeDefEq.EQUAL -> it.key == key
                 TypeDefEq.NOT_EQUAL -> it.key != key
-                TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.toInt() } catch (e:Exception) { false }
+                TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
             }
         }
     }
@@ -371,11 +371,11 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getEquality(element:CaosDefTypeDefinition) : TypeDefEq {
-        element.stub?.equality?.let { return it}
+        element.stub?.equality?.let { return it }
         if (element.key.isEmpty()) {
             return TypeDefEq.EQUAL
         }
-        return element.key.substring(0,1).let {
+        return element.key.trim().substring(0,1).let {
             when (it) {
                 "!" -> TypeDefEq.NOT_EQUAL
                 ">" -> TypeDefEq.GREATER_THAN
