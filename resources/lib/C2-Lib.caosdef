@@ -75,7 +75,7 @@ AERO (integer);
  * Set the target point on the [_IT_] object for subsequent [APPR] and [TOUC] commands.
  * #Agents
  *
- * @param {action} (integer) - 0=activate1, 1=Activate2, 2=deactive
+ * @param {action} (integer@AimAction) - 0=activate1, 1=Activate2, 2=deactive
  *
  */
 AIM: (command) action (integer);
@@ -190,7 +190,7 @@ BASE (command) index (integer);
  * 	{n} > 0 - Broadcaast as Audible ie. to all creatures in earshot
  * #Blackboard
  *
- * @param {n} (integer)
+ * @param {n} (integer@EmitType)
  *
  */
 BBD: EMIT (command) n (integer);
@@ -236,7 +236,7 @@ BBD: VOCB (command) bbdStartPosition (integer) startPosition (integer) count (in
  * #Blackboard
  *
  * @param {index} (integer) - word index in blackboard
- * @param {conceptId} (integer) - the word concept id number
+ * @param {conceptId} (integer@BlackBoardWords) - the word concept id number
  * @param {text} [string] - text to be used for the word
  *
  */
@@ -261,8 +261,8 @@ BBFD (command) textPart (integer) red (integer) green (integer) blue (integer);
  *
  * @param {text} [string]
  * @param {duration} (integer) - the number of ticks to display the bubble for
- * @param {type} (integer) - 0=speech bubble, 1=think bubble
- * @param {location} (integer) - 0=track owner, 1=centre in viewport
+ * @param {type} (integer@BbleType) - 0=speech bubble, 1=think bubble
+ * @param {location} (integer@BbleLocation) - 0=track owner, 1=centre in viewport
  *
  */
 BBLE (command) text [string] duration (integer) type (integer) location (integer);
@@ -549,7 +549,7 @@ DDE: GETB (command) organ (integer);
  * source, 18 = visited flag.
  * #Debug
  *
- * @param {property} (integer)
+ * @param {property} (integer@RoomProperties)
  *
  */
 DDE: GETB ALLR (command) property (integer);
@@ -772,7 +772,7 @@ DDE: HATC (command);
  * @param {type} (integer[0 to 1]) - 0=receptor loci 1=emmiter loci
  * @param {organ} (integer) - Note: organ field does not refer to the organs defined in the
  * @param {tissue} (integer)
- * @param {locusid} (integer)
+ * @param {locusid} (integer@LocusType)
  *
  */
 DDE: LCUS (command) type (integer) organ (integer) tissue (integer) locusid (integer);
@@ -799,7 +799,7 @@ DDE: LIVE (command);
  * Where X,Y and S are the position and state of the source neuron.
  * #Debug
  *
- * @param {flags} (integer) - 0 = type 0 dens, 1 = type 2 dens
+ * @param {flags} (integer@DendriteType) - 0 = type 0 dens, 1 = type 2 dens
  *
  */
 DDE: LNEU (command) flags (integer);
@@ -1003,7 +1003,7 @@ DPAS (command);
  * 	non-zero - gravity is activated on object
  * #Vehicles
  *
- * @param {gravity} (integer)
+ * @param {gravity} (integer@UseGravity)
  *
  */
 DPS2 (command) gravity (integer);
@@ -1424,7 +1424,7 @@ KILL (command) agent (agent);
  * 	3=Both creature and pointer can use this knob message
  * #AgentInteractions
  *
- * @param {knob} (integer@KnobFunction) - refers to the KNOB functions already set up
+ * @param {knob} (integer) - refers to the KNOB functions already set up
  * @param {flag} (integer@KnobFlag) - flag used to describe the usage of the knob
  * @param {message} (integer[0 to 65535]) - message/event to be sent when this knob is activated.
  *
@@ -2401,7 +2401,7 @@ RMEV (command) targ (agent);
  *
  * @rvalue
  * @param {room} (integer)
- * @param {edge} (integer)
+ * @param {edge} (integer@Direction)
  * @return (integer)
  *
  */
@@ -2594,7 +2594,7 @@ RTAR (command) family (integer) genus (integer) species (integer);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@RoomType)
  */
 RTYP (integer);
 
@@ -2603,7 +2603,7 @@ RTYP (integer);
  * earshot
  * #Creatures
  *
- * @param {number} (integer) - word number
+ * @param {number} (integer@BlackBoardWords) - word number
  *
  */
 SAY# (command) number (integer);
@@ -3045,7 +3045,7 @@ SYS: CMRP (command) x (integer) y (integer);
  * #World
  *
  * @param {fileSpec} (token)
- * @param {showProgress} (integer@bool)
+ * @param {showProgress} (integer@ShowProgress)
  *
  */
 SYS: CONV (command) fileSpec (token) showProgress (integer);
@@ -3505,7 +3505,13 @@ YVEC (integer);
 	5 = Adult
 }
 
-@Attributes {
+@AimAction {
+	0 = Activate1
+	1 = Activate2
+	2 = Deactivate
+}
+
+@Attributes:BitFlags {
 	1 = Carryable - Creature or another object can pick up object
 	2 = Mouseable - Mouse can pick up object
 	4 = Activatable - Mouse can activate object
@@ -3514,6 +3520,16 @@ YVEC (integer);
 	32 = Floatable - Maintains it’s position relative to window, not world
 	64 = Has Boundaries - Responds to collision events and size
 	128 = Suffers Gravity - Falls due to gravity
+}
+
+@BbleLocation {
+	0 = Track Owner
+	1 = Center In Viewport
+}
+
+@BbleType {
+	0 = Speech Bubble
+	1 = Think Bubble
 }
 
 @BehaviorClick {
@@ -3532,12 +3548,98 @@ YVEC (integer);
 	64 = Can Eat - Creature can eat
 }
 
+@BlackBoardWords {
+	0 = Stay
+	1 = Push
+	2 = Pull
+	3 = Stop
+	4 = Come
+	5 = Run
+	6 = Get
+	7 = Drop
+	8 = Why
+	9 = Rest
+	10 = Left
+	11 = Right
+	12 = Eat
+	13 = Hit
+	14 = <Empty Slot?>
+	15 = <Empty Slot?>
+	16 = <Creature's Name>
+	17 = <Hand>
+	18 = Button
+	19 = Nature
+	20 = Plant
+	21 = Egg
+	22 = Food - Classifier: 2 6 x
+	23 = Drink - Classifier: 2 7 x
+	24 = Dispenser - Classifier: 2 8 x
+	25 = Implement - Classifier: 2 9 x
+	26 = Cliff Edge - Classifier: 2 10 x
+	27 = Detritus - Classifier: 2 11 x
+	28 = Medicine - Classifier: 2 12 x
+	29 = Toy - Classifier: 2 13 x
+	30 = Weather - Classifier: 2 14 x
+	31 = Badplant - Classifier: 2 15 x
+	32 = Nest - Classifier: 2 16 x
+	33 = Badbug - Classifier: 2 17 x
+	34 = Bug - Classifier: 2 18 x
+	35 = Badcritter - Classifier: 2 19 x
+	36 = Critter - Classifier: 2 20 x
+	37 = Seed - Classifier: 2 21 x
+	38 = Leaf - Classifier: 2 22 x
+	39 = Root - Classifier: 2 23 x
+	40 = Flower - Classifier: 2 24 x Alt: Alternative class
+	41 = Fruit - Classifier: 2 25 x Alt: -----------------
+	42 = Mover - Classifier: 3 1 x Alt: 2 26 x
+	43 = Lift - Classifier: 3 2 x Alt: 2 27 x
+	44 = Computer - Classifier: 3 3 x Alt: 2 28 x
+	45 = Mediabox - Classifier: 3 4 x Alt: 2 29 x
+	46 = Message - Classifier: 3 5 x Alt: 2 30 x
+	47 = Leftright - Classifier: 3 6 x Alt: 2 31 x
+	48 = Incubator - Classifier: 3 7 x Alt: 2 32 x
+	49 = Teleporter - Classifier: 3 8 x Alt: 2 33 x
+	50 = <Empty slot> 3 9 x Alt: 2 34 x
+	51 = Machine - Classifier: 3 10 x Alt: 2 35 x
+	52 = Norn - Classifier: 4 1 x Alt: 2 36 x
+	53 = Grendel - Classifier: 4 2 x Alt: 2 37 x
+	54 = Ettin - Classifier: 4 3 x Alt: 2 38 x
+	55 = Shee - Classifier: 4 4 x; Alt: 2 39 x
+	 =
+	56 = Pain
+	57 = Sad
+	58 = Hungry
+	59 = Cold
+	60 = Hot
+	61 = Tired
+	62 = Sleepy
+	63 = Lonely
+	64 = Crowded
+	65 = Scared
+	66 = Bored
+	67 = Angry
+	68 = Friendly
+	69 = Hurt
+	70 = Choking
+	71 = Thirsty
+	72 = Stressed
+	73 = Yes - Reward creature (creature will not react).
+	74 = No - Punish creature (creature will flinch).
+	75 = Look - Helps focus attention on hand or whatever hand is holding or pointing at.
+	76 = What - Say whatever action and/or object creature is thinking about.
+	77 = Very
+	78 = Really
+	79 = Seriously
+	80 = Intensely
+	81 = Extremely
+}
+
 @bool {
 	0 = false
 	1 = true
 }
 
-@Bump {
+@Bump:BitFlags {
 	1 = Left
 	2 = Right
 	4 = Top
@@ -3709,6 +3811,11 @@ YVEC (integer);
 	255 = Dead
 }
 
+@DendriteType {
+	0 = Type 0 Dendrites
+	1 = Type 1 Dendrites
+}
+
 @Direction {
 	0 = left
 	1 = right
@@ -3735,6 +3842,11 @@ YVEC (integer);
 	15 = Suffocation
 	16 = Thirst
 	17 = Stress
+}
+
+@EmitType {
+	0 = As Read
+	>0 = As Audible
 }
 
 @EqOp {
@@ -3823,16 +3935,16 @@ YVEC (integer);
 @KnobFlag {
 	1 = Only creature can use this knob
 	2 = Only pointer can use this knob
-	3 = Both creature and pointer can use this knob message
+	3 = Both creature and pointer can use this knob
 }
 
 @KnobFunction {
 	0 = creature activate 1
 	1 = creature activate 2
 	2 = creature deactivate
-	3 = pointer activate 1
-	4 = pointer activate 2
-	5 = pointer deactivate
+	3 = PointerActivate1
+	4 = PointerActivate2
+	5 = PointerDeactivate
 }
 
 @Languages {
@@ -3862,6 +3974,11 @@ YVEC (integer);
 	0x1F = Turkish
 }
 
+@LocusType {
+	0 = Receptor Loci
+	1 = Emmiter Loci
+}
+
 @MessageNumbers {
 	0 = Activate 1
 	1 = Activate 2
@@ -3880,6 +3997,13 @@ YVEC (integer);
 	2 = Floating - Object is in fixed place on screen
 	3 = In Vehicle - Object is carried in a vehicle
 	4 = Carried - Object is carried by a creature
+}
+
+@MuscProperty {
+	0 = Volume
+	1 = Mood
+	2 = Threat
+	3 = Auto Update Music - Update according to mood and threat; 0 = False, 1 = True
 }
 
 @OnOff {
@@ -3905,14 +4029,14 @@ YVEC (integer);
 }
 
 @RainProperty {
-	0 = x position, relative to object
-	1 = y position, relative to object
-	2 = width
-	3 = height
-	4 = angle of effect (updated by wind)
-	5 = speed	number of pixels moved per update
-	6 = mode	(0=stopped, 1=running, 2=start!, 3=stop!)
-	7 = Rain Image Number (0-11)
+	0 = X-Position - X-Position, relative to object
+	1 = Y-Position, relative to object - Y-Position, relative to object
+	2 = Width
+	3 = Height
+	4 = Angle Of Effect - Angle of Effect (updated by wind)
+	5 = Speed - Number of pixels moved per update
+	6 = mode - 0=stopped, 1=running, 2=start!, 3=stop!
+	7 = Rain Image Number - Rain image number(0-11)
 }
 
 @RenderFormat {
@@ -3920,27 +4044,42 @@ YVEC (integer);
 	1 = 565
 }
 
+@RoomEdge {
+	0 = Left
+	1 = Right
+	2 = Up
+	3 = Down
+}
+
 @RoomProperties {
-	0 = left
-	1 = top
-	2 = right
-	3 = bottom
-	4 = type
-	5 = floorvalue
-	6 = organicnutrient
-	7 = inorganicnutrient
-	8 = temperature
-	9 = pressure
-	10 = windxcomponent
-	11 = windycomponent
-	12 = lightlevel
-	13 = radiation
-	14 = heatsource
-	15 = pressuresource
-	16 = lightsource
-	17 = radiationsource
-	18 = visitedflag
-	19 = dropstatus
+	0 = Left
+	1 = Top
+	2 = Right
+	3 = Bottom
+	4 = Type
+	5 = FloorValue
+	6 = OrganicNutrients
+	7 = InorganicNutrients
+	8 = Temperature
+	9 = Pressure
+	10 = WindX
+	11 = WindY
+	12 = LightLevel
+	13 = Radiation
+	14 = HeatSource
+	15 = Pressure Source
+	16 = LightSource
+	17 = RadiationSource
+	18 = VisitedFlag
+	19 = DropStatus
+}
+
+@RoomType {
+	-1 = Invalid
+	0 = Under Ground
+	1 = On Surface
+	2 = Undersea
+	3 = In the Sky
 }
 
 @ScorItems {
@@ -3957,6 +4096,11 @@ YVEC (integer);
 	1 = Summer
 	2 = Autumn
 	3 = Winter
+}
+
+@ShowProgress:bool {
+	0 = Show Progress Dialog
+	1 = No Progress Dialog
 }
 
 @Sleeping {
@@ -4013,6 +4157,11 @@ YVEC (integer);
 	45 = Mate
 }
 
+@Success {
+	0 = Unsuccessful
+	1 = Successful
+}
+
 @TimeOfDay {
 	0 = Dawn
 	1 = Morning
@@ -4024,6 +4173,11 @@ YVEC (integer);
 @Unconscious {
 	0 = Conscious
 	1 = Unconscious
+}
+
+@UseGravity {
+	0 = No Gravity
+	!0 = Use Gravity
 }
 
 @WallDirection {
