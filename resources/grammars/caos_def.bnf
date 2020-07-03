@@ -149,6 +149,7 @@ type_definition
 			getKey
 			getValue
 			getDescription
+			getEquality
 		]
 	}
 	;
