@@ -10,6 +10,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaos
 import com.openc2e.plugins.intellij.agenteering.caos.def.references.CaosDefDocCommentHashtagReference
 import com.openc2e.plugins.intellij.agenteering.caos.def.references.CaosDefTypeNameReference
 import com.openc2e.plugins.intellij.agenteering.caos.def.references.CaosDefVariableLinkReference
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
@@ -344,7 +345,13 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getValueForKey(element: CaosDefTypeDefinitionElement, key: String): CaosDefTypeDefValueStruct? {
-        return element.keys.firstOrNull { it.key == key }
+        return element.keys.firstOrNull {
+            when (it.equality) {
+                TypeDefEq.EQUAL -> it.key == key
+                TypeDefEq.NOT_EQUAL -> it.key != key
+                TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.toInt() } catch (e:Exception) { false }
+            }
+        }
     }
 
     @JvmStatic
@@ -357,8 +364,24 @@ object CaosDefPsiImplUtil {
         return CaosDefTypeDefValueStruct(
                 key = element.stub?.key ?: element.key,
                 value = element.stub?.value ?: element.value,
+                equality =  element.equality,
                 description = element.stub?.description ?: element.description
         )
+    }
+
+    @JvmStatic
+    fun getEquality(element:CaosDefTypeDefinition) : TypeDefEq {
+        element.stub?.equality?.let { return it}
+        if (element.key.isEmpty()) {
+            return TypeDefEq.EQUAL
+        }
+        return element.key.substring(0,1).let {
+            when (it) {
+                "!" -> TypeDefEq.NOT_EQUAL
+                ">" -> TypeDefEq.GREATER_THAN
+                else -> TypeDefEq.EQUAL
+            }
+        }
     }
 
     @JvmStatic

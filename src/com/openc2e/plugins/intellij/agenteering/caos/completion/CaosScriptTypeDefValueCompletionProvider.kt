@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.openc2e.plugins.intellij.agenteering.caos.lang.variant
@@ -80,6 +81,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?.keys
+                ?.filter { it.equality == TypeDefEq.EQUAL }
                 ?: return
         for(value in values) {
             var lookupElement = LookupElementBuilder

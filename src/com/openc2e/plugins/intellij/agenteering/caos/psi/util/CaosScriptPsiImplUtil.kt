@@ -12,6 +12,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefi
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
@@ -1253,7 +1254,13 @@ object CaosScriptPsiImplUtil {
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
         // Get actual value for literal in list
-        return list.keys.firstOrNull { it.key == element.text }
+        return list.keys.firstOrNull {
+            when (it.equality) {
+                TypeDefEq.EQUAL -> it.key == element.text
+                TypeDefEq.NOT_EQUAL -> it.key != element.text
+                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.toInt() } catch (e:Exception) { false }
+            }
+        }
     }
 
     @JvmStatic
@@ -1292,7 +1299,13 @@ object CaosScriptPsiImplUtil {
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
         // Get actual value for literal in list
-        return list.keys.firstOrNull { it.key == element.text }
+        return list.keys.firstOrNull {
+            when (it.equality) {
+                TypeDefEq.EQUAL -> it.key == element.text
+                TypeDefEq.NOT_EQUAL -> it.key != element.text
+                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.toInt() } catch (e:Exception) { false }
+            }
+        }
     }
 
     @JvmStatic

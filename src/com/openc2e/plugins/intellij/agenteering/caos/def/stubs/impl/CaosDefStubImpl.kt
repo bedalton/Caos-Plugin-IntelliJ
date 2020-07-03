@@ -52,7 +52,8 @@ class CaosDefTypeDefValueStubImpl(
         parent: StubElement<*>,
         override val key:String,
         override val value:String,
-        override val description: String?
+        override val description: String?,
+        override val equality: TypeDefEq = TypeDefEq.EQUAL
 ) : StubBase<CaosDefTypeDefinitionImpl>(parent, CaosDefStubTypes.TYPE_DEFINITION_VALUE), CaosDefTypeDefValueStub
 
 
@@ -71,6 +72,7 @@ data class CaosDefVariableTypeStruct(
 data class CaosDefTypeDefValueStruct (
         val key:String,
         val value:String,
+        val equality: TypeDefEq = TypeDefEq.EQUAL,
         val description:String? = null
 )
 

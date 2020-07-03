@@ -41,8 +41,15 @@ interface CaosDefTypeDefinitionStub : StubElement<CaosDefTypeDefinitionElementIm
 
 interface CaosDefTypeDefValueStub : StubElement<CaosDefTypeDefinitionImpl> {
     val key:String
+    val equality:TypeDefEq
     val value:String
     val description:String?
+}
+
+enum class TypeDefEq {
+    EQUAL,
+    NOT_EQUAL,
+    GREATER_THAN
 }
 
 interface CaosDefParameterStub : StubElement<CaosDefParameterImpl> {
