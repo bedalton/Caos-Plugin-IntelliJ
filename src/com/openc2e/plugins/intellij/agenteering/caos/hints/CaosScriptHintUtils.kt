@@ -5,6 +5,7 @@ import com.openc2e.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefi
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.openc2e.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant
@@ -73,7 +74,13 @@ internal fun getListValue(variant: CaosVariant, listName: String, project: Proje
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
             ?: return null
-    return list.keys.firstOrNull { it.key == key }
+    return list.keys.firstOrNull {
+        when (it.equality) {
+            TypeDefEq.EQUAL -> it.key == key
+            TypeDefEq.NOT_EQUAL -> it.key != key
+            TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.toInt() } catch (e:Exception) { false }
+        }
+    }
 }
 
 private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key: String): CaosDefTypeDefValueStruct? {
