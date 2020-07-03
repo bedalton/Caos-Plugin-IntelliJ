@@ -2200,18 +2200,20 @@ WINH (integer);
 WINW (integer);
 
 /*
- * vehicle's x mvt vector in 1/256ths pixel
+ * Sets/returns the vehicles x-movement vector in 1/256th of a pixel.
  * #Motion
  *
+ * @lvalue
  * @rvalue
  * @return (integer)
  */
 XVEC (integer);
 
 /*
- * vehicle's y mvt vector in 1/256ths pixel
+ * Sets/returns the vehicles y-movement vector in 1/256th of a pixel.
  * #Motion
  *
+ * @lvalue
  * @rvalue
  * @return (integer)
  */

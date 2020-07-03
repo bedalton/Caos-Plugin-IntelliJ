@@ -1114,7 +1114,7 @@ CLIK (command) message1 (integer) message2 (integer) message3 (integer);
  * #AgentInteractions
  *
  * @rvalue
- * @param {whichValue} (integer)
+ * @param {whichValue} (integer@ClikWhich)
  * @return (integer)
  *
  */
@@ -1302,7 +1302,7 @@ DBG: FLSH (command);
  * categorical.
  * #Debug
  *
- * @param {sortOrder} (integer)
+ * @param {sortOrder} (integer@CaosSortOrder)
  *
  */
 DBG: HTML (command) sortOrder (integer);
@@ -2104,7 +2104,7 @@ FILE OFLU (command);
  * of the file, or 0 to replace any existing file.
  * #Files
  *
- * @param {directory} (integer)
+ * @param {directory} (integer@FileOopeDirectory)
  * @param {filename} (string)
  * @param {append} (integer)
  *
@@ -2214,7 +2214,7 @@ FRIC (integer);
  * @param {bottomMargin} (integer)
  * @param {lineSpacing} (integer)
  * @param {characterSpacing} (integer)
- * @param {justification} (integer)
+ * @param {justification} (integer@Justification)
  *
  */
 FRMT (command) leftMargin (integer) topMargin (integer) rightMargin (integer) bottomMargin (integer) lineSpacing (integer) characterSpacing (integer) justification (integer);
@@ -2627,7 +2627,7 @@ HAND (string);
  * #Debug
  *
  * @rvalue
- * @param {index} (integer)
+ * @param {index} (integer@HeapIndices)
  * @return (integer)
  *
  */
@@ -2825,7 +2825,7 @@ HIST GEND (integer) moniker (string);
  *
  * @rvalue
  * @param {moniker} (string)
- * @return (integer)
+ * @return (integer@HistGnus)
  *
  */
 HIST GNUS (integer) moniker (string);
@@ -3277,7 +3277,7 @@ ITOF (float) numberToConvert (integer);
  * #Scripts
  *
  * @param {cosFile} (string)
- * @param {flags} (integer)
+ * @param {flags} (integer@JectFlags)
  *
  */
 JECT (command) cosFile (string) flags (integer);
@@ -3615,7 +3615,7 @@ MESG WRT+ (command) agent (agent) messageId (integer) param1 (any) param2 (any) 
  * @param {metaroomId} (integer)
  * @param {cameraX} (integer)
  * @param {cameraY} (integer)
- * @param {transition} (integer)
+ * @param {transition} (integer@MetaTransition)
  *
  */
 META (command) metaroomId (integer) cameraX (integer) cameraY (integer) transition (integer);
@@ -3911,9 +3911,9 @@ MULV (command) var (variable) mul (decimal);
  * #Sounds
  *
  * @rvalue
- * @param {andmask} (integer)
- * @param {eormask} (integer)
- * @return (integer)
+ * @param {andmask} (integer@Mute)
+ * @param {eormask} (integer@Mute)
+ * @return (integer@Muted)
  *
  */
 MUTE (integer) andmask (integer) eormask (integer);
@@ -4348,7 +4348,7 @@ NEW: CRAG (command) family (integer) geneAgent (agent) geneSlot (integer) sex (i
  * @param {family} (integer)
  * @param {geneAgent} (agent)
  * @param {geneSlot} (integer)
- * @param {sex} (integer)
+ * @param {sex} (integer@Gender)
  * @param {variant} (integer)
  *
  */
@@ -4567,7 +4567,7 @@ ORDR WRIT (command) creature (agent) speech (string);
  *
  * @rvalue
  * @param {organNumber} (integer)
- * @param {data} (integer)
+ * @param {data} (integer@OrgfDataType)
  * @return (float)
  *
  */
@@ -4583,7 +4583,7 @@ ORGF (float) organNumber (integer) data (integer);
  *
  * @rvalue
  * @param {organNumber} (integer)
- * @param {data} (integer)
+ * @param {data} (integer@OrgiDataType)
  * @return (integer)
  *
  */
@@ -5194,7 +5194,7 @@ PRAY EXPO (integer) chunkType (string);
  * @param {resourceName} (string)
  * @param {resourceType} (integer)
  * @param {doInstall} (integer)
- * @return (integer)
+ * @return (integer@PrayFileSuccess)
  *
  */
 PRAY FILE (integer) resourceName (string) resourceType (integer) doInstall (integer);
@@ -5246,7 +5246,7 @@ PRAY GARB (command) force (integer);
  * @param {monikerChunk} (string)
  * @param {actuallyDoIt} (integer)
  * @param {keepFile} (integer)
- * @return (integer)
+ * @return (integer@PrayCreatureImportCode)
  *
  */
 PRAY IMPO (integer) monikerChunk (string) actuallyDoIt (integer) keepFile (integer);
@@ -5265,7 +5265,7 @@ PRAY IMPO (integer) monikerChunk (string) actuallyDoIt (integer) keepFile (integ
  * @param {resourceName} (string)
  * @param {doInstall} (integer)
  * @param {reportVar} (variable)
- * @return (integer)
+ * @return (integer@PrayInjtSuccess)
  *
  */
 PRAY INJT (integer) resourceName (string) doInstall (integer) reportVar (variable);
@@ -5291,7 +5291,7 @@ PRAY KILL (integer) resourceName (string);
  * #Pray
  *
  * @rvalue
- * @param {whichJournalSpot} (integer)
+ * @param {whichJournalSpot} (integer@JournalSpot)
  * @param {journalName} (string)
  * @param {whichPraySpot} (integer)
  * @param {prayName} (string)
@@ -5356,7 +5356,7 @@ PRAY REFR (command);
  *
  * @rvalue
  * @param {resourceName} (string)
- * @return (integer)
+ * @return (integer@PrayTestResult)
  *
  */
 PRAY TEST (integer) resourceName (string);
@@ -5604,7 +5604,7 @@ PUHL (command) pose (integer) x (integer) y (integer);
  *
  * @rvalue
  * @param {pose} (integer)
- * @param {xOrY} (integer)
+ * @param {xOrY} (integer@XorY)
  * @return (integer)
  *
  */
@@ -5632,7 +5632,7 @@ PUPT (command) pose (integer) x (integer) y (integer);
  *
  * @rvalue
  * @param {pose} (integer)
- * @param {xOrY} (integer)
+ * @param {xOrY} (integer@XorY)
  * @return (integer)
  *
  */
@@ -6057,8 +6057,8 @@ SCAM (command) compoundagent (agent) partnumber (integer);
  * #Time
  *
  * @rvalue
- * @param {andMask} (integer)
- * @param {eorMask} (integer)
+ * @param {andMask} (integer@ScolFlags)
+ * @param {eorMask} (integer@ScolFlags)
  * @param {upSpeeds} [byte_string]
  * @param {downSpeeds} [byte_string]
  * @return (integer)
@@ -6810,7 +6810,7 @@ TINT (command) redTint (integer) greenTint (integer) blueTint (integer) rotation
  *
  * @rvalue
  * @param {attribute} (integer)
- * @return (integer)
+ * @return (integer@Tint)
  *
  */
 TINT (integer) attribute (integer);
@@ -6924,7 +6924,7 @@ TOUC (integer) first (agent) second (agent);
  * parameter on [PAT: BUTT] which overrides this.
  * #AgentSprites
  *
- * @param {transparency} (integer)
+ * @param {transparency} (integer@TransparencyAwareness)
  * @param {partNo} (integer)
  *
  */
@@ -7066,7 +7066,7 @@ UFTY (float);
  * Make the creature conscious or unconscious. 0 for conscious, 1 for unconscious.
  * #Creatures
  *
- * @param {unconscious} (integer)
+ * @param {unconscious} (integer@Unconscious)
  *
  */
 UNCS (command) unconscious (integer);
@@ -7535,8 +7535,8 @@ WNTI (integer) world (string);
  * #Time
  *
  * @rvalue
- * @param {kangaMask} (integer)
- * @param {eeyoreMask} (integer)
+ * @param {kangaMask} (integer@WolfFlags)
+ * @param {eeyoreMask} (integer@WolfFlags)
  * @return (integer)
  *
  */
@@ -7672,7 +7672,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	5 = Adult
 }
 
-@Attributes {
+@Attributes:BitFlags {
 	1 = Carryable - Can be picked up by things other than creatures, vehicles and the pointer.
 	2 = Mouseable - Can be picked up by the mouse.
 	4 = Activateable - Can be activated using the mouse - otherwise [CLAC] and [CLIK] style events don't get sent when you click on the agent.
@@ -7704,6 +7704,11 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @CanSee {
 	0 = Cannot See
 	1 = Can See
+}
+
+@CaosSortOrder {
+	0 = Alphabetical
+	1 = Categorical
 }
 
 @CAs {
@@ -7882,6 +7887,13 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	213 = REM - Controls dreaming.
 }
 
+@ClikWhich {
+	0 = Current click action number (1,2,3)
+	1 = First CLIK action.
+	2 = Second CLIK action.
+	3 = Third CLIK action
+}
+
 @Connected {
 	0 = Not-Connected - Not connected to Babel server
 	1 = Connected - Connected to babel server
@@ -8002,9 +8014,27 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	255 = Agent Exception - This script specifies the behaviour when an agent tries to do something to an invalid agent. For example, if you try and access an OVxx with a [NULL] target. If this script isn't present for [OWNR], you get a run time error. If it is present, that script is called and you can reset variables as necessary.
 }
 
+@FileOopeDirectory {
+	0 = Current World Journal
+	1 = Main Journal
+	2 = Other World's Journal - World set in variable [GAME] "engine_other_world"
+}
+
 @FullScreen {
 	0 = Windowed Mode
 	1 = Fullscreen Mode
+}
+
+@Gender {
+	0 = Random
+	1 = Male
+	2 = Female
+}
+
+@HeapIndices {
+	0 = current allocated heap memory (development builds only)
+	1 = Total Agents - Total agents, including ones waiting to be garbage collected
+	2 = Creature Agents - Similar to total agents, but just for creatures
 }
 
 @HistGender {
@@ -8013,9 +8043,36 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	-1 = Unborn
 }
 
+@HistGnus {
+	1 = Norn
+	2 = Grendel
+	3 = Ettin
+	4 = Shee
+}
+
 @ImageExists {
 	0 = Does Not Exist
 	1 = Image Exists
+}
+
+@JectFlags:BitFlags {
+	1 = Remove sctipt
+	2 = Event scripts
+	4 = Install script
+}
+
+@JournalSpot {
+	0 = World journal
+	1 = Global Journal
+}
+
+@Justification:BitFlags {
+	0 = Left
+	1 = Right
+	2 = Center
+	4 = Bottom
+	8 = Middle
+	16 = Last Page Scroll - if you add extra text to the part and show the last page, it will scroll upwards
 }
 
 @MessageNumbers {
@@ -8028,6 +8085,12 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	12 = Eat - Calls the Eat script. The permissions set with [BHVR] are checked first.
 	13 = Hold Hands - Causes a creature to hold hands with the pointer.
 	14 = Stop Holding Hands - Causes a creature to stop holding hands with the pointer. Since messages take a tick to be procesed, calling [NOHH] is quicker than using this message.
+}
+
+@MetaTransition {
+	0 = None - No transition effect
+	1 = Flip - Flip Horizontally
+	2 = Burst
 }
 
 @Mirrored {
@@ -8054,6 +8117,20 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	4 = Carried - Object is carried by a creature
 }
 
+@Mute {
+	1 = Mute Sound
+	2 = Mute Music
+	3 = Mute Music and Sound
+	0 = Mute Nothing
+}
+
+@Muted {
+	0 = Nothing Muted
+	1 = Sound Muted
+	2 = Music Muted
+	3 = Sound and Music Muted
+}
+
 @NetErrorCodes {
 	0 = Unknown
 	1 = OK
@@ -8070,6 +8147,22 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	1 = Online
 }
 
+@OrgfDataType {
+	0 = Clock rate - Clock rate in updates per tick (as locus)
+	1 = Short term life force - Short term life forceas a proportion of intial (as locus)
+	2 = Repair Modulating Factor - Factor to modulate rate of repair (as locus)
+	3 = Injury - Injury to apply (as locus)
+	4 = Initial life force - Initial life force. A million is the largest initial value
+	5 = Short term life force - Temporary damage
+	6 = Long term life force - Permanent damage
+	7 = Long term rate damage during repair
+	8 = Energy Cost - Cost to run this organ, calculated from the number of receptors, emitters and reactions
+	9 = Damage - Damage done to the organ if no energy is available
+}
+
+@OrgiDataType {
+}
+
 @Paused {
 	0 = Not-Paused
 	1 = Paused
@@ -8080,6 +8173,29 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	0 = Playing
 }
 
+@PrayCreatureImportCode {
+	0 = success
+	1 = couldn't reconcile histories so creature was cloned
+	2 = moniker not found in PRAY system
+	3 = unused error code
+	4 = internal / file format error
+}
+
+@PrayFileSuccess {
+	0 = Success
+	1 = Error
+}
+
+@PrayInjtSuccess {
+}
+
+@PrayTestResult {
+	0 = Unavailable - Chunk not available at this time
+	1 = Cached - Chunk Available, Cached and ready for use
+	2 = Uncompressed - On disk uncompressed and fine for loading
+	3 = Compressed - On disk compressed and ready for loading.
+}
+
 @Pressed {
 	0 = Not-Pressed
 	1 = Pressed
@@ -8088,6 +8204,13 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @RectToUse {
 	0 = Agent Bounds - Nearby means touching bounding rectangle of agent
 	1 = Cabin Bounds - Nearby means touching cabin rectangle
+}
+
+@ScolFlags:BitFlags {
+	1 = Screen edge nudgy scrolling
+	2 = Keyboard scrolling
+	4 = Middle mouse button screen dragging
+	8 = Mouse wheel screen scrolling
 }
 
 @ScriptNumbers {
@@ -8316,10 +8439,28 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	4 = Night
 }
 
+@Tint {
+	1 = Red
+	2 = Green
+	3 = Blue
+	4 = Rotation
+	5 = Swap
+}
+
+@TransparencyAwareness {
+	0 = Click Anywhere - Allow clicking any part in rectangle
+	1 = PixelPerfect - Transparent areas cannot be clicked
+}
+
 @TranswarpExitCode {
 	0 = Success
 	1 = Already On Disk - If the creature, or if pregnant any of its offspring, are already on disk in some form. This case won't happen much, if you use a special chunk name like WARP.
 	2 = User/World Unknown - If the user hasn't been online in this world yet / since the user name changed, so we don't know who they are. When receiving a creature, use [NET: FROM] to find out who sent it.
+}
+
+@Unconscious {
+	0 = Conscious
+	1 = Unconscious
 }
 
 @VarTypeAsInt {
@@ -8340,6 +8481,18 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	RGHT = Right
 	_UP_ = Up
 	DOWN = Down
+}
+
+@WolfFlags:BitFlags {
+	1 = Display rendering - Turning it off speeds the game up.
+	2 = Fastest ticks - The game usually runs at a maximum of 20 frames per second. If this is set, it instead runs as fast as it can.
+	4 = Refresh display at end of tick - If set, then the display is updated at the end of the tick, and the flag is cleared.
+	8 = Autokill - If set, agents which generate run errors are automatically killed, as the command line option.
+}
+
+@XorY {
+	1 = X
+	2 = Y
 }
 
 @Zombied {
