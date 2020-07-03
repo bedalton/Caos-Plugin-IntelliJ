@@ -3605,7 +3605,6 @@ YVEC (integer);
 	53 = Grendel - Classifier: 4 2 x Alt: 2 37 x
 	54 = Ettin - Classifier: 4 3 x Alt: 2 38 x
 	55 = Shee - Classifier: 4 4 x; Alt: 2 39 x
-	 =
 	56 = Pain
 	57 = Sad
 	58 = Hungry
@@ -3925,6 +3924,62 @@ YVEC (integer);
 	0 = Random
 	1 = Male
 	2 = Female
+}
+
+@Genus {
+	2 1 = System
+	2 2 = Call Button
+	2 3 = Nature
+	2 4 = Good Plant
+	2 5 = Creature Egg
+	2 6 = Processed Food
+	2 7 = Drink
+	2 8 = Dispenser
+	2 9 = Implements
+	2 10 = Cliff Edge
+	2 11 = Detritus
+	2 12 = Medicine
+	2 13 = Toy
+	2 14 = Weather
+	2 15 = Bad Plant
+	2 16 = Nest
+	2 17 = Badbug
+	2 18 = Bug
+	2 19 = Bad Critter
+	2 20 = Critter
+	2 21 = Seed
+	2 22 = Leaf
+	2 23 = Root
+	2 24 = Flower
+	2 25 = Fruit
+	3 1 = Mover
+	3 2 = Lift
+	3 3 = Computer
+	3 4 = Fun
+	3 5 = Messages
+	3 6 = LeftRight
+	3 7 = Incubator
+	3 8 = Teleporter
+	3 9 = &lt;Empty slot&gt;
+	3 10 = Machine
+	4 1 = Norn
+	4 2 = Grendel
+	4 3 = Ettin
+	4 4 = Geat?
+	2 26 = Mover
+	2 27 = Lift
+	2 28 = Computer
+	2 29 = Mediabox
+	2 30 = Message
+	2 31 = Leftright
+	2 32 = Incubator
+	2 33 = Teleporter
+	2 34 = &lt;Empty slot&gt;
+	2 35 = Machine
+	2 36 = Norn
+	2 37 = Grendel
+	2 38 = Ettin
+	2 39 = Shee
 }
 
 @ImageFormat {
