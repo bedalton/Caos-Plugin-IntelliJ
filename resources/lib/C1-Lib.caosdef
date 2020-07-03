@@ -177,7 +177,7 @@ BBD: EDIT (command) n (integer);
  * language computer to change the picture.
  * #Blackboard
  *
- * @param {n} (integer)
+ * @param {n} (integer@EmitType)
  *
  */
 BBD: EMIT (command) n (integer);
@@ -2481,6 +2481,11 @@ YVEC (integer);
 	16 = Not allocated 4
 }
 
+@EmitType {
+	0 = As Read
+	>0 = As Audible
+}
+
 @EventNumbers {
 	0 = Deactivate
 	1 = Activate 1
@@ -2540,9 +2545,36 @@ YVEC (integer);
 	2 = Female
 }
 
+@Genus {
+	2 1 = Hand
+	2 2 = Call(lift call button)
+	2 3 = Invisible
+	2 4 = Plant (or herb)
+	2 5 = Egg
+	2 6 = Food
+	2 7 = Drink
+	2 8 = Vendor
+	2 9 = Music(Instruments)
+	2 10 = Animal
+	2 11 = Hot
+	2 12 = Shower/clock
+	2 13 = Toy
+	2 14 = Big Toy
+	2 15 = Weed
+	3 1 = Mover (Vehicle)
+	3 2 = Lift
+	3 3 = Computer
+	3 4 = Fun (Projector)
+	3 5 = Bang (Cannon)
+	4 1 = Norn
+	4 2 = Grendel
+	4 3 = Ettin
+	4 4 = Shee
+}
+
 @MessageNumbers {
-	0 = Activate 1
-	1 = Activate 2
+	0 = Activate1
+	1 = Activate2
 	2 = Deactivate
 	4 = Pickup
 	5 = Drop

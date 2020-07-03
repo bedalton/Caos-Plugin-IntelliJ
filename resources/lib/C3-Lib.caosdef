@@ -1542,7 +1542,7 @@ DFTY (float);
  * Change creature to face a different direction. North 0, South 1, East 2, West 3.
  * #Creatures
  *
- * @param {direction} (integer)
+ * @param {direction} (integer@CardinalDirection)
  *
  */
 DIRN (command) direction (integer);
@@ -1552,7 +1552,7 @@ DIRN (command) direction (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@CardinalDirection)
  */
 DIRN (integer);
 
@@ -7447,6 +7447,13 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	1 = Categorical
 }
 
+@CardinalDirection {
+	0 = North (back to viewer)
+	1 = South (facing viewer)
+	2 = East
+	3 = West
+}
+
 @CAs {
 	0 = <not used>
 	1 = Light
@@ -7760,6 +7767,52 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	0 = Random
 	1 = Male
 	2 = Female
+}
+
+@Genus {
+	1 1 = Invisible
+	1 2 = User Interface
+	1 3 = Favorite Place Signposts
+	1 4 = Favorite Place Icons
+	2 1 = Hand
+	2 2 = Door
+	2 3 = Seed
+	2 4 = Good Plant
+	2 5 = Bad Plant
+	2 6 = Leaf
+	2 7 = Flower
+	2 8 = Good Fruit
+	2 9 = Bad Fruit
+	2 10 = Detritus
+	2 11 = Food
+	2 12 = Button
+	2 13 = Good Bug
+	2 14 = Bad Bug
+	2 15 = Good Critter
+	2 16 = Bad Critter
+	2 17 = Nest
+	2 18 = Agent Egg
+	2 19 = Weather
+	2 20 = Bad
+	2 21 = Toy
+	2 22 = Incubator
+	2 23 = Vendor
+	2 24 = Tool
+	2 25 = Potion
+	3 1 = Lift
+	3 2 = Teleporter
+	3 3 = Machinery
+	3 4 = Creature Egg
+	3 5 = Norn Home
+	3 6 = Grendel Home
+	3 7 = Ettin Home
+	3 8 = Gadget
+	3 9 = Portal
+	3 10 = Vehicles
+	4 1 = Norn
+	4 2 = Grendel
+	4 3 = Ettin
+	4 4 = Geat?
 }
 
 @HeapIndices {

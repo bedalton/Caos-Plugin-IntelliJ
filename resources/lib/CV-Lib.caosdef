@@ -1262,7 +1262,7 @@ DFTY (float);
  * Change creature to face a different direction. North 0, South 1, East 2, West 3.
  * #Creatures
  *
- * @param {direction} (integer)
+ * @param {direction} (integer@CardinalDirection)
  *
  */
 DIRN (command) direction (integer);
@@ -1272,7 +1272,7 @@ DIRN (command) direction (integer);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@CardinalDirection)
  */
 DIRN (integer);
 
@@ -6753,6 +6753,13 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @CaosSortOrder {
 	0 = Alphabetical
 	1 = Categorical
+}
+
+@CardinalDirection {
+	0 = North (back to viewer)
+	1 = South (facing viewer)
+	2 = East
+	3 = West
 }
 
 @CAs {
