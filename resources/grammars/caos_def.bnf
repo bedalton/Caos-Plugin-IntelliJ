@@ -1,18 +1,18 @@
 {
-	parserClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParser"
-	parserUtilClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParserUtil"
-	implements="com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
-	extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCompositeElementImpl"
-	elementTypeHolderClass="com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes"
+	parserClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser.CaosDefParser"
+	parserUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser.CaosDefParserUtil"
+	implements="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+	extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCompositeElementImpl"
+	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes"
 	elementTypePrefix="CaosDef_"
-	elementTypeClass="com.openc2e.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementType"
-	tokenTypeClass="com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTokenType"
+	elementTypeClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementType"
+	tokenTypeClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTokenType"
 	psiClassPrefix="CaosDef"
 	psiImplClassSuffix="Impl"
-	psiPackage="com.openc2e.plugins.intellij.agenteering.caos.def.psi.api"
-	psiImplPackage="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl"
-	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition|doc_comment_hashtag")="com.openc2e.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil"
+	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api"
+	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl"
+	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition|doc_comment_hashtag")="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil"
 	generateTokenAccessors=true
 	tokens = [
 		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
@@ -79,10 +79,10 @@ command_def_element
 	::= doc_comment? command return_type arguments_list?
 	{
 		pin = 2;
-		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefCommandDefinitionStub"
-		extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefCommandDefinitionStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 
 		]
 		methods = [
@@ -120,10 +120,10 @@ type_definition_element
 	::= type_def_name (COLON type_note)? type_definition_body
 	{
 		pin=1;
-		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefinitionStub"
-		extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefinitionStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getTypeName
@@ -138,10 +138,10 @@ type_definition
 	::= type_definition_key '=' type_definition_value (DASH type_definition_description)?
 	{
 		pin=2;
-		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefValueStub"
-		extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 
 		]
 		methods = [
@@ -180,10 +180,10 @@ parameter
 	::= variable_name variable_type
 	{
 		pin = 2;
-		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefParameterStub"
-		extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefParameterStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 
 		]
 		methods = [
@@ -200,7 +200,7 @@ variable_name
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getName
@@ -244,8 +244,8 @@ command_word
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
-			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 		]
 		methods = [
 			getName
@@ -264,7 +264,7 @@ type_def_name
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getName
@@ -290,10 +290,10 @@ doc_comment
 	::= DOC_COMMENT_OPEN doc_comment_body? DOC_COMMENT_CLOSE
 	{
 		pin=1;
-		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefDocCommentStub"
-		extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefDocCommentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getParameterStruct
@@ -341,11 +341,11 @@ private doc_comment_hashtag_set
 doc_comment_hashtag
 	::= HASH_TAG
 	{
-		stubClass="com.openc2e.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefDocCommentHashtagStub"
-		extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefDocCommentHashtagStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getName
@@ -430,7 +430,7 @@ variable_link
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getVariableNameTextRangeInLink
