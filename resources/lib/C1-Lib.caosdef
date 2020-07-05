@@ -157,10 +157,10 @@ BABY (integer);
 BASE (command) index (integer);
 
 /*
- * Allow user to edit the current word (n=1) Prevent further editing and relinquish kbd (n=0)
+ * Allow user to edit the current word (n=1) Prevent further editing and relinquish keyboard (n=0)
  * #Blackboard
  *
- * @param {n} (integer)
+ * @param {n} (integer@BBDEdit)
  *
  */
 BBD: EDIT (command) n (integer);
@@ -2251,6 +2251,11 @@ YVEC (integer);
 	32 = Floatable - Normally floating on screen
 	64 = Wallbound - Limits movement to current room
 	128 = Ground Bound - Movement only limited by ground
+}
+
+@BBDEdit {
+	0 = End Edit
+	1 = Start Edit
 }
 
 @BehaviorClick {
