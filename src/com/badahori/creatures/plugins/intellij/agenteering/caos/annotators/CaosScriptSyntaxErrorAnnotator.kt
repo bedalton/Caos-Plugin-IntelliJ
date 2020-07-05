@@ -27,6 +27,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previou
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -39,8 +41,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val variant = (element.containingFile as? CaosScriptFile).variant
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
-            is CaosScriptSpaceLike -> annotateExtraSpaces(element, annotationWrapper)
-            is CaosScriptSymbolComma -> annotateExtraSpaces(element, annotationWrapper)
+            is CaosScriptSpaceLike -> annotateExtraSpaces(variant, element, annotationWrapper)
+            is CaosScriptSymbolComma -> annotateExtraSpaces(variant, element, annotationWrapper)
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationWrapper)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationWrapper)
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
@@ -193,7 +195,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateExtraSpaces(element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateExtraSpaces(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val nextText = element.next?.text ?: ""
         val prevText = element.previous?.text ?: ""
         if (prevText.contains("\n")) {
@@ -211,12 +213,25 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
         val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
-        if (element.text.length == 1 && !nextIsCommaOrSpace)
+        val text = element.text
+        if (text.length == 1 && !nextIsCommaOrSpace)
             return
+        if (text.isEmpty())  {
+            if (variant !in VARIANT_OLD) {
+                return
+            }
+            val next = element.next
+                    ?: return
+            val toMark = TextRange(element.endOffset - 1, next.startOffset+1)
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.missing-whitespace"))
+                    .range(toMark)
+                    .withFix(CaosScriptInsertSpaceFix(next))
+                    .create()
+        }
         val errorTextRange = if (element.text.contains("\n") || previousIsCommaOrSpace)
             element.textRange
         else
-            TextRange.create(element.textRange.startOffset, element.textRange.endOffset)
+            TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset)
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                 .range(errorTextRange)
                 .withFix(CaosScriptFixTooManySpaces(element))
