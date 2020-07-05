@@ -47,7 +47,7 @@ AT_LVALUE=[@][lL][vV][aA][lL][uU][eE]
 AT_PARAM=[@][pP][aA][rR][aA][mM]
 AT_RETURN=[@][rR][eE][tT][uU][rR][nN][sS]?
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
-TYPE_DEF_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+
+TYPE_DEF_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+([ ]+ [a-zA-Z0-9_#-]+)*
 TYPE_DEF_VALUE=([^-\n]|-[^ ])+
 DEF_TEXT=[^\n]+
 INT=[-+]?[0-9]+
@@ -60,7 +60,7 @@ VARIABLE_LINK=[{]{ID}[}]
 AT_VARIANTS=[@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
 VARIANT_ID=[A-Za-z][A-Za-z0-9]
 VARIANT_NAME=[A-Za-z0-9 _]+
-%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE
+%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_TYPEDEF_NAME
 
 %%
 
@@ -147,17 +147,22 @@ VARIANT_NAME=[A-Za-z0-9 _]+
 	"}"						 	{ yybegin(IN_BODY); return CaosDef_CLOSE_BRACE; }
 	"{"						 	{ return CaosDef_OPEN_BRACE; }
 	","                        	{ return CaosDef_COMMA; }
-	"-"                        	{ yybegin(IN_TYPEDEF_TEXT); return CaosDef_DASH; }
     ":"							{ return CaosDef_COLON; }
     {EXCLUSIVE}					{ return CaosDef_EXCLUSIVE ;}
     {REGION}					{ return CaosDef_REGION_HEADING_LITERAL; }
 	{TYPE_DEF_KEY}			 	{ return CaosDef_TYPE_DEF_KEY; }
 }
 
-<IN_TYPEDEF_VALUE> {
-	{TYPE_DEF_VALUE}			{ yybegin(IN_TYPEDEF); return CaosDef_TYPE_DEF_VALUE; }
+<AFTER_TYPEDEF_NAME> {
+	"-"                        	{ yybegin(IN_TYPEDEF_TEXT); return CaosDef_DASH; }
     [^]							{ yybegin(IN_TYPEDEF); yypushback(1); }
 }
+
+<IN_TYPEDEF_VALUE> {
+	{TYPE_DEF_VALUE}			{ yybegin(AFTER_TYPEDEF_NAME); return CaosDef_TYPE_DEF_VALUE; }
+    [^]							{ yybegin(IN_TYPEDEF); yypushback(1); }
+}
+
 <IN_TYPEDEF_TEXT> {
 	'\n'						{ yybegin(IN_TYPEDEF); return WHITE_SPACE; }
 	{DEF_TEXT}					{ yybegin(IN_TYPEDEF); return CaosDef_TEXT_LITERAL; }
