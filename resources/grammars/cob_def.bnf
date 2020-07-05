@@ -1,17 +1,17 @@
 {
-	parserClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.CobDefParser"
-	implements="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.SprDefCompositeElement"
-	extends="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.impl.SprDefCompositeElementImpl"
-	elementTypeHolderClass="com.openc2e.agenteering.plugins.intellij.cobs.lexer.SprDefTypes"
+	parserClass="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.CobDefParser"
+	implements="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.SprDefCompositeElement"
+	extends="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.impl.SprDefCompositeElementImpl"
+	elementTypeHolderClass="com.badahori.creatures.agenteering.plugins.intellij.cobs.lexer.SprDefTypes"
 	elementTypePrefix="SprDef_"
-	elementTypeClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.types.SprDefElementType"
-	tokenTypeClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.lexer.SprDefTokenType"
+	elementTypeClass="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.types.SprDefElementType"
+	tokenTypeClass="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.lexer.SprDefTokenType"
 	psiClassPrefix="SprDef"
 	psiImplClassSuffix="Impl"
-	psiPackage="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api"
-	psiImplPackage="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.impl"
-	elementTypeFactory("sprite_name")="com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.types.CobDefElementTypeFactory.factory"
-	psiImplUtilClass="com.openc2e.agenteering.plugins.intellij.cobs.parser.util.SprDefPsiImplUtil"
+	psiPackage="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api"
+	psiImplPackage="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.impl"
+	elementTypeFactory("sprite_name")="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.types.CobDefElementTypeFactory.factory"
+	psiImplUtilClass="com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.util.SprDefPsiImplUtil"
 	generateTokenAccessors=true
 	tokens = [
 		SPR_TAG = "regexp:[#][Ss][Pp][Rr]([Ii][Tt][Ee])?";
@@ -52,7 +52,7 @@ sprite_def
 	{
 		pin=1
 		implements = [
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
 		]
 		methods = [
 			getFiles
@@ -67,7 +67,7 @@ script_def
 	{
 		pin=1
 		implements = [
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
 		]
 		methods = [
 			getFiles
@@ -82,7 +82,7 @@ inst_script_def
 	{
 		pin=1
 		implements = [
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.HasFile"
 		]
 		methods = [
 			getFiles
@@ -112,7 +112,7 @@ project_file
 	{
 		pin=1
 		implements = [
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
 		]
 	}
 	;
@@ -122,7 +122,7 @@ module_file
 	{
 		pin=1
 		implements = [
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
 		]
 	}
 	;
@@ -132,7 +132,7 @@ local_file
 	{
 		pin=1
 		implements = [
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
 		]
 	}
 	;
@@ -140,10 +140,10 @@ local_file
 sprite_name
 	::= TOKEN
 	{
-		extends = "com.openc2e.agenteering.plugins.intellij.cobs.parser.psi."
+		extends = "com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi."
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
-			"com.openc2e.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
+			"com.badahori.creatures.agenteering.plugins.intellij.cobs.parser.psi.api.CobFile"
 		]
 	}
 	;

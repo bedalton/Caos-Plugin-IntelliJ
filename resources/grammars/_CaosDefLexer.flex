@@ -1,4 +1,4 @@
-package com.openc2e.plugins.intellij.agenteering.caos.def.lexer;
+package com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer;
 
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
@@ -7,7 +7,7 @@ import com.intellij.lexer.FlexLexer;
 import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*;
+import static com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*;
 
 %%
 
