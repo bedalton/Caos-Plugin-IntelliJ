@@ -119,7 +119,6 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         when {
             count == 1L -> flags.remove(mode)
             count > 1 -> flags.put(mode, count - 1)
-            else -> builder_.error("Could not exit inactive '" + mode + "' mode at offset " + builder_.currentOffset)
         }
         return true
     }
