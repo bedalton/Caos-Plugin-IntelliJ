@@ -2,24 +2,33 @@
   <id>com.openc2e.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
   <version>0.01</version>
+  <vendor>Bedalton</vendor>
 
   <description><![CDATA[
-    This plugin aims to provide simple CAOS editing for a variety of creatures variants<br/>
+    This plugin aims to provide simple CAOS and agent editing for a variety of Creatures variants<br/>
     Supports:<br/>
     <ul>
       <li>Creatures 1</li>
       <li>Creatures 2</li>
-      <li>Creatures Village</li>
+      <li>Creatures Village (Mostly)</li>
       <li>Creatures 3</li>
       <li>Docking Station</li>
     </ul>
-    implemented
+    Implemented
     <ul>
       <li>Syntax Highlighting</li>
       <li>Basic completion</li>
       <li>Definition reference</li>
       <li>Parameter hints</li>
       <li>Known value completion from list. (ie. Drives or Chemicals by name)</li>
+      <li>SPR viewer</li>
+    </ul>
+    Todo:
+    <ul>
+      <li>COB compiler/decompiler</li>
+      <li>Pray File editing</li>
+      <li>SPR, C16 and S16 compilers</li>
+      <li>C16 and S16 viewers</li>
     </ul>
     ]]></description>
 
@@ -192,8 +201,6 @@
     <!-- ======================== -->
     <fileType name="SPR file" implementationClass="com.openc2e.plugins.intellij.agenteering.sprites.spr.SprFileType" fieldName="INSTANCE"
               language="CreaturesSPR" extensions="spr"/>
-    <fileType name="C1 Cob Definition" implementationClass="com.openc2e.plugins.intellij.agenteering.sprites.spr.def.CobDefFileType" fieldName="INSTANCE"
-              language="C1CobDef" extensions="cobdef"/>
     <fileEditorProvider implementation="com.openc2e.plugins.intellij.agenteering.sprites.spr.SprFileEditorProvider"/>
     <!-- Add your extensions here -->
   </extensions>
