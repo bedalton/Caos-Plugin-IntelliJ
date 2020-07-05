@@ -154,6 +154,8 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{MVxx}				 	{ return CaosScript_MV_XX; }
 	{VARx}				 	{ return CaosScript_VAR_X; }
 	{VAxx}				 	{ return CaosScript_VA_XX; }
+  	['][^']+[']				{ return CaosScript_CHAR; }
+ 	[%][01]+				{ return CaosScript_BINARY; }
 	{DECIMAL}              	{ return CaosScript_DECIMAL; }
 	{INT}                  	{ return CaosScript_INT; }
 	{QUOTE_STRING}         	{ return CaosScript_QUOTE_STRING; }
