@@ -4505,6 +4505,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 	|	<<isVariant 'C1'>>K_STIM space_like (K_SIGN|incomplete)
 	|	<<isVariant 'C2'>>K_STIM space_like (K_TACT|incomplete)
 	|	<<isVariant 'C1'>>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant 'C1'>>K_STIM space_like (K_FROM|incomplete)
 	{
 		implements = [
 			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
