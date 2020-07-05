@@ -691,7 +691,6 @@ object CaosScriptPsiImplUtil {
             varName?.let {
                 return it
             }
-            LOGGER.info("Named game command string is ${parent.commandStringUpper}")
         }
         (lvalue.lKwDD)?.let {
             if (it.commandStringUpper == "GAME") {

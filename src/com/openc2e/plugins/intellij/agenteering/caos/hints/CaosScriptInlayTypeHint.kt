@@ -59,7 +59,6 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val variant = token.containingCaosFile.variant
             return CaosDefTypeDefinitionElementsByNameIndex
                     .Instance[typeDef, token.project].firstOrNull {
-                LOGGER.info("Checking typedef: ${it.typeName}, typeNote: ${it.typeNote?.text?.toLowerCase()}")
                 it.isVariant(variant) && it.typeNote?.text?.toLowerCase() == "bitflags"
             }
         }
