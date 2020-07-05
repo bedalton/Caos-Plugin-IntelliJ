@@ -231,8 +231,8 @@
 		K_YVEC = "regexp:[yY][vV][eE][cC]"
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
-		K_XX_DEF = "____X____DEF__"
-		K_XX_EXPR = "____X____EXP__"
+		K_XX_DEF = " "
+		K_XX_EXPR = " "
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
 		CONST_EQ = "regexp:=";
 		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
@@ -252,8 +252,8 @@
 		COMMA = ',';
 		ANIM_R = "R"
 		PICT_DIMENSION = "#|#";
-
-
+		BINARY = "binary int"
+		CHAR = "char"
 	]
 }
 
@@ -1092,7 +1092,7 @@ new_line_like
 	;
 
 space_like
-	::= space+
+	::= (space+|!(space)<<inMode "whitespaceOptional">>) <<exitMode "whitespaceOptional">>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -1106,12 +1106,12 @@ private space
 
 expression
 	::= rvalue_prime
-	|	string_literal
-	|	byte_string
-	|	animation_string
+	|	string_literal <<enterMode "whitespaceOptional">>
+	|	byte_string <<enterMode "whitespaceOptional">>
+	|	animation_string <<enterMode "whitespaceOptional">>
 	|	vars
 	|	named_constant
-	|	number
+	|	number <<enterMode "whitespaceOptional">>
 	|	<<expects 'TOKEN'>>token
 	|	pict_dimension_literal
 	|	incomplete
@@ -6705,6 +6705,8 @@ var_token
 number
 	::= INT
 	|	DECIMAL
+	|	BINARY
+	|	CHAR
 	{
 
 	}
