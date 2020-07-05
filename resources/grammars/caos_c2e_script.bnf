@@ -1,0 +1,7090 @@
+{
+	parserClass="com.openc2e.plugins.intellij.agenteering.caos.parser.CaosScriptParser"
+	parserUtilClass="com.openc2e.plugins.intellij.agenteering.caos.parser.CaosScriptParserUtil"
+	implements="com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+	parserImports= [
+		"static com.openc2e.plugins.intellij.agenteering.caos.lang.CaosVariant.*"
+	]
+	extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes"
+	elementTypePrefix="CaosScript_"
+	elementTypeClass="com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.agenteering.caos.lexer.CaosScriptTokenType"
+	psiClassPrefix="CaosScript"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.openc2e.plugins.intellij.agenteering.caos.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.agenteering.caos.psi.impl"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime")="com.openc2e.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
+	generateTokenAccessors=true
+	generateTokens=true
+	name("space.*") = "space or comma"
+	name("c_.*") = "command"
+	name("cc_.*") = "command"
+	name("r_.*") = "value";
+	name("rvalue.*") = "value";
+	name("expects.*") = "value";
+	name("l_.*") = "variable";
+	name("lvalue") = "variable";
+	name("rvalue") = "value";
+	name("expression") = "value"
+	name("K_.*") = "command"
+	name("eq_op.*") = "EQ|NE|etc.."
+	name("word_factory_element") = ""
+	name("expression_factory") = ""
+	name("K_XX_DEF") = ""
+	name("K_XX_EXPR") = ""
+	name("command_call") = "command"
+	tokens = [
+		NEWLINE = "regexp:\n";
+		K_ENDM = "regexp:[eE][nN][dD][mM]"
+		K_SUBR = "regexp:[sS][uU][bB][rR]"
+		K_REPS = "regexp:[rR][eE][pP][sS]"
+		K_REPE = "regexp:[rR][eE][pP][eE]"
+		K_LOOP = "regexp:[lL][oO][oO][pP]"
+		K_UNTL = "regexp:[uU][nN][tT][lL]"
+		K_EVER = "regexp:[eE][vV][eE][rR]"
+		K_ENUM = "regexp:[eE][nN][uU][mM]"
+		K_NEXT = "regexp:[nN][eE][xX][tT]"
+		K_DOIF = "regexp:[dD][oO][iI][fF]"
+		K_ELSE = "regexp:[eE][lL][sS][eE]"
+		K_ENDI = "regexp:[eE][nN][dD][iI]"
+		K_DOIF = "regexp:[dD][oO][iI][fF]"
+		K_SCRP = "regexp:[sS][cC][rR][pP]"
+		K_ESCN = "regexp:[eE][sS][cC][nN]"
+		K_NSCN = "regexp:[nN][sS][cC][nN]"
+		K_ETCH = "regexp:[eE][tT][cC][hH]"
+		K_ESEE = "regexp:[eE][sS][eE][eE]"
+		VA_XX = "regexp:[Vv][Aa][0-9][0-9]"
+		OB_XX = "regexp:[Oo][Vv][0-9][0-9]"
+		MV_XX = "regexp:[Mm][Vv][0-9][0-9]"
+		VAR_X = "regexp:[Vv][Aa][Rr][0-9]"
+		OBV_X = "regexp:[Oo][Bb][Vv][0-9]"
+		K_STIM = "regexp:[sS][tT][iI][mM]"
+		K_WRIT = "regexp:[wW][rR][iI][tT]"
+		K_SHOU = "regexp:[sS][hH][oO][uU]"
+		K_SIGN = "regexp:[sS][iI][gG][nN]"
+		K_TACT = "regexp:[tT][aA][cC][tT]"
+		K_NEW_COL = "regexp:[nN][eE][wW][:]"
+		K_BKBD = "regexp:[bB][kK][bB][dD]"
+		K_ROOM = "regexp:[rR][oO][oO][mM]"
+		K_SIMP = "regexp:[sS][iI][mM][pP]"
+		K_PART = "regexp:[pP][aA][rR][tT]"
+		K_SPOT = "regexp:[sS][pP][oO][tT]"
+		K_CBTN = "regexp:[cC][bB][tT][nN]"
+		K_COMP = "regexp:[cC][oO][mM][pP]"
+		K_SCEN = "regexp:[sS][cC][eE][nN]"
+		K_CABN = "regexp:[cC][aA][bB][nN]"
+		K_SCRX = "regexp:[sS][cC][rR][xX]"
+		K_SYS_COL = "regexp:[sS][yY][sS][:]"
+		K_EDIT = "regexp:[eE][dD][iI][tT]"
+		K_TOOL = "regexp:[tT][oO][oO][lL]"
+		K_WPOS = "regexp:[wW][pP][oO][sS]"
+		K_GENE = "regexp:[gG][eE][nN][eE]"
+		K_LIFT = "regexp:[lL][iI][fF][tT]"
+		K_VHCL = "regexp:[vV][hH][cC][lL]"
+		K_RNDV = "regexp:[rR][nN][dD][vV]"
+		K_BBD_COL = "regexp:[bB][bB][dD][:]"
+		K_WORD = "regexp:[wW][oO][rR][dD]"
+		K_DDE_COL = "regexp:[dD][dD][eE][:]"
+		K_CELL = "regexp:[cC][eE][lL][lL]"
+		K_FIRE = "regexp:[fF][iI][rR][eE]"
+		K_LTCY = "regexp:[lL][tT][cC][yY]"
+		K_CREA = "regexp:[cC][rR][eE][aA]"
+		K_RTAR = "regexp:[rR][tT][aA][rR]"
+		K_TRIG = "regexp:[tT][rR][iI][gG]"
+		K_ADDV = "regexp:[aA][dD][dD][vV]"
+		K_ANDV = "regexp:[aA][nN][dD][vV]"
+		K_DIVV = "regexp:[dD][iI][vV][vV]"
+		K_MODV = "regexp:[mM][oO][dD][vV]"
+		K_MULV = "regexp:[mM][uU][lL][vV]"
+		K_ORRV = "regexp:[oO][rR][rR][vV]"
+		K_SETV = "regexp:[sS][eE][tT][vV]"
+		K_SUBV = "regexp:[sS][uU][bB][vV]"
+		K_BHVR = "regexp:[bB][hH][vV][rR]"
+		K_CHEM = "regexp:[cC][hH][eE][mM]"
+		K_PUTB = "regexp:[pP][uU][tT][bB]"
+		K_KNOB = "regexp:[kK][nN][oO][bB]"
+		K_MCRT = "regexp:[mM][cC][rR][tT]"
+		K_MESG = "regexp:[mM][eE][sS][gG]"
+		K_MVTO = "regexp:[mM][vV][tT][oO]"
+		K_SPAS = "regexp:[sS][pP][aA][sS]"
+		K_STM_NUM = "regexp:[sS][tT][mM][#]"
+		K_CMRA = "regexp:[cC][mM][rR][aA]"
+		K_GRND = "regexp:[gG][rR][nN][dD]"
+		K_TELE = "regexp:[tT][eE][lL][eE]"
+		K_SNDQ = "regexp:[sS][nN][dD][qQ]"
+		K_ABRT = "regexp:[aA][bB][rR][tT]"
+		K_APPR = "regexp:[aA][pP][pP][rR]"
+		K_CMND = "regexp:[cC][mM][nN][dD]"
+		K_DIED = "regexp:[dD][iI][eE][dD]"
+		K_HATC = "regexp:[hH][aA][tT][cC]"
+		K_LIVE = "regexp:[lL][iI][vV][eE]"
+		K_LOBE = "regexp:[lL][oO][bB][eE]"
+		K_NEGG = "regexp:[nN][eE][gG][gG]"
+		K_PANC = "regexp:[pP][aA][nN][cC]"
+		K_PICT = "regexp:[pP][iI][cC][tT]"
+		K_SCRP = "regexp:[sS][cC][rR][pP]"
+		K_DONE = "regexp:[dD][oO][nN][eE]"
+		K_DPAS = "regexp:[dD][pP][aA][sS]"
+		K_DROP = "regexp:[dD][rR][oO][pP]"
+		K_GPAS = "regexp:[gG][pP][aA][sS]"
+		K_INST = "regexp:[iI][nN][sS][tT]"
+		K_KILL = "regexp:[kK][iI][lL][lL]"
+		K_LOCK = "regexp:[lL][oO][cC][kK]"
+		K_LOOP = "regexp:[lL][oO][oO][pP]"
+		K_MATE = "regexp:[mM][aA][tT][eE]"
+		K_MVBY = "regexp:[mM][vV][bB][yY]"
+		K_OVER = "regexp:[oO][vV][eE][rR]"
+		K_POIN = "regexp:[pP][oO][iI][nN]"
+		K_QUIT = "regexp:[qQ][uU][iI][tT]"
+		K_SAYN = "regexp:[sS][aA][yY][nN]"
+		K_SLIM = "regexp:[sS][lL][iI][mM]"
+		K_SLOW = "regexp:[sS][lL][oO][wW]"
+		K_SNEZ = "regexp:[sS][nN][eE][zZ]"
+		K_STOP = "regexp:[sS][tT][oO][pP]"
+		K_STPC = "regexp:[sS][tT][pP][cC]"
+		K_CAMT = "regexp:[cC][aA][mM][tT]"
+		K_WTOP = "regexp:[wW][tT][oO][pP]"
+		K_TOUC = "regexp:[tT][oO][uU][cC]"
+		K_UNLK = "regexp:[uU][nN][lL][kK]"
+		K_WALK = "regexp:[wW][aA][lL][kK]"
+		K_NEGV = "regexp:[nN][eE][gG][vV]"
+		K_GSUB = "regexp:[gG][sS][uU][bB]"
+		K_PLDS = "regexp:[pP][lL][dD][sS]"
+		K_SNDC = "regexp:[sS][nN][dD][cC]"
+		K_SNDE = "regexp:[sS][nN][dD][eE]"
+		K_SNDF = "regexp:[sS][nN][dD][fF]"
+		K_SNDL = "regexp:[sS][nN][dD][lL]"
+		K_AIM_COL = "regexp:[aA][iI][mM][:]"
+		K_ANIM = "regexp:[aA][nN][iI][mM]"
+		K_ASLP = "regexp:[aA][sS][lL][pP]"
+		K_BASE = "regexp:[bB][aA][sS][eE]"
+		K_EMIT = "regexp:[eE][mM][iI][tT]"
+		K_SHOW = "regexp:[sS][hH][oO][wW]"
+		K_BDVG = "regexp:[bB][dD][vV][gG]"
+		K_DBGM = "regexp:[dD][bB][gG][mM]"
+		K_DBUG = "regexp:[dD][bB][uU][gG]"
+		K_GETB = "regexp:[gG][eE][tT][bB]"
+		K_PUTS = "regexp:[pP][uU][tT][sS]"
+		K_PUTV = "regexp:[pP][uU][tT][vV]"
+		K_DREA = "regexp:[dD][rR][eE][aA]"
+		K_EVNT = "regexp:[eE][vV][nN][tT]"
+		K_IMPT = "regexp:[iI][mM][pP][tT]"
+		K_POSE = "regexp:[pP][oO][sS][eE]"
+		K_PRLD = "regexp:[pP][rR][lL][dD]"
+		K_RMEV = "regexp:[rR][mM][eE][vV]"
+		K_SAY_DOL = "regexp:[sS][aA][yY][$]"
+		K_SNDV = "regexp:[sS][nN][dD][vV]"
+		K_TARG = "regexp:[tT][aA][rR][gG]"
+		K_TICK = "regexp:[tT][iI][cC][kK]"
+		K_VRSN = "regexp:[vV][rR][sS][nN]"
+		K_WAIT = "regexp:[wW][aA][iI][tT]"
+		K_WRLD = "regexp:[wW][rR][lL][dD]"
+		K_TOTL = "regexp:[tT][oO][tT][lL]"
+		K_IT_ = "regexp:[_][iI][tT][_]"
+		K_ACTV = "regexp:[aA][cC][tT][vV]"
+		K_ATTN = "regexp:[aA][tT][tT][nN]"
+		K_ATTR = "regexp:[aA][tT][tT][rR]"
+		K_BABY = "regexp:[bB][aA][bB][yY]"
+		K_BUMP = "regexp:[bB][uU][mM][pP]"
+		K_CAGE = "regexp:[cC][aA][gG][eE]"
+		K_CAMN = "regexp:[cC][aA][mM][nN]"
+		K_CARR = "regexp:[cC][aA][rR][rR]"
+		K_CLAS = "regexp:[cC][lL][aA][sS]"
+		K_DEAD = "regexp:[dD][eE][aA][dD]"
+		K_DRV_EXL = "regexp:[dD][rR][vV][!]"
+		K_EXEC = "regexp:[eE][xX][eE][cC]"
+		K_FMLY = "regexp:[fF][mM][lL][yY]"
+		K_FROM = "regexp:[fF][rR][oO][mM]"
+		K_GND_NUM = "regexp:[gG][nN][dD][#]"
+		K_GNDW = "regexp:[gG][nN][dD][wW]"
+		K_GNUS = "regexp:[gG][nN][uU][sS]"
+		K_HGHT = "regexp:[hH][gG][hH][tT]"
+		K_HOUR = "regexp:[hH][oO][uU][rR]"
+		K_LIMB = "regexp:[lL][iI][mM][bB]"
+		K_LIML = "regexp:[lL][iI][mM][lL]"
+		K_LIMR = "regexp:[lL][iI][mM][rR]"
+		K_LIMT = "regexp:[lL][iI][mM][tT]"
+		K_MINS = "regexp:[mM][iI][nN][sS]"
+		K_MOVS = "regexp:[mM][oO][vV][sS]"
+		K_NEID = "regexp:[nN][eE][iI][dD]"
+		K_NORN = "regexp:[nN][oO][rR][nN]"
+		K_OBJP = "regexp:[oO][bB][jJ][pP]"
+		K_OWNR = "regexp:[oO][wW][nN][rR]"
+		K_PNTR = "regexp:[pP][nN][tT][rR]"
+		K_POSB = "regexp:[pP][oO][sS][bB]"
+		K_POSL = "regexp:[pP][oO][sS][lL]"
+		K_POSR = "regexp:[pP][oO][sS][rR]"
+		K_POST = "regexp:[pP][oO][sS][tT]"
+		K_RMS_NUM = "regexp:[rR][mM][sS][#]"
+		K_SCOR = "regexp:[sS][cC][oO][rR]"
+		K_SNDS = "regexp:[sS][nN][dD][sS]"
+		K_SPCS = "regexp:[sS][pP][cC][sS]"
+		K_TCAR = "regexp:[tT][cC][aA][rR]"
+		K_TEMP = "regexp:[tT][eE][mM][pP]"
+		K_WDTH = "regexp:[wW][dD][tT][hH]"
+		K_WIND = "regexp:[wW][iI][nN][dD]"
+		K_WINH = "regexp:[wW][iI][nN][hH]"
+		K_WINW = "regexp:[wW][iI][nN][wW]"
+		K_XVEC = "regexp:[xX][vV][eE][cC]"
+		K_YVEC = "regexp:[yY][vV][eE][cC]"
+		K_DRIV = "regexp:[dD][rR][iI][vV]"
+		K_TOKN = "regexp:[tT][oO][kK][nN]"
+		K_XX_DEF = "____X____DEF__"
+		K_XX_EXPR = "____X____EXP__"
+		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
+		CONST_EQ = "regexp:=";
+		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
+		N_VAR = "regexp:[$][a-zA-Z_0-9]+"
+		COMMENT_LITERAL = "regexp:\*[^\n]*"
+		DECIMAL = "regexp:[0-9]+\.[0-9]+"
+		INT = "regexp:[0-9]+"
+		TEXT_LITERAL = 'regexp:\[[^]]*]';
+		QUOTE_STRING = 'regexp:"[^\n|"]*"'
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
+		COLON = ':';
+		PLUS = "+";
+		SPACE_ = "regexp:[ ]";
+		space = "regexp:\n[\t ]+";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		COMMA = ',';
+		ANIM_R = "R"
+		PICT_DIMENSION = "#|#";
+
+
+	]
+}
+
+private def	::= space_like_or_newline* (word_factory_element|expression_factory|file_body)?
+	;
+
+word_factory_element ::= K_XX_DEF space_like a_word;
+
+a_word
+	::= all_tokens
+	|	WORD
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+expression_factory
+	::= K_XX_EXPR space_like rvalue
+	;
+
+private file_body
+	::= script_body_element (!<<eof>> space_like_or_newline script_body_element)*
+	{
+	}
+	;
+
+script_body_element
+	::= comment
+	|	event_script
+	|	macro
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+macro
+	::= macro_code_block (space_like_or_newline script_terminator)?
+	{
+
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptMacroStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getBlockType
+		]
+	}
+	;
+
+private macro_code_block
+	::= code_block
+	{
+		//recoverWhile = macro_code_block_recover
+	}
+	;
+
+code_block
+	::= code_block_line (space_like_or_newline code_block_line)*
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+code_block_line
+	::= caos_element
+	;
+
+private caos_element
+	::=	control_statement
+	|	command_call
+	|	incomplete
+	| 	comment
+	;
+
+
+event_script
+	::= c_scrp space_like classifier space_like event_number_element (<<enterMode "eventScript">>space_like_or_newline event_script_body)? <<exitMode "eventScript">>  (space_like_or_newline script_terminator)?
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptEventScriptStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getBlockType
+			getFamily
+			getGenus
+			getSpecies
+			getEventNumber
+		]
+	}
+	;
+
+c_scrp ::= K_SCRP
+{
+	implements = [
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+
+private event_script_body
+	::= code_block
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		//recoverWhile=event_script_body_recover
+	}
+	;
+
+subroutine
+	::= subroutine_header (space_like_or_newline subroutine_body)? (space_like_or_newline c_retn)?
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+			getName
+		]
+	}
+	;
+
+subroutine_header
+	::= c_subr space_like subroutine_name
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_subr"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+
+c_subr
+	::= K_SUBR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_retn
+	::= K_RETN
+	{
+		implements = [
+   			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+   			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+			getReference
+		]
+	}
+	;
+
+private subroutine_body
+	::= code_block
+	{
+		//recoverWhile=subroutine_body_recover
+	}
+	;
+
+classifier
+	::= family space_like genus space_like species
+	{
+		pin = 1
+	}
+	;
+
+private control_statement
+   ::=  subroutine
+   |	loop_statement
+   |   	repeat_statement
+   |   	enum_next_statement
+   |   	enum_scenery_statement
+   |	doif_statement
+   ;
+
+loop_statement
+   ::= c_loop space_like_or_newline loop_body? (space_like_or_newline loop_terminator)?
+   {
+		pin=1
+		implements = [
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			isEver
+			isUntil
+			getBlockType
+			getCommandString
+			getCommandStringUpper
+		]
+	}
+	;
+
+loop_terminator
+	::= cEver
+	|	untl_terminator
+	{
+		pin=1
+	}
+	;
+
+
+
+private untl_terminator
+	::= c_untl space_like equality_expression
+	{
+		pin=1
+	}
+	;
+
+
+
+private loop_body
+	::= code_block
+	{
+		//recoverWhile=loop_body_recover
+	}
+	;
+
+repeat_statement
+	::= reps_header (space_like_or_newline repeat_body)? (space_like_or_newline c_repe)?
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+		]
+
+		methods = [
+			getBlockType
+		]
+
+	}
+	;
+reps_header
+	::= c_reps space_like expects_int
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_reps"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+
+private repeat_body
+   ::= code_block
+   {
+      //recoverWhile=repeat_body_recover
+   }
+   ;
+
+enum_next_statement
+	::= enum_header_command (space_like_or_newline enum_body)? (space_like_or_newline (c_next|c_nscn))? {
+		pin=1;
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+		]
+		methods = [
+			codeBlock="code_block"
+			getBlockType
+		]
+	}
+	;
+
+enum_header_command
+	::= c_enum space_like classifier
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_enum"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+
+enum_scenery_statement
+   ::= escn_header (space_like_or_newline escn_body)? (space_like_or_newline (c_nscn|c_next))? {
+		pin=1;
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+		]
+		methods = [
+			getBlockType
+		]
+   }
+   ;
+
+escn_header
+	::= c_escn space_like classifier
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_escn"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+
+private enum_body
+   ::= code_block
+   {
+      implements = [
+         "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+         "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+      ]
+      //recoverWhile=enum_body_recover
+   }
+   ;
+
+private escn_body
+   ::= code_block
+   {
+      //recoverWhile=escn_body_recover
+   }
+   ;
+
+doif_statement
+	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? (space_like_or_newline c_endi)?
+	{
+		pin=1
+		implements = [
+			 "com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+doif_statement_statement
+	::= c_doif space_like equality_expression (space_like_or_newline do_if_body)?
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+		]
+	}
+	;
+
+
+else_if_statement
+	::= c_elif space_like equality_expression (space_like_or_newline do_if_body)?
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+		]
+	}
+	;
+
+else_statement
+	::= c_else (space_like_or_newline else_block)?
+	{
+		pin=1;
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+		]
+	}
+	;
+
+
+private else_block
+	::= code_block
+	{
+		//recoverWhile=else_body_recover
+	}
+	;
+
+private do_if_body
+	::= code_block
+	{
+		//recoverWhile=do_if_body_recover
+	}
+	;
+
+c_loop
+	::= K_LOOP
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+cEver
+	::= K_EVER
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_untl
+	::= K_UNTL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_reps ::= K_REPS
+{
+	implements = [
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+c_repe ::= K_REPE
+{
+	implements = [
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+c_enum
+	::= K_ENUM
+	|	K_ESEE
+	| 	K_ETCH
+	|	K_EPAS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_next ::= K_NEXT
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_escn ::= K_ESCN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_nscn ::= K_NSCN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_doif ::= K_DOIF
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_endi ::= K_ENDI
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_elif ::= K_ELIF
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_else ::= K_ELSE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_rndv
+	::= c_kw_random space_like lvalue space_like expects_int space_like  expects_int
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRndvStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
+		]
+		methods = [
+			commandToken="c_kw_random"
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			minElement="/expects_int[0]"
+			maxElement="/expects_int[1]"
+			getRndvIntRange
+			isRndvValuesInOrder
+		]
+	}
+
+c_kw_random
+	::= K_RNDV
+	{
+		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+animation_string
+   ::= OPEN_BRACKET animation_string_body? CLOSE_BRACKET
+   {
+   		pin = 2
+   }
+   ;
+
+private animation_string_body
+	::= INT ANIM_R?
+	{
+		pin = 2
+	}
+	;
+
+byte_string
+	::= OPEN_BRACKET byte_string_body? CLOSE_BRACKET
+	{
+		pin(".*") = 3
+	}
+	;
+
+private byte_string_body
+	::=  byte_string_pose_list byte_string_r?
+	{
+		pin(".*")=2
+	}
+	;
+
+private byte_string_pose_list
+	::= byte_string_pose_element (!(<<isVariant 'C1'>>|<<isVariant 'C2'>>)(space_like byte_string_pose_element)*)
+	;
+
+byte_string_pose_element
+	::= INT
+	;
+
+byte_string_r
+	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>)space_like? ANIM_R
+	;
+
+
+symbol_comma
+	::= COMMA
+	;
+
+space_like_or_newline
+	::= (space_like new_line_like?) (new_line_like|space_like)*
+	|	(new_line_like space_like?) (new_line_like|space_like)*
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
+	;
+
+new_line_like
+	::= symbol_comma
+	|	NEWLINE+
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
+	;
+
+space_like
+	::= space+
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
+	;
+
+private space
+	::= SPACE_
+	;
+
+expression
+	::= rvalue_prime
+	|	string_literal
+	|	byte_string
+	|	animation_string
+	|	vars
+	|	named_constant
+	|	number
+	|	<<expects 'TOKEN'>>token
+	|	pict_dimension_literal
+	|	incomplete
+	{
+		methods = [
+			isString
+			isQuoteString
+			isC1String
+			isInt
+			isFloat
+			isToken
+			isNumeric
+			getFloatValue
+			getIntValue
+			getStringValue
+			toCaosVar
+			getByteStringArray
+			getCreatureAnimation
+			getAnimation
+		]
+	}
+	;
+
+pict_dimension_literal
+	::= PICT_DIMENSION
+	{
+		methods = [
+			getWidth
+			getHeight
+			getDimensions
+		]
+	}
+	;
+
+equality_expression
+   ::= equality_expression_prime (space_like equality_expression_plus)*
+   {
+   		pin=1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
+		]
+		methods = [
+			first="/expression[0]"
+			second="/expression[1]"
+		]
+   }
+   ;
+
+private equality_expression_prime
+	::= expression space_like eq_op_with_expression
+	{
+		pin = 1
+	}
+	;
+
+private eq_op_with_expression
+	::= eq_op space_like expression
+	{
+		pin=1
+	}
+	;
+
+equality_expression_plus
+	::=  equality_join space_like equality_expression_prime
+	{
+		pin(".*")=1
+		methods = [
+			first="/expression[0]"
+			second="/expression[1]"
+		]
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
+		]
+	}
+	;
+
+equality_join
+	::= K_AND
+	|	K_OR
+	;
+
+command_call ::= command_call_by_args // I think private values all have equal priority
+	{
+		pin=2
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCommandCallStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			getCommandToken
+			getArguments
+			getArgumentValues
+			getCommandTokens
+			getCommandTokens
+			getCommandElement
+			getCommandString
+			getCommandStringUpperUpper
+		]
+		//recoverWhile = command_recover
+	}
+	;
+
+private command_call_by_args
+	::= c_targ
+	|	c_d_d
+	|	c_l
+	|	c_f
+	|	c_d_s
+	|	c_l_s
+	|	c_d_d_f_d
+	|	c_d_d_f
+	|	c_bs
+	|	c_s
+	|	c_d_d_d
+	|	c_d_d_s
+	|	c_d_d_d_d
+	|	c_s_d_d_d
+	|	c_d_s_d
+	|	c_d_d_d_f
+	|	c_d_v_v
+	|	c_l_d_d
+	|	c_d_f
+	|	c_f_f_f_f
+	|	c_cond
+	|	c_a
+	|	c_v
+	|	c_s_t
+	|	c_f_f
+	|	c_d_d_d_d_d_d_d
+	|	c_s_d
+	|	c_a_d_a_d
+	|	c_a_d_a_d_a_d_d_d_d_d
+	|	c_a_d
+	|	c_a_d_s
+	|	c_t
+	|	c_d_d_d_f_f
+	|	c_s_d_s_s
+	|	c_s_d_s
+	|	c_s_s
+	|	c_d_d_d_d_d_d_d_d_d
+	|	c_d_d_d_d_f
+	|	c_a_d_v_v_d
+	|	c_l_l_l_l
+	|	c_s_l
+	|	c_s_s_d_v_v
+	|	c_t_d_d_d_d_d_d_d
+	|	c_t_d_d_d
+	|	c_t_d_d_v
+	|	c_d_d_d_s_d_d_d
+	|	c_d_a_d_d_d_s_d_d_d
+	|	c_d_a_d_d_d
+	|	c_d_d_l
+	|	c_t_d_d
+	|	c_d_d_d_d_d
+	|	c_t_d_d_d_d
+	|	c_a_s
+	|	c_d_s_d_d_d_d_d_bs_d_d
+	|	c_d_s_d_d_d_d_d_d_d_d
+	|	c_d_s_d_d_d_d
+	|	c_d_s_d_d_d_d_s
+	|	c_d_s_d_d_d_d_d
+	|	c_d_s_d_d_d_d_d_s
+	|	c_d_s_s_d_d_d
+	|	c_a_d_d
+	|	c_d_s_s_d_d
+	|	c_d_v
+	|	c_d_d_f_f_f
+	|	c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
+	|	c_d_d_d_d_d_d
+	|	c_a_a
+	|	c_s_d_d_d_d_d
+	|	c_t_d
+	|	c_s_d_f
+	|	c_d_d_d_d_d_d_d_d_d_d_d_d
+	|	c_a_d_f
+	|	c_a_d_d_d_d_d_d_d_d_d_d_d_d
+	|	c_d_f_d_f_d_f_d_f
+	|	c_a_d_f_d_f_d_f_d_f
+	|	c_s_s_s_d
+	|	c_a_d_d_d_d
+	|	c_f_d_f
+	|	c_a_d_f_d_f
+	|	c_assignment
+	|	c_rndv
+	|	c_none
+	|	c_d
+	|	c_gsub
+	|	c_pict
+	|	c_cv_char
+	;
+
+c_assignment
+	::= c_all_assign_int
+	|	c_assign_agent
+	|	c_assign_string
+	|	c_setv
+	|	c_negv
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptAssignmentStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
+		]
+		methods = [
+			getOp
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getRVar
+			getLVar
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+
+private c_assign_agent ::= c_kw_assign_agent space_like lvalue space_like expects_agent
+	{
+		pin = 1
+	}
+	;
+
+c_kw_assign_agent ::= K_SETA
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+private c_assign_string ::= c_kw_assign_string space_like lvalue space_like expects_string
+	{
+		pin = 1
+	}
+	;
+
+c_kw_assign_string ::= K_SETS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+private c_all_assign_int ::= c_kw_assign_number space_like lvalue space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+c_gsub
+	::=  c_kw_gsub space_like subroutine_name
+	{
+		pin = 1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_kw_gsub"
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+private c_cv_char
+	::= kw_cv_char space_like lvalue space_like expects_int space_like expects_int
+	;
+
+private expects_decimal_or_int ::=
+		(<<isVariant 'C1'>>|<<isVariant 'C2'>>) expects_int
+	|	(<<isVariant 'CV'>>|<<isVariant 'C3'>>|<<isVariant 'DS'>>) expects_decimal
+
+	;
+
+private c_setv ::= (c_kw_setv space_like|(<<isVariant 'C1'>>|<<isVariant 'C2'>>)(c_kw_setv space_like)?) lvalue space_like setv_prime
+	{
+		pin = 2
+	}
+	;
+
+private setv_prime
+	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>) expects_value
+	|	(<<isVariant 'CV'>>|<<isVariant 'C3'>>|<<isVariant 'DS'>>) expects_decimal
+	;
+
+c_kw_setv ::= K_SETV
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+c_kw_assign_number
+	::= K_ANDV
+	|	K_MODV
+	|	K_ORRV
+	|	K_MULV
+	|	K_DIVV
+	|	K_ADDV
+	|	K_SUBV
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+private c_negv ::= c_kw_negv space_like lvalue
+	{
+		pin = 1
+	}
+
+c_kw_negv ::= K_NEGV
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+
+
+private c_none ::= c_kw_none;
+
+
+
+private c_d ::= c_kw_d space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d ::= c_kw_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_l ::= c_kw_l space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_f ::= c_kw_f space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s ::= c_kw_d_s space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_l_s ::= c_kw_l_s space_like lvalue space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private c_d_d_f_d ::= c_kw_d_d_f_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_f ::= c_kw_d_d_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_bs ::= c_kw_bs space_like expects_byte_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s ::= c_kw_s space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d ::= c_kw_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_s ::= c_kw_d_d_s space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d ::= c_kw_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+
+private c_s_d_d_d ::= c_kw_s_d_d_d space_like expects_c1_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d ::= c_kw_d_s_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_f ::= c_kw_d_d_d_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_v_v ::= c_kw_d_v_v space_like expects_decimal_or_int space_like expects_value space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_l_d_d ::= c_kw_l_d_d space_like lvalue space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_f ::= c_kw_d_f space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_f_f_f_f ::= c_kw_f_f_f_f space_like expects_float space_like expects_float space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_cond ::= c_kw_cond space_like equality_expression
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a ::= c_kw_a space_like expects_agent
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_v ::= c_kw_v space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_t ::= c_kw_s_t space_like expects_c1_string space_like expects_token
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_f_f ::= c_kw_f_f space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_d ::= c_kw_s_d space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_a_d ::= c_kw_a_d_a_d space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_a_d_a_d_d_d_d_d ::= c_kw_a_d_a_d_a_d_d_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d ::= c_kw_a_d space_like expects_agent space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_s ::= c_kw_a_d_s space_like expects_agent space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t ::= c_kw_t space_like expects_token
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_f_f ::= c_kw_d_d_d_f_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_d_s_s ::= c_kw_s_d_s_s space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_d_s ::= c_kw_s_d_s space_like expects_string space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_s ::= c_kw_s_s space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_f ::= c_kw_d_d_d_d_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_v_v_d ::= c_kw_a_d_v_v_d space_like expects_agent space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_l_l_l_l ::= c_kw_l_l_l_l space_like lvalue space_like lvalue space_like lvalue space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_l ::= c_kw_s_l space_like expects_string space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_s_d_v_v ::= c_kw_s_s_d_v_v space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_value space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t_d_d_d_d_d_d_d ::= c_kw_t_d_d_d_d_d_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t_d_d_d ::= c_kw_t_d_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t_d_d_v ::= c_kw_t_d_d_v space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_s_d_d_d ::= c_kw_d_d_d_s_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_a_d_d_d_s_d_d_d ::= c_kw_d_a_d_d_d_s_d_d_d space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_a_d_d_d ::= c_kw_d_a_d_d_d space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_l ::= c_kw_d_d_l space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t_d_d ::= c_kw_t_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_d ::= c_kw_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t_d_d_d_d ::= c_kw_t_d_d_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_s ::= c_kw_a_s space_like expects_agent space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d_d_d_d_d_bs_d_d ::= c_kw_d_s_d_d_d_d_d_bs_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_byte_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d_d_d_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d_d_d_d ::= c_kw_d_s_d_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_s space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_d_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_d_s space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_s_d_d_d ::= c_kw_d_s_s_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_d ::= c_kw_a_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_s_s_d_d ::= c_kw_d_s_s_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_v ::= c_kw_d_v space_like expects_decimal_or_int space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_f_f_f ::= c_kw_d_d_f_f_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_a ::= c_kw_a_a space_like expects_agent space_like expects_agent
+	{
+		pin=1
+	}
+	;
+
+
+private c_s_d_d_d_d_d ::= c_kw_s_d_d_d_d_d space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_t_d ::= c_kw_t_d space_like expects_token space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_d_f ::= c_kw_s_d_f space_like expects_string space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_f ::= c_kw_a_d_f space_like expects_agent space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_d_f_d_f_d_f_d_f ::= c_kw_d_f_d_f_d_f_d_f space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_f_d_f_d_f_d_f ::= c_kw_a_d_f_d_f_d_f_d_f space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_s_s_s_d ::= c_kw_s_s_s_d space_like expects_c1_string space_like expects_c1_string space_like expects_c1_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_d_d_d ::= c_kw_a_d_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_f_d_f ::= c_kw_f_d_f space_like expects_float space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private c_a_d_f_d_f ::= c_kw_a_d_f_d_f space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private c_pict ::= c_kw_pict space_like expects_pict_dimension
+	{
+		pin=1
+	}
+	;
+
+expects_pict_dimension
+	::= rvalue
+	;
+
+
+rvalue_prime
+	::= r_cv_char
+	|	r_cv_tran
+	|	r_f
+	|	r_d_d_d_d_s
+	|	r_d_d_d_d_d_d_d
+	|	r_d
+	|	r_f_f
+	|	r_a_d
+	|	r_d_d_v_v_s_d_d_l
+	|	r_d_d_d
+	|	r_s_d
+	|	r_a
+	|	r_v
+	|	r_d_d
+	|	r_s
+	|	r_s_d_d
+	|	r_d_d_d_d_d
+	|	r_d_d_d_d
+	|	r_a_d_d_d
+	|	r_s_s
+	|	r_d_s_s_l
+	|	r_s_s_d
+	|	r_s_s_s
+	|	r_s_d_l
+	|	r_d_s_d_s_l
+	|	r_a_d_d
+	|	r_a_a
+	|	r_d_s
+	|	r_d_d_bs_bs
+	|	r_s_d_s
+	|	r_f_f_f_f
+	|	r_t
+	|	r_d_d_d_s_d
+	| 	r_none
+	{
+   		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+     		getCommandString
+			getCommandStringUpper
+     		toCaosVar
+			getArguments
+			getArgumentValues
+     		getInferredType
+		]
+	}
+	;
+
+private r_cv_char
+	::= <<expects 'NUMBER'>> kw_cv_char space_like expects_string space_like expects_int
+	|	<<expects 'STRING'>>kw_cv_char
+	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>) kw_cv_char (space_like expects_string space_like expects_int)?
+	;
+
+private r_cv_tran
+	::= <<expects 'NUMBER'>> r_kw_cv_tran space_like expects_int space_like expects_int
+	|	<<expects 'STRING'>>r_kw_cv_tran space_like expects_int
+	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>)r_kw_cv_tran space_like expects_int (space_like expects_int)?
+	{
+		pin(".*")= 5
+	}
+	;
+
+private r_none ::= r_kw_none
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_f ::= r_kw_f space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_d_d_s ::= r_kw_d_d_d_d_s space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_d_d_d_d_d ::= r_kw_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d ::= r_kw_d space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_f_f ::= r_kw_f_f space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_a_d ::= r_kw_a_d space_like expects_agent space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_v_v_s_d_d_l ::= r_kw_d_d_v_v_s_d_d_l space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_d ::= r_kw_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_d ::= r_kw_s_d space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_a ::= r_kw_a space_like expects_agent
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_v ::= r_kw_v space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d ::= r_kw_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s ::= r_kw_s space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_d_d ::= r_kw_s_d_d space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_d_d_d ::= r_kw_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_d_d ::= r_kw_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_a_d_d_d ::= r_kw_a_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_s ::= r_kw_s_s space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_s_s_l ::= r_kw_d_s_s_l space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_s_d ::= r_kw_s_s_d space_like expects_string space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_s_s ::= r_kw_s_s_s space_like expects_string space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_d_l ::= r_kw_s_d_l space_like expects_string space_like expects_decimal_or_int space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_s_d_s_l ::= r_kw_d_s_d_s_l space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_a_d_d ::= r_kw_a_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_a_a ::= r_kw_a_a space_like expects_agent space_like expects_agent
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_s ::= r_kw_d_s space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_bs_bs ::= r_kw_d_d_bs_bs space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_byte_string space_like expects_byte_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_s_d_s ::= r_kw_s_d_s space_like expects_string space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_f_f_f_f ::= r_kw_f_f_f_f space_like expects_float space_like expects_float space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_t ::= r_kw_t space_like expects_token
+	{
+		pin=1
+	}
+	;
+
+
+
+private r_d_d_d_s_d ::= r_kw_d_d_d_s_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+lvalue
+	::= named_game_var
+	|	l_none
+	|	l_a_d
+	|	l_d_d_d
+	|	l_d_d
+	|	l_v
+	|	l_d
+	|	vars
+	|	incomplete
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptLValueStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			isVariant
+			getIndex
+			getCommandToken
+			toCaosVar
+			getExpectedType
+			getInferredType
+		]
+	}
+	;
+
+named_game_var
+	::= caos_named_var_kw space_like expects_value
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+		]
+		methods = [
+			commandToken="/caos_named_var_kw"
+			getCommandString
+			getCommandStringUpper
+			isVariant
+			toCaosVar
+			getKey
+			getVarType
+			getName
+			setName
+			getArguments
+			getArgumentValues
+			getInferredType
+		]
+	}
+	;
+
+private vars
+	::= var_token
+    |	named_var
+	|	named_game_var
+    ;
+
+
+
+private l_none ::= l_kw_none
+	{
+		pin=1
+	}
+	;
+
+
+
+private l_a_d ::= l_kw_a_d space_like expects_agent space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private l_d_d_d ::= l_kw_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+private l_d_d ::= l_kw_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+
+
+private l_v ::= l_kw_v space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+
+
+private l_d ::= l_kw_d space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+c_kw_none
+	::= K_CD_ space_like (K_EJCT|incomplete)
+	|	K_CD_ space_like (K_INIT|incomplete)
+	|	K_CD_ space_like (K_SHUT|incomplete)
+	|	K_CD_ space_like (K_STOP|incomplete)
+	|	K_APPR
+	|	K_ASEA
+	|	K_BANG
+	|	K_BORN
+	|	K_BRN_COL space_like (K_DMPB|incomplete)
+	|	K_CAGE
+	|	K_CALC
+	|	K_CAMN
+	|	K_CBRG
+	|	K_DEAD
+	|	K_DBG_COL space_like (K_CPRO|incomplete)
+	|	K_DBG_COL space_like (K_FLSH|incomplete)
+	|	K_DBG_COL space_like (K_PAWS|incomplete)
+	|	K_DBG_COL space_like (K_PLAY|incomplete)
+	|	K_DBG_COL space_like (K_POLL|incomplete)
+	|	K_DBG_COL space_like (K_PROF|incomplete)
+	|	K_DBG_COL space_like (K_TOCK|incomplete)
+	|	K_DDE_COL space_like (K_DIED|incomplete)
+	|	K_DDE_COL space_like (K_GENE|incomplete)
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_BIOC
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_CNAM
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_CTIM
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_DATA
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_MONK
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_NEWV
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ORGN
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_OVVD
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RRCT
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_ROOT
+	|	K_DDE_COL space_like (K_HATC|incomplete)
+	|	K_DDE_COL space_like (K_LIVE|incomplete)
+	|	K_DDE_COL space_like (K_LOBE|incomplete)
+	|	K_DDE_COL space_like (K_NACT|incomplete)
+	|	K_DDE_COL space_like (K_NEGG|incomplete)
+	|	K_DDE_COL space_like (K_PANC|incomplete)
+	|	K_DONE
+	|	<<isVariant 'C2'>>K_DPAS
+	|	<<isVariant 'C1'>>K_DPAS
+	|	K_DROP
+	|	K_EDIT
+	|	K_FADE
+	|	K_FCUS
+	|	K_FILE space_like (K_ICLO|incomplete)
+	|	K_FILE space_like (K_OCLO|incomplete)
+	|	K_FILE space_like (K_OFLU|incomplete)
+	|	K_FRSH
+	|	K_GIDS space_like (K_ROOT|incomplete)
+	|	<<isVariant 'C2'>>K_GPAS
+	|	<<isVariant 'C1'>>K_GPAS
+	|	K_HELP
+	|	K_INST
+	|	K_ISCR
+	|	K_LOCK
+	|	K_LOOP
+	|	K_MAPK
+	|	K_MATE
+	|	K_MEMX
+	|	K_NET_COL space_like (K_HEAD|incomplete)
+	|	K_NET_COL space_like (K_WHOD|incomplete)
+	|	K_NET_COL space_like (K_WHOZ|incomplete)
+	|	K_NOHH
+	|	K_NUDE
+	|	K_OVER
+	|	K_POIN
+	|	K_PRAY space_like (K_REFR|incomplete)
+	|	K_QUIT
+	|	<<isVariant 'C2'>>K_RCLR
+	|	K_REAF
+	|	K_RGAM
+	|	RMS_NUM
+	|	K_RSCR
+	|	K_RSET
+	|	K_SAVE
+	|	K_SAYN
+	|	K_SLIM
+	|	K_SLOW
+	|	K_SNEZ
+	|	K_STOP
+	|	K_STPC
+	|	K_STPT
+	|	K_STRE
+	|	K_SYS_COL space_like (K_ABRT|incomplete)
+	|	K_SYS_COL space_like (K_CAMT|incomplete)
+	|	K_SYS_COL space_like (K_DMAP|incomplete)
+	|	K_SYS_COL space_like (K_QUIT|incomplete)
+	|	K_SYS_COL space_like (K_WTOP|incomplete)
+	|	K_TECO
+	|	K_TOUC
+	|	K_UCLN
+	|	K_UNLK
+	|	K_VOCB
+	|	K_WALK
+	|	K_WDOW
+	|	K_WIND
+	|	K_CRETN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_kw_pict
+	::= K_DDE_COL space_like (K_PICT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_kw_d
+	::= K_CD_ space_like (K_PAWS|incomplete)
+	|	K_AERO
+	|	K_AGES
+	|	K_AIM_COL
+	|	K_ASLP
+	|	K_ATTR
+	|	K_BASE
+	|	K_BBD_COL space_like (K_EDIT|incomplete)
+	|	K_BBD_COL space_like (K_EMIT|incomplete)
+	|	K_BBD_COL space_like (K_SHOW|incomplete)
+	|	<<isVariant 'C3'>>K_BHVR
+	|	<<isVariant 'DS'>>K_BHVR
+	|	<<isVariant 'CV'>>K_BHVR
+	|	K_BRN_COL space_like (K_DMPL|incomplete)
+	|	K_BRN_COL space_like (K_DMPT|incomplete)
+	|	K_BUZZ
+	|	K_CABP
+	|	K_CABV
+	|	K_CABW
+	|	K_CATO
+	|	K_CLAC
+	|	K_CMRT
+	|	K_DBG_COL space_like (K_HTML|incomplete)
+	|	K_DBG_COL space_like (K_OUTV|incomplete)
+	|	K_DBG_COL space_like (K_WTIK|incomplete)
+	|	K_DCOR
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ALLR
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_EMTR
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RCTN
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RPTY
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_FMLY
+	|	K_DDE_COL space_like (K_GETB|incomplete)
+	|	K_DDE_COL space_like (K_LNEU|incomplete)
+	|	K_DDE_COL space_like (K_WORD|incomplete)
+	|	K_DELM
+	|	K_DELR
+	|	K_DIRN
+	|	K_DMAP
+	|	K_DOCA
+	|	K_DOIN
+	|	K_DPS2
+	|	K_DREA
+	|	K_DSEE
+	|	K_ELAS
+	|	K_FACE
+	|	K_FRAT
+	|	K_FRIC
+	|	K_GAIT
+	|	K_GIDS space_like (K_FMLY|incomplete)
+	|	K_HAIR
+	|	K_IMPT
+	|	K_IMSK
+	|	K_MESG space_like (K_SHOU|incomplete)
+	|	K_MESG space_like (K_SIGN|incomplete)
+	|	K_MESG space_like (K_TACT|incomplete)
+	|	K_MIND
+	|	K_MIRA
+	|	K_MOTR
+	|	K_MOUS
+	|	K_NET_COL space_like (K_LINE|incomplete)
+	|	K_OUTV
+	|	K_PART
+	|	K_PAT_COL space_like (K_CHAR|incomplete)
+	|	K_PAT_COL space_like (K_KILL|incomplete)
+	|	K_PAUS
+	|	K_PERM
+	|	K_PLNE
+	|	K_POSE
+	|	K_PRAY space_like (K_GARB|incomplete)
+	|	K_PRNT
+	|	K_PRT_COL space_like (K_BANG|incomplete)
+	|	K_PRT_COL space_like (K_IZAP|incomplete)
+	|	K_PRT_COL space_like (K_OZAP|incomplete)
+	|	K_PURE
+	|	K_REPS
+	|	K_SAY_NUM
+	|	K_SCRL
+	|	K_SHOW
+	|	K_STEP
+	|	K_STM_NUM space_like (K_SHOU|incomplete)
+	|	K_STM_NUM space_like (K_SIGN|incomplete)
+	|	K_STM_NUM space_like (K_TACT|incomplete)
+	|	K_SYS_COL space_like (K_CMND|incomplete)
+	|	K_TICK
+	|	K_TNTW
+	|	K_UNCS
+	|	K_VRSN
+	|	K_WAIT
+	|	K_WPAU
+	|	K_ZOMB
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d
+	::= K_CD_ space_like (K_PLAY|incomplete)
+	|	K_ALPH
+	|	K_BBD_COL space_like (K_VCB1|incomplete)
+	|	K_BBTX
+	|	<<isVariant 'C2'>>K_BHVR
+	|	<<isVariant 'C1'>>K_BHVR
+	|	K_BODY
+	|	K_BRMI
+	|	K_BRN_COL space_like (K_DMPD|incomplete)
+	|	K_BRN_COL space_like (K_DMPN|incomplete)
+	|	K_CALG
+	|	K_CBRX
+	|	<<isVariant 'C2'>>K_CHEM
+	|	<<isVariant 'C1'>>K_CHEM
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_GNUS
+	|	<<isVariant 'C2'>>K_DELN
+	|	K_EXPR
+	|	K_GIDS space_like (K_GNUS|incomplete)
+	|	K_INJR
+	|	K_KNOB
+	|	K_MAPD
+	|	K_MCLR
+	|	K_MCRT
+	|	K_MIRR
+	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_CREA|incomplete)
+	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_CREA|incomplete)
+	|	K_RAIN
+	|	<<isVariant 'C3'>>K_RCLR
+	|	<<isVariant 'CV'>>K_RCLR
+	|	<<isVariant 'DS'>>K_RCLR
+	|	<<isVariant 'DS'>>K_RTYP
+	|	<<isVariant 'C3'>>K_RTYP
+	|	<<isVariant 'CV'>>K_RTYP
+	|	K_SOUL
+	|	K_SYS_COL space_like (K_CMRA|incomplete)
+	|	K_SYS_COL space_like (K_CMRP|incomplete)
+	|	K_SYS_COL space_like (K_GRND|incomplete)
+	|	K_TELE
+	|	K_TRAN
+	|	K_MVBY
+	|	K_MVTO
+	|	K_VOLM
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_l
+	::= K_ABSV
+	|	K_NAMN
+	|	K_NET_COL space_like (K_RUSO|incomplete)
+	|	K_NOTV
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_f
+	::= K_ACCG
+	|	K_ADMP
+	|	K_AVEL
+	|	K_FDMP
+	|	K_FVEL
+	|	K_RNGE
+	|	K_SDMP
+	|	K_SPIN
+	|	K_SVEL
+	|	K_VARC
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s
+	::= K_ADDB
+	|	K_BBT2
+	|	K_BMPS
+	|	K_FILE space_like (K_EXEC|incomplete)
+	|	K_FILE space_like (K_GLOB|incomplete)
+	|	K_FILE space_like (K_IOPE|incomplete)
+	|	K_FILE space_like (K_JDEL|incomplete)
+	|	K_PLMD
+	|	K_PLMU
+	|	K_STRK
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_l_s
+	::= K_ADDS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+c_kw_d_d_f_d
+	::= K_ADIN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_f
+	::= K_ALTR
+	|	K_BRN_COL space_like (K_SETL|incomplete)
+	|	K_BRN_COL space_like (K_SETT|incomplete)
+	|	K_PROP
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_bs
+	::= K_ANIM
+	|	K_PRLD
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s
+	::= K_ANMS
+	|	K_APRO
+	|	K_DBG_COL space_like (K_OUTS|incomplete)
+	|	K_DBGM
+	|	K_DDE_COL space_like (K_PUTS|incomplete)
+	|	K_DELE
+	|	K_DELG
+	|	K_DELW
+	|	K_HAND
+	|	K_HIST space_like (K_WIPE|incomplete)
+	|	K_IMGE
+	|	K_LOAD
+	|	K_MANN
+	|	K_MIDI
+	|	K_NET_COL space_like (K_HEAR|incomplete)
+	|	K_NET_COL space_like (K_WHOF|incomplete)
+	|	K_NET_COL space_like (K_WHON|incomplete)
+	|	K_ORDR space_like (K_SHOU|incomplete)
+	|	K_ORDR space_like (K_SIGN|incomplete)
+	|	K_ORDR space_like (K_TACT|incomplete)
+	|	K_OUTS
+	|	K_OUTX
+	|	K_PSWD
+	|	K_PTXT
+	|	K_SAY_DOL
+	|	K_SEZZ
+	|	<<isVariant 'CV'>>K_SNDC
+	|	<<isVariant 'C3'>>K_SNDC
+	|	<<isVariant 'DS'>>K_SNDC
+	|	<<isVariant 'CV'>>K_SNDE
+	|	<<isVariant 'C3'>>K_SNDE
+	|	<<isVariant 'DS'>>K_SNDE
+	|	<<isVariant 'CV'>>K_SNDL
+	|	<<isVariant 'C3'>>K_SNDL
+	|	<<isVariant 'DS'>>K_SNDL
+	|	K_SNDV
+	|	K_SYS_COL space_like (K_WRLD|incomplete)
+	|	K_VOIS
+	|	K_WEBB
+	|	K_WRLD
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d
+	::= K_BBD_COL space_like (K_VOCB|incomplete)
+	|	K_BOOT
+	|	K_CLIK
+	|	K_CMRA
+	|	K_CMRP
+	|	K_DDE_COL space_like (K_CELL|incomplete)
+	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_LVOB
+	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_SPCS
+	|	<<isVariant 'DS'>>K_DOOR
+	|	<<isVariant 'C3'>>K_DOOR
+	|	<<isVariant 'CV'>>K_DOOR
+	|	<<isVariant 'DS'>>K_DPAS
+	|	<<isVariant 'CV'>>K_DPAS
+	|	<<isVariant 'C3'>>K_DPAS
+	|	K_FIRE
+	|	K_GIDS space_like (K_SPCS|incomplete)
+	|	K_KMSG
+	|	K_LINK
+	|	K_LTCY
+	|	K_PAT_COL space_like (K_MOVE|incomplete)
+	|	K_PUHL
+	|	K_PUPT
+	|	K_RTAR
+	|	K_STAR
+	|	K_SWAP
+	|	K_TNTC
+	|	K_TRIG
+	|	K_TTAR
+	|	K_VOIC
+	|	K_WEAR
+	|	K_ZOOM
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_s
+	::= K_BBD_COL space_like (K_WORD|incomplete)
+	|	K_DDE_COL space_like (K_PIC2|incomplete)
+	|	K_MMSC
+	|	K_RMSC
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d
+	::= K_BBFD
+	|	K_CABN
+	|	K_CACL
+	|	K_DDE_COL space_like (K_LCUS|incomplete)
+	|	K_DDE_COL space_like (K_SCRP|incomplete)
+	|	K_DYED
+	|	<<isVariant 'DS'>>K_GPAS
+	|	<<isVariant 'CV'>>K_GPAS
+	|	<<isVariant 'C3'>>K_GPAS
+	|	K_META
+	|	K_NEW_COL space_like (K_BBTX|incomplete)
+	|	K_SCRP
+	|	K_SCRX
+	|	K_SYS_COL space_like (K_EDIT|incomplete)
+	|	K_SYS_COL space_like (K_WPOS|incomplete)
+	|	K_TNTO
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_d_d_d
+	::= K_BBLE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d
+	::= K_BKGD
+	|	K_FILE space_like (K_OOPE|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_f
+	::= K_BRN_COL space_like (K_SETD|incomplete)
+	|	K_BRN_COL space_like (K_SETN|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_v_v
+	::= K_CALL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_l_d_d
+	::= (!<<isVariant 'CV'>>) K_CHAR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_f
+	::= <<isVariant 'DS'>>K_CHEM
+	|	<<isVariant 'CV'>>K_CHEM
+	|	<<isVariant 'C3'>>K_CHEM
+	|	K_DRIV
+	|	K_EMIT
+	|	K_GRPV
+	|	K_SCLE
+	|	<<isVariant 'CV'>>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant 'C3'>>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant 'DS'>>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant 'CV'>>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant 'C3'>>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant 'DS'>>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant 'CV'>>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant 'C3'>>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant 'DS'>>K_STIM space_like (K_TACT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_f_f_f_f
+	::= K_CORE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_cond
+	::= K_DBG_COL space_like (K_ASRT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a
+	::= K_DBG_COL space_like (K_TACK|incomplete)
+	|	K_ECON
+	|	K_EVNT
+	|	K_FORF
+	|	K_FREL
+	|	K_KILL
+	|	K_LIKE
+	|	K_NORN
+	|	K_RMEV
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_targ
+	::= c_kw_targ space_like expects_agent
+	{
+		pin = 1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTargAssignmentStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getRVar
+			getArguments
+			getArgumentValues
+		]
+	}
+
+c_kw_targ
+	::= K_TARG
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_v
+	::= K_DBGV
+	|	K_DBUG
+	|	K_DDE_COL space_like (K_PUTV|incomplete)
+	|	<<isVariant 'C3'>>K_DELN
+	|	<<isVariant 'DS'>>K_DELN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_t
+	::= K_DDE_COL space_like (K_PUTB|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_f_f
+	::= K_FLTO
+	|	K_MVFT
+	|	K_MVSF
+	|	K_ROTN
+	|	K_VELO
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_d_d_d
+	::= K_FRMT
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_d
+	::= K_GALL
+	|	K_JECT
+	|	<<isVariant 'CV'>>K_SNDQ
+	|	<<isVariant 'C3'>>K_SNDQ
+	|	<<isVariant 'DS'>>K_SNDQ
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_a_d
+	::= K_GENE space_like (K_CLON|incomplete)
+	|	K_GENE space_like (K_MOVE|incomplete)
+	|	K_PRT_COL space_like (K_JOIN|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_a_d_a_d_d_d_d_d
+	::= K_GENE space_like (K_CROS|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d
+	::= K_GENE space_like (K_KILL|incomplete)
+	|	K_MESG space_like (K_WRIT|incomplete)
+	|	K_SCAM
+	|	K_STM_NUM space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_s
+	::= K_GENE space_like (K_LOAD|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_gsub
+	::= K_GSUB
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t
+	::= K_GOTO
+	|	K_PLDS
+	|	<<isVariant 'C1'>>K_SNDC
+	|	<<isVariant 'C2'>>K_SNDC
+	|	<<isVariant 'C1'>>K_SNDE
+	|	<<isVariant 'C2'>>K_SNDE
+	|	K_SNDF
+	|	<<isVariant 'C1'>>K_SNDL
+	|	<<isVariant 'C2'>>K_SNDL
+	|	K_SUBR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_f_f
+	::= K_GRPL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_d_s_s
+	::= K_HIST space_like (K_EVNT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_d_s
+	::= K_HIST space_like (K_FOTO|incomplete)
+	|	K_HIST space_like (K_UTXT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_s
+	::= K_HIST space_like (K_NAME|incomplete)
+	|	K_NET_COL space_like (K_PASS|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_d_d_d_d_d
+	::= K_LINE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_f
+	::= K_LOCI
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_v_v_d
+	::= K_MESG space_like (K_WRT_PLUS|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_l_l_l_l
+	::= K_NET_COL space_like (K_STAT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_l
+	::= K_NET_COL space_like (K_UNIK|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_s_d_v_v
+	::= K_NET_COL space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_d_d_d_d_d_d_d
+	::= K_NEW_COL space_like (K_BKBD|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_d_d_d
+	::= K_NEW_COL space_like (K_CBTN|incomplete)
+	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_COMP|incomplete)
+	|	K_NEW_COL space_like (K_SCEN|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_d_d_v
+	::= K_NEW_COL space_like (K_CBUB|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_s_d_d_d
+	::= <<isVariant 'DS'>>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant 'CV'>>K_NEW_COL space_like (K_COMP|incomplete)
+	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant 'CV'>>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant 'DS'>>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant 'DS'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	<<isVariant 'CV'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_a_d_d_d_s_d_d_d
+	::= K_NEW_COL space_like (K_CRAG|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_a_d_d_d
+	::= <<isVariant 'CV'>>K_NEW_COL space_like (K_CREA|incomplete)
+	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_CREA|incomplete)
+	|	<<isVariant 'DS'>>K_NEW_COL space_like (K_CREA|incomplete)
+	|	K_NEWC
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_l
+	::= K_NEW_COL space_like (K_GENE|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_d_d
+	::= K_NEW_COL space_like (K_LIFT|incomplete)
+	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_d
+	::= K_NEW_COL space_like (K_PART|incomplete)
+	|	K_SPOT
+	|	K_TINO
+	|	K_TINT
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_d_d_d_d
+	::= K_NEW_COL space_like (K_RAIN|incomplete)
+	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_SIMP|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_s
+	::= K_ORDR space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d_d_d_d_d_bs_d_d
+	::= K_PAT_COL space_like (K_BUTT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d_d_d_d_d_d_d_d
+	::= K_PAT_COL space_like (K_CMRA|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d_d_d_d
+	::= K_PAT_COL space_like (K_DULL|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d_d_d_d_s
+	::= K_PAT_COL space_like (K_FIXD|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d_d_d_d_d
+	::= K_PAT_COL space_like (K_GRPH|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_d_d_d_d_d_s
+	::= K_PAT_COL space_like (K_TEXT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_s_d_d_d
+	::= K_PRT_COL space_like (K_INEW|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_d
+	::= K_PRT_COL space_like (K_KRAK|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_s_s_d_d
+	::= K_PRT_COL space_like (K_ONEW|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_v
+	::= K_PRT_COL space_like (K_SEND|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_f_f_f
+	::= K_RATE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
+	::= <<isVariant 'C2'>>K_ROOM
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_d_d
+	::= <<isVariant 'C1'>>K_ROOM
+	|	K_WTNT
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_a
+	::= K_RPAS
+	|	K_SPAS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_d_d_d_d_d
+	::= K_SNAP
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_d
+	::= <<isVariant 'C1'>>K_SNDQ
+	|	<<isVariant 'C2'>>K_SNDQ
+	|	K_SYS_COL space_like (K_CONV|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_d_f
+	::= K_SPNL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_d_d_d_d_d_d_d_d_d_d_d
+	::= <<isVariant 'C2'>>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant 'C1'>>K_STIM space_like (K_SHOU|incomplete)
+	|	<<isVariant 'C2'>>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant 'C1'>>K_STIM space_like (K_SIGN|incomplete)
+	|	<<isVariant 'C2'>>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant 'C1'>>K_STIM space_like (K_TACT|incomplete)
+	|	<<isVariant 'C1'>>K_STIM space_like (K_FROM|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_f
+	::= <<isVariant 'CV'>>K_STIM space_like (K_WRIT|incomplete)
+	|	<<isVariant 'C3'>>K_STIM space_like (K_WRIT|incomplete)
+	|	<<isVariant 'DS'>>K_STIM space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
+	::= <<isVariant 'C2'>>K_STIM space_like (K_WRIT|incomplete)
+	|	<<isVariant 'C1'>>K_STIM space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_d_f_d_f_d_f_d_f
+	::= K_SWAY space_like (K_SHOU|incomplete)
+	|	K_SWAY space_like (K_SIGN|incomplete)
+	|	K_SWAY space_like (K_TACT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_f_d_f_d_f_d_f
+	::= K_SWAY space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_s_s_s_d
+	::= K_TOOL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_d_d_d
+	::= K_TRCK
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_f_d_f
+	::= K_URGE space_like (K_SHOU|incomplete)
+	|	K_URGE space_like (K_SIGN|incomplete)
+	|	K_URGE space_like (K_TACT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_a_d_f_d_f
+	::= K_URGE space_like (K_WRIT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_none
+	::= K_CD_ space_like (K_FRQH|incomplete)
+	|	K_CD_ space_like (K_FRQL|incomplete)
+	|	K_CD_ space_like (K_FRQM|incomplete)
+	|	K_CLAS
+	|	K_IT_
+	|	K_P1_
+	|	K_P2_
+	|	K_UP_
+	|	K_ABBA
+	|	K_ACCG
+	|	K_ACTV
+	|	K_ADMP
+	|	K_AERO
+	|	K_ASLP
+	|	K_ATTN
+	|	K_ATTR
+	|	K_AVEL
+	|	K_BABY
+	|	K_BASE
+	|	<<isVariant 'C3'>>K_BHVR
+	|	<<isVariant 'DS'>>K_BHVR
+	|	<<isVariant 'CV'>>K_BHVR
+	|	K_BUMP
+	|	K_BUZZ
+	|	K_BVAR
+	|	K_BYIT
+	|	K_CABB
+	|	K_CABL
+	|	K_CABP
+	|	K_CABR
+	|	K_CABT
+	|	K_CABV
+	|	K_CAGE
+	|	K_CARR
+	|	K_CATA
+	|	K_CLAC
+	|	K_CMRX
+	|	K_CMRY
+	|	K_CODE
+	|	K_CODF
+	|	K_CODG
+	|	K_CODP
+	|	K_CODS
+	|	K_DATE
+	|	K_DAYT
+	|	K_DEAD
+	|	K_DECN
+	|	K_DFTX
+	|	K_DFTY
+	|	K_DIRN
+	|	K_DOWN
+	|	K_DREA
+	|	K_DRV_EXC
+	|	K_EDIT
+	|	K_EGGL
+	|	K_ELAS
+	|	K_EMID
+	|	K_ETIK
+	|	K_EXEC
+	|	K_EXPR
+	|	K_FACE
+	|	K_FALL
+	|	K_FDMP
+	|	K_FLOR
+	|	K_FLTX
+	|	K_FLTY
+	|	K_FMLY
+	|	K_FRIC
+	|	K_FROM
+	|	K_FRZN
+	|	K_FVEL
+	|	K_GALL
+	|	K_GNAM
+	|	K_GND_NUM
+	|	K_GNDW
+	|	K_GNUS
+	|	K_GRAV
+	|	K_HAND
+	|	K_HATL
+	|	K_HELD
+	|	K_HGHT
+	|	K_HHLD
+	|	K_HOTP
+	|	K_HOTS
+	|	K_HOUR
+	|	K_HSRC
+	|	K_IITT
+	|	K_IMSK
+	|	K_INNF
+	|	K_INNI
+	|	K_INNL
+	|	K_INOK
+	|	K_INS_NUM
+	|	K_INTR
+	|	K_LACB
+	|	K_LANG
+	|	K_LNG_PLUS
+	|	K_LEFT
+	|	<<isVariant 'C2'>>K_LIMB
+	|	<<isVariant 'C1'>>K_LIMB
+	|	K_LIML
+	|	K_LIMR
+	|	K_LIMT
+	|	K_LITE
+	|	K_LSRC
+	|	K_MAPH
+	|	K_MAPW
+	|	K_META
+	|	K_MIND
+	|	K_MINS
+	|	K_MIRA
+	|	K_MODU
+	|	K_MONK
+	|	K_MONT
+	|	K_MOPX
+	|	K_MOPY
+	|	K_MOTR
+	|	K_MOVS
+	|	K_MOVX
+	|	K_MOVY
+	|	K_MOWS
+	|	K_MSEC
+	|	K_MTHX
+	|	K_MTHY
+	|	K_NEID
+	|	K_NET_COL space_like (K_ERRA|incomplete)
+	|	K_NET_COL space_like (K_HOST|incomplete)
+	|	K_NET_COL space_like (K_LINE|incomplete)
+	|	K_NET_COL space_like (K_PASS|incomplete)
+	|	K_NET_COL space_like (K_RAWE|incomplete)
+	|	K_NET_COL space_like (K_USER|incomplete)
+	|	K_NET_COL space_like (K_WHAT|incomplete)
+	|	K_NORN
+	|	K_NPGS
+	|	K_NULL
+	|	K_NWLD
+	|	K_OBJP
+	|	K_ONTR
+	|	K_ORGN
+	|	K_OWNR
+	|	K_PACE
+	|	K_PAGE
+	|	K_PAUS
+	|	K_PAWS
+	|	K_PERM
+	|	K_PLNE
+	|	K_PNTR
+	|	K_POSB
+	|	K_POSE
+	|	K_POSL
+	|	K_POSR
+	|	K_POST
+	|	K_POSX
+	|	K_POSY
+	|	K_PRES
+	|	K_PRT_COL space_like (K_ITOT|incomplete)
+	|	K_PRT_COL space_like (K_OTOT|incomplete)
+	|	K_PSRC
+	|	K_PTXT
+	|	K_PURE
+	|	K_RACE
+	|	K_RADN
+	|	<<isVariant 'C2'>>K_RELX
+	|	<<isVariant 'C2'>>K_RELY
+	|	K_REST
+	|	K_RGHT
+	|	K_RMNO
+	|	K_RMS_NUM
+	|	K_RNDR
+	|	K_RNGE
+	|	K_RSRC
+	|	K_RTIM
+	|	<<isVariant 'C2'>>K_RTYP
+	|	<<isVariant 'C1'>>K_SCOR
+	|	K_SDMP
+	|	K_SEAN
+	|	K_SEAV
+	|	K_SHOW
+	|	K_SIZE
+	|	K_SNDS
+	|	K_SPCS
+	|	K_SPIN
+	|	K_SVEL
+	|	K_TACK
+	|	K_TAGE
+	|	K_TARG
+	|	K_TCAR
+	|	K_TEMP
+	|	K_THRT
+	|	K_TICK
+	|	K_TIME
+	|	K_TMOD
+	|	K_TRCK
+	|	K_UFOS
+	|	K_UFTX
+	|	K_UFTY
+	|	K_UNCS
+	|	K_UNID
+	|	K_VARC
+	|	K_VELX
+	|	K_VELY
+	|	K_VMJR
+	|	K_VMNR
+	|	K_VOIS
+	|	K_VRSN
+	|	K_WALL
+	|	K_WDOW
+	|	K_WDTH
+	|	K_WIND
+	|	K_WINH
+	|	K_WINW
+	|	K_WLDH
+	|	K_WLDW
+	|	K_WNAM
+	|	K_WNDB
+	|	K_WNDH
+	|	K_WNDL
+	|	K_WNDR
+	|	K_WNDT
+	|	K_WNDW
+	|	K_WNDX
+	|	K_WNDY
+	|	K_WPAU
+	|	K_WTIK
+	|	K_WUID
+	|	K_XVEC
+	|	K_YEAR
+	|	K_YVEC
+	|	K_ZOMB
+	|	K_CAMN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_f
+	::= K_ACOS
+	|	K_ASIN
+	|	K_ATAN
+	|	K_COS_
+	|	K_FTOI
+	|	K_SIN_
+	|	K_SQRT
+	|	K_TAN_
+	|	K_VECX
+	|	K_VECY
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_d_d_s
+	::= K_ADDM
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_d_d_d_d_d
+	::= K_ADDR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d
+	::= K_AGNT
+	|	K_BKDS
+	|	K_BKGD
+	|	K_BODY
+	|	K_BRED
+	|	K_CALG
+	|	K_CATX
+	|	<<isVariant 'DS'>>K_CHEM
+	|	<<isVariant 'CV'>>K_CHEM
+	|	<<isVariant 'C1'>>K_CHEM
+	|	<<isVariant 'C3'>>K_CHEM
+	|	<<isVariant 'C2'>>K_CHEM
+	|	K_CLIK
+	|	K_DBG_NUM
+	|	K_DBGA
+	|	K_DRIV
+	|	K_ERID
+	|	K_GTOS
+	|	K_HEAP
+	|	K_HEDX
+	|	K_HEDY
+	|	K_HIST space_like (K_DATE|incomplete)
+	|	K_HIST space_like (K_SEAN|incomplete)
+	|	K_HIST space_like (K_TIME|incomplete)
+	|	K_HIST space_like (K_YEAR|incomplete)
+	|	K_ISAR
+	|	K_ITOF
+	|	K_KEYD
+	|	K_MLOC
+	|	K_MUSC
+	|	K_OBDT
+	|	K_OBST
+	|	K_OBSV
+	|	K_PART
+	|	K_PNXT
+	|	K_PRT_COL space_like (K_FRMA|incomplete)
+	|	K_PRT_COL space_like (K_FROM|incomplete)
+	|	K_PSWD
+	|	K_RAIN
+	|	K_RLOC
+	|	<<isVariant 'DS'>>K_RTYP
+	|	<<isVariant 'C3'>>K_RTYP
+	|	<<isVariant 'CV'>>K_RTYP
+	|	<<isVariant 'C2'>>K_SCOR
+	|	K_SEEN
+	|	K_SOUL
+	|	K_TINT
+	|	K_TORX
+	|	K_TORY
+	|	K_VISI
+	|	K_VOLM
+	|	K_VTOS
+	|	K_WRLD
+	|	K_GRND
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_f_f
+	::= K_ANGL
+	|	K_GMAP
+	|	K_GRAP
+	|	K_TMVB
+	|	K_TMVF
+	|	K_TMVT
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_a_d
+	::= K_AVAR
+	|	K_GRID
+	|	K_ONTV
+	|	K_TWIN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_v_v_s_d_d_l
+	::= K_CAOS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_d
+	::= K_CATI
+	|	<<isVariant 'C2'>>K_DOOR
+	|	K_HIRP
+	|	K_LORP
+	|	K_RMND
+	|	K_RMNR
+	|	K_TOTL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_d
+	::= !(<<isVariant 'CV'>>) K_CHAR
+	|	K_HIST space_like (K_CAGE|incomplete)
+	|	K_HIST space_like (K_FOTO|incomplete)
+	|	K_HIST space_like (K_MON1|incomplete)
+	|	K_HIST space_like (K_MON2|incomplete)
+	|	K_HIST space_like (K_NETU|incomplete)
+	|	K_HIST space_like (K_RTIM|incomplete)
+	|	K_HIST space_like (K_TAGE|incomplete)
+	|	K_HIST space_like (K_TYPE|incomplete)
+	|	K_HIST space_like (K_UTXT|incomplete)
+	|	K_HIST space_like (K_WNAM|incomplete)
+	|	K_HIST space_like (K_WTIK|incomplete)
+	|	K_HIST space_like (K_WUID|incomplete)
+	|	K_PRAY space_like (K_DEPS|incomplete)
+	|	K_READ
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_a
+	::= <<isVariant 'DS'>>K_CREA
+	|	<<isVariant 'CV'>>K_CREA
+	|	<<isVariant 'C3'>>K_CREA
+	|	K_DISQ
+	|	<<isVariant 'DS'>>K_ROOM
+	|	<<isVariant 'C3'>>K_ROOM
+	|	<<isVariant 'CV'>>K_ROOM
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+
+caos_named_var_kw
+	::= K_MAME
+	|	K_NAME
+	|	<<isVariant 'CV'>>K_GAME
+	|	<<isVariant 'C3'>>K_GAME
+	|	<<isVariant 'DS'>>K_GAME
+	|	K_EAME
+	{
+		pin = 1
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+kw_cv_char
+	::= <<isVariant 'CV'>> K_CHAR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+r_kw_cv_tran
+    	::= <<isVariant 'CV'>> K_TRAN
+    	{
+    		implements = [
+    			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+    			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+    			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+    		]
+    		methods = [
+    			getReference
+    			getCommandString
+    			getCommandStringUpper
+    			getPresentation
+    			isVariant
+    			getName
+    			setName
+    		]
+    	}
+    	;
+
+r_kw_v
+	::= <<isVariant 'C2'>>K_CREA
+	|	K_TYPE
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d
+	::= <<isVariant 'DS'>>K_DOOR
+	|	<<isVariant 'C3'>>K_DOOR
+	|	<<isVariant 'CV'>>K_DOOR
+	|	<<isVariant 'C2'>>K_GAME
+	|	K_LINK
+	|	K_MMSC
+	|	K_MUTE
+	|	K_ORGF
+	|	K_ORGI
+	|	K_PROP
+	|	K_PUHL
+	|	K_PUPT
+	|	K_RAND
+	|	K_RATE
+	|	K_RMN_NUM
+	|	K_RMSC
+	|	<<isVariant 'C1'>>K_ROOM
+	|	<<isVariant 'C2'>>K_ROOM
+	|	K_WEAR
+	|	K_WOLF
+	| 	(!<<isVariant 'CV'>>)K_TRAN
+	| 	(!<<isVariant 'CV'>>)K_CHAR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s
+	::= K_FVWM
+	|	K_GAMN
+	|	K_EAMN
+	|	K_HIST space_like (K_COUN|incomplete)
+	|	K_HIST space_like (K_CROS|incomplete)
+	|	K_HIST space_like (K_GEND|incomplete)
+	|	K_HIST space_like (K_GNUS|incomplete)
+	|	K_HIST space_like (K_MUTE|incomplete)
+	|	K_HIST space_like (K_NAME|incomplete)
+	|	K_HIST space_like (K_NEXT|incomplete)
+	|	K_HIST space_like (K_PREV|incomplete)
+	|	K_HIST space_like (K_VARI|incomplete)
+	|	K_HIST space_like (K_WVET|incomplete)
+	|	K_LOFT
+	|	K_LOWA
+	|	K_MTOA
+	|	K_MTOC
+	|	K_NET_COL space_like (K_FROM|incomplete)
+	|	K_NET_COL space_like (K_ULIN|incomplete)
+	|	K_OOWW
+	|	K_PRAY space_like (K_COUN|incomplete)
+	|	K_PRAY space_like (K_EXPO|incomplete)
+	|	K_PRAY space_like (K_KILL|incomplete)
+	|	K_PRAY space_like (K_SIZE|incomplete)
+	|	K_PRAY space_like (K_TEST|incomplete)
+	|	K_REAN
+	|	K_REAQ
+	|	K_SNAX
+	|	K_STOF
+	|	K_STOI
+	|	K_STRL
+	|	K_UPPA
+	|	K_WNTI
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_d_d
+	::= K_HIST space_like (K_FIND|incomplete)
+	|	K_HIST space_like (K_FINR|incomplete)
+	|	K_PRAY space_like (K_FILE|incomplete)
+	|	K_PRAY space_like (K_IMPO|incomplete)
+	|	K_SUBS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_d_d_d
+	::= <<isVariant 'C3'>>K_LIMB
+	|	<<isVariant 'DS'>>K_LIMB
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_d_d
+	::= K_LOCI
+	|	K_SORC
+	|	K_SORQ
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_a_d_d_d
+	::= K_NCLS
+	|	K_PCLS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_s
+	::= K_NET_COL space_like (K_EXPO|incomplete)
+	|	K_PRAY space_like (K_BACK|incomplete)
+	|	K_PRAY space_like (K_FORE|incomplete)
+	|	K_PRAY space_like (K_NEXT|incomplete)
+	|	K_PRAY space_like (K_PREV|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_s_s_l
+	::= K_NET_COL space_like (K_MAKE|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_s_d
+	::= K_PRAY space_like (K_AGTI|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_s_s
+	::= K_PRAY space_like (K_AGTS|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_d_l
+	::= K_PRAY space_like (K_INJT|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_s_d_s_l
+	::= K_PRAY space_like (K_MAKE|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_a_d_d
+	::= K_PRT_COL space_like (K_NAME|incomplete)
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_a_a
+	::= <<isVariant 'CV'>>K_RELX
+	|	<<isVariant 'DS'>>K_RELX
+	|	<<isVariant 'C3'>>K_RELX
+	|	<<isVariant 'CV'>>K_RELY
+	|	<<isVariant 'DS'>>K_RELY
+	|	<<isVariant 'C3'>>K_RELY
+	|	K_SEEE
+	|	K_TOUC
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_s
+	::= K_RTIF
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_bs_bs
+	::= K_SCOL
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_s_d_s
+	::= K_SINS
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_f_f_f_f
+	::= K_TCOR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_t
+	::= K_TOKN
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_d_d_d_s_d
+	::= K_WILD
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_none
+	::= K_ACCG
+	|	K_ACTV
+	|	K_AERO
+	|	K_ATTR
+	|	K_BABY
+	|	K_CLAS
+	|	K_FROM
+	|	K_FRZN
+	|	K_GRAV
+	|	K_HSRC
+	|	K_INTR
+	|	K_LACB
+	|	K_LITE
+	|	K_LSRC
+	|	K_MOVS
+	|	K_NORN
+	|	K_OBJP
+	|	K_ONTR
+	|	K_PAUS
+	|	K_PRES
+	|	K_PSRC
+	|	K_RADN
+	|	K_REST
+	|	K_RNGE
+	|	K_RSRC
+	|	<<isVariant 'C2'>>K_RTYP
+	|	K_SIZE
+	|	K_TEMP
+	|	K_THRT
+	|	K_VELX
+	|	K_VELY
+	|	K_WINH
+	|	K_WINW
+	|	K_XVEC
+	|	K_YVEC
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_a_d
+	::= K_AVAR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_d_d_d
+	::= <<isVariant 'C2'>>K_DOOR
+	|	K_PUHL
+	|	K_PUPT
+	|	K_RMND
+	|	K_RMNR
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_d_d
+	::= <<isVariant 'C2'>>K_GAME
+	|	K_CLS2
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_v
+	::= K_MAME
+	|	K_NAME
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_d
+	::= K_MUSC
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+all_tokens
+	::= K_CD_
+	|	VA_XX
+	|	VAR_X
+	|	OV_XX
+	|	OBV_X
+	|	MV_XX
+	|	K_EJCT
+	|	K_INIT
+	|	K_SHUT
+	|	K_STOP
+	|	K_APPR
+	|	K_ASEA
+	|	K_BANG
+	|	K_BBD_COL
+	|	K_EMIT
+	|	K_BORN
+	|	K_BRN_COL
+	|	K_DMPB
+	|	K_BUMP
+	|	K_CAGE
+	|	K_CALC
+	|	K_CAMN
+	|	K_CBRG
+	|	K_CLAS
+	|	K_DBG_COL
+	|	K_CPRO
+	|	K_FLSH
+	|	K_PAWS
+	|	K_PLAY
+	|	K_POLL
+	|	K_PROF
+	|	K_TOCK
+	|	K_DDE_COL
+	|	K_DIED
+	|	K_GENE
+	|	K_GETB
+	|	K_BIOC
+	|	K_CNAM
+	|	K_CTIM
+	|	K_DATA
+	|	K_MONK
+	|	K_NEWV
+	|	K_ORGN
+	|	K_OVVD
+	|	K_RRCT
+	|	K_GIDS
+	|	K_ROOT
+	|	K_HATC
+	|	K_LIVE
+	|	K_LOBE
+	|	K_NACT
+	|	K_NEGG
+	|	K_PANC
+	|	K_PICT
+	|	K_DEAD
+	|	K_DONE
+	|	K_DPAS
+	|	K_DROP
+	|	K_EDIT
+	|	K_ELSE
+	|	K_ENDI
+	|	K_ENDM
+	|	K_EVER
+	|	K_FADE
+	|	K_FCUS
+	|	K_FILE
+	|	K_ICLO
+	|	K_OCLO
+	|	K_OFLU
+	|	K_FRSH
+	|	K_GND_NUM
+	|	K_GNDW
+	|	K_GPAS
+	|	K_HELP
+	|	K_INST
+	|	K_ISCR
+	|	K_LNG_PLUS
+	|	K_LOCK
+	|	K_LOOP
+	|	K_MAPK
+	|	K_MATE
+	|	K_MEMX
+	|	K_NET_COL
+	|	K_HEAD
+	|	K_WHOD
+	|	K_WHOZ
+	|	K_NEXT
+	|	K_NOHH
+	|	K_NSCN
+	|	K_NUDE
+	|	K_OVER
+	|	K_POIN
+	|	K_PRAY
+	|	K_REFR
+	|	K_QUIT
+	|	K_RCLR
+	|	K_REAF
+	|	K_REPE
+	| 	K_CRETN
+	|	K_RETN
+	|	K_RGAM
+	|	K_RMS_NUM
+	|	K_RSCR
+	|	K_RSET
+	|	K_SAVE
+	|	K_SAYN
+	|	K_SLIM
+	|	K_SLOW
+	|	K_SNEZ
+	|	K_STPC
+	|	K_STPT
+	|	K_STRE
+	|	K_SUBR
+	|	K_SYS_COL
+	|	K_ABRT
+	|	K_CAMT
+	|	K_DMAP
+	|	K_WTOP
+	|	K_TECO
+	|	K_TEMP
+	|	K_TOUC
+	|	K_UCLN
+	|	K_UNLK
+	|	K_VOCB
+	|	K_WALK
+	|	K_WDOW
+	|	K_WIND
+	|	K_AERO
+	|	K_AGES
+	|	K_AIM_COL
+	|	K_ASLP
+	|	K_ATTR
+	|	K_BASE
+	|	K_SHOW
+	|	K_BHVR
+	|	K_DMPL
+	|	K_DMPT
+	|	K_BUZZ
+	|	K_CABP
+	|	K_CABV
+	|	K_CABW
+	|	K_CATO
+	|	K_CLAC
+	|	K_CMRT
+	|	K_HTML
+	|	K_OUTV
+	|	K_WTIK
+	|	K_DCOR
+	|	K_ALLR
+	|	K_EMTR
+	|	K_RCTN
+	|	K_RPTY
+	|	K_FMLY
+	|	K_LNEU
+	|	K_WORD
+	|	K_DELM
+	|	K_DELR
+	|	K_DIRN
+	|	K_DOCA
+	|	K_DOIF
+	|	K_DOIN
+	|	K_DPS2
+	|	K_DREA
+	|	K_DSEE
+	|	K_ELAS
+	|	K_FACE
+	|	K_FRAT
+	|	K_FRIC
+	|	K_GAIT
+	|	K_GRND
+	|	K_HAIR
+	|	K_IMPT
+	|	K_IMSK
+	|	K_MESG
+	|	K_SHOU
+	|	K_SIGN
+	|	K_TACT
+	|	K_MIND
+	|	K_MIRA
+	|	K_MOTR
+	|	K_MOUS
+	|	K_LINE
+	|	K_PART
+	|	K_PAT_COL
+	|	K_CHAR
+	|	K_KILL
+	|	K_PAUS
+	|	K_PERM
+	|	K_PLNE
+	|	K_POSE
+	|	K_GARB
+	|	K_PRNT
+	|	K_PRT_COL
+	|	K_IZAP
+	|	K_OZAP
+	|	K_PURE
+	|	K_REPS
+	|	K_SAY_NUM
+	|	K_SCRL
+	|	K_STEP
+	|	K_STM_NUM
+	|	K_CMND
+	|	K_TICK
+	|	K_TNTW
+	|	K_UNCS
+	|	K_VRSN
+	|	K_WAIT
+	|	K_WPAU
+	|	K_ZOMB
+	|	K_ALPH
+	|	K_VCB1
+	|	K_BBTX
+	|	K_BODY
+	|	K_BRMI
+	|	K_DMPD
+	|	K_DMPN
+	|	K_CALG
+	|	K_CBRX
+	|	K_CHEM
+	|	K_GNUS
+	|	K_DELN
+	|	K_EXPR
+	|	K_INJR
+	|	K_KNOB
+	|	K_MAPD
+	|	K_MCLR
+	|	K_MCRT
+	|	K_MIRR
+	|	K_NEW_COL
+	|	K_CREA
+	|	K_RAIN
+	|	K_RTYP
+	|	K_SOUL
+	|	K_CMRA
+	|	K_CMRP
+	|	K_TELE
+	|	K_TRAN
+	|	K_VOLM
+	|	K_ABSV
+	|	K_NAMN
+	|	K_RUSO
+	|	K_NOTV
+	|	K_ACCG
+	|	K_ADMP
+	|	K_AVEL
+	|	K_FDMP
+	|	K_FVEL
+	|	K_RNGE
+	|	K_SDMP
+	|	K_SPIN
+	|	K_SVEL
+	|	K_VARC
+	|	K_ADDB
+	|	K_BBT2
+	|	K_BMPS
+	|	K_EXEC
+	|	K_GLOB
+	|	K_IOPE
+	|	K_JDEL
+	|	K_PLMD
+	|	K_PLMU
+	|	K_STRK
+	|	K_ADDS
+	|	K_SETV
+	|	K_ADIN
+	|	K_ALTR
+	|	K_SETL
+	|	K_SETT
+	|	K_PROP
+	|	K_ANIM
+	|	K_PRLD
+	|	K_ANMS
+	|	K_APRO
+	|	K_OUTS
+	|	K_DBGM
+	|	K_PUTS
+	|	K_DELE
+	|	K_DELG
+	|	K_DELW
+	|	K_HAND
+	|	K_HIST
+	|	K_WIPE
+	|	K_IMGE
+	|	K_LOAD
+	|	K_MANN
+	|	K_MIDI
+	|	K_HEAR
+	|	K_WHOF
+	|	K_WHON
+	|	K_ORDR
+	|	K_OUTX
+	|	K_PSWD
+	|	K_PTXT
+	|	K_SAY_DOL
+	|	K_SEZZ
+	|	K_SNDC
+	|	K_SNDE
+	|	K_SNDL
+	|	K_SNDV
+	|	K_WRLD
+	|	K_VOIS
+	|	K_WEBB
+	|	K_BOOT
+	|	K_CLIK
+	|	K_CELL
+	|	K_LVOB
+	|	K_SPCS
+	|	K_DOOR
+	|	K_ENUM
+	|	K_EPAS
+	|	K_ESCN
+	|	K_ESEE
+	|	K_ETCH
+	|	K_FIRE
+	|	K_KMSG
+	|	K_LINK
+	|	K_LTCY
+	|	K_MOVE
+	|	K_PUHL
+	|	K_PUPT
+	|	K_RTAR
+	|	K_STAR
+	|	K_SWAP
+	|	K_TNTC
+	|	K_TOTL
+	|	K_TRIG
+	|	K_TTAR
+	|	K_VOIC
+	|	K_WEAR
+	|	K_ZOOM
+	|	K_PIC2
+	|	K_MMSC
+	|	K_RMSC
+	|	K_BBFD
+	|	K_CABN
+	|	K_CACL
+	|	K_LCUS
+	|	K_SCRP
+	|	K_DYED
+	|	K_META
+	|	K_SCRX
+	|	K_WPOS
+	|	K_TNTO
+	|	K_BBLE
+	|	K_BKGD
+	|	K_OOPE
+	|	K_SETD
+	|	K_SETN
+	|	K_CALL
+	|	K_RNDV
+	|	K_DRIV
+	|	K_GRPV
+	|	K_SCLE
+	|	K_STIM
+	|	K_CORE
+	|	K_ASRT
+	|	K_ELIF
+	|	K_UNTL
+	|	K_TACK
+	|	K_ECON
+	|	K_EVNT
+	|	K_FORF
+	|	K_FREL
+	|	K_LIKE
+	|	K_NORN
+	|	K_RMEV
+	|	K_TARG
+	|	K_DBGV
+	|	K_DBUG
+	|	K_PUTV
+	|	K_PUTB
+	|	K_FLTO
+	|	K_MVBY
+	|	K_MVFT
+	|	K_MVSF
+	|	K_MVTO
+	|	K_ROTN
+	|	K_VELO
+	|	K_FRMT
+	|	K_GALL
+	|	K_JECT
+	|	K_SNDQ
+	|	K_CLON
+	|	K_JOIN
+	|	K_CROS
+	|	K_WRIT
+	|	K_SCAM
+	|	K_GOTO
+	|	K_GSUB
+	|	K_PLDS
+	|	K_SNDF
+	|	K_GRPL
+	|	K_FOTO
+	|	K_UTXT
+	|	K_NAME
+	|	K_PASS
+	|	K_LOCI
+	|	K_WRT_PLUS
+	|	K_STAT
+	|	K_UNIK
+	|	K_BKBD
+	|	K_CBTN
+	|	K_COMP
+	|	K_SCEN
+	|	K_CBUB
+	|	K_SIMP
+	|	K_VHCL
+	|	K_CRAG
+	|	K_NEWC
+	|	K_LIFT
+	|	K_SPOT
+	|	K_TINO
+	|	K_TINT
+	|	K_BUTT
+	|	K_DULL
+	|	K_FIXD
+	|	K_GRPH
+	|	K_TEXT
+	|	K_INEW
+	|	K_KRAK
+	|	K_ONEW
+	|	K_SEND
+	|	K_RATE
+	|	K_ROOM
+	|	K_WTNT
+	|	K_RPAS
+	|	K_SPAS
+	|	K_SNAP
+	|	K_CONV
+	|	K_SPNL
+	|	K_SWAY
+	|	K_TOOL
+	|	K_TRCK
+	|	K_URGE
+	|	K_FRQH
+	|	K_FRQL
+	|	K_FRQM
+	|	K_IT_
+	|	K_P1_
+	|	K_P2_
+	|	K_UP_
+	|	K_ABBA
+	|	K_ACTV
+	|	K_ATTN
+	|	K_BABY
+	|	K_BVAR
+	|	K_BYIT
+	|	K_CABB
+	|	K_CABL
+	|	K_CABR
+	|	K_CABT
+	|	K_CARR
+	|	K_CATA
+	|	K_CMRX
+	|	K_CMRY
+	|	K_CODE
+	|	K_CODF
+	|	K_CODG
+	|	K_CODP
+	|	K_CODS
+	|	K_DATE
+	|	K_DAYT
+	|	K_DECN
+	|	K_DFTX
+	|	K_DFTY
+	|	K_DOWN
+	|	K_DRV_EXC
+	|	K_EGGL
+	|	K_EMID
+	|	K_ETIK
+	|	K_FALL
+	|	K_FLOR
+	|	K_FLTX
+	|	K_FLTY
+	|	K_FROM
+	|	K_FRZN
+	|	K_GNAM
+	|	K_GRAV
+	|	K_HATL
+	|	K_HELD
+	|	K_HGHT
+	|	K_HHLD
+	|	K_HOTP
+	|	K_HOTS
+	|	K_HOUR
+	|	K_HSRC
+	|	K_IITT
+	|	K_INNF
+	|	K_INNI
+	|	K_INNL
+	|	K_INOK
+	|	K_INS_NUM
+	|	K_INTR
+	|	K_LACB
+	|	K_LANG
+	|	K_LEFT
+	|	K_LIMB
+	|	K_LIML
+	|	K_LIMR
+	|	K_LIMT
+	|	K_LITE
+	|	K_LSRC
+	|	K_MAPH
+	|	K_MAPW
+	|	K_MINS
+	|	K_MODU
+	|	K_MONT
+	|	K_MOPX
+	|	K_MOPY
+	|	K_MOVS
+	|	K_MOVX
+	|	K_MOVY
+	|	K_MOWS
+	|	K_MSEC
+	|	K_MTHX
+	|	K_MTHY
+	|	K_NEID
+	|	K_ERRA
+	|	K_HOST
+	|	K_RAWE
+	|	K_USER
+	|	K_WHAT
+	|	K_NPGS
+	|	K_NULL
+	|	K_NWLD
+	|	K_OBJP
+	|	K_ONTR
+	|	K_OWNR
+	|	K_PACE
+	|	K_PAGE
+	|	K_PNTR
+	|	K_POSB
+	|	K_POSL
+	|	K_POSR
+	|	K_POST
+	|	K_POSX
+	|	K_POSY
+	|	K_PRES
+	|	K_ITOT
+	|	K_OTOT
+	|	K_PSRC
+	|	K_RACE
+	|	K_RADN
+	|	K_RELX
+	|	K_RELY
+	|	K_REST
+	|	K_RGHT
+	|	K_RMNO
+	|	K_RNDR
+	|	K_RSRC
+	|	K_RTIM
+	|	K_SCOR
+	|	K_SEAN
+	|	K_SEAV
+	|	K_SIZE
+	|	K_SNDS
+	|	K_TAGE
+	|	K_TCAR
+	|	K_THRT
+	|	K_TIME
+	|	K_TMOD
+	|	K_UFOS
+	|	K_UFTX
+	|	K_UFTY
+	|	K_UNID
+	|	K_VELX
+	|	K_VELY
+	|	K_VMJR
+	|	K_VMNR
+	|	K_WALL
+	|	K_WDTH
+	|	K_WINH
+	|	K_WINW
+	|	K_WLDH
+	|	K_WLDW
+	|	K_WNAM
+	|	K_WNDB
+	|	K_WNDH
+	|	K_WNDL
+	|	K_WNDR
+	|	K_WNDT
+	|	K_WNDW
+	|	K_WNDX
+	|	K_WNDY
+	|	K_WUID
+	|	K_XVEC
+	|	K_YEAR
+	|	K_YVEC
+	|	K_ACOS
+	|	K_ASIN
+	|	K_ATAN
+	|	K_COS_
+	|	K_FTOI
+	|	K_SIN_
+	|	K_SQRT
+	|	K_TAN_
+	|	K_VECX
+	|	K_VECY
+	|	K_ADDM
+	|	K_ADDR
+	|	K_AGNT
+	|	K_BKDS
+	|	K_BRED
+	|	K_CATX
+	|	K_DBG_NUM
+	|	K_DBGA
+	|	K_ERID
+	|	K_GTOS
+	|	K_HEAP
+	|	K_HEDX
+	|	K_HEDY
+	|	K_ISAR
+	|	K_ITOF
+	|	K_KEYD
+	|	K_MLOC
+	|	K_MUSC
+	|	K_OBDT
+	|	K_OBST
+	|	K_OBSV
+	|	K_PNXT
+	|	K_FRMA
+	|	K_RLOC
+	|	K_SEEN
+	|	K_TORX
+	|	K_TORY
+	|	K_VISI
+	|	K_VTOS
+	|	K_ANGL
+	|	K_GMAP
+	|	K_GRAP
+	|	K_TMVB
+	|	K_TMVF
+	|	K_TMVT
+	|	K_AVAR
+	|	K_GRID
+	|	K_ONTV
+	|	K_TWIN
+	|	K_CAOS
+	|	K_CATI
+	|	K_HIRP
+	|	K_LORP
+	|	K_RMND
+	|	K_RMNR
+	|	K_MON1
+	|	K_MON2
+	|	K_NETU
+	|	K_TYPE
+	|	K_DEPS
+	|	K_READ
+	|	K_DISQ
+	|	K_MAME
+	|	K_GAME
+	|	K_MUTE
+	|	K_ORGF
+	|	K_ORGI
+	|	K_RAND
+	|	K_RMN_NUM
+	|	K_WOLF
+	|	K_EAME
+	|	K_EAMN
+	|	K_FVWM
+	|	K_GAMN
+	|	K_COUN
+	|	K_GEND
+	|	K_PREV
+	|	K_VARI
+	|	K_WVET
+	|	K_LOFT
+	|	K_LOWA
+	|	K_MTOA
+	|	K_MTOC
+	|	K_ULIN
+	|	K_OOWW
+	|	K_EXPO
+	|	K_TEST
+	|	K_REAN
+	|	K_REAQ
+	|	K_SNAX
+	|	K_STOF
+	|	K_STOI
+	|	K_STRL
+	|	K_UPPA
+	|	K_WNTI
+	|	K_FIND
+	|	K_FINR
+	|	K_IMPO
+	|	K_SUBS
+	|	K_SORC
+	|	K_SORQ
+	|	K_NCLS
+	|	K_PCLS
+	|	K_BACK
+	|	K_FORE
+	|	K_MAKE
+	|	K_AGTI
+	|	K_AGTS
+	|	K_INJT
+	|	K_SEEE
+	|	K_RTIF
+	|	K_SCOL
+	|	K_SINS
+	|	K_TCOR
+	|	K_TOKN
+	|	K_WILD
+	|	K_CLS2
+	;
+
+eq_op
+	::= eq_op_old
+	|	eq_op_new
+	;
+
+eq_op_old
+	::= EQ_OP_OLD_
+	;
+
+eq_op_new
+	::= EQ_OP_NEW_
+	;
+
+var_token
+	::= VA_XX
+	| 	OV_XX
+	|	OBV_X
+	|	VAR_X
+	|	MV_XX
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptVarTokenStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase"
+		]
+		methods = [
+			getVarGroup
+			getVarIndex
+			getReference
+			getInferredType
+			getLastAssignment
+		]
+	}
+	;
+
+number
+	::= INT
+	|	DECIMAL
+	{
+
+	}
+	;
+
+private string_literal
+	::= quote_string_literal
+	|   c1_string
+	;
+
+c1_string
+	::= OPEN_BRACKET TEXT_LITERAL? CLOSE_BRACKET
+	{
+		pin(".*")=3
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+quote_string_literal
+	::= QUOTE_STRING
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+subroutine_name
+	::= all_tokens
+	|	ID
+	|	WORD
+	|	incomplete
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	};
+
+token
+	::= all_tokens
+	|	WORD
+	{
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			isVariant
+		]
+	}
+	;
+script_terminator
+	::= c_endm
+	;
+
+c_endm ::= K_ENDM
+{
+	implements = [
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+expects_token ::= <<pushExpectation 'TOKEN'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsTokenStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_byte_string ::= <<pushExpectation 'OTHER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsByteStringStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_agent ::= <<pushExpectation 'OTHER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsAgentStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_decimal ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsDecimalStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_float ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsFloatStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_quote_string ::= <<pushExpectation 'STRING'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsQuoteStringStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_c1_string ::= <<pushExpectation 'STRING'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsC1StringStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+
+expects_int ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsIntStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+private expects_string
+	::= (<<isVariant 'CV'>>|<<isVariant 'C3'>>|<<isVariant 'DS'>>)expects_quote_string
+	|	expects_c1_string
+	;
+
+expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsValueStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+			getIndex
+			getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+rvalue
+	::= rvalue_prime
+	|	named_constant
+	|	vars
+	|	expression
+	{
+   		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+     		getCommandString
+			getCommandStringUpper
+     		toCaosVar
+			getArguments
+			getArgumentValues
+     		getInferredType
+		]
+	}
+	;
+
+
+constant_assignment
+	::= named_constant CONST_EQ constant_value
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptConstantAssignmentStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+
+		methods = [
+			getValue
+			getName
+			nameElement="/named_constant"
+			valueElement="/constant_value"
+		]
+	}
+	;
+named_var_assignment
+	::= named_var CONST_EQ var_token
+	{
+		pin=1
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarAssignmentStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+
+		methods = [
+			getValue
+			getName
+		]
+	}
+	;
+constant_value
+	::= INT|FLOAT
+	;
+
+named_constant
+	::= N_CONST
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedConstantStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+		]
+		methods = [
+			getScope
+			getName
+			setName
+			getReference
+			toCaosVar
+			getInferredType
+		]
+	}
+	;
+
+named_var
+	::= N_VAR
+	{
+		stubClass="com.openc2e.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarStub"
+		extends="com.openc2e.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.openc2e.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+		]
+		methods = [
+			getScope
+			getName
+			setName
+			getReference
+			toCaosVar
+			getInferredType
+		]
+	}
+	;
+
+comment
+	::= //COMMENT_START (constant_assignment|named_var_assignment|comment_body)?
+	COMMENT_START comment_body?
+	;
+
+comment_body
+	::= COMMENT_TEXT+
+	;
+
+family ::= expects_int;
+genus ::= expects_int;
+species ::= expects_int;
+
+event_number_element
+	::= INT
+	;
+
+private follows_dde_putb
+	::=	K_ALLR
+	|	K_RPTY
+	|	K_RRCT
+	|	K_NEWV
+	|	K_LVOB
+	|	K_BIOC
+	|	K_ORGN
+	|	K_EMTR
+	|	K_RCTN
+	|	K_DATA
+	|	K_CNAM
+	|	K_CTIM
+	|	K_MONK
+	|	K_OVVD
+	;
+
+incomplete ::= ID;
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1194.27,0)">
+        <g id="Egg-Logo---Without-Text" serif:id="Egg Logo - Without Text" transform="matrix(1,0,0,1,1194.27,0)">
+            <rect x="0" y="0" width="512" height="512" style="fill:none;"/>
+            <g transform="matrix(1.04996,0,0,1.04996,-18.7836,12.731)">
+                <g transform="matrix(1.29072,0,0,1.29072,-1615.89,-42.1277)">
+                    <path d="M1450.27,54.099C1520.18,54.099 1576.94,186.087 1576.94,256C1576.94,325.913 1520.18,382.673 1450.27,382.673C1380.36,382.673 1323.6,325.913 1323.6,256C1323.6,186.087 1380.36,54.099 1450.27,54.099Z" style="fill:rgb(47,170,240);"/>
+                </g>
+                <g transform="matrix(1.01843,0.141521,-0.141521,1.01843,-1166.79,-158.023)">
+                    <path d="M1450.27,54.099C1520.18,54.099 1576.94,186.087 1576.94,256C1576.94,325.913 1520.18,382.673 1450.27,382.673C1380.36,382.673 1323.6,325.913 1323.6,256C1323.6,186.087 1380.36,54.099 1450.27,54.099Z" style="fill:rgb(121,206,254);"/>
+                </g>
+                <g transform="matrix(0.663096,0.178265,-0.178265,0.663096,-630.507,-77.0822)">
+                    <path d="M1450.27,54.099C1520.18,54.099 1576.94,186.087 1576.94,256C1576.94,325.913 1520.18,382.673 1450.27,382.673C1380.36,382.673 1323.6,325.913 1323.6,256C1323.6,186.087 1380.36,54.099 1450.27,54.099Z" style="fill:white;"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
