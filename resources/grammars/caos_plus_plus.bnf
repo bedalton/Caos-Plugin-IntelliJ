@@ -1,0 +1,94 @@
+{
+	parserClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParser"
+	parserUtilClass="com.openc2e.plugins.intellij.agenteering.caos.def.parser.CaosDefParserUtil"
+	implements="com.openc2e.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+	extends="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCompositeElementImpl"
+	elementTypeHolderClass="com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes"
+	elementTypePrefix="CaosDef_"
+	elementTypeClass="com.openc2e.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementType"
+	tokenTypeClass="com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTokenType"
+	psiClassPrefix="CaosDef"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.openc2e.plugins.intellij.agenteering.caos.def.psi.api"
+	psiImplPackage="com.openc2e.plugins.intellij.agenteering.caos.def.psi.impl"
+	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition")="com.openc2e.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	psiImplUtilClass="com.openc2e.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil"
+	generateTokenAccessors=true
+	tokens = [
+		DOC_COMMENT_LITERAL = "regexp:/\*[*]*.*(?=[*][/])[*][/]";
+		DOC_COMMENT_OPEN = 'regexp:/[*]+';
+		DOC_COMMENT_CLOSE = 'regexp:[*]+/'
+		LINE_COMMENT = "regexp://[^\n]*"
+		EXCLUSIVE = "regexp:[!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]"
+		REGION_HEADING_LITERAL = "regexp:[#][^\n]+"
+		WORD = "regexp:[a-zA-Z_][a-zA-Z0-9#!$_]{3}"
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
+		EQ = "=";
+		COMMA = ',';
+		SEMI = ';'
+		SINGLE_QUO = "'";
+		DOUBLE_QUO = '"';
+		COLON = ':';
+		OPEN_PAREN = '(';
+		CLOSE_PAREN = ")";
+		space = "regexp:\s+";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		OPEN_BRACE = '{';
+		CLOSE_BRACE = '}';
+		LEADING_ASTRISK = '*';
+		MINUS = '-';
+		PLUS = '+';
+		MULT = "*";
+		ANDV = "&"
+		ORV = "|";
+		AND = "AND";
+		OR = "OR";
+
+		PLUS_ASSIGN = "+="
+		MINUS_ASSIGN = "-=";
+		MULT_ASSIGN = "*=";
+		DIV_ASSIGN = "/=";
+		OR_ASSIGN = "|=";
+		AND_ASSIGN = "&=";
+
+		EQ = "regexp:==|[eE][qQ]";
+		NEQ = "regexp:!=|[nN]][eE]";
+
+
+		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
+		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
+		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
+		BRACKET_STRING = "regexp:\[[^]]\]";
+		space = "regexp:\s+"
+	]
+}
+
+file ::= (!<<eof>>scripts)*;
+
+scripts
+	::= inst_script
+	|	uninstall_script
+	|	event_script
+	;
+
+inst_script
+	::= word  '{' script_body '}'
+	;
+
+private script_body
+	::= command
+	|	assignment_expression
+	;
+
+private assignment_expression
+	::=
+	;
+
+operators
+	::=
+	;
+
+assignment_operators
+	::=
+	;

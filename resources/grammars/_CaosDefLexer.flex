@@ -1,24 +1,24 @@
-package com.openc2e.plugins.intellij.caos.def.lexer;
+package com.openc2e.plugins.intellij.agenteering.caos.def.lexer;
 
-import com.intellij.lexer.FlexLexer;
-import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
+import com.intellij.lexer.FlexLexer;
+import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
+import static com.openc2e.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*;
 
 %%
 
 %{
+	private int paren_depth = 0;
+	private boolean needs_type = false;
+	private boolean canDoName = false;
+	private static final Logger LOGGER = Logger.getLogger("#_CaosDefLexer");
 
-  private int paren_depth = 0;
-  private boolean needs_type = false;
-  private boolean canDoName = false;
-
-  public _CaosDefLexer() {
-	this((java.io.Reader)null);
+	public _CaosDefLexer() {
+		this((java.io.Reader)null);
 	}
 
 	private boolean yytextContainLineBreaks() {
@@ -34,38 +34,37 @@ import static com.openc2e.plugins.intellij.caos.def.lexer.CaosDefTypes.*;
 %unicode
 
 WHITE_SPACE=\s+
-TEXT=([^*\n \[]|"*"[^*/\n])+
+TEXT=([^*\n \[]|"*"[^/])+
 DOC_COMMENT_OPEN="/"[*]+
 DOC_COMMENT_CLOSE=[*]+"/"
 LINE_COMMENT="//"[^\n]*
-WORD=[a-zA-Z_][a-zA-Z0-9#!$_:]{3}
+WORD=[a-zA-Z_0-9]{3}[a-zA-Z0-9#!$_:+]
 TYPE_LINK=[@]\{[^}]\}
-ID=[_a-zA-Z][_a-zA-Z0-9]*
+ID=[_a-zA-Z][_a-zA-Z0-9]*[%]?
 CODE_BLOCK_LITERAL=[#][{][^}]*[}]
 AT_RVALUE=[@][rR][vV][aA][lL][uU][eE]
 AT_LVALUE=[@][lL][vV][aA][lL][uU][eE]
 AT_PARAM=[@][pP][aA][rR][aA][mM]
 AT_RETURN=[@][rR][eE][tT][uU][rR][nN][sS]?
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
-TYPE_NOTE=[:]{ID}
-TYPE_DEF_KEY=[a-zA-Z0-9_#]+
-TYPE_DEF_VALUE = [^-\n]+
+TYPE_DEF_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+
+TYPE_DEF_VALUE=([^-\n]|-[^ ])+
 DEF_TEXT=[^\n]+
 INT=[-+]?[0-9]+
 TO=([.]{2,3}|[Tt][Oo])
 UNTIL=[uU][nN][tT][iI][lL]
-EXCLUSIVE = [!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
+EXCLUSIVE=[!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
 REGION=[#][^\n]+
-VARIABLE_LINK = [{]{ID}[}]
-AT_VARIANTS = [@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
-VARIANT_ID = [A-Za-z][A-Za-z0-9]
-VARIANT_NAME = [A-Za-z0-9 _]+
-
-%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT
+HASH_TAG=[#][A-Za-z][_A-Za-z0-9]*
+VARIABLE_LINK=[{]{ID}[}]
+AT_VARIANTS=[@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
+VARIANT_ID=[A-Za-z][A-Za-z0-9]
+VARIANT_NAME=[A-Za-z0-9 _]+
+%state IN_TYPEDEF IN_TYPEDEF_VALUE IN_TYPEDEF_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE
 
 %%
 
-<IN_COMMENT, COMMENT_START, IN_PARAM_COMMENT, IN_COMMENT_AFTER_VAR> {
+<IN_COMMENT, COMMENT_START, IN_PARAM_COMMENT, IN_COMMENT_AFTER_VAR, IN_HASHTAG_LINE> {
 	{WHITE_SPACE}				{
 									if (yytextContainLineBreaks()) {
 										yybegin(COMMENT_START);
@@ -76,6 +75,11 @@ VARIANT_NAME = [A-Za-z0-9 _]+
   	'\n'						{ yybegin(COMMENT_START); return CaosDef_NEWLINE; }
 }
 
+<IN_HASHTAG_LINE> {
+    {HASH_TAG}					{ return CaosDef_HASH_TAG; }
+	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
+}
+
 <COMMENT_START> {
 	{AT_RVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_RVALUE; }
 	{AT_LVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_LVALUE; }
@@ -83,6 +87,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
   	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
 	{VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
+    {HASH_TAG}					{ return CaosDef_HASH_TAG; }
 	"*"	                     	{ return CaosDef_LEADING_ASTRISK; }
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
@@ -96,7 +101,6 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 }
 
 <IN_COMMENT_AFTER_VAR> {
-    {TYPE_NOTE}					{ return CaosDef_TYPE_NOTE_LITERAL; }
     {TO}						{ return CaosDef_TO;}
     {UNTIL}						{ return CaosDef_UNTIL; }
     {AT_ID}						{ return CaosDef_AT_ID; }
@@ -114,7 +118,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 		}
 		return CaosDef_TEXT_LITERAL;
       }
-
+	":"							{ return CaosDef_COLON; }
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
@@ -125,6 +129,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 <IN_LINK> {
 	{WORD}						{ return CaosDef_WORD; }
     "]"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACKET; }
+    " "							{ return WHITE_SPACE; }
   	[^]							{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
@@ -132,7 +137,8 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	{CODE_BLOCK_LITERAL}       	{ return CaosDef_CODE_BLOCK_LITERAL; }
     {VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK_LITERAL; }
-  	"["							{ yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
+  	//"["	/{WORD}					{ return CaosDef_COMMENT_TEXT_LITERAL; }
+  	"[" 						{ yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
 	{TEXT}						{ return CaosDef_COMMENT_TEXT_LITERAL; }
 }
 
@@ -142,7 +148,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
 	"{"						 	{ return CaosDef_OPEN_BRACE; }
 	","                        	{ return CaosDef_COMMA; }
 	"-"                        	{ yybegin(IN_TYPEDEF_TEXT); return CaosDef_DASH; }
-    {TYPE_NOTE}					{ return CaosDef_TYPE_NOTE_LITERAL; }
+    ":"							{ return CaosDef_COLON; }
     {EXCLUSIVE}					{ return CaosDef_EXCLUSIVE ;}
     {REGION}					{ return CaosDef_REGION_HEADING_LITERAL; }
 	{TYPE_DEF_KEY}			 	{ return CaosDef_TYPE_DEF_KEY; }
@@ -180,6 +186,7 @@ VARIANT_NAME = [A-Za-z0-9 _]+
     "="							{ canDoName = true; return CaosDef_EQ; }
   	{VARIANT_ID}				{ return CaosDef_ID; }
     {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME_LITERAL; } else return CaosDef_ID;}
+	{WHITE_SPACE}              	{ return WHITE_SPACE; }
 	[^]							{ yybegin(IN_BODY); yypushback(1); }
 }
 
