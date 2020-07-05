@@ -1850,8 +1850,8 @@ NEW: COMP (command) spriteFile (token) numimages (integer) firstImage (integer) 
 NEW: CREA (command) moniker (integer) sex (integer);
 
 /*
- * Create a new genome file from mum’s and dad’s (or just mum if dad=0) genomes, and store the
- * new genomes moniker in the variable child.
+ * Creates a new genome file from mum’s and dad’s (or just mum if dad=0) genomes, and stores
+ * the new genome's moniker in the variable child.
  * Use [TOKN] to convert text moniker to int
  * @example: #{NEW: GENE TOKN ADAM TOKN EVE_ OV00}
  * #Creatures
