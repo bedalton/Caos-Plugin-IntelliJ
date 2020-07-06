@@ -3254,6 +3254,14 @@ INS# (integer);
 INST (command);
 
 /*
+ * Marks the following chunk of script as being for the installation of an object.
+ * The presence of [SCRP], [RSCR] or [ENDM] is used to delimit the installation chunk
+ * #Scripts
+ *
+ */
+ISCR (command);
+
+/*
  * Converts an integer value into its floating-point equivalent.
  * #Variables
  *
@@ -4704,9 +4712,10 @@ PACE (float);
  * #CompoundAgents
  *
  * @rvalue
- * @return (integer)
+ * @param {page} (integer)
+ *
  */
-PAGE (integer);
+PAGE (command) page (integer);
 
 /*
  * Returns the current page for current text part. See the PAGE command for more information.
@@ -5007,10 +5016,10 @@ POSB (float);
  * by [BASE].
  * #AgentSprites
  *
- * @rvalue
- * @return (integer)
+ * @param {pose} (integer)
+ *
  */
-POSE (integer);
+POSE (command) pose (integer);
 
 /*
  * Return the current POSE of the target agent/part, or -1 if invalid part.
@@ -5930,6 +5939,14 @@ ROTN (command) noOfSpritesForEachRotation (float) noOfRotations (float);
  *
  */
 RPAS (command) vehicle (agent) passenger (agent);
+
+/*
+ * Marks the following chunk of scripts as being for the removal of an object.
+ * The presence of [SCRP], [ISCR] or [ENDM] is used to delimit the removal chunk
+ * #Scripts
+ *
+ */
+RSCR (command);
 
 /*
  * Randomly chooses an agent which matches the given classifier, and targets it.
