@@ -25,6 +25,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
     }
     data class CaosCommandCall(override val text:String, val returnType: CaosExpressionValueType? = null) : CaosVar(text, CaosExpressionValueType.ANY)
     object CaosLiteralVal: CaosVar("", CaosExpressionValueType.ANY)
+    data class CaosInferredVariableType(val varName:String, val value:CaosExpressionValueType) : CaosVar("$varName", value)
     sealed class CaosLiteral(text:String, simpleType: CaosExpressionValueType) : CaosVar(text, simpleType) {
         data class CaosString(val value:String) : CaosLiteral(value, CaosExpressionValueType.STRING)
         data class CaosC1String(val value:String) : CaosLiteral(value, CaosExpressionValueType.C1_STRING)
