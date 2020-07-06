@@ -24,6 +24,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import kotlin.math.floor
 
@@ -77,6 +78,11 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandToken(element: CaosScriptIsCommandToken): CaosScriptIsCommandToken {
         return element
+    }
+
+    @JvmStatic
+    fun getCommandToken(element: CaosScriptEnumHeaderCommand) : CaosScriptIsCommandToken {
+        return element.cEnum ?: element.cEcon!!
     }
 
     @JvmStatic
@@ -508,7 +514,7 @@ object CaosScriptPsiImplUtil {
     fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
         val variant = expression.containingCaosFile.variant
         expression.byteString?.let { stringValue ->
-            if (variant !in OLD_VARIANTS) {
+            if (variant.isNotOld) {
                 return try {
                     stringValue.byteStringPoseElementList.map { it ->
                         it.text.toInt()
@@ -525,7 +531,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getAnimation(expression: CaosScriptExpression): CaosAnimation? {
         val variant = expression.containingCaosFile.variant
-        if (variant !in OLD_VARIANTS) {
+        if (variant.isNotOld) {
             val poseList = expression.byteStringArray
                     ?: return null
             if (poseList.lastOrNull() == 255) {
@@ -603,7 +609,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
         if (stringValue.isEmpty())
             return CaosAnimation.Animation(emptyList(), false, null)
-        if (variant !in OLD_VARIANTS) {
+        if (variant.isNotOld) {
             return getCVPlusAnimation(stringValue)
         }
         val charsRawTemp = stringValue.toCharArray().toList()
@@ -1386,10 +1392,7 @@ object CaosScriptPsiImplUtil {
             getLastAssignment(it)
         }
     }
-
 }
-
-private var OLD_VARIANTS = listOf(CaosVariant.C1, CaosVariant.C2)
 
 @Suppress("UNCHECKED_CAST")
 private fun <PsiT : PsiElement> CaosScriptCompositeElement.getSelfOrParentOfType(clazz: Class<PsiT>): PsiT? {
@@ -1423,23 +1426,25 @@ enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
 }
 
 fun PsiElement.getEnclosingCommandType(): CaosCommandType {
-    var parent: PsiElement? = parent
-            ?: return CaosCommandType.UNDEFINED
-    while (parent != null && parent !is CaosScriptCommandElement && parent !is CaosScriptCodeBlockLine) {
-        parent = parent.parent
-    }
+
+    // If expression or Equality, it can only be Rvalue
+    // Getting base element will skip this possibility, so check first
+    if (isOrHasParentOfType(CaosScriptExpression::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
+        return CaosCommandType.RVALUE
+
+    val parent: PsiElement? = getParentOfType(CaosScriptBaseCommandElement::class.java)
     if (parent == null || parent !is CaosScriptCommandElement) {
-        if (this.isOrHasParentOfType(CaosScriptExpression::class.java) || this.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java))
-            return CaosCommandType.RVALUE
-        if (isOrHasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIncomplete::class.java))
+        if (isOrHasParentOfType(CaosScriptIncomplete::class.java)) {
+            LOGGER.info("$text is incomplete and marked as command by default")
             return CaosCommandType.COMMAND
+        }
         return CaosCommandType.UNDEFINED
     }
     return when (parent) {
-        is CaosScriptCommandCall -> CaosCommandType.COMMAND
-        is CaosScriptRvalue -> CaosCommandType.RVALUE
         is CaosScriptLvalue -> CaosCommandType.LVALUE
-        else -> parent.getEnclosingCommandType()
+        is CaosScriptRvalue -> CaosCommandType.RVALUE
+        is CaosScriptCommandCall -> CaosCommandType.COMMAND
+        else -> parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
     }
 }
 
