@@ -20,12 +20,21 @@ fun CaosScope?.sharesScope(otherScope: CaosScope?) : Boolean {
     }
     val thisEnclosingScopes = enclosingScope
     val otherEnclosingScope = otherScope.enclosingScope
-    for(i in enclosingScope.indices) {
-        val parentScope = enclosingScope[i]
-        val otherParentScope = otherEnclosingScope.getOrNull(i)
+    val longestScope:List<CaosScope>
+    val otherScope:List<CaosScope>
+    if (thisEnclosingScopes.size > otherEnclosingScope.size) {
+        longestScope = thisEnclosingScopes
+        otherScope = otherEnclosingScope
+    } else {
+        longestScope = otherEnclosingScope
+        otherScope = thisEnclosingScopes
+    }
+    for(i in longestScope.indices) {
+        val parentScope = longestScope[i]
+        val otherParentScope = otherScope.getOrNull(i)
                 ?: return true
         if (parentScope != otherParentScope) {
-            return when (blockType) {
+            return when (parentScope.blockType) {
                 CaosScriptBlockType.DOIF -> otherParentScope.blockType == CaosScriptBlockType.DOIF
                 CaosScriptBlockType.ELIF -> otherParentScope.blockType == CaosScriptBlockType.ELIF
                 CaosScriptBlockType.ELSE -> otherParentScope.blockType == CaosScriptBlockType.ELSE
