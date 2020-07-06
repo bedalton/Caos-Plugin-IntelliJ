@@ -873,6 +873,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	[Mm][Oo][Nn][2]        	{ return CaosScript_K_MON2; }
 	[Rr][Nn][Dd][Rr]       	{ return CaosScript_K_RNDR; }
 	[Ll][Nn][Gg][+]        	{ return CaosScript_K_LNG_PLUS; }
+    [Xx][Ii][Ss][Tt]       	{ return CaosScript_K_XIST; }
 	[Aa][Nn][Dd]           	{ return CaosScript_K_AND; }
 	[Oo][Rr]               	{ return CaosScript_K_OR; }
     "____X____DEF__"		{ return CaosScript_K_XX_DEF; }
