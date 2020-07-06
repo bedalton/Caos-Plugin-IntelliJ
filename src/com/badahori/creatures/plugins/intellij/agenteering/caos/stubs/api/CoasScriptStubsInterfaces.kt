@@ -1,14 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api
 
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.stubs.StubElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.stubs.StubElement
 
-interface CaosScriptCommandCallStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCommandCallImpl> {
+interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
     val command:String
     val commandUpper:String
     val commandTokens:List<String>
@@ -16,31 +16,31 @@ interface CaosScriptCommandCallStub : StubElement<com.badahori.creatures.plugins
     val numArguments:Int get() = argumentValues.size
 }
 
-interface CaosScriptTargAssignmentStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCTargImpl> {
+interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
     val scope:CaosScope
     val rvalue:CaosVar?
 }
 
-interface CaosScriptLValueStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptLvalueImpl> {
+interface CaosScriptLValueStub : StubElement<CaosScriptLvalueImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
     val commandString:String?
 }
 
-interface CaosScriptRValueStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueImpl> {
+interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
     val commandString:String?
 }
 
-interface CaosScriptRValuePrimeStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvaluePrimeImpl> {
+interface CaosScriptRValuePrimeStub : StubElement<CaosScriptRvaluePrimeImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
     val commandString:String?
 }
 
 
-interface CaosScriptRndvStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCRndvImpl> {
+interface CaosScriptRndvStub : StubElement<CaosScriptCRndvImpl> {
     val min:Int?
     val max:Int?
 }
@@ -52,37 +52,37 @@ interface CaosScriptArgumentStub {
     val expectedType:CaosExpressionValueType
 }
 
-interface CaosScriptExpectsIntStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsIntImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsFloatStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsFloatImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsQuoteStringStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsQuoteStringImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsC1StringStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsC1StringImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsByteStringStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsByteStringImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsTokenStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsTokenImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsAgentStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsAgentImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsValueStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsValueImpl>, CaosScriptArgumentStub
-interface CaosScriptExpectsDecimalStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsDecimalImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsIntStub : StubElement<CaosScriptExpectsIntImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsFloatStub : StubElement<CaosScriptExpectsFloatImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsQuoteStringStub : StubElement<CaosScriptExpectsQuoteStringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsC1StringStub : StubElement<CaosScriptExpectsC1StringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsByteStringStub : StubElement<CaosScriptExpectsByteStringImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsTokenStub : StubElement<CaosScriptExpectsTokenImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsAgentStub : StubElement<CaosScriptExpectsAgentImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsValueStub : StubElement<CaosScriptExpectsValueImpl>, CaosScriptArgumentStub
+interface CaosScriptExpectsDecimalStub : StubElement<CaosScriptExpectsDecimalImpl>, CaosScriptArgumentStub
 
-interface CaosScriptConstantAssignmentStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptConstantAssignmentImpl> {
+interface CaosScriptConstantAssignmentStub : StubElement<CaosScriptConstantAssignmentImpl> {
     val name:String
     val value:CaosNumber
 }
 
-interface CaosScriptNamedVarAssignmentStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptNamedVarAssignmentImpl> {
+interface CaosScriptNamedVarAssignmentStub : StubElement<CaosScriptNamedVarAssignmentImpl> {
     val name:String
     val value:CaosVar?
 }
 
-interface CaosScriptNamedConstantStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptNamedConstantImpl> {
+interface CaosScriptNamedConstantStub : StubElement<CaosScriptNamedConstantImpl> {
     val name:String
     val scope:CaosScope
 }
 
-interface CaosScriptNamedVarStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptNamedVarImpl> {
+interface CaosScriptNamedVarStub : StubElement<CaosScriptNamedVarImpl> {
     val name:String
     val scope:CaosScope
 }
 
-interface CaosScriptAssignmentStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCAssignmentImpl> {
+interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
     val fileName:String
     val operation: CaosOp
     val lvalue:CaosVar?
@@ -97,15 +97,15 @@ interface CaosScriptBlockStub {
     val blockType:CaosScriptBlockType
 }
 
-interface CaosScriptDoIfStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptDoifStatementStatementImpl>, CaosScriptBlockStub {
+interface CaosScriptDoIfStub : StubElement<CaosScriptDoifStatementStatementImpl>, CaosScriptBlockStub {
     val condition:CaosBlockCondition
 }
 
-interface CaosScriptElIfStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptElseIfStatementImpl>, CaosScriptBlockStub  {
+interface CaosScriptElIfStub : StubElement<CaosScriptElseIfStatementImpl>, CaosScriptBlockStub  {
     val condition:CaosBlockCondition
 }
 
-interface CaosScriptElseStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptElseStatementImpl>, CaosScriptBlockStub
+interface CaosScriptElseStub : StubElement<CaosScriptElseStatementImpl>, CaosScriptBlockStub
 
 interface CaosScriptEnumBlockStub : CaosScriptBlockStub {
     val family:Int
@@ -113,38 +113,38 @@ interface CaosScriptEnumBlockStub : CaosScriptBlockStub {
     val species:Int
 }
 
-interface CaosScriptEscnStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptEnumSceneryStatementImpl>, CaosScriptEnumBlockStub
+interface CaosScriptEscnStub : StubElement<CaosScriptEnumSceneryStatementImpl>, CaosScriptEnumBlockStub
 
-interface CaosScriptEnumNextStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptEnumNextStatementImpl>, CaosScriptEnumBlockStub
+interface CaosScriptEnumNextStub : StubElement<CaosScriptEnumNextStatementImpl>, CaosScriptEnumBlockStub
 
-interface CaosScriptLoopStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptLoopStatementImpl>, CaosScriptBlockStub {
+interface CaosScriptLoopStub : StubElement<CaosScriptLoopStatementImpl>, CaosScriptBlockStub {
     val loopCondition:CaosLoopCondition?
 }
 
-interface CaosScriptMacroStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptMacroImpl>
+interface CaosScriptMacroStub : StubElement<CaosScriptMacroImpl>
 
-interface CaosScriptEventScriptStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptEventScriptImpl> {
+interface CaosScriptEventScriptStub : StubElement<CaosScriptEventScriptImpl> {
     val family:Int
     val genus:Int
     val species:Int
     val eventNumber:Int
 }
 
-interface CaosScriptNamedGameVarStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptNamedGameVarImpl> {
+interface CaosScriptNamedGameVarStub : StubElement<CaosScriptNamedGameVarImpl> {
     val type: CaosScriptNamedGameVarType
     val name:String
     val key:CaosVar
 }
 
-interface CaosScriptRepsStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRepeatStatementImpl>, CaosScriptBlockStub {
+interface CaosScriptRepsStub : StubElement<CaosScriptRepeatStatementImpl>, CaosScriptBlockStub {
     val reps:CaosVar
 }
 
-interface CaosScriptSubroutineStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptSubroutineImpl> {
+interface CaosScriptSubroutineStub : StubElement<CaosScriptSubroutineImpl> {
     val name:String
 }
 
-interface CaosScriptVarTokenStub : StubElement<com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptVarTokenImpl> {
+interface CaosScriptVarTokenStub : StubElement<CaosScriptVarTokenImpl> {
     val varGroup:CaosScriptVarTokenGroup
     val varIndex:Int?
 }
