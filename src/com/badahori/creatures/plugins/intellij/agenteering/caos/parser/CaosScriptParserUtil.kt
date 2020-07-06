@@ -21,6 +21,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     const val STRING = 1
     const val TOKEN = 4
     const val OTHER = -1
+    const val ANIM = 5
     const val ANY = 3
     private var blocks = 0
     private val blockEnds = listOf<IElementType>(
