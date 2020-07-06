@@ -833,6 +833,7 @@ c_enum
 	|	K_ESEE
 	| 	K_ETCH
 	|	K_EPAS
+	|	K_ECON
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -1055,7 +1056,8 @@ private byte_string_body
 	;
 
 private byte_string_pose_list
-	::= byte_string_pose_element (!(<<isVariant 'C1'>>|<<isVariant 'C2'>>)(space_like byte_string_pose_element)*)
+	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>byte_string_pose_element)
+	|	(!(<<isVariant 'C1'>>|<<isVariant 'C2'>>)space_like? (byte_string_pose_element space_like)+ byte_string_pose_element?)
 	;
 
 byte_string_pose_element
@@ -5838,6 +5840,8 @@ l_kw_none
 	|	K_WINW
 	|	K_XVEC
 	|	K_YVEC
+	|	K_P1_
+	|	K_P2_
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
