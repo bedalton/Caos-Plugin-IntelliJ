@@ -68,6 +68,9 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     private fun annotateArgument(element: CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
         val variant = element.containingCaosFile.variant
         val rvalue = element.rvalue ?: return
+        if ((rvalue.expression ?: rvalue).getChildOfType(CaosScriptIsVariable::class.java) != null) {
+            return
+        }
         val actualType = (rvalue.expression ?: rvalue).getChildOfType(CaosScriptIsVariable::class.java)
                 ?.getInferredType()
                 ?: getActualType(rvalue, rvalue.toCaosVar())
