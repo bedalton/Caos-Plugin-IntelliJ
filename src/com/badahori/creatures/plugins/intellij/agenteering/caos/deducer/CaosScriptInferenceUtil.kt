@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.scope
@@ -17,8 +18,6 @@ object CaosScriptInferenceUtil {
     }
 
     fun getInferredValue(element: CaosScriptIsVariable): CaosVar {
-        val endRange = element.textRange.startOffset
-        var enclosingBlock = element.getParentOfType(CaosScriptCodeBlock::class.java)
         if (element is CaosScriptNamedConstant) {
             return PsiTreeUtil.getParentOfType(element.reference.resolve(), com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptConstantAssignment::class.java)
                     ?.constantValue?.let { constantValue ->
@@ -40,17 +39,17 @@ object CaosScriptInferenceUtil {
                 ?: element.text
         val startOffset = element.startOffset
         val scope = CaosScriptPsiImplUtil.getScope(element)
-        return element
+        return (element
                 .getParentOfType(CaosScriptEventScript::class.java)?.let {
                     PsiTreeUtil.collectElementsOfType(it, CaosScriptCAssignment::class.java)
-                }
-                ?.asSequence()
-                ?.mapNotNull {
+                } ?: PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptCAssignment::class.java))
+                .asSequence()
+                .mapNotNull {
                     it.arguments.lastOrNull()
                 }
-                ?.filter { it.endOffset < startOffset && it.scope.sharesScope(scope) }
-                ?.sortedByDescending { it.endOffset }
-                ?.mapNotNull { arg ->
+                .filter { it.endOffset < startOffset && it.scope.sharesScope(scope) }
+                .sortedByDescending { it.endOffset }
+                .mapNotNull { arg ->
                     val value = arg.toCaosVar()
                     val simpleType = value.simpleType
                     if (simpleType !in skipTypes) {
@@ -65,7 +64,8 @@ object CaosScriptInferenceUtil {
                     } else
                         null
                 }
-                ?.firstOrNull() ?: CaosVar.CaosVarNone
+                .filter { it.simpleType !in skipTypes }
+                .firstOrNull() ?: CaosVar.CaosVarNone
     }
 
     private fun getValueInBlock(name: String, enclosingBlock: CaosScriptCodeBlock, scope: CaosScope, endRange: Int): CaosVar? {
@@ -137,7 +137,7 @@ object CaosScriptInferenceUtil {
         return prime.getChildOfType(CaosScriptIsCommandToken::class.java)?.let { token ->
             token.reference.multiResolve(true)
                     .mapNotNull { resolved ->
-                        PsiTreeUtil.getParentOfType(resolved.element, com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+                        PsiTreeUtil.getParentOfType(resolved.element, CaosDefCommandDefElement::class.java)
                                 ?.returnTypeStruct
                                 ?.type
                                 ?.type
