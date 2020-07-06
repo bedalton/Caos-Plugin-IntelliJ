@@ -198,6 +198,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotateExtraSpaces(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val nextText = element.next?.text ?: ""
         val prevText = element.previous?.text ?: ""
+        if (variant !in VARIANT_OLD)
+            return
         if (prevText.contains("\n")) {
             if ((element.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
                 annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.c1-leading-spaces"))
