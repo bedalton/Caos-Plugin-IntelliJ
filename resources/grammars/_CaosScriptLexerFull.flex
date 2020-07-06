@@ -56,7 +56,6 @@ COMMENT_TEXT=[^ \n]+
 DECIMAL=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
-QUOTE_STRING=\"([^\n|\"]|\\[\"\\n])*\"
 WORD=[_a-zA-Z0-9]{3}[_a-zA-Z0-9!#:]
 ID=[_a-zA-Z][_a-zA-Z0-9]*
 SPACE=[ ]
@@ -74,7 +73,7 @@ CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING
 %%
 
 <START_OF_LINE> {
@@ -138,7 +137,14 @@ N_VAR = [$][a-zA-Z_0-9]+
     [^]						{ yybegin(IN_LINE); }
 }
 
+<IN_STRING> {
+	\"						{ yybegin(IN_LINE); return CaosScript_QUOTE_STRING;}
+	\\\"					{ }
+	[^\n\r\"]				{ }
+}
+
 <IN_LINE> {
+	\"         				{ yybegin(IN_STRING); }
 	":"                    	{ return CaosScript_COLON; }
 	"+"                    	{ return CaosScript_PLUS; }
 	"["                    	{ braceDepth++; yybegin(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }
@@ -158,7 +164,6 @@ N_VAR = [$][a-zA-Z_0-9]+
  	[%][01]+				{ return CaosScript_BINARY; }
 	{DECIMAL}              	{ return CaosScript_DECIMAL; }
 	{INT}                  	{ return CaosScript_INT; }
-	{QUOTE_STRING}         	{ return CaosScript_QUOTE_STRING; }
 	[Nn][Ee][Ww][:]        	{ return CaosScript_K_NEW_COL; }
 	[Ss][Cc][Ee][Nn]       	{ return CaosScript_K_SCEN; }
 	[Ss][Ii][Mm][Pp]       	{ return CaosScript_K_SIMP; }
