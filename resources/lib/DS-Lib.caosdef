@@ -468,7 +468,7 @@ ATTR (command) attributes (integer);
 ATTR (integer);
 
 /*
- * This is the OVnn variable of the agent passed in. It is equivalent to target agent, OVnn, but
+ * This is the [OVxx] variable of the agent passed in. It is equivalent to target agent, [OVxx], but
  * means that you don't need to target it first :) You can also use them to implement primitive
  * arrays.
  * #Variables
@@ -7080,6 +7080,15 @@ UFTX (float);
  * @return (float)
  */
 UFTY (float);
+
+/*
+ * Returns 1 if the creature is unconscious, 0 otherwise.
+ * #Creatures
+ *
+ * @rvalue
+ * @return (integer@Unconscious)
+ */
+UNCS (integer);
 
 /*
  * Make the creature conscious or unconscious. 0 for conscious, 1 for unconscious.
