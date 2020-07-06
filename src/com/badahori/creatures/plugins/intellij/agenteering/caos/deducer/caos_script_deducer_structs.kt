@@ -22,7 +22,8 @@ fun CaosScope?.sharesScope(otherScope: CaosScope?) : Boolean {
     val otherEnclosingScope = otherScope.enclosingScope
     for(i in enclosingScope.indices) {
         val parentScope = enclosingScope[i]
-        val otherParentScope = otherEnclosingScope[i]
+        val otherParentScope = otherEnclosingScope.getOrNull(i)
+                ?: return true
         if (parentScope != otherParentScope) {
             return when (blockType) {
                 CaosScriptBlockType.DOIF -> otherParentScope.blockType == CaosScriptBlockType.DOIF
