@@ -9,17 +9,17 @@ data class CaosScope(val range:TextRange, val blockType:CaosScriptBlockType, val
     val endOffset:Int get() = range.endOffset
 }
 
-fun CaosScope?.sharesScope(otherScope: CaosScope?) : Boolean {
+fun CaosScope?.sharesScope(otherScopeIn: CaosScope?) : Boolean {
     if (this == null) {
-        return otherScope == null
+        return otherScopeIn == null
     }
-    if (otherScope == null)
+    if (otherScopeIn == null)
         return false
-    if (this == otherScope) {
+    if (this == otherScopeIn) {
         return true
     }
     val thisEnclosingScopes = enclosingScope
-    val otherEnclosingScope = otherScope.enclosingScope
+    val otherEnclosingScope = otherScopeIn.enclosingScope
     val longestScope:List<CaosScope>
     val otherScope:List<CaosScope>
     if (thisEnclosingScopes.size > otherEnclosingScope.size) {
