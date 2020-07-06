@@ -1,14 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.AnnotationHolderWrapper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
 class CaosScriptTypesInspection : LocalInspectionTool() {
@@ -65,6 +66,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     }
 
     private fun annotateArgument(element: CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
+        val variant = element.containingCaosFile.variant
         val rvalue = element.rvalue ?: return
         val actualType = (rvalue.expression ?: rvalue).getChildOfType(CaosScriptIsVariable::class.java)
                 ?.getInferredType()
@@ -73,7 +75,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         if (expectedTypeSimple == CaosExpressionValueType.DECIMAL && expectsInt(element)) {
             expectedTypeSimple = CaosExpressionValueType.INT
         }
-        if (actualType == expectedTypeSimple || fudge(actualType, expectedTypeSimple)) {
+        if (actualType == expectedTypeSimple || fudge(variant, actualType, expectedTypeSimple)) {
             return
         }
 
@@ -124,15 +126,6 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         return returnTypeString?.let { getCaosTypeStringAsType(it) } ?: caosVar.simpleType
     }
 
-    private fun validateType(element: PsiElement, parameterName: String, expectedType: CaosExpressionValueType, actualType: CaosExpressionValueType, annotationWrapper: AnnotationHolderWrapper) {
-        if (actualType == expectedType || fudge(actualType, expectedType))
-            return
-        val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-message", parameterName, expectedType.simpleName, actualType.simpleName)
-        annotationWrapper.newWarningAnnotation(message)
-                .range(element)
-                .create()
-    }
-
     companion object {
         fun getCaosTypeStringAsType(typeStringIn: String): CaosExpressionValueType {
             return CaosExpressionValueType.fromSimpleName(typeStringIn)
@@ -143,11 +136,11 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         private val INT_LIKE = listOf(CaosExpressionValueType.INT, CaosExpressionValueType.DECIMAL)
         private val FLOAT_LIKE = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL)
         private val ANY_TYPE = listOf(CaosExpressionValueType.ANY, CaosExpressionValueType.VARIABLE, CaosExpressionValueType.UNKNOWN)
-
+        private val NUMERIC = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL, CaosExpressionValueType.INT)
         /**
          * Determine whether types are similar despite having different types
          */
-        fun fudge(actualType: CaosExpressionValueType, expectedType: CaosExpressionValueType): Boolean {
+        fun fudge(variant:CaosVariant, actualType: CaosExpressionValueType, expectedType: CaosExpressionValueType): Boolean {
             if (actualType in ANY_TYPE || expectedType in ANY_TYPE)
                 return true
             if (actualType in BYTE_STRING_LIKE && expectedType in BYTE_STRING_LIKE)
@@ -156,6 +149,8 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 return true
             if (actualType in FLOAT_LIKE && expectedType in FLOAT_LIKE)
                 return true
+            if (variant !in listOf(CaosVariant.C1, CaosVariant.C2))
+                return actualType in NUMERIC && expectedType in NUMERIC
             return false
         }
     }
