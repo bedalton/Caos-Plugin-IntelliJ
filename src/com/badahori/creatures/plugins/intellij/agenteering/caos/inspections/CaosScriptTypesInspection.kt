@@ -152,7 +152,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 return true
             if (actualType in FLOAT_LIKE && expectedType in FLOAT_LIKE)
                 return true
-            if (variant !in listOf(CaosVariant.C1, CaosVariant.C2))
+            if (variant.isNotOld)
                 return actualType in NUMERIC && expectedType in NUMERIC
             return false
         }

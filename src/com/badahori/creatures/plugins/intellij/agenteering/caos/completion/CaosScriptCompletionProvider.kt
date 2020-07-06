@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.VARIANT_OLD
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
@@ -84,7 +85,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         val type = parent.getEnclosingCommandType()
         val case = element.case
-        val allowUppercase = variant !in listOf(CaosVariant.C1, CaosVariant.C2)
+        val allowUppercase = variant !in VARIANT_OLD
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
                     if (it.commandName.toUpperCase() in SKIP_VAR_NAMES)

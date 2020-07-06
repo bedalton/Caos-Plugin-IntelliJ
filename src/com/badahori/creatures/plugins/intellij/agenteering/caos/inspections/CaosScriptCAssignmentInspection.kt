@@ -53,7 +53,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
     private fun annotateSetv(variant: CaosVariant, element: CaosScriptCAssignment, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
-        if (variant in VARIANT_OLD) {
+        if (variant.isOld) {
             val lvalue = element.lvalue
                     ?: return
             annotateSetvClassic(variant, element, lvalue, problemsHolder)
@@ -80,7 +80,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
     private fun annotateSets(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
-        if (variant in VARIANT_OLD)
+        if (variant.isOld)
             return
         val commandToken = element.commandToken
                 ?: return
@@ -89,7 +89,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
 
     private fun annotateSeta(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
-        if (variant in VARIANT_OLD)
+        if (variant.isOld)
             return
         val commandToken = element.commandToken
                 ?: return
@@ -127,9 +127,4 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }.orEmpty().toTypedArray()
         problemsHolder.registerProblem(targetElement, message, *replacementFix)
     }
-
-    companion object {
-        private val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
-    }
-
 }
