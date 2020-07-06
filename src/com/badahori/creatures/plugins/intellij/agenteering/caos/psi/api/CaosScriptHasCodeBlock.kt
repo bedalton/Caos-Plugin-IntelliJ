@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptBlockType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 
 interface CaosScriptHasCodeBlock : CaosScriptCompositeElement {
     val codeBlock: CaosScriptCodeBlock?
@@ -15,7 +16,13 @@ fun CaosScriptHasCodeBlock.scope() : CaosScope {
     var parent = getParentOfType(CaosScriptHasCodeBlock::class.java)
     while(parent != null) {
         enclosingScopes.add(parent.scope())
+        if (parent.parent is CaosScriptDoifStatement) {
+            val parentEnclosingScopes = parent.parent!!.getParentOfType(CaosScriptHasCodeBlock::class.java)?.scope()
+                    ?.let { listOf(it) + it.enclosingScope}
+                    ?: emptyList()
+            enclosingScopes.add(CaosScope(parent.parent.textRange, CaosScriptBlockType.DOIF, parentEnclosingScopes.reversed()))
+        }
         parent = parent.getParentOfType(CaosScriptHasCodeBlock::class.java)
     }
-    return CaosScope(range, blockType, enclosingScopes)
+    return CaosScope(range, blockType, enclosingScopes.reversed())
 }
