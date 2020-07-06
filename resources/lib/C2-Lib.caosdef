@@ -3458,6 +3458,16 @@ WNDX (integer);
 WNDY (integer);
 
 /*
+ * Returns 1 if specified agent exists, or 0 otherwise (ie, if it is null).
+ *
+ * @rvalue
+ * @param {agent} (agent)
+ * @return (integer@Xists)
+ *
+ */
+XIST (integer) agent (agent);
+
+/*
  * Sets/returns the vehicles x-movement vector in 1/256th of a pixel.
  * This command is a legacy from Creatures 1 – [VELX] will work just as good.
  * #Motion
@@ -4325,6 +4335,11 @@ YVEC (integer);
 	79 = seriously
 	80 = intensely
 	81 = extremely
+}
+
+@Xists {
+	1 = Exists
+	0 = Does Not Exist
 }
 
 @YesNo {

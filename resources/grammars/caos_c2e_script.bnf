@@ -231,6 +231,7 @@
 		K_YVEC = "regexp:[yY][vV][eE][cC]"
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
+		K_XIST = "regexp:[Xx][Ii][Ss][Tt]"
 		K_XX_DEF = " "
 		K_XX_EXPR = " "
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
@@ -1114,7 +1115,7 @@ new_line_like
 	;
 
 space_like
-	::= (space+|!(space)<<inMode "whitespaceOptional">>) <<exitMode "whitespaceOptional">>
+	::= (space+|!(space|NEWLINE|new_line_like)<<inMode "whitespaceOptional">>) <<exitMode "whitespaceOptional">>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -5247,6 +5248,7 @@ r_kw_a
 	|	<<isVariant 'DS'>>K_ROOM
 	|	<<isVariant 'C3'>>K_ROOM
 	|	<<isVariant 'CV'>>K_ROOM
+	|	K_XIST
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5904,8 +5906,6 @@ l_kw_a_d
 
 l_kw_d_d_d
 	::= <<isVariant 'C2'>>K_DOOR
-	|	K_PUHL
-	|	K_PUPT
 	|	K_RMND
 	|	K_RMNR
 	{
@@ -5929,6 +5929,8 @@ l_kw_d_d_d
 l_kw_d_d
 	::= <<isVariant 'C2'>>K_GAME
 	|	K_CLS2
+	|	K_PUHL
+	|	K_PUPT
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6745,13 +6747,13 @@ number
 
 private string_literal
 	::= quote_string_literal
-	|   (!<<expects 'ANIM'>>)c1_string
+	|   c1_string
 	;
 
 c1_string
-	::= OPEN_BRACKET TEXT_LITERAL? CLOSE_BRACKET
+	::= OPEN_BRACKET ((!<<expects 'ANIM'>>|<<expects 'STRING'>>)TEXT_LITERAL)? CLOSE_BRACKET
 	{
-		pin(".*")=2
+		pin(".*")=3
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
@@ -6987,7 +6989,8 @@ expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
 	;
 
 rvalue
-	::= rvalue_prime
+	::= <<expects 'TOKEN'>> token
+	|	(!<<expects 'TOKEN'>>)rvalue_prime
 	|	named_constant
 	|	vars
 	|	expression
