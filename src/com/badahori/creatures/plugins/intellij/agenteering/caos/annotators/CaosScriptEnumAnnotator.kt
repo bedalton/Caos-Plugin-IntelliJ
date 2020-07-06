@@ -93,7 +93,7 @@ class CaosScriptEnumAnnotator : Annotator {
         }
         if (variant != CaosVariant.C1)
             return
-        val badElement = header.kEsee ?: header.kEtch ?: header.kEpas
+        val badElement = header.firstChild
         ?: return // return if enum type is ENUM
         var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
                 .range(badElement)
