@@ -94,6 +94,7 @@ _IT_ (agent);
  * First macro script parameters specified in command [MESG WRT+]]
  * #Caos
  *
+ * @lvalue
  * @rvalue
  * @return (any)
  */
@@ -103,6 +104,7 @@ _P1_ (any);
  * Second macro script parameters specified in command [MESG WRT+]]
  * #Caos
  *
+ * @lvalue
  * @rvalue
  * @return (any)
  */
