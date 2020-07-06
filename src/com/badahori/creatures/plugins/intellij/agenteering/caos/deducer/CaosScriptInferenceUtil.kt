@@ -2,7 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.scope
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 
 object CaosScriptInferenceUtil {
@@ -31,35 +33,49 @@ object CaosScriptInferenceUtil {
         val name = (element as? CaosScriptNamedVar)
                 ?.let {
                     (element.reference.resolve() as? CaosScriptCompositeElement)
-                            ?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedVarAssignment::class.java)
+                            ?.getParentOfType(CaosScriptNamedVarAssignment::class.java)
                             ?.varToken
                             ?.text
                 }
                 ?: element.text
+        val startOffset = element.startOffset
         val scope = CaosScriptPsiImplUtil.getScope(element)
-        while (enclosingBlock != null) {
-            val value = getValueInBlock(name, enclosingBlock, scope, endRange)
-            if (value != null)
-                return value
-            enclosingBlock = enclosingBlock.getParentOfType(CaosScriptCodeBlock::class.java)
-        }
-        return CaosVar.CaosVarNone
+        return element
+                .getParentOfType(CaosScriptEventScript::class.java)?.let {
+                    PsiTreeUtil.collectElementsOfType(it, CaosScriptCAssignment::class.java)
+                }
+                ?.asSequence()
+                ?.mapNotNull {
+                    it.arguments.lastOrNull()
+                }
+                ?.filter { it.endOffset < startOffset && it.scope.sharesScope(scope) }
+                ?.sortedByDescending { it.endOffset }
+                ?.mapNotNull { arg ->
+                    val value = arg.toCaosVar()
+                    val simpleType = value.simpleType
+                    if (simpleType !in skipTypes) {
+                        if (value is CaosVar.CaosCommandCall) {
+                            if (value.returnType != null && value.returnType !in skipTypes)
+                                value
+                            else
+                                null
+                        } else {
+                            value
+                        }
+                    } else
+                        null
+                }
+                ?.firstOrNull() ?: CaosVar.CaosVarNone
     }
 
-    private fun getValueInBlock(name:String, enclosingBlock: CaosScriptCodeBlock, scope:CaosScope, endRange:Int) : CaosVar? {
+    private fun getValueInBlock(name: String, enclosingBlock: CaosScriptCodeBlock, scope: CaosScope, endRange: Int): CaosVar? {
         val rndvVal = enclosingBlock
                 .codeBlockLineList
                 .mapNotNull { line ->
                     line.commandCall?.cRndv
                 }
                 .filter {
-                    val thisScope = CaosScriptPsiImplUtil.getScope(it)
-                    when (thisScope.blockType) {
-                        CaosScriptBlockType.DOIF -> scope.blockType == CaosScriptBlockType.DOIF || thisScope.enclosingScope.intersect(scope.enclosingScope).size != scope.enclosingScope.size
-                        CaosScriptBlockType.ELIF -> scope.blockType == CaosScriptBlockType.ELIF || thisScope.enclosingScope.intersect(scope.enclosingScope).size != scope.enclosingScope.size
-                        CaosScriptBlockType.ELSE -> scope.blockType == CaosScriptBlockType.ELSE || thisScope.enclosingScope.intersect(scope.enclosingScope).size != scope.enclosingScope.size
-                        else -> true
-                    }
+                    CaosScriptPsiImplUtil.getScope(it).sharesScope(scope)
                 }
                 .map {
                     val minMax = it.rndvIntRange
@@ -81,12 +97,7 @@ object CaosScriptInferenceUtil {
                 }
                 .filter {
                     val thisScope = CaosScriptPsiImplUtil.getScope(it)
-                    when (thisScope.blockType) {
-                        CaosScriptBlockType.DOIF -> scope.blockType == CaosScriptBlockType.DOIF || thisScope.enclosingScope.intersect(scope.enclosingScope).size != scope.enclosingScope.size
-                        CaosScriptBlockType.ELIF -> scope.blockType == CaosScriptBlockType.ELIF || thisScope.enclosingScope.intersect(scope.enclosingScope).size != scope.enclosingScope.size
-                        CaosScriptBlockType.ELSE -> scope.blockType == CaosScriptBlockType.ELSE || thisScope.enclosingScope.intersect(scope.enclosingScope).size != scope.enclosingScope.size
-                        else -> true
-                    }
+                    scope.sharesScope(thisScope)
                 }
                 .sortedByDescending { it.startOffset }
         val rndvStart = rndvVal?.first ?: -1
@@ -134,7 +145,7 @@ object CaosScriptInferenceUtil {
                                     CaosVar.CaosCommandCall(token.text, CaosExpressionValueType.fromSimpleName(it))
                                 }
                     }
-                    .firstOrNull { it.returnType != null && it.returnType !in skipTypes}
+                    .firstOrNull { it.returnType != null && it.returnType !in skipTypes }
         }
     }
 
@@ -144,5 +155,4 @@ object CaosScriptInferenceUtil {
             CaosExpressionValueType.NULL,
             CaosExpressionValueType.VARIABLE
     )
-
 }
