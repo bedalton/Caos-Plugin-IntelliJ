@@ -23,5 +23,12 @@ enum class CaosVariant(val code:String, val fullName:String, val index:Int) {
         }
     }
 
-
+    val isOld:Boolean get() {
+        return this in VARIANT_OLD
+    }
+    val isNotOld:Boolean get() {
+        return this !in VARIANT_OLD
+    }
 }
+
+val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
