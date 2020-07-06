@@ -286,7 +286,7 @@ expression_factory
 	;
 
 private file_body
-	::= script_body_element (!<<eof>> space_like_or_newline script_body_element)*
+	::= script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
 	{
 	}
 	;
@@ -1102,6 +1102,10 @@ space_like
 
 private space
 	::= SPACE_
+	;
+
+trailing_space
+	::= space_like_or_newline*
 	;
 
 expression
@@ -2777,6 +2781,7 @@ c_kw_d
 	|	K_MOUS
 	|	K_NET_COL space_like (K_LINE|incomplete)
 	|	K_OUTV
+	|	K_PAGE
 	|	K_PART
 	|	K_PAT_COL space_like (K_CHAR|incomplete)
 	|	K_PAT_COL space_like (K_KILL|incomplete)
@@ -6714,7 +6719,7 @@ number
 
 private string_literal
 	::= quote_string_literal
-	|   c1_string
+	|   (!<<expects 'ANIM'>>)c1_string
 	;
 
 c1_string
@@ -6813,7 +6818,7 @@ expects_token ::= <<pushExpectation 'TOKEN'>>rvalue<<popExpectation>>
 	}
 	;
 
-expects_byte_string ::= <<pushExpectation 'OTHER'>>rvalue<<popExpectation>>
+expects_byte_string ::= <<pushExpectation 'ANIM'>>rvalue<<popExpectation>>
 	{
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsByteStringStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
