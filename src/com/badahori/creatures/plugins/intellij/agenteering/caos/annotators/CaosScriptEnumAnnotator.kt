@@ -1,8 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.Annotator
-import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptEtchOnC1QuickFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
@@ -11,13 +8,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
+import com.intellij.psi.PsiElement
 
 class CaosScriptEnumAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val variant = (element.containingFile as? CaosScriptFile).variant
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         when (element) {
-            is CaosScriptCEnum -> element.getParentOfType(CaosScriptEnumNextStatement::class.java)?.let { annotateBadEnumStatement(variant, it, annotationWrapper) }
+            is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)
             is CaosScriptCNext -> annotateNext(element, annotationWrapper)
             is CaosScriptCNscn -> annotateNscn(element, annotationWrapper)
             is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationWrapper)
@@ -53,7 +53,7 @@ class CaosScriptEnumAnnotator : Annotator {
         }
 
         if (parent is CaosScriptEnumNextStatement) {
-            val enum = parent.enumHeaderCommand.cEnum.text.toUpperCase()
+            val enum = parent.enumHeaderCommand.commandStringUpper
             val next = "NEXT".matchCase(element.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(element)
@@ -72,32 +72,26 @@ class CaosScriptEnumAnnotator : Annotator {
 
     private fun annotateBadEnumStatement(variant: CaosVariant, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
         val cNscn = element.cNscn
+        val enumToken = element.enumHeaderCommand.commandToken
+        val enumText = enumToken.text.toUpperCase()
         if (cNscn != null) {
-            val enum = element.enumHeaderCommand.cEnum.text
             val next = "NEXT".matchCase(cNscn.text)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enumText, "NEXT", "NSCN"))
                     .range(cNscn)
                     .withFix(CaosScriptReplaceWordFix(next, cNscn))
                     .create()
         }
-        val header = element.enumHeaderCommand.cEnum
-        if (header.kEnum != null)
+        if (enumText == "ENUM")
             return
-        if (variant !in CaosScriptSyntaxErrorAnnotator.VARIANT_OLD)
+        if (variant.isNotOld)
             return
-        header.kEpas?.let {
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", it.text.toUpperCase()))
-                    .range(it)
-                    .create()
+        if (enumText != "ECON" && variant == CaosVariant.C2) {
             return
         }
-        if (variant != CaosVariant.C1)
-            return
-        val badElement = header.firstChild
-        ?: return // return if enum type is ENUM
-        var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", badElement.text.toUpperCase()))
-                .range(badElement)
-        if (badElement.text.toUpperCase() == "ETCH") {
+
+        var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", enumText))
+                .range(enumToken)
+        if (enumText == "ETCH") {
             builder = builder.withFix(CaosScriptEtchOnC1QuickFix(element))
         }
         builder.create()
