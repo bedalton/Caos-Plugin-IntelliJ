@@ -1377,7 +1377,7 @@ object CaosScriptPsiImplUtil {
         } ?: return null
         val assignmentToken = assignment.commandStringUpper
         if (assignmentToken in varTokenAssignmentSearchTerminatingOperands) {
-            return null
+            //return null
         }
         val rvalue = (assignment.arguments.lastOrNull() as? CaosScriptExpectsValueOfType)?.rvalue
                 ?: return null
