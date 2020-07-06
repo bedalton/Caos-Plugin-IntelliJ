@@ -37,8 +37,9 @@ private const val EAME = 17
 private const val NAME = 18
 private const val NULL = 19
 private const val NONE = 20
-private const val PICT_DIMENSIONS = 21;
-private const val C2_GAME = 22;
+private const val PICT_DIMENSIONS = 21
+private const val C2_GAME = 22
+private const val INFERRED_VARIABLE_TYPE = 23
 
 
 
@@ -67,6 +68,7 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         NONE -> CaosVarNone
         PICT_DIMENSIONS -> CaosPictDimension(readInt(), readInt())
         C2_GAME -> C2GameVar(readInt(), readInt())
+        INFERRED_VARIABLE_TYPE -> CaosInferredVariableType(readNameAsString() ?: UNDEF, CaosExpressionValueType.valueOf(readNameAsString() ?: UNDEF))
         else -> throw Exception("Unexpected caos var type '$value' encountered")
     }
 }
@@ -179,6 +181,12 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
             writeInt(caosVar.first)
             writeInt(caosVar.second)
         }
+        is CaosInferredVariableType -> {
+            writeInt(INFERRED_VARIABLE_TYPE)
+            writeName(caosVar.varName)
+            writeName(caosVar.value.simpleName)
+        }
+
     }
 }
 
