@@ -1,5 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsAgent
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -12,15 +22,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import kotlin.math.abs
 
 class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
@@ -70,9 +71,9 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
         val numParameters = chemParameters.size / 2
         val stringBuilder = StringBuilder()
-        for (i in 1..numParameters) {
+        for (i in 0 until numParameters) {
             val pos = i * 2
-            val argument = arguments[pos + 1]
+            val argument = chemParameters[pos]
             val expression = (argument as? CaosScriptExpectsValueOfType)
                     ?.rvalue
                     ?.expression
@@ -83,14 +84,13 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
             val value = expression?.getTypeDefValue()?.value
                     ?: argument.text
                     ?: continue
-            val amount = arguments[pos + 2].toCaosVar()
+            val amount = chemParameters[pos + 1].toCaosVar()
             if (amount is CaosVar.CaosLiteral.CaosInt) {
                 if (amount.value == 0L)
                     continue
                 stringBuilder.append(", +")
                 stringBuilder.append(amount.value).append(" ")
-            }
-            else if (amount is CaosVar.CaosLiteral.CaosFloat) {
+            } else if (amount is CaosVar.CaosLiteral.CaosFloat) {
                 if (abs(amount.value) < 0.0001)
                     continue
                 stringBuilder.append(", +")
@@ -100,7 +100,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
             }
             stringBuilder.append(value)
         }
-        return stringBuilder.toString().trim(' ',',').nullIfEmpty()
+        return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
     }
 
     private fun foldC3ChemCall(commandCall: CaosScriptCommandCall, commandDef: CaosDefCommandDefElement): String? {
@@ -122,7 +122,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 .toTypedArray()
     }
 
-    private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall, group:FoldingGroup): FoldingDescriptor? {
+    private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
         if (!shouldFold(commandCall))
             return null
         return when (commandCall.containingCaosFile.variant) {
@@ -135,9 +135,15 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
     }
 
-    private fun getC1StimFoldingDescriptor(commandCall: CaosScriptCommandCall, group:FoldingGroup): FoldingDescriptor? {
+    private fun getC1StimFoldingDescriptor(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
         val arguments = commandCall.arguments
-        val start = arguments.firstOrNull()
+
+
+        val start = (if (arguments.firstOrNull() is CaosScriptExpectsAgent)
+            arguments.getOrNull(1)
+        else
+            arguments.firstOrNull()
+                )
                 ?.startOffset
                 ?: return null
         val end = arguments.lastOrNull()?.endOffset
