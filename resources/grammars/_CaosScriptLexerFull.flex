@@ -56,7 +56,7 @@ COMMENT_TEXT=[^ \n]+
 DECIMAL=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
-WORD=[_a-zA-Z0-9]{3}[_a-zA-Z0-9!#:]
+WORD=[_a-zA-Z0-9]{3}[_a-zA-Z0-9!#:]|[a-zA-Z0-9#!$_+]{4}
 ID=[_a-zA-Z][_a-zA-Z0-9]*
 SPACE=[ ]
 EQ=[Ee][Qq]
@@ -139,7 +139,9 @@ N_VAR = [$][a-zA-Z_0-9]+
 
 <IN_STRING> {
 	\"						{ yybegin(IN_LINE); return CaosScript_QUOTE_STRING;}
+	"\\\\"					{ }
 	\\\"					{ }
+	\\/\"					{ }
 	[^\n\r\"]				{ }
 }
 
