@@ -26,13 +26,13 @@ fun com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptE
         return getCommandParameterTypeDefValue(it, text)
     }
 
-    getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)?.let {
+    getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
         return getEqualityExpressionTypeDefValue(it, this)
     }
     return null
 }
 
-private fun getEqualityExpressionTypeDefValue(equalityExpression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression): CaosDefTypeDefValueStruct? {
+private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression): CaosDefTypeDefValueStruct? {
     val value = expression.intValue?.let { "$it" } ?: expression.stringValue ?: return null
     val other = equalityExpression.expressionList.let {
         when (it.size) {
@@ -162,13 +162,13 @@ fun com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptE
         return getCommand(it)
     }
 
-    getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)?.let {
+    getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
         return getCommand(it, this)
     }
     return null
 }
 
-private fun getCommand(equalityExpression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
+private fun getCommand(equalityExpression: CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
     val other = equalityExpression.expressionList.let {
         when (it.size) {
             0, 1 -> return null
