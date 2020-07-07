@@ -1,5 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.equalTo
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -13,20 +24,8 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
 
-class CaosScriptEtchOnC1QuickFix (element: CaosScriptEnumNextStatement) : LocalQuickFix, IntentionAction {
+class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQuickFix, IntentionAction {
 
     private val pointer = SmartPointerManager.createPointer(element)
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
@@ -39,10 +38,10 @@ class CaosScriptEtchOnC1QuickFix (element: CaosScriptEnumNextStatement) : LocalQ
         return false
     }
 
-    private fun shouldProcess(enumNext: CaosScriptEnumNextStatement) : Boolean {
+    private fun shouldProcess(enumNext: CaosScriptEnumNextStatement): Boolean {
         val variant = enumNext.containingCaosFile.variant
         return variant == CaosVariant.C1
-                && enumNext.enumHeaderCommand.commandToken.kEtch != null
+                && enumNext.enumHeaderCommand.commandToken equalTo "etch"
                 && enumNext.enumHeaderCommand.classifier?.species != null
                 && getVarNumberToUse(enumNext) != null
     }
@@ -72,7 +71,7 @@ class CaosScriptEtchOnC1QuickFix (element: CaosScriptEnumNextStatement) : LocalQ
         }
     }
 
-    private fun getVarNumberToUse(element: CaosScriptEnumNextStatement) : Int? {
+    private fun getVarNumberToUse(element: CaosScriptEnumNextStatement): Int? {
         val containingScript = element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement::class.java)
                 ?: return null
         val varsUsed = PsiTreeUtil.collectElementsOfType(containingScript, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken::class.java)
@@ -84,7 +83,7 @@ class CaosScriptEtchOnC1QuickFix (element: CaosScriptEnumNextStatement) : LocalQ
                 .mapNotNull {
                     it.varIndex
                 }.toSet()
-        for(i in 0..9) {
+        for (i in 0..9) {
             if (i !in varNumbersUsed) {
                 return i
             }
@@ -92,10 +91,12 @@ class CaosScriptEtchOnC1QuickFix (element: CaosScriptEnumNextStatement) : LocalQ
         return null
     }
 
-    private fun applyFix(document:Document, editor: Editor?, element: CaosScriptEnumNextStatement) {
+    private fun applyFix(document: Document, editor: Editor?, element: CaosScriptEnumNextStatement) {
         val project = element.project
-        val etch = element.enumHeaderCommand.commandToken.kEtch
-                ?: return
+        val etch = if (element.enumHeaderCommand.commandToken equalTo "ETCH")
+            element.enumHeaderCommand.commandToken
+        else
+            return
         val varNumber = getVarNumberToUse(element)
                 ?: return
         val insertionPoint = element.enumHeaderCommand.endOffset
@@ -123,14 +124,14 @@ class CaosScriptEtchOnC1QuickFix (element: CaosScriptEnumNextStatement) : LocalQ
         val setv = "SETV".matchCase(etchText) + " $varText $targ$lineDelim"
         if (editor != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
-            EditorUtil.insertText(editor, setv, element.startOffset,false)
+            EditorUtil.insertText(editor, setv, element.startOffset, false)
             PsiDocumentManager.getInstance(project).commitDocument(document)
-            EditorUtil.insertText(editor, text, insertionPoint+setv.length, false)
+            EditorUtil.insertText(editor, text, insertionPoint + setv.length, false)
         } else {
             PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.insertText(document, setv, element.startOffset)
             PsiDocumentManager.getInstance(project).commitDocument(document)
-            EditorUtil.insertText(project, document, text, insertionPoint+setv.length)
+            EditorUtil.insertText(project, document, text, insertionPoint + setv.length)
         }
         PsiDocumentManager.getInstance(project).commitDocument(document)
         CodeStyleManager.getInstance(project).reformat(element.parent, false)
