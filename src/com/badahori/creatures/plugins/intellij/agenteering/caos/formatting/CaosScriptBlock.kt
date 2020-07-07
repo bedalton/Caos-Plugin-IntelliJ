@@ -29,11 +29,14 @@ class CaosScriptBlock internal constructor(
         val settings: CommonCodeStyleSettings
 ) : AbstractBlock(node, wrap, alignment) {
 
+    private val caosSettings by lazy {
+        CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(CaosScriptCodeStyleSettings::class.java)
+    }
+
     private val spacingProcessor: CaosScriptSpacingProcessor by lazy {
         CaosScriptSpacingProcessor(node, settings)
     }
     private val indentProcessor: CaosScriptIndentProcessor by lazy {
-        val caosSettings = CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(CaosScriptCodeStyleSettings::class.java)
         CaosScriptIndentProcessor(settings, caosSettings)
     }
 
@@ -56,7 +59,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
-        if ((node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
+        if (caosSettings.INDENT_BLOCKS) {//Allow indenting C1, as whitespace will be trimmed || node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
             return noneIndent
         }
         val elementType = myNode.elementType
@@ -82,7 +85,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getIndent(): Indent? {
-        if ((node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1 || !CaosScriptProjectSettings.indent)
+        if (!(CaosScriptProjectSettings.indent || caosSettings.INDENT_BLOCKS)) // allow indent on C1(node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1 || !CaosScriptProjectSettings.indent)
             return Indent.getNoneIndent()
         return indentProcessor.getChildIndent(node)
     }
