@@ -1967,6 +1967,14 @@ NORN (agent);
 NSCN (command);
 
 /*
+ * Returns a null agent pointer.
+ *
+ * @rvalue
+ * @return (agent)
+ */
+NULL (agent);
+
+/*
  * Returns the distance to any obstacle in the given direction regardless of [SIZE], floor value or
  * door values.
  * #Motion
