@@ -1677,6 +1677,30 @@ SPCS (integer);
 SPOT (command) spot (integer) left (integer) top (integer) right (integer) bottom (integer);
 
 /*
+ * Send a stimulus to all creatures who can see [OWNR].
+ * significance – amount to nudge the Source lobe neurone by, this decides the significance of
+ * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
+ * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
+ * remaining values should be set to 0
+ * #Creatures
+ *
+ * @param {significance} (integer) - amount to nudge significance neurone by
+ * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
+ * @param {intensity} (integer) - Amount to nudge input neurone by
+ * @param {features} (integer) - bit record of features
+ * @param {chem1} (integer@Chemicals)
+ * @param {amount1} (integer)
+ * @param {chem2} (integer@Chemicals)
+ * @param {amount2} (integer)
+ * @param {chem3} (integer@Chemicals)
+ * @param {amount3} (integer)
+ * @param {chem4} (integer@Chemicals)
+ * @param {amount4} (integer)
+ *
+ */
+STIM FROM (command) significance (integer) input (integer) intensity (integer) features (integer) chem1 (integer) amount1 (integer) chem2 (integer) amount2 (integer) chem3 (integer) amount3 (integer) chem4 (integer) amount4 (integer);
+
+/*
  * Shout the list of stimulus_items to all within earshot
  * significance – amount to nudge the Source lobe neurone by, this decides the significance of
  * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
