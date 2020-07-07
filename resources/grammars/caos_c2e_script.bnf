@@ -1077,8 +1077,8 @@ private byte_string_body
 	;
 
 private byte_string_pose_list
-	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>byte_string_pose_element)
-	|	(!(<<isVariant 'C1'>>|<<isVariant 'C2'>>)space_like? (byte_string_pose_element space_like)+ byte_string_pose_element?)
+	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>)byte_string_pose_element
+	|	(!(<<isVariant 'C1'>>|<<isVariant 'C2'>>))space_like? (byte_string_pose_element space_like?)+
 	;
 
 byte_string_pose_element
@@ -1105,8 +1105,8 @@ space_like_or_newline
 	;
 
 new_line_like
-	::= symbol_comma
-	|	NEWLINE+
+	::= symbol_comma <<exitMode 'WHITE_SPACE_OPTIONAL'>>
+	|	NEWLINE+ <<exitMode 'WHITE_SPACE_OPTIONAL'>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -1115,7 +1115,7 @@ new_line_like
 	;
 
 space_like
-	::= (space+|!(space|NEWLINE|new_line_like)<<inMode "whitespaceOptional">>) <<exitMode "whitespaceOptional">>
+	::= (space+|!(space|NEWLINE|new_line_like)(<<inMode 'WHITE_SPACE_OPTIONAL'>>)) <<exitMode 'WHITE_SPACE_OPTIONAL'>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -1133,12 +1133,12 @@ trailing_space
 
 expression
 	::= rvalue_prime
-	|	string_literal <<enterMode "whitespaceOptional">>
-	|	byte_string <<enterMode "whitespaceOptional">>
-	|	animation_string <<enterMode "whitespaceOptional">>
+	|	string_literal <<enterMode 'WHITE_SPACE_OPTIONAL'>>
+	|	byte_string <<enterMode 'WHITE_SPACE_OPTIONAL'>>
+	|	animation_string <<enterMode 'WHITE_SPACE_OPTIONAL'>>
 	|	vars
 	|	named_constant
-	|	number <<enterMode "whitespaceOptional">>
+	|	number <<enterMode 'WHITE_SPACE_OPTIONAL'>>
 	|	<<expects 'TOKEN'>>token
 	|	pict_dimension_literal
 	|	incomplete
@@ -1248,7 +1248,8 @@ command_call ::= command_call_by_args // I think private values all have equal p
 	;
 
 private command_call_by_args
-	::= c_targ
+	::= incomplete
+	|	c_targ
 	|	c_d_d
 	|	c_l
 	|	c_f
@@ -6747,11 +6748,11 @@ number
 
 private string_literal
 	::= quote_string_literal
-	|   c1_string
+	|   (<<isVariant 'C1'>>|<<isVariant 'C2'>>)c1_string
 	;
 
 c1_string
-	::= OPEN_BRACKET ((!<<expects 'ANIM'>>|<<expects 'STRING'>>)TEXT_LITERAL)? CLOSE_BRACKET
+	::= OPEN_BRACKET ((!<<expects 'ANIM'>>|<<expects 'STRING' 'false'>>)TEXT_LITERAL)? CLOSE_BRACKET
 	{
 		pin(".*")=3
 		implements = [
@@ -6989,7 +6990,7 @@ expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
 	;
 
 rvalue
-	::= <<expects 'TOKEN'>> token
+	::= <<expects 'TOKEN' 'false'>> token
 	|	(!<<expects 'TOKEN'>>)rvalue_prime
 	|	named_constant
 	|	vars
