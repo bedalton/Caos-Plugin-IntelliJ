@@ -1,5 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -9,22 +22,6 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.intellij.psi.search.GlobalSearchScope
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import kotlin.math.abs
@@ -51,10 +48,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
-            is CaosScriptSubroutineName -> annotateSubroutineName(variant, element, annotationWrapper)
-            is CaosScriptCRndv -> annotateRndv(variant, element, annotationWrapper)
             is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
+            is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> if (element.parent == element.containingFile && variant == CaosVariant.C1) {
                 if (element.previous?.firstChild !is CaosScriptComment) {
                     simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
@@ -64,29 +60,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(element, annotationWrapper)
             }
-        }
-    }
-
-    private fun annotateRndv(variant: CaosVariant, element: CaosScriptCRndv, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant.isNotOld)
-            return
-        val minMax:Pair<Int?, Int?> = element.rndvIntRange
-        val min = minMax.first ?: return
-        val max = minMax.second ?: return
-        if (min < max)
-            return
-        if (minMax.first == minMax.second) {
-            annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same", min))
-                    .range(element.commandToken)
-                    .create()
-            return
-        }
-        listOfNotNull(element.minElement, element.maxElement).forEach {
-            // Todo Infer min/max values from each variable value
-            annotationWrapper.newWarningAnnotation(CaosBundle.message("caos.annotator.command-annotator.rndv-out-of-order", variant))
-                    .range(it)
-                    .withFix(CaosScriptReorderRndvParameters(element))
-                    .create()
         }
     }
 
@@ -101,23 +74,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     .withFix(CaosScriptInsertBeforeFix("Insert '$setv' before $command", setv, element))
                     .create()
         }
-    }
-
-    private fun annotateSubroutineName(variant: CaosVariant, element: CaosScriptSubroutineName, annotationWrapper: AnnotationHolderWrapper) {
-        val name = element.name
-        if ((variant == CaosVariant.C1 || variant == CaosVariant.C2) && name.length != 4) {
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length", variant))
-                    .range(element)
-                    .create()
-        }
-        val searchScope = GlobalSearchScope.fileScope(element.containingFile)
-        val hasMatch = CaosScriptSubroutineIndex.instance[name, element.project, searchScope]
-                .isNotEmpty()
-        if (hasMatch)
-            return
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.subroutine-not-found", name))
-                .range(element)
-                .create()
     }
 
     private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
@@ -186,6 +142,23 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
+    private fun annotateSetvCompoundLvalue(variant: CaosVariant, element: CaosScriptCAssignment, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant.isNotOld)
+            return
+        val args = element.arguments
+        if (args.size == 2) {
+            return
+        }
+        if (element.cKwNegv != null && args.size == 1)
+            return
+        val lvalue = args.getOrNull(0) as? CaosScriptLvalue
+        if (lvalue?.argumentsLength.orElse(0) > 0)
+            return
+        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.expects-a-value"))
+                .range(TextRange(element.endOffset-1, element.endOffset))
+                .create()
+    }
+
     @Suppress("SameParameterValue")
     private fun simpleError(element: PsiElement, message: String, annotationWrapper: AnnotationHolderWrapper) {
         annotationWrapper.newErrorAnnotation(message)
@@ -199,7 +172,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (variant.isNotOld)
             return
         if (prevText.contains("\n")) {
-            if ((element.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
+            if (false) { //(element.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
                 annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.c1-leading-spaces"))
                         .range(element)
                         .withFix(CaosScriptFixTooManySpaces(element))
@@ -214,12 +187,14 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
         val text = element.text
-        if (text.length == 1 || (text.isEmpty() && nextIsCommaOrSpace))
+        if (text.length == 1 || (text.isEmpty() && (nextIsCommaOrSpace||nextText.contains("\n"))))
             return
         if (text.isEmpty())  {
             if (variant.isNotOld) {
                 return
             }
+            if (nextText.startsWith("\n"))// && variant != CaosVariant.C1)
+                return
             val next = element.next
                     ?: return
             val toMark = TextRange(element.endOffset - 1, next.startOffset+1)
@@ -231,7 +206,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val errorTextRange = if (element.text.contains("\n") || previousIsCommaOrSpace)
             element.textRange
         else
-            TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset)
+            TextRange.create(element.textRange.startOffset, element.textRange.endOffset + 1)
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                 .range(errorTextRange)
                 .withFix(CaosScriptFixTooManySpaces(element))
@@ -243,8 +218,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateComment(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant != CaosVariant.C1)
+        // Skip comment error for now, as C2 CAOS tool strips comments anyways, so we should too?
+        if (true || variant != CaosVariant.C1)
             return
+
         annotationWrapper.newErrorAnnotation("Comments are not allowed in [C1] variant")
                 .range(element)
                 .create()
@@ -332,6 +309,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
+
     companion object {
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
 
@@ -397,7 +375,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             var builder = annotationWrapper
                     .newErrorAnnotation(error)
                     .range(element)
-            if (variant.isOld) {
+            if (variant.isOld && commandsOfType.any { it.isLvalue && it.isVariant(variant) }) {
                 builder = builder
                         .withFix(CaosScriptInsertBeforeFix("Insert SETV before ${element.commandString.toUpperCase()}", "SETV".matchCase(command), element))
             }
