@@ -468,7 +468,7 @@ ATTR (command) attributes (integer);
 ATTR (integer);
 
 /*
- * This is the OVxx variable of the agent passed in. It is equivalent to target agent, OVxx, but
+ * This is the [OVxx] variable of the agent passed in. It is equivalent to target agent, [OVxx], but
  * means that you don't need to target it first :) You can also use them to implement primitive
  * arrays.
  * #Variables
