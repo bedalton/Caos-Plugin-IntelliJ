@@ -112,7 +112,9 @@ class CaosScriptTokenSets {
                 CaosScript_K_SCRP,
                 CaosScript_K_UNTL,
                 CaosScript_K_CRETN,
-                CaosScript_K_ECON
+                CaosScript_K_ECON,
+                CaosScript_K_AND,
+                CaosScript_K_OR
         )
 
         @JvmStatic
