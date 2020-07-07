@@ -10,8 +10,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 
 enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
@@ -33,11 +38,25 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
             val referencedCommand = getCommand(commandElement)
                     ?: return mutableListOf()
             val skipLast = skipLast(commandElement)
-            val parameters = getParametersAsStrings(referencedCommand.parameterStructs, skipLast)
+            val last = if (skipLast) {
+                commandElement.getSelfOrParentOfType(CaosScriptCAssignment::class.java)?.let { assignment ->
+                    val firstCommand = (assignment.arguments.firstOrNull() as? CaosScriptLvalue)
+                    val arg = assignment.arguments.lastOrNull()
+                    val lastParameter = firstCommand?.let {getCommand(it) }?.parameterStructs?.lastOrNull()
+                    if (lastParameter != null && arg != null)
+                        listOf(InlayInfo(lastParameter.name, arg.startOffset))
+                    else
+                        null
+                }
+            } else {
+               null
+            } ?: emptyList()
+            val parameterStructs = referencedCommand.parameterStructs
+            val parameters = getParametersAsStrings(parameterStructs, skipLast)
             return commandElement.arguments.mapIndexedNotNull{ i, it ->
                 parameters.getOrNull(i)?.let { parameter -> InlayInfo("$parameter:", it.startOffset) }
 
-            }.toMutableList()
+            }.toList() + last
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
@@ -48,8 +67,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
                     ?: return null
             val referencedCommand = getCommand(commandElement)
                     ?: return null
-            val skipLast = skipLast(commandElement)
-            val parameters = getParametersAsStrings(referencedCommand.parameterStructs, skipLast)
+            val parameters = getParametersAsStrings(referencedCommand.parameterStructs, false)
             return HintInfo.MethodInfo(commandElement.commandString, parameters, CaosDefLanguage.instance)
         }
     }
@@ -61,20 +79,19 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
 
         private val setLike = listOf("SETV", "SETS", "SETA")
 
+        private val SKIP_LAST = listOf("PUHL", "PUPT", "CLS2")
+
         private fun skipLast(element:CaosScriptCommandElement) : Boolean {
             return if (element.commandString.toUpperCase() in setLike) {
                 val firstArg = element.argumentValues.firstOrNull()
-                (firstArg is CaosVar.CaosCommandCall && firstArg.text.toUpperCase() == "CLS2")
+                (firstArg is CaosVar.CaosCommandCall && firstArg.text.toUpperCase() in SKIP_LAST)
             } else
                 false
         }
 
         private fun getParametersAsStrings(parameters:List<CaosDefParameterStruct>, skipLast:Boolean) : List<String> {
-            return if (skipLast && parameters.size == 2) {
-                listOfNotNull(parameters.firstOrNull()?.name, "species:")
-            } else if (skipLast) {
-                val lastIndex = parameters.lastIndex
-                parameters.mapIndexed { i, parameter -> if (i == lastIndex) "species:" else parameter.name }
+            return if (skipLast) {
+                (0 until parameters.lastIndex).mapIndexed { i, parameter -> parameters[i].name }
             } else {
                 parameters.map { it.name }
             }
