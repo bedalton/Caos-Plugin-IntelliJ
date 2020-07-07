@@ -1,15 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C3
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.DS
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
 import com.intellij.psi.tree.IElementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.CV
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.intellij.psi.tree.TokenSet
 import gnu.trove.TObjectLongHashMap
 
 @Suppress("UNUSED_PARAMETER", "unused")
@@ -23,6 +26,15 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     const val OTHER = -1
     const val ANIM = 5
     const val ANY = 3
+    const val WHITE_SPACE_OPTIONAL = "whiteSpaceOptional"
+    val needsNoWhitespace = TokenSet.create(
+            CaosScriptTypes.CaosScript_BYTE_STRING,
+            CaosScriptTypes.CaosScript_OPEN_BRACKET,
+            CaosScriptTypes.CaosScript_INT,
+            CaosScriptTypes.CaosScript_FLOAT,
+            CaosScriptTypes.CaosScript_QUOTE_STRING,
+            CaosScriptTypes.CaosScript_CHAR
+    )
     private var blocks = 0
     private val blockEnds = listOf<IElementType>(
             CaosScriptTypes.CaosScript_K_ENDM, CaosScriptTypes.CaosScript_K_NEXT, CaosScriptTypes.CaosScript_K_ELSE, CaosScriptTypes.CaosScript_K_ENDI, CaosScriptTypes.CaosScript_K_ELIF, CaosScriptTypes.CaosScript_K_REPE, CaosScriptTypes.CaosScript_K_NSCN, CaosScriptTypes.CaosScript_K_UNTL, CaosScriptTypes.CaosScript_K_EVER, CaosScriptTypes.CaosScript_K_RETN, CaosScriptTypes.CaosScript_K_SUBR
@@ -85,7 +97,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                         level: Int,
                         expectation: Int
     ): Boolean {
-        if (CaosScriptProjectSettings.variant != CV)
+        if (ignoreExpects())
             return true
         if (expectsType.isEmpty())
             expectsType.add(expectation)
@@ -97,7 +109,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun popExpectation(builder_: PsiBuilder?,
                        level: Int): Boolean {
-        if (CaosScriptProjectSettings.variant != CV)
+        if (ignoreExpects())
             return true
         expectsType.remove(0)
         return true
@@ -106,10 +118,28 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun expects(builder_: PsiBuilder?,
                 level: Int,
-                expectation: Int): Boolean {
-        if (CaosScriptProjectSettings.variant != CV)
-            return true
+                expectation: Int
+    ): Boolean {
+        return expects(builder_, level, expectation, true)
+    }
+
+    @JvmStatic
+    fun expects(builder_: PsiBuilder?,
+                level: Int,
+                expectation: Int,
+                default:Boolean
+    ): Boolean {
+        if (ignoreExpects())
+            return default
+        if (expectsType.isEmpty()) {
+            LOGGER.severe("Checking expectation '$expectation' when no expectations in stack")
+            return default
+        }
         return expectsType[0] == expectation
+    }
+
+    private fun ignoreExpects() : Boolean {
+        return CaosScriptProjectSettings.variant == C3 || CaosScriptProjectSettings.variant == DS
     }
 
     @JvmStatic
