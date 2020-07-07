@@ -2564,7 +2564,7 @@ private vars
 
 
 
-private l_none ::= l_kw_none
+private l_none ::= l_kw_none <<enterMode 'NEEDS_NEXT'>>
 	{
 		pin=1
 	}
