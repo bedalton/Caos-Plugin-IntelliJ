@@ -63,19 +63,24 @@
     <!-- ===== CAOS Script ====== -->
     <!-- ======================== -->
     <!-- LANG -->
-    <fileTypeFactory implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
-    <lang.parserDefinition implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
-                           language="CaosScript" />
+    <fileTypeFactory
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
+    <lang.parserDefinition
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
+        language="CaosScript" />
 
     <completion.contributor language="CaosScript"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
-    <editorNotificationProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
+    <editorNotificationProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider" />
 
     <!-- Project -->
-    <directoryProjectGenerator implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptVariantTemplate"/>
-    <projectTemplatesFactory implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory"/>
+    <directoryProjectGenerator
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptVariantTemplate" />
+    <projectTemplatesFactory
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory" />
 
     <!-- Formatting -->
     <lang.formatter language="CaosScript"
@@ -93,7 +98,8 @@
         language="CaosScript"
         key="CaosScript"
     />
-    <colorSettingsPage implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
+    <colorSettingsPage
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml" />
@@ -132,6 +138,31 @@
                      shortName="ExpectedAssigmentType"
     />
 
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSubroutineInspection"
+                     level="ERROR"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Subroutine Is Defined Check"
+                     shortName="SubroutineIsDefined"
+    />
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomVarOutOfOrderInspection"
+                     level="WARNING"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="RNDV values out of order"
+                     shortName="RNDVOutOfOrder"
+    />
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomValueIsTheSameInspection"
+                     level="WEAK WARNING"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Rndv value is always the same"
+                     shortName="RndvIsTheSame"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
@@ -140,25 +171,38 @@
     <!--lang.foldingBuilder language="CaosScript"
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptRValueFoldingBuilder"/-->
     <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder"/>
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
 
 
     <!-- Indices -->
-    <applicationService serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
-                        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl" />
-    <stubElementTypeHolder class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptConstAssignmentIndex" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarAssignmentIndex" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarUseIndex" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
+    <applicationService
+        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
+        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl" />
+    <stubElementTypeHolder
+        class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptConstAssignmentIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarAssignmentIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarUseIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
+
+    <!-- Actions -->
+    <enterHandlerDelegate
+        id="CaosScriptEnterDelegate"
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptEnterDelegate" />
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
     <!-- ======================== -->
     <!-- LANG -->
-    <lang.parserDefinition implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser.CaosDefParserDefinition"
-                           language="CaosDef" />
+    <lang.parserDefinition
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser.CaosDefParserDefinition"
+        language="CaosDef" />
     <completion.contributor language="CaosDef"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.contributor.CaosDefCompletionContributor" />
     <lang.findUsagesProvider
@@ -166,11 +210,14 @@
         language="CaosDef" />
 
     <!-- Bundled Definitions -->
-    <library.type implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosLibraryType" id="CaosLibrary" />
+    <library.type
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosLibraryType"
+        id="CaosLibrary" />
 
     <!-- Highlighting -->
-    <syntaxHighlighter implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighter"
-                       key="CaosDef" />
+    <syntaxHighlighter
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighter"
+        key="CaosDef" />
     <lang.syntaxHighlighterFactory
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
         language="CaosDef" />
@@ -181,11 +228,15 @@
 
 
     <!-- Indices -->
-    <stubElementTypeHolder class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
-    <applicationService serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
-                        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex" />
-    <stubIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex" />
+    <stubElementTypeHolder
+        class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
+    <applicationService
+        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
+        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex" />
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
 
@@ -199,9 +250,12 @@
     <!-- ======================== -->
     <!-- ====== SPR Files ======= -->
     <!-- ======================== -->
-    <fileType name="SPR file" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType" fieldName="INSTANCE"
-              language="CreaturesSPR" extensions="spr"/>
-    <fileEditorProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileEditorProvider"/>
+    <fileType name="SPR file"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
+              fieldName="INSTANCE"
+              language="CreaturesSPR" extensions="spr" />
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileEditorProvider" />
     <!-- Add your extensions here -->
   </extensions>
 
@@ -211,7 +265,8 @@
 
   <project-components>
     <component>
-      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectComponent</implementation-class>
+      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectComponent
+      </implementation-class>
     </component>
   </project-components>
   <application-components>
