@@ -10,9 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptTypesInspection : LocalInspectionTool() {
+class CaosScriptTypesInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Expected parameter type"
     override fun getGroupDisplayName(): String = "CaosScript"
@@ -137,9 +138,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         // Similar var types
         private val BYTE_STRING_LIKE = listOf(CaosExpressionValueType.BYTE_STRING, CaosExpressionValueType.C1_STRING, CaosExpressionValueType.ANIMATION)
         private val INT_LIKE = listOf(CaosExpressionValueType.INT, CaosExpressionValueType.DECIMAL)
-        private val FLOAT_LIKE = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL)
+        private val FLOAT_LIKE = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL, CaosExpressionValueType.INT)
         private val ANY_TYPE = listOf(CaosExpressionValueType.ANY, CaosExpressionValueType.VARIABLE, CaosExpressionValueType.UNKNOWN)
         private val NUMERIC = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL, CaosExpressionValueType.INT)
+        private val AGENT_LIKE = listOf(CaosExpressionValueType.AGENT, CaosExpressionValueType.NULL)
         /**
          * Determine whether types are similar despite having different types
          */
@@ -151,6 +153,8 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             if (actualType in INT_LIKE && expectedType in INT_LIKE)
                 return true
             if (actualType in FLOAT_LIKE && expectedType in FLOAT_LIKE)
+                return true
+            if (actualType in AGENT_LIKE && expectedType in AGENT_LIKE)
                 return true
             if (variant.isNotOld)
                 return actualType in NUMERIC && expectedType in NUMERIC
