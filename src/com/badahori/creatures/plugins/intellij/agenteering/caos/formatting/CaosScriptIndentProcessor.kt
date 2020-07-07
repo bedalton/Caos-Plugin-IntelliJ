@@ -16,7 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPare
 
 class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, private val caosSettings: CaosScriptCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
-        if (!caosSettings.INDENT_BLOCKS || (node.psi?.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1)
+        if (!caosSettings.INDENT_BLOCKS)// Allow indents in C1 as indents will be stripped on inject || (node.psi?.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1)
             return Indent.getNoneIndent()
         val elementType = node.elementType
         var firstChild: ASTNode? = node
