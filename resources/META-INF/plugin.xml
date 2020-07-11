@@ -75,6 +75,7 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider" />
+    <moduleType id="CAOS_MODULE" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType" classpathProvider="true"/>
 
     <!-- Project -->
     <directoryProjectGenerator
