@@ -15,9 +15,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 
-fun com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
+fun CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
     // Lists values can only be for expressions of string or int
     if (!(isString || isInt)) {
         return null
@@ -32,7 +33,7 @@ fun com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptE
     return null
 }
 
-private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression): CaosDefTypeDefValueStruct? {
+private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefTypeDefValueStruct? {
     val value = expression.intValue?.let { "$it" } ?: expression.stringValue ?: return null
     val other = equalityExpression.expressionList.let {
         when (it.size) {
@@ -45,26 +46,20 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
         }
     } ?: return null
     val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
-    if (token == null) {
-        return null
-    }
+            ?: return null
     val reference = token
             .reference
             .multiResolve(true)
             .firstOrNull()
             ?.element
-            ?.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
-    if (reference == null) {
-        return null
-    }
+            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+            ?: return null
     val typeDef = reference
             .docComment
             ?.returnTypeStruct
             ?.type
             ?.typedef
-    if (typeDef == null) {
-        return null
-    }
+            ?: return null
     val variant = expression.containingCaosFile.variant
     return getListValue(variant, typeDef, expression.project, value)
 }
@@ -93,7 +88,7 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             ?.multiResolve(true)
             ?.firstOrNull()
             ?.element
-            ?.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
             ?: return null
     val parameterStruct = reference
             .docComment
@@ -110,10 +105,11 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
 }
 
 
-internal fun getCommand(element: CaosScriptCommandElement): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
+internal fun getCommand(element: CaosScriptCommandElement): CaosDefCommandDefElement? {
     val commandTokens = try {
         element.commandToken?.reference?.multiResolve(true)?.mapNotNull {
-            (it.element as? CaosDefCompositeElement)?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+            ProgressIndicatorProvider.checkCanceled()
+            (it.element as? CaosDefCompositeElement)?.getParentOfType(CaosDefCommandDefElement::class.java)
         }
     } catch (e: Exception) {
         null
@@ -130,9 +126,10 @@ internal fun getCommand(element: CaosScriptCommandElement): com.badahori.creatur
     }
 }
 
-internal fun getCommand(commandToken: CaosScriptIsCommandToken): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
+internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosDefCommandDefElement? {
     val commandTokens = commandToken.reference.multiResolve(true).mapNotNull {
-        (it.element as? CaosDefCompositeElement)?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+        ProgressIndicatorProvider.checkCanceled()
+        (it.element as? CaosDefCompositeElement)?.getParentOfType(CaosDefCommandDefElement::class.java)
     }
     if (commandTokens.isEmpty())
         return null
@@ -153,7 +150,7 @@ internal fun getCommand(commandToken: CaosScriptIsCommandToken): com.badahori.cr
     }
 }
 
-fun com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression.getCommand(): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
+fun CaosScriptExpression.getCommand(): CaosDefCommandDefElement? {
     // Lists values can only be for expressions of string or int
     if (!(isString || isInt)) {
         return null
@@ -168,7 +165,7 @@ fun com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptE
     return null
 }
 
-private fun getCommand(equalityExpression: CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
+private fun getCommand(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefCommandDefElement? {
     val other = equalityExpression.expressionList.let {
         when (it.size) {
             0, 1 -> return null
@@ -179,19 +176,17 @@ private fun getCommand(equalityExpression: CaosScriptEqualityExpression, express
         }
     } ?: return null
     val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
-    if (token == null) {
-        return null
-    }
+            ?: return null
     return token
             .reference
             .multiResolve(true)
             .firstOrNull()
             ?.element
-            ?.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
 }
 
 
-private fun getCommand(valueOfType: CaosScriptExpectsValueOfType): com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement? {
+private fun getCommand(valueOfType: CaosScriptExpectsValueOfType): CaosDefCommandDefElement? {
     val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
             ?: return null
     return containingCommand
@@ -200,6 +195,6 @@ private fun getCommand(valueOfType: CaosScriptExpectsValueOfType): com.badahori.
             ?.multiResolve(true)
             ?.firstOrNull()
             ?.element
-            ?.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
             ?: return null
 }
