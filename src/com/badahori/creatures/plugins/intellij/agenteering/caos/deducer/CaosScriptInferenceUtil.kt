@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.scope
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
@@ -37,12 +38,12 @@ object CaosScriptInferenceUtil {
             }
             val variable = argument.varToken
                     ?: argument.expression?.varToken
-            variable?.let varLet@{
+            /*variable?.let varLet@{
                 inferPreviouslyAssignedType(it)?.let { value ->
                     if (value.simpleType !in skipTypes)
                         return value
                 }
-            }
+            }*/
             val caosVar = argument.toCaosVar()
             if (caosVar is CaosVar.CaosNumberedVar || caosVar is CaosVar.CaosNamedGameVar) {
                 when (assignment.firstChild?.text?.toUpperCase()) {
@@ -87,6 +88,7 @@ object CaosScriptInferenceUtil {
     }
 
     private fun inferPreviouslyAssignedType(element: CaosScriptVarToken): CaosVar? {
+        ProgressIndicatorProvider.checkCanceled()
         val startOffset = element.startOffset
         val scope = element.scope
         val varText = element.text.toLowerCase()
@@ -97,6 +99,7 @@ object CaosScriptInferenceUtil {
                 .filter { it.endOffset < startOffset && it.lvalue?.text?.toLowerCase() == varText && it.scope.sharesScope(scope) }
                 .sortedByDescending { it.endOffset }
                 .mapNotNull {
+
                     val argument = it.arguments.lastOrNull() as? CaosScriptRvalue
                             ?: return@mapNotNull null
                     val varToken = argument.varToken
