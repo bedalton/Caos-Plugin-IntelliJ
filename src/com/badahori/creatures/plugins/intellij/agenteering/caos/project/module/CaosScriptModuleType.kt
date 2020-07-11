@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import icons.CaosScriptIcons
 import javax.swing.Icon
 
-class CaosScriptModuleType(id: String) : ModuleType<CaosScriptModuleBuilder>(id) {
+class CaosScriptModuleType : ModuleType<CaosScriptModuleBuilder>("CAOS_MODULE") {
     override fun createModuleBuilder(): CaosScriptModuleBuilder {
         return CaosScriptModuleBuilder()
     }
