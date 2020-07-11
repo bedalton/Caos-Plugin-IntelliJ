@@ -87,9 +87,9 @@ object Injector {
     }
 
     private fun sanitize(caos:String) : String {
-        var out = caos.replace("\n+".toRegex(), ",")
-        out = out.replace("/\\s+".toRegex(), " ")
-        out.replace("\\s*,\\s*".toRegex(), ",")
+        var out = caos
+        out = out.replace("/[ ]+".toRegex(), " ")
+        out.replace("[ ]*,[ ]".toRegex(), ",")
         return out.trim()
     }
 
