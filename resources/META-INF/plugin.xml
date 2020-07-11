@@ -262,6 +262,12 @@
 
   <actions>
     <!-- Add your actions here -->
+    <action
+        id="CaosScript.NewFile"
+        icon="CaosScriptIcons.CAOS_FILE_ICON"
+        class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptNewFileAction">
+      <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+    </action>
   </actions>
 
   <project-components>
