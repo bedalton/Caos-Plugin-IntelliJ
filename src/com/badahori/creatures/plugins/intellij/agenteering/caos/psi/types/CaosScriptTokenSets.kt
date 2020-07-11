@@ -59,7 +59,8 @@ class CaosScriptTokenSets {
         val NUMBER_LITERALS = create(
                 CaosScript_INT,
                 CaosScript_DECIMAL,
-                CaosScript_PLUS
+                CaosScript_PLUS,
+                CaosScript_BINARY
         )
 
         @JvmStatic
@@ -72,7 +73,8 @@ class CaosScriptTokenSets {
                 CaosScript_TEXT_LITERAL,
                 CaosScript_C_1_STRING,
                 CaosScript_OPEN_BRACKET,
-                CaosScript_CLOSE_BRACKET
+                CaosScript_CLOSE_BRACKET,
+                CaosScript_CHAR
         )
 
         val LITERALS: TokenSet = create(
