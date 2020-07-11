@@ -1115,7 +1115,7 @@ new_line_like
 	;
 
 space_like
-	::= (space+|!(space|NEWLINE|new_line_like)(<<inMode 'WHITE_SPACE_OPTIONAL'>>)) <<exitMode 'WHITE_SPACE_OPTIONAL'>>
+	::= (space+|!(space|NEWLINE|new_line_like|SPACE_)(<<inMode 'WHITE_SPACE_OPTIONAL'>>)) <<exitMode 'WHITE_SPACE_OPTIONAL'>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -1335,6 +1335,13 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_cv_char
+	{
+		//recoverWhile=command_call_recover
+	}
+	;
+
+private command_call_recover
+	::= !(NEWLINE|COMMA)
 	;
 
 c_assignment
@@ -2564,7 +2571,7 @@ private vars
 
 
 
-private l_none ::= l_kw_none <<enterMode 'NEEDS_NEXT'>>
+private l_none ::= l_kw_none
 	{
 		pin=1
 	}
