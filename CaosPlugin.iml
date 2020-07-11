@@ -87,6 +87,5 @@
     <orderEntry type="jdk" jdkName="IntelliJ IDEA IU-201.6668.121" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Bundled Protobuf Distribution" level="application" />
-    <orderEntry type="library" name="pretty-tools-JDDE-2.1.0-javadoc" level="project" />
   </component>
 </module>
