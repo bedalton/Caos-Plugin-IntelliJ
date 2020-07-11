@@ -13,6 +13,7 @@
       <entry name="?*.caosdef" />
       <entry name="?*.properties" />
       <entry name="?*.dta" />
+      <entry name="?*.dll" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="8">
       <module name="CaosPlugin" target="8" />
