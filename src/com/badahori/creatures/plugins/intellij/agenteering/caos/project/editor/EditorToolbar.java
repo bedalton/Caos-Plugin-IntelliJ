@@ -35,6 +35,10 @@ public class EditorToolbar {
         injectButton.addActionListener(listener);
     }
 
+    public void showInjectionButton(boolean show) {
+        injectButton.setVisible(show);
+    }
+
     public void removeInjectionHandler(ActionListener listener) {
         injectButton.removeActionListener(listener);
     }
