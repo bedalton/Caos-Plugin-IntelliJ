@@ -15,11 +15,10 @@
  */
 package com.pretty_tools.dde.server;
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.LibraryLoader;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosLibraryLoader;
 import com.pretty_tools.dde.DDEException;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /**
  * This class represents a Dynamic Data Exchange (DDE) Server.
@@ -327,8 +326,8 @@ public abstract class DDEServer
     static// Loads the library, if available.
     {
         if ("64".equals(System.getProperty("sun.arch.data.model")))
-            LibraryLoader.loadLib("JavaDDEx64");
+            CaosLibraryLoader.loadLib("JavaDDEx64");
         else
-            LibraryLoader.loadLib("JavaDDE");
+            CaosLibraryLoader.loadLib("JavaDDE");
     }
 }
