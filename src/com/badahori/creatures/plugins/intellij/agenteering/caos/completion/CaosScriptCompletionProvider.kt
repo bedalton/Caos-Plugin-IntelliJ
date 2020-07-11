@@ -20,7 +20,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import icons.CaosScriptIcons
+import javafx.scene.control.ProgressIndicator
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
     private val IS_NUMBER = "[0-9]+".toRegex()
@@ -76,7 +78,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         var parent: PsiElement? = element
-        while (parent != null && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIncomplete) {
+        while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall && parent !is CaosScriptIncomplete) {
             parent = parent.parent
         }
         if (parent == null) {
@@ -88,6 +90,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val allowUppercase = variant !in VARIANT_OLD
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
+                    ProgressIndicatorProvider.checkCanceled()
                     if (it.commandName.toUpperCase() in SKIP_VAR_NAMES)
                         return@filter false
                     if (!it.isVariant(variant))
@@ -96,10 +99,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                         CaosCommandType.COMMAND -> it.isCommand
                         CaosCommandType.RVALUE -> it.isRvalue
                         CaosCommandType.LVALUE -> it.isLvalue
+                        CaosCommandType.CONTROL_STATEMENT -> it.isCommand
                         CaosCommandType.UNDEFINED -> it.isRvalue
                     }
                 }
                 .map {
+                    ProgressIndicatorProvider.checkCanceled()
                     createCommandTokenLookupElement(allowUppercase, element, case, it.commandName, it.isCommand, it.returnTypeString)
                 }
         resultSet.addAllElements(singleCommands)
@@ -181,7 +186,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
     private fun needsSpaceAfter(element: PsiElement, commandString: String): Boolean {
         var parent: PsiElement? = element.parent
-        while (parent != null && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue && parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall) {
+        while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
             parent = parent.parent
         }
         if (parent == null)
@@ -190,9 +195,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         var matches = CaosDefCommandElementsByNameIndex.Instance[commandString, element.project]
                 .filter { variant in it.variants }
         matches = when (parent) {
-            is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall -> matches.filter { it.isCommand }
-            is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue -> matches.filter { it.isRvalue }
-            is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue -> matches.filter { it.isLvalue }
+            is CaosScriptCommandCall -> matches.filter { it.isCommand }
+            is CaosScriptRvalue -> matches.filter { it.isRvalue }
+            is CaosScriptLvalue -> matches.filter { it.isLvalue }
             else -> return false
         }
         if (matches.isEmpty())
