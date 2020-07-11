@@ -16,6 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
@@ -36,6 +37,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         val typeList = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance["EventNumbers", element.project]
                 .filter {
+                    ProgressIndicatorProvider.checkCanceled()
                     it.containingCaosDefFile.isVariant(variant)
                 }
                 .firstOrNull()
@@ -52,6 +54,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
         // Get a collection of the literal expressions in the document below root
         val literalExpressions = PsiTreeUtil.findChildrenOfType(root, CaosScriptExpression::class.java)
         return literalExpressions.filter {
+            ProgressIndicatorProvider.checkCanceled()
             getExpressionFoldingText(it).isNotNullOrBlank()
         }.map {
             FoldingDescriptor(it.node, it.textRange, group)

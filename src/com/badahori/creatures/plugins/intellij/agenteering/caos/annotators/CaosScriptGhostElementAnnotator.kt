@@ -10,9 +10,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 class CaosScriptGhostElementAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
+        ProgressIndicatorProvider.checkCanceled()
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         if (element !is CaosScriptCompositeElement)
             return
@@ -57,10 +59,12 @@ class CaosScriptGhostElementAnnotator : Annotator {
 
     private fun <PsiT:PsiElement> annotate(element:PsiT, expectedTokens:List<String>, annotationWrapper: AnnotationHolderWrapper) {
         for(expectedToken in expectedTokens) {
+            ProgressIndicatorProvider.checkCanceled()
             if (element.lastChild.text.toUpperCase().contains(expectedToken))
                 return
         }
         for(expectedToken in expectedTokens) {
+            ProgressIndicatorProvider.checkCanceled()
             annotationWrapper.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
                     .range(TextRange(element.lastChild.endOffset - 1, element.lastChild.endOffset))
                     .withFix(AppendStatementTerminator(element, expectedToken))

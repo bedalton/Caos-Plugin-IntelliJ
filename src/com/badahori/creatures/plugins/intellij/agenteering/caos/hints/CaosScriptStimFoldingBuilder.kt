@@ -15,6 +15,7 @@ import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
@@ -117,6 +118,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     shouldFold(it)
                 }
                 .mapNotNull {
+                    ProgressIndicatorProvider.checkCanceled()
                     getCommandCallFoldingRegion(it, group)
                 }
                 .toTypedArray()
