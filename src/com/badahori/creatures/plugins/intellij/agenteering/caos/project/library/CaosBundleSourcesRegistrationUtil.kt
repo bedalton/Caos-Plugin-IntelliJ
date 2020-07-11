@@ -11,6 +11,7 @@ import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.openapi.vfs.VirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.contents
+import com.intellij.openapi.roots.ModifiableRootModel
 import java.util.logging.Logger
 
 
@@ -51,14 +52,8 @@ object CaosBundleSourcesRegistrationUtil {
         }
         val rootModel = ModuleRootManager.getInstance(module).modifiableModel
         val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
-        val libraryPath = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
+        val libraryPath = libraryPath()
         if (libraryPath == null) {
-            val pluginRoot = CaosFileUtil.PLUGIN_HOME_DIRECTORY
-            if (pluginRoot == null || !pluginRoot.exists()) {
-                LOGGER.severe("Failed to locate bundled caos definition files: Plugin root is invalid")
-            } else {
-                LOGGER.severe("Failed to locate bundled caos definition files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
-            }
             rootModel.dispose()
             modifiableModel.dispose()
             return false
@@ -68,14 +63,40 @@ object CaosBundleSourcesRegistrationUtil {
         if (isSourceCurrent(libraryPath, modifiableModel)) {
             return true
         }
+
+        rootModel.commit()
+        return true
+    }
+
+    fun libraryPath() : VirtualFile? {
+        val libraryPath = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
+        if (libraryPath == null) {
+            val pluginRoot = CaosFileUtil.PLUGIN_HOME_DIRECTORY
+            if (pluginRoot == null || !pluginRoot.exists()) {
+                LOGGER.severe("Failed to locate bundled caos definition files: Plugin root is invalid")
+            } else {
+                LOGGER.severe("Failed to locate bundled caos definition files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
+            }
+            return null
+        }
+        return libraryPath
+    }
+
+    fun addLibrary(modifiableModel: ModifiableModel) : Boolean {
+        val libraryPath = libraryPath()
+                ?: return false
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
                 ?: modifiableModel.createLibrary(LIBRARY_NAME, CaosLibraryType.LIBRARY)
         val libModel = library.modifiableModel
         libModel.addRoot(libraryPath, OrderRootType.SOURCES)
         libModel.commit()
         modifiableModel.commit()
-        rootModel.commit()
         return true
+    }
+
+
+    fun addLibrary(modifiableModel: ModifiableRootModel) : Boolean {
+        return addLibrary(modifiableModel.moduleLibraryTable.modifiableModel)
     }
 
     private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {

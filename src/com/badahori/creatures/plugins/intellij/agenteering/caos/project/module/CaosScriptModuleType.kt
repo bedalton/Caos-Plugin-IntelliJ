@@ -21,4 +21,9 @@ class CaosScriptModuleType : ModuleType<CaosScriptModuleBuilder>("CAOS_MODULE") 
     override fun getNodeIcon(p0: Boolean): Icon {
         return CaosScriptIcons.MODULE_ICON
     }
+
+    companion object {
+        @JvmStatic
+        val INSTANCE = CaosScriptModuleType()
+    }
 }
