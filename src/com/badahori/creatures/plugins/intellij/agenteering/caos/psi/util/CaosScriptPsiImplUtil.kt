@@ -23,6 +23,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRndvStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
@@ -111,6 +112,8 @@ object CaosScriptPsiImplUtil {
                     ?.let { getCommandString(it) }
             CaosCommandType.LVALUE -> command
                     .getSelfOrParentOfType(CaosScriptLvalue::class.java)
+                    ?.let { getCommandString(it) }
+            CaosCommandType.CONTROL_STATEMENT -> (command as? CaosScriptIsCommandToken ?:  command.getChildOfType(CaosScriptIsCommandToken::class.java))
                     ?.let { getCommandString(it) }
             CaosCommandType.UNDEFINED -> null
         } ?: UNDEF
@@ -1431,19 +1434,36 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
     // Getting base element will skip this possibility, so check first
     if (isOrHasParentOfType(CaosScriptExpression::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
         return CaosCommandType.RVALUE
-
     val parent: PsiElement? = getParentOfType(CaosScriptBaseCommandElement::class.java)
-    if (parent == null || parent !is CaosScriptCommandElement) {
+    if (parent == null || (parent !is CaosScriptCommandElement || parent is CaosScriptNamedGameVar)) {
         if (isOrHasParentOfType(CaosScriptIncomplete::class.java)) {
             LOGGER.info("$text is incomplete and marked as command by default")
             return CaosCommandType.COMMAND
         }
+        if (isOrHasParentOfType(CaosScriptDoifStatement::class.java))
+            return CaosCommandType.CONTROL_STATEMENT
+        if (isOrHasParentOfType(CaosScriptEnumHeaderCommand::class.java))
+            return CaosCommandType.CONTROL_STATEMENT
+        if (isOrHasParentOfType(CaosScriptEnumSceneryStatement::class.java))
+            return CaosCommandType.CONTROL_STATEMENT
+        if (isOrHasParentOfType(CaosScriptRepsHeader::class.java))
+            return CaosCommandType.CONTROL_STATEMENT
+        if (isOrHasParentOfType(CaosScriptLoopStatement::class.java))
+            return CaosCommandType.CONTROL_STATEMENT
         return CaosCommandType.UNDEFINED
     }
     return when (parent) {
         is CaosScriptLvalue -> CaosCommandType.LVALUE
         is CaosScriptRvalue -> CaosCommandType.RVALUE
         is CaosScriptCommandCall -> CaosCommandType.COMMAND
+        is CaosScriptEnumNextStatement -> CaosCommandType.CONTROL_STATEMENT
+        is CaosScriptCAssignment -> CaosCommandType.COMMAND
+        is CaosScriptCGsub -> CaosCommandType.COMMAND
+        is CaosScriptCRndv -> CaosCommandType.COMMAND
+        is CaosScriptCTarg -> CaosCommandType.COMMAND
+        is CaosScriptEscnHeader -> CaosCommandType.CONTROL_STATEMENT
+        is CaosScriptRepsHeader -> CaosCommandType.CONTROL_STATEMENT
+        is CaosScriptSubroutineHeader -> CaosCommandType.CONTROL_STATEMENT
         else -> parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
     }
 }
@@ -1452,7 +1472,8 @@ enum class CaosCommandType(val value: String) {
     COMMAND("Command"),
     RVALUE("RValue"),
     LVALUE("LValue"),
-    UNDEFINED("???")
+    CONTROL_STATEMENT("Control Statement"),
+    UNDEFINED("???");
 }
 
 fun <PsiT : PsiElement> PsiElement.getSelfOrParentOfType(parentClass: Class<PsiT>): PsiT? {

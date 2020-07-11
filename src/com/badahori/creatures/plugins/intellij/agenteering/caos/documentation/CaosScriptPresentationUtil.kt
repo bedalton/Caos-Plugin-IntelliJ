@@ -24,6 +24,7 @@ object CaosScriptPresentationUtil {
             override fun getIcon(b: Boolean): Icon {
                 return when (element.getEnclosingCommandType()) {
                     CaosCommandType.COMMAND -> CaosScriptIcons.COMMAND
+                    CaosCommandType.CONTROL_STATEMENT -> CaosScriptIcons.COMMAND
                     CaosCommandType.RVALUE -> CaosScriptIcons.RVALUE
                     CaosCommandType.LVALUE -> CaosScriptIcons.LVALUE
                     CaosCommandType.UNDEFINED -> CaosScriptIcons.COMMAND
@@ -38,10 +39,8 @@ object CaosScriptPresentationUtil {
                 .multiResolve(true)
                 .firstOrNull()
                 ?.element
-        if (resolved == null) {
-            return simpleDescription
-        }
-        val command = resolved.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+                ?: return simpleDescription
+        val command = resolved.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return simpleDescription
         return command.fullCommand
 
