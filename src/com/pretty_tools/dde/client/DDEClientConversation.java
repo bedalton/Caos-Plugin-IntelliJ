@@ -16,7 +16,7 @@
 
 package com.pretty_tools.dde.client;
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.LibraryLoader;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosLibraryLoader;
 import com.pretty_tools.dde.ClipboardFormat;
 import com.pretty_tools.dde.DDEException;
 
@@ -432,9 +432,9 @@ public class DDEClientConversation {
     static// Loads the library, if available.
     {
         if ("64".equals(System.getProperty("sun.arch.data.model"))) {
-            LibraryLoader.loadLib("/dde/JavaDDEx64");
+            CaosLibraryLoader.loadLib("/dde/JavaDDEx64");
         } else {
-            LibraryLoader.loadLib("/dde/JavaDDE");
+            CaosLibraryLoader.loadLib("/dde/JavaDDE");
         }
     }
 }
