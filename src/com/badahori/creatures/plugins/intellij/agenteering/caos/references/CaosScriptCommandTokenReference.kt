@@ -19,6 +19,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
 
@@ -47,6 +48,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         return CaosDefCommandElementsByNameIndex
                 .Instance[parentCommand.commandWordList.joinToString(" ") { it.text }, myElement.project]
                 .filter {
+                    ProgressIndicatorProvider.checkCanceled()
                     it.variants.intersect(variants.orEmpty()).isNotEmpty()
                 }.mapNotNull {
                     it.command.commandWordList.getOrNull(index)
@@ -63,18 +65,19 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 .Instance[formattedName, myElement.project]
                 // Filter for type and variant
                 .filter {
+                    ProgressIndicatorProvider.checkCanceled()
                     val isVariant = it.isVariant(variant)
                     if (!isVariant)
                         return@filter false
                     val isForElement = when (type) {
                         CaosCommandType.COMMAND -> it.isCommand
+                        CaosCommandType.CONTROL_STATEMENT -> it.isCommand
                         CaosCommandType.RVALUE -> it.isRvalue
                         CaosCommandType.LVALUE -> it.isLvalue
                         CaosCommandType.UNDEFINED -> it.isRvalue
                     }
                     if (!isForElement) {
                         if (!(it.isLvalue || it.isRvalue || it.isCommand)) {
-                            LOGGER.severe("Command element '${it.commandName}' is unknown return type")
                             return@filter false
                         }
                     }

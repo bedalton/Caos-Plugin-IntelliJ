@@ -52,7 +52,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
             is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> if (element.parent == element.containingFile && variant == CaosVariant.C1) {
-                if (element.previous?.firstChild !is CaosScriptComment) {
+                if (element.containingFile.firstChild == element) {
                     simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
                 }
             }
@@ -350,6 +350,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                             CaosCommandType.COMMAND -> it.isCommand
                             CaosCommandType.RVALUE -> it.isRvalue
                             CaosCommandType.LVALUE -> it.isLvalue
+                            CaosCommandType.CONTROL_STATEMENT -> it.isCommand
                             CaosCommandType.UNDEFINED -> false
                         }
                     }
