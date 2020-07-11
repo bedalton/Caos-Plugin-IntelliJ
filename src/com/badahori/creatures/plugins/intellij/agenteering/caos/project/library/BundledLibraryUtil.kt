@@ -38,7 +38,7 @@ internal fun registerSourcesAsLibrary(module: Module, libraryName:String, direct
                 //throw Exception("Failed to locate bundled files: Plugin root is invalid")
             } else {
                 val searchScope = GlobalSearchScopes.directoriesScope(module.project, true, pluginRoot)
-                val errorMessage = "Failed to locate bundled files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>;\nfiles:\n${FilenameIndex.getAllFilesByExt(module.project, "j", searchScope).map { "\n\t${it.name}" }}"
+                val errorMessage = "Failed to locate bundled files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>;\nfiles:\n${FilenameIndex.getAllFilesByExt(module.project, "cos", searchScope).map { "\n\t${it.name}" }}"
                 LOGGER.severe(errorMessage)
                 //throw Exception(errorMessage)
             }
