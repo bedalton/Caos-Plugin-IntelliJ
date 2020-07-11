@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationManager
@@ -16,11 +17,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.*
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.File
+
 
 val VirtualFile.contents: String
     get() {
@@ -53,12 +54,13 @@ object CaosFileUtil {
     private val PLUGIN_HOME_FILE: File?
         get() = PLUGIN?.path
 
+
     val PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
             val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
-            val jar = libFolder.findChild("Creatures CAOS and Agenteering.jar")
+            val jar = libFolder.findChild("CaosPlugin.jar")
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
             return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
         }
@@ -83,7 +85,6 @@ fun copyToClipboard(string: String) {
     val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
     clipboard.setContents(stringSelection, null)
 }
-
 
 fun CaosScriptFile.trimErrorSpaces() {
     ApplicationManager.getApplication().runWriteAction {
