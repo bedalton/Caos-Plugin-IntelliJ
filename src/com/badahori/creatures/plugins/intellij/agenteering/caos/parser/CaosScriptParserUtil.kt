@@ -111,6 +111,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                        level: Int): Boolean {
         if (ignoreExpects())
             return true
+        if (expectsType.isEmpty())
+            return true
         expectsType.remove(0)
         return true
     }
