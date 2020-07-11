@@ -10,13 +10,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.lang.reflect.Method;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 public class EditorToolbar {
     private JComboBox<String> variant;
-    private JButton copyOneLine;
     private JButton trimSpaces;
     private JPanel panel;
     private JButton docsButton;
+    private JButton injectButton;
 
     public JPanel getPanel() {
         return panel;
@@ -28,6 +29,18 @@ public class EditorToolbar {
 
     public void addDocsButtonClickListener(ActionListener actionListener) {
         docsButton.addActionListener(actionListener);
+    }
+
+    public void addInjectionHandler(ActionListener listener) {
+        injectButton.addActionListener(listener);
+    }
+
+    public void removeInjectionHandler(ActionListener listener) {
+        injectButton.removeActionListener(listener);
+    }
+
+    public void setInjectButtonEnabled(boolean enable) {
+        injectButton.setEnabled(enable);
     }
 
     public void setDocsButtonEnabled(boolean enabled) {
@@ -44,10 +57,6 @@ public class EditorToolbar {
 
     public String getSelectedVariant() {
         return (String) variant.getSelectedItem();
-    }
-
-    public void addCopyOneLineListener(ActionListener actionListener) {
-        copyOneLine.addActionListener(actionListener);
     }
 
     public void addTrimSpacesListener(ActionListener actionListener) {
@@ -74,26 +83,25 @@ public class EditorToolbar {
         panel.setBackground(new Color(- 1));
         variant = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("Caos Variant");
         defaultComboBoxModel1.addElement("C1");
         defaultComboBoxModel1.addElement("C2");
         defaultComboBoxModel1.addElement("CV");
         defaultComboBoxModel1.addElement("C3");
         defaultComboBoxModel1.addElement("DS");
         variant.setModel(defaultComboBoxModel1);
-        variant.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures//plugins/intellij/caos-bundle", "caos.toolbar.varaint-tool-tip"));
-        panel.add(variant, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        variant.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/caos-bundle", "caos.toolbar.varaint-tool-tip"));
+        panel.add(variant, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        copyOneLine = new JButton();
-        this.$$$loadButtonText$$$(copyOneLine, this.$$$getMessageFromBundle$$$("com/badahori/creatures//plugins/intellij/caos-bundle", "caos.toolbar.copy-as-one-liner"));
-        panel.add(copyOneLine, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         trimSpaces = new JButton();
         this.$$$loadButtonText$$$(trimSpaces, this.$$$getMessageFromBundle$$$("com/badahori/creatures//plugins/intellij/caos-bundle", "caos.toolbar.trim-error-spaces"));
         panel.add(trimSpaces, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         docsButton = new JButton();
         docsButton.setText("Docs");
-        panel.add(docsButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel.add(docsButton, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        injectButton = new JButton();
+        injectButton.setText("Inject");
+        panel.add(injectButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     private static Method $$$cachedGetBundleMethod$$$ = null;
