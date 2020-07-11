@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.Annot
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 
 class CaosScriptHighlighterAnnotator : Annotator {
@@ -66,7 +67,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 ?.reference
                 ?.multiResolve(true)
                 .orEmpty()
-                .mapNotNull { it.element as? CaosDefCommandDefElement }
+                .mapNotNull { it.element?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java) }
                 .any {
                     val parameter = it.parameterList
                             .getOrNull(index)
