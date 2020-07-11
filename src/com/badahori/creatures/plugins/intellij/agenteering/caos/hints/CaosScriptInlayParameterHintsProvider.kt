@@ -91,7 +91,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
 
         private fun getParametersAsStrings(parameters:List<CaosDefParameterStruct>, skipLast:Boolean) : List<String> {
             return if (skipLast) {
-                (0 until parameters.lastIndex).mapIndexed { i, parameter -> parameters[i].name }
+                (0 until parameters.lastIndex).map { i -> parameters[i].name }
             } else {
                 parameters.map { it.name }
             }
