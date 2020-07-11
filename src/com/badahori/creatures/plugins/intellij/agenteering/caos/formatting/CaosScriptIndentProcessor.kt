@@ -27,18 +27,18 @@ class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, p
             return Indent.getNoneIndent()
         }
         val parent = node.psi.parent
-        if (parent is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock) {
+        if (parent is CaosScriptCodeBlock) {
             val parentBlock = parent.parent
-            if (parentBlock is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro || parentBlock is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript) {
+            if (parentBlock is CaosScriptMacro || parentBlock is CaosScriptEventScript) {
                 return Indent.getNoneIndent()
             }
             return Indent.getNormalIndent()
-        } else if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock::class.java)?.parent !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro) {
+        } else if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent !is CaosScriptMacro) {
             return Indent.getNormalIndent()
-        } else if (node.treeParent?.elementType == com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK) {
+        } else if (node.treeParent?.elementType == CaosScriptTypes.CaosScript_CODE_BLOCK) {
             // Check if block parent is Event Script or Macro
             node.treeParent?.treeParent?.elementType?.let {
-                if (it == com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_MACRO || it == com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_EVENT_SCRIPT)
+                if (it == CaosScriptTypes.CaosScript_MACRO || it == CaosScriptTypes.CaosScript_EVENT_SCRIPT)
                     return Indent.getNormalIndent()
             }
         }
