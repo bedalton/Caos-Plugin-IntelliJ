@@ -12,10 +12,22 @@ import com.pretty_tools.dde.client.DDEClientEventListener
 object Injector {
 
     private fun getActualVersion(project: Project, variant: CaosVariant) : CaosVariant {
+        if (variant.isNotOld) {
+            return variant;
+        }
         val code = "dde: putv vrsn"
         val response = injectPrivate(project, variant, code)
-        postInfo(project, "CheckVersion", "Version == " + response)
-        return variant
+        if (response !is InjectionStatus.Ok)
+            return variant
+        return try {
+            if (response.response.toInt() < 6) {
+                CaosVariant.C1
+            } else {
+                CaosVariant.C2
+            }
+        } catch(e:Exception) {
+            variant
+        }
     }
 
     fun inject(project: Project, variant: CaosVariant, caosIn:String) : Boolean {
