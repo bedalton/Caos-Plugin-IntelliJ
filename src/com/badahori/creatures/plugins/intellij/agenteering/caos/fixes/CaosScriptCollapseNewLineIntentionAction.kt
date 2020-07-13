@@ -50,9 +50,8 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
 
     companion object {
-        fun collapseLinesInCopy(fileIn: PsiFile) : PsiFile {
+        fun collapseLinesInCopy(fileIn: PsiFile, collapseChar:CollapseChar = CollapseChar.COMMA) : PsiFile {
             val project = fileIn.project
-            val collapseChar = CollapseChar.COMMA
             var document = PsiDocumentManager.getInstance(project).getCachedDocument(fileIn) ?: fileIn.document
             if (document != null) {
                 PsiDocumentManager.getInstance(project).commitDocument(document)

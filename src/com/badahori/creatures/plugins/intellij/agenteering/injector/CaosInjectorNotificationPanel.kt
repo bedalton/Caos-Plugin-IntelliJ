@@ -37,7 +37,7 @@ import com.intellij.openapi.wm.ToolWindowId
 object CaosInjectorNotifications {
     private val NOTIFICATION_GROUP: NotificationGroup = NotificationGroup(
             CaosBundle.message("caos.injector.notification.group"),
-            NotificationDisplayType.BALLOON,
+            NotificationDisplayType.NONE,
             true,
             ToolWindowId.PROJECT_VIEW
     );
