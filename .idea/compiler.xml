@@ -14,6 +14,7 @@
       <entry name="?*.properties" />
       <entry name="?*.dta" />
       <entry name="?*.dll" />
+      <entry name="?*.exe" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="8">
       <module name="CaosPlugin" target="8" />
