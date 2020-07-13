@@ -1,13 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.now
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import com.pretty_tools.dde.client.DDEClientConversation
-import com.pretty_tools.dde.client.DDEClientEventListener
 
 object Injector {
 
@@ -61,7 +58,7 @@ object Injector {
         return connection.inject(caos)
     }
 
-    private fun connection(project: Project, variant: CaosVariant): Connection? {
+    private fun connection(project: Project, variant: CaosVariant): CaosConnection? {
         val conn = getConnection(variant)
         if (conn == null || !conn.connect()) {
             CaosInjectorNotifications.show(project, "Connection Failed", "Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again", NotificationType.ERROR)
@@ -70,7 +67,8 @@ object Injector {
         return conn
     }
 
-    private fun postOk(project: Project, response:InjectionStatus.Ok) {
+    @JvmStatic
+    internal fun postOk(project: Project, response:InjectionStatus.Ok) {
         val responseText = response.response.nullIfEmpty()?.let {
             "\n\tOutput: $it"
         } ?: ""
@@ -78,30 +76,33 @@ object Injector {
         CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
     }
 
-    fun postInfo(project: Project, title:String, message: String) {
+    @JvmStatic
+    internal fun postInfo(project: Project, title:String, message: String) {
         CaosInjectorNotifications.show(project, title, message, NotificationType.INFORMATION)
     }
 
-    fun postError(project: Project, title:String, message: String) {
+    @JvmStatic
+    internal fun postError(project: Project, title:String, message: String) {
         CaosInjectorNotifications.show(project, title, message, NotificationType.ERROR)
     }
 
+    @JvmStatic
     fun postWarning(project: Project, title:String, message: String) {
         CaosInjectorNotifications.show(project, title, message, NotificationType.WARNING)
     }
 
-    private fun getConnection(variant: CaosVariant) : Connection? {
+    private fun getConnection(variant: CaosVariant) : CaosConnection? {
         return when (variant) {
             CaosVariant.C1 -> DDEConnection(variant)
             CaosVariant.C2 -> DDEConnection(variant)
-            else -> null
+            else -> C3Connection(variant)
         }
     }
 
     private fun sanitize(caos:String) : String {
         var out = caos
-        out = out.replace("/[ ]+".toRegex(), " ")
-        out.replace("[ ]*,[ ]".toRegex(), ",")
+        out = out.replace("[ ]+".toRegex(), " ")
+        out.replace("[ ]*,[ ]*".toRegex(), ",")
         return out.trim()
     }
 
@@ -110,92 +111,19 @@ object Injector {
             CaosVariant.C1 -> true
             CaosVariant.C2 -> true
             CaosVariant.CV -> false
-            CaosVariant.C3 -> false
-            CaosVariant.DS -> false
+            CaosVariant.C3 -> true
+            CaosVariant.DS -> true
             else -> false
         }
     }
 
 }
 
-internal interface Connection {
+internal interface CaosConnection {
     fun inject(caos: String): InjectionStatus
     fun disconnect(): Boolean
     fun isConnected(): Boolean
     fun connect(silent: Boolean = false): Boolean
-}
-
-private class DDEConnection(private val variant: CaosVariant) : Connection {
-
-    override fun inject(caos: String): InjectionStatus {
-        val conn = getConnection()
-                ?: return InjectionStatus.BadConnection("Failed to fetch connection to Vivarium")
-        try {
-            conn.poke("Macro", caos+0.toChar())
-        } catch(e:Exception) {
-            return InjectionStatus.Bad("Poke macro failed with error: ${e.message}")
-        }
-        return try {
-            val response = conn.request("Macro")
-            InjectionStatus.Ok(response)
-        } catch(e:Exception) {
-            LOGGER.severe("Request failed after poke with dde error: ${e.message}")
-            InjectionStatus.Bad("Do request failed with error: ${e.message}")
-        }
-    }
-
-    override fun disconnect(): Boolean {
-        return try {
-            connection?.disconnect()
-            connection = null
-            true
-        } catch (e: Exception) {
-            LOGGER.severe("Failed to disconnect from DDE Vivarium with error: ${e.message}")
-            false
-        }
-    }
-
-    override fun isConnected(): Boolean {
-        return connection != null
-    }
-
-    override fun connect(silent: Boolean): Boolean {
-        if (connection != null)
-            return true
-        return getConnection() != null
-    }
-
-    private fun getConnection(): DDEClientConversation? {
-        var conn = connection
-        if (conn != null)
-            return connection
-        conn = DDEClientConversation()
-        conn.eventListener = object : DDEClientEventListener {
-            override fun onItemChanged(p0: String?, p1: String?, p2: String?) {
-
-            }
-
-            override fun onDisconnect() {
-                connection?.eventListener = null
-                connection = null
-            }
-        }
-        try {
-            conn.connect(server, topic)
-            connection = conn
-            return conn
-        } catch (e: Exception) {
-            LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running")
-            return null
-        }
-    }
-
-    companion object {
-        private const val server: String = "Vivarium"
-        private const val topic: String = "IntelliJCaosInjector"
-        private var connection: DDEClientConversation? = null
-    }
-
 }
 
 private data class CaosResponse(val caos:String, val success:Boolean, val response:String? = null, val error:String? = null, val time:Long = now)
