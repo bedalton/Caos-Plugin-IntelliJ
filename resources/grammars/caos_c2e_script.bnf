@@ -304,7 +304,7 @@ script_body_element
 	;
 
 macro
-	::= macro_code_block (space_like_or_newline script_terminator)?
+	::= (macro_code_block (space_like_or_newline script_terminator)?|script_terminator)
 	{
 
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptMacroStub"
