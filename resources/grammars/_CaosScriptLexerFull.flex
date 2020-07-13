@@ -86,6 +86,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{INT}				 	{ return CaosScript_INT; }
 	{SPACE}				 	{ return CaosScript_SPACE_; }
     "R"					 	{ return CaosScript_ANIM_R; }
+    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
 <COMMENT_START> {
@@ -99,10 +100,12 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{COMMENT_TEXT}			{ return CaosScript_COMMENT_TEXT; }
     " "						{ return WHITE_SPACE; }
     \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
 <IN_TEXT> {
 	{TEXT}					{ return CaosScript_TEXT_LITERAL; }
+    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
 <IN_BYTE_STRING, IN_TEXT> {
@@ -143,6 +146,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	\\\"					{ }
 	\\/\"					{ }
 	[^\n\r\"]				{ }
+    [^]						{ yybegin(IN_LINE); }
 }
 
 <IN_LINE> {
@@ -885,6 +889,7 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{WORD}                 	{ return CaosScript_WORD; }
 	{ID}                   	{ return CaosScript_ID; }
 	{SPACE}                	{ return CaosScript_SPACE_; }
+    [^]						{ return BAD_CHARACTER; }
 }
 
 <YYINITIAL> 	{
