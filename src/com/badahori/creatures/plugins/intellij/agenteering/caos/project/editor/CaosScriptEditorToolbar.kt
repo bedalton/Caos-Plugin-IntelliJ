@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
@@ -105,7 +106,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     }
 
     toolbar.addInjectionHandler handler@{
-        val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile).text
+        val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE).text
         if (content.isBlank()) {
             Injector.postInfo(project, "Empty Injection", "Empty code body was not injected");
             return@handler
