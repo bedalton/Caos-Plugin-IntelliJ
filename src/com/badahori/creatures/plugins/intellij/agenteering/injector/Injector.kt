@@ -1,16 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.now
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 
 object Injector {
 
-    private fun getActualVersion(project: Project, variant: CaosVariant) : CaosVariant {
+    private fun getActualVersion(project: Project, variant: CaosVariant): CaosVariant {
         if (variant.isNotOld) {
-            return variant;
+            return variant
         }
         val code = "dde: putv vrsn"
         val response = injectPrivate(project, variant, code)
@@ -22,12 +22,12 @@ object Injector {
             } else {
                 CaosVariant.C2
             }
-        } catch(e:Exception) {
+        } catch (e: Exception) {
             variant
         }
     }
 
-    fun inject(project: Project, variant: CaosVariant, caosIn:String) : Boolean {
+    fun inject(project: Project, variant: CaosVariant, caosIn: String): Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
             CaosInjectorNotifications.show(project, "ConnectionException", error, NotificationType.ERROR)
@@ -48,9 +48,17 @@ object Injector {
         }
         return response is InjectionStatus.Ok
     }
-    private fun injectPrivate(project: Project, variant: CaosVariant, caosIn:String) : InjectionStatus? {
+
+    private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String): InjectionStatus? {
         val connection = connection(project, variant)
                 ?: return null
+        if (!creditsCalled.containsKey(variant)) {
+            creditsCalled[variant] = false
+        }
+        if (creditsCalled[variant].orFalse()) {
+            creditsCalled[variant] = true
+            connection.showAttribution(project, variant)
+        }
         val caos = sanitize(caosIn)
         if (!connection.isConnected() && !connection.connect(false)) {
             return null
@@ -68,7 +76,7 @@ object Injector {
     }
 
     @JvmStatic
-    internal fun postOk(project: Project, response:InjectionStatus.Ok) {
+    internal fun postOk(project: Project, response: InjectionStatus.Ok) {
         val responseText = response.response.nullIfEmpty()?.let {
             "\n\tOutput: $it"
         } ?: ""
@@ -77,21 +85,21 @@ object Injector {
     }
 
     @JvmStatic
-    internal fun postInfo(project: Project, title:String, message: String) {
+    internal fun postInfo(project: Project, title: String, message: String) {
         CaosInjectorNotifications.show(project, title, message, NotificationType.INFORMATION)
     }
 
     @JvmStatic
-    internal fun postError(project: Project, title:String, message: String) {
+    internal fun postError(project: Project, title: String, message: String) {
         CaosInjectorNotifications.show(project, title, message, NotificationType.ERROR)
     }
 
     @JvmStatic
-    fun postWarning(project: Project, title:String, message: String) {
+    fun postWarning(project: Project, title: String, message: String) {
         CaosInjectorNotifications.show(project, title, message, NotificationType.WARNING)
     }
 
-    private fun getConnection(variant: CaosVariant) : CaosConnection? {
+    private fun getConnection(variant: CaosVariant): CaosConnection? {
         return when (variant) {
             CaosVariant.C1 -> DDEConnection(variant)
             CaosVariant.C2 -> DDEConnection(variant)
@@ -99,7 +107,7 @@ object Injector {
         }
     }
 
-    private fun sanitize(caos:String) : String {
+    private fun sanitize(caos: String): String {
         var out = caos
         out = out.replace("[ ]+".toRegex(), " ")
         out.replace("[ ]*,[ ]*".toRegex(), ",")
@@ -110,12 +118,21 @@ object Injector {
         return when (variant) {
             CaosVariant.C1 -> true
             CaosVariant.C2 -> true
-            CaosVariant.CV -> false
+            CaosVariant.CV -> true
             CaosVariant.C3 -> true
             CaosVariant.DS -> true
             else -> false
         }
     }
+
+
+    private val creditsCalled = mutableMapOf(
+            CaosVariant.C1 to false,
+            CaosVariant.C2 to false,
+            CaosVariant.CV to false,
+            CaosVariant.C3 to false,
+            CaosVariant.DS to false
+    )
 
 }
 
@@ -124,12 +141,11 @@ internal interface CaosConnection {
     fun disconnect(): Boolean
     fun isConnected(): Boolean
     fun connect(silent: Boolean = false): Boolean
+    fun showAttribution(project: Project, variant: CaosVariant)
 }
 
-private data class CaosResponse(val caos:String, val success:Boolean, val response:String? = null, val error:String? = null, val time:Long = now)
-
 internal sealed class InjectionStatus {
-    data class Ok(val response:String): InjectionStatus()
-    data class Bad(val error:String) : InjectionStatus()
-    data class BadConnection(val error:String) : InjectionStatus()
+    data class Ok(val response: String) : InjectionStatus()
+    data class Bad(val error: String) : InjectionStatus()
+    data class BadConnection(val error: String) : InjectionStatus()
 }
