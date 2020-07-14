@@ -79,6 +79,15 @@ ANIM (command) anim [anim];
 APPR (command);
 
 /*
+ * return 1 if creature is asleep
+ * #Creatures
+ *
+ * @rvalue
+ * @return (integer@Sleeping)
+ */
+ASLP (integer);
+
+/*
  * Go to sleep (close eyes, become insensible to some stimuli) or wake up.
  * Instruction doesn't change pose - macro must do this after ASLP instr.
  * Any change of action will automatically wake creature up again.
@@ -88,15 +97,6 @@ APPR (command);
  *
  */
 ASLP (command) asleep (integer);
-
-/*
- * return 1 if creature is asleep
- * #Creatures
- *
- * @rvalue
- * @return (integer@Sleeping)
- */
-ASLP (integer);
 
 /*
  * [_IT_] object that [OWNR] creature is attending to (may be NULL)
@@ -2081,17 +2081,6 @@ TOOL (command) fsp [string] menutext [string] helptext [string] glyph (integer);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
- * Reach out and touch IT.
- * Normally preceeded by [APPR] macro. Continue with next instruction when you have successfully
- * touched IT (or when you are as close as you are going to get).
- * If total failure (no IT, or IT gone below floor level) then the present action schema is
- * suppressed (action has failed) and the macro is terminated.
- * #Creatures
- *
- */
-TOUC (command);
-
-/*
  * two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are
  * touching
  * == System Operands
@@ -2104,6 +2093,17 @@ TOUC (command);
  *
  */
 TOUC (integer) first (agent) second (agent);
+
+/*
+ * Reach out and touch IT.
+ * Normally preceeded by [APPR] macro. Continue with next instruction when you have successfully
+ * touched IT (or when you are as close as you are going to get).
+ * If total failure (no IT, or IT gone below floor level) then the present action schema is
+ * suppressed (action has failed) and the macro is terminated.
+ * #Creatures
+ *
+ */
+TOUC (command);
 
 /*
  * Fire this particular neurone

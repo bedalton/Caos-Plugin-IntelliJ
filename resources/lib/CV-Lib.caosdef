@@ -815,7 +815,7 @@ CHAR (integer) string (string) index (integer);
  * Adjusts chemical (0 to 255) by concentration -1.0 to +1.0 in the target creature's bloodstream.
  * #Creatures
  *
- * @param {chemical} (integer)
+ * @param {chemical} (integer@Chemicals)
  * @param {adjustment} (float[-1 to 1])
  *
  */
@@ -826,23 +826,11 @@ CHEM (command) chemical (integer) adjustment (float);
  * #Creatures
  *
  * @rvalue
- * @param {chemical} (integer)
+ * @param {chemical} (integer@Chemicals)
  * @return (float)
  *
  */
 CHEM (float) chemical (integer);
-
-/*
- * Set the click action, which is the identifier of the message sent to the agent when it is
- * clicked on, provided attribute Activateable is set. Default is activate 1. Use -1 to prevent it
- * sending a message. Also overriden by [CLIK]. Remember that the early Message Numbers differ
- * slightly from Script Numbers.
- * #Input
- *
- * @param {message} (integer)
- *
- */
-CLAC (command) message (integer);
 
 /*
  * This returns the CLAC action of the [TARG] object. If the [TARG] is in [CLIK] mode, then the return
@@ -855,16 +843,16 @@ CLAC (command) message (integer);
 CLAC (integer);
 
 /*
- * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
- * are ignored. Overriden by [CLAC].
+ * Set the click action, which is the identifier of the message sent to the agent when it is
+ * clicked on, provided attribute Activateable is set. Default is activate 1. Use -1 to prevent it
+ * sending a message. Also overriden by [CLIK]. Remember that the early Message Numbers differ
+ * slightly from Script Numbers.
  * #Input
  *
- * @param {message1} (integer)
- * @param {message2} (integer)
- * @param {message3} (integer)
+ * @param {message} (integer)
  *
  */
-CLIK (command) message1 (integer) message2 (integer) message3 (integer);
+CLAC (command) message (integer);
 
 /*
  * This returns the CLIK action of the [TARG] object. If the object is in [CLAC] mode, then it returns
@@ -881,6 +869,18 @@ CLIK (command) message1 (integer) message2 (integer) message3 (integer);
  *
  */
 CLIK (integer) whichValue (integer);
+
+/*
+ * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
+ * are ignored. Overriden by [CLAC].
+ * #Input
+ *
+ * @param {message1} (integer)
+ * @param {message2} (integer)
+ * @param {message3} (integer)
+ *
+ */
+CLIK (command) message1 (integer) message2 (integer) message3 (integer);
 
 /*
  * Move current camera so top left corner of view is at world coordinate x y. Set pan 0 to jump
@@ -1418,7 +1418,7 @@ DREA (integer);
  * Adjusts the level of the given drive by the specified amount - can be positive or negative.
  * #Creatures
  *
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  * @param {adjustment} (float)
  *
  */
@@ -1431,7 +1431,7 @@ DRIV (command) drive (integer) adjustment (float);
  * #Creatures
  *
  * @rvalue
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  * @return (float)
  *
  */
@@ -1882,15 +1882,6 @@ FRAT (command) framerate (integer);
 FREL (command) relative (agent);
 
 /*
- * Return physics friction percentage.
- * #Motion
- *
- * @rvalue
- * @return (integer)
- */
-FRIC (integer);
-
-/*
  * Set physics friction percentage, normally from 0 to 100. Speed is lost by this amount when an
  * agent slides along the floor.
  * #Motion
@@ -1899,6 +1890,15 @@ FRIC (integer);
  *
  */
 FRIC (command) friction (integer);
+
+/*
+ * Return physics friction percentage.
+ * #Motion
+ *
+ * @rvalue
+ * @return (integer)
+ */
+FRIC (integer);
 
 /*
  * Use this command to alter the appearance of the current text part. The line and character
@@ -2819,6 +2819,15 @@ IITT (agent);
 IMGE (command) fileName (string);
 
 /*
+ * Returns the input event mask.
+ * #Input
+ *
+ * @rvalue
+ * @return (integer)
+ */
+IMSK (integer);
+
+/*
  * Set the input event mask. Indicates which types of global input events the agent is interested
  * in, if any. For example, if the flag for "key up" events is set here, the agents "key up"
  * script will be run every time a key is released.
@@ -2837,15 +2846,6 @@ IMGE (command) fileName (string);
  *
  */
 IMSK (command) mask (integer);
-
-/*
- * Returns the input event mask.
- * #Input
- *
- * @rvalue
- * @return (integer)
- */
-IMSK (integer);
 
 /*
  * Injures an organ, -1 to randomly choose the organ, 0 for the body organ.
@@ -3978,7 +3978,6 @@ PACE (float);
  * set the current part.
  * #CompoundAgents
  *
- * @rvalue
  * @param {page} (integer)
  *
  */
@@ -4236,7 +4235,6 @@ POSB (float);
  * by [BASE].
  * #AgentSprites
  *
- * @rvalue
  * @param {pose} (integer)
  *
  */
@@ -5754,13 +5752,13 @@ SWAP (command) variant (integer) bodypartId (integer) commitChanges (integer);
  * Stimulate all creatures that can hear [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
- * @param {drive1} (integer)
+ * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -5770,13 +5768,13 @@ SWAY SHOU (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * Stimulate all creatures that can see [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
- * @param {drive1} (integer)
+ * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -5786,13 +5784,13 @@ SWAY SIGN (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * Stimulate all creatures that are touching [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
- * @param {drive1} (integer)
+ * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -5803,13 +5801,13 @@ SWAY TACT (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * #Creatures
  *
  * @param {creature} (agent)
- * @param {drive1} (integer)
+ * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -5847,15 +5845,6 @@ TAGE (integer);
 TAN_ (float) theta (float);
 
 /*
- * Returns current target, on whom many commands act.
- * #AgentVars
- *
- * @rvalue
- * @return (agent)
- */
-TARG (agent);
-
-/*
  * This sets the TARG variable to the agent specified.
  * #AgentVars
  *
@@ -5863,6 +5852,15 @@ TARG (agent);
  *
  */
 TARG (command) agent (agent);
+
+/*
+ * Returns current target, on whom many commands act.
+ * #AgentVars
+ *
+ * @rvalue
+ * @return (agent)
+ */
+TARG (agent);
 
 /*
  * Start agent timer, calling Timer script every tick_rate ticks. Set to 0 to turn off the timer.
@@ -6803,6 +6801,173 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	17 = Ettin homes
 }
 
+@Chemicals {
+	0 = <error - chemical id 0> there is no chemical zero - it's used internally as a placeholder
+	1 = Lactate
+	2 = Pyruvate
+	3 = Glucose
+	4 = Glycogen
+	5 = Starch
+	6 = Fatty Acid
+	7 = Cholesterol
+	8 = Triglyceride
+	9 = Adipose Tissue
+	10 = Fat
+	11 = Muscle Tissue
+	12 = Protein
+	13 = Amino Acid
+	14 = Fullness
+	17 = Downatrophin
+	18 = Upatrophin
+	21 = Dancing
+	24 = Dissolved carbon dioxide
+	25 = Urea
+	26 = Ammonia
+	29 = Air
+	30 = Oxygen
+	33 = Water
+	34 = Energy
+	35 = ATP
+	36 = ADP
+	39 = Arousal Potential
+	40 = Libido lowerer
+	41 = Opposite Sex Pheromone
+	46 = Oestrogen
+	48 = Progesterone
+	53 = Testosterone
+	54 = Inhibin
+	66 = Heavy Metals
+	67 = Cyanide
+	68 = Belladonna
+	69 = Geddonase
+	70 = Glycotoxin
+	71 = Sleep toxin
+	72 = Fever toxin
+	73 = Histamine A
+	74 = Histamine B
+	75 = Alcohol
+	78 = ATP Decoupler
+	79 = Carbon monoxide
+	80 = Fear toxin
+	81 = Muscle toxin
+	82 = Antigen 0
+	83 = Antigen 1
+	84 = Antigen 2
+	85 = Antigen 3
+	86 = Antigen 4
+	87 = Antigen 5
+	88 = Antigen 6
+	89 = Antigen 7
+	90 = Wounded
+	92 = Medicine one
+	93 = Anti-oxidant
+	94 = Prostaglandin
+	95 = EDTA
+	96 = Sodium thiosulphite
+	97 = Arnica
+	98 = Vitamin E
+	99 = Vitamin C
+	100 = Antihistamine
+	102 = Antibody 0
+	103 = Antibody 1
+	104 = Antibody 2
+	105 = Antibody 3
+	106 = Antibody 4
+	107 = Antibody 5
+	108 = Antibody 6
+	109 = Antibody 7
+	112 = Anabolic steroid
+	113 = Pistle
+	114 = Insulin
+	115 = Glycolase
+	116 = Dehydrogenase
+	117 = Adrenalin
+	118 = Grendel nitrate
+	119 = Ettin nitrate
+	121 = Protease
+	124 = Activase
+	125 = Life
+	126 = CAdv Exercise meter
+	127 = Injury
+	128 = Stress
+	129 = Sleepase
+	131 = Pain backup
+	132 = Hunger for protein backup
+	133 = Hunger for carb backup
+	134 = Hunger for fat backup
+	135 = Coldness backup
+	136 = Hotness backup
+	137 = Tiredness backup
+	138 = Sleepiness backup
+	139 = Loneliness backup
+	140 = Crowded backup
+	141 = Fear backup
+	142 = Boredom backup
+	143 = Anger backup
+	144 = Sex drive backup
+	145 = Comfort backup
+	148 = Pain
+	149 = Hunger for protein
+	150 = Hunger for carbohydrate
+	151 = Hunger for fat
+	152 = Coldness
+	153 = Hotness
+	154 = Tiredness
+	155 = Sleepiness
+	156 = Loneliness
+	157 = Crowded
+	158 = Fear
+	159 = Boredom
+	160 = Anger
+	161 = Sex drive
+	162 = Comfort
+	165 = Ca smell 0 (sound)
+	166 = CA smell 1 (light)
+	167 = CA smell 2 (heat)
+	168 = Ca smell 3 (water)
+	169 = CA smell 4 (nutrient)
+	170 = CA smell 5 (water)
+	171 = CA smell 6 (protein)
+	172 = CA smell 7 (carbohydrate)
+	173 = CA smell 8 (fat)
+	174 = CA smell 9 (flowers)
+	175 = CA smell 10 (machinery)
+	176 = CA smell 11
+	177 = CA smell 12 (Norn)
+	178 = CA smell 13 (Grendel)
+	179 = CA smell 14 (Ettin)
+	180 = CA smell 15 (Norn home)
+	181 = CA smell 16 (Grendel home)
+	182 = CA smell 17 (Ettin home)
+	183 = CA smell 18
+	184 = CA smell 19
+	187 = Stress (H4C)
+	188 = Stress (H4P)
+	189 = Stress (H4F)
+	190 = Stress (Anger)
+	191 = Stress (Fear)
+	192 = Stress (Pain)
+	193 = Stress (Sleep)
+	194 = Stress (Tired)
+	195 = Stress (Crowded)
+	198 = Disappointment
+	199 = Up
+	200 = Down
+	201 = Exit
+	202 = Enter
+	203 = Wait
+	204 = Reward
+	205 = Punishment
+	206 = Brain chemical 9
+	207 = Brain chemical 10
+	208 = Brain chemical 11
+	209 = brain chemical 12
+	210 = Brain chemical 13
+	211 = Brain chemical 14
+	212 = Pre-REM Sleep
+	213 = REM sleep
+}
+
 @ClikWhich {
 	0 = Current click action number (1,2,3)
 	1 = First CLIK action.
@@ -6818,6 +6983,24 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @Dreaming {
 	1 = Dreaming
 	0 = Awake
+}
+
+@Drives {
+	0 = Pain
+	1 = Hunger for protein
+	2 = Hunger for carb
+	3 = Hunger for fat
+	4 = Coldness
+	5 = Hotness
+	6 = Tiredness
+	7 = Sleepiness
+	8 = Loneliness
+	9 = Crowded
+	10 = Fear
+	11 = Boredom
+	12 = Anger
+	13 = Sex drive
+	14 = Comfort
 }
 
 @Enabled {
