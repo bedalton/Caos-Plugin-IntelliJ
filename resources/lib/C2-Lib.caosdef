@@ -3243,15 +3243,6 @@ TOKN (integer) token (token);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
- * Reach out and touch [_IT_], normally preceded with an [APPR] macro.
- * Continue with next instruction when you have successfully touched [_IT_].
- * If total failure (object gone away) then present action schema is suppressed.
- * #Creatures
- *
- */
-TOUC (command);
-
-/*
  * Returns 1 if these two objects are in contact.
  * @example: #{DOIF TOUC TARG OWNR GT 0} - [DOIF] [TARG] and [OWNR] are touching
  * #Agents
@@ -3263,6 +3254,15 @@ TOUC (command);
  *
  */
 TOUC (integer) first (agent) second (agent);
+
+/*
+ * Reach out and touch [_IT_], normally preceded with an [APPR] macro.
+ * Continue with next instruction when you have successfully touched [_IT_].
+ * If total failure (object gone away) then present action schema is suppressed.
+ * #Creatures
+ *
+ */
+TOUC (command);
 
 /*
  * Fire the neurone that is at the lobe and cell numbers specified – amount is the signal
@@ -3277,7 +3277,7 @@ TOUC (integer) first (agent) second (agent);
 TRIG (command) lobe (integer) cell (integer) amount (integer);
 
 /*
- * Returns 1 if the creature is unconscious, 0 otherwise.
+ * Returns whether a creature is unconscious or not 0=conscious, 1=unconscious
  * #Creatures
  *
  * @rvalue
@@ -3286,7 +3286,7 @@ TRIG (command) lobe (integer) cell (integer) amount (integer);
 UNCS (integer);
 
 /*
- * Returns whether a creature is unconscious or not 0=conscious, 1=unconscious
+ * Returns 1 if the creature is unconscious, 0 otherwise.
  * #Creatures
  *
  * @rvalue

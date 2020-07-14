@@ -243,7 +243,7 @@ ADDV (command) var (variable) sum (decimal);
  * @param {verb} (integer)
  * @param {noun} (integer)
  * @param {qualifier} (float)
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  *
  */
 ADIN (command) verb (integer) noun (integer) qualifier (float) drive (integer);
@@ -1095,6 +1095,18 @@ CLAC (integer);
 CLAC (command) message (integer);
 
 /*
+ * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
+ * are ignored. Overriden by [CLAC].
+ * #Input
+ *
+ * @param {message1} (integer)
+ * @param {message2} (integer)
+ * @param {message3} (integer)
+ *
+ */
+CLIK (command) message1 (integer) message2 (integer) message3 (integer);
+
+/*
  * This returns the CLIK action of the [TARG] object. If the object is in [CLAC] mode, then it returns
  * -2, else the return values are as follows:
  * 0 -> Current click action number (1,2,3)
@@ -1109,18 +1121,6 @@ CLAC (command) message (integer);
  *
  */
 CLIK (integer) whichValue (integer);
-
-/*
- * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
- * are ignored. Overriden by [CLAC].
- * #Input
- *
- * @param {message1} (integer)
- * @param {message2} (integer)
- * @param {message3} (integer)
- *
- */
-CLIK (command) message1 (integer) message2 (integer) message3 (integer);
 
 /*
  * Move current camera so top left corner of view is at world coordinate x y. Set pan 0 to jump
@@ -1707,7 +1707,7 @@ DREA (integer);
  * Adjusts the level of the given drive by the specified amount - can be positive or negative.
  * #Creatures
  *
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  * @param {adjustment} (float)
  *
  */
@@ -1720,7 +1720,7 @@ DRIV (command) drive (integer) adjustment (float);
  * #Creatures
  *
  * @rvalue
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  * @return (float)
  *
  */
@@ -4440,7 +4440,6 @@ PACE (float);
  * set the current part.
  * #CompoundAgents
  *
- * @rvalue
  * @param {page} (integer)
  *
  */
@@ -6357,13 +6356,13 @@ SVEL (float);
  * Stimulate all creatures that can hear [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
- * @param {drive1} (integer)
+ * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -6373,13 +6372,13 @@ SWAY SHOU (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * Stimulate all creatures that can see [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  * @param {adjust} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -6389,13 +6388,13 @@ SWAY SIGN (command) drive (integer) adjust (float) drive2 (integer) adjust2 (flo
  * Stimulate all creatures that are touching [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
- * @param {drive1} (integer)
+ * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -6406,13 +6405,13 @@ SWAY TACT (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * #Creatures
  *
  * @param {creature} (agent)
- * @param {drive} (integer)
+ * @param {drive} (integer@Drives)
  * @param {adjust} (float)
- * @param {drive2} (integer)
+ * @param {drive2} (integer@Drives)
  * @param {adjust2} (float)
- * @param {drive3} (integer)
+ * @param {drive3} (integer@Drives)
  * @param {adjust3} (float)
- * @param {drive4} (integer)
+ * @param {drive4} (integer@Drives)
  * @param {adjust4} (float)
  *
  */
@@ -6450,15 +6449,6 @@ TAGE (integer);
 TAN_ (float) theta (float);
 
 /*
- * Returns current target, on whom many commands act.
- * #AgentVars
- *
- * @rvalue
- * @return (agent)
- */
-TARG (agent);
-
-/*
  * This sets the TARG variable to the agent specified.
  * #AgentVars
  *
@@ -6466,6 +6456,15 @@ TARG (agent);
  *
  */
 TARG (command) agent (agent);
+
+/*
+ * Returns current target, on whom many commands act.
+ * #AgentVars
+ *
+ * @rvalue
+ * @return (agent)
+ */
+TARG (agent);
 
 /*
  * Tests setting the bounding box of the physical core of the object [TARG]. May be set to smaller
@@ -6646,14 +6645,6 @@ TORY (float) roomId (integer);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
- * Make creature reach out to touch the IT agent. Blocks the script until the creature either
- * reaches the agent, or it's fully stretched and still can't.
- * #Creatures
- *
- */
-TOUC (command);
-
-/*
  * Returns 1 if the two specified agents are touching, or 0 if they are not. Agents are said to be
  * touching if their bounding rectangles overlap.
  * #Agents
@@ -6665,6 +6656,14 @@ TOUC (command);
  *
  */
 TOUC (integer) first (agent) second (agent);
+
+/*
+ * Make creature reach out to touch the IT agent. Blocks the script until the creature either
+ * reaches the agent, or it's fully stretched and still can't.
+ * #Creatures
+ *
+ */
+TOUC (command);
 
 /*
  * Test for a transparent pixel, returns 1 if the given x y position coincides with a transparent
@@ -7664,6 +7663,24 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @Dreaming {
 	1 = Dreaming
 	0 = Awake
+}
+
+@Drives {
+	0 = Pain
+	1 = Hunger for protein
+	2 = Hunger for carb
+	3 = Hunger for fat
+	4 = Coldness
+	5 = Hotness
+	6 = Tiredness
+	7 = Sleepiness
+	8 = Loneliness
+	9 = Crowded
+	10 = Fear
+	11 = Boredom
+	12 = Anger
+	13 = Sex drive
+	14 = Comfort
 }
 
 @Enabled {
