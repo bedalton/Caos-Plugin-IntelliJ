@@ -141,16 +141,15 @@ N_VAR = [$][a-zA-Z_0-9]+
 }
 
 <IN_STRING> {
-	\"						{ yybegin(IN_LINE); return CaosScript_QUOTE_STRING;}
-	"\\\\"					{ }
-	\\\"					{ }
-	\\/\"					{ }
-	[^\n\r\"]				{ }
+	\"						{ yybegin(IN_LINE); return CaosScript_DOUBLE_QUOTE;}
+	"\\\\"					{ return CaosScript_STRING_ESCAPE_CHAR; }
+	\\\"					{ return CaosScript_STRING_ESCAPE_CHAR; }
+	[^\n\r\"]				{ return CaosScript_STRING_CHAR; }
     [^]						{ yybegin(IN_LINE); }
 }
 
 <IN_LINE> {
-	\"         				{ yybegin(IN_STRING); }
+	\"         				{ yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
 	":"                    	{ return CaosScript_COLON; }
 	"+"                    	{ return CaosScript_PLUS; }
 	"["                    	{ braceDepth++; yybegin(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }
