@@ -74,7 +74,11 @@ class CaosScriptTokenSets {
                 CaosScript_C_1_STRING,
                 CaosScript_OPEN_BRACKET,
                 CaosScript_CLOSE_BRACKET,
-                CaosScript_CHAR
+                CaosScript_CHAR,
+                CaosScript_DOUBLE_QUOTE,
+                CaosScript_STRING_CHAR,
+                CaosScript_STRING_ESCAPE_CHAR,
+                CaosScript_QUOTE_STRING
         )
 
         val LITERALS: TokenSet = create(
