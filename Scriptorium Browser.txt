@@ -1,0 +1,4 @@
+GIDS ROOT - Families
+GIDS FMLY - Genuses for family
+GIDS Gnus - Species
+SORQ - get script
