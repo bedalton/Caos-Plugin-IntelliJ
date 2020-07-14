@@ -59,7 +59,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
-        if (!caosSettings.INDENT_BLOCKS) {//Allow indenting C1, as whitespace will be trimmed || node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
+        if (!caosSettings.INDENT_BLOCKS) {
             return noneIndent
         }
         val elementType = myNode.elementType
