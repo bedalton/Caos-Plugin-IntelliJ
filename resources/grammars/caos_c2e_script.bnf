@@ -255,6 +255,9 @@
 		PICT_DIMENSION = "#|#";
 		BINARY = "binary int"
 		CHAR = "char"
+		STRING_ESCAPE_CHAR = "escaped char"
+		STRING_CHAR = "string char";
+		DOUBLE_QUOTE = "\""
 	]
 }
 
@@ -6773,8 +6776,9 @@ c1_string
 	;
 
 quote_string_literal
-	::= QUOTE_STRING
+	::= DOUBLE_QUOTE (STRING_CHAR|STRING_ESCAPE_CHAR)* DOUBLE_QUOTE
 	{
+		pin=1;
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
