@@ -23,6 +23,11 @@ fun <T> T?.orElse(defaultValue:T) : T {
     return this ?: defaultValue
 }
 
+fun <T> T?.orElse(defaultValue:()->T) : T {
+    return this ?: defaultValue()
+}
+
+
 fun Boolean?.orFalse() : Boolean {
     return this ?: false
 }
