@@ -9,7 +9,6 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK_LINE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
@@ -86,7 +85,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getIndent(): Indent? {
-        if (!(CaosScriptProjectSettings.indent || caosSettings.INDENT_BLOCKS)) // allow indent on C1(node.psi.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1 || !CaosScriptProjectSettings.indent)
+        if (!(CaosScriptProjectSettings.indent || caosSettings.INDENT_BLOCKS))
             return Indent.getNoneIndent()
         return indentProcessor.getChildIndent(node)
     }
