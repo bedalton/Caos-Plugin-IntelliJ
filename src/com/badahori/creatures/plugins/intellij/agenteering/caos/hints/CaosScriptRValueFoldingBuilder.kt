@@ -11,7 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -33,7 +33,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun getEventName(element: CaosScriptEventNumberElement):String? {
         val eventElement = element as? CaosScriptEventNumberElement
                 ?: return null
-        val variant = element.containingCaosFile.variant
+        val variant = element.containingCaosFile?.variant.orDefault()
         val typeList = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance["EventNumbers", element.project]
                 .filter {

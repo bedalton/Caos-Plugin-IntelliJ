@@ -8,9 +8,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.source.resolve.FileContextUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import gnu.trove.TObjectLongHashMap
@@ -58,7 +63,18 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun isVariant(builder_: PsiBuilder,
                   level: Int,
                   variant: CaosVariant): Boolean {
-        return CaosScriptProjectSettings.variant == variant
+        val fileVariant = psiFile(builder_)?.let { ModuleUtil.findModuleForPsiElement(it)  }
+                ?.variant
+                ?: return false//CaosScriptProjectSettings.variant
+        return variant == fileVariant
+    }
+
+    /**
+     * Will not be CaosPsiFile
+     */
+    @JvmStatic
+    fun psiFile(builder_: PsiBuilder) : PsiFile? {
+        return builder_.getUserData(FileContextUtil.CONTAINING_FILE_KEY)
     }
 
     @JvmStatic
@@ -166,6 +182,11 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun notInMode(builder_: PsiBuilder,
                   level: Int, mode: String?): Boolean {
         return getParsingModes(builder_)!![mode] == 0L
+    }
+
+    @JvmStatic
+    fun getVirtualFile(builder_: PsiBuilder) : VirtualFile? {
+        return psiFile(builder_)?.virtualFile
     }
 
     @JvmStatic

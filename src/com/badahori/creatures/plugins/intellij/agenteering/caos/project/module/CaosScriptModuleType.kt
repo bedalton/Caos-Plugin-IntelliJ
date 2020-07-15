@@ -6,6 +6,7 @@ import icons.CaosScriptIcons
 import javax.swing.Icon
 
 class CaosScriptModuleType : ModuleType<CaosScriptModuleBuilder>("CAOS_MODULE") {
+
     override fun createModuleBuilder(): CaosScriptModuleBuilder {
         return CaosScriptModuleBuilder()
     }

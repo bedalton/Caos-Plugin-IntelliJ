@@ -10,9 +10,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosPluginSettingsUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 
 class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
@@ -29,7 +31,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
     private fun annotateAssignment(element: CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
-        val variant = element.containingCaosFile.variant
+        val variant = element.containingCaosFile?.variant.orDefault()
         val type = getType(element)
                 ?: return
         when (element.commandString.toUpperCase()) {

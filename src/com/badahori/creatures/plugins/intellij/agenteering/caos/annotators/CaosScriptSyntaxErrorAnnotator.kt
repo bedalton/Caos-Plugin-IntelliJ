@@ -4,10 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
@@ -34,7 +32,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (DumbService.isDumb(element.project))
             return
         val annotationWrapper = AnnotationHolderWrapper(holder)
-        val variant = (element.containingFile as? CaosScriptFile).variant
+        val variant = (element.containingFile as? CaosScriptFile)?.variant.orDefault()
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
             is CaosScriptSpaceLike -> annotateExtraSpaces(variant, element, annotationWrapper)
@@ -315,6 +313,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
 
         internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+            if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
+                annotationWrapper.colorize(element, CaosScriptSyntaxHighlighter.TOKEN)
+                return
+            }
             val command = element.commandString.toUpperCase()
             val commandType = element.getEnclosingCommandType()
             val commands = CaosDefCommandElementsByNameIndex

@@ -2,4 +2,4 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.templat
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 
-data class CaosProjectGeneratorInfo(val variant:CaosVariant)
+data class CaosProjectGeneratorInfo(var variant:CaosVariant = CaosVariant.DS)
