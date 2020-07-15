@@ -1,21 +1,22 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.Annotator
-import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptTokenToLowerCaseFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
+import com.intellij.psi.PsiElement
 
 class CaosScriptCommandCaseAnnotator : Annotator {
 
     override fun annotate(elementIn: PsiElement, annotationHolder: AnnotationHolder) {
         val token = elementIn as? CaosScriptShouldBeLowerCase
                 ?: return
-        val variant = token.containingCaosFile.variant
+        val variant = token.containingCaosFile?.variant.orDefault()
         if (variant != CaosVariant.C1 && variant != CaosVariant.C2)
             return
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)

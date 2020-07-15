@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineHeader
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
@@ -31,7 +31,7 @@ class CaosScriptSubroutineInspection : LocalInspectionTool() {
 
     private fun annotateSubroutineName(element: CaosScriptSubroutineName, holder: ProblemsHolder) {
         val name = element.name
-        val variant = element.containingCaosFile.variant
+        val variant = element.containingCaosFile?.variant.orDefault()
         if ((variant == CaosVariant.C1 || variant == CaosVariant.C2) && name.length != 4) {
             holder.registerProblem(element, CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length", variant))
         }

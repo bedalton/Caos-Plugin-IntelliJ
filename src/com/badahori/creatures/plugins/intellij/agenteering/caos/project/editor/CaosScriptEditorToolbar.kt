@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
@@ -66,11 +65,11 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     toolbar.addTrimSpacesListener {
         caosFile.trimErrorSpaces()
     }
-    caosFile.variant.let {
+    /*caosFile.variant.let {
         toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(it))
-    }
+    }*/
 
-    toolbar.addVariantListener variant@{
+    /*toolbar.addVariantListener variant@{
         if (it.stateChange != ItemEvent.SELECTED)
             return@variant
         val selected = CaosVariant.fromVal(it.item as String)
@@ -79,13 +78,15 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
         val canInject = Injector.canConnectToVariant(selected)
         toolbar.setInjectButtonEnabled(canInject)
         CaosScriptProjectSettings.setVariant(selected)
-        //caosFile.variant = selected
+        caosFile.variant = selected
         runWriteAction {
-            com.intellij.psi.text.BlockSupport.getInstance(project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
+            try {
+                com.intellij.psi.text.BlockSupport.getInstance(project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
+            } catch(e:Exception) {}
         }
         DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
         toolbar.setDocsButtonEnabled(true)
-    }
+    }*/
 
     toolbar.addDocsButtonClickListener {
         val selectedVariant = toolbar.selectedVariant

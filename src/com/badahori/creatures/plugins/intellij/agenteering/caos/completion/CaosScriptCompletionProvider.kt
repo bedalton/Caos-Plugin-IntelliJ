@@ -1,28 +1,25 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.ProcessingContext
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.VARIANT_OLD
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import icons.CaosScriptIcons
-import javafx.scene.control.ProgressIndicator
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
     private val IS_NUMBER = "[0-9]+".toRegex()
@@ -191,7 +188,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         if (parent == null)
             return false
-        val variant = (element.containingFile as? CaosScriptFile).variant
+        val variant = (element.containingFile as? CaosScriptFile)?.variant.orDefault()
         var matches = CaosDefCommandElementsByNameIndex.Instance[commandString, element.project]
                 .filter { variant in it.variants }
         matches = when (parent) {

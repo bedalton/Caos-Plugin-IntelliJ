@@ -3,6 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.templat
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.platform.ProjectTemplate
 import com.intellij.platform.ProjectTemplatesFactory
+import icons.CaosScriptIcons
+import javax.swing.Icon
 
 
 /**
@@ -13,9 +15,13 @@ class CaosScriptTemplateFactory : ProjectTemplatesFactory() {
         return arrayOf(GROUP_NAME)
     }
 
+    override fun getGroupIcon(group: String?): Icon {
+        return CaosScriptIcons.MODULE_ICON
+    }
+
     override fun createTemplates(group: String?, context: WizardContext): Array<ProjectTemplate> {
         return arrayOf(
-                CaosScriptVariantTemplate()
+                CaosScriptProjectGenerator()
         )
     }
 

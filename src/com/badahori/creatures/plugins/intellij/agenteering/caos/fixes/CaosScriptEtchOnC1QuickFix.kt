@@ -2,11 +2,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.equalTo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
@@ -39,7 +40,7 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
     }
 
     private fun shouldProcess(enumNext: CaosScriptEnumNextStatement): Boolean {
-        val variant = enumNext.containingCaosFile.variant
+        val variant = enumNext.containingCaosFile?.variant.orDefault()
         return variant == CaosVariant.C1
                 && enumNext.enumHeaderCommand.commandToken equalTo "etch"
                 && enumNext.enumHeaderCommand.classifier?.species != null
