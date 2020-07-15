@@ -22,106 +22,112 @@ import org.jetbrains.annotations.Contract
 class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
 
     @Contract(pure = true)
-    fun newAnnotation(severity:HighlightSeverity, message: String) : AnnotationBuilder {
+    fun newAnnotation(severity: HighlightSeverity, message: String): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, severity, message)
     }
 
     @Contract(pure = true)
-    fun newErrorAnnotation(message:String) : AnnotationBuilder {
+    fun newErrorAnnotation(message: String): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, HighlightSeverity.ERROR, message)
     }
 
     @Contract(pure = true)
-    fun newWarningAnnotation(message:String) : AnnotationBuilder {
+    fun newWarningAnnotation(message: String): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, HighlightSeverity.WARNING, message)
     }
 
     @Contract(pure = true)
-    fun newWeakWarningAnnotation(message:String) : AnnotationBuilder {
+    fun newWeakWarningAnnotation(message: String): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, HighlightSeverity.WEAK_WARNING, message)
     }
 
     @Contract(pure = true)
-    fun newInfoAnnotation(message:String?) : AnnotationBuilder {
+    fun newInfoAnnotation(message: String?): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, HighlightSeverity.INFORMATION, message)
+    }
+
+    fun colorize(range: PsiElement, textAttributes: TextAttributesKey) {
+        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+                .setEnforcedTextAttributes(TextAttributes.ERASE_MARKER);
+        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null).textAttributes = textAttributes
     }
 }
 
 internal data class AnnotationBuilderData(
-        internal val message:String,
+        internal val message: String,
         internal val severity: HighlightSeverity,
         internal val range: TextRange? = null,
-        internal val fixBuilderData:List<FixBuilderData> = listOf(),
-        internal val fixes:List<IntentionAction> = listOf(),
+        internal val fixBuilderData: List<FixBuilderData> = listOf(),
+        internal val fixes: List<IntentionAction> = listOf(),
         internal val enforcedTextAttributes: TextAttributes? = null,
         internal val textAttributes: TextAttributesKey? = null,
         internal val needsUpdateOnTyping: Boolean? = null,
-        internal val highlightType:ProblemHighlightType? = null,
-        internal val tooltip:String? = null
+        internal val highlightType: ProblemHighlightType? = null,
+        internal val tooltip: String? = null
 )
 
 class AnnotationBuilder private constructor(internal val annotationHolder: AnnotationHolder, internal val data: AnnotationBuilderData) {
 
-    constructor(annotationHolder:AnnotationHolder, severity:HighlightSeverity, message: String?)
+    constructor(annotationHolder: AnnotationHolder, severity: HighlightSeverity, message: String?)
             : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message
             ?: ""))
 
     @Contract(pure = true)
-    fun range(range:TextRange) : AnnotationBuilder {
+    fun range(range: TextRange): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(range = range))
     }
 
     @Contract(pure = true)
-    fun range(element: PsiElement) : AnnotationBuilder {
+    fun range(element: PsiElement): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(range = element.textRange))
     }
 
-    fun range(node: ASTNode) : AnnotationBuilder {
+    fun range(node: ASTNode): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(range = node.textRange))
     }
 
     @Contract(pure = true)
-    fun withFix(fix:IntentionAction) : AnnotationBuilder {
+    fun withFix(fix: IntentionAction): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(fixes = data.fixes + fix))
     }
 
     @Contract(pure = true)
-    private fun withFix(fix: FixBuilderData) : AnnotationBuilder {
+    private fun withFix(fix: FixBuilderData): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(fixBuilderData = data.fixBuilderData + fix))
     }
 
     @Contract(pure = true)
-    fun withFixes(fixes:List<IntentionAction>) : AnnotationBuilder {
+    fun withFixes(fixes: List<IntentionAction>): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(fixes = data.fixes + fixes))
     }
 
     @Contract(pure = true)
-    fun needsUpdateOnTyping(needsUpdateOnTyping:Boolean) : AnnotationBuilder {
+    fun needsUpdateOnTyping(needsUpdateOnTyping: Boolean): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(needsUpdateOnTyping = needsUpdateOnTyping))
     }
 
     @Contract(pure = true)
-    fun needsUpdateOnTyping() : AnnotationBuilder {
+    fun needsUpdateOnTyping(): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(needsUpdateOnTyping = true))
     }
 
     @Contract(pure = true)
-    fun highlightType(highlightType:ProblemHighlightType) : AnnotationBuilder {
+    fun highlightType(highlightType: ProblemHighlightType): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(highlightType = highlightType))
     }
 
     @Contract(pure = true)
-    fun tooltip(tooltip:String) : AnnotationBuilder {
+    fun tooltip(tooltip: String): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(tooltip = tooltip))
     }
 
     @Contract(pure = true)
-    fun textAttributes(textAttributes: TextAttributesKey) : AnnotationBuilder {
+    fun textAttributes(textAttributes: TextAttributesKey): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(textAttributes = textAttributes))
     }
 
     @Contract(pure = true)
-    fun enforcedTextAttributes(textAttributes:TextAttributes) : AnnotationBuilder {
+    fun enforcedTextAttributes(textAttributes: TextAttributes): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(enforcedTextAttributes = textAttributes))
     }
 
@@ -158,7 +164,7 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
                 annotation.registerUniversalFix(union, it.range, it.key)
             }
             if (union == null && it.batch.orFalse()) {
-                if (intentionAction != null){
+                if (intentionAction != null) {
                     if (it.range != null) {
                         if (it.key != null) {
                             annotation.registerFix(intentionAction, it.range, it.key)
@@ -197,8 +203,7 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
     }
 
 
-
-    class FixBuilder private  constructor(private val annotationBuilder: AnnotationBuilder, private val fixBuilderData: FixBuilderData) {
+    class FixBuilder private constructor(private val annotationBuilder: AnnotationBuilder, private val fixBuilderData: FixBuilderData) {
 
         @Contract(pure = true)
         fun range(range: TextRange): FixBuilder {
@@ -222,7 +227,7 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
 
         companion object {
             @Suppress("FunctionName")
-            internal fun _createFixBuilder(annotationBuilder: AnnotationBuilder, fixBuilderData: FixBuilderData) : FixBuilder {
+            internal fun _createFixBuilder(annotationBuilder: AnnotationBuilder, fixBuilderData: FixBuilderData): FixBuilder {
                 return FixBuilder(annotationBuilder, fixBuilderData)
             }
         }
@@ -234,13 +239,13 @@ internal data class FixBuilderData(
         internal val intentionAction: IntentionAction? = null,
         internal val range: TextRange? = null,
         internal val key: HighlightDisplayKey? = null,
-        internal val universal:Boolean? = null,
-        internal val batch:Boolean? = null,
+        internal val universal: Boolean? = null,
+        internal val batch: Boolean? = null,
         internal val problemDescriptor: ProblemDescriptor? = null
 
 )
 
-class FixUnion(val quickFix:LocalQuickFix, val intentionAction: IntentionAction) : IntentionAction by intentionAction, LocalQuickFix by quickFix {
+class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction) : IntentionAction by intentionAction, LocalQuickFix by quickFix {
 
     override fun getText(): String = intentionAction.text
 
