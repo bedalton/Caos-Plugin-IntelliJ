@@ -8,13 +8,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
@@ -55,7 +56,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?.type
                     ?.typedef
                     ?: return null
-            val variant = token.containingCaosFile.variant
+            val variant = token.containingCaosFile?.variant.orDefault()
             return CaosDefTypeDefinitionElementsByNameIndex
                     .Instance[typeDef, token.project].firstOrNull {
                 it.isVariant(variant) && it.typeNote?.text?.toLowerCase() == "bitflags"
@@ -120,7 +121,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                                 ?: return@letCommand null
 
                         val typeDef = commandDef.returnTypeStruct?.type?.typedef ?: return@letCommand null
-                        getListValue(element.containingCaosFile.variant, typeDef, element.project, element.text)
+                        getListValue(element.containingCaosFile?.variant.orDefault(), typeDef, element.project, element.text)
                     } ?: return list
             list.add(InlayInfo("(" + typeDefValue.value + ")", element.endOffset))
             return list
@@ -146,7 +147,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val eventElement = element as? CaosScriptEventNumberElement
                     ?: return emptyList()
-            val variant = element.containingCaosFile.variant
+            val variant = element.containingCaosFile?.variant.orDefault()
             val typeList = CaosDefTypeDefinitionElementsByNameIndex
                     .Instance["EventNumbers", element.project]
                     .firstOrNull {

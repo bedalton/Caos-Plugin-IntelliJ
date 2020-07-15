@@ -2,11 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptEtchOnC1QuickFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -14,7 +12,7 @@ import com.intellij.psi.PsiElement
 
 class CaosScriptEnumAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
-        val variant = (element.containingFile as? CaosScriptFile).variant
+        val variant = (element.containingFile as? CaosScriptFile)?.variant.orDefault()
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         when (element) {
             is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)

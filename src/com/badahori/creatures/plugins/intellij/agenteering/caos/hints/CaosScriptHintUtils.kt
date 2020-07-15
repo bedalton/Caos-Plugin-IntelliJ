@@ -9,11 +9,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Ty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 
@@ -60,7 +61,7 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
             ?.type
             ?.typedef
             ?: return null
-    val variant = expression.containingCaosFile.variant
+    val variant = expression.containingCaosFile?.variant.orDefault()
     return getListValue(variant, typeDef, expression.project, value)
 }
 
@@ -100,7 +101,7 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             .typedef
             ?: return null
 
-    val variant = valueOfType.containingCaosFile.variant
+    val variant = valueOfType.containingCaosFile?.variant.orDefault()
     return getListValue(variant, typeDef, valueOfType.project, key)
 }
 

@@ -17,7 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.is
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsQuoteStringImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -244,7 +244,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptIsCommandToken, variants: List<CaosVariant>, strict: Boolean): Boolean {
-        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile.variant
+        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant.orDefault()
         if (thisVariant == CaosVariant.UNKNOWN) {
             return !strict
         }
@@ -253,7 +253,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptCompositeElement, variants: List<CaosVariant>, strict: Boolean): Boolean {
-        val thisVariant = element.containingCaosFile.variant
+        val thisVariant = element.containingCaosFile?.variant.orDefault()
         if (thisVariant == CaosVariant.UNKNOWN)
             return !strict
         return thisVariant in variants
@@ -515,7 +515,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
-        val variant = expression.containingCaosFile.variant
+        val variant = expression.containingCaosFile?.variant.orDefault()
         expression.byteString?.let { stringValue ->
             if (variant.isNotOld) {
                 return try {
@@ -533,7 +533,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getAnimation(expression: CaosScriptExpression): CaosAnimation? {
-        val variant = expression.containingCaosFile.variant
+        val variant = expression.containingCaosFile?.variant.orDefault()
         if (variant.isNotOld) {
             val poseList = expression.byteStringArray
                     ?: return null
@@ -607,7 +607,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCreatureAnimation(expression: CaosScriptExpression): CaosAnimation? {
-        val variant = expression.containingCaosFile.variant
+        val variant = expression.containingCaosFile?.variant.orDefault()
         val stringValue = expression.stringValue
                 ?: return null
         if (stringValue.isEmpty())
@@ -670,7 +670,7 @@ object CaosScriptPsiImplUtil {
             varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
             varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
             else -> {
-                val validTypes = when (varToken.containingCaosFile.variant) {
+                val validTypes = when (varToken.containingCaosFile?.variant.orDefault()) {
                     CaosVariant.C1 -> "[varX,obvX]"
                     CaosVariant.C2 -> "[varX,vaXX,obvX,ovXX]"
                     else -> "[vaXX,ovXX,mvXX]"
@@ -1260,7 +1260,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get variant
-        val variant = element.containingCaosFile.variant
+        val variant = element.containingCaosFile?.variant.orDefault()
         // Find list in index
         val list = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[typeDef, element.project]
@@ -1305,7 +1305,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get variant
-        val variant = element.containingCaosFile.variant
+        val variant = element.containingCaosFile?.variant.orDefault()
         // Find list in index
         val list = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[typeDef, element.project]

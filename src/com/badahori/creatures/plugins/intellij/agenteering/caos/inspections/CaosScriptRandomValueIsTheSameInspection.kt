@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
@@ -24,7 +24,7 @@ class CaosScriptRandomValueIsTheSameInspection : LocalInspectionTool() {
     }
 
     private fun annotateRndv(element: CaosScriptCRndv, holder: ProblemsHolder) {
-        val variant = element.containingCaosFile.variant
+        val variant = element.containingCaosFile?.variant.orDefault()
         if (variant.isNotOld)
             return
         val minMax:Pair<Int?, Int?> = element.rndvIntRange

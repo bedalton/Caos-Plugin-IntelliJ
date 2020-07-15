@@ -20,6 +20,7 @@ public class EditorToolbar {
     private JButton injectButton;
 
     public JPanel getPanel() {
+        variant.setVisible(false);
         return panel;
     }
 

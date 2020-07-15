@@ -14,4 +14,10 @@ public interface CaosScriptIcons {
     Icon RVALUE = IconLoader.getIcon("/icons/right-value-icon.png");
     Icon LVALUE = IconLoader.getIcon("/icons/left-value-icon.png");
     Icon HASHTAG = IconLoader.getIcon("/icons/hashtag-icon.png");
+    Icon C1 = IconLoader.getIcon("/icons/C1.png");
+    Icon C2 = IconLoader.getIcon("/icons/C2.png");
+    Icon CV = IconLoader.getIcon("/icons/CV.png");
+    Icon C3 = IconLoader.getIcon("/icons/C3.png");
+    Icon DS = IconLoader.getIcon("/icons/DS.png");
+    Icon SM = IconLoader.getIcon("/icons/SM.png");
 }
