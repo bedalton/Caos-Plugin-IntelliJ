@@ -4,18 +4,17 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
@@ -28,9 +27,7 @@ import com.intellij.refactoring.suggested.startOffset
 
 enum class CaosScriptInlayTypeHint(description: String, override val enabled: Boolean, override val priority: Int = 0) : CaosScriptHintsProvider {
 
-    ATTRIBUTE_BITFLAGS_HINT("Show bit flag for outer expression", true, 100) {
-
-
+    ATTRIBUTE_BITFLAGS_RETURN_VALUE_HINT("Show bit flag for outer expression", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
             return (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
         }
@@ -51,15 +48,22 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
         private fun getTypeList(token: CaosScriptIsCommandToken): CaosDefTypeDefinitionElement? {
             val typeDef = token.reference.resolve()
-                    ?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+                    ?.getParentOfType(CaosDefCommandDefElement::class.java)
                     ?.returnTypeStruct
                     ?.type
                     ?.typedef
                     ?: return null
-            val variant = token.containingCaosFile?.variant.orDefault()
+            val variant = token.containingCaosFile?.variant
+                    ?: return null
             return CaosDefTypeDefinitionElementsByNameIndex
-                    .Instance[typeDef, token.project].firstOrNull {
-                it.isVariant(variant) && it.typeNote?.text?.toLowerCase() == "bitflags"
+                    .Instance[typeDef, token.project].firstOrNull check@{
+                if (!it.isVariant(variant))
+                    return@check false
+                val typeNote = it.typeNote?.text
+                if (typeNote == null) {
+                   return@check false
+                }
+                it.typeNote?.text?.toLowerCase()?.contains("bitflags").orFalse()
             }
         }
 
@@ -75,6 +79,83 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 else -> null
             } ?: return emptyList()
             val typeList = getTypeList(commandToken)
+                    ?: return emptyList()
+            val values = mutableListOf<String>()
+            for (key in typeList.keys) {
+                try {
+                    if (attr and key.key.toInt() > 0)
+                        values.add(key.value)
+                } catch (e: Exception) {
+                }
+            }
+            return listOf(InlayInfo("(${values.joinToString()})", element.endOffset))
+        }
+
+        override fun getHintInfo(element: PsiElement): HintInfo? {
+            if (element !is CaosScriptExpression) {
+                return null
+            }
+            val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
+                    ?: element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+            return parent?.let {
+                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+            }
+        }
+    },
+    ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
+        override fun isApplicable(element: PsiElement): Boolean {
+            return (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
+        }
+
+        private fun usesBitFlags(element: CaosScriptExpression): Boolean {
+            val parent = element.parent
+            val caosCommandToken = when {
+                parent is CaosScriptComparesEqualityElement -> getCommandTokenFromEquality(parent, element)
+                parent.parent.parent is CaosScriptCommandElement -> getCommandTokenFromCommand(parent.parent.parent as CaosScriptCommandElement, element)
+                else -> null
+            } ?: return false
+            val argument = element.getParentOfType(CaosScriptArgument::class.java)
+                    ?: return false
+            return getTypeList(caosCommandToken, argument.index) != null
+        }
+
+        private fun getTypeList(token: CaosScriptIsCommandToken, index:Int): CaosDefTypeDefinitionElement? {
+            val typeDef = token.reference.resolve()
+                    ?.getParentOfType(CaosDefCommandDefElement::class.java)
+                    ?.parameterStructs
+                    ?.getOrNull(index)
+                    ?.type
+                    ?.typedef
+                    ?: return null
+            val variant = token.containingCaosFile?.variant
+                    ?: return null
+            return CaosDefTypeDefinitionElementsByNameIndex
+                    .Instance[typeDef, token.project].firstOrNull check@{
+                if (!it.isVariant(variant))
+                    return@check false
+                val typeNote = it.typeNote?.text
+                if (typeNote == null) {
+                    //LOGGER.info("TypeNote is null for ${it.typeName}")
+                    return@check false
+                }
+                it.typeNote?.text?.toLowerCase()?.contains("bitflags").orFalse()
+            }
+        }
+
+        override fun provideHints(element: PsiElement): List<InlayInfo> {
+            val expression = element as? CaosScriptExpression
+                    ?: return emptyList()
+            val attr = expression.intValue
+                    ?: return emptyList()
+            val parent = element.parent
+            val argumentIndex:Int = element.getParentOfType(CaosScriptArgument::class.java)
+                    ?.index
+                    ?: return emptyList()
+            val commandToken = when {
+                parent.parent.parent is CaosScriptCommandElement -> getCommandTokenFromCommand(parent.parent.parent as CaosScriptCommandElement, expression)
+                else -> null
+            } ?: return emptyList()
+            val typeList = getTypeList(commandToken, argumentIndex)
                     ?: return emptyList()
             val values = mutableListOf<String>()
             for (key in typeList.keys) {
@@ -117,11 +198,13 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                                 ?.multiResolve(true)
                                 ?.firstOrNull()
                                 ?.element
-                                ?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+                                ?.getParentOfType(CaosDefCommandDefElement::class.java)
                                 ?: return@letCommand null
 
                         val typeDef = commandDef.returnTypeStruct?.type?.typedef ?: return@letCommand null
-                        getListValue(element.containingCaosFile?.variant.orDefault(), typeDef, element.project, element.text)
+                        val variant = element.containingCaosFile?.variant
+                                ?: return emptyList()
+                        getListValue(variant, typeDef, element.project, element.text)
                     } ?: return list
             list.add(InlayInfo("(" + typeDefValue.value + ")", element.endOffset))
             return list
@@ -147,7 +230,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val eventElement = element as? CaosScriptEventNumberElement
                     ?: return emptyList()
-            val variant = element.containingCaosFile?.variant.orDefault()
+            val variant = element.containingCaosFile?.variant
+                    ?: return emptyList()
             val typeList = CaosDefTypeDefinitionElementsByNameIndex
                     .Instance["EventNumbers", element.project]
                     .firstOrNull {
@@ -234,7 +318,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?.multiResolve(false)
                     ?.firstOrNull()
                     ?.element
-                    ?.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+                    ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                     ?: return inlayInfo
             val parameterStruct = containingCommand.parameterStructs.getOrNull(index)
             if (parameterStruct != null) {
