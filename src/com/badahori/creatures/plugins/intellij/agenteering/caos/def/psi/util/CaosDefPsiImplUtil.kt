@@ -304,7 +304,7 @@ object CaosDefPsiImplUtil {
             }
         }
         val fileTypes = element.variableFileType?.let {
-            element.text.substring(5)?.split("/")
+            it.text.substring(6).split("/")
         }
         return CaosDefVariableTypeStruct(
                 type = type,
