@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
@@ -21,29 +22,24 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction {
 
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        if (file == null)
-            return false
-        val hasCommas = file.text.orEmpty().contains(",")
-        val isSingleLine = file.text.length > 5 && file.lastChild.lineNumber == 0
-        if (hasCommas)
-            return true
-        else if (isSingleLine) {
-            return true
-        }
-        return false
+        return file is CaosScriptFile
     }
 
     override fun getText(): String = CaosBundle.message("caos.intentions.commands-on-new-line")
 
     override fun invoke(project: Project, editor: Editor?, fileIn: PsiFile?) {
         val file = fileIn ?: return
-        val document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: fileIn.document
+        var document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: fileIn.document
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
         val newLines = PsiTreeUtil.collectElementsOfType(file, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline::class.java)
         for (newLine in newLines) {
             replaceIfBlankOrComma(newLine)
+        }
+        document = file.document ?: PsiDocumentManager.getInstance(project).getCachedDocument(file)
+        document?.let {
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
         CodeStyleManager.getInstance(project).reformat(fileIn, true)
     }
