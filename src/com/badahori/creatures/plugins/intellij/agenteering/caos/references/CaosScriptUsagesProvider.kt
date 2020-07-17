@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
@@ -32,6 +33,9 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
             element.isOrHasParentOfType(CaosScriptNamedVar::class.java) -> "var ${element.text}"
             element.isOrHasParentOfType(CaosScriptNamedConstant::class.java) -> "const ${element.text}"
+            element.elementType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
+            element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
+            element.elementType == CaosScriptTypes.CaosScript_DECIMAL -> "number ${element.text}"
             else -> {
                 element.getSelfOrParentOfType(CaosScriptIsCommandToken::class.java)?.let {
                     CaosScriptPresentationUtil.getDescriptiveText(it)
@@ -49,6 +53,9 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
                 in CaosScriptTokenSets.STRING_LIKE -> "String"
                 in CaosScriptTokenSets.KEYWORDS -> "Flow Control"
                 in CaosScriptTokenSets.ALL_COMMANDS -> "Command"
+                CaosScriptTypes.CaosScript_INT -> "Integer"
+                CaosScriptTypes.CaosScript_FLOAT -> "Float"
+                CaosScriptTypes.CaosScript_DECIMAL -> "Number"
                 else -> "element"
             }
         }
