@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.VariantFilePropertyPusher
@@ -16,14 +17,19 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage.instance) {
-    val variant: CaosVariant
+    val variant: CaosVariant?
             get() {
-                return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
-                        ?.variant.orDefault()
+                val module = module ?: originalFile.module
+                if (module == null) {
+                    LOGGER.severe("Failed to locate module for file: ${name}")
+                    return null
+                }
+                return module.variant
             }
 
     override fun getFileType(): FileType {
@@ -50,4 +56,8 @@ class CaosScriptFile(viewProvider: FileViewProvider)
         val VariantUserDataKey = Key<CaosVariant>("com.badahori.creatures.plugins.intellij.agenteering.caos.SCRIPT_VARIANT_KEY")
 
     }
+}
+
+val PsiFile.module:Module? get() {
+    return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
 }

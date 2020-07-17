@@ -1,8 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
-import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.psi.PsiElementVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptC1ClasToCls2Fix
@@ -10,11 +7,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosPluginSettingsUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiElementVisitor
 
 class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
@@ -31,7 +28,8 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
     private fun annotateAssignment(element: CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return
         val type = getType(element)
                 ?: return
         when (element.commandString.toUpperCase()) {

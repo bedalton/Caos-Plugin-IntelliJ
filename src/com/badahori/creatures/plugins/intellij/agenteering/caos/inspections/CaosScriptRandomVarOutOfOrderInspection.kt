@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
@@ -25,7 +24,8 @@ class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
     }
 
     private fun annotateSubroutineName(element: CaosScriptCRndv, holder: ProblemsHolder) {
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return
         if (variant != CaosVariant.C1)
             return
         val minMax:Pair<Int?, Int?> = element.rndvIntRange

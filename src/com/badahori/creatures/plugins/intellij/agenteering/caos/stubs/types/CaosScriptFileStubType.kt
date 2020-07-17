@@ -1,17 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptFileStubImpl
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.stubs.*
 import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptFileStubImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import java.io.IOException
 
 class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, CaosScriptLanguage.instance) {
@@ -58,7 +59,7 @@ private class CaosScriptFileStubBuilder : DefaultStubBuilder() {
             super.createStubForFile(file)
         } else {
             val fileName = file.name
-            return CaosScriptFileStubImpl(file, fileName, file.variant)
+            return CaosScriptFileStubImpl(file, fileName, file.variant.orDefault())
         }
     }
 }

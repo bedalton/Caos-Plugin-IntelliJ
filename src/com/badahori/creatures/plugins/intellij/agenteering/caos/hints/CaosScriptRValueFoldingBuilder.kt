@@ -1,22 +1,21 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
@@ -33,7 +32,8 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun getEventName(element: CaosScriptEventNumberElement):String? {
         val eventElement = element as? CaosScriptEventNumberElement
                 ?: return null
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return null
         val typeList = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance["EventNumbers", element.project]
                 .filter {

@@ -12,7 +12,8 @@ import com.intellij.psi.PsiElement
 
 class CaosScriptEnumAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
-        val variant = (element.containingFile as? CaosScriptFile)?.variant.orDefault()
+        val variant = (element.containingFile as? CaosScriptFile)?.variant
+                ?: return
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         when (element) {
             is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)

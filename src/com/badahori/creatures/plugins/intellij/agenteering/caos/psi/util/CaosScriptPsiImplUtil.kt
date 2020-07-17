@@ -1,12 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.project.DumbService
-import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.IElementType
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
@@ -16,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.is
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsQuoteStringImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -24,6 +16,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiElement
+import com.intellij.psi.tree.IElementType
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import kotlin.math.floor
 
 const val UNDEF = "{UNDEF}"
@@ -241,7 +240,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptIsCommandToken, variants: List<CaosVariant>, strict: Boolean): Boolean {
-        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant.orDefault()
+        val thisVariant = (element as? CaosScriptCompositeElement)?.containingCaosFile?.variant
+                ?: return !strict
         if (thisVariant == CaosVariant.UNKNOWN) {
             return !strict
         }
@@ -250,7 +250,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isVariant(element: CaosScriptCompositeElement, variants: List<CaosVariant>, strict: Boolean): Boolean {
-        val thisVariant = element.containingCaosFile?.variant.orDefault()
+        val thisVariant = element.containingCaosFile?.variant
+                ?: return !strict
         if (thisVariant == CaosVariant.UNKNOWN)
             return !strict
         return thisVariant in variants
@@ -542,7 +543,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
-        val variant = expression.containingCaosFile?.variant.orDefault()
+        val variant = expression.containingCaosFile?.variant
+                ?: return null
         expression.byteString?.let { stringValue ->
             if (variant.isNotOld) {
                 return try {
@@ -560,7 +562,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getAnimation(expression: CaosScriptExpression): CaosAnimation? {
-        val variant = expression.containingCaosFile?.variant.orDefault()
+        val variant = expression.containingCaosFile?.variant
+                ?: return null
         if (variant.isNotOld) {
             val poseList = expression.byteStringArray
                     ?: return null
@@ -634,7 +637,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCreatureAnimation(expression: CaosScriptExpression): CaosAnimation? {
-        val variant = expression.containingCaosFile?.variant.orDefault()
+        val variant = expression.containingCaosFile?.variant
+                ?: return null
         val stringValue = expression.stringValue
                 ?: return null
         if (stringValue.isEmpty())
@@ -697,7 +701,7 @@ object CaosScriptPsiImplUtil {
             varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
             varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
             else -> {
-                val validTypes = when (varToken.containingCaosFile?.variant.orDefault()) {
+                val validTypes = when (varToken.containingCaosFile?.variant) {
                     CaosVariant.C1 -> "[varX,obvX]"
                     CaosVariant.C2 -> "[varX,vaXX,obvX,ovXX]"
                     else -> "[vaXX,ovXX,mvXX]"
@@ -1287,7 +1291,8 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get variant
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return null
         // Find list in index
         val list = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[typeDef, element.project]
@@ -1332,7 +1337,8 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get variant
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return null
         // Find list in index
         val list = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[typeDef, element.project]

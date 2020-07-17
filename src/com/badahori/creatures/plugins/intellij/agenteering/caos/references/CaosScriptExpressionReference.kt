@@ -1,12 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionKey
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.intellij.openapi.project.Project
@@ -32,8 +33,6 @@ class CaosScriptExpressionReference(element:CaosScriptExpression) : PsiPolyVaria
                 ?.ifEmpty { null }
                 ?: return@lazy emptyList<String>()
         val argumentNumber = argument.index
-        val project = myElement.project
-        val variant = myElement.containingCaosFile?.variant.orDefault()
         commandDef.mapNotNull map@{ def ->
             val parameter = def.parameterStructs.getOrNull(argumentNumber)
                     ?: return@map null
@@ -55,7 +54,8 @@ class CaosScriptExpressionReference(element:CaosScriptExpression) : PsiPolyVaria
     }
 
     override fun multiResolve(p0: Boolean): Array<ResolveResult> {
-        val variant = myElement.containingCaosFile?.variant.orDefault()
+        val variant = myElement.containingCaosFile?.variant
+                ?: return ResolveResult.EMPTY_ARRAY
         val keys = possibleTypeDefNames.flatMap map@{ typeDefName ->
             CaosDefTypeDefinitionElementsByNameIndex.Instance[typeDefName, project]
                     .filter {

@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.con
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
@@ -44,7 +43,8 @@ object CaosScriptTypeDefValueCompletionProvider {
                 .typedef
                 ?: return
 
-        val variant = valueOfType.containingCaosFile?.variant.orDefault()
+        val variant = valueOfType.containingCaosFile?.variant
+                ?: return
         addListValues(resultSet, variant, typeDef, valueOfType.project, valueOfType.text, reference.parameterStructs.size - 1 > index)
     }
 
@@ -74,7 +74,8 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?.type
                 ?.typedef
                 ?: return
-        val variant = expression.containingCaosFile?.variant.orDefault()
+        val variant = expression.containingCaosFile?.variant
+                ?: return
         addListValues(resultSet, variant, typeDef, expression.project, expression.text, expression.getPreviousNonEmptyNode(false) !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqOp)
     }
 
