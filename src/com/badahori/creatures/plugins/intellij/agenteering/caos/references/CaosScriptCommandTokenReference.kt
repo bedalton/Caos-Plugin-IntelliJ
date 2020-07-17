@@ -1,11 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementResolveResult
-import com.intellij.psi.PsiPolyVariantReferenceBase
-import com.intellij.psi.ResolveResult
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommand
@@ -13,14 +7,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementResolveResult
+import com.intellij.psi.PsiPolyVariantReferenceBase
+import com.intellij.psi.ResolveResult
 
 class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
 
@@ -61,7 +58,8 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         val type = myElement.getEnclosingCommandType()
         val formattedName = name?.replace(EXTRA_SPACE_REGEX, " ")
                 ?: return emptyList()
-        val variant = myElement.containingCaosFile?.variant.orDefault()
+        val variant = myElement.containingCaosFile?.variant
+                ?: return emptyList()
         val matches = CaosDefCommandElementsByNameIndex
                 .Instance[formattedName, myElement.project]
                 // Filter for type and variant

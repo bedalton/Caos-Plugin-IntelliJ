@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsAgent
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
@@ -38,7 +37,8 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     }
 
     private fun getStimFold(commandCall: CaosScriptCommandCall): String? {
-        val variant = commandCall.containingCaosFile?.variant.orDefault()
+        val variant = commandCall.containingCaosFile?.variant
+                ?: return null
         val resolved = commandCall.commandToken
                 ?.reference
                 ?.multiResolve(true)
@@ -127,7 +127,9 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
         if (!shouldFold(commandCall))
             return null
-        return when (commandCall.containingCaosFile?.variant.orDefault()) {
+        val variant = commandCall.containingCaosFile?.variant
+                ?: return null
+        return when (variant) {
             CaosVariant.C1, CaosVariant.C2 -> getC1StimFoldingDescriptor(commandCall, group)
             else -> {
                 // TODO implement CV+ folding

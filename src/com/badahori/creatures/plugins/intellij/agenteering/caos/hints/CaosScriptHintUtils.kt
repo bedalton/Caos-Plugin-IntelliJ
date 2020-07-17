@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.intellij.openapi.project.Project
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
@@ -9,14 +8,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Ty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.Project
 
 
 fun CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
@@ -61,7 +59,8 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
             ?.type
             ?.typedef
             ?: return null
-    val variant = expression.containingCaosFile?.variant.orDefault()
+    val variant = expression.containingCaosFile?.variant
+            ?: return null
     return getListValue(variant, typeDef, expression.project, value)
 }
 
@@ -101,7 +100,8 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             .typedef
             ?: return null
 
-    val variant = valueOfType.containingCaosFile?.variant.orDefault()
+    val variant = valueOfType.containingCaosFile?.variant
+            ?: return null
     return getListValue(variant, typeDef, valueOfType.project, key)
 }
 

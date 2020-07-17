@@ -1,14 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.scope
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.suggested.endOffset
@@ -47,9 +43,11 @@ object CaosScriptInferenceUtil {
                 }
             }*/
             val caosVar = argument.toCaosVar()
+            val variant = element.containingCaosFile?.variant
+                    ?: return@let null
             if (caosVar is CaosVar.CaosNumberedVar || caosVar is CaosVar.CaosNamedGameVar) {
                 when (assignment.firstChild?.text?.toUpperCase()) {
-                    "SETV" -> if (element.containingCaosFile?.variant.orDefault().isNotOld)
+                    "SETV" -> if (variant.isNotOld)
                         CaosVar.CaosInferredVariableType(assignment.arguments.firstOrNull()?.text
                                 ?: "???", CaosExpressionValueType.DECIMAL)
                     else
