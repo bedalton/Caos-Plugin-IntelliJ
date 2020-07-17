@@ -1161,6 +1161,14 @@ expression
 			getByteStringArray
 			getCreatureAnimation
 			getAnimation
+			getReference
+			getName
+			setName
+		]
+
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 		]
 	}
 	;
@@ -7127,6 +7135,17 @@ species ::= expects_int;
 
 event_number_element
 	::= INT
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getName
+			setName
+		]
+	}
 	;
 
 private follows_dde_putb
