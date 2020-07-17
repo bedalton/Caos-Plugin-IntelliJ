@@ -6,18 +6,25 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.con
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.endsWithIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.substringFromEnd
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 
 object CaosScriptTypeDefValueCompletionProvider {
 
@@ -38,14 +45,47 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?.parameterStructs
                 ?.getOrNull(index)
                 ?: return
-        val typeDef = parameterStruct
+        val type = parameterStruct
                 .type
-                .typedef
-                ?: return
-
         val variant = valueOfType.containingCaosFile?.variant
                 ?: return
-        addListValues(resultSet, variant, typeDef, valueOfType.project, valueOfType.text, reference.parameterStructs.size - 1 > index)
+        val addSpace = reference.parameterStructs.size - 1 > index
+        if (type.typedef != null) {
+            addListValues(resultSet, variant, type.typedef, valueOfType.project, valueOfType.text, addSpace)
+        } else if (!type.fileTypes.isNullOrEmpty()) {
+
+            val project = valueOfType.project
+            val allFiles = type.fileTypes
+                    .flatMap { fileExtensionTemp ->
+                        val fileExtension = fileExtensionTemp.toLowerCase()
+                        LOGGER.info("Finding files with extensions: '$fileExtension'")
+                        val searchScope =
+                                valueOfType.containingFile?.module?.let { GlobalSearchScope.moduleScope(it) }
+                                        ?: GlobalSearchScope.projectScope(project)
+                        FilenameIndex.getAllFilesByExt(project,fileExtension, searchScope).toList()
+                    }
+                    .map { it.nameWithoutExtension }
+            LOGGER.info("Files with types: [${type.fileTypes.joinToString()}] == [${allFiles.joinToString()}]")
+            for (file in allFiles) {
+                val fileName = file
+                val isToken = parameterStruct.type.type.toLowerCase() == "token"
+                val text = when {
+                    isToken -> fileName
+                    variant.isOld -> "[$fileName]"
+                    else -> "\"$fileName\""
+                }
+                var lookupElement = LookupElementBuilder
+                        .create(text)
+                        .withStrikeoutness(isToken && fileName.length != 4)
+                        .withLookupString(fileName)
+                        .withPresentableText(fileName)
+                if (addSpace) {
+                    lookupElement = lookupElement
+                            .withInsertHandler(AddSpaceInsertHandler(true))
+                }
+                resultSet.addElement(lookupElement)
+            }
+        }
     }
 
     fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression) {
@@ -76,7 +116,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?: return
         val variant = expression.containingCaosFile?.variant
                 ?: return
-        addListValues(resultSet, variant, typeDef, expression.project, expression.text, expression.getPreviousNonEmptyNode(false) !is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqOp)
+        addListValues(resultSet, variant, typeDef, expression.project, expression.text, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
 
     private fun addListValues(resultSet: CompletionResultSet, variant: CaosVariant, listName: String, project: Project, string: String, addSpace: Boolean) {
