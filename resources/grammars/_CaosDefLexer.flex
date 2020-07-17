@@ -47,6 +47,7 @@ AT_LVALUE=[@][lL][vV][aA][lL][uU][eE]
 AT_PARAM=[@][pP][aA][rR][aA][mM]
 AT_RETURN=[@][rR][eE][tT][uU][rR][nN][sS]?
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
+AT_FILE=AT_ID=[@][Ff][Ii][Ll][Ee][.][a-zA-Z_][a-zA-Z_0-9/]*
 TYPE_DEF_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+([ ]+ [a-zA-Z0-9_#-]+)*
 TYPE_DEF_VALUE=([^-\n]|-[^ ])+
 DEF_TEXT=[^\n]+
@@ -104,6 +105,7 @@ VARIANT_NAME=[A-Za-z0-9 _]+
     {TO}						{ return CaosDef_TO;}
     {UNTIL}						{ return CaosDef_UNTIL; }
     {AT_ID}						{ return CaosDef_AT_ID; }
+    {AT_FILE}					{ return CaosDef_AT_FILE; }
     {INT}						{ return CaosDef_INT_LITERAL; }
     {ID}						{ return CaosDef_ID; }
     "("							{ paren_depth++; return CaosDef_OPEN_PAREN; }

@@ -46,6 +46,7 @@
 		AT_RETURN = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
 
 		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
+		AT_FILE = "regexp:[@][Ff][Ii][Ll][Ee][.][a-zA-Z_][a-zA-Z_0-9/]+"
 		SINGLE_QUO_STRING = "regexp:'[^\n']*'";
 		DOUBLE_QUO_STRING = 'regexp:"[^\n"]*"';
 		STRING_LITERAL_TYPE
@@ -463,6 +464,11 @@ private variable_type_tail
 	::= type_def_name
 	|	COLON type_note
 	|	variable_tail_limits
+	|	variable_file_type
+	;
+
+variable_file_type
+	::= AT_FILE
 	;
 
 type_note
