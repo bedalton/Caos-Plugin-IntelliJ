@@ -515,7 +515,6 @@ loop_statement
 			isUntil
 			getBlockType
 			getCommandString
-			getCommandStringUpper
 		]
 	}
 	;
@@ -1142,7 +1141,7 @@ expression
 	|	vars
 	|	named_constant
 	|	number
-	|	<<expects 'TOKEN'>>token
+	|	<<expects 'TOKEN' 'false'>>token
 	|	pict_dimension_literal
 	|	incomplete
 	{
@@ -1244,7 +1243,6 @@ command_call ::= command_call_by_args // I think private values all have equal p
 			getCommandTokens
 			getCommandElement
 			getCommandString
-			getCommandStringUpperUpper
 		]
 		//recoverWhile = command_recover
 	}
@@ -7012,7 +7010,7 @@ expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
 	;
 
 rvalue
-	::= rvalue_prime
+	::= (!<<expects 'TOKEN' 'false'>>)rvalue_prime
 	|	<<expects 'TOKEN' 'false'>> token
 	|	named_constant
 	|	vars
