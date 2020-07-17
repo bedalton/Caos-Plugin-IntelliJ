@@ -108,6 +108,14 @@ fun String.equalsIgnoreCase(otherString: String): Boolean {
     return this.equals(otherString, true)
 }
 
+fun String.endsWithIgnoreCase(otherString:String) : Boolean {
+    return this.toLowerCase().endsWith(otherString.toLowerCase())
+}
+
+fun String.startsWithIgnoreCase(otherString:String) : Boolean {
+    return this.toLowerCase().startsWith(otherString.toLowerCase())
+}
+
 fun String.notEqualsIgnoreCase(otherString: String): Boolean {
     return !this.equals(otherString, true)
 }
