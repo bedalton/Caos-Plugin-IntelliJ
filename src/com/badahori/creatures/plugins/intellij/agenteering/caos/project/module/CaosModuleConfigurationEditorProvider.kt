@@ -1,18 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosProjectGeneratorInfo
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
 import com.intellij.openapi.module.ModuleConfigurationEditor
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleType
-import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.project.impl.ProjectManagerImpl
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationEditorProvider
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationState
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFileSystem
 import javax.swing.JComponent
 
 
