@@ -4,4 +4,5 @@ import com.intellij.lang.Language
 
 
 object SprLanguage : Language("CreaturesSPR") {
+
 }

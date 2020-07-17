@@ -25,6 +25,7 @@ public class SprFileEditor {
     public static final String RED = "Red";
     public static final String BLUE = "Blue";
     public static final String GREEN = "Green";
+    private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
 
 
     SprFileEditor(VirtualFile file) {
@@ -35,29 +36,29 @@ public class SprFileEditor {
             final String color = (String) itemEvent.getItem();
             switch (color) {
                 case TRANSPARENT:
-                    SpriteCellRenderer.INSTANCE.setColor(new Color(0, 0, 0, 0));
+                    cellRenderer.setColor(new Color(0, 0, 0, 0));
                     break;
                 case BLACK:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.BLACK);
+                    cellRenderer.setColor(JBColor.BLACK);
                     break;
                 case DARK_GREY:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.DARK_GRAY);
+                    cellRenderer.setColor(JBColor.DARK_GRAY);
                     break;
                 case WHITE:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.WHITE);
+                    cellRenderer.setColor(JBColor.WHITE);
                     break;
 
                 case LIGHT_GREY:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.LIGHT_GRAY);
+                    cellRenderer.setColor(JBColor.LIGHT_GRAY);
                     break;
                 case RED:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.RED);
+                    cellRenderer.setColor(JBColor.RED);
                     break;
                 case BLUE:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.BLUE);
+                    cellRenderer.setColor(JBColor.BLUE);
                     break;
                 case GREEN:
-                    SpriteCellRenderer.INSTANCE.setColor(JBColor.GREEN);
+                    cellRenderer.setColor(JBColor.GREEN);
                     break;
             }
             imageList.updateUI();
@@ -66,7 +67,7 @@ public class SprFileEditor {
         scale.addItemListener((e) -> {
             final String value = (String) Objects.requireNonNull(scale.getSelectedItem());
             final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
-            SpriteCellRenderer.INSTANCE.setScale(newScale);
+            cellRenderer.setScale(newScale);
             imageList.updateUI();
         });
     }
@@ -107,7 +108,7 @@ public class SprFileEditor {
 
     private void createUIComponents() {
         imageList = new JBList<>(images);
-        imageList.setCellRenderer(SpriteCellRenderer.INSTANCE);
+        imageList.setCellRenderer(cellRenderer);
         backgroundColor = new ComboBox<>(new String[]{
                 TRANSPARENT,
                 BLACK,
