@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinition
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.openapi.util.TextRange
@@ -21,13 +20,16 @@ class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : Psi
             return false
         val typeDefElement = element.getParentOfType(CaosDefTypeDefinitionElement::class.java)
                 ?: return false
-        return typeDefElement.typeName == EVENT_NUMBER_TYPE_DEF_NAME && typeDefElement.isVariant(myElement.containingCaosFile?.variant.orDefault())
+        val variant = myElement.containingCaosFile?.variant
+                ?: return false
+        return typeDefElement.typeName == EVENT_NUMBER_TYPE_DEF_NAME && typeDefElement.isVariant(variant)
     }
 
     override fun resolve(): PsiElement? {
         val project = element.project
         val text = element.text
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return null
         return CaosDefTypeDefinitionElementsByNameIndex.Instance["EventNumbers", project]
                 .filter { it.isVariant(variant) }
                 .mapNotNull {

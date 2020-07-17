@@ -5,7 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
@@ -67,7 +66,8 @@ class CaosScriptTypesInspection : LocalInspectionTool(), DumbAware {
     }
 
     private fun annotateArgument(element: CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
-        val variant = element.containingCaosFile?.variant.orDefault()
+        val variant = element.containingCaosFile?.variant
+                ?: return
         val rvalue = element.rvalue ?: return
         if ((rvalue.expression ?: rvalue).getChildOfType(CaosScriptIsVariable::class.java) != null) {
             return

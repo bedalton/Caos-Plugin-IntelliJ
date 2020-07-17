@@ -30,6 +30,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val caosFile = element.containingFile.originalFile as? CaosScriptFile
                 ?: return
         val variant = caosFile.variant
+                ?: return
 
         val text = element.textWithoutCompletionIdString
         if (IS_NUMBER.matches(text)) {
@@ -188,7 +189,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         if (parent == null)
             return false
-        val variant = (element.containingFile as? CaosScriptFile)?.variant.orDefault()
+        val variant = (element.containingFile as? CaosScriptFile)?.variant
+                ?: return true
         var matches = CaosDefCommandElementsByNameIndex.Instance[commandString, element.project]
                 .filter { variant in it.variants }
         matches = when (parent) {
