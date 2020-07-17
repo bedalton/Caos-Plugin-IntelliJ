@@ -77,3 +77,4 @@ fabric.properties
 **/.DS_Store
 .DS_Store
 *.bak
+.idea/xtextAutoBuilderState.xml
