@@ -44,7 +44,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         val previous = element.getPreviousNonEmptySibling(true)
-        if (IS_NUMBER.matches( element.previous?.text ?:"")) {
+        if (IS_NUMBER.matches( element.previous?.text ?: "")) {
             resultSet.stopHere()
             return
         }
@@ -111,7 +111,11 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         (element.getParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
             CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
         }
-        (element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression::class.java))?.let { expression ->
+        if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
+            resultSet.stopHere()
+            return
+        }
+        (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
             val equalityExpression = expression.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
             if (equalityExpression != null) {
                 CaosScriptTypeDefValueCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
