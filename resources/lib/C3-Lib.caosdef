@@ -174,7 +174,7 @@ ACOS (float) x (float);
  * #Map
  *
  * @param {metaroomId} (integer)
- * @param {backgroundFile} (string)
+ * @param {backgroundFile} (string@File.C16/S16)
  *
  */
 ADDB (command) metaroomId (integer) backgroundFile (string);
@@ -1095,18 +1095,6 @@ CLAC (integer);
 CLAC (command) message (integer);
 
 /*
- * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
- * are ignored. Overriden by [CLAC].
- * #Input
- *
- * @param {message1} (integer)
- * @param {message2} (integer)
- * @param {message3} (integer)
- *
- */
-CLIK (command) message1 (integer) message2 (integer) message3 (integer);
-
-/*
  * This returns the CLIK action of the [TARG] object. If the object is in [CLAC] mode, then it returns
  * -2, else the return values are as follows:
  * 0 -> Current click action number (1,2,3)
@@ -1121,6 +1109,18 @@ CLIK (command) message1 (integer) message2 (integer) message3 (integer);
  *
  */
 CLIK (integer) whichValue (integer);
+
+/*
+ * Sets a chain of three message ids to cycle through as the agent is clicked on. Entries of -1
+ * are ignored. Overriden by [CLAC].
+ * #Input
+ *
+ * @param {message1} (integer)
+ * @param {message2} (integer)
+ * @param {message3} (integer)
+ *
+ */
+CLIK (command) message1 (integer) message2 (integer) message3 (integer);
 
 /*
  * Move current camera so top left corner of view is at world coordinate x y. Set pan 0 to jump
@@ -2295,7 +2295,7 @@ GAIT (command) gaitNumber (integer);
  * (using the current [PART]). The current [POSE] is kept the same in both galleries.
  * #AgentSprites
  *
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {firstImage} (integer)
  *
  */
@@ -4041,7 +4041,7 @@ NEGV (command) var (variable);
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {imageCount} (integer)
  * @param {firstImage} (integer)
  * @param {plane} (integer)
@@ -4059,7 +4059,7 @@ NEW: COMP (command) family (integer) genus (integer) species (integer) spriteFil
  * @param {geneSlot} (integer)
  * @param {sex} (integer)
  * @param {variant} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {imageCount} (integer)
  * @param {firstImage} (integer)
  * @param {plane} (integer)
@@ -4093,7 +4093,7 @@ NEW: CREA (command) family (integer) geneAgent (agent) geneSlot (integer) sex (i
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {imageCount} (integer)
  * @param {firstImage} (integer)
  * @param {plane} (integer)
@@ -4108,7 +4108,7 @@ NEW: SIMP (command) family (integer) genus (integer) species (integer) spriteFil
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {imageCount} (integer)
  * @param {firstImage} (integer)
  * @param {plane} (integer)
@@ -4485,7 +4485,7 @@ PART (integer) partId (integer);
  * #CompoundAgents
  *
  * @param {partId} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {firstImage} (integer)
  * @param {imageCount} (integer)
  * @param {relX} (decimal)
@@ -4525,7 +4525,7 @@ PAT: CMRA (command) partId (integer) overlaySprite (string) baseimage (integer) 
  * #CompoundAgents
  *
  * @param {partId} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {firstImage} (integer)
  * @param {relX} (decimal)
  * @param {relY} (decimal)
@@ -4540,7 +4540,7 @@ PAT: DULL (command) partId (integer) spriteFile (string) firstImage (integer) re
  * #CompoundAgents
  *
  * @param {partId} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {firstImage} (integer)
  * @param {relX} (decimal)
  * @param {relY} (decimal)
@@ -4594,7 +4594,7 @@ PAT: MOVE (command) partId (integer) relX (decimal) relY (decimal);
  * #CompoundAgents
  *
  * @param {partId} (integer)
- * @param {spriteFile} (string)
+ * @param {spriteFile} (string@File.C16/S16)
  * @param {firstImage} (integer)
  * @param {relX} (decimal)
  * @param {relY} (decimal)
@@ -6022,7 +6022,7 @@ SNAX (integer) filename (string);
  * agent moves.
  * #Sounds
  *
- * @param {soundFile} (string)
+ * @param {soundFile} (string@File.WAV)
  *
  */
 SNDC (command) soundFile (string);
@@ -6031,7 +6031,7 @@ SNDC (command) soundFile (string);
  * Play a sound effect audible as if emitted from target's current location.
  * #Sounds
  *
- * @param {soundFile} (string)
+ * @param {soundFile} (string@File.WAV)
  *
  */
 SNDE (command) soundFile (string);
@@ -6040,7 +6040,7 @@ SNDE (command) soundFile (string);
  * Play a sound effect as in [SNDC], only the sound is looped.
  * #Sounds
  *
- * @param {soundFile} (string)
+ * @param {soundFile} (string@File.WAV)
  *
  */
 SNDL (command) soundFile (string);
@@ -6049,7 +6049,7 @@ SNDL (command) soundFile (string);
  * As [SNDE], only with a delay before playing.
  * #Sounds
  *
- * @param {soundFile} (string)
+ * @param {soundFile} (string@File.WAV)
  * @param {delay} (integer)
  *
  */
@@ -6449,15 +6449,6 @@ TAGE (integer);
 TAN_ (float) theta (float);
 
 /*
- * This sets the TARG variable to the agent specified.
- * #AgentVars
- *
- * @param {agent} (agent)
- *
- */
-TARG (command) agent (agent);
-
-/*
  * Returns current target, on whom many commands act.
  * #AgentVars
  *
@@ -6465,6 +6456,15 @@ TARG (command) agent (agent);
  * @return (agent)
  */
 TARG (agent);
+
+/*
+ * This sets the TARG variable to the agent specified.
+ * #AgentVars
+ *
+ * @param {agent} (agent)
+ *
+ */
+TARG (command) agent (agent);
 
 /*
  * Tests setting the bounding box of the physical core of the object [TARG]. May be set to smaller
@@ -6645,6 +6645,14 @@ TORY (float) roomId (integer);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
+ * Make creature reach out to touch the IT agent. Blocks the script until the creature either
+ * reaches the agent, or it's fully stretched and still can't.
+ * #Creatures
+ *
+ */
+TOUC (command);
+
+/*
  * Returns 1 if the two specified agents are touching, or 0 if they are not. Agents are said to be
  * touching if their bounding rectangles overlap.
  * #Agents
@@ -6656,14 +6664,6 @@ TOTL (integer) family (integer) genus (integer) species (integer);
  *
  */
 TOUC (integer) first (agent) second (agent);
-
-/*
- * Make creature reach out to touch the IT agent. Blocks the script until the creature either
- * reaches the agent, or it's fully stretched and still can't.
- * #Creatures
- *
- */
-TOUC (command);
 
 /*
  * Test for a transparent pixel, returns 1 if the given x y position coincides with a transparent
@@ -7484,13 +7484,14 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	8 = Fat
 	9 = <not used>
 	10 = Machinery
-	11 = <not used>
+	11 = Creature Egg Smell
 	12 = Norns
 	13 = Grendels
 	14 = Ettins
 	15 = Norn homes
 	16 = Grendel hones
 	17 = Ettin homes
+	18 = Gadgets
 }
 
 @Chemicals {

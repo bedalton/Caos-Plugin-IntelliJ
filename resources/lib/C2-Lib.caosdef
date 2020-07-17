@@ -1789,7 +1789,7 @@ NEW: BBTX (command) textpart (integer) relx (integer) rely (integer) width (inte
  * commands designed to teach words and concepts.
  * #Blackboard
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  * @param {backgroundColor} (integer) - color number to use for plotting text
@@ -1805,7 +1805,7 @@ NEW: BKBD (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * Create a call button object.
  * #Vehicles
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  * @param {plane} (integer) - plane for this object between the range of 0=back, 9000=front
@@ -1818,7 +1818,7 @@ NEW: CBTN (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * text boxes capable of displaying text from the in-game string table – specified by stringID.
  * #Bubbles
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  * @param {stringId} (any) - string id in in-game string table
@@ -1833,7 +1833,7 @@ NEW: CBUB (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * if [ATTR] is set to allow it.
  * #AgentConstructors
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  * @param {clone} (integer)
@@ -1870,7 +1870,7 @@ NEW: GENE (command) mum (integer) dad (integer) child (variable);
  * floors.
  * #Vehicles
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  *
@@ -1896,7 +1896,7 @@ NEW: PART (command) part (integer) relx (integer) rely (integer) imageOffset (in
  * underneath.
  * #Rain
  *
- * @param {spriteFile} (token) - the sprite file to use for the cloud itself
+ * @param {spriteFile} (token@File.S16) - the sprite file to use for the cloud itself
  * @param {numimages} (integer) - the total number of images to be used for this object
  * @param {firstImage} (integer) - the number of the first image belonging to this object
  * @param {plane} (integer) - the image plane to plot the object at.
@@ -1909,7 +1909,7 @@ NEW: RAIN (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * Creates a scenery object – scenery objects do not need to have a unique classifier.
  * #AgentConstructors
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {totalinsprite} (integer) - total number of images in the sprite file
  * @param {firstImage} (integer) - offset of first image associated with this object
  * @param {plane} (integer) - plane for this object between the range of 0=back, 9000=front
@@ -1922,7 +1922,7 @@ NEW: SCEN (command) spriteFile (token) totalinsprite (integer) firstImage (integ
  * these must be set up after creation.
  * #AgentConstructors
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  * @param {plane} (integer) - plane for this object between the range of 0=back, 9000=front
@@ -1935,7 +1935,7 @@ NEW: SIMP (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * Create a vehicle object.
  * #Vehicles
  *
- * @param {spriteFile} (token) - 4 letter token representing the sprite filename
+ * @param {spriteFile} (token@File.S16) - 4 letter token representing the sprite filename
  * @param {numimages} (integer) - number of images belonging to this object
  * @param {firstImage} (integer) - offset of first image associated with this object
  *
@@ -2127,7 +2127,7 @@ PAUS (integer);
  * filename	value
  * #Sounds
  *
- * @param {filename} (token) - 4 letter filename token
+ * @param {filename} (token@File.WAV) - 4 letter filename token
  *
  */
 PLDS (command) filename (token);
@@ -2744,7 +2744,7 @@ SLOW (command);
  * around as it moves, for the duration of the effect.
  * #Sounds
  *
- * @param {filename} (token)
+ * @param {filename} (token@File.WAV)
  *
  */
 SNDC (command) filename (token);
@@ -2753,7 +2753,7 @@ SNDC (command) filename (token);
  * Play sound effect if [TARG] is visible on screen.
  * #Sounds
  *
- * @param {filename} (token)
+ * @param {filename} (token@File.WAV)
  *
  */
 SNDE (command) filename (token);
@@ -2762,7 +2762,7 @@ SNDE (command) filename (token);
  * Start a controlled sound loop if [TARG] is visible on screen
  * #Sounds
  *
- * @param {filename} (token)
+ * @param {filename} (token@File.WAV)
  *
  */
 SNDL (command) filename (token);
@@ -2771,7 +2771,7 @@ SNDL (command) filename (token);
  * Play sound effect after a short delay if [TARG] is visible on screen.
  * #Sounds
  *
- * @param {filename} (token)
+ * @param {filename} (token@File.WAV)
  * @param {delay} (integer)
  *
  */
@@ -3046,16 +3046,10 @@ SYS: CMRP (command) x (integer) y (integer);
  * CONVert sprite file. Command converts a given sprite file (located in the images directory) to
  * the current system image format. If the file is already in the correct format it is not
  * modified.
- * Filespec – a 4 letter sprite file specifier.
- * p – p=0 no progress dialog is displayed. p=1 a progress dialog is displayed.
- * filespec	token
- * progress	int@bool	0=No progress dialog, 1 = progress dialog shown
- * [RNDR]	int@imageFormat>>
- * ReNDereR image format. Returns 0 if image format is 555 and 1 if it is 565.
  * #World
  *
- * @param {fileSpec} (token)
- * @param {showProgress} (integer@ShowProgress)
+ * @param {fileSpec} (token@File.S16) - A four letter sprite identifier
+ * @param {showProgress} (integer@ShowProgress) - 0 = no progress dialog is displayed. 1 = a progress dialog is displayed.
  *
  */
 SYS: CONV (command) fileSpec (token) showProgress (integer);
@@ -3243,6 +3237,15 @@ TOKN (integer) token (token);
 TOTL (integer) family (integer) genus (integer) species (integer);
 
 /*
+ * Reach out and touch [_IT_], normally preceded with an [APPR] macro.
+ * Continue with next instruction when you have successfully touched [_IT_].
+ * If total failure (object gone away) then present action schema is suppressed.
+ * #Creatures
+ *
+ */
+TOUC (command);
+
+/*
  * Returns 1 if these two objects are in contact.
  * @example: #{DOIF TOUC TARG OWNR GT 0} - [DOIF] [TARG] and [OWNR] are touching
  * #Agents
@@ -3254,15 +3257,6 @@ TOTL (integer) family (integer) genus (integer) species (integer);
  *
  */
 TOUC (integer) first (agent) second (agent);
-
-/*
- * Reach out and touch [_IT_], normally preceded with an [APPR] macro.
- * Continue with next instruction when you have successfully touched [_IT_].
- * If total failure (object gone away) then present action schema is suppressed.
- * #Creatures
- *
- */
-TOUC (command);
 
 /*
  * Fire the neurone that is at the lobe and cell numbers specified – amount is the signal
@@ -3277,7 +3271,7 @@ TOUC (command);
 TRIG (command) lobe (integer) cell (integer) amount (integer);
 
 /*
- * Returns whether a creature is unconscious or not 0=conscious, 1=unconscious
+ * Returns 1 if the creature is unconscious, 0 otherwise.
  * #Creatures
  *
  * @rvalue
@@ -3286,7 +3280,7 @@ TRIG (command) lobe (integer) cell (integer) amount (integer);
 UNCS (integer);
 
 /*
- * Returns 1 if the creature is unconscious, 0 otherwise.
+ * Returns whether a creature is unconscious or not 0=conscious, 1=unconscious
  * #Creatures
  *
  * @rvalue
@@ -3559,7 +3553,7 @@ YVEC (integer);
 	4 = Cycle - First click activate 1, second activate 2, third deactivate
 }
 
-@BehaviorTouch {
+@BehaviorTouch:BitFlags {
 	0 = No Action - Creature can take no actions
 	1 = Activate 1 - Creature can activate 1
 	2 = Activate 2 - Creature can activate 2
@@ -3707,9 +3701,9 @@ YVEC (integer);
 	32 = Suffocation Increase
 	33 = Thirst Increase
 	34 = Stress Increase
-	35 = Pain Decrease (Endorphin)
+	35 = Pain Decrease
 	36 = Need for Pleasure Decrease
-	37 = Hunger Decrease (Saccharin)
+	37 = Hunger Decrease
 	38 = Coldness Decrease
 	39 = Hotness Decrease
 	40 = Tiredness Decrease
