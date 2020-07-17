@@ -29,17 +29,28 @@ class CaosScriptHelperActionAnnotator : Annotator {
                     intention.create()
                     return
                 }
-                if (element.next?.text?.contains(",") == true) {
+                if (COMMAS_ONLY_REGEX.matches(next.text)) {
                     wrapper.newInfoAnnotation(null)
                             .range(element)
                             .withFix(CaosScriptExpandCommasIntentionAction)
                             .create()
-                } else {
+                } else if (next is CaosScriptSpaceLikeOrNewline && next.textContains('\n')){
                     wrapper.newInfoAnnotation(null)
                             .range(element)
                             .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
                             .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
                             .create()
+                } else {
+                    var intention = wrapper.newInfoAnnotation(null)
+                            .range(element)
+                            .withFix(CaosScriptExpandCommasIntentionAction)
+                    if (element.containingFile.text.contains("\n")) {
+                        intention = intention
+                                .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                                .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+                    }
+                    intention.create()
+                    return
                 }
             }
             element is CaosScriptSpaceLikeOrNewline -> {
@@ -64,5 +75,8 @@ class CaosScriptHelperActionAnnotator : Annotator {
                 }
             }
         }
+    }
+    companion object {
+        private val COMMAS_ONLY_REGEX = "[,]+".toRegex()
     }
 }
