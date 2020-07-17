@@ -69,7 +69,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        if (element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCGsub::class.java)) {
+        if (element.hasParentOfType(CaosScriptCGsub::class.java)) {
             addSubroutineNames(element, resultSet)
             resultSet.stopHere()
             return
@@ -86,6 +86,13 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val type = parent.getEnclosingCommandType()
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
+        (element.getParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
+            CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
+        }
+        if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
+            resultSet.stopHere()
+            return
+        }
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
@@ -108,13 +115,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         resultSet.addAllElements(singleCommands)
         if (type != CaosCommandType.COMMAND)
             addVariableCompletions(variant, element, resultSet)
-        (element.getParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
-            CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
-        }
-        if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
-            resultSet.stopHere()
-            return
-        }
+
         (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
             val equalityExpression = expression.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
             if (equalityExpression != null) {
