@@ -15,6 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
@@ -26,13 +27,14 @@ import com.intellij.refactoring.suggested.startOffset
 import kotlin.math.abs
 import kotlin.math.floor
 
-class CaosScriptSyntaxErrorAnnotator : Annotator {
+class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (DumbService.isDumb(element.project))
             return
         val annotationWrapper = AnnotationHolderWrapper(holder)
-        val variant = (element.containingFile as? CaosScriptFile)?.variant.orDefault()
+        val variant = (element.containingFile as? CaosScriptFile)?.variant
+                ?: return
         when (element) {
             //is CaosScriptTrailingSpace -> annotateExtraSpaces(element, annotationWrapper)
             is CaosScriptSpaceLike -> annotateExtraSpaces(variant, element, annotationWrapper)
@@ -50,11 +52,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
             is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
-            is CaosScriptSpaceLikeOrNewline -> if (element.parent == element.containingFile && variant == CaosVariant.C1) {
-                if (element.containingFile.firstChild == element) {
-                    simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
-                }
-            }
+            is CaosScriptSpaceLikeOrNewline -> annotateNewLineLike(variant, element, annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(element, annotationWrapper)
@@ -186,12 +184,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
         val text = element.text
-        if (text.length == 1 || (text.isEmpty() && (nextIsCommaOrSpace||nextText.contains("\n"))))
+        if (text.isEmpty() && (nextIsCommaOrSpace||nextText.contains("\n")))
+            return
+        // Is a single space, and not followed by terminating comma or newline
+        if (text.length == 1 && !COMMA_NEW_LINE_REGEX.matches(nextText))
             return
         if (text.isEmpty())  {
-            if (variant.isNotOld) {
-                return
-            }
             if (nextText.startsWith("\n"))// && variant != CaosVariant.C1)
                 return
             val next = element.next
@@ -201,11 +199,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     .range(toMark)
                     .withFix(CaosScriptInsertSpaceFix(next))
                     .create()
+            return
         }
         val errorTextRange = if (element.text.contains("\n") || previousIsCommaOrSpace)
             element.textRange
         else
-            TextRange.create(element.textRange.startOffset, element.textRange.endOffset + 1)
+            TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset + 1)
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                 .range(errorTextRange)
                 .withFix(CaosScriptFixTooManySpaces(element))
@@ -308,9 +307,64 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
+    private fun annotateNewLineLike(variant:CaosVariant, element:CaosScriptSpaceLikeOrNewline, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant.isNotOld)
+            return
+        if (element.parent == element.containingFile && element.containingFile.firstChild == element && variant == CaosVariant.C1) {
+            simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
+            return
+        }
+        if (element.spaceLikeList.isNotEmpty() && element.newLineLikeList.isNotEmpty()) {
+            val lastNewLine = element.newLineLikeList.last()
+            val lastNewLineOffset = lastNewLine.startOffset
+            val prevSpaces = element.children.filter {
+                it.startOffset < lastNewLineOffset && !it.textContains('\n')
+            }.sortedBy {
+                it.startOffset
+            }
+            if(prevSpaces.isNotEmpty()) {
+                val range = TextRange.create(prevSpaces.first().startOffset, prevSpaces.last().endOffset)
+                val error = CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-whitespace")
+                annotationWrapper
+                        .newErrorAnnotation(error)
+                        .range(range)
+                        .withFix(CaosScriptFixTooManySpaces(prevSpaces.last()))
+                        .create()
+                return
+            }
+        }
+        /*
+        val next = element.next
+                ?: return
+        if (element.text.contains(",")) {
+            if (next.textContains('\n')) {
+                val error = CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-comma")
+                annotationWrapper
+                        .newErrorAnnotation(error)
+                        .range(element)
+                        .create()
+            }
+            return
+        }
+        if (next.text.contains(",")) {
+            val error = CaosBundle.message("caos.annotator.command-annotator.invalid-var-type-for-variant", varName, variants)
+            annotationWrapper
+                    .newErrorAnnotation(error)
+                    .range(element)
+                    .create()
+        }
+        if (element.text.contains(",") && element.next?.text?.contains(",")) {
+            if (element.)
+        }*/
+    }
 
     companion object {
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
+
+        private val COMMA_SPACED = "(\\s+,\\s*)||(\\s*,\\s+)".toRegex()
+        private val TRAILING_SPACE_REGEX = "[ ]+[,]?\n".toRegex()
+        private val WHITE_SPACE = "[ ]+".toRegex()
+        private val COMMA_NEW_LINE_REGEX = "([,]|[\\s])+".toRegex()
 
         internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
             if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
