@@ -7,10 +7,10 @@ import java.awt.Image
 import java.awt.image.BufferedImage
 import javax.swing.*
 
-object SpriteCellRenderer : ListCellRenderer<Image> {
+class SpriteCellRenderer : ListCellRenderer<Image> {
     var color:Color = DEFAULT_COLOR
     var fontColor = Color.BLACK
-    var scale = 2.0
+    var scale = 1.0
     override fun getListCellRendererComponent(list: JList<out Image>?, value: Image?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
 
         val panel = JPanel()
