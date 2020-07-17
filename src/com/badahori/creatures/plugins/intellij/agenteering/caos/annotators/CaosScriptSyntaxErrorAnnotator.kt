@@ -201,7 +201,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     .create()
             return
         }
-        val errorTextRange = if (element.text.contains("\n") || previousIsCommaOrSpace)
+        val errorTextRange = if (element.text.contains("\n") || nextText.contains("\n") || previousIsCommaOrSpace)
             element.textRange
         else
             TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset + 1)
