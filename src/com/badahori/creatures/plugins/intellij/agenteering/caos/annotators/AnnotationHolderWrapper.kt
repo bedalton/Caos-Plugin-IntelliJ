@@ -49,7 +49,9 @@ class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
     fun colorize(range: PsiElement, textAttributes: TextAttributesKey) {
         annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
                 .setEnforcedTextAttributes(TextAttributes.ERASE_MARKER);
-        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null).textAttributes = textAttributes
+        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+        annotation.textAttributes = textAttributes
+        annotation.enforcedTextAttributes = textAttributes.defaultAttributes
     }
 }
 
