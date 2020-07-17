@@ -66,6 +66,7 @@ data class CaosDefVariableTypeStruct(
         val typedef: String? = null,
         val noteText: String? = null,
         val intRange:Pair<Int, Int>? = null,
+        val fileTypes:List<String>? = null,
         val length:Int? = null
 )
 

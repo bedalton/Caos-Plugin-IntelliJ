@@ -8,6 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readStringList
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.writeStringList
 
 fun StubInputStream.readNameAsString() : String? {
     return readName()?.string
@@ -62,12 +64,14 @@ internal fun StubInputStream.readVariableType() : CaosDefVariableTypeStruct? {
     val length = readInt()
     if (type == null)
         return null
+    val fileTypes = readStringList().ifEmpty { null }
     return CaosDefVariableTypeStruct(
             type = type,
             typedef = typeDef,
             noteText = typeNote,
             intRange = intRange,
-            length = if (length >= 0) length else null
+            length = if (length >= 0) length else null,
+            fileTypes = fileTypes
     )
 }
 
@@ -78,6 +82,7 @@ internal fun StubOutputStream.writeVariableType(struct:CaosDefVariableTypeStruct
     writeInt(struct.intRange?.first ?: -1)
     writeInt(struct.intRange?.second ?: -1)
     writeInt(struct.length ?: -1)
+    writeStringList(struct.fileTypes.orEmpty())
 }
 
 internal fun <T> StubOutputStream.writeList(list: List<T>, write:StubOutputStream.(T)->Unit) {
