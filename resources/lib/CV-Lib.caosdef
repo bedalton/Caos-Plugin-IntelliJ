@@ -6781,25 +6781,18 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 }
 
 @CAs {
-	0 = <not used>
-	1 = Light
-	2 = Heat
-	3 = Water (Soil) - Soil moisture only
-	4 = Nutrients
-	5 = Water (Bodies of) - Bodies of water
-	6 = Protein
-	7 = Carbohydrate
-	8 = Fat
-	9 = <not used>
-	10 = Machinery
-	11 = Creature Egg Smell
-	12 = Norns
-	13 = Grendels
-	14 = Ettins
-	15 = Norn homes
-	16 = Grendel hones
-	17 = Ettin homes
-	18 = Gadgets
+	1 = Movers - Movers (2 2 0)
+	2 = Anims - Animated toys that lower boredom and raise sleepiness (2 3 0)
+	3 = Lonelies - Toys that reduce boredom and loneliness (2 8 0)
+	4 = Instruments - Instruments (2 11 0)
+	5 = Clothes - Clothes (2 26 0)
+	7 = Protein - (2 22 0)
+	8 = Fat - ie. Cake (2 23 0)
+	9 = Carbohydrates - ie.Carrots, fruit (2 24 0)
+	10 = Food Vendors - (2 35 0)
+	11 = Scaries - Things that go bump in the night and scare norns.
+	12 = Male Norns
+	13 = Female Norns
 }
 
 @Chemicals {
