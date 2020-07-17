@@ -9,7 +9,6 @@ import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
@@ -23,9 +22,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRndvStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import kotlin.math.floor
 
@@ -315,6 +312,36 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getReference(element: CaosScriptIsCommandToken): CaosScriptCommandTokenReference {
         return CaosScriptCommandTokenReference(element)
+    }
+
+    @JvmStatic
+    fun getReference(element: CaosScriptExpression) : CaosScriptExpressionReference {
+        return CaosScriptExpressionReference(element)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosScriptEventNumberElement) : CaosScriptEventNumberReference {
+        return CaosScriptEventNumberReference(element)
+    }
+
+    @JvmStatic
+    fun getName(element:CaosScriptEventNumberElement) : String {
+        return element.text
+    }
+
+    @JvmStatic
+    fun setName(element:CaosScriptEventNumberElement, newName:String) : PsiElement {
+        return element
+    }
+
+    @JvmStatic
+    fun getName(element:CaosScriptExpression) : String {
+        return element.text
+    }
+
+    @JvmStatic
+    fun setName(element:CaosScriptExpression, newName:String) : PsiElement {
+        return element
     }
 
     @JvmStatic
