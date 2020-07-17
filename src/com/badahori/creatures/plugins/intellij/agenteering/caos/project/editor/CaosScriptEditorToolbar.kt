@@ -3,30 +3,26 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.trimErrorSpaces
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.intellij.ProjectTopics
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
+import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.refactoring.suggested.endOffset
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
-import java.awt.event.ItemEvent
 import javax.swing.JPanel
 
 
@@ -58,7 +54,7 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
     }
 }
 
-internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel {
+internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
     val toolbar = EditorToolbar()
     val project = caosFile.project
     toolbar.panel.background = TRANSPARENT_COLOR
@@ -89,7 +85,14 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
     }*/
 
     toolbar.addDocsButtonClickListener {
-        val selectedVariant = toolbar.selectedVariant
+        val selectedVariant = caosFile.variant
+        if (selectedVariant == null) {
+            val builder = DialogBuilder(caosFile.project)
+            builder.setErrorText("Failed to access module game variant")
+            builder.title("Variant Error")
+            builder.show()
+            return@addDocsButtonClickListener
+        }
         val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
         val virtualFile = CaosFileUtil.getPluginResourceFile(docRelativePath)
         val file = virtualFile?.getPsiFile(project)
@@ -123,7 +126,12 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile) : JPanel 
                 return@handler
             }
         }
-        Injector.inject(project, caosFile.variant, content)
+        val variant = caosFile.variant
+        if (variant == null) {
+            Injector.postError(project, "Variant error", "File variant could not be determined")
+            return@handler
+        }
+        Injector.inject(project, variant, content)
     }
     return toolbar.panel
 }
