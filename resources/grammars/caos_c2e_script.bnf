@@ -1130,7 +1130,7 @@ private space
 	;
 
 trailing_space
-	::= space_like_or_newline*
+	::= space_like_or_newline+
 	;
 
 expression
