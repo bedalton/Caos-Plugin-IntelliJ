@@ -18,9 +18,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.substringFromEnd
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import icons.CaosScriptIcons
 import javax.swing.Icon
 
@@ -338,6 +336,16 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getTypeName(element: CaosDefTypeDefinitionElement): String {
         return element.stub?.typeName ?: element.typeDefName.text.substring(1)
+    }
+
+    @JvmStatic
+    fun getTypeNoteString(element:CaosDefTypeDefinitionElement) : String? {
+        return element.stub?.typeNote ?: element.typeNote?.text
+    }
+
+    @JvmStatic
+    fun isBitflags(element:CaosDefTypeDefinitionElement) : Boolean {
+        return element.stub?.isBitflags ?: getTypeNoteString(element)?.equalsIgnoreCase("BitFlags").orFalse()
     }
 
     @JvmStatic

@@ -44,7 +44,9 @@ class CaosDefParameterStubImpl(
 class CaosDefTypeDefinitionStubImpl(
         parent: StubElement<*>,
         override val typeName:String,
-        override val keys: List<CaosDefTypeDefValueStruct>
+        override val keys: List<CaosDefTypeDefValueStruct>,
+        override val typeNote: String?,
+        override val isBitflags: Boolean
 ) : StubBase<CaosDefTypeDefinitionElementImpl>(parent, CaosDefStubTypes.TYPE_DEFINITION_ELEMENT), CaosDefTypeDefinitionStub
 
 
