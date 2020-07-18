@@ -24,7 +24,7 @@ import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import kotlin.math.abs
 
-class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
+class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
 
     override fun getPlaceholderText(node: ASTNode): String? {
         if (DumbService.isDumb(node.psi.project))

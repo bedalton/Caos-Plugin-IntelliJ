@@ -16,7 +16,7 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptSubroutineInspection : LocalInspectionTool(), DumbAware {
+class CaosScriptSubroutineInspection : LocalInspectionTool()  {
 
     override fun getDisplayName(): String = "Subroutine Is Defined Check"
     override fun getGroupDisplayName(): String = "CaosScript"
