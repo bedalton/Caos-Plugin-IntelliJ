@@ -242,7 +242,6 @@
 		DECIMAL = "regexp:[0-9]+\.[0-9]+"
 		INT = "regexp:[0-9]+"
 		TEXT_LITERAL = 'regexp:\[[^]]*]';
-		QUOTE_STRING = 'regexp:"[^\n|"]*"'
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
 		PLUS = "+";
@@ -258,6 +257,8 @@
 		STRING_ESCAPE_CHAR = "escaped char"
 		STRING_CHAR = "string char";
 		DOUBLE_QUOTE = "\""
+		SINGLE_QUOTE = "'"
+		CHAR_CHAR = "'char'"
 	]
 }
 
@@ -6767,9 +6768,20 @@ number
 	::= INT
 	|	DECIMAL
 	|	BINARY
-	|	CHAR
+	|	char
 	{
 
+	}
+	;
+
+private char
+	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
+	{
+		pin=1
+		methods = [
+			openQuote="/SINGLE_QUOTE[0]"
+			closeQuote="/SINGLE_QUOTE[1]"
+		]
 	}
 	;
 
@@ -6793,7 +6805,7 @@ c1_string
 	;
 
 quote_string_literal
-	::= DOUBLE_QUOTE (STRING_CHAR|STRING_ESCAPE_CHAR)* DOUBLE_QUOTE
+	::= DOUBLE_QUOTE string_text? DOUBLE_QUOTE
 	{
 		pin=1;
 		implements = [
@@ -6802,8 +6814,14 @@ quote_string_literal
 		]
 		methods = [
 			getStringValue
+			openQuote="/DOUBLE_QUOTE[0]"
+			closeQuote="/DOUBLE_QUOTE[1]"
 		]
 	}
+	;
+
+string_text
+	::= (STRING_CHAR|STRING_ESCAPE_CHAR)+
 	;
 
 subroutine_name
