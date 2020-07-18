@@ -21,15 +21,21 @@ class CaosDefTypeDefinitionStubType(debugName:String) : com.badahori.creatures.p
     override fun serialize(stub: CaosDefTypeDefinitionStub, stream: StubOutputStream) {
         stream.writeName(stub.typeName)
         stream.writeList(stub.keys, StubOutputStream::writeTypeDefValue)
+        stream.writeName(stub.typeNote.orEmpty())
+        stream.writeBoolean(stub.isBitflags)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefTypeDefinitionStub {
         val name = stream.readNameAsString().nullIfEmpty() ?: CaosDefPsiImplUtil.UnknownReturn
         val keys = stream.readList(StubInputStream::readTypeDefValue).filterNotNull()
+        val typeNote = stream.readNameAsString()?.nullIfEmpty()
+        val isBitflags = stream.readBoolean()
         return CaosDefTypeDefinitionStubImpl (
                 parent = parent,
                 typeName = name,
-                keys = keys
+                keys = keys,
+                typeNote = typeNote,
+                isBitflags = isBitflags
         )
     }
 
@@ -37,7 +43,9 @@ class CaosDefTypeDefinitionStubType(debugName:String) : com.badahori.creatures.p
         return CaosDefTypeDefinitionStubImpl (
                 parent = parent,
                 typeName = element.typeName,
-                keys = element.keys
+                keys = element.keys,
+                typeNote = element.typeNoteString,
+                isBitflags = element.isBitflags
         )
     }
 
