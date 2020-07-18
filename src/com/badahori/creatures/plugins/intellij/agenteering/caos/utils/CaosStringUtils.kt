@@ -156,6 +156,16 @@ val String.case:Case get()  {
     return Case.UPPER_CASE
 }
 
+private val numberRegex = "[-+]?[0-9]+".toRegex()
+
+fun String.toIntSafe(): Int? {
+    return try {
+        this.toInt()
+    } catch (e:Exception) {
+        null
+    }
+}
+
 enum class Case {
     UPPER_CASE,
     LOWER_CASE,
