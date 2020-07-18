@@ -16,6 +16,12 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import com.sun.javafx.scene.CameraHelper
 
 object EditorUtil {
 
@@ -153,4 +159,27 @@ val PsiElement.document : Document? get() {
 
 val PsiElement.editor : Editor? get() {
     return EditorUtil.editor(this)
+}
+
+val Editor.psiFile : PsiFile? get() {
+    val file = virtualFile
+            ?: return null
+    val project = this.project
+            ?: return null
+    return PsiManager.getInstance(project).findFile(file)
+}
+
+val Editor.element: PsiElement? get() {
+    val file = psiFile
+            ?: return null
+    val position = this.caretModel.offset
+    return file.findElementAt(position)
+}
+
+val Editor.module: Module? get() {
+    val file = virtualFile
+            ?: return null
+    val project = this.project
+            ?: return null
+    return ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(file)
 }
