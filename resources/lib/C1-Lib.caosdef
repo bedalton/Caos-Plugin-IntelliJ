@@ -996,6 +996,7 @@ MODV (command) var (variable) mod (integer);
  * MovementStatus (FLOATING, MOUSEDRIVEN, etc)
  * #Motion
  *
+ * @lvalue
  * @rvalue
  * @return (integer@MovementStatus)
  */
@@ -1533,7 +1534,7 @@ SCOR (integer);
 SCRP (command) family (integer) genus (integer) species (integer) event (integer);
 
 /*
- * Remove specified script from the scriptorium.
+ * Installs a script
  * #Scripts
  *
  * @param {family} (integer[0 to 255])
