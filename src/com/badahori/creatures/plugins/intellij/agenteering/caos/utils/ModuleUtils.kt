@@ -30,19 +30,18 @@ fun errorNotification(project: Project? = null, message: String, title: String =
             NotificationType.ERROR), project)
 }
 
-var Module.variant: CaosVariant
+var Module.variant: CaosVariant?
     get() {
         val virtualFile = moduleFile
                 ?: return CaosScriptProjectSettings.variant
         return VariantFilePropertyPusher.readFromStorage(virtualFile)
                 ?: getUserData(CaosScriptFile.VariantUserDataKey)
-                ?: CaosScriptProjectSettings.variant
     }
     set(newVariant) {
         val virtualFile = moduleFile
                 ?: return
-        VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant)
-        virtualFile.putUserData(CaosScriptFile.VariantUserDataKey, newVariant)
+        VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant ?: CaosVariant.UNKNOWN)
+        virtualFile.putUserData(CaosScriptFile.VariantUserDataKey, newVariant ?: CaosVariant.UNKNOWN)
         FileContentUtil.reparseFiles(project, listOf(virtualFile), true)
     }
 
