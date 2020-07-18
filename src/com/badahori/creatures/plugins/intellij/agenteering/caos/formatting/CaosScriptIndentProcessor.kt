@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 
 class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, private val caosSettings: CaosScriptCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
@@ -32,7 +33,7 @@ class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, p
                 return Indent.getNoneIndent()
             }
             return Indent.getNormalIndent()
-        } else if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent !is CaosScriptMacro) {
+        } else if (elementType == TokenType.WHITE_SPACE && node.psi?.getParentOfType(CaosScriptCodeBlock::class.java)?.parent?.let {it !is CaosScriptMacro && it !is CaosScriptEventScript}.orFalse()) {
             return Indent.getNormalIndent()
         } else if (node.treeParent?.elementType == CaosScriptTypes.CaosScript_CODE_BLOCK) {
             // Check if block parent is Event Script or Macro
