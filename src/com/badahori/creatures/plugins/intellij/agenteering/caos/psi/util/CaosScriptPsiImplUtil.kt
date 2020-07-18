@@ -363,6 +363,16 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getRvalue(element:CaosScriptExpectsValue) : CaosScriptRvalue {
+        return element.rvalue
+    }
+
+    @JvmStatic
+    fun getRvalue(element:CaosScriptExpectsToken) : CaosScriptRvalueLike {
+        return element.tokenRvalue
+    }
+
+    @JvmStatic
     fun getRVar(assignment: CaosScriptCTarg): CaosVar? {
         return assignment.expectsAgent?.rvalue?.toCaosVar()
     }
@@ -390,8 +400,11 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(rvalue: CaosScriptRvalue): CaosVar {
-        rvalue.stub?.caosVar?.let {
+    fun toCaosVar(rvalue: CaosScriptRvalueLike): CaosVar {
+        (rvalue as? CaosScriptRvalue)?.stub?.caosVar?.let {
+            return it
+        }
+        (rvalue as? CaosScriptTokenRvalue)?.stub?.caosVar?.let {
             return it
         }
         (rvalue.varToken)?.let {
