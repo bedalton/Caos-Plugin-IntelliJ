@@ -7,20 +7,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Ty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqOp
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.endsWithIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.substringFromEnd
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
@@ -45,15 +40,28 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?.parameterStructs
                 ?.getOrNull(index)
                 ?: return
-        val type = parameterStruct
-                .type
+        val type =
+                if (containingCommand is CaosScriptCAssignment) {
+                    containingCommand.lvalue
+                            ?.commandToken
+                            ?.reference
+                            ?.multiResolve(true)
+                            ?.firstOrNull()
+                            ?.element
+                            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+                            ?.returnTypeStruct
+                            ?.type
+                } else {
+                    parameterStruct.type
+                }
+                        ?: return
         val variant = valueOfType.containingCaosFile?.variant
                 ?: return
         val addSpace = reference.parameterStructs.size - 1 > index
+        LOGGER.info("TypeNote for parameter ${parameterStruct.parameterNumber}, '${parameterStruct.name}' types == $type")
         if (type.typedef != null) {
             addListValues(resultSet, variant, type.typedef, valueOfType.project, valueOfType.text, addSpace)
         } else if (!type.fileTypes.isNullOrEmpty()) {
-
             val project = valueOfType.project
             val allFiles = type.fileTypes
                     .flatMap { fileExtensionTemp ->
@@ -62,7 +70,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                         val searchScope =
                                 valueOfType.containingFile?.module?.let { GlobalSearchScope.moduleScope(it) }
                                         ?: GlobalSearchScope.projectScope(project)
-                        FilenameIndex.getAllFilesByExt(project,fileExtension, searchScope).toList()
+                        FilenameIndex.getAllFilesByExt(project, fileExtension, searchScope).toList()
                     }
                     .map { it.nameWithoutExtension }
             LOGGER.info("Files with types: [${type.fileTypes.joinToString()}] == [${allFiles.joinToString()}]")
@@ -120,12 +128,24 @@ object CaosScriptTypeDefValueCompletionProvider {
     }
 
     private fun addListValues(resultSet: CompletionResultSet, variant: CaosVariant, listName: String, project: Project, string: String, addSpace: Boolean) {
-        val values = CaosDefTypeDefinitionElementsByNameIndex
+        val def = CaosDefTypeDefinitionElementsByNameIndex
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
-                ?.keys
-                ?.filter { it.equality == TypeDefEq.EQUAL }
                 ?: return
+        LOGGER.info("TypeNote for $listName == ${def.typeNoteString}. Is BitFlags == ${def.isBitflags}")
+        val values = def.keys
+                .filter { it.equality == TypeDefEq.EQUAL }
+                .ifEmpty { null }
+                ?: return
+        if (def.typeNoteString != null) {
+            val lookupElement = PrioritizedLookupElement.withPriority(LookupElementBuilder
+                    .create("")
+                    .withLookupString("$listName bit-flag builder")
+                    .withPresentableText("$listName bit-flag builder")
+                    .withInsertHandler(GenerateBitFlagIntegerAction(listName, values)), 1000.0)
+            resultSet.addElement(lookupElement)
+            return
+        }
         for (value in values) {
             var lookupElement = LookupElementBuilder
                     .create(value.key)
