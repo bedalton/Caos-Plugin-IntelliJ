@@ -56,7 +56,7 @@ data class CaosScriptTokenRValueStubImpl(
         val parent: StubElement<*>?,
         override val caosVar: CaosVar,
         override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptTokenRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptTokenRValueStub {
+) : StubBase<CaosScriptTokenRvalueImpl>(parent, CaosScriptStubTypes.TOKEN_RVALUE),  CaosScriptTokenRValueStub {
 
     override val commandString: String? get() = null
 }
