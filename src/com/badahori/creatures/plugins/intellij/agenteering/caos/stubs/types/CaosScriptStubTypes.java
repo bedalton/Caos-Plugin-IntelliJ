@@ -25,6 +25,9 @@ public interface CaosScriptStubTypes {
     CaosScriptRValueStubType RVALUE = new CaosScriptRValueStubType("CaosScript_RVALUE");
 
     @NotNull
+    CaosScriptTokenRValueStubType TOKEN_RVALUE = new CaosScriptTokenRValueStubType("CaosScript_TOKEN_RVALUE");
+
+    @NotNull
     CaosScriptAssignmentStubType VAR_ASSIGNMENT = new CaosScriptAssignmentStubType("CaosScript_CAssignment");
 
     @NotNull

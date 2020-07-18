@@ -12,7 +12,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptTypesInspection : LocalInspectionTool(), DumbAware {
+class CaosScriptTypesInspection : LocalInspectionTool()  {
 
     override fun getDisplayName(): String = "Expected parameter type"
     override fun getGroupDisplayName(): String = "CaosScript"
@@ -117,7 +117,7 @@ class CaosScriptTypesInspection : LocalInspectionTool(), DumbAware {
         return containingCommand?.parameterStructs?.getOrNull(index)
     }
 
-    private fun getActualType(element: CaosScriptRvalue, caosVar: CaosVar): CaosExpressionValueType {
+    private fun getActualType(element: CaosScriptRvalueLike, caosVar: CaosVar): CaosExpressionValueType {
         val commandToken = element.commandToken
                 ?: return caosVar.simpleType
         val returnTypeString = (commandToken

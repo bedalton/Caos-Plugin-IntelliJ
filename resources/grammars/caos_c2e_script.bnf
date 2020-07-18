@@ -14,7 +14,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime|token_rvalue")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -6858,7 +6858,7 @@ c_endm ::= K_ENDM
 }
 ;
 
-expects_token ::= <<pushExpectation 'TOKEN'>>rvalue<<popExpectation>>
+expects_token ::= token_rvalue
 	{
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsTokenStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -6871,6 +6871,18 @@ expects_token ::= <<pushExpectation 'TOKEN'>>rvalue<<popExpectation>>
      		getExpectedType
      		toCaosVar
      		getParameterListValue
+     		getRvalue
+		]
+	}
+	;
+
+token_rvalue
+	::= token
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueMixin"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
 		]
 	}
 	;
@@ -7030,6 +7042,7 @@ rvalue
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
 		]
 		methods = [
 			getCommandToken
@@ -7042,7 +7055,6 @@ rvalue
 		]
 	}
 	;
-
 
 constant_assignment
 	::= named_constant CONST_EQ constant_value

@@ -26,7 +26,6 @@ class CaosScriptFile(viewProvider: FileViewProvider)
             get() {
                 val module = module ?: originalFile.module
                 if (module == null) {
-                    LOGGER.severe("Failed to locate module for file: ${name}")
                     return null
                 }
                 return module.variant

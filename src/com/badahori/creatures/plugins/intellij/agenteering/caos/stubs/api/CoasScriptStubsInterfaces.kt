@@ -32,6 +32,11 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val argumentValues: List<CaosVar>
     val commandString:String?
 }
+interface CaosScriptTokenRValueStub : StubElement<CaosScriptTokenRvalueImpl> {
+    val caosVar:CaosVar
+    val argumentValues: List<CaosVar>
+    val commandString:String?
+}
 
 interface CaosScriptRValuePrimeStub : StubElement<CaosScriptRvaluePrimeImpl> {
     val caosVar:CaosVar

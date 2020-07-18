@@ -27,7 +27,7 @@ import com.intellij.refactoring.suggested.startOffset
 import kotlin.math.abs
 import kotlin.math.floor
 
-class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
+class CaosScriptSyntaxErrorAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (DumbService.isDumb(element.project))

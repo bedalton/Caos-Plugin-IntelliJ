@@ -17,7 +17,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptRValueFoldingBuilder : FoldingBuilderEx(), DumbAware {
+class CaosScriptRValueFoldingBuilder : FoldingBuilderEx() {
 
     override fun getPlaceholderText(node: ASTNode): String? {
         (node.psi as? CaosScriptExpression)?.let {
