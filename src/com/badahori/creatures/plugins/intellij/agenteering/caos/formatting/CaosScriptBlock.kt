@@ -19,6 +19,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPrev
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orTrue
 
 
 class CaosScriptBlock internal constructor(
@@ -62,26 +63,16 @@ class CaosScriptBlock internal constructor(
             return noneIndent
         }
         val elementType = myNode.elementType
-        val previousType = myNode.getPreviousNonEmptyNode(true)?.elementType
-        if (myNode.psi is CaosScriptHasCodeBlock)
-            return normalIndent
         val canIndent = elementType == CaosScript_CODE_BLOCK_LINE
-                || previousType == CaosScript_CODE_BLOCK_LINE
                 || myNode.treeParent?.elementType == CaosScript_CODE_BLOCK_LINE
-                || myNode.psi is CaosScriptHasCodeBlock
         if (canIndent || myNode.psi is CaosScriptHasCodeBlock) {
-            val isMacroOrEventScript = myNode.psi.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock::class.java)
-                    ?.parent
-                    ?.let { it is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro || it is com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript }
+            val isChildElement = myNode.psi.getSelfOrParentOfType(CaosScriptCodeBlock::class.java)
+                    ?.let { it !is CaosScriptMacro && it !is CaosScriptEventScript }
                     .orFalse()
-            if (isMacroOrEventScript)
-                return noneIndent
-            return normalIndent
+            if (isChildElement)
+                return normalIndent
         }
-        if (elementType in CaosScriptTokenSets.BLOCK_ENDS)
-            return noneIndent
-
-        return super.getChildAttributes(newIndex)
+        return noneIndent
     }
 
     override fun getIndent(): Indent? {

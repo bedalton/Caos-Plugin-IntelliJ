@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 
 class CaosScriptTokenSets {
 
@@ -68,7 +68,8 @@ class CaosScriptTokenSets {
                 CaosScript_ANIMATION_STRING,
                 CaosScript_BYTE_STRING,
                 CaosScript_ANIM_R,
-                CaosScript_QUOTE_STRING,
+                CaosScript_DOUBLE_QUOTE,
+                CaosScript_STRING_TEXT,
                 CaosScript_QUOTE_STRING_LITERAL,
                 CaosScript_TEXT_LITERAL,
                 CaosScript_C_1_STRING,
@@ -78,7 +79,9 @@ class CaosScriptTokenSets {
                 CaosScript_DOUBLE_QUOTE,
                 CaosScript_STRING_CHAR,
                 CaosScript_STRING_ESCAPE_CHAR,
-                CaosScript_QUOTE_STRING
+                CaosScript_SINGLE_QUOTE,
+                CaosScript_CHAR_CHAR,
+                CaosScript_CHAR
         )
 
         val LITERALS: TokenSet = create(
@@ -89,7 +92,8 @@ class CaosScriptTokenSets {
                 CaosScript_C_1_STRING,
                 CaosScript_BYTE_STRING,
                 CaosScript_ANIMATION_STRING,
-                CaosScript_QUOTE_STRING
+                CaosScript_QUOTE_STRING_LITERAL,
+                CaosScript_CHAR
         )
 
         @JvmStatic

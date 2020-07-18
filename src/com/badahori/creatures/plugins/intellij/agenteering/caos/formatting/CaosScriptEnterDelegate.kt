@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.element
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate.Result.Continue
 import com.intellij.openapi.actionSystem.DataContext
@@ -18,17 +20,17 @@ import com.intellij.refactoring.suggested.endOffset
 
 class CaosScriptEnterDelegate : EnterHandlerDelegate {
 
-    override fun postProcessEnter(file: PsiFile, editor: Editor, context: DataContext): EnterHandlerDelegate.Result {
+    override fun preprocessEnter(file: PsiFile, editor: Editor, ref1: Ref<Int>, ref2: Ref<Int>, context: DataContext, editorActionHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
         return Continue
     }
 
-    override fun preprocessEnter(file: PsiFile, editor: Editor, ref1: Ref<Int>, ref2: Ref<Int>, context: DataContext, editorActionHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
+    override fun postProcessEnter(file: PsiFile, editor: Editor, context: DataContext): EnterHandlerDelegate.Result {
         var offset = editor.caretModel.currentCaret.offset
         if (offset > 2) {
             offset -= 2
         } else if (offset > 1)
             offset -= 1
-        val element = file.findElementAt(offset)?.let { it }
+        val element = file.findElementAt(offset)
                 ?: return Continue
         val reformatRange: TextRange? = element.getSelfOrParentOfType(CaosScriptHasCodeBlock::class.java)?.let { block ->
             when {
@@ -52,35 +54,67 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
     private fun onEnterInDoif(editor: Editor, doif: CaosScriptDoifStatement): PsiElement? {
         if (doif.cEndi != null)
             return null
-        EditorUtil.insertText(editor, "\nendi", doif.endOffset, false)
+        val after = getEditorAfterCandidate(editor) {
+            doif.elseStatement
+                    ?: doif.elseIfStatementList.lastOrNull()
+                    ?: doif.doifStatementStatement.equalityExpression
+                    ?: doif.lastChild
+        }.let {
+            LOGGER.info("Doif is set to insert after: ${it.text} at offset: ${it.endOffset}")
+            it.textRange.endOffset
+        }
+        EditorUtil.insertText(editor, "\nendi\n", after, false)
         return doif
     }
 
     private fun onEnterInEnumNext(editor: Editor, enumNext: CaosScriptEnumNextStatement): PsiElement? {
         if (enumNext.cNext != null || enumNext.cNscn != null)
             return null
-        EditorUtil.insertText(editor, "\nnext", enumNext.endOffset, false)
+        val after = getEditorAfterCandidate(editor) { enumNext.enumHeaderCommand }.endOffset
+        EditorUtil.insertText(editor, "\nnext\n", after, false)
         return enumNext
     }
 
     private fun onEnterInEscn(editor: Editor, escn: CaosScriptEnumSceneryStatement): PsiElement? {
         if (escn.cNext != null || escn.cNscn != null)
             return null
-        EditorUtil.insertText(editor, "\nnscn", escn.endOffset, false)
+        val after = getEditorAfterCandidate(editor) { escn.escnHeader }.textRange.endOffset
+        EditorUtil.insertText(editor, "\nnscn\n", after, false)
         return escn
     }
 
     private fun onEnterInRepeatStatement(editor: Editor, reps: CaosScriptRepeatStatement): PsiElement? {
         if (reps.cRepe != null)
             return null
-        EditorUtil.insertText(editor, "\nrepe", reps.endOffset, false)
+        val after = getEditorAfterCandidate(editor) { reps.repsHeader }.endOffset
+        EditorUtil.insertText(editor, "\nrepe\n", after, false)
         return reps
     }
 
     private fun onEnterInSubroutine(editor: Editor, subroutine: CaosScriptSubroutine): PsiElement? {
         if (subroutine.cRetn != null)
             return null
-        EditorUtil.insertText(editor, "\nretn", subroutine.endOffset, false)
+        EditorUtil.insertText(editor, "\nretn\n", subroutine.endOffset, false)
         return subroutine
+    }
+
+    private fun getEditorAfterCandidate(editor: Editor, find: () -> PsiElement): PsiElement {
+        var item = getEditorAfterCandidateRaw(editor, find)
+        
+        return item
+    }
+
+    private fun getEditorAfterCandidateRaw(editor: Editor, find: () -> PsiElement): PsiElement {
+        val editorElement = editor.element
+        if (editorElement == null) {
+            LOGGER.info("Editor element is null at offset ${editor.caretModel.offset}")
+            return find()
+        }
+        editorElement.getPreviousNonEmptySibling(true)?.let { sibling ->
+            sibling.getSelfOrParentOfType(CaosScriptCodeBlockLine::class.java)?.let { return it }
+            sibling.lastChild.getSelfOrParentOfType(CaosScriptCodeBlockLine::class.java)?.let { return it }
+            sibling.previous
+        }
+        return find()
     }
 }
