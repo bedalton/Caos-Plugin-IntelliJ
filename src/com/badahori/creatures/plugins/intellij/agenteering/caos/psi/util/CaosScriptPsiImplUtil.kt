@@ -680,17 +680,12 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getStringValue(string: CaosScriptC1String): String {
-        return string.textLiteral?.text ?: ""
+        return string.textLiteral.text
     }
 
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptQuoteStringLiteral): String {
-        var string = stringIn.text
-        if (string.startsWith("\""))
-            string = string.substring(1)
-        if (string.endsWith("\""))
-            string = string.substring(0, string.length - 1)
-        return string
+        return stringIn.stringText?.text ?: ""
     }
 
     @JvmStatic

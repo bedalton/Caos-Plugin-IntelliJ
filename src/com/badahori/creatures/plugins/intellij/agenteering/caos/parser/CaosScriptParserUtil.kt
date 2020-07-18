@@ -37,7 +37,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             CaosScriptTypes.CaosScript_OPEN_BRACKET,
             CaosScriptTypes.CaosScript_INT,
             CaosScriptTypes.CaosScript_FLOAT,
-            CaosScriptTypes.CaosScript_QUOTE_STRING,
+            CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL,
             CaosScriptTypes.CaosScript_CHAR
     )
     private var blocks = 0
