@@ -282,7 +282,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
-            return element is CaosScriptRvalue
+            return element is CaosScriptRvalue && element.rvaluePrime != null
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
