@@ -16,6 +16,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.roots.ProjectRootManager
@@ -104,7 +105,7 @@ object EditorUtil {
 
 
     fun replaceText(editor: Editor, range:TextRange, text: String, moveCaretToEnd: Boolean = false) {
-        runWriteAction {
+        WriteCommandAction.runWriteCommandAction(editor.project) {
             editor.document.replaceString(range.startOffset, range.endOffset, text)
             if (moveCaretToEnd) {
                 editor.caretModel.moveToOffset(range.endOffset + text.length)
