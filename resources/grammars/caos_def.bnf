@@ -131,6 +131,8 @@ type_definition_element
 			getKeys
 			getValueForKey
 			getAllKeys
+			getTypeNoteString
+			isBitflags
 		]
 	}
 	;
