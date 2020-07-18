@@ -1500,7 +1500,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
     }
     return when (parent) {
         is CaosScriptLvalue -> CaosCommandType.LVALUE
-        is CaosScriptRvalue -> CaosCommandType.RVALUE
+        is CaosScriptRvalueLike -> CaosCommandType.RVALUE
         is CaosScriptCommandCall -> CaosCommandType.COMMAND
         is CaosScriptEnumNextStatement -> CaosCommandType.CONTROL_STATEMENT
         is CaosScriptCAssignment -> CaosCommandType.COMMAND
