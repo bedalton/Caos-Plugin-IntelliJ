@@ -53,6 +53,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
             is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> annotateNewLineLike(variant, element, annotationWrapper)
+            is CaosScriptTrailingSpace -> annotationTrailingWhiteSpace(variant, element, annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(element, annotationWrapper)
@@ -356,6 +357,15 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (element.text.contains(",") && element.next?.text?.contains(",")) {
             if (element.)
         }*/
+    }
+
+    private fun annotationTrailingWhiteSpace(variant: CaosVariant, element: CaosScriptTrailingSpace, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant.isNotOld)
+            return
+        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-whitespace"))
+                .range(element)
+                .withFix(CaosScriptFixTooManySpaces(element))
+                .create()
     }
 
     companion object {
