@@ -68,14 +68,20 @@
     <lang.parserDefinition
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
         language="CaosScript" />
-
-    <completion.contributor language="CaosScript"
-                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider" />
-    <moduleType id="CAOS_MODULE" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType" classpathProvider="true"/>
+    <moduleType id="CAOS_MODULE"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
+                classpathProvider="true" />
+
+    <!-- Completion -->
+    <completion.contributor language="CaosScript"
+                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
+    <com.intellij.typedHandler
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptTypedHandler"
+    />
 
     <!-- Project -->
     <iconProvider
@@ -84,7 +90,7 @@
     <projectTemplatesFactory
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory" />
     <moduleConfigurationEditorProvider
-                    implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider"/>
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider" />
     <!-- Formatting -->
     <lang.formatter language="CaosScript"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptFormattingModelBuilder" />
@@ -171,11 +177,14 @@
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
     <documentationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider" />
+
     <!--lang.foldingBuilder language="CaosScript"
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptRValueFoldingBuilder"/-->
     <lang.foldingBuilder language="CaosScript"
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
-
+    <lang.braceMatcher language="CaosScript"
+                       implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBraceMatcher" />
+    <lang.quoteHandler implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
 
     <!-- Indices -->
     <applicationService
@@ -268,7 +277,7 @@
         id="CaosScript.NewFile"
         icon="CaosScriptIcons.CAOS_FILE_ICON"
         class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptNewFileAction">
-      <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+      <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile" />
     </action>
   </actions>
 
