@@ -153,6 +153,7 @@ type_definition
 			getValue
 			getDescription
 			getEquality
+			getPresentation
 		]
 	}
 	;

@@ -19,6 +19,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.intellij.psi.util.parentOfType
 import icons.CaosScriptIcons
 import javax.swing.Icon
 
@@ -592,6 +593,27 @@ object CaosDefPsiImplUtil {
 
             override fun getLocationString(): String {
                 return fileName
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return null
+            }
+        }
+    }
+
+    @JvmStatic
+    fun getPresentation(element:CaosDefTypeDefinition) : ItemPresentation {
+        val struct = element.toStruct()
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return struct.key + " = " + struct.value
+            }
+
+            override fun getLocationString(): String {
+                val location = (struct.description ?: "") + element.getParentOfType(CaosDefTypeDefinitionElement::class.java)?.typeName?.let {
+                    " @ $it"
+                }
+                return location.trim()
             }
 
             override fun getIcon(b: Boolean): Icon? {
