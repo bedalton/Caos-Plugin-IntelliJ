@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.intellij.openapi.application.invokeLater
 import javax.swing.*
 
 
@@ -19,7 +20,7 @@ internal const val GENERATE_DDE_PICT_LOOKUP_STRING = "Generate PICT dimensions"
 internal object GeneratePictDimensionsAction : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
         val position = context.editor.caretModel.currentCaret.offset
-        invokeAndWaitIfNeeded {
+        invokeLater {
             PictDimensionsForm(position, context.editor).showAndGet()
         }
     }
