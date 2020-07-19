@@ -101,7 +101,6 @@ class CaosScriptHelperActionAnnotator : Annotator {
                     it.isVariant(variant)
                 }
                 .mapNotNull {
-                    LOGGER.info("Command has typedef: ${it.returnTypeStruct?.type?.typedef}")
                     it.returnTypeStruct?.type?.typedef
                 }
                 .firstOrNull()
