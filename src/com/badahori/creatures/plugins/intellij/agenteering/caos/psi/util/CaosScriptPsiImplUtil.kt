@@ -181,9 +181,6 @@ object CaosScriptPsiImplUtil {
         }
         val token = call.getChildOfType(CaosScriptIsCommandToken::class.java)
                 ?: call.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
-        if (token == null) {
-            LOGGER.severe("Failed to get command token from call: ${call.text}")
-        }
         return token
     }
 
@@ -764,9 +761,6 @@ object CaosScriptPsiImplUtil {
                 return CaosVar.CaosCommandCall(it.text, getReturnType(it, lvalue.arguments.size))
             }
             return CaosVar.CaosCommandCall(it.text)
-        }
-        if (lvalue.incomplete != null) {
-            LOGGER.warning("Failed to understand lvalue: ${lvalue.text}, first child = ${lvalue.firstChild?.elementType}. File: ${lvalue.containingFile.name}, Line: ${lvalue.lineNumber}")
         }
         return CaosVar.CaosLiteralVal
     }
@@ -1478,7 +1472,6 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
     val parent: PsiElement? = getParentOfType(CaosScriptBaseCommandElement::class.java)
     if (parent == null || (parent !is CaosScriptCommandElement || parent is CaosScriptNamedGameVar)) {
         if (isOrHasParentOfType(CaosScriptIncomplete::class.java)) {
-            LOGGER.info("$text is incomplete and marked as command by default")
             return CaosCommandType.COMMAND
         }
         if (isOrHasParentOfType(CaosScriptDoifStatement::class.java))

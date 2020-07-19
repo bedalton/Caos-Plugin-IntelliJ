@@ -52,7 +52,7 @@ object SprParser {
                 val pixels = (0 until (imageData.width * imageData.height)).map pixels@{_ ->
                     bytesBuffer.uInt8.let {
                         if (it < 0 || it > 256) {
-                            LOGGER.info("Color value '$it' is invalid")
+                            LOGGER.severe("Color value '$it' is invalid")
                             return@pixels 0
                         }
                         colors[it]
