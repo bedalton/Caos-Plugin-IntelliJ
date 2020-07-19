@@ -58,7 +58,6 @@ object CaosScriptTypeDefValueCompletionProvider {
         val variant = valueOfType.containingCaosFile?.variant
                 ?: return
         val addSpace = reference.parameterStructs.size - 1 > index
-        LOGGER.info("TypeNote for parameter ${parameterStruct.parameterNumber}, '${parameterStruct.name}' types == $type")
         if (type.typedef != null) {
             addListValues(resultSet, variant, type.typedef, valueOfType.project, valueOfType.text, addSpace)
         } else if (!type.fileTypes.isNullOrEmpty()) {
@@ -66,14 +65,12 @@ object CaosScriptTypeDefValueCompletionProvider {
             val allFiles = type.fileTypes
                     .flatMap { fileExtensionTemp ->
                         val fileExtension = fileExtensionTemp.toLowerCase()
-                        LOGGER.info("Finding files with extensions: '$fileExtension'")
                         val searchScope =
                                 valueOfType.containingFile?.module?.let { GlobalSearchScope.moduleScope(it) }
                                         ?: GlobalSearchScope.projectScope(project)
                         FilenameIndex.getAllFilesByExt(project, fileExtension, searchScope).toList()
                     }
                     .map { it.nameWithoutExtension }
-            LOGGER.info("Files with types: [${type.fileTypes.joinToString()}] == [${allFiles.joinToString()}]")
             for (file in allFiles) {
                 val fileName = file
                 val isToken = parameterStruct.type.type.toLowerCase() == "token"
@@ -132,7 +129,6 @@ object CaosScriptTypeDefValueCompletionProvider {
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return
-        LOGGER.info("TypeNote for $listName == ${def.typeNoteString}. Is BitFlags == ${def.isBitflags}")
         val values = def.keys
                 .filter { it.equality == TypeDefEq.EQUAL }
                 .ifEmpty { null }

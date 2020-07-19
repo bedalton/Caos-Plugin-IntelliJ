@@ -421,10 +421,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                             CaosCommandType.UNDEFINED -> false
                         }
                     }
-
-            if (commandsOfType.isEmpty()) {
-                LOGGER.warning("There are no commands from any variant for '${command}' of expected type ${commandType.value} when checked against ${commands.size} commands with matching name")
-            }
             // Command variant of type exists, so exit
             if (commandsOfType.any { it.isVariant(variant) })
                 return

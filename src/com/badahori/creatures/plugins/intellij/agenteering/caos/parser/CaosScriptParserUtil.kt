@@ -150,7 +150,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         if (ignoreExpects())
             return default
         if (expectsType.isEmpty()) {
-            LOGGER.severe("Checking expectation '$expectation' when no expectations in stack")
+            //LOGGER.severe("Checking expectation '$expectation' when no expectations in stack")
             return default
         }
         return expectsType[0] == expectation
