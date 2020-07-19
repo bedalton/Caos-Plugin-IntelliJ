@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
@@ -37,8 +39,11 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
-
-        val newLines = PsiTreeUtil.collectElementsOfType(file, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline::class.java)
+        val comments = PsiTreeUtil.collectElementsOfType(file, CaosScriptComment::class.java)
+        for(comment in comments) {
+            comment.delete()
+        }
+        val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
         for (newLine in newLines) {
             if (newLine.isValid)
                 replaceWithSpaceOrComma(newLine, collapseChar)
@@ -56,9 +61,12 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             if (document != null) {
                 PsiDocumentManager.getInstance(project).commitDocument(document)
             }
-
             val file = fileIn.copy().let { it as? PsiFile ?: it.containingFile }
-            val newLines = PsiTreeUtil.collectElementsOfType(file, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline::class.java)
+            val comments = PsiTreeUtil.collectElementsOfType(file, CaosScriptComment::class.java)
+            for(comment in comments) {
+                comment.delete()
+            }
+            val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
             for (newLine in newLines) {
                 if (newLine.isValid)
                     replaceWithSpaceOrComma(newLine, collapseChar)
