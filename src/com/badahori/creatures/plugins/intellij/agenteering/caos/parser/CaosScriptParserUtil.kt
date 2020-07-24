@@ -38,7 +38,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             CaosScriptTypes.CaosScript_INT,
             CaosScriptTypes.CaosScript_FLOAT,
             CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL,
-            CaosScriptTypes.CaosScript_CHAR
+            CaosScriptTypes.CaosScript_CHAR_CHAR,
+            CaosScriptTypes.CaosScript_CHARACTER
     )
     private var blocks = 0
     private val blockEnds = listOf<IElementType>(
@@ -150,7 +151,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         if (ignoreExpects())
             return default
         if (expectsType.isEmpty()) {
-            LOGGER.severe("Checking expectation '$expectation' when no expectations in stack")
+            //LOGGER.severe("Checking expectation '$expectation' when no expectations in stack")
             return default
         }
         return expectsType[0] == expectation

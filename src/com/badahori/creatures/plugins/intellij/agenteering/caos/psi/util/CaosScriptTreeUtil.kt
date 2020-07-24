@@ -17,7 +17,7 @@ import java.util.logging.Logger
 
 
 internal val LOGGER:Logger by lazy {
-    Logger.getLogger("#ObjJTreeUtil")
+    Logger.getLogger("#CaosScriptTreeUtil")
 }
 
 
