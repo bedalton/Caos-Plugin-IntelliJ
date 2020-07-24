@@ -63,7 +63,11 @@ public class CaosProjectGeneratorPeerImpl {
         });
         variantComboBox.setToolTipText("CAOS Variant");
         variantComboBox.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
-            return new JLabel(value.getFullName());
+            if (value == null) {
+                return new JLabel("UNKNOWN");
+            } else {
+                return new JLabel(value.getFullName());
+            }
         });
     }
 }
