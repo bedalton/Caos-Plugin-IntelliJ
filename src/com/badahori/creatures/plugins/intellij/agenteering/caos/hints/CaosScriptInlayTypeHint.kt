@@ -133,11 +133,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     .Instance[typeDef, token.project].firstOrNull check@{
                 if (!it.isVariant(variant))
                     return@check false
-                val typeNote = it.typeNote?.text
-                if (typeNote == null) {
-                    //LOGGER.info("TypeNote is null for ${it.typeName}")
-                    return@check false
-                }
+                val typeNote = it.typeNote?.text ?: return@check false
                 it.typeNote?.text?.toLowerCase()?.contains("bitflags").orFalse()
             }
         }

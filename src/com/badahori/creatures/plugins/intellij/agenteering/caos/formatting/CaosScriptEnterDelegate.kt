@@ -21,17 +21,23 @@ import com.intellij.refactoring.suggested.endOffset
 class CaosScriptEnterDelegate : EnterHandlerDelegate {
 
     override fun preprocessEnter(file: PsiFile, editor: Editor, ref1: Ref<Int>, ref2: Ref<Int>, context: DataContext, editorActionHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
-        return Continue
+
+        return handle(file, editor)//Continue
     }
 
     override fun postProcessEnter(file: PsiFile, editor: Editor, context: DataContext): EnterHandlerDelegate.Result {
+        return Continue
+    }
+
+    private fun handle(file: PsiFile, editor:Editor): EnterHandlerDelegate.Result {
         var offset = editor.caretModel.currentCaret.offset
         if (offset > 2) {
             offset -= 2
         } else if (offset > 1)
             offset -= 1
-        val element = file.findElementAt(offset)
-                ?: return Continue
+        val element = editor.element ?: file.findElementAt(offset)
+        ?: return Continue
+
         val reformatRange: TextRange? = element.getSelfOrParentOfType(CaosScriptHasCodeBlock::class.java)?.let { block ->
             when {
                 block.parent is CaosScriptDoifStatement -> onEnterInDoif(editor, block.parent as CaosScriptDoifStatement)
@@ -60,10 +66,9 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
                     ?: doif.doifStatementStatement.equalityExpression
                     ?: doif.lastChild
         }.let {
-            LOGGER.info("Doif is set to insert after: ${it.text} at offset: ${it.endOffset}")
             it.textRange.endOffset
         }
-        EditorUtil.insertText(editor, "\nendi\n", after, false)
+        EditorUtil.insertText(editor, "\nendi", after, false)
         return doif
     }
 
@@ -71,7 +76,7 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
         if (enumNext.cNext != null || enumNext.cNscn != null)
             return null
         val after = getEditorAfterCandidate(editor) { enumNext.enumHeaderCommand }.endOffset
-        EditorUtil.insertText(editor, "\nnext\n", after, false)
+        EditorUtil.insertText(editor, "\nnext", after, false)
         return enumNext
     }
 
@@ -79,7 +84,7 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
         if (escn.cNext != null || escn.cNscn != null)
             return null
         val after = getEditorAfterCandidate(editor) { escn.escnHeader }.textRange.endOffset
-        EditorUtil.insertText(editor, "\nnscn\n", after, false)
+        EditorUtil.insertText(editor, "\nnscn", after, false)
         return escn
     }
 
@@ -87,33 +92,31 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
         if (reps.cRepe != null)
             return null
         val after = getEditorAfterCandidate(editor) { reps.repsHeader }.endOffset
-        EditorUtil.insertText(editor, "\nrepe\n", after, false)
+        EditorUtil.insertText(editor, "\nrepe", after, false)
         return reps
     }
 
     private fun onEnterInSubroutine(editor: Editor, subroutine: CaosScriptSubroutine): PsiElement? {
         if (subroutine.cRetn != null)
             return null
-        EditorUtil.insertText(editor, "\nretn\n", subroutine.endOffset, false)
+        EditorUtil.insertText(editor, "\nretn", subroutine.endOffset, false)
         return subroutine
     }
 
     private fun getEditorAfterCandidate(editor: Editor, find: () -> PsiElement): PsiElement {
         var item = getEditorAfterCandidateRaw(editor, find)
-        
+
         return item
     }
 
     private fun getEditorAfterCandidateRaw(editor: Editor, find: () -> PsiElement): PsiElement {
         val editorElement = editor.element
         if (editorElement == null) {
-            LOGGER.info("Editor element is null at offset ${editor.caretModel.offset}")
             return find()
         }
         editorElement.getPreviousNonEmptySibling(true)?.let { sibling ->
             sibling.getSelfOrParentOfType(CaosScriptCodeBlockLine::class.java)?.let { return it }
             sibling.lastChild.getSelfOrParentOfType(CaosScriptCodeBlockLine::class.java)?.let { return it }
-            sibling.previous
         }
         return find()
     }

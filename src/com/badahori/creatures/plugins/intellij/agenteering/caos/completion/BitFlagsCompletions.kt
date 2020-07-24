@@ -109,7 +109,6 @@ private class BitFlagsForm(
         }
         if (consume > 0) {
             val range = TextRange(position, position + consume)
-            LOGGER.info("Replace $range with value $value")
             EditorUtil.replaceText(editor, range, "$value", true)
         } else {
             EditorUtil.insertText(editor, "$value", position, true)

@@ -75,13 +75,12 @@ class CaosScriptTokenSets {
                 CaosScript_C_1_STRING,
                 CaosScript_OPEN_BRACKET,
                 CaosScript_CLOSE_BRACKET,
-                CaosScript_CHAR,
+                CaosScript_CHARACTER,
                 CaosScript_DOUBLE_QUOTE,
                 CaosScript_STRING_CHAR,
                 CaosScript_STRING_ESCAPE_CHAR,
                 CaosScript_SINGLE_QUOTE,
-                CaosScript_CHAR_CHAR,
-                CaosScript_CHAR
+                CaosScript_CHAR_CHAR
         )
 
         val LITERALS: TokenSet = create(
@@ -93,7 +92,7 @@ class CaosScriptTokenSets {
                 CaosScript_BYTE_STRING,
                 CaosScript_ANIMATION_STRING,
                 CaosScript_QUOTE_STRING_LITERAL,
-                CaosScript_CHAR
+                CaosScript_CHARACTER
         )
 
         @JvmStatic
