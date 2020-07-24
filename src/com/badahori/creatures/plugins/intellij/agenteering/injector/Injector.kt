@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.notification.NotificationType
@@ -110,8 +111,9 @@ object Injector {
     private fun sanitize(caos: String): String {
         var out = caos
         out = out.replace("[ ]+".toRegex(), " ")
-        out.replace("[ ]*,[ ]*".toRegex(), ",")
-        return out.trim()
+        out = out.replace("[ ]*,[ ]*".toRegex(), ",").trim()
+        LOGGER.info("Injecting: <$out>")
+        return out
     }
 
     fun canConnectToVariant(variant: CaosVariant): Boolean {

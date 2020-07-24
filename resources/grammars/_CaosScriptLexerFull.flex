@@ -72,6 +72,9 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
 CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
+ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
+QUOTE_STRING_CHAR=[^\"]
+QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 
 %state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR
 %%
@@ -142,9 +145,8 @@ N_VAR = [$][a-zA-Z_0-9]+
 
 <IN_STRING> {
 	\"						{ yybegin(IN_LINE); return CaosScript_DOUBLE_QUOTE;}
-	"\\\\"					{ return CaosScript_STRING_ESCAPE_CHAR; }
-	\\\"					{ return CaosScript_STRING_ESCAPE_CHAR; }
-	[^\n\r\"]				{ return CaosScript_STRING_CHAR; }
+	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
+    \s+						{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_LINE); }
 }
 
@@ -172,7 +174,6 @@ N_VAR = [$][a-zA-Z_0-9]+
 	{MVxx}				 	{ return CaosScript_MV_XX; }
 	{VARx}				 	{ return CaosScript_VAR_X; }
 	{VAxx}				 	{ return CaosScript_VA_XX; }
-  	['][^']+[']				{ return CaosScript_CHAR; }
  	[%][01]+				{ return CaosScript_BINARY; }
 	{DECIMAL}              	{ return CaosScript_DECIMAL; }
 	{INT}                  	{ return CaosScript_INT; }

@@ -253,7 +253,6 @@
 		ANIM_R = "R"
 		PICT_DIMENSION = "#|#";
 		BINARY = "binary int"
-		CHAR = "char"
 		STRING_ESCAPE_CHAR = "escaped char"
 		STRING_CHAR = "string char";
 		DOUBLE_QUOTE = "\""
@@ -6768,13 +6767,13 @@ number
 	::= INT
 	|	DECIMAL
 	|	BINARY
-	|	char
+	|	character
 	{
 
 	}
 	;
 
-private char
+character
 	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
 	{
 		pin=1
