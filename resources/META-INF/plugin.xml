@@ -281,6 +281,12 @@
     </action>
   </actions>
 
+  <module-components>
+    <component>
+      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettings</implementation-class>
+    </component>
+  </module-components>
+
   <project-components>
     <component>
       <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectComponent
