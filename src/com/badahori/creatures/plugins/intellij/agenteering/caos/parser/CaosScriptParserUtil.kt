@@ -38,7 +38,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             CaosScriptTypes.CaosScript_INT,
             CaosScriptTypes.CaosScript_FLOAT,
             CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL,
-            CaosScriptTypes.CaosScript_CHAR
+            CaosScriptTypes.CaosScript_CHAR_CHAR,
+            CaosScriptTypes.CaosScript_CHARACTER
     )
     private var blocks = 0
     private val blockEnds = listOf<IElementType>(
