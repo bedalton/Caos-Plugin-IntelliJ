@@ -4546,7 +4546,7 @@ c_kw_s_d_f
 
 c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 	::= K_STIM space_like (K_SHOU|K_SIGN|K_TACT|incomplete) <<isOldVariant>>
-	|	K_STIM space_like (K_FROM|incomplete) (<<isOldVariant>>
+	|	K_STIM space_like (K_FROM|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
