@@ -1079,8 +1079,8 @@ private byte_string_body
 	;
 
 private byte_string_pose_list
-	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>)byte_string_pose_element
-	|	(!(<<isVariant 'C1'>>|<<isVariant 'C2'>>))space_like? (byte_string_pose_element space_like?)+
+	::= (<<isOldVariant>>)byte_string_pose_element
+	|	(!<<isOldVariant>>)space_like? (byte_string_pose_element space_like?)+
 	;
 
 byte_string_pose_element
@@ -1088,7 +1088,7 @@ byte_string_pose_element
 	;
 
 byte_string_r
-	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>)space_like? ANIM_R
+	::= <<isOldVariant>> space_like? ANIM_R
 	;
 
 
@@ -1108,7 +1108,7 @@ space_like_or_newline
 
 new_line_like
 	::= symbol_comma
-	|	NEWLINE+
+	|	new_line+
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
@@ -1116,11 +1116,21 @@ new_line_like
 	}
 	;
 
+new_line
+	::= NEWLINE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.intellij.psi.PsiWhiteSpace"
+		]
+	}
+
 space_like
 	::= space+
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+			"com.intellij.psi.PsiWhiteSpace"
 		]
 	}
 	;
@@ -1349,10 +1359,6 @@ private command_call_by_args
 	}
 	;
 
-private command_call_recover
-	::= !(NEWLINE|COMMA)
-	;
-
 c_assignment
 	::= c_all_assign_int
 	|	c_assign_agent
@@ -1456,20 +1462,20 @@ private c_cv_char
 	;
 
 private expects_decimal_or_int ::=
-		(<<isVariant 'C1'>>|<<isVariant 'C2'>>) expects_int
-	|	(<<isVariant 'CV'>>|<<isVariant 'C3'>>|<<isVariant 'DS'>>) expects_decimal
+		(<<isOldVariant>>) expects_int
+	|	(<<isNewerVariant>>) expects_decimal
 
 	;
 
-private c_setv ::= (c_kw_setv space_like|((<<isVariant 'C1'>>|<<isVariant 'C2'>>)(c_kw_setv space_like)?)) lvalue space_like setv_prime
+private c_setv ::= (c_kw_setv space_like|((<<isOldVariant>>)(c_kw_setv space_like)?)) lvalue space_like setv_prime
 	{
 		pin = 2
 	}
 	;
 
 private setv_prime
-	::= (<<isVariant 'C1'>>|<<isVariant 'C2'>>) expects_value
-	|	(<<isVariant 'CV'>>|<<isVariant 'C3'>>|<<isVariant 'DS'>>) expects_decimal
+	::= (<<isOldVariant>>) expects_value
+	|	(<<isNewerVariant>>) expects_decimal
 	;
 
 c_kw_setv ::= K_SETV
@@ -1544,8 +1550,6 @@ c_kw_negv ::= K_NEGV
 
 private c_none ::= c_kw_none;
 
-
-
 private c_d ::= c_kw_d space_like expects_decimal_or_int
 	{
 		pin=1
@@ -1554,12 +1558,13 @@ private c_d ::= c_kw_d space_like expects_decimal_or_int
 
 
 
-private c_d_d ::= c_kw_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d ::= c_kw_d_d args_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_l ::= c_kw_l space_like lvalue
@@ -1578,13 +1583,13 @@ private c_f ::= c_kw_f space_like expects_float
 
 
 
-private c_d_s ::= c_kw_d_s space_like expects_decimal_or_int space_like expects_string
+private c_d_s ::= c_kw_d_s args_d_s
 	{
 		pin=1
 	}
 	;
 
-
+private args_d_s ::= space_like expects_decimal_or_int space_like expects_string;
 
 private c_l_s ::= c_kw_l_s space_like lvalue space_like expects_string
 	{
@@ -1592,20 +1597,22 @@ private c_l_s ::= c_kw_l_s space_like lvalue space_like expects_string
 	}
 	;
 
-private c_d_d_f_d ::= c_kw_d_d_f_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int
+private c_d_d_f_d ::= c_kw_d_d_f_d args_d_d_f_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_f_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int;
 
 
-private c_d_d_f ::= c_kw_d_d_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+private c_d_d_f ::= c_kw_d_d_f args_d_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_f ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float;
 
 
 private c_bs ::= c_kw_bs space_like expects_byte_string
@@ -1624,86 +1631,91 @@ private c_s ::= c_kw_s space_like expects_string
 
 
 
-private c_d_d_d ::= c_kw_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d ::= c_kw_d_d_d args_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
 
-
-private c_d_d_s ::= c_kw_d_d_s space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+private c_d_d_s ::= c_kw_d_d_s args_d_d_s
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_s ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string;
 
 
-private c_d_d_d_d ::= c_kw_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d ::= c_kw_d_d_d_d args_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-
-private c_s_d_d_d ::= c_kw_s_d_d_d space_like expects_c1_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_s_d_d_d ::= c_kw_s_d_d_d args_c1s_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_c1s_d_d_d ::= space_like expects_c1_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_s_d ::= c_kw_d_s_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int
+private c_d_s_d ::= c_kw_d_s_d args_d_s_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int;
 
 
-private c_d_d_d_f ::= c_kw_d_d_d_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+private c_d_d_d_f ::= c_kw_d_d_d_f args_d_d_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_f  ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float;
 
 
-private c_d_v_v ::= c_kw_d_v_v space_like expects_decimal_or_int space_like expects_value space_like expects_value
+private c_d_v_v ::= c_kw_d_v_v args_d_v_v
 	{
 		pin=1
 	}
 	;
 
+private args_d_v_v ::=  space_like expects_decimal_or_int space_like expects_value space_like expects_value;
 
-
-private c_l_d_d ::= c_kw_l_d_d space_like lvalue space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_l_d_d ::= c_kw_l_d_d args_l_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_l_d_d ::= space_like lvalue space_like expects_decimal_or_int space_like expects_decimal_or_int
 
-
-private c_d_f ::= c_kw_d_f space_like expects_decimal_or_int space_like expects_float
+private c_d_f ::= c_kw_d_f args_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_f ::= space_like expects_decimal_or_int space_like expects_float;
 
 
-private c_f_f_f_f ::= c_kw_f_f_f_f space_like expects_float space_like expects_float space_like expects_float space_like expects_float
+private c_f_f_f_f ::= c_kw_f_f_f_f args_f_f_f_f
 	{
 		pin=1
 	}
 	;
 
-
+private args_f_f_f_f ::= space_like expects_float space_like expects_float space_like expects_float space_like expects_float;
 
 private c_cond ::= c_kw_cond space_like equality_expression
 	{
@@ -1729,69 +1741,74 @@ private c_v ::= c_kw_v space_like expects_value
 
 
 
-private c_s_t ::= c_kw_s_t space_like expects_c1_string space_like expects_token
+private c_s_t ::= c_kw_s_t args_s_t
 	{
 		pin=1
 	}
 	;
 
+private args_s_t ::= space_like expects_c1_string space_like expects_token;
 
 
-private c_f_f ::= c_kw_f_f space_like expects_float space_like expects_float
+private c_f_f ::= c_kw_f_f args_f_f
 	{
 		pin=1
 	}
 	;
 
+private args_f_f ::= space_like expects_float space_like expects_float;
 
 
-private c_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d args_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_s_d ::= c_kw_s_d space_like expects_string space_like expects_decimal_or_int
+private c_s_d ::= c_kw_s_d args_s_d
 	{
 		pin=1
 	}
 	;
 
+private args_s_d ::= space_like expects_string space_like expects_decimal_or_int;
 
 
-private c_a_d_a_d ::= c_kw_a_d_a_d space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int
+private c_a_d_a_d ::= c_kw_a_d_a_d args_a_d_a_d
+	{
+		pin=1
+	}
+	;
+private args_a_d_a_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int;
+
+
+private c_a_d_a_d_a_d_d_d_d_d ::= c_kw_a_d_a_d_a_d_d_d_d_d args_a_d_a_d_a_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_a_d_a_d_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
-
-private c_a_d_a_d_a_d_d_d_d_d ::= c_kw_a_d_a_d_a_d_d_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_a_d ::= c_kw_a_d args_a_d
 	{
 		pin=1
 	}
 	;
 
+private args_a_d ::= space_like expects_agent space_like expects_decimal_or_int;
 
 
-private c_a_d ::= c_kw_a_d space_like expects_agent space_like expects_decimal_or_int
+private c_a_d_s ::= c_kw_a_d_s args_a_d_s
 	{
 		pin=1
 	}
 	;
 
-
-
-private c_a_d_s ::= c_kw_a_d_s space_like expects_agent space_like expects_decimal_or_int space_like expects_string
-	{
-		pin=1
-	}
-	;
-
-
+private args_a_d_s ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_string;
 
 private c_t ::= c_kw_t space_like expects_token
 	{
@@ -1801,173 +1818,187 @@ private c_t ::= c_kw_t space_like expects_token
 
 
 
-private c_d_d_d_f_f ::= c_kw_d_d_d_f_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float
+private c_d_d_d_f_f ::= c_kw_d_d_d_f_f args_d_d_d_f_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_f_f ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float;
 
-
-private c_s_d_s_s ::= c_kw_s_d_s_s space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like expects_string
+private c_s_d_s_s ::= c_kw_s_d_s_s args_s_d_s_s
 	{
 		pin=1
 	}
 	;
 
+private args_s_d_s_s ::=  space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like expects_string;
 
 
-private c_s_d_s ::= c_kw_s_d_s space_like expects_string space_like expects_decimal_or_int space_like expects_string
+private c_s_d_s ::= c_kw_s_d_s args_s_d_s
 	{
 		pin=1
 	}
 	;
 
+private args_s_d_s ::= space_like expects_string space_like expects_decimal_or_int space_like expects_string;
 
 
-private c_s_s ::= c_kw_s_s space_like expects_string space_like expects_string
+private c_s_s ::= c_kw_s_s args_s_s
 	{
 		pin=1
 	}
 	;
 
+private args_s_s ::= space_like expects_string space_like expects_string;
 
-
-private c_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d args_d_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d_d_d_d_d_d  ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_d_d_d_f ::= c_kw_d_d_d_d_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+private c_d_d_d_d_f ::= c_kw_d_d_d_d_f args_d_d_d_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d_f ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float;
 
 
-private c_a_d_v_v_d ::= c_kw_a_d_v_v_d space_like expects_agent space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_decimal_or_int
+private c_a_d_v_v_d ::= c_kw_a_d_v_v_d args_a_d_v_v_d
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_v_v_d ::=  space_like expects_agent space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_decimal_or_int;
 
 
-private c_l_l_l_l ::= c_kw_l_l_l_l space_like lvalue space_like lvalue space_like lvalue space_like lvalue
+private c_l_l_l_l ::= c_kw_l_l_l_l args_l_l_l_l
 	{
 		pin=1
 	}
 	;
 
+private args_l_l_l_l ::= space_like lvalue space_like lvalue space_like lvalue space_like lvalue;
+
+private c_s_l ::= c_kw_s_l args_s_l
+	{
+		pin=1
+	}
+	;
+private args_s_l ::= space_like expects_string space_like lvalue
 
 
-private c_s_l ::= c_kw_s_l space_like expects_string space_like lvalue
+private c_s_s_d_v_v ::= c_kw_s_s_d_v_v args_s_s_d_v_v
 	{
 		pin=1
 	}
 	;
 
+private args_s_s_d_v_v ::= space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_value space_like expects_value;
 
 
-private c_s_s_d_v_v ::= c_kw_s_s_d_v_v space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_value space_like expects_value
+private c_t_d_d_d_d_d_d_d ::= c_kw_t_d_d_d_d_d_d_d args_t_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_t_d_d_d_d_d_d_d ::=  space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_t_d_d_d_d_d_d_d ::= c_kw_t_d_d_d_d_d_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_t_d_d_d ::= c_kw_t_d_d_d args_t_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_t_d_d_d ::=  space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_t_d_d_d ::= c_kw_t_d_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_t_d_d_v ::= c_kw_t_d_d_v args_t_d_d_v
 	{
 		pin=1
 	}
 	;
 
+private args_t_d_d_v ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value;
 
-
-private c_t_d_d_v ::= c_kw_t_d_d_v space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value
+private c_d_d_d_s_d_d_d ::= c_kw_d_d_d_s_d_d_d args_d_d_d_s_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_d_d_s_d_d_d ::= c_kw_d_d_d_s_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_a_d_d_d_s_d_d_d ::= c_kw_d_a_d_d_d_s_d_d_d args_d_a_d_d_d_s_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_a_d_d_d_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
-
-private c_d_a_d_d_d_s_d_d_d ::= c_kw_d_a_d_d_d_s_d_d_d space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_a_d_d_d ::= c_kw_d_a_d_d_d args_d_a_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_a_d_d_d ::= space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_a_d_d_d ::= c_kw_d_a_d_d_d space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_l ::= c_kw_d_d_l args_d_d_l
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_l ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue;
 
 
-private c_d_d_l ::= c_kw_d_d_l space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
+private c_t_d_d ::= c_kw_t_d_d args_t_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_t_d_d ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_t_d_d ::= c_kw_t_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d_d ::= c_kw_d_d_d_d_d args_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_d_d_d_d ::= c_kw_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_t_d_d_d_d ::= c_kw_t_d_d_d_d args_t_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_t_d_d_d_d ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_t_d_d_d_d ::= c_kw_t_d_d_d_d space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_a_s ::= c_kw_a_s args_a_s
 	{
 		pin=1
 	}
 	;
 
-
-
-private c_a_s ::= c_kw_a_s space_like expects_agent space_like expects_string
-	{
-		pin=1
-	}
-	;
-
-
+private args_a_s ::= space_like expects_agent space_like expects_string;
 
 private c_d_s_d_d_d_d_d_bs_d_d ::= c_kw_d_s_d_d_d_d_d_bs_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_byte_string space_like expects_decimal_or_int space_like expects_decimal_or_int
 	{
@@ -1977,122 +2008,135 @@ private c_d_s_d_d_d_d_d_bs_d_d ::= c_kw_d_s_d_d_d_d_d_bs_d_d space_like expects_
 
 
 
-private c_d_s_d_d_d_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_s_d_d_d_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d_d_d_d args_d_s_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
-
-private c_d_s_d_d_d_d ::= c_kw_d_s_d_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int
+private c_d_s_d_d_d_d ::= c_kw_d_s_d_d_d_d args_d_s_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_d_d_d_d ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int
 
 
-private c_d_s_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_s space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_string
+private c_d_s_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_s args_d_s_d_d_d_d_s
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_d_d_d_d_s ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_string
 
 
-private c_d_s_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_s_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d args_d_s_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_d_d_d_d_d ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_s_d_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_d_s space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+
+private c_d_s_d_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_d_s args_d_s_d_d_d_d_d_s
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_d_d_d_d_d_s ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
 
-
-private c_d_s_s_d_d_d ::= c_kw_d_s_s_d_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_s_s_d_d_d ::= c_kw_d_s_s_d_d_d args_d_s_s_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_a_d_d ::= c_kw_a_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_a_d_d ::= c_kw_a_d_d arg_a_d_d
 	{
 		pin=1
 	}
 	;
 
+private arg_a_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
 
 
-private c_d_s_s_d_d ::= c_kw_d_s_s_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_s_s_d_d ::= c_kw_d_s_s_d_d args_d_s_s_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_s_s_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
 
-
-private c_d_v ::= c_kw_d_v space_like expects_decimal_or_int space_like expects_value
+private c_d_v ::= c_kw_d_v args_d_v
 	{
 		pin=1
 	}
 	;
 
+private args_d_v ::= space_like expects_decimal_or_int space_like expects_value;
 
-
-private c_d_d_f_f_f ::= c_kw_d_d_f_f_f space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float space_like expects_float
+private c_d_d_f_f_f ::= c_kw_d_d_f_f_f args_d_d_f_f_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_f_f_f ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float space_like expects_float
 
 
-private c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d args_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
-
-private c_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d args_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_a_a ::= c_kw_a_a space_like expects_agent space_like expects_agent
+private c_a_a ::= c_kw_a_a args_a_a
 	{
 		pin=1
 	}
 	;
 
+private args_a_a ::= space_like expects_agent space_like expects_agent
 
-private c_s_d_d_d_d_d ::= c_kw_s_d_d_d_d_d space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+
+private c_s_d_d_d_d_d ::= c_kw_s_d_d_d_d_d args_s_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_s_d_d_d_d_d ::= space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_t_d ::= c_kw_t_d space_like expects_token space_like expects_decimal_or_int
+private c_t_d ::= c_kw_t_d args_t_d
 	{
 		pin=1
 	}
 	;
+
+private args_t_d ::=  space_like expects_token space_like expects_decimal_or_int;
 
 
 
@@ -2104,75 +2148,85 @@ private c_s_d_f ::= c_kw_s_d_f space_like expects_string space_like expects_deci
 
 
 
-private c_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d arg_d_d_d_d_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private arg_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
 
 
-private c_a_d_f ::= c_kw_a_d_f space_like expects_agent space_like expects_decimal_or_int space_like expects_float
+
+private c_a_d_f ::= c_kw_a_d_f args_a_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_f ::=  space_like expects_agent space_like expects_decimal_or_int space_like expects_float;
 
-
-private c_a_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_a_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d args_a_d_d_d_d_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_d_f_d_f_d_f_d_f ::= c_kw_d_f_d_f_d_f_d_f space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+
+private c_d_f_d_f_d_f_d_f ::= c_kw_d_f_d_f_d_f_d_f args_d_f_d_f_d_f_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_d_f_d_f_d_f_d_f ::=  space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
 
 
-private c_a_d_f_d_f_d_f_d_f ::= c_kw_a_d_f_d_f_d_f_d_f space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+private c_a_d_f_d_f_d_f_d_f ::= c_kw_a_d_f_d_f_d_f_d_f args_a_d_f_d_f_d_f_d_f
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_f_d_f_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
 
 
-private c_s_s_s_d ::= c_kw_s_s_s_d space_like expects_c1_string space_like expects_c1_string space_like expects_c1_string space_like expects_decimal_or_int
+private c_s_s_s_d ::= c_kw_s_s_s_d args_s_s_s_d
 	{
 		pin=1
 	}
 	;
 
+private args_s_s_s_d ::= space_like expects_c1_string space_like expects_c1_string space_like expects_c1_string space_like expects_decimal_or_int
 
 
-private c_a_d_d_d_d ::= c_kw_a_d_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private c_a_d_d_d_d ::= c_kw_a_d_d_d_d args_a_d_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
-private c_f_d_f ::= c_kw_f_d_f space_like expects_float space_like expects_decimal_or_int space_like expects_float
+private c_f_d_f ::= c_kw_f_d_f args_f_d_f
+	{
+		pin=1
+	}
+	;
+private args_f_d_f ::= space_like expects_float space_like expects_decimal_or_int space_like expects_float;
+
+
+private c_a_d_f_d_f ::= c_kw_a_d_f_d_f args_a_d_f_d_f
 	{
 		pin=1
 	}
 	;
 
-
-
-private c_a_d_f_d_f ::= c_kw_a_d_f_d_f space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
-	{
-		pin=1
-	}
-	;
+private args_a_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float;
 
 private c_pict ::= c_kw_pict space_like expects_pict_dimension
 	{
@@ -2270,21 +2324,18 @@ private r_f ::= r_kw_f space_like expects_float
 
 
 
-private r_d_d_d_d_s ::= r_kw_d_d_d_d_s space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+private r_d_d_d_d_s ::= r_kw_d_d_d_d_s args_d_d_d_d_s
 	{
 		pin=1
 	}
 	;
 
 
-
-private r_d_d_d_d_d_d_d ::= r_kw_d_d_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private r_d_d_d_d_d_d_d ::= r_kw_d_d_d_d_d_d_d args_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-
 
 private r_d ::= r_kw_d space_like expects_decimal_or_int
 	{
@@ -2294,45 +2345,37 @@ private r_d ::= r_kw_d space_like expects_decimal_or_int
 
 
 
-private r_f_f ::= r_kw_f_f space_like expects_float space_like expects_float
+private r_f_f ::= r_kw_f_f args_f_f
+	{
+		pin=1
+	}
+	;
+
+private r_a_d ::= r_kw_a_d args_a_d
 	{
 		pin=1
 	}
 	;
 
 
-
-private r_a_d ::= r_kw_a_d space_like expects_agent space_like expects_decimal_or_int
+private r_d_d_v_v_s_d_d_l ::= r_kw_d_d_v_v_s_d_d_l args_d_d_v_v_s_d_d_l
 	{
 		pin=1
 	}
 	;
 
 
-
-private r_d_d_v_v_s_d_d_l ::= r_kw_d_d_v_v_s_d_d_l space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
+private r_d_d_d ::= r_kw_d_d_d args_d_d_d
 	{
 		pin=1
 	}
 	;
 
-
-
-private r_d_d_d ::= r_kw_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private r_s_d ::= r_kw_s_d args_s_d
 	{
 		pin=1
 	}
 	;
-
-
-
-private r_s_d ::= r_kw_s_d space_like expects_string space_like expects_decimal_or_int
-	{
-		pin=1
-	}
-	;
-
-
 
 private r_a ::= r_kw_a space_like expects_agent
 	{
@@ -2350,7 +2393,7 @@ private r_v ::= r_kw_v space_like expects_value
 
 
 
-private r_d_d ::= r_kw_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int
+private r_d_d ::= r_kw_d_d args_d_d
 	{
 		pin=1
 	}
@@ -2366,13 +2409,13 @@ private r_s ::= r_kw_s space_like expects_string
 
 
 
-private r_s_d_d ::= r_kw_s_d_d space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+private r_s_d_d ::= r_kw_s_d_d args_s_d_d
 	{
 		pin=1
 	}
 	;
 
-
+private args_s_d_d ::= space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 private r_d_d_d_d_d ::= r_kw_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
 	{
@@ -2382,7 +2425,7 @@ private r_d_d_d_d_d ::= r_kw_d_d_d_d_d space_like expects_decimal_or_int space_l
 
 
 
-private r_d_d_d_d ::= r_kw_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private r_d_d_d_d ::= r_kw_d_d_d_d args_d_d_d_d
 	{
 		pin=1
 	}
@@ -2390,7 +2433,7 @@ private r_d_d_d_d ::= r_kw_d_d_d_d space_like expects_decimal_or_int space_like 
 
 
 
-private r_a_d_d_d ::= r_kw_a_d_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private r_a_d_d_d ::= r_kw_a_d_d_d args_a_d_d_d_d
 	{
 		pin=1
 	}
@@ -2398,7 +2441,7 @@ private r_a_d_d_d ::= r_kw_a_d_d_d space_like expects_agent space_like expects_d
 
 
 
-private r_s_s ::= r_kw_s_s space_like expects_string space_like expects_string
+private r_s_s ::= r_kw_s_s args_s_s
 	{
 		pin=1
 	}
@@ -2406,7 +2449,60 @@ private r_s_s ::= r_kw_s_s space_like expects_string space_like expects_string
 
 
 
-private r_d_s_s_l ::= r_kw_d_s_s_l space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like lvalue
+private r_d_s_s_l ::= r_kw_d_s_s_l args_d_s_s_l
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_s_l ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like lvalue;
+
+
+private r_s_s_d ::= r_kw_s_s_d args_s_s_d
+	{
+		pin=1
+	}
+	;
+
+private args_s_s_d ::= space_like expects_string space_like expects_string space_like expects_decimal_or_int;
+
+
+private r_s_s_s ::= r_kw_s_s_s args_s_s_s
+	{
+		pin=1
+	}
+	;
+
+private args_s_s_s ::= space_like expects_string space_like expects_string space_like expects_string;
+
+private r_s_d_l ::= r_kw_s_d_l args_s_d_l
+	{
+		pin=1
+	}
+	;
+
+private args_s_d_l ::= space_like expects_string space_like expects_decimal_or_int space_like lvalue;
+
+private r_d_s_d_s_l ::= r_kw_d_s_d_s_l args_d_s_d_s_l
+	{
+		pin=1
+	}
+	;
+
+
+private args_d_s_d_s_l ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like lvalue;
+
+
+
+private r_a_d_d ::= r_kw_a_d_d args_a_d_d
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int;
+
+private r_a_a ::= r_kw_a_a args_a_a
 	{
 		pin=1
 	}
@@ -2414,7 +2510,7 @@ private r_d_s_s_l ::= r_kw_d_s_s_l space_like expects_decimal_or_int space_like 
 
 
 
-private r_s_s_d ::= r_kw_s_s_d space_like expects_string space_like expects_string space_like expects_decimal_or_int
+private r_d_s ::= r_kw_d_s args_d_s
 	{
 		pin=1
 	}
@@ -2422,7 +2518,15 @@ private r_s_s_d ::= r_kw_s_s_d space_like expects_string space_like expects_stri
 
 
 
-private r_s_s_s ::= r_kw_s_s_s space_like expects_string space_like expects_string space_like expects_string
+private r_d_d_bs_bs ::= r_kw_d_d_bs_bs args_d_d_bs_bs
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_bs_bs ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_byte_string space_like expects_byte_string;
+
+private r_s_d_s ::= r_kw_s_d_s args_s_d_s
 	{
 		pin=1
 	}
@@ -2430,63 +2534,7 @@ private r_s_s_s ::= r_kw_s_s_s space_like expects_string space_like expects_stri
 
 
 
-private r_s_d_l ::= r_kw_s_d_l space_like expects_string space_like expects_decimal_or_int space_like lvalue
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_d_s_d_s_l ::= r_kw_d_s_d_s_l space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like lvalue
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_a_d_d ::= r_kw_a_d_d space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_a_a ::= r_kw_a_a space_like expects_agent space_like expects_agent
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_d_s ::= r_kw_d_s space_like expects_decimal_or_int space_like expects_string
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_d_d_bs_bs ::= r_kw_d_d_bs_bs space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_byte_string space_like expects_byte_string
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_s_d_s ::= r_kw_s_d_s space_like expects_string space_like expects_decimal_or_int space_like expects_string
-	{
-		pin=1
-	}
-	;
-
-
-
-private r_f_f_f_f ::= r_kw_f_f_f_f space_like expects_float space_like expects_float space_like expects_float space_like expects_float
+private r_f_f_f_f ::= r_kw_f_f_f_f args_f_f_f_f
 	{
 		pin=1
 	}
@@ -2502,11 +2550,13 @@ private r_t ::= r_kw_t space_like expects_token
 
 
 
-private r_d_d_d_s_d ::= r_kw_d_d_d_s_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int
+private r_d_d_d_s_d ::= r_kw_d_d_d_s_d args_d_d_d_s_d
 	{
 		pin=1
 	}
 	;
+
+private args_d_d_d_s_d ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int;
 
 lvalue
 	::= named_game_var
@@ -2588,7 +2638,7 @@ private l_none ::= l_kw_none
 
 
 
-private l_a_d ::= l_kw_a_d space_like expects_agent space_like expects_decimal_or_int
+private l_a_d ::= l_kw_a_d args_a_d
 	{
 		pin=1
 	}
@@ -2596,14 +2646,14 @@ private l_a_d ::= l_kw_a_d space_like expects_agent space_like expects_decimal_o
 
 
 
-private l_d_d_d ::= l_kw_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+private l_d_d_d ::= l_kw_d_d_d args_d_d_d
 	{
 		pin=1
 	}
 	;
 
 
-private l_d_d ::= l_kw_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int
+private l_d_d ::= l_kw_d_d args_d_d
 	{
 		pin=1
 	}
@@ -2630,6 +2680,7 @@ c_kw_none
 	|	K_CD_ space_like (K_INIT|incomplete)
 	|	K_CD_ space_like (K_SHUT|incomplete)
 	|	K_CD_ space_like (K_STOP|incomplete)
+	|	K_DPAS <<isOldVariant>>
 	|	K_APPR
 	|	K_ASEA
 	|	K_BANG
@@ -2666,8 +2717,6 @@ c_kw_none
 	|	K_DDE_COL space_like (K_NEGG|incomplete)
 	|	K_DDE_COL space_like (K_PANC|incomplete)
 	|	K_DONE
-	|	<<isVariant 'C2'>>K_DPAS
-	|	<<isVariant 'C1'>>K_DPAS
 	|	K_DROP
 	|	K_EDIT
 	|	K_FADE
@@ -2677,8 +2726,7 @@ c_kw_none
 	|	K_FILE space_like (K_OFLU|incomplete)
 	|	K_FRSH
 	|	K_GIDS space_like (K_ROOT|incomplete)
-	|	<<isVariant 'C2'>>K_GPAS
-	|	<<isVariant 'C1'>>K_GPAS
+	|	K_GPAS (<<isOldVariant>>)
 	|	K_HELP
 	|	K_INST
 	|	K_ISCR
@@ -2696,7 +2744,7 @@ c_kw_none
 	|	K_POIN
 	|	K_PRAY space_like (K_REFR|incomplete)
 	|	K_QUIT
-	|	<<isVariant 'C2'>>K_RCLR
+	|	K_RCLR <<isVariant 'C2'>>
 	|	K_REAF
 	|	K_RGAM
 	|	RMS_NUM
@@ -2772,9 +2820,7 @@ c_kw_d
 	|	K_BBD_COL space_like (K_EDIT|incomplete)
 	|	K_BBD_COL space_like (K_EMIT|incomplete)
 	|	K_BBD_COL space_like (K_SHOW|incomplete)
-	|	<<isVariant 'C3'>>K_BHVR
-	|	<<isVariant 'DS'>>K_BHVR
-	|	<<isVariant 'CV'>>K_BHVR
+	|	K_BHVR (<<isNewerVariant>>)
 	|	K_BRN_COL space_like (K_DMPL|incomplete)
 	|	K_BRN_COL space_like (K_DMPT|incomplete)
 	|	K_BUZZ
@@ -2876,18 +2922,16 @@ c_kw_d_d
 	|	K_ALPH
 	|	K_BBD_COL space_like (K_VCB1|incomplete)
 	|	K_BBTX
-	|	<<isVariant 'C2'>>K_BHVR
-	|	<<isVariant 'C1'>>K_BHVR
+	|	K_BHVR (<<isOldVariant>>)
 	|	K_BODY
 	|	K_BRMI
 	|	K_BRN_COL space_like (K_DMPD|incomplete)
 	|	K_BRN_COL space_like (K_DMPN|incomplete)
 	|	K_CALG
 	|	K_CBRX
-	|	<<isVariant 'C2'>>K_CHEM
-	|	<<isVariant 'C1'>>K_CHEM
+	|	K_CHEM (<<isOldVariant>>)
 	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_GNUS
-	|	<<isVariant 'C2'>>K_DELN
+	|	K_DELN (<<isOldVariant>>)
 	|	K_EXPR
 	|	K_GIDS space_like (K_GNUS|incomplete)
 	|	K_INJR
@@ -2896,15 +2940,10 @@ c_kw_d_d
 	|	K_MCLR
 	|	K_MCRT
 	|	K_MIRR
-	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_CREA|incomplete)
-	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_CREA|incomplete)
+	|	K_NEW_COL (<<isOldVariant>>) space_like (K_CREA|incomplete)
 	|	K_RAIN
-	|	<<isVariant 'C3'>>K_RCLR
-	|	<<isVariant 'CV'>>K_RCLR
-	|	<<isVariant 'DS'>>K_RCLR
-	|	<<isVariant 'DS'>>K_RTYP
-	|	<<isVariant 'C3'>>K_RTYP
-	|	<<isVariant 'CV'>>K_RTYP
+	|	K_RCLR <<isNewerVariant>>
+	|	K_RTYP <<isNewerVariant>>
 	|	K_SOUL
 	|	K_SYS_COL space_like (K_CMRA|incomplete)
 	|	K_SYS_COL space_like (K_CMRP|incomplete)
@@ -3125,15 +3164,9 @@ c_kw_s
 	|	K_PTXT
 	|	K_SAY_DOL
 	|	K_SEZZ
-	|	<<isVariant 'CV'>>K_SNDC
-	|	<<isVariant 'C3'>>K_SNDC
-	|	<<isVariant 'DS'>>K_SNDC
-	|	<<isVariant 'CV'>>K_SNDE
-	|	<<isVariant 'C3'>>K_SNDE
-	|	<<isVariant 'DS'>>K_SNDE
-	|	<<isVariant 'CV'>>K_SNDL
-	|	<<isVariant 'C3'>>K_SNDL
-	|	<<isVariant 'DS'>>K_SNDL
+	|	K_SNDC <<isNewerVariant>>
+	|	K_SNDE <<isNewerVariant>>
+	|	K_SNDL <<isNewerVariant>>
 	|	K_SNDV
 	|	K_SYS_COL space_like (K_WRLD|incomplete)
 	|	K_VOIS
@@ -3166,12 +3199,8 @@ c_kw_d_d_d
 	|	K_DDE_COL space_like (K_CELL|incomplete)
 	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_LVOB
 	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_SPCS
-	|	<<isVariant 'DS'>>K_DOOR
-	|	<<isVariant 'C3'>>K_DOOR
-	|	<<isVariant 'CV'>>K_DOOR
-	|	<<isVariant 'DS'>>K_DPAS
-	|	<<isVariant 'CV'>>K_DPAS
-	|	<<isVariant 'C3'>>K_DPAS
+	|	K_DOOR <<isNewerVariant>>
+	| 	K_DPAS <<isNewerVariant>>
 	|	K_FIRE
 	|	K_GIDS space_like (K_SPCS|incomplete)
 	|	K_KMSG
@@ -3237,9 +3266,7 @@ c_kw_d_d_d_d
 	|	K_DDE_COL space_like (K_LCUS|incomplete)
 	|	K_DDE_COL space_like (K_SCRP|incomplete)
 	|	K_DYED
-	|	<<isVariant 'DS'>>K_GPAS
-	|	<<isVariant 'CV'>>K_GPAS
-	|	<<isVariant 'C3'>>K_GPAS
+	|	K_GPAS <<isNewerVariant>>
 	|	K_META
 	|	K_NEW_COL space_like (K_BBTX|incomplete)
 	|	K_SCRP
@@ -3349,7 +3376,7 @@ c_kw_d_v_v
 	;
 
 c_kw_l_d_d
-	::= (!<<isVariant 'CV'>>) K_CHAR
+	::= K_CHAR (!<<isVariant 'CV'>>)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3369,22 +3396,12 @@ c_kw_l_d_d
 	;
 
 c_kw_d_f
-	::= <<isVariant 'DS'>>K_CHEM
-	|	<<isVariant 'CV'>>K_CHEM
-	|	<<isVariant 'C3'>>K_CHEM
+	::= K_CHEM <<isNewerVariant>>
 	|	K_DRIV
 	|	K_EMIT
 	|	K_GRPV
 	|	K_SCLE
-	|	<<isVariant 'CV'>>K_STIM space_like (K_SHOU|incomplete)
-	|	<<isVariant 'C3'>>K_STIM space_like (K_SHOU|incomplete)
-	|	<<isVariant 'DS'>>K_STIM space_like (K_SHOU|incomplete)
-	|	<<isVariant 'CV'>>K_STIM space_like (K_SIGN|incomplete)
-	|	<<isVariant 'C3'>>K_STIM space_like (K_SIGN|incomplete)
-	|	<<isVariant 'DS'>>K_STIM space_like (K_SIGN|incomplete)
-	|	<<isVariant 'CV'>>K_STIM space_like (K_TACT|incomplete)
-	|	<<isVariant 'C3'>>K_STIM space_like (K_TACT|incomplete)
-	|	<<isVariant 'DS'>>K_STIM space_like (K_TACT|incomplete)
+	|	K_STIM space_like (K_SHOU|K_SIGN|K_TACT|incomplete)  <<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3516,8 +3533,7 @@ c_kw_v
 	::= K_DBGV
 	|	K_DBUG
 	|	K_DDE_COL space_like (K_PUTV|incomplete)
-	|	<<isVariant 'C3'>>K_DELN
-	|	<<isVariant 'DS'>>K_DELN
+	|	K_DELN (<<isVariant 'C3'>>|<<isVariant 'DS'>>)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3603,9 +3619,7 @@ c_kw_d_d_d_d_d_d_d
 c_kw_s_d
 	::= K_GALL
 	|	K_JECT
-	|	<<isVariant 'CV'>>K_SNDQ
-	|	<<isVariant 'C3'>>K_SNDQ
-	|	<<isVariant 'DS'>>K_SNDQ
+	|	K_SNDQ<<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3732,13 +3746,10 @@ c_kw_gsub
 c_kw_t
 	::= K_GOTO
 	|	K_PLDS
-	|	<<isVariant 'C1'>>K_SNDC
-	|	<<isVariant 'C2'>>K_SNDC
-	|	<<isVariant 'C1'>>K_SNDE
-	|	<<isVariant 'C2'>>K_SNDE
+	|	K_SNDC <<isOldVariant>>
+	|	K_SNDE <<isOldVariant>>
 	|	K_SNDF
-	|	<<isVariant 'C1'>>K_SNDL
-	|	<<isVariant 'C2'>>K_SNDL
+	|	K_SNDL <<isOldVariant>>
 	|	K_SUBR
 	{
 		implements = [
@@ -3982,8 +3993,7 @@ c_kw_t_d_d_d_d_d_d_d
 
 c_kw_t_d_d_d
 	::= K_NEW_COL space_like (K_CBTN|incomplete)
-	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_COMP|incomplete)
-	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_COMP|incomplete)
+	|	K_NEW_COL space_like (K_COMP|incomplete)  <<isOldVariant>>
 	|	K_NEW_COL space_like (K_SCEN|incomplete)
 	{
 		implements = [
@@ -4024,15 +4034,9 @@ c_kw_t_d_d_v
 	;
 
 c_kw_d_d_d_s_d_d_d
-	::= <<isVariant 'DS'>>K_NEW_COL space_like (K_COMP|incomplete)
-	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_COMP|incomplete)
-	|	<<isVariant 'CV'>>K_NEW_COL space_like (K_COMP|incomplete)
-	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_SIMP|incomplete)
-	|	<<isVariant 'CV'>>K_NEW_COL space_like (K_SIMP|incomplete)
-	|	<<isVariant 'DS'>>K_NEW_COL space_like (K_SIMP|incomplete)
-	|	<<isVariant 'DS'>>K_NEW_COL space_like (K_VHCL|incomplete)
-	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_VHCL|incomplete)
-	|	<<isVariant 'CV'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	::= K_NEW_COL space_like (K_COMP|incomplete) <<isNewerVariant>>
+	|	K_NEW_COL space_like (K_SIMP|incomplete) <<isNewerVariant>>
+	|	K_NEW_COL space_like (K_VHCL|incomplete) <<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4072,9 +4076,7 @@ c_kw_d_a_d_d_d_s_d_d_d
 	;
 
 c_kw_d_a_d_d_d
-	::= <<isVariant 'CV'>>K_NEW_COL space_like (K_CREA|incomplete)
-	|	<<isVariant 'C3'>>K_NEW_COL space_like (K_CREA|incomplete)
-	|	<<isVariant 'DS'>>K_NEW_COL space_like (K_CREA|incomplete)
+	::= K_NEW_COL space_like (K_CREA|incomplete)  <<isNewerVariant>>
 	|	K_NEWC
 	{
 		implements = [
@@ -4116,8 +4118,7 @@ c_kw_d_d_l
 
 c_kw_t_d_d
 	::= K_NEW_COL space_like (K_LIFT|incomplete)
-	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_VHCL|incomplete)
-	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_VHCL|incomplete)
+	|	K_NEW_COL space_like (K_VHCL|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4161,8 +4162,7 @@ c_kw_d_d_d_d_d
 
 c_kw_t_d_d_d_d
 	::= K_NEW_COL space_like (K_RAIN|incomplete)
-	|	<<isVariant 'C2'>>K_NEW_COL space_like (K_SIMP|incomplete)
-	|	<<isVariant 'C1'>>K_NEW_COL space_like (K_SIMP|incomplete)
+	|	K_NEW_COL space_like (K_SIMP|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4422,7 +4422,7 @@ c_kw_d_d_f_f_f
 	;
 
 c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
-	::= <<isVariant 'C2'>>K_ROOM
+	::= K_ROOM <<isVariant 'C2'>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4442,7 +4442,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_d_d_d_d_d
-	::= <<isVariant 'C1'>>K_ROOM
+	::= K_ROOM <<isVariant 'C1'>>
 	|	K_WTNT
 	{
 		implements = [
@@ -4504,8 +4504,7 @@ c_kw_s_d_d_d_d_d
 	;
 
 c_kw_t_d
-	::= <<isVariant 'C1'>>K_SNDQ
-	|	<<isVariant 'C2'>>K_SNDQ
+	::= K_SNDQ <<isOldVariant>>
 	|	K_SYS_COL space_like (K_CONV|incomplete)
 	{
 		implements = [
@@ -4546,13 +4545,8 @@ c_kw_s_d_f
 	;
 
 c_kw_d_d_d_d_d_d_d_d_d_d_d_d
-	::= <<isVariant 'C2'>>K_STIM space_like (K_SHOU|incomplete)
-	|	<<isVariant 'C1'>>K_STIM space_like (K_SHOU|incomplete)
-	|	<<isVariant 'C2'>>K_STIM space_like (K_SIGN|incomplete)
-	|	<<isVariant 'C1'>>K_STIM space_like (K_SIGN|incomplete)
-	|	<<isVariant 'C2'>>K_STIM space_like (K_TACT|incomplete)
-	|	<<isVariant 'C1'>>K_STIM space_like (K_TACT|incomplete)
-	|	<<isVariant 'C1'>>K_STIM space_like (K_FROM|incomplete)
+	::= K_STIM space_like (K_SHOU|K_SIGN|K_TACT|incomplete) <<isOldVariant>>
+	|	K_STIM space_like (K_FROM|incomplete) (<<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4572,9 +4566,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_a_d_f
-	::= (<<isVariant 'CV'>>(K_STIM space_like (K_WRIT|incomplete)))
-	|	(<<isVariant 'C3'>>(K_STIM space_like (K_WRIT|incomplete)))
-	|	(<<isVariant 'DS'>>(K_STIM space_like (K_WRIT|incomplete)))
+	::= (K_STIM space_like (K_WRIT|incomplete))<<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4594,8 +4586,7 @@ c_kw_a_d_f
 	;
 
 c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
-	::= <<isVariant 'C2'>>K_STIM space_like (K_WRIT|incomplete)
-	|	<<isVariant 'C1'>>K_STIM space_like (K_WRIT|incomplete)
+	::= K_STIM space_like (K_WRIT|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4758,9 +4749,7 @@ r_kw_none
 	|	K_AVEL
 	|	K_BABY
 	|	K_BASE
-	|	<<isVariant 'C3'>>K_BHVR
-	|	<<isVariant 'DS'>>K_BHVR
-	|	<<isVariant 'CV'>>K_BHVR
+	|	K_BHVR <<isNewerVariant>>
 	|	K_BUMP
 	|	K_BUZZ
 	|	K_BVAR
@@ -4837,8 +4826,7 @@ r_kw_none
 	|	K_LANG
 	|	K_LNG_PLUS
 	|	K_LEFT
-	|	<<isVariant 'C2'>>K_LIMB
-	|	<<isVariant 'C1'>>K_LIMB
+	|	K_LIMB <<isOldVariant>>
 	|	K_LIML
 	|	K_LIMR
 	|	K_LIMT
@@ -4901,8 +4889,8 @@ r_kw_none
 	|	K_PURE
 	|	K_RACE
 	|	K_RADN
-	|	<<isVariant 'C2'>>K_RELX
-	|	<<isVariant 'C2'>>K_RELY
+	|	K_RELX <<isOldVariant>>
+	|	K_RELY <<isOldVariant>>
 	|	K_REST
 	|	K_RGHT
 	|	K_RMNO
@@ -4911,8 +4899,7 @@ r_kw_none
 	|	K_RNGE
 	|	K_RSRC
 	|	K_RTIM
-	|	<<isVariant 'C2'>>K_RTYP
-	|	<<isVariant 'C1'>>K_SCOR
+	|	K_RTYP <<isOldVariant>>
 	|	K_SDMP
 	|	K_SEAN
 	|	K_SEAV
@@ -5064,11 +5051,7 @@ r_kw_d
 	|	K_BRED
 	|	K_CALG
 	|	K_CATX
-	|	<<isVariant 'DS'>>K_CHEM
-	|	<<isVariant 'CV'>>K_CHEM
-	|	<<isVariant 'C1'>>K_CHEM
-	|	<<isVariant 'C3'>>K_CHEM
-	|	<<isVariant 'C2'>>K_CHEM
+	|	K_CHEM
 	|	K_CLIK
 	|	K_DBG_NUM
 	|	K_DBGA
@@ -5097,10 +5080,8 @@ r_kw_d
 	|	K_PSWD
 	|	K_RAIN
 	|	K_RLOC
-	|	<<isVariant 'DS'>>K_RTYP
-	|	<<isVariant 'C3'>>K_RTYP
-	|	<<isVariant 'CV'>>K_RTYP
-	|	<<isVariant 'C2'>>K_SCOR
+	|	K_RTYP <<isNewerVariant>>
+	|	K_SCOR <<isVariant 'C2'>>
 	|	K_SEEN
 	|	K_SOUL
 	|	K_TINT
@@ -5199,7 +5180,7 @@ r_kw_d_d_v_v_s_d_d_l
 
 r_kw_d_d_d
 	::= K_CATI
-	|	<<isVariant 'C2'>>K_DOOR
+	|	K_DOOR <<isVariant 'C2'>>
 	|	K_HIRP
 	|	K_LORP
 	|	K_RMND
@@ -5224,7 +5205,7 @@ r_kw_d_d_d
 	;
 
 r_kw_s_d
-	::= !(<<isVariant 'CV'>>) K_CHAR
+	::= K_CHAR !(<<isVariant 'CV'>>)
 	|	K_HIST space_like (K_CAGE|incomplete)
 	|	K_HIST space_like (K_FOTO|incomplete)
 	|	K_HIST space_like (K_MON1|incomplete)
@@ -5258,13 +5239,9 @@ r_kw_s_d
 	;
 
 r_kw_a
-	::= <<isVariant 'DS'>>K_CREA
-	|	<<isVariant 'CV'>>K_CREA
-	|	<<isVariant 'C3'>>K_CREA
+	::= K_CREA <<isNewerVariant>>
 	|	K_DISQ
-	|	<<isVariant 'DS'>>K_ROOM
-	|	<<isVariant 'C3'>>K_ROOM
-	|	<<isVariant 'CV'>>K_ROOM
+	|	K_ROOM <<isNewerVariant>>
 	|	K_XIST
 	{
 		implements = [
@@ -5289,9 +5266,7 @@ r_kw_a
 caos_named_var_kw
 	::= K_MAME
 	|	K_NAME
-	|	<<isVariant 'CV'>>K_GAME
-	|	<<isVariant 'C3'>>K_GAME
-	|	<<isVariant 'DS'>>K_GAME
+	|	K_GAME <<isNewerVariant>>
 	|	K_EAME
 	{
 		pin = 1
@@ -5314,7 +5289,7 @@ caos_named_var_kw
 	;
 
 kw_cv_char
-	::= <<isVariant 'CV'>> K_CHAR
+	::= K_CHAR <<isVariant 'CV'>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5333,7 +5308,7 @@ kw_cv_char
 	}
 	;
 r_kw_cv_tran
-    	::= <<isVariant 'CV'>> K_TRAN
+    	::= K_TRAN <<isVariant 'CV'>>
     	{
     		implements = [
     			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5353,7 +5328,7 @@ r_kw_cv_tran
     	;
 
 r_kw_v
-	::= <<isVariant 'C2'>>K_CREA
+	::= K_CREA <<isVariant 'C2'>>
 	|	K_TYPE
 	{
 		implements = [
@@ -5374,10 +5349,8 @@ r_kw_v
 	;
 
 r_kw_d_d
-	::= <<isVariant 'DS'>>K_DOOR
-	|	<<isVariant 'C3'>>K_DOOR
-	|	<<isVariant 'CV'>>K_DOOR
-	|	<<isVariant 'C2'>>K_GAME
+	::= K_DOOR <<isNewerVariant>>
+	|	K_GAME <<isVariant 'C2'>>
 	|	K_LINK
 	|	K_MMSC
 	|	K_MUTE
@@ -5390,12 +5363,11 @@ r_kw_d_d
 	|	K_RATE
 	|	K_RMN_NUM
 	|	K_RMSC
-	|	<<isVariant 'C1'>>K_ROOM
-	|	<<isVariant 'C2'>>K_ROOM
+	|	K_ROOM <<isOldVariant>>
 	|	K_WEAR
 	|	K_WOLF
-	| 	(!<<isVariant 'CV'>>)K_TRAN
-	| 	(!<<isVariant 'CV'>>)K_CHAR
+	| 	K_TRAN (!<<isVariant 'CV'>>)
+	| 	K_CHAR (!<<isVariant 'CV'>>)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5491,8 +5463,8 @@ r_kw_s_d_d
 	;
 
 r_kw_d_d_d_d_d
-	::= <<isVariant 'C3'>>K_LIMB
-	|	<<isVariant 'DS'>>K_LIMB
+	::= K_LIMB <<isVariant 'C3'>>
+	|	K_LIMB <<isVariant 'DS'>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5699,12 +5671,8 @@ r_kw_a_d_d
 	;
 
 r_kw_a_a
-	::= <<isVariant 'CV'>>K_RELX
-	|	<<isVariant 'DS'>>K_RELX
-	|	<<isVariant 'C3'>>K_RELX
-	|	<<isVariant 'CV'>>K_RELY
-	|	<<isVariant 'DS'>>K_RELY
-	|	<<isVariant 'C3'>>K_RELY
+	::= K_RELX<<isNewerVariant>>
+	|	K_RELY <<isNewerVariant>>
 	|	K_SEEE
 	|	K_TOUC
 	{
@@ -5871,7 +5839,7 @@ l_kw_none
 	|	K_REST
 	|	K_RNGE
 	|	K_RSRC
-	|	<<isVariant 'C2'>>K_RTYP
+	|	K_RTYP <<isVariant 'C2'>>
 	|	K_SIZE
 	|	K_TEMP
 	|	K_THRT
@@ -5922,7 +5890,7 @@ l_kw_a_d
 	;
 
 l_kw_d_d_d
-	::= <<isVariant 'C2'>>K_DOOR
+	::= K_DOOR <<isVariant 'C2'>>
 	|	K_RMND
 	|	K_RMNR
 	{
@@ -5944,7 +5912,7 @@ l_kw_d_d_d
 	;
 
 l_kw_d_d
-	::= <<isVariant 'C2'>>K_GAME
+	::= K_GAME <<isVariant 'C2'>>
 	|	K_CLS2
 	|	K_PUHL
 	|	K_PUPT
@@ -6786,7 +6754,7 @@ character
 
 private string_literal
 	::= quote_string_literal
-	|   (<<isVariant 'C1'>>|<<isVariant 'C2'>>)c1_string
+	|   (<<isOldVariant>>) c1_string
 	;
 
 c1_string
@@ -7025,7 +6993,7 @@ expects_int ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
 	;
 
 private expects_string
-	::= (<<isVariant 'CV'>>|<<isVariant 'C3'>>|<<isVariant 'DS'>>)expects_quote_string
+	::= <<isNewerVariant>> expects_quote_string
 	|	expects_c1_string
 	;
 
@@ -7193,4 +7161,9 @@ private follows_dde_putb
 	;
 
 incomplete ::= ID;
+
+
+private args_d_d_d_d_s ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string;
+private args_d_d_v_v_s_d_d_l ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
+
 
