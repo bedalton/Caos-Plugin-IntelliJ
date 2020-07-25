@@ -70,6 +70,24 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         return variant == fileVariant
     }
 
+    @JvmStatic
+    fun isOldVariant(builder_: PsiBuilder,
+                  level: Int): Boolean {
+        val fileVariant = psiFile(builder_)?.let { ModuleUtil.findModuleForPsiElement(it)  }
+                ?.variant
+                ?: return false//CaosScriptProjectSettings.variant
+        return fileVariant.isOld
+    }
+
+    @JvmStatic
+    fun isNewerVariant(builder_: PsiBuilder,
+                     level: Int): Boolean {
+        val fileVariant = psiFile(builder_)?.let { ModuleUtil.findModuleForPsiElement(it)  }
+                ?.variant
+                ?: return false//CaosScriptProjectSettings.variant
+        return fileVariant.isNotOld
+    }
+
     /**
      * Will not be CaosPsiFile
      */
