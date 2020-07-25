@@ -2,24 +2,20 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
-import com.intellij.formatting.*
-import com.intellij.lang.ASTNode
-import com.intellij.psi.codeStyle.CodeStyleSettingsManager
-import com.intellij.psi.codeStyle.CommonCodeStyleSettings
-import com.intellij.psi.formatter.common.AbstractBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK_LINE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orTrue
+import com.intellij.formatting.*
+import com.intellij.lang.ASTNode
+import com.intellij.psi.codeStyle.CodeStyleSettingsManager
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings
+import com.intellij.psi.formatter.common.AbstractBlock
 
 
 class CaosScriptBlock internal constructor(
@@ -44,7 +40,7 @@ class CaosScriptBlock internal constructor(
         val blocks: MutableList<Block> = mutableListOf()
         var child: ASTNode? = myNode.firstChildNode
         while (child != null) {
-            if (child.text.trim().isNotBlank()) {
+            if (child.elementType !in CaosScriptTokenSets.WHITESPACES && child.text.isNotBlank()) {
                 val block: Block = CaosScriptBlock(
                         child,
                         NONE_WRAP,
@@ -69,8 +65,9 @@ class CaosScriptBlock internal constructor(
             val isChildElement = myNode.psi.getSelfOrParentOfType(CaosScriptCodeBlock::class.java)
                     ?.let { it !is CaosScriptMacro && it !is CaosScriptEventScript }
                     .orFalse()
-            if (isChildElement)
+            if (isChildElement) {
                 return normalIndent
+            }
         }
         return noneIndent
     }

@@ -80,7 +80,7 @@ QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 %%
 
 <START_OF_LINE> {
-	\s+				 	 	{ return CaosScript_SPACE_; }
+	\s+						{ return WHITE_SPACE; }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
@@ -140,14 +140,14 @@ QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 <IN_PICT> {
 	[^\s ,\n][^\s ,\n][^\s ,\n] { yybegin(IN_LINE); return CaosScript_PICT_DIMENSION; }
 	\s+				 	 	{ return CaosScript_SPACE_; }
-    [^]						{ yybegin(IN_LINE); }
+    [^]						{ yybegin(IN_LINE); yypushback(yylength()); }
 }
 
 <IN_STRING> {
 	\"						{ yybegin(IN_LINE); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
     \s+						{ return WHITE_SPACE; }
-    [^]						{ yybegin(IN_LINE); }
+    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
 <IN_CHAR> {
