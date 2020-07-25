@@ -5,8 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.DS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
 import com.intellij.lang.PsiBuilder
@@ -226,7 +225,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         var offset = 0
         do {
             type = builder_.lookAhead(offset++)
-        } while (type != null && WHITE_SPACE_LIKE.contains(type))
+        } while (type != null && WHITE_SPACE_LIKE_WITH_COMMENT.contains(type))
         return type == null || ScriptTerminators.contains(type) || eof(builder_, level)
     }
 

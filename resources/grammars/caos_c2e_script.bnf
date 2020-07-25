@@ -1124,6 +1124,7 @@ new_line
 			"com.intellij.psi.PsiWhiteSpace"
 		]
 	}
+	;
 
 space_like
 	::= space+

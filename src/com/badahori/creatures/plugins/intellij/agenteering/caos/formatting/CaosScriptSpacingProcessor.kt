@@ -19,15 +19,15 @@ internal val LOGGER: Logger by lazy {
 
 class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySettings: CommonCodeStyleSettings) {
 
-    private val noneSpace by lazy { Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, Int.MAX_VALUE) }
-    private val oneSpace by lazy { Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, Int.MAX_VALUE) }
-    private val anySpace by lazy { Spacing.createSpacing(0, 1, 0, mySettings.KEEP_LINE_BREAKS, Int.MAX_VALUE) }
+    private val noneSpace by lazy { Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, 0) }
+    private val oneSpace by lazy { Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, 2) }
+    private val anySpace by lazy { Spacing.createSpacing(0, 1, 0, mySettings.KEEP_LINE_BREAKS, 2) }
 
     fun getSpacing(child1: Block?, child2: Block?): Spacing? {
         if (child1 !is AbstractBlock || child2 !is AbstractBlock) {
-            return null
+            return noneSpace
         }
-        val keepBlankLines = if((myNode.psi.containingFile as? CaosScriptFile)?.variant?.isNotOld.orFalse()) Int.MAX_VALUE else 0
+        val keepBlankLines = 2
         val type = myNode.elementType
         val node1 = child1.node
         val type1 = node1.elementType
@@ -38,7 +38,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
         if (commaTypes.intersect(types).isNotEmpty())
             return noneSpace
         if (myNode.next?.isDirectlyPrecededByNewline().orFalse())
-            Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
+            return Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
         if (node2.isDirectlyPrecededByNewline())
             return Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
         if (node1.next?.text.orEmpty().contains("\n")) {
