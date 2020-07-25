@@ -12,21 +12,15 @@ class CaosScriptTokenSets {
 
         val BLOCK_ENDS = create(
                 CaosScript_C_ENDM,
-                CaosScript_C_DOIF,
                 CaosScript_C_ELIF,
                 CaosScript_C_ELSE,
                 CaosScript_C_ENDI,
                 CaosScript_C_RETN,
-                CaosScript_C_ENUM,
                 CaosScript_C_NEXT,
-                CaosScript_C_ESCN,
                 CaosScript_C_NSCN,
-                CaosScript_C_REPS,
                 CaosScript_C_REPE,
-                CaosScript_C_LOOP,
                 CaosScript_C_UNTL,
                 CaosScript_C_EVER,
-                CaosScript_C_SCRP,
                 CaosScript_C_SUBR
         )
 
@@ -49,10 +43,21 @@ class CaosScriptTokenSets {
         )
 
         @JvmStatic
-        val WHITE_SPACE_LIKE = create(
+        val WHITE_SPACE_LIKE_WITH_COMMENT = create(
                 CaosScript_SPACE_,
                 CaosScript_COMMENT_LITERAL,
                 TokenType.WHITE_SPACE
+        )
+
+        @JvmStatic
+        val WHITESPACES = create(
+                CaosScript_SPACE_,
+                CaosScript_SPACE_LIKE,
+                CaosScript_COMMENT_LITERAL,
+                TokenType.WHITE_SPACE,
+                CaosScript_SPACE,
+                CaosScript_NEWLINE,
+                CaosScript_NEW_LINE
         )
 
         @JvmStatic
