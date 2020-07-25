@@ -362,10 +362,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     private fun annotationTrailingWhiteSpace(variant: CaosVariant, element: CaosScriptTrailingSpace, annotationWrapper: AnnotationHolderWrapper) {
         if (variant.isNotOld)
             return
+        /*
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-whitespace"))
                 .range(element)
                 .withFix(CaosScriptFixTooManySpaces(element))
-                .create()
+                .create()*/
     }
 
     companion object {
