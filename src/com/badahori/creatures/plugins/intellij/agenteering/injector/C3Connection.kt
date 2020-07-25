@@ -14,7 +14,7 @@ import java.io.OutputStream
 
 internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
-    private val exeName = "C3Engine.exe"
+    private val exeName = "C3CaosInjector.exe"
     private val file: File by lazy {
         ensureExe()
     }
