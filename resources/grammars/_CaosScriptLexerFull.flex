@@ -72,12 +72,15 @@ CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
 ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
-QUOTE_STRING_CHAR=[^\"]
+QUOTE_STRING_CHAR=[^\"\\]
 QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 WORD_CHAR = [a-zA-Z0-9_$#:!+]
-ERROR_WORD={WORD_CHAR}{4,100}
+ERROR_WORD={WORD_CHAR}{5,100}
 WORD=[_a-zA-Z0-9]{3}[_a-zA-Z0-9!#:]|[a-zA-Z0-9#!$_+]{4}
-INCOMPLETE_WORD={WORD_CHAR}+
+INCOMPLETE_WORD={WORD_CHAR}{1,3}
+CHAR_ESCAPE_CHAR=("\\\\"|"\\\'"|"\\"[^\'])
+CHAR_CHAR=[^\'\\]
+CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 
 %state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME
 %%
@@ -154,7 +157,7 @@ INCOMPLETE_WORD={WORD_CHAR}+
 }
 
 <IN_CHAR> {
-	[^']|\\\'				{ return CaosScript_CHAR_CHAR; }
+	{CHAR_CHARS}			{ return CaosScript_CHAR_CHAR; }
  	"'"						{ yybegin(IN_LINE); return CaosScript_SINGLE_QUOTE; }
     [^]						{ yybegin(IN_LINE); yypushback(yylength());}
 }
