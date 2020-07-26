@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
@@ -30,15 +30,15 @@ fun errorNotification(project: Project? = null, message: String, title: String =
             NotificationType.ERROR), project)
 }
 
-val Module.settings:CaosModuleSettings get() {
-    return this.getComponent(CaosModuleSettings::class.java)
+val Module.settings:CaosModuleSettingsComponent get() {
+    return this.getComponent(CaosModuleSettingsComponent::class.java)
 }
 
 var Module.variant: CaosVariant?
 get() {
-    return settings.variant
+    return settings.state.variant
 } set(newVariant) {
-    settings.variant = newVariant
+    settings.state.variant = newVariant
 }
     /*
     get() {
