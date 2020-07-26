@@ -443,7 +443,7 @@ object CaosDefPsiImplUtil {
     }
 
     private fun wrapParameterType(type: String): String {
-        if (type.substring(0, 1) == "[")
+        if (type.substring(0, 1) == "[" || type.substring(0,1) == "(")
             return type
         return "($type)"
     }
@@ -633,10 +633,10 @@ object CaosDefPsiImplUtil {
 
     private fun formatType(type:CaosDefVariableTypeStruct) : String {
         val typeText = type.type
-        return if (typeText.startsWith("["))
+        return if (typeText.startsWith("[") || typeText.startsWith("("))
             typeText
         else
-            "(" + typeText + ")"
+            "($typeText)"
     }
 
 }
