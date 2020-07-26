@@ -1,11 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.VARIANT_OLD
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
@@ -110,7 +112,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 }
                 .map {
                     ProgressIndicatorProvider.checkCanceled()
-                    createCommandTokenLookupElement(allowUppercase, element, case, it.commandName, it.isCommand, it.returnTypeString)
+                    createCommandTokenLookupElement(allowUppercase, element, case, it.commandName, it.isCommand, it.parameterStructs, it.returnTypeString)
                 }
         resultSet.addAllElements(singleCommands)
         if (type != CaosCommandType.COMMAND)
@@ -157,7 +159,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
-    private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, returnType: String, prefixIn: String? = null): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, parameters:List<CaosDefParameterStruct>, returnType: String, prefixIn: String? = null): LookupElementBuilder {
         val tailText = if (isCommand)
             "command"
         else
@@ -179,7 +181,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 .create(command)
                 .withTailText("($tailText)")
                 .withIcon(icon)
-        if (needsSpaceAfter(element, command))
+        val needsSpace = needsSpaceAfter(element, command)
+        if (parameters.size > 0) {
+            builder = builder.withInsertHandler(CommandInsertHandler(command, parameters, needsSpace))
+        } else if (needsSpace)
             builder = builder.withInsertHandler(SpaceAfterInsertHandler)
         if (prefix.isNotNullOrBlank()) {
             builder = builder.withPresentableText("$prefix $command")
