@@ -1828,10 +1828,14 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_cv_char
-	//| 	incomplete
+	| 	incomplete
 	{
-		//recoverWhile=command_call_recover
+		recoverWhile=command_call_recover
 	}
+	;
+
+private command_call_recover
+	::= !(COMMA|NEWLINE|symbol_comma|new_line|new_line_like|space_like_or_newline)
 	;
 
 c_assignment
@@ -2162,7 +2166,7 @@ c_kw_gsub
 	}
 	;
 
-
+r_gend ::= K_GEND <<isVariant 'C1'>>;
 
 caos_named_var_kw
 	::= K_MAME
@@ -3090,12 +3094,18 @@ private r_d_d_d_d ::= r_kw_d_d_d_d args_d_d_d_d
 
 
 
-private r_a_d_d_d ::= r_kw_a_d_d_d args_a_d_d_d_d
+private r_a_d_d_d ::= r_kw_a_d_d_d args_a_d_d_d
 	{
 		pin=1
 	}
 	;
 
+private args_a_d_d_d
+	::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=2
+	}
+	;
 
 
 private r_s_s ::= r_kw_s_s args_s_s
@@ -5443,6 +5453,7 @@ r_kw_none
 	|	K_RTYP <<isOldVariant>>
 	|	K_SDMP
 	|	K_SEAN
+	|	K_SCOR <<isVariant 'C1'>>
 	|	K_SEAV
 	|	K_SHOW
 	|	K_SIZE
@@ -5497,6 +5508,7 @@ r_kw_none
 	|	K_YVEC
 	|	K_ZOMB
 	|	K_CAMN
+	| 	r_gend
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
