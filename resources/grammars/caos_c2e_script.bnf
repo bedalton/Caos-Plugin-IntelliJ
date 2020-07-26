@@ -34,6 +34,7 @@
 	name("expression_factory") = ""
 	name("K_XX_DEF") = ""
 	name("K_XX_EXPR") = ""
+	name("incomplete") = "command"
 	name("command_call") = "command"
 	tokens = [
 		NEWLINE = "regexp:\n";
@@ -258,6 +259,8 @@
 		DOUBLE_QUOTE = "\""
 		SINGLE_QUOTE = "'"
 		CHAR_CHAR = "'char'"
+		ERROR_WORD = "command"
+
 	]
 }
 
@@ -346,7 +349,6 @@ code_block_line
 private caos_element
 	::=	control_statement
 	|	command_call
-	|	incomplete
 	| 	comment
 	;
 
@@ -1241,6 +1243,478 @@ equality_join
 	|	K_OR
 	;
 
+
+eq_op
+	::= eq_op_old
+	|	eq_op_new
+	;
+
+eq_op_old
+	::= EQ_OP_OLD_
+	;
+
+eq_op_new
+	::= EQ_OP_NEW_
+	;
+
+var_token
+	::= VA_XX
+	| 	OV_XX
+	|	OBV_X
+	|	VAR_X
+	|	MV_XX
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptVarTokenStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase"
+		]
+		methods = [
+			getVarGroup
+			getVarIndex
+			getReference
+			getInferredType
+			getLastAssignment
+		]
+	}
+	;
+
+number
+	::= INT
+	|	DECIMAL
+	|	BINARY
+	|	character
+	{
+
+	}
+	;
+
+character
+	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
+	{
+		pin=1
+		methods = [
+			openQuote="/SINGLE_QUOTE[0]"
+			closeQuote="/SINGLE_QUOTE[1]"
+		]
+	}
+	;
+
+private string_literal
+	::= quote_string_literal
+	|   (<<isOldVariant>>) c1_string
+	;
+
+c1_string
+	::= OPEN_BRACKET TEXT_LITERAL CLOSE_BRACKET
+	{
+		pin(".*")=3
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+quote_string_literal
+	::= DOUBLE_QUOTE string_text? DOUBLE_QUOTE
+	{
+		pin=1;
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			getStringValue
+			openQuote="/DOUBLE_QUOTE[0]"
+			closeQuote="/DOUBLE_QUOTE[1]"
+		]
+	}
+	;
+
+string_text
+	::= (STRING_CHAR|STRING_ESCAPE_CHAR)+
+	;
+
+subroutine_name
+	::= all_tokens
+	|	ID
+	|	WORD
+	|	incomplete
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	};
+
+token
+	::= all_tokens
+	|	WORD
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			isVariant
+		]
+	}
+	;
+
+script_terminator
+	::= c_endm
+	;
+
+c_endm ::= K_ENDM
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+expects_token ::= token_rvalue
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsTokenStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+     		getRvalue
+		]
+	}
+	;
+
+token_rvalue
+	::= token
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueMixin"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
+		]
+	}
+	;
+
+expects_byte_string ::= <<pushExpectation 'ANIM'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsByteStringStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_agent ::= <<pushExpectation 'OTHER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsAgentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_decimal ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsDecimalStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_float ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsFloatStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_quote_string ::= <<pushExpectation 'STRING'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsQuoteStringStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+expects_c1_string ::= <<pushExpectation 'STRING'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsC1StringStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+
+expects_int ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsIntStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+     		getIndex
+     		getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+private expects_string
+	::= <<isNewerVariant>> expects_quote_string
+	|	expects_c1_string
+	;
+
+expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
+		]
+		methods = [
+			getIndex
+			getExpectedType
+     		toCaosVar
+     		getParameterListValue
+		]
+	}
+	;
+
+rvalue
+	::= (!<<expects 'TOKEN' 'false'>>)rvalue_prime
+	|	<<expects 'TOKEN' 'false'>> token
+	|	named_constant
+	|	vars
+	|	expression
+	|	incomplete
+	{
+   		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
+		]
+		methods = [
+			getCommandToken
+     		getCommandString
+			getCommandStringUpper
+     		toCaosVar
+			getArguments
+			getArgumentValues
+     		getInferredType
+		]
+	}
+	;
+
+constant_assignment
+	::= named_constant CONST_EQ constant_value
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptConstantAssignmentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+
+		methods = [
+			getValue
+			getName
+			nameElement="/named_constant"
+			valueElement="/constant_value"
+		]
+	}
+	;
+named_var_assignment
+	::= named_var CONST_EQ var_token
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarAssignmentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+
+		methods = [
+			getValue
+			getName
+		]
+	}
+	;
+
+constant_value
+	::= INT|FLOAT
+	;
+
+named_constant
+	::= N_CONST
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedConstantStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+		]
+		methods = [
+			getScope
+			getName
+			setName
+			getReference
+			toCaosVar
+			getInferredType
+		]
+	}
+	;
+
+named_var
+	::= N_VAR
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+		]
+		methods = [
+			getScope
+			getName
+			setName
+			getReference
+			toCaosVar
+			getInferredType
+		]
+	}
+	;
+
+comment
+	::= //COMMENT_START (constant_assignment|named_var_assignment|comment_body)?
+	COMMENT_START comment_body?
+	;
+
+comment_body
+	::= COMMENT_TEXT+
+	;
+
+family ::= expects_int;
+genus ::= expects_int;
+species ::= expects_int;
+
+event_number_element
+	::= INT
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getName
+			setName
+		]
+	}
+	;
+
+private follows_dde_putb
+	::=	K_ALLR
+	|	K_RPTY
+	|	K_RRCT
+	|	K_NEWV
+	|	K_LVOB
+	|	K_BIOC
+	|	K_ORGN
+	|	K_EMTR
+	|	K_RCTN
+	|	K_DATA
+	|	K_CNAM
+	|	K_CTIM
+	|	K_MONK
+	|	K_OVVD
+	;
+
+incomplete ::= ID | ERROR_WORD;
+
 command_call ::= command_call_by_args // I think private values all have equal priority
 	{
 		pin=2
@@ -1268,8 +1742,7 @@ command_call ::= command_call_by_args // I think private values all have equal p
 	;
 
 private command_call_by_args
-	::= incomplete
-	|	c_targ
+	::= c_targ
 	|	c_d_d
 	|	c_l
 	|	c_f
@@ -1355,6 +1828,7 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_cv_char
+	//| 	incomplete
 	{
 		//recoverWhile=command_call_recover
 	}
@@ -1546,6 +2020,213 @@ c_kw_negv ::= K_NEGV
 	}
 	;
 
+private c_pict ::= c_kw_pict space_like expects_pict_dimension
+	{
+		pin=1
+	}
+	;
+
+expects_pict_dimension
+	::= rvalue
+	;
+
+private r_cv_char
+	::= <<expects 'NUMBER'>> kw_cv_char space_like expects_string space_like expects_int
+	|	<<expects 'STRING'>>kw_cv_char
+	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>) kw_cv_char (space_like expects_string space_like expects_int)?
+	;
+
+private r_cv_tran
+	::= <<expects 'NUMBER'>> r_kw_cv_tran space_like expects_int space_like expects_int
+	|	<<expects 'STRING'>>r_kw_cv_tran space_like expects_int
+	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>)r_kw_cv_tran space_like expects_int (space_like expects_int)?
+	{
+		pin(".*")= 5
+	}
+	;
+
+named_game_var
+	::= caos_named_var_kw space_like expects_value
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+		]
+		methods = [
+			commandToken="/caos_named_var_kw"
+			getCommandString
+			getCommandStringUpper
+			isVariant
+			toCaosVar
+			getKey
+			getVarType
+			getName
+			setName
+			getArguments
+			getArgumentValues
+			getInferredType
+		]
+	}
+	;
+
+private vars
+	::= var_token
+    |	named_var
+	|	named_game_var
+    ;
+
+
+c_kw_pict
+	::= K_DDE_COL space_like (K_PICT|incomplete)
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_targ
+	::= c_kw_targ space_like expects_agent
+	{
+		pin = 1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTargAssignmentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getRVar
+			getArguments
+			getArgumentValues
+		]
+	}
+
+c_kw_targ
+	::= K_TARG
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_gsub
+	::= K_GSUB
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+
+caos_named_var_kw
+	::= K_MAME
+	|	K_NAME
+	|	K_GAME <<isNewerVariant>>
+	|	K_EAME
+	{
+		pin = 1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+kw_cv_char
+	::= K_CHAR <<isVariant 'CV'>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+r_kw_cv_tran
+    	::= K_TRAN <<isVariant 'CV'>>
+    	{
+    		implements = [
+    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+    		]
+    		methods = [
+    			getReference
+    			getCommandString
+    			getCommandStringUpper
+    			getPresentation
+    			isVariant
+    			getName
+    			setName
+    		]
+    	}
+    	;
 
 
 
@@ -2229,16 +2910,6 @@ private c_a_d_f_d_f ::= c_kw_a_d_f_d_f args_a_d_f_d_f
 
 private args_a_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float;
 
-private c_pict ::= c_kw_pict space_like expects_pict_dimension
-	{
-		pin=1
-	}
-	;
-
-expects_pict_dimension
-	::= rvalue
-	;
-
 
 rvalue_prime
 	::= r_cv_char
@@ -2291,21 +2962,6 @@ rvalue_prime
 			getArgumentValues
      		getInferredType
 		]
-	}
-	;
-
-private r_cv_char
-	::= <<expects 'NUMBER'>> kw_cv_char space_like expects_string space_like expects_int
-	|	<<expects 'STRING'>>kw_cv_char
-	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>) kw_cv_char (space_like expects_string space_like expects_int)?
-	;
-
-private r_cv_tran
-	::= <<expects 'NUMBER'>> r_kw_cv_tran space_like expects_int space_like expects_int
-	|	<<expects 'STRING'>>r_kw_cv_tran space_like expects_int
-	|	!(<<expects 'STRING'>>|<<expects 'NUMBER'>>)r_kw_cv_tran space_like expects_int (space_like expects_int)?
-	{
-		pin(".*")= 5
 	}
 	;
 
@@ -2594,42 +3250,6 @@ lvalue
 	}
 	;
 
-named_game_var
-	::= caos_named_var_kw space_like expects_value
-	{
-		pin=1
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.intellij.psi.PsiNamedElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
-		]
-		methods = [
-			commandToken="/caos_named_var_kw"
-			getCommandString
-			getCommandStringUpper
-			isVariant
-			toCaosVar
-			getKey
-			getVarType
-			getName
-			setName
-			getArguments
-			getArgumentValues
-			getInferredType
-		]
-	}
-	;
-
-private vars
-	::= var_token
-    |	named_var
-	|	named_game_var
-    ;
-
-
 
 private l_none ::= l_kw_none
 	{
@@ -2774,25 +3394,6 @@ c_kw_none
 	|	K_WDOW
 	|	K_WIND
 	|	K_CRETN
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getCommandStringUpper
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-c_kw_pict
-	::= K_DDE_COL space_like (K_PICT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3489,47 +4090,6 @@ c_kw_a
 	}
 	;
 
-c_targ
-	::= c_kw_targ space_like expects_agent
-	{
-		pin = 1
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTargAssignmentStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-		]
-		methods = [
-			getCommandToken
-			getCommandString
-			getCommandStringUpper
-			getScope
-			getRVar
-			getArguments
-			getArgumentValues
-		]
-	}
-
-c_kw_targ
-	::= K_TARG
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getCommandStringUpper
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
 c_kw_v
 	::= K_DBGV
 	|	K_DBUG
@@ -3706,26 +4266,6 @@ c_kw_a_d
 
 c_kw_a_d_s
 	::= K_GENE space_like (K_LOAD|incomplete)
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getCommandStringUpper
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
-c_kw_gsub
-	::= K_GSUB
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5263,71 +5803,6 @@ r_kw_a
 	;
 
 
-
-caos_named_var_kw
-	::= K_MAME
-	|	K_NAME
-	|	K_GAME <<isNewerVariant>>
-	|	K_EAME
-	{
-		pin = 1
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getCommandStringUpper
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-
-kw_cv_char
-	::= K_CHAR <<isVariant 'CV'>>
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
-		]
-		methods = [
-			getReference
-			getCommandString
-			getCommandStringUpper
-			getPresentation
-			isVariant
-			getName
-			setName
-		]
-	}
-	;
-r_kw_cv_tran
-    	::= K_TRAN <<isVariant 'CV'>>
-    	{
-    		implements = [
-    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
-    		]
-    		methods = [
-    			getReference
-    			getCommandString
-    			getCommandStringUpper
-    			getPresentation
-    			isVariant
-    			getName
-    			setName
-    		]
-    	}
-    	;
-
 r_kw_v
 	::= K_CREA <<isVariant 'C2'>>
 	|	K_TYPE
@@ -6692,476 +7167,7 @@ all_tokens
 	| K_YVEC
 	| K_ZOMB
 	| K_ZOOM
-
 	;
-
-eq_op
-	::= eq_op_old
-	|	eq_op_new
-	;
-
-eq_op_old
-	::= EQ_OP_OLD_
-	;
-
-eq_op_new
-	::= EQ_OP_NEW_
-	;
-
-var_token
-	::= VA_XX
-	| 	OV_XX
-	|	OBV_X
-	|	VAR_X
-	|	MV_XX
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptVarTokenStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase"
-		]
-		methods = [
-			getVarGroup
-			getVarIndex
-			getReference
-			getInferredType
-			getLastAssignment
-		]
-	}
-	;
-
-number
-	::= INT
-	|	DECIMAL
-	|	BINARY
-	|	character
-	{
-
-	}
-	;
-
-character
-	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
-	{
-		pin=1
-		methods = [
-			openQuote="/SINGLE_QUOTE[0]"
-			closeQuote="/SINGLE_QUOTE[1]"
-		]
-	}
-	;
-
-private string_literal
-	::= quote_string_literal
-	|   (<<isOldVariant>>) c1_string
-	;
-
-c1_string
-	::= OPEN_BRACKET TEXT_LITERAL CLOSE_BRACKET
-	{
-		pin(".*")=3
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
-		]
-		methods = [
-			getStringValue
-		]
-	}
-	;
-
-quote_string_literal
-	::= DOUBLE_QUOTE string_text? DOUBLE_QUOTE
-	{
-		pin=1;
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
-		]
-		methods = [
-			getStringValue
-			openQuote="/DOUBLE_QUOTE[0]"
-			closeQuote="/DOUBLE_QUOTE[1]"
-		]
-	}
-	;
-
-string_text
-	::= (STRING_CHAR|STRING_ESCAPE_CHAR)+
-	;
-
-subroutine_name
-	::= all_tokens
-	|	ID
-	|	WORD
-	|	incomplete
-	{
-		implements = [
-			"com.intellij.psi.PsiNamedElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-		]
-		methods = [
-			getName
-			setName
-			getReference
-		]
-	};
-
-token
-	::= all_tokens
-	|	WORD
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-		]
-		methods = [
-			isVariant
-		]
-	}
-	;
-script_terminator
-	::= c_endm
-	;
-
-c_endm ::= K_ENDM
-{
-	implements = [
-		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
-		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-	]
-	methods = [
-		getReference
-		getCommandString
-			getCommandStringUpper
-		getPresentation
-		isVariant
-		getName
-		setName
-	]
-}
-;
-
-expects_token ::= token_rvalue
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsTokenStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-     		getRvalue
-		]
-	}
-	;
-
-token_rvalue
-	::= token
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueMixin"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
-		]
-	}
-	;
-
-expects_byte_string ::= <<pushExpectation 'ANIM'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsByteStringStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-expects_agent ::= <<pushExpectation 'OTHER'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsAgentStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-expects_decimal ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsDecimalStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-expects_float ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsFloatStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-expects_quote_string ::= <<pushExpectation 'STRING'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsQuoteStringStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-expects_c1_string ::= <<pushExpectation 'STRING'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsC1StringStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-
-expects_int ::= <<pushExpectation 'NUMBER'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsIntStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-     		getIndex
-     		getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-private expects_string
-	::= <<isNewerVariant>> expects_quote_string
-	|	expects_c1_string
-	;
-
-expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsValueStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType"
-		]
-		methods = [
-			getIndex
-			getExpectedType
-     		toCaosVar
-     		getParameterListValue
-		]
-	}
-	;
-
-rvalue
-	::= (!<<expects 'TOKEN' 'false'>>)rvalue_prime
-	|	<<expects 'TOKEN' 'false'>> token
-	|	named_constant
-	|	vars
-	|	expression
-	{
-   		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
-		]
-		methods = [
-			getCommandToken
-     		getCommandString
-			getCommandStringUpper
-     		toCaosVar
-			getArguments
-			getArgumentValues
-     		getInferredType
-		]
-	}
-	;
-
-constant_assignment
-	::= named_constant CONST_EQ constant_value
-	{
-		pin=1
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptConstantAssignmentStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-
-		methods = [
-			getValue
-			getName
-			nameElement="/named_constant"
-			valueElement="/constant_value"
-		]
-	}
-	;
-named_var_assignment
-	::= named_var CONST_EQ var_token
-	{
-		pin=1
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarAssignmentStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-
-		methods = [
-			getValue
-			getName
-		]
-	}
-	;
-constant_value
-	::= INT|FLOAT
-	;
-
-named_constant
-	::= N_CONST
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedConstantStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.intellij.psi.PsiNamedElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
-		]
-		methods = [
-			getScope
-			getName
-			setName
-			getReference
-			toCaosVar
-			getInferredType
-		]
-	}
-	;
-
-named_var
-	::= N_VAR
-	{
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedVarStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
-		implements = [
-			"com.intellij.psi.PsiNamedElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
-		]
-		methods = [
-			getScope
-			getName
-			setName
-			getReference
-			toCaosVar
-			getInferredType
-		]
-	}
-	;
-
-comment
-	::= //COMMENT_START (constant_assignment|named_var_assignment|comment_body)?
-	COMMENT_START comment_body?
-	;
-
-comment_body
-	::= COMMENT_TEXT+
-	;
-
-family ::= expects_int;
-genus ::= expects_int;
-species ::= expects_int;
-
-event_number_element
-	::= INT
-	{
-		implements = [
-			"com.intellij.psi.PsiNamedElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-		]
-		methods = [
-			getReference
-			getName
-			setName
-		]
-	}
-	;
-
-private follows_dde_putb
-	::=	K_ALLR
-	|	K_RPTY
-	|	K_RRCT
-	|	K_NEWV
-	|	K_LVOB
-	|	K_BIOC
-	|	K_ORGN
-	|	K_EMTR
-	|	K_RCTN
-	|	K_DATA
-	|	K_CNAM
-	|	K_CTIM
-	|	K_MONK
-	|	K_OVVD
-	;
-
-incomplete ::= ID;
 
 
 private args_d_d_d_d_s ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string;
