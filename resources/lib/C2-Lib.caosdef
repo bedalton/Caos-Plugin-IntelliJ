@@ -3180,7 +3180,7 @@ TEMP (integer);
 THRT (integer);
 
 /*
- * Get the object timer script tick rate.
+ * Gets ticks left in current timer.
  * #Agents
  *
  * @rvalue
