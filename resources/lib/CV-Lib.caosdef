@@ -314,7 +314,7 @@ ATTN (integer);
  * value to pass into this command.
  * #AgentAttributes
  *
- * @param {attributes} (integer)
+ * @param {attributes} (integer@Attributes)
  *
  */
 ATTR (command) attributes (integer);
