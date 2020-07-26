@@ -56,7 +56,6 @@ COMMENT_TEXT=[^ \n]+
 DECIMAL=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
-WORD=[_a-zA-Z0-9]{3}[_a-zA-Z0-9!#:]|[a-zA-Z0-9#!$_+]{4}
 ID=[_a-zA-Z][_a-zA-Z0-9]*
 SPACE=[ ]
 EQ=[Ee][Qq]
@@ -75,8 +74,12 @@ N_VAR = [$][a-zA-Z_0-9]+
 ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
 QUOTE_STRING_CHAR=[^\"]
 QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
+WORD_CHAR = [a-zA-Z0-9_$#:!+]
+ERROR_WORD={WORD_CHAR}{4,100}
+WORD=[_a-zA-Z0-9]{3}[_a-zA-Z0-9!#:]|[a-zA-Z0-9#!$_+]{4}
+INCOMPLETE_WORD={WORD_CHAR}+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME
 %%
 
 <START_OF_LINE> {
@@ -153,6 +156,11 @@ QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 <IN_CHAR> {
 	[^']|\\\'				{ return CaosScript_CHAR_CHAR; }
  	"'"						{ yybegin(IN_LINE); return CaosScript_SINGLE_QUOTE; }
+    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+}
+
+<IN_SUBROUTINE_NAME> {
+	{ID}					{ yybegin(IN_LINE); return CaosScript_ID; }
     [^]						{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
@@ -253,8 +261,8 @@ QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 	[Bb][Bb][Ll][Ee]       	{ return CaosScript_K_BBLE; }
 	[Ss][Tt][Oo][Pp]       	{ return CaosScript_K_STOP; }
 	[Ee][Nn][Dd][Mm]       	{ return CaosScript_K_ENDM; }
-	[Ss][Uu][Bb][Rr]       	{ return CaosScript_K_SUBR; }
-	[Gg][Ss][Uu][Bb]       	{ return CaosScript_K_GSUB; }
+	[Ss][Uu][Bb][Rr]       	{ yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_SUBR; }
+	[Gg][Ss][Uu][Bb]       	{ yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_GSUB; }
 	[Rr][Ee][Tt][Nn]       	{ return blockDepth > 0 ? CaosScript_K_CRETN : CaosScript_K_RETN; }
 	[Rr][Ee][Pp][Ss]       	{ blockDepth++; return CaosScript_K_REPS; }
 	[Rr][Ee][Pp][Ee]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_REPE; }
@@ -893,8 +901,9 @@ QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
     "____X____EXPR__"		{ return CaosScript_K_XX_EXPR; }
 	{EQ_C1}                	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}               	{ return CaosScript_EQ_OP_NEW_; }
+  	{ERROR_WORD}			{ return CaosScript_ERROR_WORD; }
 	{WORD}                 	{ return CaosScript_WORD; }
-	{ID}                   	{ return CaosScript_ID; }
+	{INCOMPLETE_WORD}      	{ return CaosScript_ERROR_WORD; }
 	{SPACE}                	{ return CaosScript_SPACE_; }
     [^]						{ return BAD_CHARACTER; }
 }
