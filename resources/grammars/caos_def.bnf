@@ -287,9 +287,12 @@ type_definition_value
 	;
 
 type_definition_description
-	::= TEXT_LITERAL
+	::= type_definition_description_element+
 	;
-
+type_definition_description_element
+	::= TEXT_LITERAL
+	|	word_link
+	;
 doc_comment
 	::= DOC_COMMENT_OPEN doc_comment_body? DOC_COMMENT_CLOSE
 	{
