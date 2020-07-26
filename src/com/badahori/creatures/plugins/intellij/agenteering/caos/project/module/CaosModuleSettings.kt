@@ -12,13 +12,13 @@ import com.intellij.util.xmlb.annotations.Attribute
 
 @State(
         name = "CaosModuleSettings",
-        storages = [Storage(value = "default", file = StoragePathMacros.MODULE_FILE)]
+        storages = [Storage(file = StoragePathMacros.MODULE_FILE)]
 )
 class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings> {
 
     private var settings = CaosModuleSettings()
 
-    override fun getState(): CaosModuleSettings? {
+    override fun getState(): CaosModuleSettings {
         return settings
     }
 

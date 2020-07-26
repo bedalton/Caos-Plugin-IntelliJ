@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.errorNotification
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleBuilderListener
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
@@ -73,6 +74,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
             val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
             val variant = (variantComboBox.selectedItem as? CaosVariant) ?: CaosScriptProjectSettings.variant
             module.putUserData(CaosScriptFile.VariantUserDataKey, variant)
+            module.variant = variant
             module.rootManager.modifiableModel.apply {
                 inheritSdk()
                 contentEntries.firstOrNull()?.apply setupRoot@{

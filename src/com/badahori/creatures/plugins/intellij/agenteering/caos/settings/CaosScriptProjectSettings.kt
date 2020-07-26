@@ -24,4 +24,29 @@ object CaosScriptProjectSettings {
     fun setIndent(indent:Boolean) {
         INDENT_SETTING.value = indent
     }
+
+    // === UndocumentedCommand === //
+    private const val IGNORE_UNDOCUMENTED_COMMAND_KEY = "IGNORE_UNDOCUMENTED_COMMAND"
+    private val IGNORE_UNDOCUMENTED_COMMAND_SETTING = CaosPluginSettingsUtil.StringSetting(IGNORE_UNDOCUMENTED_COMMAND_KEY, "")
+    private val ignoredUndocumentedCommands by lazy {
+        IGNORE_UNDOCUMENTED_COMMAND_SETTING.value?.split(";")?.toMutableList() ?: mutableListOf()
+    }
+    fun isIgnoredUndocumentedCommand(command:String) : Boolean {
+        return command.toUpperCase() in ignoredUndocumentedCommands
+    }
+
+    fun ignoreUndocumentedCommand(commandIn:String, ignore:Boolean = true) {
+        val command = commandIn.toUpperCase()
+        if (ignore) {
+            if (command in ignoredUndocumentedCommands)
+                return
+            ignoredUndocumentedCommands.add(command)
+        } else {
+            if (command !in ignoredUndocumentedCommands)
+                return
+            ignoredUndocumentedCommands.remove(command)
+        }
+
+        IGNORE_UNDOCUMENTED_COMMAND_SETTING.value = ignoredUndocumentedCommands.joinToString(";")
+    }
 }
