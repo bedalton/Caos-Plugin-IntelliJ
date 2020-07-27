@@ -50,6 +50,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper)
+            is CaosScriptCharacter -> {
+                if (element.charChar?.textLength.orElse(0) > 1) {
+                    simpleError(element.charChar?:element, "Char value can be only one character", annotationWrapper)
+                }
+            }
             is CaosScriptErrorLvalue -> {
                 val variableType = if (element.number != null) {
                     "number"
