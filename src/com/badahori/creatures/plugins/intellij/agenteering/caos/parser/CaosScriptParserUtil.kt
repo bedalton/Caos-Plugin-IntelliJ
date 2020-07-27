@@ -174,6 +174,16 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         return expectsType[0] == expectation
     }
 
+    @JvmStatic
+    fun expectsValue(builder_: PsiBuilder?,
+                level: Int,
+                 default:Boolean
+    ): Boolean {
+        if (ignoreExpects())
+            return default
+        return expectsType.isNotEmpty()
+    }
+
     private fun ignoreExpects() : Boolean {
         return CaosScriptProjectSettings.variant == C3 || CaosScriptProjectSettings.variant == DS
     }
