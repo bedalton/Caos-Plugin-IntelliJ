@@ -79,7 +79,7 @@
     <!-- Completion -->
     <completion.contributor language="CaosScript"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
-    <com.intellij.typedHandler
+    <editorTypedHandler
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptTypedHandler"
     />
 
@@ -172,6 +172,15 @@
                      shortName="RndvIsTheSame"
     />
 
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosCommandUndocumentedCommandUsage"
+                     level="WEAK WARNING"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Undocumented command usage"
+                     shortName="UndocumentedCommandUsage"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
@@ -204,9 +213,9 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
 
     <!-- Actions -->
-    <enterHandlerDelegate
+    <!--enterHandlerDelegate
         id="CaosScriptEnterDelegate"
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptEnterDelegate" />
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptEnterDelegate" / -->
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
@@ -283,7 +292,7 @@
 
   <module-components>
     <component>
-      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettings</implementation-class>
+      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent</implementation-class>
     </component>
   </module-components>
 
