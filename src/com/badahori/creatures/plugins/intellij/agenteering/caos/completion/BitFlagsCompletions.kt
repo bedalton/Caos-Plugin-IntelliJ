@@ -32,7 +32,7 @@ internal class GenerateBitFlagIntegerAction(private val typeDefName: String, pri
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
         val position = context.editor.caretModel.currentCaret.offset
         invokeLater {
-            BitFlagsForm(position, 0, context.editor, typeDefName, typeDefValues, currentValue).showAndGet()
+            BitFlagsForm(position, 0, context.editor, typeDefName, typeDefValues.sortedBy { it.key.toIntSafe() ?: 1000 }, currentValue).showAndGet()
         }
     }
 }
