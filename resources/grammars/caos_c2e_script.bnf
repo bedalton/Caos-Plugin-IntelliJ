@@ -1296,6 +1296,14 @@ character
 	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
 	{
 		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			getStringValue
+			isClosed
+		]
 		methods = [
 			openQuote="/SINGLE_QUOTE[0]"
 			closeQuote="/SINGLE_QUOTE[1]"
@@ -1317,7 +1325,10 @@ c1_string
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
 		]
 		methods = [
+			isClosed
 			getStringValue
+			openQuote="/OPEN_BRACKET"
+			closeQuote="/CLOSE_BRACKET"
 		]
 	}
 	;
@@ -1332,6 +1343,7 @@ quote_string_literal
 		]
 		methods = [
 			getStringValue
+			isClosed
 			openQuote="/DOUBLE_QUOTE[0]"
 			closeQuote="/DOUBLE_QUOTE[1]"
 		]
