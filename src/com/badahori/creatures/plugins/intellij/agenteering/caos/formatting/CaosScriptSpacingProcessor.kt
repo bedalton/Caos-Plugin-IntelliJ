@@ -20,8 +20,8 @@ internal val LOGGER: Logger by lazy {
 class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySettings: CommonCodeStyleSettings) {
 
     private val noneSpace by lazy { Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, 0) }
-    private val oneSpace by lazy { Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, 2) }
-    private val anySpace by lazy { Spacing.createSpacing(0, 1, 0, mySettings.KEEP_LINE_BREAKS, 2) }
+    private val oneSpace by lazy { Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, Int.MAX_VALUE) }
+    private val anySpace by lazy { Spacing.createSpacing(0, 1, 0, mySettings.KEEP_LINE_BREAKS, Int.MAX_VALUE) }
 
     fun getSpacing(child1: Block?, child2: Block?): Spacing? {
         if (child1 !is AbstractBlock || child2 !is AbstractBlock) {
