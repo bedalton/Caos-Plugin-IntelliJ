@@ -1728,7 +1728,9 @@ private follows_dde_putb
 
 incomplete ::= ID | ERROR_WORD;
 
-command_call ::= command_call_by_args // I think private values all have equal priority
+command_call
+	::= command_call_by_args // I think private values all have equal priority
+	| 	incomplete
 	{
 		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCommandCallStub"
@@ -1841,7 +1843,6 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_cv_char
-	| 	(!<<expectsValue 'false'>>) incomplete
 	{
 		recoverWhile=command_call_recover
 	}
