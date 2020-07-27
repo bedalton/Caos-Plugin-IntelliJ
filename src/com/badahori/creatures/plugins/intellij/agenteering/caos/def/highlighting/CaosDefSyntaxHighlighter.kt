@@ -53,6 +53,7 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
         val TYPE_LINK:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_LINK", DefaultLanguageHighlighterColors.KEYWORD)
         val TYPE_DEF_NAME:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_NAME", DefaultLanguageHighlighterColors.KEYWORD)
         val TYPE_DEF_KEY:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_KEY", DefaultLanguageHighlighterColors.CLASS_REFERENCE)
+        val TYPE_DEF_WORD_LINK:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_WORD_LINK", DefaultLanguageHighlighterColors.KEYWORD)
         val REGION_HEADER:TextAttributesKey = createTextAttributesKey("CaosDef_REGION_HEADER", DefaultLanguageHighlighterColors.KEYWORD)
         val VARIABLE_LINK: TextAttributesKey = createTextAttributesKey("CaosDef_VARIABLE_LINK", DefaultLanguageHighlighterColors.KEYWORD)
         val VARIABLE_TYPE: TextAttributesKey = createTextAttributesKey("CaosDef_VARIABLE_TYPE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
