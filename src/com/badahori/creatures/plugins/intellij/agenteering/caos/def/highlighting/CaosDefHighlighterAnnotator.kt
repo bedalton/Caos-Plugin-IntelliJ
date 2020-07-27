@@ -15,7 +15,13 @@ class CaosDefHighlighterAnnotator : Annotator {
         if (element !is CaosDefCompositeElement)
             return
         when(element) {
-            is CaosDefWordLink ->addColor(element, annotationHolder, CaosDefSyntaxHighlighter.WORD_LINK)
+            is CaosDefWordLink -> {
+                val attributeKey = if (element.hasParentOfType(CaosDefDocComment::class.java))
+                    CaosDefSyntaxHighlighter.WORD_LINK
+                else
+                    CaosDefSyntaxHighlighter.TYPE_DEF_WORD_LINK
+                addColor(element, annotationHolder, attributeKey)
+            }
             is CaosDefTypeDefName -> {
                 if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement::class.java))
                     addColor(element, annotationHolder, CaosDefSyntaxHighlighter.TYPE_LINK)
