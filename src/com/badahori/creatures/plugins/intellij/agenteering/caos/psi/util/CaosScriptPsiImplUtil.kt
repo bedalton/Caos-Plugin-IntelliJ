@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.is
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsQuoteStringImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -683,6 +684,26 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptQuoteStringLiteral): String {
         return stringIn.stringText?.text ?: ""
+    }
+
+    @JvmStatic
+    fun getStringValue(stringIn: CaosScriptCharacter): String {
+        return stringIn.charChar?.text ?: ""
+    }
+
+    @JvmStatic
+    fun isClosed(stringIn: CaosScriptQuoteStringLiteral) : Boolean {
+        return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_DOUBLE_QUOTE
+    }
+
+    @JvmStatic
+    fun isClosed(stringIn: CaosScriptCharacter) : Boolean {
+        return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_SINGLE_QUOTE
+    }
+
+    @JvmStatic
+    fun isClosed(stringIn: CaosScriptC1String) : Boolean {
+        return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_CLOSE_BRACKET
     }
 
     @JvmStatic
