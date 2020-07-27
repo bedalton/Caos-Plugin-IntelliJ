@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -24,7 +25,7 @@ import com.intellij.psi.search.GlobalSearchScope
 object CaosScriptTypeDefValueCompletionProvider {
 
     fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptExpectsValueOfType) {
-        val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
+        val containingCommand = valueOfType.getSelfOrParentOfType(CaosScriptCommandElement::class.java)
                 ?: return
         val index = valueOfType.index
         val reference = containingCommand
@@ -40,6 +41,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?.parameterStructs
                 ?.getOrNull(index)
                 ?: return
+
         val type =
                 if (containingCommand is CaosScriptCAssignment) {
                     containingCommand.lvalue
@@ -61,7 +63,10 @@ object CaosScriptTypeDefValueCompletionProvider {
         if (type.typedef != null) {
             addListValues(resultSet, variant, type.typedef, valueOfType.project, valueOfType.text, addSpace)
         } else if (!type.fileTypes.isNullOrEmpty()) {
+            // RValue requires a file type, so fill in filenames with matching types
             val project = valueOfType.project
+            // Get all files of for filetype list
+            // List is necessary for CV-DS, as they can take C16 or S16
             val allFiles = type.fileTypes
                     .flatMap { fileExtensionTemp ->
                         val fileExtension = fileExtensionTemp.toLowerCase()
@@ -71,6 +76,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                         FilenameIndex.getAllFilesByExt(project, fileExtension, searchScope).toList()
                     }
                     .map { it.nameWithoutExtension }
+            // Loop through all files and format them as needed.
             for (file in allFiles) {
                 val fileName = file
                 val isToken = parameterStruct.type.type.toLowerCase() == "token"
@@ -79,6 +85,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                     variant.isOld -> "[$fileName]"
                     else -> "\"$fileName\""
                 }
+                // Create lookup element
                 var lookupElement = LookupElementBuilder
                         .create(text)
                         .withStrikeoutness(isToken && fileName.length != 4)
@@ -132,6 +139,7 @@ object CaosScriptTypeDefValueCompletionProvider {
         val values = def.keys
                 .filter { it.equality == TypeDefEq.EQUAL }
                 .ifEmpty { null }
+                ?.sortedBy { it.key.toIntSafe() ?: 1000 }
                 ?: return
         if (def.typeNoteString != null) {
             val lookupElement = PrioritizedLookupElement.withPriority(LookupElementBuilder
@@ -140,7 +148,6 @@ object CaosScriptTypeDefValueCompletionProvider {
                     .withPresentableText("$listName bit-flag builder")
                     .withInsertHandler(GenerateBitFlagIntegerAction(listName, values)), 1000.0)
             resultSet.addElement(lookupElement)
-            return
         }
         for (value in values) {
             var lookupElement = LookupElementBuilder
@@ -152,7 +159,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                 lookupElement = lookupElement
                         .withInsertHandler(AddSpaceInsertHandler(true))
             }
-            resultSet.addElement(lookupElement)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
         }
     }
 

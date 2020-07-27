@@ -88,7 +88,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val type = parent.getEnclosingCommandType()
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
-        (element.getParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
+        (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
             CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
         }
         if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {

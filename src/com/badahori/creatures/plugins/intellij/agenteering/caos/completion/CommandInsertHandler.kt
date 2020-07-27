@@ -12,8 +12,8 @@ import com.intellij.codeInsight.template.impl.VariableNode
 
 class CommandInsertHandler(private val command:String, private val parameters:List<CaosDefParameterStruct>, private val withSpace:Boolean) : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, p1: LookupElement) {
-        val tail = if (withSpace) " " else ""
-        val templateText = " " + parameters.joinToString(" ") { "\$${it.name}\$"} + tail
+        //val tail = if (withSpace) " " else "" // Never needs tail as parameters are included
+        val templateText = " " + parameters.joinToString(" ") { "\$${it.name}\$"}// + tail
         val template = TemplateImpl("", templateText, "")
         LOGGER.info("Template Text: $templateText")
         for(i in 0 ..parameters.lastIndex) {
