@@ -221,14 +221,34 @@ val PsiElement.lineNumber:Int? get() {
     return document?.getLineNumber(elementStartOffset)
 }
 
+private val isWhitespaceAtAll:List<IElementType> = listOf(
+        TokenType.WHITE_SPACE,
+        CaosScriptTypes.CaosScript_SPACE_LIKE,
+        CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE,
+        CaosScriptTypes.CaosScript_SPACE_,
+        CaosScriptTypes.CaosScript_SPACE,
+        CaosScriptTypes.CaosScript_NEWLINE,
+        CaosScriptTypes.CaosScript_NEW_LINE,
+        CaosScriptTypes.CaosScript_NEW_LINE_LIKE
+)
+
+private val newLineElementType:List<IElementType> = listOf(
+        CaosScriptTypes.CaosScript_NEWLINE,
+        CaosScriptTypes.CaosScript_NEW_LINE
+)
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
     var node: ASTNode? = previous
     while (node != null) {
-        if (node.text.isNotBlank())
+        val elementType = node.elementType
+        if (elementType !in isWhitespaceAtAll)
             return false
-        if (node.text.contains("\n"))
+        if (elementType in newLineElementType) {
             return true
+        } else if (elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE) {
+            if (node.text.contains("\n"))
+                return true
+        }
         node = node.previous
     }
     return false
