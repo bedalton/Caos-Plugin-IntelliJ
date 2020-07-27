@@ -36,6 +36,7 @@
 	name("K_XX_EXPR") = ""
 	name("incomplete") = "command"
 	name("command_call") = "command"
+	name("error_lvalue") = "variable"
 	tokens = [
 		NEWLINE = "regexp:\n";
 		K_ENDM = "regexp:[eE][nN][dD][mM]"
@@ -1828,7 +1829,7 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_cv_char
-	| 	incomplete
+	| 	(!<<expectsValue 'false'>>) incomplete
 	{
 		recoverWhile=command_call_recover
 	}
@@ -3235,6 +3236,7 @@ lvalue
 	|	l_d
 	|	vars
 	|	incomplete
+	|	error_lvalue
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptLValueStub"
@@ -3260,6 +3262,12 @@ lvalue
 	}
 	;
 
+error_lvalue
+	::= string_literal
+	|	byte_string
+	|	animation_string
+	|	number
+	;
 
 private l_none ::= l_kw_none
 	{
