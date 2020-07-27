@@ -3,12 +3,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
@@ -29,7 +29,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
     ATTRIBUTE_BITFLAGS_RETURN_VALUE_HINT("Show bit flag for outer expression", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
+            return option.isEnabled() && (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
         }
 
         private fun usesBitFlags(element: CaosScriptExpression): Boolean {
@@ -41,7 +41,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             } ?: return false
             caosCommandToken.commandString.toUpperCase().let {
                 if (it == "ATTR" || it == "BUMP")
-                    return true
+                    return (parent.parent.parent !is CaosScriptCommandCall)
             }
             return getTypeList(caosCommandToken) != null
         }
@@ -56,15 +56,16 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val variant = token.containingCaosFile?.variant
                     ?: return null
             return CaosDefTypeDefinitionElementsByNameIndex
-                    .Instance[typeDef, token.project].firstOrNull check@{
-                if (!it.isVariant(variant))
-                    return@check false
-                val typeNote = it.typeNote?.text
-                if (typeNote == null) {
-                   return@check false
-                }
-                it.typeNote?.text?.toLowerCase()?.contains("bitflags").orFalse()
-            }
+                    .Instance[typeDef, token.project]
+                    .firstOrNull check@{
+                        if (!it.isVariant(variant))
+                            return@check false
+                        val typeNote = it.typeNote?.text
+                        if (typeNote == null) {
+                            return@check false
+                        }
+                        it.typeNote?.text?.toLowerCase()?.contains("bitflags").orFalse()
+                    }
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -96,15 +97,15 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
-                    ?: element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+                    ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
             }
         }
     },
     ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
+            return option.isEnabled() && (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
         }
 
         private fun usesBitFlags(element: CaosScriptExpression): Boolean {
@@ -119,7 +120,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return getTypeList(caosCommandToken, argument.index) != null
         }
 
-        private fun getTypeList(token: CaosScriptIsCommandToken, index:Int): CaosDefTypeDefinitionElement? {
+        private fun getTypeList(token: CaosScriptIsCommandToken, index: Int): CaosDefTypeDefinitionElement? {
             val typeDef = token.reference.resolve()
                     ?.getParentOfType(CaosDefCommandDefElement::class.java)
                     ?.parameterStructs
@@ -134,7 +135,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 if (!it.isVariant(variant))
                     return@check false
                 val typeNote = it.typeNote?.text ?: return@check false
-                it.typeNote?.text?.toLowerCase()?.contains("bitflags").orFalse()
+               typeNote.toLowerCase().contains("bitflags").orFalse()
             }
         }
 
@@ -144,7 +145,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val attr = expression.intValue
                     ?: return emptyList()
             val parent = element.parent
-            val argumentIndex:Int = element.getParentOfType(CaosScriptArgument::class.java)
+            val argumentIndex: Int = element.getParentOfType(CaosScriptArgument::class.java)
                     ?.index
                     ?: return emptyList()
             val commandToken = when {
@@ -169,15 +170,15 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
-                    ?: element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+                    ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
             }
         }
     },
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return element is CaosScriptExpression
+            return option.isEnabled() && element is CaosScriptExpression
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -211,16 +212,16 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
-                    ?: element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+                    ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
             }
         }
     },
     ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
-            return element is CaosScriptEventNumberElement
+            return option.isEnabled() && element is CaosScriptEventNumberElement
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -247,16 +248,16 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
-                    ?: element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+                    ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
             }
         }
     },
     DDE_PIC_DIMENSIONS("Show DDE: PICT dimensions", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
-            return element is CaosScriptPictDimensionLiteral
+            return option.isEnabled() && element is CaosScriptPictDimensionLiteral
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -272,13 +273,13 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptPictDimensionLiteral) {
                 return null
             }
-            return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosDefLanguage.instance)
+            return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosScriptLanguage.instance)
         }
     },
     RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
-            return element is CaosScriptRvalue && element.rvaluePrime != null
+            return option.isEnabled() && element is CaosScriptRvalue
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -286,7 +287,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return emptyList()
             (rvalue.parent.parent as? CaosScriptCAssignment)?.let { assignment ->
                 if (assignment.commandString.toUpperCase() == "SETV") {
-                    val lvalue = assignment.lvalue?.text
+                    val lvalue = assignment.lvalue?.text?.toLowerCase()
                     if (lvalue == "clas") {
                         rvalue.expression?.intValue?.let {
                             val agentClass = CaosAgentClassUtils.parseClas(it)
@@ -295,6 +296,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                                     InlayInfo("family:${agentClass.family} genus:${agentClass.genus} species:${agentClass.species}", rvalue.endOffset)
                             )
                         }
+                        LOGGER.info("IS CLAS, but Int value is null")
+                        return emptyList()
                     }
                 }
             }
@@ -331,9 +334,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
-                    ?: element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+                    ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosDefLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
             }
         }
     };
