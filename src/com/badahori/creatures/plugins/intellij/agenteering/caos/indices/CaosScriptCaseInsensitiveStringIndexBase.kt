@@ -7,6 +7,7 @@ import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.startsAndEndsWith
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
@@ -28,6 +29,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     open operator fun get(keyIn: String, project: Project): List<PsiT> {
         val key = keyIn.toLowerCase()
         return getAllKeys(project).filter { it.toLowerCase() == key }.flatMap {
+            ProgressIndicatorProvider.checkCanceled()
             get(it, project, GlobalSearchScope.allScope(project))
         }
     }
@@ -35,6 +37,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     override operator fun get(keyIn: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
         val key = keyIn.toLowerCase()
         return getAllKeys(project).filter { it.toLowerCase() == key }.flatMap {
+            ProgressIndicatorProvider.checkCanceled()
             StubIndex.getElements(this.key, it, project, scope, indexedElementClass).toList()
         }
     }
@@ -54,6 +57,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         val keys = ArrayList<String>()
         val notMatchingKeys = ArrayList<String>()
         for (keyIn in getAllKeys(project)) {
+            ProgressIndicatorProvider.checkCanceled()
             val key = keyIn.toLowerCase()
             if (notMatchingKeys.contains(key) || keys.contains(key)) {
                 continue
@@ -82,6 +86,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     protected fun getAllForKeys(keys: List<String>, project: Project, globalSearchScope: GlobalSearchScope? = null): Map<String, MutableList<PsiT>> {
         val out = HashMap<String, MutableList<PsiT>>() as MutableMap<String, MutableList<PsiT>>
         for (key in keys) {
+            ProgressIndicatorProvider.checkCanceled()
             if (out.containsKey(key)) {
                 out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)))
             } else {
@@ -110,6 +115,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         val out = ArrayList<PsiT>()
         val done = ArrayList<String>()
         for (key in keys) {
+            ProgressIndicatorProvider.checkCanceled()
             if (!done.contains(key)) {
                 done.add(key)
                 out.addAll(get(key, project, scopeOrDefault(globalSearchScope, project)))
@@ -149,6 +155,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     fun getAll(project: Project, globalSearchScope: GlobalSearchScope? = null): List<PsiT> {
         val out = ArrayList<PsiT>()
         for (key in getAllKeys(project)) {
+            ProgressIndicatorProvider.checkCanceled()
             out.addAll(get(key, project, scopeOrDefault(globalSearchScope, project)))
         }
         return out
