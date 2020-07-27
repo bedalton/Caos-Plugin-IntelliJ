@@ -10,20 +10,29 @@ class CaosScriptTokenSets {
 
     companion object {
 
-        val BLOCK_ENDS = create(
+        val BLOCK_START_AND_ENDS = create(
                 CaosScript_C_ENDM,
+                CaosScript_C_DOIF,
                 CaosScript_C_ELIF,
                 CaosScript_C_ELSE,
                 CaosScript_C_ENDI,
                 CaosScript_C_RETN,
+                CaosScript_C_ENUM,
                 CaosScript_C_NEXT,
+                CaosScript_C_ESCN,
                 CaosScript_C_NSCN,
+                CaosScript_C_REPS,
                 CaosScript_C_REPE,
+                CaosScript_C_LOOP,
                 CaosScript_C_UNTL,
                 CaosScript_C_EVER,
+                CaosScript_C_SCRP,
                 CaosScript_C_SUBR
         )
 
+        /**
+         * Eq op tokens. Symbols are grouped by old ('eq'|'ne') and new style ('='|'!=')
+         */
         @JvmStatic
         val EQ_OPS = create(
                 CaosScript_EQ_OP,
@@ -53,7 +62,6 @@ class CaosScriptTokenSets {
         val WHITESPACES = create(
                 CaosScript_SPACE_,
                 CaosScript_SPACE_LIKE,
-                CaosScript_COMMENT_LITERAL,
                 TokenType.WHITE_SPACE,
                 CaosScript_SPACE,
                 CaosScript_NEWLINE,
