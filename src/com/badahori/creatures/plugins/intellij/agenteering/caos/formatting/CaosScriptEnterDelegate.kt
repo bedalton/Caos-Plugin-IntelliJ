@@ -21,12 +21,11 @@ import com.intellij.refactoring.suggested.endOffset
 class CaosScriptEnterDelegate : EnterHandlerDelegate {
 
     override fun preprocessEnter(file: PsiFile, editor: Editor, ref1: Ref<Int>, ref2: Ref<Int>, context: DataContext, editorActionHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
-
-        return handle(file, editor)//Continue
+        return Continue
     }
 
     override fun postProcessEnter(file: PsiFile, editor: Editor, context: DataContext): EnterHandlerDelegate.Result {
-        return Continue
+        return handle(file, editor)//Continue
     }
 
     private fun handle(file: PsiFile, editor:Editor): EnterHandlerDelegate.Result {
