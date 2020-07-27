@@ -50,7 +50,26 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper)
-            is CaosScriptIncomplete -> simpleError(element, "invalid element", annotationWrapper)
+            is CaosScriptErrorLvalue -> {
+                val variableType = if (element.number != null) {
+                    "number"
+                } else if (element.quoteStringLiteral != null || element.c1String != null) {
+                    "string"
+                } else if (element.animationString != null) {
+                    "animation"
+                } else if (element.byteString != null) {
+                    "byte-string"
+                } else {
+                    "literal"
+                }
+                simpleError(element, "Variable expected. Found $variableType", annotationWrapper)
+            }
+            is CaosScriptIncomplete -> {
+                if (element.hasParentOfType(CaosScriptSubroutineName::class.java)) {
+                    return;
+                }
+                simpleError(element, "invalid element", annotationWrapper)
+            }
             is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> annotateNewLineLike(variant, element, annotationWrapper)
             is CaosScriptTrailingSpace -> annotationTrailingWhiteSpace(variant, element, annotationWrapper)
@@ -191,7 +210,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (text.length == 1 && !COMMA_NEW_LINE_REGEX.matches(nextText))
             return
         if (text.isEmpty())  {
-            if (nextText.startsWith("\n"))// && variant != CaosVariant.C1)
+            // Did check for trailing comma, but this is assumed to be removed before injection
+            // I think bobcob does this and Cyberlife CAOS tool strips this as well.
+            if (true || nextText.startsWith("\n"))// && variant != CaosVariant.C1)
                 return
             val next = element.next
                     ?: return
