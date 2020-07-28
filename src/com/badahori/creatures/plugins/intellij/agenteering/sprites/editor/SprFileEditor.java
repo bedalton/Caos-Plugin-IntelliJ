@@ -1,5 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr;
+package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
@@ -7,6 +8,7 @@ import com.intellij.ui.components.JBList;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,8 +17,12 @@ public class SprFileEditor {
     private JList<Image> imageList;
     private JComboBox<String> backgroundColor;
     private JComboBox<String> scale;
+    @SuppressWarnings({
+            "FieldCanBeLocal",
+            "unused"
+    })
     private final VirtualFile virtualFile;
-    private final List<Image> images;
+    private final List<BufferedImage> images;
     public static final String TRANSPARENT = "Transparent";
     public static final String BLACK = "Black";
     public static final String LIGHT_GREY = "Light Grey";
@@ -25,18 +31,19 @@ public class SprFileEditor {
     public static final String RED = "Red";
     public static final String BLUE = "Blue";
     public static final String GREEN = "Green";
+    private static final JBColor TRANSPARENT_COLOR = new JBColor(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0));
     private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
 
 
     SprFileEditor(VirtualFile file) {
         this.virtualFile = file;
-        this.images = SprParser.INSTANCE.parseSprite$CaosPlugin(file);
+        this.images = SpriteParser.parse(file).getImages();
         $$$setupUI$$$();
         backgroundColor.addItemListener((itemEvent) -> {
             final String color = (String) itemEvent.getItem();
             switch (color) {
                 case TRANSPARENT:
-                    cellRenderer.setColor(new Color(0, 0, 0, 0));
+                    cellRenderer.setColor(TRANSPARENT_COLOR);
                     break;
                 case BLACK:
                     cellRenderer.setColor(JBColor.BLACK);
