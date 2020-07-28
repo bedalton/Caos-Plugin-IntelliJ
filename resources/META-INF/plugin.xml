@@ -268,15 +268,26 @@
                                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
 
-    <!-- ======================== -->
-    <!-- ====== SPR Files ======= -->
-    <!-- ======================== -->
+    <!-- =========================== -->
+    <!-- ====== Sprite Files ======= -->
+    <!-- =========================== -->
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteFileEditorProvider" />
+
     <fileType name="SPR file"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
               fieldName="INSTANCE"
               language="CreaturesSPR" extensions="spr" />
-    <fileEditorProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileEditorProvider" />
+
+    <fileType name="S16 Sprite File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType"
+              fieldName="INSTANCE"
+              language="CreaturesS16" extensions="s16" />
+
+    <fileType name="C16 Sprite File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
+              fieldName="INSTANCE"
+              language="CreaturesC16" extensions="c16" />
     <!-- Add your extensions here -->
   </extensions>
 
