@@ -8,10 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.VARIANT_OLD
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -22,10 +19,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.ProcessingContext
 import icons.CaosScriptIcons
+import java.util.logging.Logger
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
-    private val IS_NUMBER = "[0-9]+".toRegex()
-    private val WHITESPACE = "\\s+".toRegex()
+    private val IS_NUMBER = "^[0-9]+$".toRegex()
+    private val WHITESPACE = "^\\s+$".toRegex()
     private val SKIP_VAR_NAMES = listOf("VARX", "OBVX", "MVXX", "OVXX", "VAXX")
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
         val element = parameters.position
@@ -40,7 +38,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        if (!WHITESPACE.matches(element.previous?.text ?: "")) {
+        if (element.previous?.text?.nullIfEmpty()?.let { !WHITESPACE.matches(it) }.orFalse()) {
             resultSet.stopHere()
             return
         }
@@ -78,7 +76,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         var parent: PsiElement? = element
-        while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall && parent !is CaosScriptIncomplete) {
+        while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
             parent = parent.parent
         }
         if (parent == null) {
@@ -86,11 +84,13 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
         val type = parent.getEnclosingCommandType()
+        LOGGER.info("Type: $type. Text: '${element.text}'")
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
         (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
             CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
         }
+
         if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
             resultSet.stopHere()
             return
