@@ -128,6 +128,10 @@ interface CaosScriptLoopStub : StubElement<CaosScriptLoopStatementImpl>, CaosScr
 
 interface CaosScriptMacroStub : StubElement<CaosScriptMacroImpl>
 
+interface CaosScriptInstallScriptStub : StubElement<CaosScriptInstallScriptImpl>
+
+interface CaosScriptRemovalScriptStub : StubElement<CaosScriptRemovalScriptImpl>
+
 interface CaosScriptEventScriptStub : StubElement<CaosScriptEventScriptImpl> {
     val family:Int
     val genus:Int

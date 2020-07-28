@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types;
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRemovalScript;
 import org.jetbrains.annotations.NotNull;
 
 public interface CaosScriptStubTypes {
@@ -81,6 +82,10 @@ public interface CaosScriptStubTypes {
 
     @NotNull
     CaosScriptMacroStubType MACRO = new CaosScriptMacroStubType("CaosScript_MACRO");
+    @NotNull
+    CaosScriptInstallScriptStubType INSTALL_SCRIPT = new CaosScriptInstallScriptStubType("CaosScript_INSTALL_SCRIPT");
+    @NotNull
+    CaosScriptRemovalScriptStubType REMOVAL_SCRIPT = new CaosScriptRemovalScriptStubType("CaosScript_REMOVAL_SCRIPT");
 
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
     CaosScriptRValuePrimeStubType RVALUE_PRIME = new CaosScriptRValuePrimeStubType("CaosScript_RVALUE_PRIME");
