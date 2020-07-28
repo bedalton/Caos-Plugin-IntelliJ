@@ -185,7 +185,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     private fun ignoreExpects() : Boolean {
-        return CaosScriptProjectSettings.variant == C3 || CaosScriptProjectSettings.variant == DS
+        return false && (CaosScriptProjectSettings.variant == C3 || CaosScriptProjectSettings.variant == DS)
     }
 
     @JvmStatic
