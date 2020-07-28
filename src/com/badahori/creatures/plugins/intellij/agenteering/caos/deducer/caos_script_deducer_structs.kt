@@ -70,6 +70,8 @@ enum class CaosOp(val value:Int) {
 enum class CaosScriptBlockType(val value:String) {
     UNDEF("UNDEF"),
     SCRP("scrp"),
+    ISCR("iscr"),
+    RSCR("rscr"),
     MACRO("inst"),
     DOIF("doif"),
     ELIF("elif"),

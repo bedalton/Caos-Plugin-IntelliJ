@@ -294,6 +294,15 @@ class CaosScriptMacroStubImpl(
         parent: StubElement<*>?
 ) : StubBase<CaosScriptMacroImpl>(parent, CaosScriptStubTypes.MACRO), CaosScriptMacroStub
 
+class CaosScriptInstallScriptStubImpl(
+        parent: StubElement<*>?
+) : StubBase<CaosScriptInstallScriptImpl>(parent, CaosScriptStubTypes.INSTALL_SCRIPT), CaosScriptInstallScriptStub
+
+
+class CaosScriptRemovalScriptStubImpl(
+        parent: StubElement<*>?
+) : StubBase<CaosScriptRemovalScriptImpl>(parent, CaosScriptStubTypes.REMOVAL_SCRIPT), CaosScriptRemovalScriptStub
+
 
 data class CaosScriptConstantAssignmentStruct(
         val name:String,

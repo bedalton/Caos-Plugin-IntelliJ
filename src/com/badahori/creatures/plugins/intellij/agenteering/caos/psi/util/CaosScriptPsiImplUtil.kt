@@ -987,6 +987,12 @@ object CaosScriptPsiImplUtil {
     fun getBlockType(script: CaosScriptEventScript): CaosScriptBlockType = CaosScriptBlockType.SCRP
 
     @JvmStatic
+    fun getBlockType(script: CaosScriptRemovalScript): CaosScriptBlockType = CaosScriptBlockType.RSCR
+
+    @JvmStatic
+    fun getBlockType(script: CaosScriptInstallScript): CaosScriptBlockType = CaosScriptBlockType.ISCR
+
+    @JvmStatic
     fun getCommandToken(lvalue: CaosScriptLvalue): CaosScriptIsCommandToken? {
         return lvalue.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
