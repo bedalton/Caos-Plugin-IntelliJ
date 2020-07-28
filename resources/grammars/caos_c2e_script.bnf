@@ -14,7 +14,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime|token_rvalue")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -300,9 +300,10 @@ private file_body
 	;
 
 script_body_element
-	::= comment
-	|	event_script
+	::= event_script
 	|	macro
+	| 	removal_script
+	|	install_script
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
@@ -319,9 +320,47 @@ macro
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
 		]
 		methods = [
 			getBlockType
+		]
+	}
+	;
+
+removal_script
+	::= c_rscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
+	{
+
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRemovalScriptStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+		]
+		methods = [
+			getBlockType
+		]
+	}
+	;
+
+c_rscr
+	::= K_RSCR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
 		]
 	}
 	;
@@ -348,9 +387,9 @@ code_block_line
 	;
 
 private caos_element
-	::=	control_statement
+	::=	comment
+	|	control_statement
 	|	command_call
-	| 	comment
 	;
 
 
@@ -363,6 +402,7 @@ event_script
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
 		]
 		methods = [
 			getBlockType
@@ -384,7 +424,7 @@ c_scrp ::= K_SCRP
 	methods = [
 		getReference
 		getCommandString
-			getCommandStringUpper
+		getCommandStringUpper
 		getPresentation
 		isVariant
 		getName
@@ -392,7 +432,6 @@ c_scrp ::= K_SCRP
 	]
 }
 ;
-
 
 private event_script_body
 	::= code_block
@@ -404,6 +443,47 @@ private event_script_body
 		//recoverWhile=event_script_body_recover
 	}
 	;
+
+
+install_script
+	::= c_iscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptInstallScriptStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+		]
+		methods = [
+			getBlockType
+			getFamily
+			getGenus
+			getSpecies
+			getEventNumber
+		]
+	}
+	;
+
+c_iscr ::= K_ISCR
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+		getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
 
 subroutine
 	::= subroutine_header (space_like_or_newline subroutine_body)? (space_like_or_newline c_retn)?
@@ -1157,7 +1237,6 @@ expression
 	|	number
 	|	<<expects 'TOKEN' 'false'>>token
 	|	pict_dimension_literal
-	|	incomplete
 	{
 		methods = [
 			isString
@@ -1752,7 +1831,7 @@ command_call
 			getCommandElement
 			getCommandString
 		]
-		//recoverWhile = command_recover
+		recoverWhile = command_call_recover
 	}
 	;
 
@@ -1844,7 +1923,7 @@ private command_call_by_args
 	|	c_pict
 	|	c_cv_char
 	{
-		recoverWhile=command_call_recover
+		//recoverWhile=command_call_recover
 	}
 	;
 
@@ -2264,8 +2343,6 @@ private c_d_d ::= c_kw_d_d args_d_d
 	}
 	;
 
-private args_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_l ::= c_kw_l space_like lvalue
 	{
@@ -2289,8 +2366,6 @@ private c_d_s ::= c_kw_d_s args_d_s
 	}
 	;
 
-private args_d_s ::= space_like expects_decimal_or_int space_like expects_string;
-
 private c_l_s ::= c_kw_l_s space_like lvalue space_like expects_string
 	{
 		pin=1
@@ -2303,16 +2378,12 @@ private c_d_d_f_d ::= c_kw_d_d_f_d args_d_d_f_d
 	}
 	;
 
-private args_d_d_f_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int;
-
 
 private c_d_d_f ::= c_kw_d_d_f args_d_d_f
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_f ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float;
 
 
 private c_bs ::= c_kw_bs space_like expects_byte_string
@@ -2337,15 +2408,11 @@ private c_d_d_d ::= c_kw_d_d_d args_d_d_d
 	}
 	;
 
-private args_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
-
 private c_d_d_s ::= c_kw_d_d_s args_d_d_s
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_s ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string;
 
 
 private c_d_d_d_d ::= c_kw_d_d_d_d args_d_d_d_d
@@ -2354,16 +2421,12 @@ private c_d_d_d_d ::= c_kw_d_d_d_d args_d_d_d_d
 	}
 	;
 
-private args_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_s_d_d_d ::= c_kw_s_d_d_d args_c1s_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_c1s_d_d_d ::= space_like expects_c1_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_d_s_d ::= c_kw_d_s_d args_d_s_d
@@ -2372,16 +2435,12 @@ private c_d_s_d ::= c_kw_d_s_d args_d_s_d
 	}
 	;
 
-private args_d_s_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int;
-
 
 private c_d_d_d_f ::= c_kw_d_d_d_f args_d_d_d_f
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_d_f  ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float;
 
 
 private c_d_v_v ::= c_kw_d_v_v args_d_v_v
@@ -2390,15 +2449,11 @@ private c_d_v_v ::= c_kw_d_v_v args_d_v_v
 	}
 	;
 
-private args_d_v_v ::=  space_like expects_decimal_or_int space_like expects_value space_like expects_value;
-
 private c_l_d_d ::= c_kw_l_d_d args_l_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_l_d_d ::= space_like lvalue space_like expects_decimal_or_int space_like expects_decimal_or_int
 
 private c_d_f ::= c_kw_d_f args_d_f
 	{
@@ -2406,16 +2461,12 @@ private c_d_f ::= c_kw_d_f args_d_f
 	}
 	;
 
-private args_d_f ::= space_like expects_decimal_or_int space_like expects_float;
-
 
 private c_f_f_f_f ::= c_kw_f_f_f_f args_f_f_f_f
 	{
 		pin=1
 	}
 	;
-
-private args_f_f_f_f ::= space_like expects_float space_like expects_float space_like expects_float space_like expects_float;
 
 private c_cond ::= c_kw_cond space_like equality_expression
 	{
@@ -2447,16 +2498,12 @@ private c_s_t ::= c_kw_s_t args_s_t
 	}
 	;
 
-private args_s_t ::= space_like expects_c1_string space_like expects_token;
-
 
 private c_f_f ::= c_kw_f_f args_f_f
 	{
 		pin=1
 	}
 	;
-
-private args_f_f ::= space_like expects_float space_like expects_float;
 
 
 private c_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d args_d_d_d_d_d_d_d
@@ -2465,8 +2512,6 @@ private c_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d args_d_d_d_d_d_d_d
 	}
 	;
 
-private args_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_s_d ::= c_kw_s_d args_s_d
 	{
@@ -2474,15 +2519,12 @@ private c_s_d ::= c_kw_s_d args_s_d
 	}
 	;
 
-private args_s_d ::= space_like expects_string space_like expects_decimal_or_int;
-
 
 private c_a_d_a_d ::= c_kw_a_d_a_d args_a_d_a_d
 	{
 		pin=1
 	}
 	;
-private args_a_d_a_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int;
 
 
 private c_a_d_a_d_a_d_d_d_d_d ::= c_kw_a_d_a_d_a_d_d_d_d_d args_a_d_a_d_a_d_d_d_d_d
@@ -2491,15 +2533,11 @@ private c_a_d_a_d_a_d_d_d_d_d ::= c_kw_a_d_a_d_a_d_d_d_d_d args_a_d_a_d_a_d_d_d_
 	}
 	;
 
-private args_a_d_a_d_a_d_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 private c_a_d ::= c_kw_a_d args_a_d
 	{
 		pin=1
 	}
 	;
-
-private args_a_d ::= space_like expects_agent space_like expects_decimal_or_int;
 
 
 private c_a_d_s ::= c_kw_a_d_s args_a_d_s
@@ -2507,8 +2545,6 @@ private c_a_d_s ::= c_kw_a_d_s args_a_d_s
 		pin=1
 	}
 	;
-
-private args_a_d_s ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_string;
 
 private c_t ::= c_kw_t space_like expects_token
 	{
@@ -2524,15 +2560,11 @@ private c_d_d_d_f_f ::= c_kw_d_d_d_f_f args_d_d_d_f_f
 	}
 	;
 
-private args_d_d_d_f_f ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float;
-
 private c_s_d_s_s ::= c_kw_s_d_s_s args_s_d_s_s
 	{
 		pin=1
 	}
 	;
-
-private args_s_d_s_s ::=  space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like expects_string;
 
 
 private c_s_d_s ::= c_kw_s_d_s args_s_d_s
@@ -2541,8 +2573,6 @@ private c_s_d_s ::= c_kw_s_d_s args_s_d_s
 	}
 	;
 
-private args_s_d_s ::= space_like expects_string space_like expects_decimal_or_int space_like expects_string;
-
 
 private c_s_s ::= c_kw_s_s args_s_s
 	{
@@ -2550,15 +2580,11 @@ private c_s_s ::= c_kw_s_s args_s_s
 	}
 	;
 
-private args_s_s ::= space_like expects_string space_like expects_string;
-
 private c_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d args_d_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_d_d_d_d_d_d_d  ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_d_d_d_d_f ::= c_kw_d_d_d_d_f args_d_d_d_d_f
@@ -2567,16 +2593,12 @@ private c_d_d_d_d_f ::= c_kw_d_d_d_d_f args_d_d_d_d_f
 	}
 	;
 
-private args_d_d_d_d_f ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float;
-
 
 private c_a_d_v_v_d ::= c_kw_a_d_v_v_d args_a_d_v_v_d
 	{
 		pin=1
 	}
 	;
-
-private args_a_d_v_v_d ::=  space_like expects_agent space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_decimal_or_int;
 
 
 private c_l_l_l_l ::= c_kw_l_l_l_l args_l_l_l_l
@@ -2585,14 +2607,11 @@ private c_l_l_l_l ::= c_kw_l_l_l_l args_l_l_l_l
 	}
 	;
 
-private args_l_l_l_l ::= space_like lvalue space_like lvalue space_like lvalue space_like lvalue;
-
 private c_s_l ::= c_kw_s_l args_s_l
 	{
 		pin=1
 	}
 	;
-private args_s_l ::= space_like expects_string space_like lvalue
 
 
 private c_s_s_d_v_v ::= c_kw_s_s_d_v_v args_s_s_d_v_v
@@ -2601,16 +2620,12 @@ private c_s_s_d_v_v ::= c_kw_s_s_d_v_v args_s_s_d_v_v
 	}
 	;
 
-private args_s_s_d_v_v ::= space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_value space_like expects_value;
-
 
 private c_t_d_d_d_d_d_d_d ::= c_kw_t_d_d_d_d_d_d_d args_t_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_t_d_d_d_d_d_d_d ::=  space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_t_d_d_d ::= c_kw_t_d_d_d args_t_d_d_d
@@ -2619,8 +2634,6 @@ private c_t_d_d_d ::= c_kw_t_d_d_d args_t_d_d_d
 	}
 	;
 
-private args_t_d_d_d ::=  space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_t_d_d_v ::= c_kw_t_d_d_v args_t_d_d_v
 	{
@@ -2628,15 +2641,11 @@ private c_t_d_d_v ::= c_kw_t_d_d_v args_t_d_d_v
 	}
 	;
 
-private args_t_d_d_v ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value;
-
 private c_d_d_d_s_d_d_d ::= c_kw_d_d_d_s_d_d_d args_d_d_d_s_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_d_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_d_a_d_d_d_s_d_d_d ::= c_kw_d_a_d_d_d_s_d_d_d args_d_a_d_d_d_s_d_d_d
@@ -2645,15 +2654,11 @@ private c_d_a_d_d_d_s_d_d_d ::= c_kw_d_a_d_d_d_s_d_d_d args_d_a_d_d_d_s_d_d_d
 	}
 	;
 
-private args_d_a_d_d_d_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 private c_d_a_d_d_d ::= c_kw_d_a_d_d_d args_d_a_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_a_d_d_d ::= space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_d_d_l ::= c_kw_d_d_l args_d_d_l
@@ -2662,16 +2667,12 @@ private c_d_d_l ::= c_kw_d_d_l args_d_d_l
 	}
 	;
 
-private args_d_d_l ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue;
-
 
 private c_t_d_d ::= c_kw_t_d_d args_t_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_t_d_d ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_d_d_d_d_d ::= c_kw_d_d_d_d_d args_d_d_d_d_d
@@ -2680,8 +2681,6 @@ private c_d_d_d_d_d ::= c_kw_d_d_d_d_d args_d_d_d_d_d
 	}
 	;
 
-private args_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_t_d_d_d_d ::= c_kw_t_d_d_d_d args_t_d_d_d_d
 	{
@@ -2689,16 +2688,12 @@ private c_t_d_d_d_d ::= c_kw_t_d_d_d_d args_t_d_d_d_d
 	}
 	;
 
-private args_t_d_d_d_d ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_a_s ::= c_kw_a_s args_a_s
 	{
 		pin=1
 	}
 	;
-
-private args_a_s ::= space_like expects_agent space_like expects_string;
 
 private c_d_s_d_d_d_d_d_bs_d_d ::= c_kw_d_s_d_d_d_d_d_bs_d_d space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_byte_string space_like expects_decimal_or_int space_like expects_decimal_or_int
 	{
@@ -2714,15 +2709,11 @@ private c_d_s_d_d_d_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d_d_d_d args_d_s_d_d_d_d_d_d_
 	}
 	;
 
-private args_d_s_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 private c_d_s_d_d_d_d ::= c_kw_d_s_d_d_d_d args_d_s_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_s_d_d_d_d ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int
 
 
 private c_d_s_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_s args_d_s_d_d_d_d_s
@@ -2731,16 +2722,12 @@ private c_d_s_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_s args_d_s_d_d_d_d_s
 	}
 	;
 
-private args_d_s_d_d_d_d_s ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_string
-
 
 private c_d_s_d_d_d_d_d ::= c_kw_d_s_d_d_d_d_d args_d_s_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_s_d_d_d_d_d ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 
@@ -2750,15 +2737,11 @@ private c_d_s_d_d_d_d_d_s ::= c_kw_d_s_d_d_d_d_d_s args_d_s_d_d_d_d_d_s
 	}
 	;
 
-private args_d_s_d_d_d_d_d_s ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
-
 private c_d_s_s_d_d_d ::= c_kw_d_s_s_d_d_d args_d_s_s_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_s_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_a_d_d ::= c_kw_a_d_d arg_a_d_d
@@ -2767,8 +2750,6 @@ private c_a_d_d ::= c_kw_a_d_d arg_a_d_d
 	}
 	;
 
-private arg_a_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
-
 
 private c_d_s_s_d_d ::= c_kw_d_s_s_d_d args_d_s_s_d_d
 	{
@@ -2776,23 +2757,17 @@ private c_d_s_s_d_d ::= c_kw_d_s_s_d_d args_d_s_s_d_d
 	}
 	;
 
-private args_d_s_s_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
-
 private c_d_v ::= c_kw_d_v args_d_v
 	{
 		pin=1
 	}
 	;
 
-private args_d_v ::= space_like expects_decimal_or_int space_like expects_value;
-
 private c_d_d_f_f_f ::= c_kw_d_d_f_f_f args_d_d_f_f_f
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_f_f_f ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float space_like expects_float
 
 
 private c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d args_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d
@@ -2801,15 +2776,11 @@ private c_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d_d
 	}
 	;
 
-private args_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 private c_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d args_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 private c_a_a ::= c_kw_a_a args_a_a
@@ -2818,8 +2789,6 @@ private c_a_a ::= c_kw_a_a args_a_a
 	}
 	;
 
-private args_a_a ::= space_like expects_agent space_like expects_agent
-
 
 private c_s_d_d_d_d_d ::= c_kw_s_d_d_d_d_d args_s_d_d_d_d_d
 	{
@@ -2827,16 +2796,12 @@ private c_s_d_d_d_d_d ::= c_kw_s_d_d_d_d_d args_s_d_d_d_d_d
 	}
 	;
 
-private args_s_d_d_d_d_d ::= space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_t_d ::= c_kw_t_d args_t_d
 	{
 		pin=1
 	}
 	;
-
-private args_t_d ::=  space_like expects_token space_like expects_decimal_or_int;
 
 
 
@@ -2854,9 +2819,6 @@ private c_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_d_d_d_d_d_d_d_d_d_d_d_d arg_d_d_d_d_d
 	}
 	;
 
-private arg_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
-
-
 
 private c_a_d_f ::= c_kw_a_d_f args_a_d_f
 	{
@@ -2864,15 +2826,11 @@ private c_a_d_f ::= c_kw_a_d_f args_a_d_f
 	}
 	;
 
-private args_a_d_f ::=  space_like expects_agent space_like expects_decimal_or_int space_like expects_float;
-
 private c_a_d_d_d_d_d_d_d_d_d_d_d_d ::= c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d args_a_d_d_d_d_d_d_d_d_d_d_d_d
 	{
 		pin=1
 	}
 	;
-
-private args_a_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 
 
@@ -2882,16 +2840,12 @@ private c_d_f_d_f_d_f_d_f ::= c_kw_d_f_d_f_d_f_d_f args_d_f_d_f_d_f_d_f
 	}
 	;
 
-private args_d_f_d_f_d_f_d_f ::=  space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
-
 
 private c_a_d_f_d_f_d_f_d_f ::= c_kw_a_d_f_d_f_d_f_d_f args_a_d_f_d_f_d_f_d_f
 	{
 		pin=1
 	}
 	;
-
-private args_a_d_f_d_f_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
 
 
 private c_s_s_s_d ::= c_kw_s_s_s_d args_s_s_s_d
@@ -2900,8 +2854,6 @@ private c_s_s_s_d ::= c_kw_s_s_s_d args_s_s_s_d
 	}
 	;
 
-private args_s_s_s_d ::= space_like expects_c1_string space_like expects_c1_string space_like expects_c1_string space_like expects_decimal_or_int
-
 
 private c_a_d_d_d_d ::= c_kw_a_d_d_d_d args_a_d_d_d_d
 	{
@@ -2909,24 +2861,18 @@ private c_a_d_d_d_d ::= c_kw_a_d_d_d_d args_a_d_d_d_d
 	}
 	;
 
-private args_a_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 
 private c_f_d_f ::= c_kw_f_d_f args_f_d_f
 	{
 		pin=1
 	}
 	;
-private args_f_d_f ::= space_like expects_float space_like expects_decimal_or_int space_like expects_float;
-
 
 private c_a_d_f_d_f ::= c_kw_a_d_f_d_f args_a_d_f_d_f
 	{
 		pin=1
 	}
 	;
-
-private args_a_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float;
 
 
 rvalue_prime
@@ -3090,8 +3036,6 @@ private r_s_d_d ::= r_kw_s_d_d args_s_d_d
 	}
 	;
 
-private args_s_d_d ::= space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int;
-
 private r_d_d_d_d_d ::= r_kw_d_d_d_d_d space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
 	{
 		pin=1
@@ -3114,13 +3058,6 @@ private r_a_d_d_d ::= r_kw_a_d_d_d args_a_d_d_d
 	}
 	;
 
-private args_a_d_d_d
-	::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
-	{
-		pin=2
-	}
-	;
-
 
 private r_s_s ::= r_kw_s_s args_s_s
 	{
@@ -3138,14 +3075,19 @@ private r_d_s_s_l ::= r_kw_d_s_s_l args_d_s_s_l
 
 private args_d_s_s_l ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like lvalue;
 
+private args_a_d_d_d
+	::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=2
+	}
+	;
+
 
 private r_s_s_d ::= r_kw_s_s_d args_s_s_d
 	{
 		pin=1
 	}
 	;
-
-private args_s_s_d ::= space_like expects_string space_like expects_string space_like expects_decimal_or_int;
 
 
 private r_s_s_s ::= r_kw_s_s_s args_s_s_s
@@ -3154,15 +3096,11 @@ private r_s_s_s ::= r_kw_s_s_s args_s_s_s
 	}
 	;
 
-private args_s_s_s ::= space_like expects_string space_like expects_string space_like expects_string;
-
 private r_s_d_l ::= r_kw_s_d_l args_s_d_l
 	{
 		pin=1
 	}
 	;
-
-private args_s_d_l ::= space_like expects_string space_like expects_decimal_or_int space_like lvalue;
 
 private r_d_s_d_s_l ::= r_kw_d_s_d_s_l args_d_s_d_s_l
 	{
@@ -3171,8 +3109,6 @@ private r_d_s_d_s_l ::= r_kw_d_s_d_s_l args_d_s_d_s_l
 	;
 
 
-private args_d_s_d_s_l ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like lvalue;
-
 
 
 private r_a_d_d ::= r_kw_a_d_d args_a_d_d
@@ -3180,8 +3116,6 @@ private r_a_d_d ::= r_kw_a_d_d args_a_d_d
 		pin=1
 	}
 	;
-
-private args_a_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int;
 
 private r_a_a ::= r_kw_a_a args_a_a
 	{
@@ -3204,8 +3138,6 @@ private r_d_d_bs_bs ::= r_kw_d_d_bs_bs args_d_d_bs_bs
 		pin=1
 	}
 	;
-
-private args_d_d_bs_bs ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_byte_string space_like expects_byte_string;
 
 private r_s_d_s ::= r_kw_s_d_s args_s_d_s
 	{
@@ -3236,8 +3168,6 @@ private r_d_d_d_s_d ::= r_kw_d_d_d_s_d args_d_d_d_s_d
 		pin=1
 	}
 	;
-
-private args_d_d_d_s_d ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int;
 
 lvalue
 	::= named_game_var
@@ -3381,7 +3311,6 @@ c_kw_none
 	|	K_GPAS (<<isOldVariant>>)
 	|	K_HELP
 	|	K_INST
-	|	K_ISCR
 	|	K_LOCK
 	|	K_LOOP
 	|	K_MAPK
@@ -3400,7 +3329,6 @@ c_kw_none
 	|	K_REAF
 	|	K_RGAM
 	|	RMS_NUM
-	|	K_RSCR
 	|	K_RSET
 	|	K_SAVE
 	|	K_SAYN
@@ -5530,6 +5458,7 @@ r_kw_none
 	|	K_ZOMB
 	|	K_CAMN
 	| 	r_gend
+	|	incomplete
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -7202,6 +7131,442 @@ all_tokens
 	| K_ZOOM
 	;
 
+
+private args_d_d_d_s_d ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_bs_bs ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_byte_string space_like expects_byte_string
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d_s_l ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+private args_s_d_l ::= space_like expects_string space_like expects_decimal_or_int space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+private args_s_s_s ::= space_like expects_string space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_s_s_d ::= space_like expects_string space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_s_d_d ::= space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_f_d_f ::= space_like expects_float space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_s_s_s_d ::= space_like expects_c1_string space_like expects_c1_string space_like expects_c1_string space_like expects_decimal_or_int
+
+private args_a_d_f_d_f_d_f_d_f ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+
+private args_d_f_d_f_d_f_d_f ::=  space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int space_like expects_float
+
+private args_a_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_f ::=  space_like expects_agent space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private arg_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_t_d ::=  space_like expects_token space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_s_d_d_d_d_d ::= space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_a_a ::= space_like expects_agent space_like expects_agent
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_f_f_f ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_d_v ::= space_like expects_decimal_or_int space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_s_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private arg_a_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d_d_d_d_d_s ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d_d_d_d_d ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d_d_d_d_s ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d_d_d_d ::=  space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal space_like expects_decimal space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_a_s ::= space_like expects_agent space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_t_d_d_d_d ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_t_d_d ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_l ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+private args_d_a_d_d_d ::= space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_a_d_d_d_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_s_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_t_d_d_v ::= space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+private args_t_d_d_d ::=  space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_t_d_d_d_d_d_d_d ::=  space_like expects_token space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_s_s_d_v_v ::= space_like expects_string space_like expects_string space_like expects_decimal_or_int space_like expects_value space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+private args_s_l ::= space_like expects_string space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+private args_l_l_l_l ::= space_like lvalue space_like lvalue space_like lvalue space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_v_v_d ::=  space_like expects_agent space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d_f ::=  space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d_d_d_d_d_d  ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_s_s ::= space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_s_d_s ::= space_like expects_string space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_s_d_s_s ::=  space_like expects_string space_like expects_decimal_or_int space_like expects_string space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_f_f ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_s ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_a_d ::= space_like expects_agent space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_a_d_a_d_a_d_d_d_d_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+private args_a_d_a_d ::= space_like expects_agent space_like expects_decimal_or_int space_like expects_agent space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_s_d ::= space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_f_f ::= space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_s_t ::= space_like expects_c1_string space_like expects_token
+	{
+		pin=1
+	}
+	;
+
+private args_f_f_f_f ::= space_like expects_float space_like expects_float space_like expects_float space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_d_f ::= space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_l_d_d ::= space_like lvalue space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_v_v ::=  space_like expects_decimal_or_int space_like expects_value space_like expects_value
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_f  ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	}
+	;
+
+private args_d_s_d ::= space_like expects_decimal_or_int space_like expects_string space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_c1s_d_d_d ::= space_like expects_c1_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_s ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
+
+private args_d_d_f ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float
+	{
+		pin=1
+	};
+
+private args_d_d_f_d ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_float space_like expects_decimal_or_int
+	{
+		pin=1
+	};
+
+private args_d_s ::= space_like expects_decimal_or_int space_like expects_string
+	{
+		pin=1
+	};
+
+
+private args_d_d
+	::= space_like expects_decimal_or_int space_like expects_decimal_or_int
+	{
+		pin=1
+	}
+	;
 
 private args_d_d_d_d_s ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_string;
 private args_d_d_v_v_s_d_d_l ::= space_like expects_decimal_or_int space_like expects_decimal_or_int space_like expects_value space_like expects_value space_like expects_string space_like expects_decimal_or_int space_like expects_decimal_or_int space_like lvalue
