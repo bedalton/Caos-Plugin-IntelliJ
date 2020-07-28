@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
+package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
@@ -9,14 +9,15 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 
 
-class SprFileEditorProvider : FileEditorProvider, DumbAware {
+class SpriteFileEditorProvider : FileEditorProvider, DumbAware {
+
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
-        return file.extension == "spr"
+        return file.extension?.toLowerCase() in spriteFileTypes
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
-        return SprEditorImpl(project, file)
+        return SpriteEditorImpl(project, file)
     }
 
     override fun disposeEditor(editor: FileEditor) {
@@ -31,6 +32,7 @@ class SprFileEditorProvider : FileEditorProvider, DumbAware {
         return FileEditorPolicy.HIDE_DEFAULT_EDITOR
     }
     companion object {
+        private val spriteFileTypes = listOf("spr", "back", "c16", "s16")
         private const val EDITOR_TYPE_ID = "creature.spr"
     }
 }

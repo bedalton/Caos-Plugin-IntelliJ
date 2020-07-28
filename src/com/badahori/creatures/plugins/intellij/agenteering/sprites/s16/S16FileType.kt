@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
+package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
 
 import com.intellij.openapi.fileTypes.FileType
@@ -6,13 +6,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
 
-class SprFileType private constructor() : FileType {
+class S16FileType private constructor() : FileType {
     override fun getName(): String {
-        return "SPR file"
+        return "S16 Sprite File"
     }
 
     override fun getDescription(): String {
-        return "Creatures 1 Sprite File"
+        return "Creatures S16 Sprite File"
     }
 
     override fun isBinary(): Boolean {
@@ -37,8 +37,8 @@ class SprFileType private constructor() : FileType {
 
     companion object {
         @JvmStatic
-        val INSTANCE = SprFileType()
+        val INSTANCE = S16FileType()
         @JvmStatic
-        val DEFAULT_EXTENSION = "spr"
+        val DEFAULT_EXTENSION = "s16"
     }
 }
