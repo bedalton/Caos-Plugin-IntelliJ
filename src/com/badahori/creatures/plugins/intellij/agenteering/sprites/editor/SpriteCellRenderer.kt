@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
+package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import java.awt.Color

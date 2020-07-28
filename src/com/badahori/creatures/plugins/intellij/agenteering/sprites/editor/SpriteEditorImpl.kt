@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
+package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -11,7 +11,7 @@ import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
 
-class SprEditorImpl : UserDataHolderBase, FileEditor {
+class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     private var myFile: VirtualFile
     private var myProject: Project? = null
 
