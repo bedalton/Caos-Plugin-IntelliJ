@@ -772,7 +772,6 @@ object CaosScriptPsiImplUtil {
                         val second = arguments[1].text.toInt()
                         CaosVar.CaosNamedGameVar.C2GameVar(first, second)
                     } catch (e:Exception) {
-                        LOGGER.warning("Unexpected values encountered for C2 [GAME] variable. Expected int's")
                     }
                 }
             }
@@ -1496,7 +1495,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
     // Getting base element will skip this possibility, so check first
     if (isOrHasParentOfType(CaosScriptExpression::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
         return CaosCommandType.RVALUE
-    val parent: PsiElement? = getParentOfType(CaosScriptBaseCommandElement::class.java)
+    val parent: PsiElement? = getSelfOrParentOfType(CaosScriptBaseCommandElement::class.java)
     if (parent == null || (parent !is CaosScriptCommandElement || parent is CaosScriptNamedGameVar)) {
         if (isOrHasParentOfType(CaosScriptIncomplete::class.java)) {
             return CaosCommandType.COMMAND
