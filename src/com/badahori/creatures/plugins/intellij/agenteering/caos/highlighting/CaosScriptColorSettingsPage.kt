@@ -31,7 +31,7 @@ doif var1 <eqOp>eq</eqOp> 10
     <command>base</command> 4 <command>anim</command> <anim>[0123R]</anim>
     enum 4 1 0
         <command>chem</command> 57 10
-        <command>gsub</gsub> <subroutine>sbrt</subroutine> 
+        <command>gsub</command> <subroutine>sbrt</subroutine> 
     next
 else
     <command>addv</command> obv1 1
@@ -45,7 +45,7 @@ scrp 2 3 6 9
     doif mv00 <symbol>></symbol> 0
         <command>tick</command> 0
         <keyword>stop</keyword>
-        <command>setv</command> <lvalue>ob20</lvalue> <rvalue>driv</rvalue> 5
+        <command>setv</command> <lvalue>ov20</lvalue> <rvalue>driv</rvalue> 5
     else
         <command>anim</command> <anim>[10 11 12 13]</anim>
     endi
