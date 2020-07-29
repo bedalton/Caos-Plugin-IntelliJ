@@ -20,3 +20,12 @@ object ReplaceTextWithValueInsertHandler : InsertHandler<LookupElement> {
         context.document.replaceString(context.startOffset, context.tailOffset, lookupEl.lookupString)
     }
 }
+
+class CloseQuoteInsertHandler(private val closeQuote:String) : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
+        context.editor.caretModel.currentCaret.offset
+        if (EditorUtil.isTextAtOffset(context, closeQuote))
+            return
+        EditorUtil.insertText(context, closeQuote, true)
+    }
+}
