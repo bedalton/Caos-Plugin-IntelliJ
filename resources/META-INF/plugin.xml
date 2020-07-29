@@ -108,11 +108,12 @@
         key="CaosScript"
     />
     <colorSettingsPage
+        language=""
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptDefColorSchemeDarcula.xml" />
+    <additionalTextAttributes scheme="Darcula" dark="true" file="colorSchemes/CaosScriptColorSchemeDarcula.xml" />
 
     <!-- Annotators -->
     <annotator language="CaosScript"
@@ -245,7 +246,7 @@
     <annotator language="CaosDef"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefHighlighterAnnotator" />
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDarcula.xml" />
+    <additionalTextAttributes scheme="Darcula" file="colorSchemes/CaosDefColorSchemeDarcula.xml" />
 
 
     <!-- Indices -->
