@@ -76,9 +76,10 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
                 val color = SpriteColorUtil.getColor(bytesBuffer.uInt16BE, encoding)
                 if (color[0] == 0 && color[1] == 0 && color[2] == 0)
                     image.alphaRaster.setPixel(x, y, transparent)
-                else
+                else {
                     image.raster.setPixel(x, y, color)
                     image.alphaRaster.setPixel(x, y, solid)
+                }
             }
         }
         return image
