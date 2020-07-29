@@ -62,7 +62,7 @@
 		MV_XX = "regexp:[Mm][Vv][0-9][0-9]"
 		VAR_X = "regexp:[Vv][Aa][Rr][0-9]"
 		OBV_X = "regexp:[Oo][Bb][Vv][0-9]"
-		K_STIM = "regexp:[sS][tT][iI][mM]"
+		prefix_stim = "regexp:[sS][tT][iI][mM]"
 		K_WRIT = "regexp:[wW][rR][iI][tT]"
 		K_SHOU = "regexp:[sS][hH][oO][uU]"
 		K_SIGN = "regexp:[sS][iI][gG][nN]"
@@ -78,7 +78,7 @@
 		K_SCEN = "regexp:[sS][cC][eE][nN]"
 		K_CABN = "regexp:[cC][aA][bB][nN]"
 		K_SCRX = "regexp:[sS][cC][rR][xX]"
-		K_SYS_COL = "regexp:[sS][yY][sS][:]"
+		SYS_COL = "regexp:[sS][yY][sS][:]"
 		K_EDIT = "regexp:[eE][dD][iI][tT]"
 		K_TOOL = "regexp:[tT][oO][oO][lL]"
 		K_WPOS = "regexp:[wW][pP][oO][sS]"
@@ -86,9 +86,9 @@
 		K_LIFT = "regexp:[lL][iI][fF][tT]"
 		K_VHCL = "regexp:[vV][hH][cC][lL]"
 		K_RNDV = "regexp:[rR][nN][dD][vV]"
-		K_BBD_COL = "regexp:[bB][bB][dD][:]"
+		BBD_COL = "regexp:[bB][bB][dD][:]"
 		K_WORD = "regexp:[wW][oO][rR][dD]"
-		K_DDE_COL = "regexp:[dD][dD][eE][:]"
+		DDE_COL = "regexp:[dD][dD][eE][:]"
 		K_CELL = "regexp:[cC][eE][lL][lL]"
 		K_FIRE = "regexp:[fF][iI][rR][eE]"
 		K_LTCY = "regexp:[lL][tT][cC][yY]"
@@ -2179,7 +2179,7 @@ private vars
 
 
 c_kw_pict
-	::= K_DDE_COL space_like (K_PICT|incomplete)
+	::= prefix_kw_dde_col space_like (K_PICT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3258,56 +3258,47 @@ private l_d ::= l_kw_d space_like expects_decimal_or_int
 	;
 
 c_kw_none
-	::= K_CD_ space_like (K_EJCT|incomplete)
-	|	K_CD_ space_like (K_INIT|incomplete)
-	|	K_CD_ space_like (K_SHUT|incomplete)
-	|	K_CD_ space_like (K_STOP|incomplete)
+	::= c_kw_cd_prefix space_like (K_EJCT|incomplete)
+	|	c_kw_cd_prefix space_like (K_INIT|incomplete)
+	|	c_kw_cd_prefix space_like (K_SHUT|incomplete)
+	|	c_kw_cd_prefix space_like (K_STOP|incomplete)
 	|	K_DPAS <<isOldVariant>>
 	|	K_APPR
 	|	K_ASEA
 	|	K_BANG
 	|	K_BORN
-	|	K_BRN_COL space_like (K_DMPB|incomplete)
+	|	prefix_kw_brn_col space_like (K_DMPB|incomplete)
 	|	K_CAGE
 	|	K_CALC
 	|	K_CAMN
 	|	K_CBRG
 	|	K_DEAD
-	|	K_DBG_COL space_like (K_CPRO|incomplete)
-	|	K_DBG_COL space_like (K_FLSH|incomplete)
-	|	K_DBG_COL space_like (K_PAWS|incomplete)
-	|	K_DBG_COL space_like (K_PLAY|incomplete)
-	|	K_DBG_COL space_like (K_POLL|incomplete)
-	|	K_DBG_COL space_like (K_PROF|incomplete)
-	|	K_DBG_COL space_like (K_TOCK|incomplete)
-	|	K_DDE_COL space_like (K_DIED|incomplete)
-	|	K_DDE_COL space_like (K_GENE|incomplete)
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_BIOC
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_CNAM
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_CTIM
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_DATA
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_MONK
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_NEWV
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ORGN
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_OVVD
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RRCT
-	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_ROOT
-	|	K_DDE_COL space_like (K_HATC|incomplete)
-	|	K_DDE_COL space_like (K_LIVE|incomplete)
-	|	K_DDE_COL space_like (K_LOBE|incomplete)
-	|	K_DDE_COL space_like (K_NACT|incomplete)
-	|	K_DDE_COL space_like (K_NEGG|incomplete)
-	|	K_DDE_COL space_like (K_PANC|incomplete)
+	|	prefix_kw_dbg_col space_like (K_CPRO|incomplete)
+	|	prefix_kw_dbg_col space_like (K_FLSH|incomplete)
+	|	prefix_kw_dbg_col space_like (K_PAWS|incomplete)
+	|	prefix_kw_dbg_col space_like (K_PLAY|incomplete)
+	|	prefix_kw_dbg_col space_like (K_POLL|incomplete)
+	|	prefix_kw_dbg_col space_like (K_PROF|incomplete)
+	|	prefix_kw_dbg_col space_like (K_TOCK|incomplete)
+	|	prefix_kw_dde_col space_like (K_DIED|incomplete)
+	|	prefix_kw_dde_col space_like (K_GENE|incomplete)
+	|	prefix_kw_dde_col space_like ((K_GETB|incomplete) | K_GETB space_like (c_kw_dde_getb_none|incomplete))
+	|	prefix_kw_dde_col space_like (K_HATC|incomplete)
+	|	prefix_kw_dde_col space_like (K_LIVE|incomplete)
+	|	prefix_kw_dde_col space_like (K_LOBE|incomplete)
+	|	prefix_kw_dde_col space_like (K_NACT|incomplete)
+	|	prefix_kw_dde_col space_like (K_NEGG|incomplete)
+	|	prefix_kw_dde_col space_like (K_PANC|incomplete)
 	|	K_DONE
 	|	K_DROP
 	|	K_EDIT
 	|	K_FADE
 	|	K_FCUS
-	|	K_FILE space_like (K_ICLO|incomplete)
-	|	K_FILE space_like (K_OCLO|incomplete)
-	|	K_FILE space_like (K_OFLU|incomplete)
+	|	prefix_kw_file space_like (K_ICLO|incomplete)
+	|	prefix_kw_file space_like (K_OCLO|incomplete)
+	|	prefix_kw_file space_like (K_OFLU|incomplete)
 	|	K_FRSH
-	|	K_GIDS space_like (K_ROOT|incomplete)
+	|	prefix_kw_gids space_like (K_ROOT|incomplete)
 	|	K_GPAS (<<isOldVariant>>)
 	|	K_HELP
 	|	K_INST
@@ -3316,14 +3307,14 @@ c_kw_none
 	|	K_MAPK
 	|	K_MATE
 	|	K_MEMX
-	|	K_NET_COL space_like (K_HEAD|incomplete)
-	|	K_NET_COL space_like (K_WHOD|incomplete)
-	|	K_NET_COL space_like (K_WHOZ|incomplete)
+	|	prefix_kw_net_col space_like (K_HEAD|incomplete)
+	|	prefix_kw_net_col space_like (K_WHOD|incomplete)
+	|	prefix_kw_net_col space_like (K_WHOZ|incomplete)
 	|	K_NOHH
 	|	K_NUDE
 	|	K_OVER
 	|	K_POIN
-	|	K_PRAY space_like (K_REFR|incomplete)
+	|	prefix_kw_pray space_like (K_REFR|incomplete)
 	|	K_QUIT
 	|	K_RCLR <<isVariant 'C2'>>
 	|	K_REAF
@@ -3339,11 +3330,11 @@ c_kw_none
 	|	K_STPC
 	|	K_STPT
 	|	K_STRE
-	|	K_SYS_COL space_like (K_ABRT|incomplete)
-	|	K_SYS_COL space_like (K_CAMT|incomplete)
-	|	K_SYS_COL space_like (K_DMAP|incomplete)
-	|	K_SYS_COL space_like (K_QUIT|incomplete)
-	|	K_SYS_COL space_like (K_WTOP|incomplete)
+	|	prefix_kw_sys_col space_like (K_ABRT|incomplete)
+	|	prefix_kw_sys_col space_like (K_CAMT|incomplete)
+	|	prefix_kw_sys_col space_like (K_DMAP|incomplete)
+	|	prefix_kw_sys_col space_like (K_QUIT|incomplete)
+	|	prefix_kw_sys_col space_like (K_WTOP|incomplete)
 	|	K_TECO
 	|	K_TOUC
 	|	K_UCLN
@@ -3370,20 +3361,60 @@ c_kw_none
 		]
 	}
 	;
+
+prefix_kw_dde_col
+	::=
+	;
+
+prefix_kw_brn_col
+	::= K_BRN_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixToken"
+		]
+	}
+	;
+
+c_kw_cd_prefix
+	::= prefix_cd
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixToken"
+		]
+	}
+	;
+
+c_kw_dde_getb_none
+	::= K_CNAM
+	|	K_CTIM
+	|	K_DATA
+	|	K_MONK
+	|	K_NEWV
+	|	K_ORGN
+	|	K_OVVD
+	|	K_RRCT
+	|	K_ROOT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+		]
+	}
+	;
 c_kw_d
-	::= K_CD_ space_like (K_PAWS|incomplete)
+	::= prefix_cd space_like (K_PAWS|incomplete)
 	|	K_AERO
 	|	K_AGES
 	|	K_AIM_COL
 	|	K_ASLP
 	|	K_ATTR
 	|	K_BASE
-	|	K_BBD_COL space_like (K_EDIT|incomplete)
-	|	K_BBD_COL space_like (K_EMIT|incomplete)
-	|	K_BBD_COL space_like (K_SHOW|incomplete)
+	|	prefix_kw_bbd_col space_like (K_EDIT|incomplete)
+	|	prefix_kw_bbd_col space_like (K_EMIT|incomplete)
+	|	prefix_kw_bbd_col space_like (K_SHOW|incomplete)
 	|	K_BHVR (<<isNewerVariant>>)
-	|	K_BRN_COL space_like (K_DMPL|incomplete)
-	|	K_BRN_COL space_like (K_DMPT|incomplete)
+	|	prefix_kw_brn_col space_like (K_DMPL|incomplete)
+	|	prefix_kw_brn_col space_like (K_DMPT|incomplete)
 	|	K_BUZZ
 	|	K_CABP
 	|	K_CABV
@@ -3391,18 +3422,15 @@ c_kw_d
 	|	K_CATO
 	|	K_CLAC
 	|	K_CMRT
-	|	K_DBG_COL space_like (K_HTML|incomplete)
-	|	K_DBG_COL space_like (K_OUTV|incomplete)
-	|	K_DBG_COL space_like (K_WTIK|incomplete)
+	|	prefix_kw_dbg_col space_like (K_HTML|incomplete)
+	|	prefix_kw_dbg_col space_like (K_OUTV|incomplete)
+	|	prefix_kw_dbg_col space_like (K_WTIK|incomplete)
 	|	K_DCOR
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_ALLR
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_EMTR
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RCTN
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_RPTY
-	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_FMLY
-	|	K_DDE_COL space_like (K_GETB|incomplete)
-	|	K_DDE_COL space_like (K_LNEU|incomplete)
-	|	K_DDE_COL space_like (K_WORD|incomplete)
+	|	prefix_kw_dde_col space_like ((K_GETB|incomplete) | K_GETB space_like (c_kw_dde_getb_d|incomplete))
+	|	prefix_kw_dde_col space_like ((prefix_kw_gids|incomplete) | prefix_kw_gids space_like (c_kw_dde_gids_d|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB|incomplete)
+	|	prefix_kw_dde_col space_like (K_LNEU|incomplete)
+	|	prefix_kw_dde_col space_like (K_WORD|incomplete)
 	|	K_DELM
 	|	K_DELR
 	|	K_DIRN
@@ -3417,7 +3445,7 @@ c_kw_d
 	|	K_FRAT
 	|	K_FRIC
 	|	K_GAIT
-	|	K_GIDS space_like (K_FMLY|incomplete)
+	|	prefix_kw_gids space_like (K_FMLY|incomplete)
 	|	K_HAIR
 	|	K_IMPT
 	|	K_IMSK
@@ -3428,21 +3456,21 @@ c_kw_d
 	|	K_MIRA
 	|	K_MOTR
 	|	K_MOUS
-	|	K_NET_COL space_like (K_LINE|incomplete)
+	|	prefix_kw_net_col space_like (K_LINE|incomplete)
 	|	K_OUTV
 	|	K_PAGE
 	|	K_PART
-	|	K_PAT_COL space_like (K_CHAR|incomplete)
-	|	K_PAT_COL space_like (K_KILL|incomplete)
+	|	prefix_pat_col space_like (K_CHAR|incomplete)
+	|	prefix_pat_col space_like (K_KILL|incomplete)
 	|	K_PAUS
 	|	K_PERM
 	|	K_PLNE
 	|	K_POSE
-	|	K_PRAY space_like (K_GARB|incomplete)
+	|	prefix_kw_pray space_like (K_GARB|incomplete)
 	|	K_PRNT
-	|	K_PRT_COL space_like (K_BANG|incomplete)
-	|	K_PRT_COL space_like (K_IZAP|incomplete)
-	|	K_PRT_COL space_like (K_OZAP|incomplete)
+	|	prefix_kw_prt_col space_like (K_BANG|incomplete)
+	|	prefix_kw_prt_col space_like (K_IZAP|incomplete)
+	|	prefix_kw_prt_col space_like (K_OZAP|incomplete)
 	|	K_PURE
 	|	K_REPS
 	|	K_SAY_NUM
@@ -3452,7 +3480,7 @@ c_kw_d
 	|	K_STM_NUM space_like (K_SHOU|incomplete)
 	|	K_STM_NUM space_like (K_SIGN|incomplete)
 	|	K_STM_NUM space_like (K_TACT|incomplete)
-	|	K_SYS_COL space_like (K_CMND|incomplete)
+	|	prefix_kw_sys_col space_like (K_CMND|incomplete)
 	|	K_TICK
 	|	K_TNTW
 	|	K_UNCS
@@ -3478,23 +3506,45 @@ c_kw_d
 	}
 	;
 
+c_kw_dde_gids_d
+	::= K_FMLY
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+		]
+	}
+	;
+
+c_kw_dde_getb_d
+	::= K_ALLR
+	|	K_EMTR
+	|	K_RCTN
+	|	K_RPTY
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+		]
+	}
+	;
 c_kw_d_d
-	::= K_CD_ space_like (K_PLAY|incomplete)
+	::= prefix_cd space_like (K_PLAY|incomplete)
 	|	K_ALPH
-	|	K_BBD_COL space_like (K_VCB1|incomplete)
+	|	prefix_kw_bbd_col space_like (K_VCB1|incomplete)
 	|	K_BBTX
 	|	K_BHVR (<<isOldVariant>>)
 	|	K_BODY
 	|	K_BRMI
-	|	K_BRN_COL space_like (K_DMPD|incomplete)
-	|	K_BRN_COL space_like (K_DMPN|incomplete)
+	|	prefix_kw_brn_col space_like (K_DMPD|incomplete)
+	|	prefix_kw_brn_col space_like (K_DMPN|incomplete)
 	|	K_CALG
 	|	K_CBRX
 	|	K_CHEM (<<isOldVariant>>)
-	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_GNUS
+	|	prefix_kw_dde_col space_like ((prefix_kw_gids|incomplete) | prefix_kw_gids space_like (c_dde_gids_d_d|incomplete))
 	|	K_DELN (<<isOldVariant>>)
 	|	K_EXPR
-	|	K_GIDS space_like (K_GNUS|incomplete)
+	|	prefix_kw_gids space_like (K_GNUS|incomplete)
 	|	K_INJR
 	|	K_KNOB
 	|	K_MAPD
@@ -3506,9 +3556,9 @@ c_kw_d_d
 	|	K_RCLR <<isNewerVariant>>
 	|	K_RTYP <<isNewerVariant>>
 	|	K_SOUL
-	|	K_SYS_COL space_like (K_CMRA|incomplete)
-	|	K_SYS_COL space_like (K_CMRP|incomplete)
-	|	K_SYS_COL space_like (K_GRND|incomplete)
+	|	prefix_kw_sys_col space_like (K_CMRA|incomplete)
+	|	prefix_kw_sys_col space_like (K_CMRP|incomplete)
+	|	prefix_kw_sys_col space_like (K_GRND|incomplete)
 	|	K_TELE
 	|	K_TRAN
 	|	K_MVBY
@@ -3532,10 +3582,19 @@ c_kw_d_d
 	}
 	;
 
+c_dde_gids_d_d
+	::= K_GNUS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+		]
+	}
+	;
+
 c_kw_l
 	::= K_ABSV
 	|	K_NAMN
-	|	K_NET_COL space_like (K_RUSO|incomplete)
+	|	prefix_kw_net_col space_like (K_RUSO|incomplete)
 	|	K_NOTV
 	{
 		implements = [
@@ -3588,10 +3647,10 @@ c_kw_d_s
 	::= K_ADDB
 	|	K_BBT2
 	|	K_BMPS
-	|	K_FILE space_like (K_EXEC|incomplete)
-	|	K_FILE space_like (K_GLOB|incomplete)
-	|	K_FILE space_like (K_IOPE|incomplete)
-	|	K_FILE space_like (K_JDEL|incomplete)
+	|	prefix_kw_file space_like (K_EXEC|incomplete)
+	|	prefix_kw_file space_like (K_GLOB|incomplete)
+	|	prefix_kw_file space_like (K_IOPE|incomplete)
+	|	prefix_kw_file space_like (K_JDEL|incomplete)
 	|	K_PLMD
 	|	K_PLMU
 	|	K_STRK
@@ -3656,8 +3715,8 @@ c_kw_d_d_f_d
 
 c_kw_d_d_f
 	::= K_ALTR
-	|	K_BRN_COL space_like (K_SETL|incomplete)
-	|	K_BRN_COL space_like (K_SETT|incomplete)
+	|	prefix_kw_brn_col space_like (K_SETL|incomplete)
+	|	prefix_kw_brn_col space_like (K_SETT|incomplete)
 	|	K_PROP
 	{
 		implements = [
@@ -3701,21 +3760,21 @@ c_kw_bs
 c_kw_s
 	::= K_ANMS
 	|	K_APRO
-	|	K_DBG_COL space_like (K_OUTS|incomplete)
+	|	prefix_kw_dbg_col space_like (K_OUTS|incomplete)
 	|	K_DBGM
-	|	K_DDE_COL space_like (K_PUTS|incomplete)
+	|	prefix_kw_dde_col space_like (K_PUTS|incomplete)
 	|	K_DELE
 	|	K_DELG
 	|	K_DELW
 	|	K_HAND
-	|	K_HIST space_like (K_WIPE|incomplete)
+	|	prefix_kw_hist space_like (K_WIPE|incomplete)
 	|	K_IMGE
 	|	K_LOAD
 	|	K_MANN
 	|	K_MIDI
-	|	K_NET_COL space_like (K_HEAR|incomplete)
-	|	K_NET_COL space_like (K_WHOF|incomplete)
-	|	K_NET_COL space_like (K_WHON|incomplete)
+	|	prefix_kw_net_col space_like (K_HEAR|incomplete)
+	|	prefix_kw_net_col space_like (K_WHOF|incomplete)
+	|	prefix_kw_net_col space_like (K_WHON|incomplete)
 	|	K_ORDR space_like (K_SHOU|incomplete)
 	|	K_ORDR space_like (K_SIGN|incomplete)
 	|	K_ORDR space_like (K_TACT|incomplete)
@@ -3729,7 +3788,7 @@ c_kw_s
 	|	K_SNDE <<isNewerVariant>>
 	|	K_SNDL <<isNewerVariant>>
 	|	K_SNDV
-	|	K_SYS_COL space_like (K_WRLD|incomplete)
+	|	prefix_kw_sys_col space_like (K_WRLD|incomplete)
 	|	K_VOIS
 	|	K_WEBB
 	|	K_WRLD
@@ -3752,22 +3811,22 @@ c_kw_s
 	;
 
 c_kw_d_d_d
-	::= K_BBD_COL space_like (K_VOCB|incomplete)
+	::= prefix_kw_bbd_col space_like (K_VOCB|incomplete)
 	|	K_BOOT
 	|	K_CLIK
 	|	K_CMRA
 	|	K_CMRP
-	|	K_DDE_COL space_like (K_CELL|incomplete)
-	|	K_DDE_COL space_like (K_GETB|incomplete) space_like K_LVOB
-	|	K_DDE_COL space_like (K_GIDS|incomplete) space_like K_SPCS
+	|	prefix_kw_dde_col space_like (K_CELL|incomplete)
+	|	prefix_kw_dde_col space_like (K_GETB|incomplete) space_like K_LVOB
+	|	prefix_kw_dde_col space_like (prefix_kw_gids|incomplete) space_like K_SPCS
 	|	K_DOOR <<isNewerVariant>>
 	| 	K_DPAS <<isNewerVariant>>
 	|	K_FIRE
-	|	K_GIDS space_like (K_SPCS|incomplete)
+	|	prefix_kw_gids space_like (K_SPCS|incomplete)
 	|	K_KMSG
 	|	K_LINK
 	|	K_LTCY
-	|	K_PAT_COL space_like (K_MOVE|incomplete)
+	|	prefix_pat_col space_like (K_MOVE|incomplete)
 	|	K_PUHL
 	|	K_PUPT
 	|	K_RTAR
@@ -3798,8 +3857,8 @@ c_kw_d_d_d
 	;
 
 c_kw_d_d_s
-	::= K_BBD_COL space_like (K_WORD|incomplete)
-	|	K_DDE_COL space_like (K_PIC2|incomplete)
+	::= prefix_kw_bbd_col space_like (K_WORD|incomplete)
+	|	prefix_kw_dde_col space_like (K_PIC2|incomplete)
 	|	K_MMSC
 	|	K_RMSC
 	{
@@ -3824,16 +3883,16 @@ c_kw_d_d_d_d
 	::= K_BBFD
 	|	K_CABN
 	|	K_CACL
-	|	K_DDE_COL space_like (K_LCUS|incomplete)
-	|	K_DDE_COL space_like (K_SCRP|incomplete)
+	|	prefix_kw_dde_col space_like (K_LCUS|incomplete)
+	|	prefix_kw_dde_col space_like (K_SCRP|incomplete)
 	|	K_DYED
 	|	K_GPAS <<isNewerVariant>>
 	|	K_META
 	|	K_NEW_COL space_like (K_BBTX|incomplete)
 	|	K_SCRP
 	|	K_SCRX
-	|	K_SYS_COL space_like (K_EDIT|incomplete)
-	|	K_SYS_COL space_like (K_WPOS|incomplete)
+	|	prefix_kw_sys_col space_like (K_EDIT|incomplete)
+	|	prefix_kw_sys_col space_like (K_WPOS|incomplete)
 	|	K_TNTO
 	{
 		implements = [
@@ -3875,7 +3934,7 @@ c_kw_s_d_d_d
 
 c_kw_d_s_d
 	::= K_BKGD
-	|	K_FILE space_like (K_OOPE|incomplete)
+	|	prefix_kw_file space_like (K_OOPE|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3895,8 +3954,8 @@ c_kw_d_s_d
 	;
 
 c_kw_d_d_d_f
-	::= K_BRN_COL space_like (K_SETD|incomplete)
-	|	K_BRN_COL space_like (K_SETN|incomplete)
+	::= prefix_kw_brn_col space_like (K_SETD|incomplete)
+	|	prefix_kw_brn_col space_like (K_SETN|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3962,7 +4021,7 @@ c_kw_d_f
 	|	K_EMIT
 	|	K_GRPV
 	|	K_SCLE
-	|	K_STIM space_like (K_SHOU|K_SIGN|K_TACT|incomplete)  <<isNewerVariant>>
+	|	prefix_stim space_like (K_SHOU|K_SIGN|K_TACT|incomplete)  <<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4002,7 +4061,7 @@ c_kw_f_f_f_f
 	;
 
 c_kw_cond
-	::= K_DBG_COL space_like (K_ASRT|incomplete)
+	::= prefix_kw_dbg_col space_like (K_ASRT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4022,7 +4081,7 @@ c_kw_cond
 	;
 
 c_kw_a
-	::= K_DBG_COL space_like (K_TACK|incomplete)
+	::= prefix_kw_dbg_col space_like (K_TACK|incomplete)
 	|	K_ECON
 	|	K_EVNT
 	|	K_FORF
@@ -4052,7 +4111,7 @@ c_kw_a
 c_kw_v
 	::= K_DBGV
 	|	K_DBUG
-	|	K_DDE_COL space_like (K_PUTV|incomplete)
+	|	prefix_kw_dde_col space_like (K_PUTV|incomplete)
 	|	K_DELN (<<isVariant 'C3'>>|<<isVariant 'DS'>>)
 	{
 		implements = [
@@ -4073,7 +4132,7 @@ c_kw_v
 	;
 
 c_kw_s_t
-	::= K_DDE_COL space_like (K_PUTB|incomplete)
+	::= prefix_kw_dde_col space_like (K_PUTB|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4161,7 +4220,7 @@ c_kw_s_d
 c_kw_a_d_a_d
 	::= K_GENE space_like (K_CLON|incomplete)
 	|	K_GENE space_like (K_MOVE|incomplete)
-	|	K_PRT_COL space_like (K_JOIN|incomplete)
+	|	prefix_kw_prt_col space_like (K_JOIN|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4290,7 +4349,7 @@ c_kw_d_d_d_f_f
 	;
 
 c_kw_s_d_s_s
-	::= K_HIST space_like (K_EVNT|incomplete)
+	::= prefix_kw_hist space_like (K_EVNT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4310,8 +4369,8 @@ c_kw_s_d_s_s
 	;
 
 c_kw_s_d_s
-	::= K_HIST space_like (K_FOTO|incomplete)
-	|	K_HIST space_like (K_UTXT|incomplete)
+	::= prefix_kw_hist space_like (K_FOTO|incomplete)
+	|	prefix_kw_hist space_like (K_UTXT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4331,8 +4390,8 @@ c_kw_s_d_s
 	;
 
 c_kw_s_s
-	::= K_HIST space_like (K_NAME|incomplete)
-	|	K_NET_COL space_like (K_PASS|incomplete)
+	::= prefix_kw_hist space_like (K_NAME|incomplete)
+	|	prefix_kw_net_col space_like (K_PASS|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4412,7 +4471,7 @@ c_kw_a_d_v_v_d
 	;
 
 c_kw_l_l_l_l
-	::= K_NET_COL space_like (K_STAT|incomplete)
+	::= prefix_kw_net_col space_like (K_STAT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4432,7 +4491,7 @@ c_kw_l_l_l_l
 	;
 
 c_kw_s_l
-	::= K_NET_COL space_like (K_UNIK|incomplete)
+	::= prefix_kw_net_col space_like (K_UNIK|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4452,7 +4511,7 @@ c_kw_s_l
 	;
 
 c_kw_s_s_d_v_v
-	::= K_NET_COL space_like (K_WRIT|incomplete)
+	::= prefix_kw_net_col space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4702,7 +4761,7 @@ c_kw_a_s
 	;
 
 c_kw_d_s_d_d_d_d_d_bs_d_d
-	::= K_PAT_COL space_like (K_BUTT|incomplete)
+	::= prefix_pat_col space_like (K_BUTT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4722,7 +4781,7 @@ c_kw_d_s_d_d_d_d_d_bs_d_d
 	;
 
 c_kw_d_s_d_d_d_d_d_d_d_d
-	::= K_PAT_COL space_like (K_CMRA|incomplete)
+	::= prefix_pat_col space_like (K_CMRA|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4742,7 +4801,7 @@ c_kw_d_s_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d
-	::= K_PAT_COL space_like (K_DULL|incomplete)
+	::= prefix_pat_col space_like (K_DULL|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4762,7 +4821,7 @@ c_kw_d_s_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d_s
-	::= K_PAT_COL space_like (K_FIXD|incomplete)
+	::= prefix_pat_col space_like (K_FIXD|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4782,7 +4841,7 @@ c_kw_d_s_d_d_d_d_s
 	;
 
 c_kw_d_s_d_d_d_d_d
-	::= K_PAT_COL space_like (K_GRPH|incomplete)
+	::= prefix_pat_col space_like (K_GRPH|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4802,7 +4861,7 @@ c_kw_d_s_d_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d_d_s
-	::= K_PAT_COL space_like (K_TEXT|incomplete)
+	::= prefix_pat_col space_like (K_TEXT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4822,7 +4881,7 @@ c_kw_d_s_d_d_d_d_d_s
 	;
 
 c_kw_d_s_s_d_d_d
-	::= K_PRT_COL space_like (K_INEW|incomplete)
+	::= prefix_kw_prt_col space_like (K_INEW|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4842,7 +4901,7 @@ c_kw_d_s_s_d_d_d
 	;
 
 c_kw_a_d_d
-	::= K_PRT_COL space_like (K_KRAK|incomplete)
+	::= prefix_kw_prt_col space_like (K_KRAK|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4862,7 +4921,7 @@ c_kw_a_d_d
 	;
 
 c_kw_d_s_s_d_d
-	::= K_PRT_COL space_like (K_ONEW|incomplete)
+	::= prefix_kw_prt_col space_like (K_ONEW|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4882,7 +4941,7 @@ c_kw_d_s_s_d_d
 	;
 
 c_kw_d_v
-	::= K_PRT_COL space_like (K_SEND|incomplete)
+	::= prefix_kw_prt_col space_like (K_SEND|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5005,7 +5064,7 @@ c_kw_s_d_d_d_d_d
 
 c_kw_t_d
 	::= K_SNDQ <<isOldVariant>>
-	|	K_SYS_COL space_like (K_CONV|incomplete)
+	|	prefix_kw_sys_col space_like (K_CONV|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5045,8 +5104,8 @@ c_kw_s_d_f
 	;
 
 c_kw_d_d_d_d_d_d_d_d_d_d_d_d
-	::= K_STIM space_like (K_SHOU|K_SIGN|K_TACT|incomplete) <<isOldVariant>>
-	|	K_STIM space_like (K_FROM|incomplete) <<isOldVariant>>
+	::= prefix_stim space_like (K_SHOU|K_SIGN|K_TACT|incomplete) <<isOldVariant>>
+	|	prefix_stim space_like (K_FROM|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5066,7 +5125,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_a_d_f
-	::= (K_STIM space_like (K_WRIT|incomplete))<<isNewerVariant>>
+	::= (prefix_stim space_like (K_WRIT|incomplete))<<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5086,7 +5145,7 @@ c_kw_a_d_f
 	;
 
 c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
-	::= K_STIM space_like (K_WRIT|incomplete) <<isOldVariant>>
+	::= prefix_stim space_like (K_WRIT|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5106,9 +5165,9 @@ c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_f_d_f_d_f_d_f
-	::= K_SWAY space_like (K_SHOU|incomplete)
-	|	K_SWAY space_like (K_SIGN|incomplete)
-	|	K_SWAY space_like (K_TACT|incomplete)
+	::= prefix_sway space_like (K_SHOU|incomplete)
+	|	prefix_sway space_like (K_SIGN|incomplete)
+	|	prefix_sway space_like (K_TACT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5128,7 +5187,7 @@ c_kw_d_f_d_f_d_f_d_f
 	;
 
 c_kw_a_d_f_d_f_d_f_d_f
-	::= K_SWAY space_like (K_WRIT|incomplete)
+	::= prefix_sway space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5146,6 +5205,8 @@ c_kw_a_d_f_d_f_d_f_d_f
 		]
 	}
 	;
+
+
 
 c_kw_s_s_s_d
 	::= K_TOOL
@@ -5188,9 +5249,9 @@ c_kw_a_d_d_d_d
 	;
 
 c_kw_f_d_f
-	::= K_URGE space_like (K_SHOU|incomplete)
-	|	K_URGE space_like (K_SIGN|incomplete)
-	|	K_URGE space_like (K_TACT|incomplete)
+	::= prefix_urge space_like (K_SHOU|incomplete)
+	|	prefix_urge space_like (K_SIGN|incomplete)
+	|	prefix_urge space_like (K_TACT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5209,8 +5270,17 @@ c_kw_f_d_f
 	}
 	;
 
+prefix_urge
+	::= K_URGE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+		]
+	}
+	;
+
 c_kw_a_d_f_d_f
-	::= K_URGE space_like (K_WRIT|incomplete)
+	::= prefix_urge space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5230,10 +5300,7 @@ c_kw_a_d_f_d_f
 	;
 
 r_kw_none
-	::= K_CD_ space_like (K_FRQH|incomplete)
-	|	K_CD_ space_like (K_FRQL|incomplete)
-	|	K_CD_ space_like (K_FRQM|incomplete)
-	|	K_CLAS
+	::= K_CLAS
 	|	K_IT_
 	|	K_P1_
 	|	K_P2_
@@ -5352,13 +5419,7 @@ r_kw_none
 	|	K_MTHX
 	|	K_MTHY
 	|	K_NEID
-	|	K_NET_COL space_like (K_ERRA|incomplete)
-	|	K_NET_COL space_like (K_HOST|incomplete)
-	|	K_NET_COL space_like (K_LINE|incomplete)
-	|	K_NET_COL space_like (K_PASS|incomplete)
-	|	K_NET_COL space_like (K_RAWE|incomplete)
-	|	K_NET_COL space_like (K_USER|incomplete)
-	|	K_NET_COL space_like (K_WHAT|incomplete)
+	|	prefix_kw_net_col space_like (net_col_kw_none|incomplete)
 	|	K_NORN
 	|	K_NPGS
 	|	K_NULL
@@ -5382,8 +5443,8 @@ r_kw_none
 	|	K_POSX
 	|	K_POSY
 	|	K_PRES
-	|	K_PRT_COL space_like (K_ITOT|incomplete)
-	|	K_PRT_COL space_like (K_OTOT|incomplete)
+	|	prefix_kw_prt_col space_like (K_ITOT|incomplete)
+	|	prefix_kw_prt_col space_like (K_OTOT|incomplete)
 	|	K_PSRC
 	|	K_PTXT
 	|	K_PURE
@@ -5457,6 +5518,7 @@ r_kw_none
 	|	K_YVEC
 	|	K_ZOMB
 	|	K_CAMN
+	| 	prefix_cd space_like (cd_kw_none|incomplete)
 	| 	r_gend
 	|	incomplete
 	{
@@ -5475,6 +5537,21 @@ r_kw_none
 			setName
 		]
 	}
+	;
+
+private cd_kw_none
+ 	::= K_FRQH
+	|	K_FRQL
+	|	K_FRQM
+
+private net_col_kw_none
+	::= K_ERRA
+	|	K_HOST
+	|	K_LINE
+	|	K_PASS
+	|	K_RAWE
+	|	K_USER
+	|	K_WHAT
 	;
 
 r_kw_f
@@ -5564,10 +5641,10 @@ r_kw_d
 	|	K_HEAP
 	|	K_HEDX
 	|	K_HEDY
-	|	K_HIST space_like (K_DATE|incomplete)
-	|	K_HIST space_like (K_SEAN|incomplete)
-	|	K_HIST space_like (K_TIME|incomplete)
-	|	K_HIST space_like (K_YEAR|incomplete)
+	|	prefix_kw_hist space_like (K_DATE|incomplete)
+	|	prefix_kw_hist space_like (K_SEAN|incomplete)
+	|	prefix_kw_hist space_like (K_TIME|incomplete)
+	|	prefix_kw_hist space_like (K_YEAR|incomplete)
 	|	K_ISAR
 	|	K_ITOF
 	|	K_KEYD
@@ -5578,8 +5655,8 @@ r_kw_d
 	|	K_OBSV
 	|	K_PART
 	|	K_PNXT
-	|	K_PRT_COL space_like (K_FRMA|incomplete)
-	|	K_PRT_COL space_like (K_FROM|incomplete)
+	|	prefix_kw_prt_col space_like (K_FRMA|incomplete)
+	|	prefix_kw_prt_col space_like (K_FROM|incomplete)
 	|	K_PSWD
 	|	K_RAIN
 	|	K_RLOC
@@ -5709,19 +5786,8 @@ r_kw_d_d_d
 
 r_kw_s_d
 	::= K_CHAR !(<<isVariant 'CV'>>)
-	|	K_HIST space_like (K_CAGE|incomplete)
-	|	K_HIST space_like (K_FOTO|incomplete)
-	|	K_HIST space_like (K_MON1|incomplete)
-	|	K_HIST space_like (K_MON2|incomplete)
-	|	K_HIST space_like (K_NETU|incomplete)
-	|	K_HIST space_like (K_RTIM|incomplete)
-	|	K_HIST space_like (K_TAGE|incomplete)
-	|	K_HIST space_like (K_TYPE|incomplete)
-	|	K_HIST space_like (K_UTXT|incomplete)
-	|	K_HIST space_like (K_WNAM|incomplete)
-	|	K_HIST space_like (K_WTIK|incomplete)
-	|	K_HIST space_like (K_WUID|incomplete)
-	|	K_PRAY space_like (K_DEPS|incomplete)
+	|	prefix_kw_hist space_like (hist_kw_s_d|incomplete)
+	|	prefix_kw_pray space_like (K_DEPS|incomplete)
 	|	K_READ
 	{
 		implements = [
@@ -5739,6 +5805,21 @@ r_kw_s_d
 			setName
 		]
 	}
+	;
+
+private hist_kw_s_d
+	::= K_CAGE
+	|	K_FOTO
+	|	K_MON1
+	|	K_MON2
+	|	K_NETU
+	|	K_RTIM
+	|	K_TAGE
+	|	K_TYPE
+	|	K_UTXT
+	|	K_WNAM
+	|	K_WTIK
+	|	K_WUID
 	;
 
 r_kw_a
@@ -5828,28 +5909,15 @@ r_kw_s
 	::= K_FVWM
 	|	K_GAMN
 	|	K_EAMN
-	|	K_HIST space_like (K_COUN|incomplete)
-	|	K_HIST space_like (K_CROS|incomplete)
-	|	K_HIST space_like (K_GEND|incomplete)
-	|	K_HIST space_like (K_GNUS|incomplete)
-	|	K_HIST space_like (K_MUTE|incomplete)
-	|	K_HIST space_like (K_NAME|incomplete)
-	|	K_HIST space_like (K_NEXT|incomplete)
-	|	K_HIST space_like (K_PREV|incomplete)
-	|	K_HIST space_like (K_VARI|incomplete)
-	|	K_HIST space_like (K_WVET|incomplete)
+	|	prefix_kw_hist space_like (hist_kw_s|incomplete)
 	|	K_LOFT
 	|	K_LOWA
 	|	K_MTOA
 	|	K_MTOC
-	|	K_NET_COL space_like (K_FROM|incomplete)
-	|	K_NET_COL space_like (K_ULIN|incomplete)
+	|	prefix_kw_net_col space_like (K_FROM|incomplete)
+	|	prefix_kw_net_col space_like (K_ULIN|incomplete)
 	|	K_OOWW
-	|	K_PRAY space_like (K_COUN|incomplete)
-	|	K_PRAY space_like (K_EXPO|incomplete)
-	|	K_PRAY space_like (K_KILL|incomplete)
-	|	K_PRAY space_like (K_SIZE|incomplete)
-	|	K_PRAY space_like (K_TEST|incomplete)
+	|	prefix_kw_pray space_like (pray_kw_s|incomplete)
 	|	K_REAN
 	|	K_REAQ
 	|	K_SNAX
@@ -5876,11 +5944,32 @@ r_kw_s
 	}
 	;
 
+private hist_kw_s
+	::= K_COUN
+	|	K_CROS
+	|	K_GEND
+	|	K_GNUS
+	|	K_MUTE
+	|	K_NAME
+	|	K_NEXT
+	|	K_PREV
+	|	K_VARI
+	|	K_WVET
+	;
+
+private pray_kw_s
+	::= K_COUN
+	|	K_EXPO
+	|	K_KILL
+	|	K_SIZE
+	|	K_TEST
+	;
+
 r_kw_s_d_d
-	::= K_HIST space_like (K_FIND|incomplete)
-	|	K_HIST space_like (K_FINR|incomplete)
-	|	K_PRAY space_like (K_FILE|incomplete)
-	|	K_PRAY space_like (K_IMPO|incomplete)
+	::= prefix_kw_hist space_like (K_FIND|incomplete)
+	|	prefix_kw_hist space_like (K_FINR|incomplete)
+	|	prefix_kw_pray space_like (K_FILE|incomplete)
+	|	prefix_kw_pray space_like (K_IMPO|incomplete)
 	|	K_SUBS
 	{
 		implements = [
@@ -5965,11 +6054,11 @@ r_kw_a_d_d_d
 	;
 
 r_kw_s_s
-	::= K_NET_COL space_like (K_EXPO|incomplete)
-	|	K_PRAY space_like (K_BACK|incomplete)
-	|	K_PRAY space_like (K_FORE|incomplete)
-	|	K_PRAY space_like (K_NEXT|incomplete)
-	|	K_PRAY space_like (K_PREV|incomplete)
+	::= prefix_kw_net_col space_like (K_EXPO|incomplete)
+	|	prefix_kw_pray space_like (K_BACK|incomplete)
+	|	prefix_kw_pray space_like (K_FORE|incomplete)
+	|	prefix_kw_pray space_like (K_NEXT|incomplete)
+	|	prefix_kw_pray space_like (K_PREV|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5989,7 +6078,7 @@ r_kw_s_s
 	;
 
 r_kw_d_s_s_l
-	::= K_NET_COL space_like (K_MAKE|incomplete)
+	::= prefix_kw_net_col space_like (K_MAKE|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6009,7 +6098,7 @@ r_kw_d_s_s_l
 	;
 
 r_kw_s_s_d
-	::= K_PRAY space_like (K_AGTI|incomplete)
+	::= prefix_kw_pray space_like (K_AGTI|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6029,7 +6118,7 @@ r_kw_s_s_d
 	;
 
 r_kw_s_s_s
-	::= K_PRAY space_like (K_AGTS|incomplete)
+	::= prefix_kw_pray space_like (K_AGTS|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6049,7 +6138,7 @@ r_kw_s_s_s
 	;
 
 r_kw_s_d_l
-	::= K_PRAY space_like (K_INJT|incomplete)
+	::= prefix_kw_pray space_like (K_INJT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6069,7 +6158,7 @@ r_kw_s_d_l
 	;
 
 r_kw_d_s_d_s_l
-	::= K_PRAY space_like (K_MAKE|incomplete)
+	::= prefix_kw_pray space_like (K_MAKE|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6089,7 +6178,7 @@ r_kw_d_s_d_s_l
 	;
 
 r_kw_a_d_d
-	::= K_PRT_COL space_like (K_NAME|incomplete)
+	::= prefix_kw_prt_col space_like (K_NAME|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6414,7 +6503,7 @@ l_kw_d
 	;
 
 all_tokens
-	::= K_CD_
+	::= prefix_cd
 	|	VA_XX
 	|	VAR_X
 	|	OV_XX
@@ -6851,7 +6940,7 @@ all_tokens
 	| K_PANC
 	| K_PART
 	| K_PASS
-	| K_PAT_COL
+	| prefix_pat_col
 	| K_PAUS
 	| K_PAWS
 	| K_PCLS
@@ -6996,7 +7085,7 @@ all_tokens
 	| K_STAR
 	| K_STAT
 	| K_STEP
-	| K_STIM
+	| prefix_stim
 	| K_STM_NUM
 	| K_STOF
 	| K_STOI
@@ -7011,7 +7100,7 @@ all_tokens
 	| K_SUBV
 	| K_SVEL
 	| K_SWAP
-	| K_SWAY
+	| prefix_sway
 	| K_SYS_COL
 	| K_TACK
 	| K_TACT
@@ -7061,7 +7150,7 @@ all_tokens
 	| K_UNLK
 	| K_UNTL
 	| K_UPPA
-	| K_URGE
+	| prefix_urge
 	| K_USER
 	| K_UTXT
 	| K_VARC
