@@ -505,6 +505,130 @@ object CaosScriptPsiImplUtil {
         } ?: CaosVar.CaosLiteralVal
     }
 
+    @JvmStatic
+    fun toCaosVar(namedConstant: CaosScriptNamedConstant): CaosVar.ConstVal {
+        return CaosVar.ConstVal(namedConstant.text)
+    }
+
+    @JvmStatic
+    fun toCaosVar(namedVar: CaosScriptNamedVar): CaosVar {
+        return CaosVar.NamedVar(namedVar.text)
+    }
+
+    @JvmStatic
+    fun toCaosVar(varToken: CaosScriptVarToken): CaosVar {
+        val text = varToken.text
+        val number = Integer.parseInt(text.replace(EXTRACT_NUMBER_REGEX, ""))
+        return when {
+            varToken.varX != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, true)
+            varToken.obvX != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, true)
+            varToken.vaXx != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, false)
+            varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
+            varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
+            else -> {
+                val validTypes = when (varToken.containingCaosFile?.variant) {
+                    CaosVariant.C1 -> "[varX,obvX]"
+                    CaosVariant.C2 -> "[varX,vaXX,obvX,ovXX]"
+                    else -> "[vaXX,ovXX,mvXX]"
+                }
+                throw Exception("Unexpected caos variable encountered. Expected types are: $validTypes. Found '$text'")
+            }
+        }
+    }
+
+    @JvmStatic
+    fun toCaosVar(lvalue: CaosScriptLvalue): CaosVar {
+        lvalue.stub?.caosVar?.let {
+            return it
+        }
+        lvalue.namedVar?.let {
+            return CaosVar.NamedVar(it.nVar.text)
+        }
+        (lvalue.varToken)?.let {
+            return toCaosVar(it)
+        }
+        (lvalue.namedVar)?.let {
+            return CaosVar.NamedVar(it.text)
+        }
+        (lvalue.namedGameVar)?.let {parent ->
+            val varName = when (parent.commandStringUpper) {
+                "NAME" ->  CaosVar.CaosNamedGameVar.NameVar(parent.expectsValue?.text ?: UNDEF)
+                "MAME" ->  CaosVar.CaosNamedGameVar.MameVar(parent.expectsValue?.text ?: UNDEF)
+                "GAME" ->  CaosVar.CaosNamedGameVar.GameVar(parent.expectsValue?.text ?: UNDEF)
+                "EAME" ->  CaosVar.CaosNamedGameVar.EameVar(parent.expectsValue?.text ?: UNDEF)
+                else -> null
+            }
+            varName?.let {
+                return it
+            }
+        }
+        (lvalue.lKwDD)?.let {
+            if (it.commandStringUpper == "GAME") {
+                val arguments = lvalue.arguments
+                if (arguments.size == 2) {
+                    try {
+                        val first = arguments[0].text.toInt()
+                        val second = arguments[1].text.toInt()
+                        return CaosVar.CaosNamedGameVar.C2GameVar(first, second)
+                    } catch (e:Exception) {
+                        return CaosVar.CaosNamedGameVar.C2GameVar(-1, -1)
+                    }
+                }
+            }
+        }
+        lvalue.commandToken?.let {
+            if (!DumbService.isDumb(it.project)) {
+                return CaosVar.CaosCommandCall(it.text, getReturnType(it, lvalue.arguments.size))
+            }
+            return CaosVar.CaosCommandCall(it.text)
+        }
+        return CaosVar.CaosLiteralVal
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsAgent): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
+    @JvmStatic
+    fun getExpectedType(element: CaosScriptExpectsQuoteString): CaosExpressionValueType {
+        return CaosExpressionValueType.STRING
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsQuoteString): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsByteString): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsInt): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsFloat): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsDecimal): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsValue): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
+    @JvmStatic
+    fun toCaosVar(element: CaosScriptExpectsToken): CaosVar {
+        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
+    }
+
     private fun getReturnType(token: CaosScriptIsCommandToken, numberOfArgs: Int): CaosExpressionValueType {
         val possibleCommands = token.reference.multiResolve(true)
                 .mapNotNull {
@@ -707,85 +831,6 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(namedConstant: CaosScriptNamedConstant): CaosVar.ConstVal {
-        return CaosVar.ConstVal(namedConstant.text)
-    }
-
-    @JvmStatic
-    fun toCaosVar(namedVar: CaosScriptNamedVar): CaosVar {
-        return CaosVar.NamedVar(namedVar.text)
-    }
-
-    @JvmStatic
-    fun toCaosVar(varToken: CaosScriptVarToken): CaosVar {
-        val text = varToken.text
-        val number = Integer.parseInt(text.replace(EXTRACT_NUMBER_REGEX, ""))
-        return when {
-            varToken.varX != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, true)
-            varToken.obvX != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, true)
-            varToken.vaXx != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, false)
-            varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
-            varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
-            else -> {
-                val validTypes = when (varToken.containingCaosFile?.variant) {
-                    CaosVariant.C1 -> "[varX,obvX]"
-                    CaosVariant.C2 -> "[varX,vaXX,obvX,ovXX]"
-                    else -> "[vaXX,ovXX,mvXX]"
-                }
-                throw Exception("Unexpected caos variable encountered. Expected types are: $validTypes. Found '$text'")
-            }
-        }
-    }
-
-    @JvmStatic
-    fun toCaosVar(lvalue: CaosScriptLvalue): CaosVar {
-        lvalue.stub?.caosVar?.let {
-            return it
-        }
-        lvalue.namedVar?.let {
-            return CaosVar.NamedVar(it.nVar.text)
-        }
-        (lvalue.varToken)?.let {
-            return toCaosVar(it)
-        }
-        (lvalue.namedVar)?.let {
-            return CaosVar.NamedVar(it.text)
-        }
-        (lvalue.namedGameVar)?.let {parent ->
-            val varName = when (parent.commandStringUpper) {
-                "NAME" ->  CaosVar.CaosNamedGameVar.NameVar(parent.expectsValue?.text ?: UNDEF)
-                "MAME" ->  CaosVar.CaosNamedGameVar.MameVar(parent.expectsValue?.text ?: UNDEF)
-                "GAME" ->  CaosVar.CaosNamedGameVar.GameVar(parent.expectsValue?.text ?: UNDEF)
-                "EAME" ->  CaosVar.CaosNamedGameVar.EameVar(parent.expectsValue?.text ?: UNDEF)
-                else -> null
-            }
-            varName?.let {
-                return it
-            }
-        }
-        (lvalue.lKwDD)?.let {
-            if (it.commandStringUpper == "GAME") {
-                val arguments = lvalue.arguments
-                if (arguments.size == 2) {
-                    try {
-                        val first = arguments[0].text.toInt()
-                        val second = arguments[1].text.toInt()
-                        CaosVar.CaosNamedGameVar.C2GameVar(first, second)
-                    } catch (e:Exception) {
-                    }
-                }
-            }
-        }
-        lvalue.commandToken?.let {
-            if (!DumbService.isDumb(it.project)) {
-                return CaosVar.CaosCommandCall(it.text, getReturnType(it, lvalue.arguments.size))
-            }
-            return CaosVar.CaosCommandCall(it.text)
-        }
-        return CaosVar.CaosLiteralVal
-    }
-
-    @JvmStatic
     fun getExpectedType(element: CaosScriptExpectsAgent): CaosExpressionValueType {
         return CaosExpressionValueType.AGENT
     }
@@ -796,28 +841,8 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsAgent): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
-    }
-
-    @JvmStatic
-    fun getExpectedType(element: CaosScriptExpectsQuoteString): CaosExpressionValueType {
-        return CaosExpressionValueType.STRING
-    }
-
-    @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsQuoteString): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
-    }
-
-    @JvmStatic
     fun getExpectedType(element: CaosScriptExpectsByteString): CaosExpressionValueType {
         return CaosExpressionValueType.BYTE_STRING
-    }
-
-    @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsByteString): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
     }
 
     @JvmStatic
@@ -836,18 +861,8 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsInt): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
-    }
-
-    @JvmStatic
     fun getExpectedType(element: CaosScriptExpectsFloat): CaosExpressionValueType {
         return CaosExpressionValueType.FLOAT
-    }
-
-    @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsFloat): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
     }
 
     @JvmStatic
@@ -856,28 +871,14 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsDecimal): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
-    }
-
-    @JvmStatic
     fun getExpectedType(element: CaosScriptExpectsValue): CaosExpressionValueType {
         return CaosExpressionValueType.ANY
     }
 
-    @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsValue): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
-    }
 
     @JvmStatic
     fun getExpectedType(element: CaosScriptExpectsToken): CaosExpressionValueType {
         return CaosExpressionValueType.TOKEN
-    }
-
-    @JvmStatic
-    fun toCaosVar(element: CaosScriptExpectsToken): CaosVar {
-        return element.stub?.caosVar ?: element.rvalue.toCaosVar()
     }
 
     @JvmStatic
