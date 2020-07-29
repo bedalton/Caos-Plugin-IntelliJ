@@ -34,22 +34,25 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         val text = element.textWithoutCompletionIdString
         if (IS_NUMBER.matches(text)) {
+            LOGGER.info("Is Number, STOP")
             resultSet.stopHere()
             return
         }
 
-        if (element.previous?.text?.nullIfEmpty()?.let { !WHITESPACE.matches(it) }.orFalse()) {
+        val previous = element.previous?.text
+        if (previous != "[" && previous != "\"" && previous.nullIfEmpty()?.let { !WHITESPACE.matches(it) }.orFalse()) {
+            LOGGER.info("Previous is not whitespace. STOP")
             resultSet.stopHere()
             return
         }
 
-        val previous = element.getPreviousNonEmptySibling(true)
-        if (IS_NUMBER.matches( element.previous?.text ?: "")) {
+        if (IS_NUMBER.matches( previous ?: "")) {
+            LOGGER.info("Previous is number. STOP")
             resultSet.stopHere()
             return
         }
 
-        if (previous?.text?.toUpperCase() == "CLAS") {
+        if (previous?.toUpperCase() == "CLAS") {
             val builderElement = LookupElementBuilder
                     .create("")
                     .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
@@ -59,7 +62,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        if (previous?.text?.toUpperCase() == "DDE: PICT") {
+        if (previous?.toUpperCase() == "DDE: PICT") {
             val builderElement = LookupElementBuilder
                     .create("")
                     .withPresentableText(GENERATE_DDE_PICT_LOOKUP_STRING)
@@ -80,6 +83,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             parent = parent.parent
         }
         if (parent == null) {
+            LOGGER.info("Parent command is null. STOP")
             resultSet.stopHere()
             return
         }
@@ -119,7 +123,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             addVariableCompletions(variant, element, resultSet)
 
         (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
-            val equalityExpression = expression.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression::class.java)
+            val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpression::class.java)
             if (equalityExpression != null) {
                 CaosScriptTypeDefValueCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
             }
