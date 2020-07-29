@@ -21,6 +21,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.parentOfType
 
 object CaosScriptTypeDefValueCompletionProvider {
 
@@ -36,12 +37,12 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?.element
                 ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return
+
         val parameterStruct = reference
                 .docComment
                 ?.parameterStructs
                 ?.getOrNull(index)
                 ?: return
-
         val type =
                 if (containingCommand is CaosScriptCAssignment) {
                     containingCommand.lvalue
@@ -70,6 +71,7 @@ object CaosScriptTypeDefValueCompletionProvider {
             val allFiles = type.fileTypes
                     .flatMap { fileExtensionTemp ->
                         val fileExtension = fileExtensionTemp.toLowerCase()
+                        LOGGER.info("Expecting filetype: $fileExtension")
                         val searchScope =
                                 valueOfType.containingFile?.module?.let { GlobalSearchScope.moduleScope(it) }
                                         ?: GlobalSearchScope.projectScope(project)
@@ -82,18 +84,28 @@ object CaosScriptTypeDefValueCompletionProvider {
                 val isToken = parameterStruct.type.type.toLowerCase() == "token"
                 val text = when {
                     isToken -> fileName
-                    variant.isOld -> "[$fileName]"
-                    else -> "\"$fileName\""
+                    variant.isOld -> "[$fileName"
+                    else -> "\"$fileName"
+                }
+                val openQuote = when {
+                    isToken -> null
+                    variant.isOld -> "["
+                    else -> "\""
+                }
+                val closeQuote = when {
+                    isToken -> null
+                    variant.isOld -> "]"
+                    else -> "\""
                 }
                 // Create lookup element
                 var lookupElement = LookupElementBuilder
                         .create(text)
                         .withStrikeoutness(isToken && fileName.length != 4)
-                        .withLookupString(fileName)
+                        .withLookupString("$openQuote$fileName$closeQuote")
                         .withPresentableText(fileName)
-                if (addSpace) {
+                if (closeQuote != null) {
                     lookupElement = lookupElement
-                            .withInsertHandler(AddSpaceInsertHandler(true))
+                            .withInsertHandler(CloseQuoteInsertHandler(closeQuote))
                 }
                 resultSet.addElement(lookupElement)
             }
