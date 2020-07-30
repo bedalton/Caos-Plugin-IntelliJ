@@ -302,7 +302,7 @@ private file_body
 script_body_element
 	::= event_script
 	|	macro
-	|		removal_script
+	|	removal_script
 	|	install_script
 	{
 		implements = [
@@ -458,10 +458,6 @@ install_script
 		]
 		methods = [
 			getBlockType
-			getFamily
-			getGenus
-			getSpecies
-			getEventNumber
 		]
 	}
 	;
