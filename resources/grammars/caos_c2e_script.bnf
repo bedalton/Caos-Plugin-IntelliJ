@@ -62,12 +62,12 @@
 		MV_XX = "regexp:[Mm][Vv][0-9][0-9]"
 		VAR_X = "regexp:[Vv][Aa][Rr][0-9]"
 		OBV_X = "regexp:[Oo][Bb][Vv][0-9]"
-		prefix_stim = "regexp:[sS][tT][iI][mM]"
+		K_STIM = "regexp:[sS][tT][iI][mM]"
 		K_WRIT = "regexp:[wW][rR][iI][tT]"
 		K_SHOU = "regexp:[sS][hH][oO][uU]"
 		K_SIGN = "regexp:[sS][iI][gG][nN]"
 		K_TACT = "regexp:[tT][aA][cC][tT]"
-		prefix_kw_new_col = "regexp:[nN][eE][wW][:]"
+		K_NEW_COL = "regexp:[nN][eE][wW][:]"
 		K_BKBD = "regexp:[bB][kK][bB][dD]"
 		K_ROOM = "regexp:[rR][oO][oO][mM]"
 		K_SIMP = "regexp:[sS][iI][mM][pP]"
@@ -82,7 +82,7 @@
 		K_EDIT = "regexp:[eE][dD][iI][tT]"
 		K_TOOL = "regexp:[tT][oO][oO][lL]"
 		K_WPOS = "regexp:[wW][pP][oO][sS]"
-		prefix_kw_gene = "regexp:[gG][eE][nN][eE]"
+		K_GENE = "regexp:[gG][eE][nN][eE]"
 		K_LIFT = "regexp:[lL][iI][fF][tT]"
 		K_VHCL = "regexp:[vV][hH][cC][lL]"
 		K_RNDV = "regexp:[rR][nN][dD][vV]"
@@ -302,7 +302,7 @@ private file_body
 script_body_element
 	::= event_script
 	|	macro
-	| 	removal_script
+	|		removal_script
 	|	install_script
 	{
 		implements = [
@@ -577,9 +577,9 @@ classifier
 private control_statement
    ::=  subroutine
    |	loop_statement
-   |   	repeat_statement
-   |   	enum_next_statement
-   |   	enum_scenery_statement
+   |	  	repeat_statement
+   |	  	enum_next_statement
+   |	  	enum_scenery_statement
    |	doif_statement
    ;
 
@@ -918,7 +918,7 @@ c_repe ::= K_REPE
 c_enum
 	::= K_ENUM
 	|	K_ESEE
-	| 	K_ETCH
+	|		K_ETCH
 	|	K_EPAS
 	{
 		implements = [
@@ -1339,7 +1339,7 @@ eq_op_new
 
 var_token
 	::= VA_XX
-	| 	OV_XX
+	|		OV_XX
 	|	OBV_X
 	|	VAR_X
 	|	MV_XX
@@ -1392,7 +1392,7 @@ character
 
 private string_literal
 	::= quote_string_literal
-	|   (<<isOldVariant>>) c1_string
+	|	  (<<isOldVariant>>) c1_string
 	;
 
 c1_string
@@ -1700,6 +1700,7 @@ constant_assignment
 		]
 	}
 	;
+
 named_var_assignment
 	::= named_var CONST_EQ var_token
 	{
@@ -1805,11 +1806,11 @@ private follows_dde_putb
 	|	K_OVVD
 	;
 
-incomplete ::= ID | ERROR_WORD;
+incomplete ::= ID |	ERROR_WORD;
 
 command_call
 	::= command_call_by_args // I think private values all have equal priority
-	| 	incomplete
+	|		incomplete
 	{
 		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCommandCallStub"
@@ -2909,7 +2910,7 @@ rvalue_prime
 	|	r_f_f_f_f
 	|	r_t
 	|	r_d_d_d_s_d
-	| 	r_none
+	|		r_none
 	{
    		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -3258,10 +3259,10 @@ private l_d ::= l_kw_d space_like expects_decimal_or_int
 	;
 
 c_kw_none
-	::= c_kw_cd_prefix space_like (K_EJCT|incomplete)
-	|	c_kw_cd_prefix space_like (K_INIT|incomplete)
-	|	c_kw_cd_prefix space_like (K_SHUT|incomplete)
-	|	c_kw_cd_prefix space_like (K_STOP|incomplete)
+	::= prefix_kw_cd space_like (K_EJCT|incomplete)
+	|	prefix_kw_cd space_like (K_INIT|incomplete)
+	|	prefix_kw_cd space_like (K_SHUT|incomplete)
+	|	prefix_kw_cd space_like (K_STOP|incomplete)
 	|	K_DPAS <<isOldVariant>>
 	|	K_APPR
 	|	K_ASEA
@@ -3281,8 +3282,9 @@ c_kw_none
 	|	prefix_kw_dbg_col space_like (K_PROF|incomplete)
 	|	prefix_kw_dbg_col space_like (K_TOCK|incomplete)
 	|	prefix_kw_dde_col space_like (K_DIED|incomplete)
-	|	prefix_kw_dde_col space_like (prefix_kw_gene|incomplete)
-	|	prefix_kw_dde_col space_like ((K_GETB|incomplete) | K_GETB space_like (c_kw_dde_getb_none|incomplete))
+	|	prefix_kw_dde_col space_like (K_GENE|incomplete)
+	|	prefix_kw_dde_col space_like (incomplete |	K_GETB space_like (c_kw_dde_getb_none|incomplete))
+	|	prefix_kw_dde_col space_like (incomplet | K_GIDS space_like (c_kw_dde_gids_none|incomplete))
 	|	prefix_kw_dde_col space_like (K_HATC|incomplete)
 	|	prefix_kw_dde_col space_like (K_LIVE|incomplete)
 	|	prefix_kw_dde_col space_like (K_LOBE|incomplete)
@@ -3371,6 +3373,96 @@ prefix_kw_dde_col
 		]
 	}
 	;
+prefix_kw_gene
+	::= K_GENE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+prefix_kw_mesg
+	::= K_MESG
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_sys_col
+	::= K_SYS_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_sway
+	::= K_SWAY
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_dbg_col
+	::= K_DBG_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_file
+	::= K_FILE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+
+prefix_kw_gids
+	::= K_GIDS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_net_col
+	::= K_NET_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_ordr
+	::= K_ORDR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
 prefix_kw_pat_col
 	::= K_PAT_COL
 	{
@@ -3380,6 +3472,7 @@ prefix_kw_pat_col
 		]
 	}
 	;
+
 prefix_kw_prt_col
 	::= K_PRT_COL
 	{
@@ -3458,26 +3551,29 @@ prefix_kw_cd
 		]
 	}
 	;
+
 prefix_kw_brn_col
 	::= K_BRN_COL
 	{
 		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
 		]
 	}
 	;
 
-c_kw_cd_prefix
-	::= prefix_kw_cd
+
+prefix_kw_urge
+	::= K_URGE
 	{
 		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
 		]
 	}
 	;
 
 c_kw_dde_getb_none
-	::= K_CNAM
+	::= K_BIOC
+	|	K_CNAM
 	|	K_CTIM
 	|	K_DATA
 	|	K_MONK
@@ -3485,11 +3581,10 @@ c_kw_dde_getb_none
 	|	K_ORGN
 	|	K_OVVD
 	|	K_RRCT
-	|	K_ROOT
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
 		]
 	}
 	;
@@ -3518,8 +3613,8 @@ c_kw_d
 	|	prefix_kw_dbg_col space_like (K_OUTV|incomplete)
 	|	prefix_kw_dbg_col space_like (K_WTIK|incomplete)
 	|	K_DCOR
-	|	prefix_kw_dde_col space_like ((K_GETB|incomplete) | K_GETB space_like (c_kw_dde_getb_d|incomplete))
-	|	prefix_kw_dde_col space_like ((prefix_kw_gids|incomplete) | prefix_kw_gids space_like (c_kw_dde_gids_d|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete |	K_GETB space_like (c_kw_dde_getb_d|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete |	K_GIDS space_like (c_kw_dde_gids_d|incomplete))
 	|	prefix_kw_dde_col space_like (K_GETB|incomplete)
 	|	prefix_kw_dde_col space_like (K_LNEU|incomplete)
 	|	prefix_kw_dde_col space_like (K_WORD|incomplete)
@@ -3552,8 +3647,8 @@ c_kw_d
 	|	K_OUTV
 	|	K_PAGE
 	|	K_PART
-	|	prefix_pat_col space_like (K_CHAR|incomplete)
-	|	prefix_pat_col space_like (K_KILL|incomplete)
+	|	prefix_kw_pat_col space_like (K_CHAR|incomplete)
+	|	prefix_kw_pat_col space_like (K_KILL|incomplete)
 	|	K_PAUS
 	|	K_PERM
 	|	K_PLNE
@@ -3603,11 +3698,19 @@ c_kw_dde_gids_d
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
 		]
 	}
 	;
-
+c_kw_dde_gids_none
+	::= K_ROOT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
+		]
+	}
+	;
 c_kw_dde_getb_d
 	::= K_ALLR
 	|	K_EMTR
@@ -3616,7 +3719,7 @@ c_kw_dde_getb_d
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
 		]
 	}
 	;
@@ -3633,7 +3736,7 @@ c_kw_d_d
 	|	K_CALG
 	|	K_CBRX
 	|	K_CHEM (<<isOldVariant>>)
-	|	prefix_kw_dde_col space_like ((prefix_kw_gids|incomplete) | prefix_kw_gids space_like (c_dde_gids_d_d|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete |	K_GIDS space_like (c_dde_gids_d_d|incomplete))
 	|	K_DELN (<<isOldVariant>>)
 	|	K_EXPR
 	|	prefix_kw_gids space_like (K_GNUS|incomplete)
@@ -3678,7 +3781,7 @@ c_dde_gids_d_d
 	::= K_GNUS
 	{
 		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSuffix"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
 		]
 	}
 	;
@@ -3739,10 +3842,7 @@ c_kw_d_s
 	::= K_ADDB
 	|	K_BBT2
 	|	K_BMPS
-	|	prefix_kw_file space_like (K_EXEC|incomplete)
-	|	prefix_kw_file space_like (K_GLOB|incomplete)
-	|	prefix_kw_file space_like (K_IOPE|incomplete)
-	|	prefix_kw_file space_like (K_JDEL|incomplete)
+	|	prefix_kw_file space_like (K_EXEC|K_GLOB|K_IOPE|K_JDEL|incomplete)
 	|	K_PLMD
 	|	K_PLMU
 	|	K_STRK
@@ -3807,8 +3907,7 @@ c_kw_d_d_f_d
 
 c_kw_d_d_f
 	::= K_ALTR
-	|	prefix_kw_brn_col space_like (K_SETL|incomplete)
-	|	prefix_kw_brn_col space_like (K_SETT|incomplete)
+	|	prefix_kw_brn_col space_like (K_SETL|K_SETT|incomplete)
 	|	K_PROP
 	{
 		implements = [
@@ -3909,16 +4008,16 @@ c_kw_d_d_d
 	|	K_CMRA
 	|	K_CMRP
 	|	prefix_kw_dde_col space_like (K_CELL|incomplete)
-	|	prefix_kw_dde_col space_like (K_GETB|incomplete) space_like K_LVOB
-	|	prefix_kw_dde_col space_like (prefix_kw_gids|incomplete) space_like K_SPCS
+	|	prefix_kw_dde_col space_like (incomplete | K_GETB space_like (dde_col_getb_d_d_d|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete | K_GIDS space_like (dde_col_gids_d_d_d|incomplete))
 	|	K_DOOR <<isNewerVariant>>
-	| 	K_DPAS <<isNewerVariant>>
+	|		K_DPAS <<isNewerVariant>>
 	|	K_FIRE
 	|	prefix_kw_gids space_like (K_SPCS|incomplete)
 	|	K_KMSG
 	|	K_LINK
 	|	K_LTCY
-	|	prefix_pat_col space_like (K_MOVE|incomplete)
+	|	prefix_kw_pat_col space_like (K_MOVE|incomplete)
 	|	K_PUHL
 	|	K_PUPT
 	|	K_RTAR
@@ -3948,6 +4047,21 @@ c_kw_d_d_d
 	}
 	;
 
+dde_col_getb_d_d_d ::= K_LVOB
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
+		]
+	}
+	;
+
+dde_col_gids_d_d_d ::= K_SPCS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsSuffixToken"
+		]
+	}
+	;
 c_kw_d_d_s
 	::= prefix_kw_bbd_col space_like (K_WORD|incomplete)
 	|	prefix_kw_dde_col space_like (K_PIC2|incomplete)
@@ -4113,7 +4227,7 @@ c_kw_d_f
 	|	K_EMIT
 	|	K_GRPV
 	|	K_SCLE
-	|	prefix_stim space_like (K_SHOU|K_SIGN|K_TACT|incomplete)  <<isNewerVariant>>
+	|	prefix_kw_stim space_like (K_SHOU|K_SIGN|K_TACT|incomplete)  <<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4461,8 +4575,7 @@ c_kw_s_d_s_s
 	;
 
 c_kw_s_d_s
-	::= prefix_kw_hist space_like (K_FOTO|incomplete)
-	|	prefix_kw_hist space_like (K_UTXT|incomplete)
+	::= prefix_kw_hist space_like (K_FOTO|K_UTXT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4748,7 +4861,7 @@ c_kw_d_a_d_d_d
 	;
 
 c_kw_d_d_l
-	::= prefix_kw_new_col space_like (prefix_kw_gene|incomplete)
+	::= prefix_kw_new_col space_like (K_GENE|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4853,7 +4966,7 @@ c_kw_a_s
 	;
 
 c_kw_d_s_d_d_d_d_d_bs_d_d
-	::= prefix_pat_col space_like (K_BUTT|incomplete)
+	::= prefix_kw_pat_col space_like (K_BUTT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4873,7 +4986,7 @@ c_kw_d_s_d_d_d_d_d_bs_d_d
 	;
 
 c_kw_d_s_d_d_d_d_d_d_d_d
-	::= prefix_pat_col space_like (K_CMRA|incomplete)
+	::= prefix_kw_pat_col space_like (K_CMRA|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4893,7 +5006,7 @@ c_kw_d_s_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d
-	::= prefix_pat_col space_like (K_DULL|incomplete)
+	::= prefix_kw_pat_col space_like (K_DULL|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4913,7 +5026,7 @@ c_kw_d_s_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d_s
-	::= prefix_pat_col space_like (K_FIXD|incomplete)
+	::= prefix_kw_pat_col space_like (K_FIXD|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4933,7 +5046,7 @@ c_kw_d_s_d_d_d_d_s
 	;
 
 c_kw_d_s_d_d_d_d_d
-	::= prefix_pat_col space_like (K_GRPH|incomplete)
+	::= prefix_kw_pat_col space_like (K_GRPH|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4953,7 +5066,7 @@ c_kw_d_s_d_d_d_d_d
 	;
 
 c_kw_d_s_d_d_d_d_d_s
-	::= prefix_pat_col space_like (K_TEXT|incomplete)
+	::= prefix_kw_pat_col space_like (K_TEXT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5196,8 +5309,8 @@ c_kw_s_d_f
 	;
 
 c_kw_d_d_d_d_d_d_d_d_d_d_d_d
-	::= prefix_stim space_like (K_SHOU|K_SIGN|K_TACT|incomplete) <<isOldVariant>>
-	|	prefix_stim space_like (K_FROM|incomplete) <<isOldVariant>>
+	::= prefix_kw_stim space_like (K_SHOU|K_SIGN|K_TACT|incomplete) <<isOldVariant>>
+	|	prefix_kw_stim space_like (K_FROM|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5217,7 +5330,7 @@ c_kw_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_a_d_f
-	::= (prefix_stim space_like (K_WRIT|incomplete))<<isNewerVariant>>
+	::= (prefix_kw_stim space_like (K_WRIT|incomplete))<<isNewerVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5237,7 +5350,7 @@ c_kw_a_d_f
 	;
 
 c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
-	::= prefix_stim space_like (K_WRIT|incomplete) <<isOldVariant>>
+	::= prefix_kw_stim space_like (K_WRIT|incomplete) <<isOldVariant>>
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5257,9 +5370,7 @@ c_kw_a_d_d_d_d_d_d_d_d_d_d_d_d
 	;
 
 c_kw_d_f_d_f_d_f_d_f
-	::= prefix_sway space_like (K_SHOU|incomplete)
-	|	prefix_sway space_like (K_SIGN|incomplete)
-	|	prefix_sway space_like (K_TACT|incomplete)
+	::= prefix_kw_sway space_like (K_SHOU|K_SIGN|K_TACT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5279,7 +5390,7 @@ c_kw_d_f_d_f_d_f_d_f
 	;
 
 c_kw_a_d_f_d_f_d_f_d_f
-	::= prefix_sway space_like (K_WRIT|incomplete)
+	::= prefix_kw_sway space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5341,9 +5452,7 @@ c_kw_a_d_d_d_d
 	;
 
 c_kw_f_d_f
-	::= prefix_urge space_like (K_SHOU|incomplete)
-	|	prefix_urge space_like (K_SIGN|incomplete)
-	|	prefix_urge space_like (K_TACT|incomplete)
+	::= prefix_kw_urge space_like (K_SHOU|K_SIGN|K_TACT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5362,17 +5471,9 @@ c_kw_f_d_f
 	}
 	;
 
-prefix_urge
-	::= K_URGE
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
-		]
-	}
-	;
 
 c_kw_a_d_f_d_f
-	::= prefix_urge space_like (K_WRIT|incomplete)
+	::= prefix_kw_urge space_like (K_WRIT|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -5535,8 +5636,7 @@ r_kw_none
 	|	K_POSX
 	|	K_POSY
 	|	K_PRES
-	|	prefix_kw_prt_col space_like (K_ITOT|incomplete)
-	|	prefix_kw_prt_col space_like (K_OTOT|incomplete)
+	|	prefix_kw_prt_col space_like (K_ITOT|K_OTOT|incomplete)
 	|	K_PSRC
 	|	K_PTXT
 	|	K_PURE
@@ -5610,8 +5710,8 @@ r_kw_none
 	|	K_YVEC
 	|	K_ZOMB
 	|	K_CAMN
-	| 	prefix_kw_cd space_like (cd_kw_none|incomplete)
-	| 	r_gend
+	|	prefix_kw_cd space_like (cd_kw_none|incomplete)
+	|	r_gend
 	|	incomplete
 	{
 		implements = [
@@ -5733,10 +5833,7 @@ r_kw_d
 	|	K_HEAP
 	|	K_HEDX
 	|	K_HEDY
-	|	prefix_kw_hist space_like (K_DATE|incomplete)
-	|	prefix_kw_hist space_like (K_SEAN|incomplete)
-	|	prefix_kw_hist space_like (K_TIME|incomplete)
-	|	prefix_kw_hist space_like (K_YEAR|incomplete)
+	|	prefix_kw_hist space_like (K_DATE|K_SEAN|K_TIME|K_YEAR|incomplete)
 	|	K_ISAR
 	|	K_ITOF
 	|	K_KEYD
@@ -5747,8 +5844,7 @@ r_kw_d
 	|	K_OBSV
 	|	K_PART
 	|	K_PNXT
-	|	prefix_kw_prt_col space_like (K_FRMA|incomplete)
-	|	prefix_kw_prt_col space_like (K_FROM|incomplete)
+	|	prefix_kw_prt_col space_like (K_FRMA|K_FROM|incomplete)
 	|	K_PSWD
 	|	K_RAIN
 	|	K_RLOC
@@ -5977,8 +6073,8 @@ r_kw_d_d
 	|	K_ROOM <<isOldVariant>>
 	|	K_WEAR
 	|	K_WOLF
-	| 	K_TRAN (!<<isVariant 'CV'>>)
-	| 	K_CHAR (!<<isVariant 'CV'>>)
+	|	K_TRAN (!<<isVariant 'CV'>>)
+	|	K_CHAR (!<<isVariant 'CV'>>)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6006,8 +6102,7 @@ r_kw_s
 	|	K_LOWA
 	|	K_MTOA
 	|	K_MTOC
-	|	prefix_kw_net_col space_like (K_FROM|incomplete)
-	|	prefix_kw_net_col space_like (K_ULIN|incomplete)
+	|	prefix_kw_net_col space_like (K_FROM|K_ULIN|incomplete)
 	|	K_OOWW
 	|	prefix_kw_pray space_like (pray_kw_s|incomplete)
 	|	K_REAN
@@ -6058,10 +6153,8 @@ private pray_kw_s
 	;
 
 r_kw_s_d_d
-	::= prefix_kw_hist space_like (K_FIND|incomplete)
-	|	prefix_kw_hist space_like (K_FINR|incomplete)
-	|	prefix_kw_pray space_like (K_FILE|incomplete)
-	|	prefix_kw_pray space_like (K_IMPO|incomplete)
+	::= prefix_kw_hist space_like (K_FIND|K_FINR|incomplete)
+	|	prefix_kw_pray space_like (K_FILE|K_IMPO|incomplete)
 	|	K_SUBS
 	{
 		implements = [
@@ -6147,10 +6240,7 @@ r_kw_a_d_d_d
 
 r_kw_s_s
 	::= prefix_kw_net_col space_like (K_EXPO|incomplete)
-	|	prefix_kw_pray space_like (K_BACK|incomplete)
-	|	prefix_kw_pray space_like (K_FORE|incomplete)
-	|	prefix_kw_pray space_like (K_NEXT|incomplete)
-	|	prefix_kw_pray space_like (K_PREV|incomplete)
+	|	prefix_kw_pray space_like (K_BACK|K_FORE|K_NEXT|K_PREV|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6595,721 +6685,721 @@ l_kw_d
 	;
 
 all_tokens
-	::= prefix_kw_cd
+	::= K_CD_
 	|	VA_XX
 	|	VAR_X
 	|	OV_XX
 	|	OBV_X
 	|	MV_XX
-	| K_IT_
-	| K_P1_
-	| K_P2_
-	| K_UP_
-	| K_ABBA
-	| K_ABRT
-	| K_ABSV
-	| K_ACCG
-	| K_ACOS
-	| K_ACTV
-	| K_ADDB
-	| K_ADDM
-	| K_ADDR
-	| K_ADDS
-	| K_ADDV
-	| K_ADIN
-	| K_ADMP
-	| K_AERO
-	| K_AGES
-	| K_AGNT
-	| K_AGTI
-	| K_AGTS
-	| K_AIM_COL
-	| K_ALLR
-	| K_ALPH
-	| K_ALTR
-	| K_ANDV
-	| K_ANGL
-	| K_ANIM
-	| K_ANMS
-	| K_APPR
-	| K_APRO
-	| K_ASEA
-	| K_ASIN
-	| K_ASLP
-	| K_ASRT
-	| K_ATAN
-	| K_ATTN
-	| K_ATTR
-	| K_AVAR
-	| K_AVEL
-	| K_BABY
-	| K_BACK
-	| K_BANG
-	| K_BASE
-	| K_BBD_COL
-	| K_BBFD
-	| K_BBLE
-	| K_BBT2
-	| K_BBTX
-	| K_BHVR
-	| K_BIOC
-	| K_BKBD
-	| K_BKDS
-	| K_BKGD
-	| K_BMPS
-	| K_BODY
-	| K_BOOT
-	| K_BORN
-	| K_BRED
-	| K_BRMI
-	| K_BRN_COL
-	| K_BUMP
-	| K_BUTT
-	| K_BUZZ
-	| K_BVAR
-	| K_BYIT
-	| K_CABB
-	| K_CABL
-	| K_CABN
-	| K_CABP
-	| K_CABR
-	| K_CABT
-	| K_CABV
-	| K_CABW
-	| K_CACL
-	| K_CAGE
-	| K_CALC
-	| K_CALG
-	| K_CALL
-	| K_CAMN
-	| K_CAMT
-	| K_CAOS
-	| K_CARR
-	| K_CATA
-	| K_CATI
-	| K_CATO
-	| K_CATX
-	| K_CBRG
-	| K_CBRX
-	| K_CBTN
-	| K_CBUB
-	| K_CELL
-	| K_CHAR
-	| K_CHEM
-	| K_CLAC
-	| K_CLAS
-	| K_CLIK
-	| K_CLON
-	| K_CLS2
-	| K_CMND
-	| K_CMRA
-	| K_CMRP
-	| K_CMRT
-	| K_CMRX
-	| K_CMRY
-	| K_CNAM
-	| K_CODE
-	| K_CODF
-	| K_CODG
-	| K_CODP
-	| K_CODS
-	| K_COMP
-	| K_CONV
-	| K_CORE
-	| K_COS_
-	| K_COUN
-	| K_CPRO
-	| K_CRAG
-	| K_CREA
-	| K_CROS
-	| K_CTIM
-	| K_DATA
-	| K_DATE
-	| K_DAYT
-	| K_DBG_NUM
-	| K_DBG_COL
-	| K_DBGA
-	| K_DBGM
-	| K_DBGV
-	| K_DBUG
-	| K_DCOR
-	| K_DDE_COL
-	| K_DEAD
-	| K_DECN
-	| K_DELE
-	| K_DELG
-	| K_DELM
-	| K_DELN
-	| K_DELR
-	| K_DELW
-	| K_DEPS
-	| K_DFTX
-	| K_DFTY
-	| K_DIED
-	| K_DIRN
-	| K_DISQ
-	| K_DIVV
-	| K_DMAP
-	| K_DMPB
-	| K_DMPD
-	| K_DMPL
-	| K_DMPN
-	| K_DMPT
-	| K_DOCA
-	| K_DOIF
-	| K_DOIN
-	| K_DONE
-	| K_DOOR
-	| K_DOWN
-	| K_DPAS
-	| K_DPS2
-	| K_DREA
-	| K_DRIV
-	| K_DROP
-	| K_DRV_EXC
-	| K_DSEE
-	| K_DULL
-	| K_DYED
-	| K_EAME
-	| K_EAMN
-	| K_ECON
-	| K_EDIT
-	| K_EGGL
-	| K_EJCT
-	| K_ELAS
-	| K_ELIF
-	| K_ELSE
-	| K_EMID
-	| K_EMIT
-	| K_EMTR
-	| K_ENDI
-	| K_ENDM
-	| K_ENUM
-	| K_EPAS
-	| K_ERID
-	| K_ERRA
-	| K_ESCN
-	| K_ESEE
-	| K_ETCH
-	| K_ETIK
-	| K_EVER
-	| K_EVNT
-	| K_EXEC
-	| K_EXPO
-	| K_EXPR
-	| K_FACE
-	| K_FADE
-	| K_FALL
-	| K_FCUS
-	| K_FDMP
-	| K_FILE
-	| K_FIND
-	| K_FINR
-	| K_FIRE
-	| K_FIXD
-	| K_FLOR
-	| K_FLSH
-	| K_FLTO
-	| K_FLTX
-	| K_FLTY
-	| K_FMLY
-	| K_FORE
-	| K_FORF
-	| K_FOTO
-	| K_FRAT
-	| K_FREL
-	| K_FRIC
-	| K_FRMA
-	| K_FRMT
-	| K_FROM
-	| K_FRQH
-	| K_FRQL
-	| K_FRQM
-	| K_FRSH
-	| K_FRZN
-	| K_FTOI
-	| K_FVEL
-	| K_FVWM
-	| K_GAIT
-	| K_GALL
-	| K_GAME
-	| K_GAMN
-	| K_GARB
-	| K_GEND
-	| prefix_kw_gene
-	| K_GETB
-	| K_GIDS
-	| K_GLOB
-	| K_GMAP
-	| K_GNAM
-	| K_GND_NUM
-	| K_GNDW
-	| K_GNUS
-	| K_GOTO
-	| K_GPAS
-	| K_GRAP
-	| K_GRAV
-	| K_GRID
-	| K_GRND
-	| K_GRPH
-	| K_GRPL
-	| K_GRPV
-	| K_GSUB
-	| K_GTOS
-	| K_HAIR
-	| K_HAND
-	| K_HATC
-	| K_HATL
-	| K_HEAD
-	| K_HEAP
-	| K_HEAR
-	| K_HEDX
-	| K_HEDY
-	| K_HELD
-	| K_HELP
-	| K_HGHT
-	| K_HHLD
-	| K_HIRP
-	| K_HIST
-	| K_HOST
-	| K_HOTP
-	| K_HOTS
-	| K_HOUR
-	| K_HSRC
-	| K_HTML
-	| K_ICLO
-	| K_IITT
-	| K_IMGE
-	| K_IMPO
-	| K_IMPT
-	| K_IMSK
-	| K_INEW
-	| K_INIT
-	| K_INJR
-	| K_INJT
-	| K_INNF
-	| K_INNI
-	| K_INNL
-	| K_INOK
-	| K_INS_NUM
-	| K_INST
-	| K_INTR
-	| K_IOPE
-	| K_ISAR
-	| K_ISCR
-	| K_ITOF
-	| K_ITOT
-	| K_IZAP
-	| K_JDEL
-	| K_JECT
-	| K_JOIN
-	| K_KEYD
-	| K_KILL
-	| K_KMSG
-	| K_KNOB
-	| K_KRAK
-	| K_LACB
-	| K_LANG
-	| K_LCUS
-	| K_LEFT
-	| K_LIFT
-	| K_LIKE
-	| K_LIMB
-	| K_LIML
-	| K_LIMR
-	| K_LIMT
-	| K_LINE
-	| K_LINK
-	| K_LITE
-	| K_LIVE
-	| K_LNEU
-	| K_LNG+
-	| K_LOAD
-	| K_LOBE
-	| K_LOCI
-	| K_LOCK
-	| K_LOFT
-	| K_LOOP
-	| K_LORP
-	| K_LOWA
-	| K_LSRC
-	| K_LTCY
-	| K_LVOB
-	| K_MAKE
-	| K_MAME
-	| K_MANN
-	| K_MAPD
-	| K_MAPH
-	| K_MAPK
-	| K_MAPW
-	| K_MATE
-	| K_MCLR
-	| K_MCRT
-	| K_MEMX
-	| prefix_kw_mesg
-	| K_META
-	| K_MIDI
-	| K_MIND
-	| K_MINS
-	| K_MIRA
-	| K_MIRR
-	| K_MLOC
-	| K_MMSC
-	| K_MODU
-	| K_MODV
-	| K_MON1
-	| K_MON2
-	| K_MONK
-	| K_MONT
-	| K_MOPX
-	| K_MOPY
-	| K_MOTR
-	| K_MOUS
-	| K_MOVE
-	| K_MOVS
-	| K_MOVX
-	| K_MOVY
-	| K_MOWS
-	| K_MSEC
-	| K_MTHX
-	| K_MTHY
-	| K_MTOA
-	| K_MTOC
-	| K_MULV
-	| K_MUSC
-	| K_MUTE
-	| K_MVBY
-	| K_MVFT
-	| K_MVSF
-	| K_MVTO
-	| K_NACT
-	| K_NAME
-	| K_NAMN
-	| K_NCLS
-	| K_NEGG
-	| K_NEGV
-	| K_NEID
-	| K_NET_COL
-	| K_NETU
-	| prefix_kw_new_col
-	| K_NEWC
-	| K_NEWV
-	| K_NEXT
-	| K_NOHH
-	| K_NORN
-	| K_NOTV
-	| K_NPGS
-	| K_NSCN
-	| K_NUDE
-	| K_NULL
-	| K_NWLD
-	| K_OBDT
-	| K_OBJP
-	| K_OBST
-	| K_OBSV
-	| K_OCLO
-	| K_OFLU
-	| K_ONEW
-	| K_ONTR
-	| K_ONTV
-	| K_OOPE
-	| K_OOWW
-	| prefix_kw_ordr
-	| K_ORGF
-	| K_ORGI
-	| K_ORGN
-	| K_ORRV
-	| K_OTOT
-	| K_OUTS
-	| K_OUTV
-	| K_OUTX
-	| K_OVER
-	| K_OVVD
-	| K_OWNR
-	| K_OZAP
-	| K_PACE
-	| K_PAGE
-	| K_PANC
-	| K_PART
-	| K_PASS
-	| prefix_pat_col
-	| K_PAUS
-	| K_PAWS
-	| K_PCLS
-	| K_PERM
-	| K_PIC2
-	| K_PICT
-	| K_PLAY
-	| K_PLDS
-	| K_PLMD
-	| K_PLMU
-	| K_PLNE
-	| K_PNTR
-	| K_PNXT
-	| K_POIN
-	| K_POLL
-	| K_POSB
-	| K_POSE
-	| K_POSL
-	| K_POSR
-	| K_POST
-	| K_POSX
-	| K_POSY
-	| K_PRAY
-	| K_PRES
-	| K_PREV
-	| K_PRLD
-	| K_PRNT
-	| K_PROF
-	| K_PROP
-	| K_PRT_COL
-	| K_PSRC
-	| K_PSWD
-	| K_PTXT
-	| K_PUHL
-	| K_PUPT
-	| K_PURE
-	| K_PUTB
-	| K_PUTS
-	| K_PUTV
-	| K_QUIT
-	| K_RACE
-	| K_RADN
-	| K_RAIN
-	| K_RAND
-	| K_RATE
-	| K_RAWE
-	| K_RCLR
-	| K_RCTN
-	| K_READ
-	| K_REAF
-	| K_REAN
-	| K_REAQ
-	| K_REFR
-	| K_RELX
-	| K_RELY
-	| K_REPE
-	| K_REPS
-	| K_REST
-	| K_RETN
-	| K_RGAM
-	| K_RGHT
-	| K_RLOC
-	| K_RMEV
-	| K_RMN_NUM
-	| K_RMND
-	| K_RMNO
-	| K_RMNR
-	| K_RMS_NUM
-	| K_RMSC
-	| K_RNDR
-	| K_RNDV
-	| K_RNGE
-	| K_ROOM
-	| K_ROOT
-	| K_ROTN
-	| K_RPAS
-	| K_RPTY
-	| K_RRCT
-	| K_RSCR
-	| K_RSET
-	| K_RSRC
-	| K_RTAR
-	| K_RTIF
-	| K_RTIM
-	| K_RTYP
-	| K_RUSO
-	| K_SAVE
-	| K_SAY_NUM
-	| K_SAY_DOL
-	| K_SAYN
-	| K_SCAM
-	| K_SCEN
-	| K_SCLE
-	| K_SCOL
-	| K_SCOR
-	| K_SCRL
-	| K_SCRP
-	| K_SCRX
-	| K_SDMP
-	| K_SEAN
-	| K_SEAV
-	| K_SEEE
-	| K_SEEN
-	| K_SEND
-	| K_SETA
-	| K_SETD
-	| K_SETL
-	| K_SETN
-	| K_SETS
-	| K_SETT
-	| K_SETV
-	| K_SEZZ
-	| K_SHOU
-	| K_SHOW
-	| K_SHUT
-	| K_SIGN
-	| K_SIMP
-	| K_SIN_
-	| K_SINS
-	| K_SIZE
-	| K_SLIM
-	| K_SLOW
-	| K_SNAP
-	| K_SNAX
-	| K_SNDC
-	| K_SNDE
-	| K_SNDF
-	| K_SNDL
-	| K_SNDQ
-	| K_SNDS
-	| K_SNDV
-	| K_SNEZ
-	| K_SORC
-	| K_SORQ
-	| K_SOUL
-	| K_SPAS
-	| K_SPCS
-	| K_SPIN
-	| K_SPNL
-	| K_SPOT
-	| K_SQRT
-	| K_STAR
-	| K_STAT
-	| K_STEP
-	| prefix_stim
-	| prefix_kw_stm_num
-	| K_STOF
-	| K_STOI
-	| K_STOP
-	| K_STPC
-	| K_STPT
-	| K_STRE
-	| K_STRK
-	| K_STRL
-	| K_SUBR
-	| K_SUBS
-	| K_SUBV
-	| K_SVEL
-	| K_SWAP
-	| prefix_sway
-	| K_SYS_COL
-	| K_TACK
-	| K_TACT
-	| K_TAGE
-	| K_TAN_
-	| K_TARG
-	| K_TCAR
-	| K_TCOR
-	| K_TECO
-	| K_TELE
-	| K_TEMP
-	| K_TEST
-	| K_TEXT
-	| K_THRT
-	| K_TICK
-	| K_TIME
-	| K_TINO
-	| K_TINT
-	| K_TMOD
-	| K_TMVB
-	| K_TMVF
-	| K_TMVT
-	| K_TNTC
-	| K_TNTO
-	| K_TNTW
-	| K_TOCK
-	| K_TOKN
-	| K_TOOL
-	| K_TORX
-	| K_TORY
-	| K_TOTL
-	| K_TOUC
-	| K_TRAN
-	| K_TRCK
-	| K_TRIG
-	| K_TTAR
-	| K_TWIN
-	| K_TYPE
-	| K_UCLN
-	| K_UFOS
-	| K_UFTX
-	| K_UFTY
-	| K_ULIN
-	| K_UNCS
-	| K_UNID
-	| K_UNIK
-	| K_UNLK
-	| K_UNTL
-	| K_UPPA
-	| prefix_urge
-	| K_USER
-	| K_UTXT
-	| K_VARC
-	| K_VARI
-	| K_VCB1
-	| K_VECX
-	| K_VECY
-	| K_VELO
-	| K_VELX
-	| K_VELY
-	| K_VHCL
-	| K_VISI
-	| K_VMJR
-	| K_VMNR
-	| K_VOCB
-	| K_VOIC
-	| K_VOIS
-	| K_VOLM
-	| K_VRSN
-	| K_VTOS
-	| K_WAIT
-	| K_WALK
-	| K_WALL
-	| K_WDOW
-	| K_WDTH
-	| K_WEAR
-	| K_WEBB
-	| K_WHAT
-	| K_WHOD
-	| K_WHOF
-	| K_WHON
-	| K_WHOZ
-	| K_WILD
-	| K_WIND
-	| K_WINH
-	| K_WINW
-	| K_WIPE
-	| K_WLDH
-	| K_WLDW
-	| K_WNAM
-	| K_WNDB
-	| K_WNDH
-	| K_WNDL
-	| K_WNDR
-	| K_WNDT
-	| K_WNDW
-	| K_WNDX
-	| K_WNDY
-	| K_WNTI
-	| K_WOLF
-	| K_WORD
-	| K_WPAU
-	| K_WPOS
-	| K_WRIT
-	| K_WRLD
-	| K_WRT+
-	| K_WTIK
-	| K_WTNT
-	| K_WTOP
-	| K_WUID
-	| K_WVET
-	| K_XIST
-	| K_XVEC
-	| K_YEAR
-	| K_YVEC
-	| K_ZOMB
-	| K_ZOOM
+	|	K_IT_
+	|	K_P1_
+	|	K_P2_
+	|	K_UP_
+	|	K_ABBA
+	|	K_ABRT
+	|	K_ABSV
+	|	K_ACCG
+	|	K_ACOS
+	|	K_ACTV
+	|	K_ADDB
+	|	K_ADDM
+	|	K_ADDR
+	|	K_ADDS
+	|	K_ADDV
+	|	K_ADIN
+	|	K_ADMP
+	|	K_AERO
+	|	K_AGES
+	|	K_AGNT
+	|	K_AGTI
+	|	K_AGTS
+	|	K_AIM_COL
+	|	K_ALLR
+	|	K_ALPH
+	|	K_ALTR
+	|	K_ANDV
+	|	K_ANGL
+	|	K_ANIM
+	|	K_ANMS
+	|	K_APPR
+	|	K_APRO
+	|	K_ASEA
+	|	K_ASIN
+	|	K_ASLP
+	|	K_ASRT
+	|	K_ATAN
+	|	K_ATTN
+	|	K_ATTR
+	|	K_AVAR
+	|	K_AVEL
+	|	K_BABY
+	|	K_BACK
+	|	K_BANG
+	|	K_BASE
+	|	K_BBD_COL
+	|	K_BBFD
+	|	K_BBLE
+	|	K_BBT2
+	|	K_BBTX
+	|	K_BHVR
+	|	K_BIOC
+	|	K_BKBD
+	|	K_BKDS
+	|	K_BKGD
+	|	K_BMPS
+	|	K_BODY
+	|	K_BOOT
+	|	K_BORN
+	|	K_BRED
+	|	K_BRMI
+	|	K_BRN_COL
+	|	K_BUMP
+	|	K_BUTT
+	|	K_BUZZ
+	|	K_BVAR
+	|	K_BYIT
+	|	K_CABB
+	|	K_CABL
+	|	K_CABN
+	|	K_CABP
+	|	K_CABR
+	|	K_CABT
+	|	K_CABV
+	|	K_CABW
+	|	K_CACL
+	|	K_CAGE
+	|	K_CALC
+	|	K_CALG
+	|	K_CALL
+	|	K_CAMN
+	|	K_CAMT
+	|	K_CAOS
+	|	K_CARR
+	|	K_CATA
+	|	K_CATI
+	|	K_CATO
+	|	K_CATX
+	|	K_CBRG
+	|	K_CBRX
+	|	K_CBTN
+	|	K_CBUB
+	|	K_CELL
+	|	K_CHAR
+	|	K_CHEM
+	|	K_CLAC
+	|	K_CLAS
+	|	K_CLIK
+	|	K_CLON
+	|	K_CLS2
+	|	K_CMND
+	|	K_CMRA
+	|	K_CMRP
+	|	K_CMRT
+	|	K_CMRX
+	|	K_CMRY
+	|	K_CNAM
+	|	K_CODE
+	|	K_CODF
+	|	K_CODG
+	|	K_CODP
+	|	K_CODS
+	|	K_COMP
+	|	K_CONV
+	|	K_CORE
+	|	K_COS_
+	|	K_COUN
+	|	K_CPRO
+	|	K_CRAG
+	|	K_CREA
+	|	K_CROS
+	|	K_CTIM
+	|	K_DATA
+	|	K_DATE
+	|	K_DAYT
+	|	K_DBG_NUM
+	|	K_DBG_COL
+	|	K_DBGA
+	|	K_DBGM
+	|	K_DBGV
+	|	K_DBUG
+	|	K_DCOR
+	|	K_DDE_COL
+	|	K_DEAD
+	|	K_DECN
+	|	K_DELE
+	|	K_DELG
+	|	K_DELM
+	|	K_DELN
+	|	K_DELR
+	|	K_DELW
+	|	K_DEPS
+	|	K_DFTX
+	|	K_DFTY
+	|	K_DIED
+	|	K_DIRN
+	|	K_DISQ
+	|	K_DIVV
+	|	K_DMAP
+	|	K_DMPB
+	|	K_DMPD
+	|	K_DMPL
+	|	K_DMPN
+	|	K_DMPT
+	|	K_DOCA
+	|	K_DOIF
+	|	K_DOIN
+	|	K_DONE
+	|	K_DOOR
+	|	K_DOWN
+	|	K_DPAS
+	|	K_DPS2
+	|	K_DREA
+	|	K_DRIV
+	|	K_DROP
+	|	K_DRV_EXC
+	|	K_DSEE
+	|	K_DULL
+	|	K_DYED
+	|	K_EAME
+	|	K_EAMN
+	|	K_ECON
+	|	K_EDIT
+	|	K_EGGL
+	|	K_EJCT
+	|	K_ELAS
+	|	K_ELIF
+	|	K_ELSE
+	|	K_EMID
+	|	K_EMIT
+	|	K_EMTR
+	|	K_ENDI
+	|	K_ENDM
+	|	K_ENUM
+	|	K_EPAS
+	|	K_ERID
+	|	K_ERRA
+	|	K_ESCN
+	|	K_ESEE
+	|	K_ETCH
+	|	K_ETIK
+	|	K_EVER
+	|	K_EVNT
+	|	K_EXEC
+	|	K_EXPO
+	|	K_EXPR
+	|	K_FACE
+	|	K_FADE
+	|	K_FALL
+	|	K_FCUS
+	|	K_FDMP
+	|	K_FILE
+	|	K_FIND
+	|	K_FINR
+	|	K_FIRE
+	|	K_FIXD
+	|	K_FLOR
+	|	K_FLSH
+	|	K_FLTO
+	|	K_FLTX
+	|	K_FLTY
+	|	K_FMLY
+	|	K_FORE
+	|	K_FORF
+	|	K_FOTO
+	|	K_FRAT
+	|	K_FREL
+	|	K_FRIC
+	|	K_FRMA
+	|	K_FRMT
+	|	K_FROM
+	|	K_FRQH
+	|	K_FRQL
+	|	K_FRQM
+	|	K_FRSH
+	|	K_FRZN
+	|	K_FTOI
+	|	K_FVEL
+	|	K_FVWM
+	|	K_GAIT
+	|	K_GALL
+	|	K_GAME
+	|	K_GAMN
+	|	K_GARB
+	|	K_GEND
+	|	K_GENE
+	|	K_GETB
+	|	K_GIDS
+	|	K_GLOB
+	|	K_GMAP
+	|	K_GNAM
+	|	K_GND_NUM
+	|	K_GNDW
+	|	K_GNUS
+	|	K_GOTO
+	|	K_GPAS
+	|	K_GRAP
+	|	K_GRAV
+	|	K_GRID
+	|	K_GRND
+	|	K_GRPH
+	|	K_GRPL
+	|	K_GRPV
+	|	K_GSUB
+	|	K_GTOS
+	|	K_HAIR
+	|	K_HAND
+	|	K_HATC
+	|	K_HATL
+	|	K_HEAD
+	|	K_HEAP
+	|	K_HEAR
+	|	K_HEDX
+	|	K_HEDY
+	|	K_HELD
+	|	K_HELP
+	|	K_HGHT
+	|	K_HHLD
+	|	K_HIRP
+	|	K_HIST
+	|	K_HOST
+	|	K_HOTP
+	|	K_HOTS
+	|	K_HOUR
+	|	K_HSRC
+	|	K_HTML
+	|	K_ICLO
+	|	K_IITT
+	|	K_IMGE
+	|	K_IMPO
+	|	K_IMPT
+	|	K_IMSK
+	|	K_INEW
+	|	K_INIT
+	|	K_INJR
+	|	K_INJT
+	|	K_INNF
+	|	K_INNI
+	|	K_INNL
+	|	K_INOK
+	|	K_INS_NUM
+	|	K_INST
+	|	K_INTR
+	|	K_IOPE
+	|	K_ISAR
+	|	K_ISCR
+	|	K_ITOF
+	|	K_ITOT
+	|	K_IZAP
+	|	K_JDEL
+	|	K_JECT
+	|	K_JOIN
+	|	K_KEYD
+	|	K_KILL
+	|	K_KMSG
+	|	K_KNOB
+	|	K_KRAK
+	|	K_LACB
+	|	K_LANG
+	|	K_LCUS
+	|	K_LEFT
+	|	K_LIFT
+	|	K_LIKE
+	|	K_LIMB
+	|	K_LIML
+	|	K_LIMR
+	|	K_LIMT
+	|	K_LINE
+	|	K_LINK
+	|	K_LITE
+	|	K_LIVE
+	|	K_LNEU
+	|	K_LNG+
+	|	K_LOAD
+	|	K_LOBE
+	|	K_LOCI
+	|	K_LOCK
+	|	K_LOFT
+	|	K_LOOP
+	|	K_LORP
+	|	K_LOWA
+	|	K_LSRC
+	|	K_LTCY
+	|	K_LVOB
+	|	K_MAKE
+	|	K_MAME
+	|	K_MANN
+	|	K_MAPD
+	|	K_MAPH
+	|	K_MAPK
+	|	K_MAPW
+	|	K_MATE
+	|	K_MCLR
+	|	K_MCRT
+	|	K_MEMX
+	|	K_MESG
+	|	K_META
+	|	K_MIDI
+	|	K_MIND
+	|	K_MINS
+	|	K_MIRA
+	|	K_MIRR
+	|	K_MLOC
+	|	K_MMSC
+	|	K_MODU
+	|	K_MODV
+	|	K_MON1
+	|	K_MON2
+	|	K_MONK
+	|	K_MONT
+	|	K_MOPX
+	|	K_MOPY
+	|	K_MOTR
+	|	K_MOUS
+	|	K_MOVE
+	|	K_MOVS
+	|	K_MOVX
+	|	K_MOVY
+	|	K_MOWS
+	|	K_MSEC
+	|	K_MTHX
+	|	K_MTHY
+	|	K_MTOA
+	|	K_MTOC
+	|	K_MULV
+	|	K_MUSC
+	|	K_MUTE
+	|	K_MVBY
+	|	K_MVFT
+	|	K_MVSF
+	|	K_MVTO
+	|	K_NACT
+	|	K_NAME
+	|	K_NAMN
+	|	K_NCLS
+	|	K_NEGG
+	|	K_NEGV
+	|	K_NEID
+	|	K_NET_COL
+	|	K_NETU
+	|	K_NEW_COL
+	|	K_NEWC
+	|	K_NEWV
+	|	K_NEXT
+	|	K_NOHH
+	|	K_NORN
+	|	K_NOTV
+	|	K_NPGS
+	|	K_NSCN
+	|	K_NUDE
+	|	K_NULL
+	|	K_NWLD
+	|	K_OBDT
+	|	K_OBJP
+	|	K_OBST
+	|	K_OBSV
+	|	K_OCLO
+	|	K_OFLU
+	|	K_ONEW
+	|	K_ONTR
+	|	K_ONTV
+	|	K_OOPE
+	|	K_OOWW
+	|	K_ORDR
+	|	K_ORGF
+	|	K_ORGI
+	|	K_ORGN
+	|	K_ORRV
+	|	K_OTOT
+	|	K_OUTS
+	|	K_OUTV
+	|	K_OUTX
+	|	K_OVER
+	|	K_OVVD
+	|	K_OWNR
+	|	K_OZAP
+	|	K_PACE
+	|	K_PAGE
+	|	K_PANC
+	|	K_PART
+	|	K_PASS
+	|	K_PAT_COL
+	|	K_PAUS
+	|	K_PAWS
+	|	K_PCLS
+	|	K_PERM
+	|	K_PIC2
+	|	K_PICT
+	|	K_PLAY
+	|	K_PLDS
+	|	K_PLMD
+	|	K_PLMU
+	|	K_PLNE
+	|	K_PNTR
+	|	K_PNXT
+	|	K_POIN
+	|	K_POLL
+	|	K_POSB
+	|	K_POSE
+	|	K_POSL
+	|	K_POSR
+	|	K_POST
+	|	K_POSX
+	|	K_POSY
+	|	K_PRAY
+	|	K_PRES
+	|	K_PREV
+	|	K_PRLD
+	|	K_PRNT
+	|	K_PROF
+	|	K_PROP
+	|	K_PRT_COL
+	|	K_PSRC
+	|	K_PSWD
+	|	K_PTXT
+	|	K_PUHL
+	|	K_PUPT
+	|	K_PURE
+	|	K_PUTB
+	|	K_PUTS
+	|	K_PUTV
+	|	K_QUIT
+	|	K_RACE
+	|	K_RADN
+	|	K_RAIN
+	|	K_RAND
+	|	K_RATE
+	|	K_RAWE
+	|	K_RCLR
+	|	K_RCTN
+	|	K_READ
+	|	K_REAF
+	|	K_REAN
+	|	K_REAQ
+	|	K_REFR
+	|	K_RELX
+	|	K_RELY
+	|	K_REPE
+	|	K_REPS
+	|	K_REST
+	|	K_RETN
+	|	K_RGAM
+	|	K_RGHT
+	|	K_RLOC
+	|	K_RMEV
+	|	K_RMN_NUM
+	|	K_RMND
+	|	K_RMNO
+	|	K_RMNR
+	|	K_RMS_NUM
+	|	K_RMSC
+	|	K_RNDR
+	|	K_RNDV
+	|	K_RNGE
+	|	K_ROOM
+	|	K_ROOT
+	|	K_ROTN
+	|	K_RPAS
+	|	K_RPTY
+	|	K_RRCT
+	|	K_RSCR
+	|	K_RSET
+	|	K_RSRC
+	|	K_RTAR
+	|	K_RTIF
+	|	K_RTIM
+	|	K_RTYP
+	|	K_RUSO
+	|	K_SAVE
+	|	K_SAY_NUM
+	|	K_SAY_DOL
+	|	K_SAYN
+	|	K_SCAM
+	|	K_SCEN
+	|	K_SCLE
+	|	K_SCOL
+	|	K_SCOR
+	|	K_SCRL
+	|	K_SCRP
+	|	K_SCRX
+	|	K_SDMP
+	|	K_SEAN
+	|	K_SEAV
+	|	K_SEEE
+	|	K_SEEN
+	|	K_SEND
+	|	K_SETA
+	|	K_SETD
+	|	K_SETL
+	|	K_SETN
+	|	K_SETS
+	|	K_SETT
+	|	K_SETV
+	|	K_SEZZ
+	|	K_SHOU
+	|	K_SHOW
+	|	K_SHUT
+	|	K_SIGN
+	|	K_SIMP
+	|	K_SIN_
+	|	K_SINS
+	|	K_SIZE
+	|	K_SLIM
+	|	K_SLOW
+	|	K_SNAP
+	|	K_SNAX
+	|	K_SNDC
+	|	K_SNDE
+	|	K_SNDF
+	|	K_SNDL
+	|	K_SNDQ
+	|	K_SNDS
+	|	K_SNDV
+	|	K_SNEZ
+	|	K_SORC
+	|	K_SORQ
+	|	K_SOUL
+	|	K_SPAS
+	|	K_SPCS
+	|	K_SPIN
+	|	K_SPNL
+	|	K_SPOT
+	|	K_SQRT
+	|	K_STAR
+	|	K_STAT
+	|	K_STEP
+	|	K_STIM
+	|	K_STM_NUM
+	|	K_STOF
+	|	K_STOI
+	|	K_STOP
+	|	K_STPC
+	|	K_STPT
+	|	K_STRE
+	|	K_STRK
+	|	K_STRL
+	|	K_SUBR
+	|	K_SUBS
+	|	K_SUBV
+	|	K_SVEL
+	|	K_SWAP
+	|	K_SWAY
+	|	K_SYS_COL
+	|	K_TACK
+	|	K_TACT
+	|	K_TAGE
+	|	K_TAN_
+	|	K_TARG
+	|	K_TCAR
+	|	K_TCOR
+	|	K_TECO
+	|	K_TELE
+	|	K_TEMP
+	|	K_TEST
+	|	K_TEXT
+	|	K_THRT
+	|	K_TICK
+	|	K_TIME
+	|	K_TINO
+	|	K_TINT
+	|	K_TMOD
+	|	K_TMVB
+	|	K_TMVF
+	|	K_TMVT
+	|	K_TNTC
+	|	K_TNTO
+	|	K_TNTW
+	|	K_TOCK
+	|	K_TOKN
+	|	K_TOOL
+	|	K_TORX
+	|	K_TORY
+	|	K_TOTL
+	|	K_TOUC
+	|	K_TRAN
+	|	K_TRCK
+	|	K_TRIG
+	|	K_TTAR
+	|	K_TWIN
+	|	K_TYPE
+	|	K_UCLN
+	|	K_UFOS
+	|	K_UFTX
+	|	K_UFTY
+	|	K_ULIN
+	|	K_UNCS
+	|	K_UNID
+	|	K_UNIK
+	|	K_UNLK
+	|	K_UNTL
+	|	K_UPPA
+	|	K_URGE
+	|	K_USER
+	|	K_UTXT
+	|	K_VARC
+	|	K_VARI
+	|	K_VCB1
+	|	K_VECX
+	|	K_VECY
+	|	K_VELO
+	|	K_VELX
+	|	K_VELY
+	|	K_VHCL
+	|	K_VISI
+	|	K_VMJR
+	|	K_VMNR
+	|	K_VOCB
+	|	K_VOIC
+	|	K_VOIS
+	|	K_VOLM
+	|	K_VRSN
+	|	K_VTOS
+	|	K_WAIT
+	|	K_WALK
+	|	K_WALL
+	|	K_WDOW
+	|	K_WDTH
+	|	K_WEAR
+	|	K_WEBB
+	|	K_WHAT
+	|	K_WHOD
+	|	K_WHOF
+	|	K_WHON
+	|	K_WHOZ
+	|	K_WILD
+	|	K_WIND
+	|	K_WINH
+	|	K_WINW
+	|	K_WIPE
+	|	K_WLDH
+	|	K_WLDW
+	|	K_WNAM
+	|	K_WNDB
+	|	K_WNDH
+	|	K_WNDL
+	|	K_WNDR
+	|	K_WNDT
+	|	K_WNDW
+	|	K_WNDX
+	|	K_WNDY
+	|	K_WNTI
+	|	K_WOLF
+	|	K_WORD
+	|	K_WPAU
+	|	K_WPOS
+	|	K_WRIT
+	|	K_WRLD
+	|	K_WRT+
+	|	K_WTIK
+	|	K_WTNT
+	|	K_WTOP
+	|	K_WUID
+	|	K_WVET
+	|	K_XIST
+	|	K_XVEC
+	|	K_YEAR
+	|	K_YVEC
+	|	K_ZOMB
+	|	K_ZOOM
 	;
 
 

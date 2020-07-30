@@ -27,8 +27,10 @@ class CaosScriptColorSettingsPage : ColorSettingsPage {
 doif var1 <eqOp>eq</eqOp> 10
     <command>setv</command> obv1 12
     <command>tick</command> 50
+    <prefix>new:</prefix> <command>simp</command> <token>eggs</token> 8 0 0 0 
     <command>sndv</command> [heli.wav]
     <command>base</command> 4 <command>anim</command> <anim>[0123R]</anim>
+    <prefix>dde:</prefix> <command>getb</command> <suffix>cnam</suffix>
     enum 4 1 0
         <command>chem</command> 57 10
         <command>gsub</command> <subroutine>sbrt</subroutine> 
@@ -40,7 +42,7 @@ endi
 endm
 * An example of a event script
 scrp 2 3 6 9
-    <command>dde: puts</command> [Testing... 1,2,3]
+    <prefix>dde:</prefix> <command>puts</command> [Testing... 1,2,3]
     <command>subv</command> mv00 18
     doif mv00 <symbol>></symbol> 0
         <command>tick</command> 0
@@ -79,6 +81,8 @@ endm
                 AttributesDescriptor("Line Comment", CaosScriptSyntaxHighlighter.COMMENT),
                 AttributesDescriptor("Var Tokens", CaosScriptSyntaxHighlighter.VAR_TOKEN),
                 AttributesDescriptor("Commands", CaosScriptSyntaxHighlighter.COMMAND_TOKEN),
+                AttributesDescriptor("Command Prefix", CaosScriptSyntaxHighlighter.PREFIX_TOKEN),
+                AttributesDescriptor("Command Suffix", CaosScriptSyntaxHighlighter.SUFFIX_TOKEN),
                 AttributesDescriptor("Right Value Keywords", CaosScriptSyntaxHighlighter.RVALUE_TOKEN),
                 AttributesDescriptor("Left Value Keywords", CaosScriptSyntaxHighlighter.LVALUE_TOKEN),
                 AttributesDescriptor("Numbers", CaosScriptSyntaxHighlighter.NUMBER),
@@ -96,7 +100,10 @@ endm
                 "command" to CaosScriptSyntaxHighlighter.COMMAND_TOKEN,
                 "symbol" to CaosScriptSyntaxHighlighter.SYMBOL,
                 "eqOp" to CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD,
-                "subroutine" to CaosScriptSyntaxHighlighter.SUBROUTINE_NAME
+                "subroutine" to CaosScriptSyntaxHighlighter.SUBROUTINE_NAME,
+                "prefix" to CaosScriptSyntaxHighlighter.PREFIX_TOKEN,
+                "suffix" to CaosScriptSyntaxHighlighter.SUFFIX_TOKEN
+
         )
     }
 }
