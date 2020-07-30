@@ -12,6 +12,9 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Objects;
 
+import static java.awt.Color.BLACK;
+
+@SuppressWarnings("UseJBColor")
 public class SprFileEditor {
     private JPanel main;
     private JList<Image> imageList;
@@ -31,7 +34,7 @@ public class SprFileEditor {
     public static final String RED = "Red";
     public static final String BLUE = "Blue";
     public static final String GREEN = "Green";
-    private static final JBColor TRANSPARENT_COLOR = new JBColor(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0));
+    private static final Color TRANSPARENT_COLOR = new Color(0, 0, 0, 0);
     private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
 
 
@@ -46,17 +49,17 @@ public class SprFileEditor {
                     cellRenderer.setColor(TRANSPARENT_COLOR);
                     break;
                 case BLACK:
-                    cellRenderer.setColor(JBColor.BLACK);
+                    cellRenderer.setColor(Color.BLACK);
                     break;
                 case DARK_GREY:
-                    cellRenderer.setColor(JBColor.DARK_GRAY);
+                    cellRenderer.setColor(Color.DARK_GRAY);
                     break;
                 case WHITE:
-                    cellRenderer.setColor(JBColor.WHITE);
+                    cellRenderer.setColor(Color.WHITE);
                     break;
 
                 case LIGHT_GREY:
-                    cellRenderer.setColor(JBColor.LIGHT_GRAY);
+                    cellRenderer.setColor(Color.LIGHT_GRAY);
                     break;
                 case RED:
                     cellRenderer.setColor(JBColor.RED);
