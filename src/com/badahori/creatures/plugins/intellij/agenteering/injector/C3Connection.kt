@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -14,9 +15,12 @@ import java.io.OutputStream
 
 internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
+    private var ranOnce = false
     private val exeName = "C3CaosInjector.exe"
     private val file: File by lazy {
-        ensureExe()
+        val file = ensureExe(!ranOnce)
+        ranOnce = true
+        file
     }
 
     /**
@@ -65,7 +69,8 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
         // Parse result
         return try {
-            val response = proc.inputStream.bufferedReader().readLines().joinToString("\n").trim().substringFromEnd(0, 1)
+            val response = proc.inputStream.bufferedReader().readText().substringFromEnd(0, 1).nullIfEmpty()
+                    ?: proc.errorStream.bufferedReader().readText().substringFromEnd(0, 1)
             when (response.substring(0, 4)) {
                 "!CMD" -> InjectionStatus.BadConnection("Internal plugin run error. " + response.substring(4))
                 "!CONN" -> InjectionStatus.BadConnection("Connection error: " + response.substring(4))
@@ -111,7 +116,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
     /**
      * Ensures that the bundled exe is extracted to accessible location to be run
      */
-    private fun ensureExe(): File {
+    private fun ensureExe(clear:Boolean): File {
         val pathTemp = "c3engine/$exeName"
         val path = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath(pathTemp)?.path
                 ?: throw Exception("$exeName does not exist in plugin")
@@ -121,8 +126,12 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 ?: throw Exception("Failed to get resource as stream")
         // always write to different location
         val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
-        if (fileOut.exists())
-            return fileOut
+        if (fileOut.exists()) {
+            if (clear) {
+                fileOut.delete()
+            } else
+                return fileOut
+        }
         LOGGER.info("Writing dll to: " + fileOut.absolutePath)
         val out: OutputStream = FileUtils.openOutputStream(fileOut)
         IOUtils.copy(inputStream, out)
