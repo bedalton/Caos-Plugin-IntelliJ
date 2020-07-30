@@ -4,7 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.refactoring.suggested.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.AppendStatementTerminator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*

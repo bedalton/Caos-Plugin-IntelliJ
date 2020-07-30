@@ -22,8 +22,8 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import kotlin.math.floor
 
 const val UNDEF = "{UNDEF}"
@@ -1599,5 +1599,8 @@ fun CaosScriptCompositeElement.sharesScope(otherScope:CaosScope?) : Boolean {
 fun CaosScriptCompositeElement.sharesScope(other:CaosScriptCompositeElement) : Boolean {
     return scope.sharesScope(other.scope)
 }
+
+val PsiElement.endOffset get() = textRange.endOffset
+val PsiElement.startOffset get() = textRange.startOffset
 
 val CaosScriptCompositeElement.scope: CaosScope? get() = (this as? CaosScriptHasCodeBlock ?: this.getParentOfType(CaosScriptHasCodeBlock::class.java))?.scope()

@@ -19,8 +19,8 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import kotlin.math.abs
 
 class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {

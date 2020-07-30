@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
