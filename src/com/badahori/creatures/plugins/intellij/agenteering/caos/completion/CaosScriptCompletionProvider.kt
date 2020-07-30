@@ -52,7 +52,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        if (previous?.toUpperCase() == "CLAS") {
+        val previousToken = element.getPreviousNonEmptySibling(false)?.text?.toUpperCase()
+        if (previousToken == "CLAS") {
             val builderElement = LookupElementBuilder
                     .create("")
                     .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
@@ -62,7 +63,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        if (previous?.toUpperCase() == "DDE: PICT") {
+        if (previousToken == "DDE: PICT") {
             val builderElement = LookupElementBuilder
                     .create("")
                     .withPresentableText(GENERATE_DDE_PICT_LOOKUP_STRING)
