@@ -21,14 +21,13 @@
       <li>Definition reference</li>
       <li>Parameter hints</li>
       <li>Known value completion from list. (ie. Drives or Chemicals by name)</li>
-      <li>SPR viewer</li>
+      <li>Sprite viewers</li>
     </ul>
     Todo:
     <ul>
       <li>COB compiler/decompiler</li>
       <li>Pray File editing</li>
-      <li>SPR, C16 and S16 compilers</li>
-      <li>C16 and S16 viewers</li>
+      <li>Sprite compilers</li>
     </ul>
     ]]></description>
 
@@ -195,7 +194,9 @@
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
     <lang.braceMatcher language="CaosScript"
                        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBraceMatcher" />
-    <lang.quoteHandler implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
+    <lang.quoteHandler
+        language="CaosScript"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
 
     <!-- Indices -->
     <applicationService
