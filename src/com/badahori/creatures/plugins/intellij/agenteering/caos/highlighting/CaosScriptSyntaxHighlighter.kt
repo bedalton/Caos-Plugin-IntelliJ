@@ -54,9 +54,13 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         @JvmStatic
+        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", DefaultLanguageHighlighterColors.STATIC_FIELD)
+        @JvmStatic
+        val LVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_LVALUE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+        @JvmStatic
         val PREFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_PREFIX_TOKEN", COMMAND_TOKEN)
         @JvmStatic
-        val SUFFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_SUFFIX_TOKEN", COMMAND_TOKEN)
+        val SUFFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_SUFFIX_TOKEN", RVALUE_TOKEN)
         @JvmStatic
         val NUMBER:TextAttributesKey = createTextAttributesKey("CaosScript_NUMBER_LITERAL", DefaultLanguageHighlighterColors.NUMBER)
         @JvmStatic
@@ -71,11 +75,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         val EQ_OP_KEYWORD:TextAttributesKey = createTextAttributesKey("CaosScript_EQ_OP_KEYWORD", KEYWORDS)
         @JvmStatic
         val SYMBOL:TextAttributesKey = createTextAttributesKey("CaosScript_SYMBOLS", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
-        @JvmStatic
-        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", DefaultLanguageHighlighterColors.STATIC_FIELD)
-        @JvmStatic
-        val LVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_LVALUE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
-        @JvmStatic
+       @JvmStatic
         val SUBROUTINE_NAME: TextAttributesKey = createTextAttributesKey("CaosScript_SUBROUTINE_NAME", DefaultLanguageHighlighterColors.INSTANCE_METHOD)
     }
 }

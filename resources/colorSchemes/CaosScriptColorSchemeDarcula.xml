@@ -6,18 +6,6 @@
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
-  <option name="CaosScript_VAR_TOKEN">
-    <value>
-      <option name="FOREGROUND" value="AA8FE4"/>
-      <option name="FONT_TYPE" value="0"/>
-    </value>
-  </option>
-  <option name="CaosScript_COMMAND_TOKEN">
-    <value>
-      <option name="FOREGROUND" value="FF7BA0"/>
-      <option name="FONT_TYPE" value="0"/>
-    </value>
-  </option>
   <option name="CaosScript_LVALUE">
     <value>
       <option name="FOREGROUND" value="D0A03A"/>
@@ -32,7 +20,7 @@
   </option>
   <option name="CaosScript_RVALUE">
     <value>
-      <option name="FOREGROUND" value="98C2E8"/>
+      <option name="FOREGROUND" value="FF7BA0"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
