@@ -1,21 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.application.invokeLater
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -23,7 +19,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.intellij.refactoring.suggested.startOffset
 import com.intellij.ui.components.JBScrollPane
 import javax.swing.*
 
