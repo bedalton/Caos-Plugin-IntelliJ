@@ -1,18 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
-import com.intellij.openapi.application.invokeLater
 import javax.swing.*
 
 

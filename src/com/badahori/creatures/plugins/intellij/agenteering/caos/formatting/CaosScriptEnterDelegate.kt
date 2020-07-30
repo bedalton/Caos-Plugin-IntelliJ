@@ -16,7 +16,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.refactoring.suggested.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 
 class CaosScriptEnterDelegate : EnterHandlerDelegate {
 

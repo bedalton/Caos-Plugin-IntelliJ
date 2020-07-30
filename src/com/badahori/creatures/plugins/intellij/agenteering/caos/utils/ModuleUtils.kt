@@ -15,12 +15,14 @@ import com.intellij.openapi.roots.impl.FilePropertyPusher
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.FileAttribute
+import com.intellij.util.messages.MessageBus
 
 
 fun findOrCreate(baseDir: VirtualFile, dir: String, module: Module) =
         baseDir.findChild(dir) ?: baseDir.createChildDirectory(module, dir)
 
-private const val NOTIFICATION_ERROR_TAG = "CAOS Project Error"
+private const val NOTIFICATION_ERROR_TAG = "CAOS Project: Error"
+private const val NOTIFICATION_WARN_TAG = "CAOS Project: Warning"
 
 fun errorNotification(project: Project? = null, message: String, title: String = "Error") {
     Notifications.Bus.notify(Notification(
@@ -28,6 +30,13 @@ fun errorNotification(project: Project? = null, message: String, title: String =
             title,
             message,
             NotificationType.ERROR), project)
+}
+fun warningNotification(project: Project? = null, message: String, title: String = "Error") {
+    Notifications.Bus.notify(Notification(
+            NOTIFICATION_WARN_TAG,
+            title,
+            message,
+            NotificationType.WARNING), project)
 }
 
 val Module.settings:CaosModuleSettingsComponent get() {
@@ -116,6 +125,10 @@ class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosV
             stream.writeChars(variant)
             stream.close()
         }
+    }
+
+    override fun initExtra(project: Project, messageBus: MessageBus, engine: FilePropertyPusher.Engine) {
+
     }
 
 }
