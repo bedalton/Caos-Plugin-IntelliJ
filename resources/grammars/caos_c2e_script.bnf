@@ -2036,7 +2036,7 @@ private expects_decimal_or_int ::=
 
 	;
 
-private c_setv ::= (c_kw_setv space_like|((<<isOldVariant>>)(c_kw_setv space_like)?)) lvalue space_like setv_prime
+private c_setv ::= c_kw_setv space_like lvalue space_like setv_prime
 	{
 		pin = 2
 	}
