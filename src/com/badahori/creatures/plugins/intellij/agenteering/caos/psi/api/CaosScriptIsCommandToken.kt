@@ -11,5 +11,8 @@ interface CaosScriptIsCommandToken : PsiNamedElement, CaosScriptCompositeElement
     val commandString:String
 }
 
+interface CaosScriptIsSuffixToken : CaosScriptCompositeElement
+interface CaosScriptIsPrefixToken : CaosScriptCompositeElement
+
 infix fun CaosScriptIsCommandToken?.equalTo(otherValue:String) : Boolean = this?.text?.equalsIgnoreCase(otherValue) ?: false
 infix fun CaosScriptIsCommandToken?.notEqualTo(otherValue:String) : Boolean = this?.text?.equalsIgnoreCase(otherValue) ?: false

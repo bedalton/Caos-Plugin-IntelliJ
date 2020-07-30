@@ -54,6 +54,10 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         @JvmStatic
+        val PREFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_PREFIX_TOKEN", COMMAND_TOKEN)
+        @JvmStatic
+        val SUFFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_SUFFIX_TOKEN", COMMAND_TOKEN)
+        @JvmStatic
         val NUMBER:TextAttributesKey = createTextAttributesKey("CaosScript_NUMBER_LITERAL", DefaultLanguageHighlighterColors.NUMBER)
         @JvmStatic
         val ANIMATION:TextAttributesKey = createTextAttributesKey("CaosScript_ANIMATION", DefaultLanguageHighlighterColors.CONSTANT)
