@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.errorNotification
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.warningNotification
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleBuilderListener
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
@@ -19,8 +20,10 @@ import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.roots.ModifiableModelsProvider
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.vfs.VfsUtil
 import javafx.scene.control.ComboBox
 import java.awt.Color
+import java.io.File
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.ListCellRenderer
@@ -36,7 +39,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
                 CaosVariant.DS
         ))
         variantComboBox.setToolTipText("CAOS Variant")
-        variantComboBox.setRenderer(ListCellRenderer { list: JList<out CaosVariant>?, value: CaosVariant, index: Int, isSelected: Boolean, cellHasFocus: Boolean ->
+        variantComboBox.setRenderer({ _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
             val label = JLabel(value.fullName)
             if (isSelected) {
                 label.background = Color.lightGray
@@ -63,6 +66,10 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
         super.setupRootModel(modifiableRootModel)
         CaosBundleSourcesRegistrationUtil.addLibrary(modifiableModel = modifiableRootModel)
         moduleFileDirectory?.let {
+            val file = File(it)
+            if (!file.exists()) {
+                VfsUtil.createDirectories(it)
+            }
             modifiableRootModel.addContentEntry("file://$it")
             true
         } ?: modifiableRootModel.addContentEntry(moduleFilePath)
@@ -70,21 +77,38 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
 
     override fun moduleCreated(module: Module) {
         ApplicationManager.getApplication().runWriteAction {
-            val manager = ModuleRootManager.getInstance(module)
             val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
             val variant = (variantComboBox.selectedItem as? CaosVariant) ?: CaosScriptProjectSettings.variant
             module.putUserData(CaosScriptFile.VariantUserDataKey, variant)
             module.variant = variant
             module.rootManager.modifiableModel.apply {
                 inheritSdk()
-                contentEntries.firstOrNull()?.apply setupRoot@{
+                moduleFileDirectory?.let {
+                    try {
+                        val baseDir = File(it)
+                        if (!baseDir.exists()) {
+                            VfsUtil.createDirectories(it)
+                        }
+                    } catch (e: Exception) {
+                        errorNotification(project, "Failed to create root directory.")
+                    }
+                }
+                (contentEntries.firstOrNull { it.file != null} ?: contentEntries.firstOrNull()) ?.apply setupRoot@{
                     val project = module.project
-                    val baseDir = file
+                    val baseDir = file ?: sourceFolders.firstOrNull { it.file != null }?.file ?: VfsUtil.findFileByIoFile(File(url), true)
                     ?: run {
-                        errorNotification(project, "Created project does not have a root directory.")
+                        warningNotification(project, "Module root initialization delayed. Wait or refresh root")
                         return@setupRoot
                     }
-                    addSourceFolder(baseDir, false)
+                    try {
+                        if (!baseDir.exists()) {
+                            val file = VfsUtil.virtualToIoFile(baseDir)
+                            VfsUtil.createDirectories(file.path)
+                        }
+                        addSourceFolder(baseDir, false)
+                    } catch(e:Exception) {
+                        errorNotification(project, "Failed to create root directory.")
+                    }
                 }
                 commit()
             }

@@ -3,13 +3,17 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.trimErrorSpaces
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.intellij.ProjectTopics
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -20,9 +24,11 @@ import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.text.BlockSupport
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
+import java.awt.event.ItemEvent
 import javax.swing.JPanel
 
 
@@ -61,29 +67,35 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
     toolbar.addTrimSpacesListener {
         caosFile.trimErrorSpaces()
     }
-    /*caosFile.variant.let {
-        toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(it))
-    }*/
-
-    /*toolbar.addVariantListener variant@{
-        if (it.stateChange != ItemEvent.SELECTED)
-            return@variant
-        val selected = CaosVariant.fromVal(it.item as String)
-        if (caosFile.variant == selected || selected !in CaosConstants.VARIANTS)
-            return@variant
-        val canInject = Injector.canConnectToVariant(selected)
-        toolbar.setInjectButtonEnabled(canInject)
-        CaosScriptProjectSettings.setVariant(selected)
-        caosFile.variant = selected
-        runWriteAction {
-            try {
-                com.intellij.psi.text.BlockSupport.getInstance(project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
-            } catch(e:Exception) {}
+    if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN}) {
+        toolbar.setVariantIsVisible(true)
+        caosFile.variant.let {
+            toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(it))
         }
-        DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
-        toolbar.setDocsButtonEnabled(true)
-    }*/
 
+        toolbar.addVariantListener variant@{
+            if (it.stateChange != ItemEvent.SELECTED)
+                return@variant
+            val selected = CaosVariant.fromVal(it.item as String)
+            if (caosFile.variant == selected || selected !in CaosConstants.VARIANTS)
+                return@variant
+            val canInject = Injector.canConnectToVariant(selected)
+            toolbar.setInjectButtonEnabled(canInject)
+            CaosScriptProjectSettings.setVariant(selected)
+            caosFile.variant = selected
+            runWriteAction {
+                try {
+                    BlockSupport.getInstance(project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
+                } catch (e: Exception) {
+                }
+            }
+            DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
+            toolbar.setDocsButtonEnabled(true)
+        }
+
+    } else {
+        toolbar.setVariantIsVisible(false)
+    }
     toolbar.addDocsButtonClickListener {
         val selectedVariant = caosFile.variant
         if (selectedVariant == null) {
