@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C3
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.DS
@@ -63,8 +64,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun isVariant(builder_: PsiBuilder,
                   level: Int,
                   variant: CaosVariant): Boolean {
-        val fileVariant = psiFile(builder_)?.let { ModuleUtil.findModuleForPsiElement(it)  }
-                ?.variant
+        val fileVariant = (psiFile(builder_) as? CaosScriptFile)?.variant
                 ?: return false//CaosScriptProjectSettings.variant
         return variant == fileVariant
     }
@@ -72,8 +72,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun isOldVariant(builder_: PsiBuilder,
                   level: Int): Boolean {
-        val fileVariant = psiFile(builder_)?.let { ModuleUtil.findModuleForPsiElement(it)  }
-                ?.variant
+        val fileVariant = (psiFile(builder_) as? CaosScriptFile)?.variant
                 ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isOld
     }
@@ -81,8 +80,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun isNewerVariant(builder_: PsiBuilder,
                      level: Int): Boolean {
-        val fileVariant = psiFile(builder_)?.let { ModuleUtil.findModuleForPsiElement(it)  }
-                ?.variant
+        val fileVariant = (psiFile(builder_) as? CaosScriptFile)?.variant
                 ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isNotOld
     }
