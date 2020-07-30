@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import java.awt.Color
 import java.awt.Component
 import java.awt.Image
@@ -8,8 +9,8 @@ import java.awt.image.BufferedImage
 import javax.swing.*
 
 class SpriteCellRenderer : ListCellRenderer<Image> {
-    var color:Color = DEFAULT_COLOR
-    var fontColor = Color.BLACK
+    var color:Color = EditorColorsManager.getInstance().globalScheme.defaultBackground
+    var fontColor = EditorColorsManager.getInstance().globalScheme.defaultForeground
     var scale = 1.0
     override fun getListCellRendererComponent(list: JList<out Image>?, value: Image?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
 
@@ -18,13 +19,13 @@ class SpriteCellRenderer : ListCellRenderer<Image> {
         val textBox = JLabel("$index.")
         panel.border = BorderFactory.createEmptyBorder(5, 16, 10, 5)
         if (isSelected) {
-            panel.background = SELECTED_COLOR
-            panel.foreground = DEFAULT_COLOR
-            textBox.foreground = DEFAULT_COLOR
+            panel.background = EditorColorsManager.getInstance().globalScheme.defaultForeground
+            panel.foreground = EditorColorsManager.getInstance().globalScheme.defaultBackground
+            textBox.foreground = EditorColorsManager.getInstance().globalScheme.defaultBackground
         } else {
-            panel.background = DEFAULT_COLOR
-            panel.foreground = SELECTED_COLOR
-            textBox.foreground = SELECTED_COLOR
+            panel.background = EditorColorsManager.getInstance().globalScheme.defaultBackground
+            panel.foreground = EditorColorsManager.getInstance().globalScheme.defaultForeground
+            textBox.foreground = EditorColorsManager.getInstance().globalScheme.defaultForeground
         }
 
         panel.add(textBox)
@@ -55,7 +56,3 @@ class SpriteCellRenderer : ListCellRenderer<Image> {
         return panel
     }
 }
-
-
-private val DEFAULT_COLOR by lazy { Color(255,255,255) }
-private val SELECTED_COLOR by lazy { Color(100,100,100) }
