@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.project.template
 import com.intellij.ide.util.projectWizard.SettingsStep
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.platform.ProjectGeneratorPeer
+import com.intellij.platform.WebProjectGenerator
 import java.awt.event.ItemEvent
 import javax.swing.JComponent
 
@@ -36,6 +37,10 @@ class CaosProjectGeneratorPeer:ProjectGeneratorPeer<CaosProjectGeneratorInfo>  {
     }
 
     override fun isBackgroundJobRunning(): Boolean = false
+
+    override fun addSettingsStateListener(listener: WebProjectGenerator.SettingsStateListener) {
+
+    }
 
 
 }

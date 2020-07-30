@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
@@ -15,15 +14,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -408,17 +406,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 annotationWrapper.colorize(element, CaosScriptSyntaxHighlighter.TOKEN)
                 return
             }
-            val command = element.commandString.toUpperCase()
+            val commandToUpperCase = element.commandString.toUpperCase()
             val commandType = element.getEnclosingCommandType()
             val commands = CaosDefCommandElementsByNameIndex
-                    .Instance[command, element.project]
+                    .Instance[commandToUpperCase, element.project]
             var variants = commands
                     .flatMap { it.variants.filterNotNull() }
                     .toSet()
                     .toList()
             if (variants.isEmpty()) {
                 annotationWrapper
-                        .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command", command))
+                        .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command", commandToUpperCase))
                         .range(element)
                         .create()
                 return
@@ -426,7 +424,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
 
             if (variant !in variants) {
                 val variantString = getVariantString(variants)
-                val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", command, variantString)
+                val message = CaosBundle.message("caos.annotator.command-annotator.invalid-variant", commandToUpperCase, variantString)
                 annotationWrapper
                         .newErrorAnnotation(message)
                         .range(element)
@@ -459,16 +457,16 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             // Command variant of type does not exist, show error
             val error = CaosBundle.message(
                     "caos.annotator.command-annotator.invalid-command-type-for-variant",
-                    command.toUpperCase(),
+                    commandToUpperCase,
                     commandType.value.toLowerCase(),
                     getVariantString(variants)
             )
             var builder = annotationWrapper
                     .newErrorAnnotation(error)
                     .range(element)
-            if (variant.isOld && commandsOfType.any { it.isLvalue && it.isVariant(variant) }) {
+            if (variant.isOld && commands.any { it.isLvalue && it.isVariant(variant) }) {
                 builder = builder
-                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before ${element.commandString.toUpperCase()}", "SETV".matchCase(command), element))
+                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before ${commandToUpperCase}", "SETV".matchCase(element.commandString), element))
             }
             builder.create()
         }

@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -51,12 +52,27 @@ class SpriteEditorImpl : UserDataHolderBase, FileEditor {
         return null
     }
 
-    override fun dispose() {}
-    override fun <T> getUserData(key: Key<T>): T? {
+    override fun deselectNotify() {
+
+    }
+
+    override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
         return null
     }
 
-    override fun <T> putUserData(key: Key<T>, value: T?) {}
+    override fun dispose() {}
+
+    override fun <T> getUserData(key: Key<T>): T? {
+        return myFile.getUserData(key);
+    }
+
+    override fun <T> putUserData(key: Key<T>, value: T?) {
+        myFile.putUserData(key, value)
+    }
+
+    override fun selectNotify() {
+
+    }
 
     companion object {
         private const val NAME = "SPREditor"

@@ -7,8 +7,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.scope
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 
 object CaosScriptInferenceUtil {
 
