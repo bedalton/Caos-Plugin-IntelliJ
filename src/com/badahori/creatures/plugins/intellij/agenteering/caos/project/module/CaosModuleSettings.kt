@@ -29,7 +29,7 @@ class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings>
 
 data class CaosModuleSettings(
         @Attribute("com.badahori.creatures.caos.variant", converter = CaosVariantConverter::class)
-        var variant: CaosVariant? = CaosVariant.DS
+        var variant: CaosVariant? = null
 )
 
 class CaosVariantConverter : Converter<CaosVariant>() {
