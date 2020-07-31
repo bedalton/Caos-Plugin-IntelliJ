@@ -20,7 +20,6 @@ class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, p
         if (!caosSettings.INDENT_BLOCKS) {
             return Indent.getNoneIndent()
         }
-        val elementType = node.elementType
         val firstChild: ASTNode? = node
 
         // Handle indent if cursor is at block end (ie. NEXT, ENDI)

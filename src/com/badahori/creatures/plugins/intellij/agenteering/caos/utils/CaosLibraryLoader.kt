@@ -23,8 +23,6 @@ object CaosLibraryLoader{
             "$pathIn.dll"
         val myFile: String = FilenameUtils.getBaseName(pathIn)
         try {
-            val path = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath(pathTemp)?.path
-                    ?: throw Exception("DLL does not exist in plugin")
             // have to use a stream
             val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
                     ?: throw Exception("Failed to get resource as stream")
