@@ -77,8 +77,8 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 response
             when (code) {
                 "!CMD" -> InjectionStatus.BadConnection("Internal plugin run error. " + response.substring(4))
-                "!CONN" -> InjectionStatus.BadConnection("Connection error: " + response.substring(4))
-                "!ERR" -> InjectionStatus.Bad("Injection failed with error: " + response.substring(4))
+                "!CON" -> InjectionStatus.BadConnection(response.substring(4))
+                "!ERR" -> InjectionStatus.Bad(response.substring(4))
                 else -> {
                     if (!response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none{ it.matches(response)}) {
                         InjectionStatus.Ok(response)
