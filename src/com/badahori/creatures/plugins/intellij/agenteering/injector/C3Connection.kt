@@ -124,8 +124,6 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
      */
     private fun ensureExe(clear:Boolean): File {
         val pathTemp = "c3engine/$exeName"
-        val path = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath(pathTemp)?.path
-                ?: throw Exception("$exeName does not exist in plugin")
         // have to use a stream
         val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
                 ?: throw Exception("Failed to get resource as stream")
