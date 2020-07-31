@@ -23,7 +23,7 @@ class CaosDefHighlighterAnnotator : Annotator {
                 addColor(element, annotationHolder, attributeKey)
             }
             is CaosDefTypeDefName -> {
-                if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement::class.java))
+                if (!element.hasParentOfType(CaosDefTypeDefinitionElement::class.java))
                     addColor(element, annotationHolder, CaosDefSyntaxHighlighter.TYPE_LINK)
                 else
                     addColor(element, annotationHolder, CaosDefSyntaxHighlighter.TYPE_DEF_NAME)
@@ -34,7 +34,7 @@ class CaosDefHighlighterAnnotator : Annotator {
                 -> addColor(element, annotationHolder, CaosDefSyntaxHighlighter.VARIABLE_LINK)
             is CaosDefTypeLiteral -> {
                 if (element.hasParentOfType(CaosDefDocComment::class.java))
-                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT)
+                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT_VARIABLE_TYPE)
                 else
                     addColor(element, annotationHolder, CaosDefSyntaxHighlighter.VARIABLE_TYPE)
             }
@@ -55,12 +55,11 @@ class CaosDefHighlighterAnnotator : Annotator {
             is CaosDefCodeBlock -> {
                 addColor(element, annotationHolder, CaosDefSyntaxHighlighter.CODE_BLOCK)
             }
-            is CaosDefDocComment ->
-                addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT)
+            is CaosDefCommentLineItemMisc -> addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT)
             else -> {
                 if (element.hasParentOfType(CaosDefDocComment::class.java)) {
                     if (element is LeafPsiElement)
-                        addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT_STATEMENT)
+                        addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMENT_TAG)
                 }
 
             }
