@@ -51,7 +51,7 @@ object Injector {
     }
 
     private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String): InjectionStatus? {
-        val connection = connection(project, variant)
+        val connection = connection(variant)
                 ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
         if (!creditsCalled.containsKey(variant)) {
             creditsCalled[variant] = false
@@ -67,7 +67,7 @@ object Injector {
         return connection.inject(caos)
     }
 
-    private fun connection(project: Project, variant: CaosVariant): CaosConnection? {
+    private fun connection(variant: CaosVariant): CaosConnection? {
         val conn = getConnection(variant)
         if (conn == null || !conn.connect()) {
             return null
