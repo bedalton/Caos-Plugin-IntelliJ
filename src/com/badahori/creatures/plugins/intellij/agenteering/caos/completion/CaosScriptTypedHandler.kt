@@ -40,9 +40,9 @@ class CaosScriptTypedHandler(private val originalHandler:TypedActionHandler?) : 
 
     override fun execute(editor: Editor, char: Char, context: DataContext) {
         originalHandler?.execute(editor, char, context)
-        if (handleQuote(char, editor)) {
-            return
-        }
+        //if (handleQuote(char, editor)) {
+          //  return
+        //}
         //if (dedentIfBlockEnd(c, project, editor)) {
         //  return Result.CONTINUE
         // }
