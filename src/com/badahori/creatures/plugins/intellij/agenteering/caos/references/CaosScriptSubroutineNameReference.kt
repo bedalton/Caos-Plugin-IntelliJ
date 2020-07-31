@@ -24,14 +24,12 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
         if (myElement.parent is CaosScriptSubroutineHeader)
             return null
         val name = myElement.name
-        LOGGER.info("Resolving...subr <$name>")
         val resolvedElement = CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull {
             myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
         } ?: myElement.getParentOfType(CaosScriptScriptElement::class.java)?.let { scriptElement ->
             PsiTreeUtil.collectElementsOfType(scriptElement, CaosScriptSubroutine::class.java)
                     .mapNotNull { it.subroutineHeader.subroutineName }
                     .firstOrNull {
-                        LOGGER.info("Check subr $name == ${it.text}")
                         it.text == name
                     }}
         if (resolvedElement == myElement)

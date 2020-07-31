@@ -25,13 +25,11 @@ object CaosLibraryLoader{
         try {
             val path = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath(pathTemp)?.path
                     ?: throw Exception("DLL does not exist in plugin")
-            LOGGER.info("DLL Path: $path")
             // have to use a stream
             val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
                     ?: throw Exception("Failed to get resource as stream")
             // always write to different location
             val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
-            LOGGER.info("Writing dll to: " + fileOut.absolutePath)
             val out: OutputStream = FileUtils.openOutputStream(fileOut)
             IOUtils.copy(inputStream, out)
             inputStream.close()

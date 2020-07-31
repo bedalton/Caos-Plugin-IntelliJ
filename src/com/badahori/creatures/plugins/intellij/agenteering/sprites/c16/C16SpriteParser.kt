@@ -21,7 +21,6 @@ class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C1
         val bytesBuffer = ByteBuffer.wrap(rawBytes)
         val buffer = bytesBuffer.uInt32BE
         val encoding = if (buffer and 1L == 1L) ColorEncoding.x565 else ColorEncoding.x555
-        LOGGER.info("Encoding: $buffer")
         if (buffer and 2L == 0L) {
             throw Exception("C16 parse exception. This file is probably a S16 masquerading as a C16!")
         } else if (buffer > 3) {

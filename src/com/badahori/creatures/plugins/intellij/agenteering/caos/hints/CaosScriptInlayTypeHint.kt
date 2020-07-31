@@ -296,7 +296,6 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                                     InlayInfo("family:${agentClass.family} genus:${agentClass.genus} species:${agentClass.species}", rvalue.endOffset)
                             )
                         }
-                        LOGGER.info("IS CLAS, but Int value is null")
                         return emptyList()
                     }
                 }

@@ -34,20 +34,17 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         val text = element.textWithoutCompletionIdString
         if (IS_NUMBER.matches(text)) {
-            LOGGER.info("Is Number, STOP")
             resultSet.stopHere()
             return
         }
 
         val previous = element.previous?.text
         if (previous != "[" && previous != "\"" && previous.nullIfEmpty()?.let { !WHITESPACE.matches(it) }.orFalse()) {
-            LOGGER.info("Previous is not whitespace. STOP")
             resultSet.stopHere()
             return
         }
 
         if (IS_NUMBER.matches( previous ?: "")) {
-            LOGGER.info("Previous is number. STOP")
             resultSet.stopHere()
             return
         }
@@ -84,12 +81,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             parent = parent.parent
         }
         if (parent == null) {
-            LOGGER.info("Parent command is null. STOP")
             resultSet.stopHere()
             return
         }
         val type = parent.getEnclosingCommandType()
-        LOGGER.info("Type: $type. Text: '${element.text}'")
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
         (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
