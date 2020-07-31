@@ -72,7 +72,7 @@ CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
 ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
-QUOTE_STRING_CHAR=[^\"\\]
+QUOTE_STRING_CHAR=[^\"\\\n]
 QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
 WORD_CHAR = [a-zA-Z0-9_$#:!+]
 ERROR_WORD={WORD_CHAR}{5,100}
@@ -152,7 +152,8 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 <IN_STRING> {
 	\"						{ yybegin(IN_LINE); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
-    \s+						{ return WHITE_SPACE; }
+  	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
+	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_LINE); yypushback(yylength());}
 }
 
