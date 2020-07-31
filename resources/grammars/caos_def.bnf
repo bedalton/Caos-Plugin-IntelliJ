@@ -385,8 +385,16 @@ private doc_comment_line_items
 	|	word_link
 	|	variable_link
 	|	type_link
-	|	COMMENT_TEXT_LITERAL
-	|	'['
+	|	comment_text
+	|	comment_line_item_misc
+	;
+
+comment_text
+	::= COMMENT_TEXT_LITERAL
+	;
+
+comment_line_item_misc
+	::= '['
 	|	WORD
 	|	']'
 	;

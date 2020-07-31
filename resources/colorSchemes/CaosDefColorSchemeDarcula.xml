@@ -8,17 +8,23 @@
   </option>
   <option name="CaosDef_BLOCK_COMMENT">
     <value>
-      <option name="FOREGROUND" value="1565c0"/>
+      <option name="FOREGROUND" value="71A9C0"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosDef_COMMENT_AT_STATEMENT">
-    <option name="FOREGROUND" value="1565c0"/>
+    <value>
+    <option name="FOREGROUND" value="71A9C0"/>
     <option name="FONT_TYPE" value="1"/>
+    </value>
   </option>
   <option name="CaosDef_DOC_COMMENT_HASHTAG">
-    <option name="FOREGROUND" value="1565c0"/>
+    <value>
+    <option name="FOREGROUND" value="71A9C0"/>
     <option name="FONT_TYPE" value="1"/>
+    <option name="EFFECT_TYPE" value="1" />
+    <option name="EFFECT_COLOR" value="71A9C0" />
+    </value>
   </option>
   <option name="CaosDef_REGION_HEADER">
     <value>
@@ -28,28 +34,28 @@
   </option>
   <option name="CaosDef_WORD_LINK">
     <value>
-      <option name="FOREGROUND" value="1e88e5"/>
+      <option name="FOREGROUND" value="71A9C0"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="CaosDef_TYPE_LINK">
     <value>
-      <option name="FOREGROUND" value="1e88e5"/>
+      <option name="FOREGROUND" value="71A9C0"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="CaosDef_VARIABLE_LINK">
     <value>
-      <option name="FOREGROUND" value="1e88e5"/>
+      <option name="FOREGROUND" value="6699C0"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-  <option name="CaosDef_VARIABLE_TYPE">
+  <!--option name="CaosDef_VARIABLE_TYPE">
     <value>
       <option name="FOREGROUND" value="607d8b"/>
       <option name="FONT_TYPE" value="0"/>
     </value>
-  </option>
+  </option -->
   <option name="CaosDef_VARIABLE_NAME">
     <value>
       <option name="FOREGROUND" value="DDDDDD"/>
@@ -76,8 +82,13 @@
   </option>
   <option name="CaosDef_TYPE_DEF_WORD_LINK">
     <value>
-      <option name="FOREGROUND" value="DDDDDD"/>
+      <option name="FOREGROUND" value="ABABAB"/>
       <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="CaosDef_TYPE_DEF_VALUE_DESCRIPTION">
+    <value>
+      <option name="FOREGROUND" value="C1C1C1"/>
     </value>
   </option>
   <option name="CaosDef_CODE_BLOCK">

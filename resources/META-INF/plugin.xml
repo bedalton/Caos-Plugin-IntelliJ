@@ -108,7 +108,7 @@
         key="CaosScript"
     />
     <colorSettingsPage
-        language=""
+        language="CaosScript"
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
@@ -270,6 +270,9 @@
     <enterBetweenBracesDelegate language="CaosDef"
                                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
+    <colorSettingsPage
+        language="CaosDef"
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefColorSettingsPage" />
 
     <!-- =========================== -->
     <!-- ====== Sprite Files ======= -->
