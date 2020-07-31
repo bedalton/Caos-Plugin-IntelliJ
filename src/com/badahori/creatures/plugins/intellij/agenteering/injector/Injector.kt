@@ -78,10 +78,9 @@ object Injector {
 
     @JvmStatic
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
-        val responseText = response.response.nullIfEmpty()?.let {
+        val message = response.response.nullIfEmpty()?.let {
             "\n\tOutput: $it"
         } ?: ""
-        val message = "status: OK$responseText"
         CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
     }
 
