@@ -1,5 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
+import kotlin.math.max
+import kotlin.math.min
+
 object CaosStringUtil {
 
     @JvmOverloads
@@ -17,7 +20,7 @@ object CaosStringUtil {
     }
 
     fun substringFromEnd(string: String, start: Int, fromEnd: Int): String =
-            string.substring(start, string.length - fromEnd)
+            string.substring(start, max(string.length - fromEnd, start))
 
 
     private val MULTI_SPACE_REGEX = "\\s+".toRegex()
