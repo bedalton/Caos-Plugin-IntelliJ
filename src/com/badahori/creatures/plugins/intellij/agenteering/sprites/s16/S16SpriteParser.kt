@@ -18,7 +18,6 @@ class S16SpriteFile(file: VirtualFile) : SpriteFile<S16SpriteFrame>(SpriteType.S
 
     init {
         val rawBytes = file.contentsToByteArray()
-        val numRawBytes = rawBytes.size
         val bytesBuffer = ByteBuffer.wrap(rawBytes)
         val buffer = bytesBuffer.uInt32BE
         val encoding = if (buffer == 1L)
