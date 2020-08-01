@@ -22,7 +22,7 @@ object SprCompiler {
     private val colors: List<IntArray> by lazy {
         val pathToPalette = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath("support/palette.dta")
         if (pathToPalette == null) {
-            LOGGER.info("Path to palette is null")
+            LOGGER.severe("Path to palette is null")
             return@lazy (0..(255 * 3)).map { blackIntArray }
         }
         val bytes = pathToPalette.contentsToByteArray()
