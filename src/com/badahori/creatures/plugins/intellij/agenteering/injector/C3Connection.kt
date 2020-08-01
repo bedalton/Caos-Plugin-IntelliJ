@@ -81,9 +81,9 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "!ERR" -> InjectionStatus.Bad(response.substring(4))
                 else -> {
                     if (!response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none{ it.matches(response)}) {
-                        InjectionStatus.Ok(response)
+                        InjectionStatus.Ok(response.substringFromEnd(0, 1))
                     } else {
-                        InjectionStatus.Bad(response)
+                        InjectionStatus.Bad(response.substringFromEnd(0, 1))
                     }
                 }
             }
