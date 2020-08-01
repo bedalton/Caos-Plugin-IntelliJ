@@ -71,7 +71,6 @@ object CaosScriptTypeDefValueCompletionProvider {
             val allFiles = type.fileTypes
                     .flatMap { fileExtensionTemp ->
                         val fileExtension = fileExtensionTemp.toLowerCase()
-                        LOGGER.info("Expecting filetype: $fileExtension")
                         val searchScope =
                                 valueOfType.containingFile?.module?.let { GlobalSearchScope.moduleScope(it) }
                                         ?: GlobalSearchScope.projectScope(project)

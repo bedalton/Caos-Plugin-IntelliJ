@@ -15,10 +15,8 @@ class CommandInsertHandler(private val command:String, private val parameters:Li
         //val tail = if (withSpace) " " else "" // Never needs tail as parameters are included
         val templateText = " " + parameters.joinToString(" ") { "\$${it.name}\$"}// + tail
         val template = TemplateImpl("", templateText, "")
-        LOGGER.info("Template Text: $templateText")
         for(i in 0 ..parameters.lastIndex) {
             val parameter = parameters[i]
-            LOGGER.info("Adding variable $i->'${parameter.name}' to template.")
             template.addVariable(parameter.name, VariableNode(parameter.name, EmptyNode()), false)
         }
         val editor = context.editor
