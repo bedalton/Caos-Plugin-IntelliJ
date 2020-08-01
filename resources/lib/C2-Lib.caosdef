@@ -4099,7 +4099,7 @@ YVEC (integer);
 
 @RainProperty {
 	0 = X-Position - X-Position, relative to object
-	1 = Y-Position, relative to object - Y-Position, relative to object
+	1 = Y-Position - Y-Position, relative to object
 	2 = Width
 	3 = Height
 	4 = Angle Of Effect - Angle of Effect (updated by wind)
