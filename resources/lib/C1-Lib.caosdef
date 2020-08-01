@@ -728,7 +728,8 @@ FROM (agent);
 /*
  * Undocumented creatures command, always seems to return 1
  * #Creatures
- * @Undocumented(status=undefined)
+ *
+ * @undocumented(status=undefined)
  * @rvalue
  * @return (integer)
  */
@@ -2478,11 +2479,11 @@ YVEC (integer);
 }
 
 @Click {
-	0 = Clicks have no effect
-	1 = Monostable	clicks activate, further clicks have no effect until object is inactive again
-	2 = Retriggerable Mono	clicks activate even if already active
-	3 = Toggle	toggle: 1st click activates, 2nd deactivates again
-	4 = Cycle	cycle: 1st click activate1, 2nd activate2, 3rd deactivate
+	0 = None - Clicks have no effect
+	1 = Monostable - Clicks activate, further clicks have no effect until object is inactive again
+	2 = Retriggerable Mono - Clicks activate even if already active
+	3 = Toggle - 1st click activates, 2nd deactivates again
+	4 = Cycle - 1st click activate1, 2nd activate2, 3rd deactivate
 }
 
 @CreatureInteraction {
