@@ -48,13 +48,23 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             if (newLine.isValid)
                 replaceWithSpaceOrComma(newLine, collapseChar)
         }
+        while(trailingText.matches(file.firstChild.text))
+            file.firstChild.delete()
+        while(trailingText.matches(file.lastChild.text))
+            file.lastChild.delete()
         runWriteAction {
-            CodeStyleManager.getInstance(project).reformat(fileIn, true)
+            file.document?.let {
+                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
+                CodeStyleManager.getInstance(project).reformat(fileIn, true)
+            }
         }
     }
 
 
     companion object {
+
+        private val trailingText = "[ \n,\t]+".toRegex()
+
         fun collapseLinesInCopy(fileIn: PsiFile, collapseChar:CollapseChar = CollapseChar.COMMA) : PsiFile {
             val project = fileIn.project
             var document = PsiDocumentManager.getInstance(project).getCachedDocument(fileIn) ?: fileIn.document
@@ -71,8 +81,13 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 if (newLine.isValid)
                     replaceWithSpaceOrComma(newLine, collapseChar)
             }
+            while(trailingText.matches(file.firstChild.text))
+                file.firstChild.delete()
+            while(trailingText.matches(file.lastChild.text))
+                file.lastChild.delete()
             document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: file.document
             if (document != null) {
+                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
                 PsiDocumentManager.getInstance(project).commitDocument(document)
             }
             return file
