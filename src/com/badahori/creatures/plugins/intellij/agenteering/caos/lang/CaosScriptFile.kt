@@ -19,7 +19,7 @@ class CaosScriptFile(viewProvider: FileViewProvider)
     var variant: CaosVariant?
         get() {
             val module = module ?: originalFile.module
-            return module?.variant ?: (this.virtualFile ?: this.originalFile.virtualFile)
+            return module?.variant ?: this.virtualFile
                     ?.let {
                         VariantFilePropertyPusher.readFromStorage(it)
                                 ?: it.getUserData(VariantUserDataKey)
@@ -27,7 +27,7 @@ class CaosScriptFile(viewProvider: FileViewProvider)
                     ?: CaosScriptProjectSettings.variant
         }
         set(newVariant) {
-            (this.virtualFile ?: this.originalFile.virtualFile)
+            this.virtualFile
                     ?.let {
                         VariantFilePropertyPusher.writeToStorage(it, newVariant ?: CaosVariant.UNKNOWN)
                         it.putUserData(VariantUserDataKey, newVariant ?: CaosVariant.UNKNOWN)
