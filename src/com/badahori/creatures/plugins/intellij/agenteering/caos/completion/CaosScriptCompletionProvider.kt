@@ -22,7 +22,7 @@ import icons.CaosScriptIcons
 import java.util.logging.Logger
 
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
-    private val IS_NUMBER = "^[0-9]+$".toRegex()
+    private val IS_NUMBER = "^[0-9]+".toRegex()
     private val WHITESPACE = "^\\s+$".toRegex()
     private val SKIP_VAR_NAMES = listOf("VARX", "OBVX", "MVXX", "OVXX", "VAXX")
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
@@ -33,7 +33,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 ?: return
 
         val text = element.textWithoutCompletionIdString
-        if (IS_NUMBER.matches(text)) {
+        if (text.isNotEmpty() && text.replace(IS_NUMBER, "").isEmpty()) {
             resultSet.stopHere()
             return
         }
