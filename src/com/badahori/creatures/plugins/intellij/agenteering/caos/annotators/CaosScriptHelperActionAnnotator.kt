@@ -19,69 +19,92 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
 
+/**
+ * Adds helper actions to command elements
+ */
 class CaosScriptHelperActionAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val wrapper = AnnotationHolderWrapper(annotationHolder)
         val variant = element.containingFile.module?.variant ?: CaosVariant.UNKNOWN
         when {
             element is CaosScriptCommandLike -> {
+                // Annnotate assignment commands
                 (element as? CaosScriptCAssignment)?.let {
                     annotateAssignment(variant, it, wrapper)
                 }
-                val next = element.next
-                if (next == null) {
-                    var intention = wrapper.newInfoAnnotation(null)
-                            .range(element)
-                            .withFix(CaosScriptExpandCommasIntentionAction)
-                    if (element.containingFile.text.contains("\n")) {
-                        intention = intention
-                                .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                                .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-                    }
-                    intention.create()
-                    return
-                }
-                if (COMMAS_ONLY_REGEX.matches(next.text)) {
-                    wrapper.newInfoAnnotation(null)
-                            .range(element)
-                            .withFix(CaosScriptExpandCommasIntentionAction)
-                            .create()
-                } else if (next is CaosScriptSpaceLikeOrNewline && next.textContains('\n')) {
-                    wrapper.newInfoAnnotation(null)
-                            .range(element)
-                            .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                            .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-                            .create()
-                } else {
-                    var intention = wrapper.newInfoAnnotation(null)
-                            .range(element)
-                            .withFix(CaosScriptExpandCommasIntentionAction)
-                    if (element.containingFile.text.contains("\n")) {
-                        intention = intention
-                                .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                                .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-                    }
-                    intention.create()
-                    return
-                }
+                //Anotatte
+                addExpandCollapseLinesActions(element, wrapper)
             }
+            // Annotate SpaceLike with expand collapse
             element is CaosScriptSpaceLikeOrNewline -> {
-                if (element.text == "," || element.text == " ") {
-                    wrapper.newInfoAnnotation(null)
-                            .range(element)
-                            .withFix(CaosScriptExpandCommasIntentionAction)
-                            .create()
-                }
-                if (element.text.contains("\n")) {
-                    wrapper.newInfoAnnotation(null)
-                            .range(element)
-                            .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                            .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-                            .create()
-                }
+                expandCollapseOnSpaceOrNewline(element, wrapper)
             }
             else -> {
             }
+        }
+    }
+
+    private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, wrapper: AnnotationHolderWrapper) {
+        val next = element.next
+        if (next == null) {
+            var intention = wrapper.newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptExpandCommasIntentionAction)
+            if (element.containingFile.text.contains("\n")) {
+                intention = intention
+                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+            }
+            intention.create()
+            return
+        }
+
+        // If there are only commas next, simply allow for expansion
+        if (COMMAS_ONLY_REGEX.matches(next.text)) {
+            wrapper.newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptExpandCommasIntentionAction)
+                    .create()
+        // if next is a newline element, allow collapse with commas or spaces
+        } else if (next is CaosScriptSpaceLikeOrNewline && next.textContains('\n')) {
+            wrapper.newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+                    .create()
+        } else {
+            // Next does not include commas or newlines
+            // Always allow expand lines
+            var intention = wrapper.newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptExpandCommasIntentionAction)
+            // If there are newlines in file, also allow collapsing of lines
+            if (element.containingFile.text.contains("\n")) {
+                intention = intention
+                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+            }
+            intention.create()
+            return
+        }
+    }
+
+    /**
+     *
+     */
+    private fun expandCollapseOnSpaceOrNewline(element:CaosScriptSpaceLikeOrNewline, wrapper: AnnotationHolderWrapper) {
+        if (element.text == "," || element.text == " ") {
+            wrapper.newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptExpandCommasIntentionAction)
+                    .create()
+        }
+        if (element.text.contains("\n")) {
+            wrapper.newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+                    .create()
         }
     }
 
