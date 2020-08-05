@@ -9,19 +9,31 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
 
+
+/**
+ * Annotates command case errors
+ * In C1 and C2 all command and var names must be lowercase
+ */
 class CaosScriptCommandCaseAnnotator : Annotator {
 
+    /**
+     * Process each element in file
+     */
     override fun annotate(elementIn: PsiElement, annotationHolder: AnnotationHolder) {
         val token = elementIn as? CaosScriptShouldBeLowerCase
                 ?: return
         val variant = token.containingCaosFile?.variant
                 ?: return
-        if (variant != CaosVariant.C1 && variant != CaosVariant.C2)
+        // If variant is not C1 or C2, return
+        if (variant.isNotOld)
             return
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         annotateC1Token(variant, token, annotationWrapper)
     }
 
+    /**
+     * Actually annotate the token
+     */
     private fun annotateC1Token(variant: CaosVariant, token:CaosScriptShouldBeLowerCase, annotationWrapper: AnnotationHolderWrapper) {
         val commandString = token.text
         if (commandString.toLowerCase() == commandString) {
