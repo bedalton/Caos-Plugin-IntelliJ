@@ -25,6 +25,13 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         element.name
     }
 
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name?.toUpperCase()) {
+            return true
+        }
+        return super.isReferenceTo(element)
+    }
+
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         if (DumbService.isDumb(myElement.project))
             return emptyArray()
