@@ -24,6 +24,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 
+/**
+ * Turns an ETCH..NEXT statement on C1 to ENUM..NEXT with DOIF TOUC
+ * Experimental as it may overwrite a used variable or may not perform as expected
+ */
 class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQuickFix, IntentionAction {
 
     private val pointer = SmartPointerManager.createPointer(element)
@@ -91,6 +95,9 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
         return null
     }
 
+    /**
+     * Actually apply the fix by modifying the AST tree
+     */
     private fun applyFix(document: Document, editor: Editor?, element: CaosScriptEnumNextStatement) {
         val project = element.project
         val etch = if (element.enumHeaderCommand.commandToken equalTo "ETCH")
