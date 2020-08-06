@@ -898,7 +898,8 @@ class CaosScriptTokenSets {
                     CaosScript_OV_XX,
                     CaosScript_MV_XX,
                     CaosDef_HASH_TAG,
-                    CaosScript_INT
+                    CaosScript_INT,
+                    CaosScript_VAR_TOKEN
             )
             val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
                     .types + otherTokens)

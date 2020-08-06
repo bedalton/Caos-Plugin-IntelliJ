@@ -1,24 +1,24 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.intellij.lang.cacheBuilder.DefaultWordsScanner
-import com.intellij.lang.cacheBuilder.WordsScanner
-import com.intellij.lang.findUsages.FindUsagesProvider
-import com.intellij.psi.PsiElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptLexerAdapter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isOrHasParentOfType
+import com.intellij.lang.cacheBuilder.DefaultWordsScanner
+import com.intellij.lang.cacheBuilder.WordsScanner
+import com.intellij.lang.findUsages.FindUsagesProvider
+import com.intellij.psi.PsiElement
 
 class CaosScriptUsagesProvider : FindUsagesProvider {
 
     override fun getWordsScanner(): WordsScanner? {
         return DefaultWordsScanner(
-                CaosDefLexerAdapter(),
+                CaosScriptLexerAdapter(),
                 CaosScriptTokenSets.ALL_FIND_USAGES_TOKENS,
                 CaosScriptTokenSets.COMMENTS,
                 CaosScriptTokenSets.LITERALS
@@ -32,6 +32,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
         return when {
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
             element.isOrHasParentOfType(CaosScriptNamedVar::class.java) -> "var ${element.text}"
+            element.isOrHasParentOfType(CaosScriptVarToken::class.java) -> "var ${element.text}"
             element.isOrHasParentOfType(CaosScriptNamedConstant::class.java) -> "const ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
@@ -56,6 +57,11 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
                 CaosScriptTypes.CaosScript_INT -> "Integer"
                 CaosScriptTypes.CaosScript_FLOAT -> "Float"
                 CaosScriptTypes.CaosScript_DECIMAL -> "Number"
+                CaosScriptTypes.CaosScript_VA_XX -> "SCRP variable"
+                CaosScriptTypes.CaosScript_VAR_X -> "SCRP variable"
+                CaosScriptTypes.CaosScript_OV_XX -> "TARG variable"
+                CaosScriptTypes.CaosScript_OBV_X -> "TARG variable"
+                CaosScriptTypes.CaosScript_MV_XX -> "OWNR variable"
                 else -> "element"
             }
         }
