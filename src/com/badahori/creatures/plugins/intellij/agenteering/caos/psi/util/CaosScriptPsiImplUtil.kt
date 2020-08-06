@@ -269,6 +269,19 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getName(element: CaosScriptVarToken): String {
+        return element.varGroup.name.toUpperCase()
+    }
+
+    @JvmStatic
+    fun setName(element: CaosScriptVarToken, newName: String): PsiElement {
+        CaosScriptPsiElementFactory.createCommandTokenElement(element.project, newName)?.let {
+            element.replace(it)
+        }
+        return element
+    }
+
+    @JvmStatic
     fun getKey(element: CaosScriptNamedGameVar): CaosVar {
         return element.stub?.key ?: element.expectsValue?.toCaosVar() ?: CaosVar.CaosVarNone
     }

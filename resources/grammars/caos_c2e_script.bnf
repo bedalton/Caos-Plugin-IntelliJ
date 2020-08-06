@@ -1335,7 +1335,7 @@ eq_op_new
 
 var_token
 	::= VA_XX
-	|		OV_XX
+	|	OV_XX
 	|	OBV_X
 	|	VAR_X
 	|	MV_XX
@@ -1346,6 +1346,7 @@ var_token
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase"
+			"com.intellij.psi.PsiNamedElement"
 		]
 		methods = [
 			getVarGroup
@@ -1353,6 +1354,8 @@ var_token
 			getReference
 			getInferredType
 			getLastAssignment
+			getName
+			setName
 		]
 	}
 	;
