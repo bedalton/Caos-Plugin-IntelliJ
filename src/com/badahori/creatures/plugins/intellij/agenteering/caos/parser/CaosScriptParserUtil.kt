@@ -8,10 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
-import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
@@ -23,8 +21,9 @@ import gnu.trove.TObjectLongHashMap
 @Suppress("UNUSED_PARAMETER", "unused")
 object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val MODES_KEY = Key.create<TObjectLongHashMap<String>>("MODES_KEY")
+    private val EXPECTATIONS_KEY = Key.create<MutableList<Int>>("com.badahori.caos.parser.EXPECTATIONS_KEY")
     private val CAOS_VARIANT = Key.create<CaosVariant>("CAOS_VARIANT")
-    private val expectsType: MutableList<Int> = mutableListOf()
+    private val lock = Object()
     const val NUMBER = 0
     const val STRING = 1
     const val TOKEN = 4
@@ -52,6 +51,15 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             builder_.putUserData(MODES_KEY, TObjectLongHashMap<String>().also { flags = it })
         }
         return flags
+    }
+
+
+    private fun expectsType(builder_: PsiBuilder): MutableList<Int> {
+        var flags = builder_.getUserData<MutableList<Int>>(EXPECTATIONS_KEY)
+        if (flags == null) {
+            builder_.putUserData(EXPECTATIONS_KEY, mutableListOf<Int>().also { flags = it })
+        }
+        return flags!!
     }
 
     /*@JvmStatic
@@ -104,14 +112,14 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun enterBlock(builder_: PsiBuilder?,
+    fun enterBlock(builder_: PsiBuilder,
                    level: Int): Boolean {
         blocks++
         return true
     }
 
     @JvmStatic
-    fun exitBlock(builder_: PsiBuilder?,
+    fun exitBlock(builder_: PsiBuilder,
                   level: Int): Boolean {
         if (blocks > 0)
             blocks--
@@ -119,67 +127,79 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun insideBlock(builder_: PsiBuilder?,
+    fun insideBlock(builder_: PsiBuilder,
                     level: Int): Boolean {
         return blocks > 0
     }
 
     @JvmStatic
-    fun pushExpectation(builder_: PsiBuilder?,
+    fun pushExpectation(builder_: PsiBuilder,
                         level: Int,
                         expectation: Int
     ): Boolean {
         if (ignoreExpects())
             return true
-        if (expectsType.isEmpty())
-            expectsType.add(expectation)
-        else
-            expectsType.add(0, expectation)
+        synchronized(lock) {
+            val expectsType = expectsType(builder_)
+            if (expectsType.isEmpty())
+                expectsType.add(expectation)
+            else
+                expectsType.add(0, expectation)
+        }
         return true
     }
 
     @JvmStatic
-    fun popExpectation(builder_: PsiBuilder?,
+    fun popExpectation(builder_: PsiBuilder,
                        level: Int): Boolean {
         if (ignoreExpects())
             return true
-        if (expectsType.isEmpty())
-            return true
-        expectsType.remove(0)
+        synchronized(lock) {
+            val expectsType = expectsType(builder_)
+            if (expectsType.isEmpty())
+                return true
+            expectsType.remove(0)
+        }
         return true
     }
 
     @JvmStatic
-    fun expects(builder_: PsiBuilder?,
+    fun expects(builder_: PsiBuilder,
                 level: Int,
                 expectation: Int
     ): Boolean {
-        return expects(builder_, level, expectation, true)
+        return synchronized(lock) {
+            expects(builder_, level, expectation, true)
+        }
     }
 
     @JvmStatic
-    fun expects(builder_: PsiBuilder?,
+    fun expects(builder_: PsiBuilder,
                 level: Int,
                 expectation: Int,
                 default:Boolean
     ): Boolean {
         if (ignoreExpects())
             return default
-        if (expectsType.isEmpty()) {
-            //LOGGER.severe("Checking expectation '$expectation' when no expectations in stack")
-            return default
+        return synchronized(lock) {
+            val expectsType = expectsType(builder_)
+            if (expectsType.isEmpty())
+                default
+            else
+                expectsType[0] == expectation
         }
-        return expectsType[0] == expectation
     }
 
     @JvmStatic
-    fun expectsValue(builder_: PsiBuilder?,
+    fun expectsValue(builder_: PsiBuilder,
                 level: Int,
                  default:Boolean
     ): Boolean {
         if (ignoreExpects())
             return default
-        return expectsType.isNotEmpty()
+        return synchronized(lock) {
+            expectsType(builder_).isNotEmpty()
+        }
     }
 
     private fun ignoreExpects() : Boolean {
