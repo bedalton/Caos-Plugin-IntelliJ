@@ -19,6 +19,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import org.jetbrains.annotations.Contract
 
+/**
+ * Annotation wrapper to try to unify calls in Intellij 191 and 201, where some annotation commands were deprecated
+ */
 class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
 
     @Contract(pure = true)
