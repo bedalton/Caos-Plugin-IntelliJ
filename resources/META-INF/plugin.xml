@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.2</version>
+  <version>0.01.3</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -33,6 +33,18 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>0.03</b>
+        <ul>
+          <li>fix exception on concurrent access to AST expects array</li>
+        </ul>
+      </li>
+      <li>
+        <b>0.02</b>
+        <ul>
+          <li>fix autocomplete changing numbers to variables</li>
+        </ul>
+      </li>
       <li>
         <b>0.01</b>
         <ul>
