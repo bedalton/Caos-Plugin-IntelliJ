@@ -270,7 +270,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getName(element: CaosScriptVarToken): String {
-        return element.varGroup.name.toUpperCase()
+        return element.varGroup.value
     }
 
     @JvmStatic
