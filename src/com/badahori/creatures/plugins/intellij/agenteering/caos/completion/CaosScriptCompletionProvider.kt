@@ -19,8 +19,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.ProcessingContext
 import icons.CaosScriptIcons
-import java.util.logging.Logger
 
+/**
+ * Provides completions for CAOS script
+ * Adds completions for commands, variables, subroutine names, and known values.
+ */
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
     private val IS_NUMBER = "^[0-9]+".toRegex()
     private val WHITESPACE = "^\\s+$".toRegex()
@@ -39,17 +42,23 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         val previous = element.previous?.text
+
+        // If previous is not whitespace and not square of double quote symbol, return
         if (previous != "[" && previous != "\"" && previous.nullIfEmpty()?.let { !WHITESPACE.matches(it) }.orFalse()) {
             resultSet.stopHere()
             return
         }
 
+        //If previous is number, return
         if (IS_NUMBER.matches( previous ?: "")) {
             resultSet.stopHere()
             return
         }
 
+        // Get previous token, in case a special completion is in order
         val previousToken = element.getPreviousNonEmptySibling(false)?.text?.toUpperCase()
+
+        // Previous token is CLAS, add class generator
         if (previousToken == "CLAS") {
             val builderElement = LookupElementBuilder
                     .create("")
@@ -60,6 +69,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
+        // Previous token is DDE: PICT, add PICT value generator
         if (previousToken == "DDE: PICT") {
             val builderElement = LookupElementBuilder
                     .create("")
@@ -70,31 +80,42 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
+        // Requires a SUBR name
         if (element.hasParentOfType(CaosScriptCGsub::class.java)) {
             addSubroutineNames(element, resultSet)
             resultSet.stopHere()
             return
         }
 
+        // Get parent Command element
         var parent: PsiElement? = element
         while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
             parent = parent.parent
         }
+        // Element has no command parent
         if (parent == null) {
             resultSet.stopHere()
             return
         }
+        // Get command type, ie RVALUE, LVALUE, COMMAND
         val type = parent.getEnclosingCommandType()
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
+        // If has parent of value, add typedef completion if needed
+        // ie. Chemicals by name, or file names
         (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
             CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
         }
 
+        // If token is expected, return
+        // Token completions will have been added with CaosScriptTypeDefValueCompletionProvider#addParameterTypeDefValueCompletions,
+        // called in the command previously
         if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
             resultSet.stopHere()
             return
         }
+
+        // Add command name completions
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
@@ -115,9 +136,11 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     createCommandTokenLookupElement(allowUppercase, element, case, it.commandName, it.isCommand, it.parameterStructs, it.returnTypeString)
                 }
         resultSet.addAllElements(singleCommands)
+        // If type is Lvalue or Rvalue, add variable name completions
         if (type != CaosCommandType.COMMAND)
             addVariableCompletions(variant, element, resultSet)
 
+        // Add equality expression completions for known types
         (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
             val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpression::class.java)
             if (equalityExpression != null) {
@@ -126,6 +149,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
+    /**
+     * Adds variables to completions for a given variant.
+     * ie. VAR0 -> VAR9 on C1 or VA00-VA99 on C2+
+     */
     private fun addVariableCompletions(variant: CaosVariant, element: PsiElement, resultSet: CompletionResultSet) {
         if (variant == CaosVariant.C1) {
             (0..2).forEach {
@@ -159,30 +186,44 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
+    /**
+     * Creates a completion lookup element for a command
+     */
     private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, parameters:List<CaosDefParameterStruct>, returnType: String, prefixIn: String? = null): LookupElementBuilder {
+        // Tail text for command display element
         val tailText = if (isCommand)
             "command"
         else
             returnType
+        // If an icon is possible, use it here
         val icon = if (isCommand)
             CaosScriptIcons.COMMAND
         else
             CaosScriptIcons.RVALUE
+
+        // Create completion for a given case
         val command = if (case == Case.UPPER_CASE && allowUppercase)
             commandIn.toUpperCase()
         else
             commandIn.toLowerCase()
+
+        // If prefix, match case
         val prefix = when {
             prefixIn == null -> null
             case == Case.UPPER_CASE -> prefixIn.toUpperCase()
             else -> prefixIn.toLowerCase()
         }
+
+        // Create actual element
         var builder = LookupElementBuilder
                 .create(command)
                 .withTailText("($tailText)")
                 .withIcon(icon)
+        // Check needs space requirement
+        // Mostly just adds a space if there are additional parameters
         val needsSpace = needsSpaceAfter(element, command)
-        if (parameters.size > 0) {
+        // Add parameter insert handler if needed
+        if (parameters.isNotEmpty()) {
             builder = builder.withInsertHandler(CommandInsertHandler(command, parameters, needsSpace))
         } else if (needsSpace)
             builder = builder.withInsertHandler(SpaceAfterInsertHandler)
@@ -192,6 +233,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         return builder
     }
 
+    /**
+     * Checks if a space is needed after insert
+     */
     private fun needsSpaceAfter(element: PsiElement, commandString: String): Boolean {
         var parent: PsiElement? = element.parent
         while (parent != null && parent !is CaosScriptRvalue && parent !is CaosScriptLvalue && parent !is CaosScriptCommandCall) {
@@ -214,6 +258,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         return matches.all { it.parameterStructs.size > 0 }
     }
 
+    /**
+     * Adds completion for subroutine names in a given SCRP element
+     */
     private fun addSubroutineNames(element:PsiElement, resultSet: CompletionResultSet) {
         val project = element.project
         val file = element.containingFile
@@ -232,4 +279,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
 }
 
+/**
+ * Gets element text minus the weird IntelliJ completion string appended to the end
+ */
 private val PsiElement.textWithoutCompletionIdString get() = text.substringBefore(CompletionUtilCore.DUMMY_IDENTIFIER)
