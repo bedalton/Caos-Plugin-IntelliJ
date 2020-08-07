@@ -36,7 +36,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         if (DumbService.isDumb(myElement.project))
             return emptyArray()
         if (myElement.parent?.parent is CaosDefCommandDefElement) {
-            return PsiElementResolveResult.createResults(myElement)
+            return PsiElementResolveResult.EMPTY_ARRAY
         }
         val elements = if (myElement is CaosDefCompositeElement)
             findFromDefElement()
