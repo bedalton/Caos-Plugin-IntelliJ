@@ -259,6 +259,7 @@ command_word
 			isVariant
 			getPresentation
 			getCommandString
+			isEquivalentTo
 		]
 	}
 	;
