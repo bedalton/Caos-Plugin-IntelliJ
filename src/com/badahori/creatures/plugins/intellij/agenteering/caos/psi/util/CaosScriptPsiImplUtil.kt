@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
@@ -16,10 +17,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.floor
@@ -215,9 +218,9 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getVarGroup(element: CaosScriptVarToken): CaosScriptVarTokenGroup {
-        val group = element.stub?.varGroup
+        /*val group = element.stub?.varGroup
         if (group != null)
-            return group
+            return group*/
         return when {
             element.varX != null -> CaosScriptVarTokenGroup.VARx
             element.vaXx != null -> CaosScriptVarTokenGroup.VAxx
@@ -230,8 +233,9 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getVarIndex(element: CaosScriptVarToken): Int? {
-        return element.stub?.varIndex
-                ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()
+        /*return element.stub?.varIndex
+                ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()*/
+        return element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()
     }
 
     @JvmStatic
@@ -268,7 +272,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getName(element: CaosScriptVarToken): String {
-        return element.varGroup.value
+        return element.text.toUpperCase()
     }
 
     @JvmStatic
@@ -1467,6 +1471,15 @@ object CaosScriptPsiImplUtil {
         return rvalue.varToken?.let  {
             getLastAssignment(it)
         }
+    }
+
+    @JvmStatic
+    fun isEquivalentTo(element:CaosScriptVarToken, another: PsiElement): Boolean {
+        LOGGER.info("Check if is equivalent: ${another.text}")
+        if (another is CaosDefCommandWord) {
+            return element.varGroup.value.equalsIgnoreCase(another.text)
+        }
+        return another is CaosScriptVarToken && another.name == element.name
     }
 }
 
