@@ -4,43 +4,43 @@ import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefTypeDefinitionImpl
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefValuesListValueImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefValueStub
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStubImpl
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListValueStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
-class CaosDefTypeDefValueStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefTypeDefValueStub, CaosDefTypeDefinitionImpl>(debugName) {
+class CaosDefValuesListValueStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefValuesListValueStub, CaosDefValuesListValueImpl>(debugName) {
 
-    override fun createPsi(stub: CaosDefTypeDefValueStub): CaosDefTypeDefinitionImpl {
-        return CaosDefTypeDefinitionImpl(stub, this)
+    override fun createPsi(stub: CaosDefValuesListValueStub): CaosDefValuesListValueImpl {
+        return CaosDefValuesListValueImpl(stub, this)
     }
 
-    override fun serialize(stub: CaosDefTypeDefValueStub, stream: StubOutputStream) {
+    override fun serialize(stub: CaosDefValuesListValueStub, stream: StubOutputStream) {
         stream.writeName(stub.key)
         stream.writeName(stub.value)
         stream.writeUTFFast(stub.description ?: "")
         val equality = when (stub.equality) {
-            TypeDefEq.EQUAL -> 0
-            TypeDefEq.GREATER_THAN -> 1
-            TypeDefEq.NOT_EQUAL -> 2
+            ValuesListEq.EQUAL -> 0
+            ValuesListEq.GREATER_THAN -> 1
+            ValuesListEq.NOT_EQUAL -> 2
         }
         stream.writeInt(equality)
     }
 
-    override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefTypeDefValueStub {
+    override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefValuesListValueStub {
         val key = stream.readNameAsString() ?: CaosDefPsiImplUtil.UnknownReturn
         val value = stream.readNameAsString() ?: CaosDefPsiImplUtil.UnknownReturn
         val description = stream.readUTFFast().nullIfEmpty()
         val equality = when (stream.readInt()) {
-            0 -> TypeDefEq.EQUAL
-            1 -> TypeDefEq.GREATER_THAN
-            2 -> TypeDefEq.NOT_EQUAL
+            0 -> ValuesListEq.EQUAL
+            1 -> ValuesListEq.GREATER_THAN
+            2 -> ValuesListEq.NOT_EQUAL
             else -> throw Exception("Invalid equals value encountered")
         }
-        return CaosDefTypeDefValueStubImpl(
+        return CaosDefValuesListValueStubImpl(
                 parent = parent,
                 key = key,
                 value = value,
@@ -49,12 +49,12 @@ class CaosDefTypeDefValueStubType(debugName:String) : com.badahori.creatures.plu
         )
     }
 
-    override fun createStub(element: CaosDefTypeDefinitionImpl, parent: StubElement<*>): CaosDefTypeDefValueStub {
+    override fun createStub(element: CaosDefValuesListValueImpl, parent: StubElement<*>): CaosDefValuesListValueStub {
         var key = element.key
         if (key.length > 1 && (key.startsWith(">") || key.startsWith("!"))) {
             key = key.substring(1)
         }
-        return CaosDefTypeDefValueStubImpl(
+        return CaosDefValuesListValueStubImpl(
                 parent = parent,
                 key = key,
                 value = element.value,
@@ -63,7 +63,7 @@ class CaosDefTypeDefValueStubType(debugName:String) : com.badahori.creatures.plu
         )
     }
 
-    override fun indexStub(p0: CaosDefTypeDefValueStub, p1: IndexSink) {
+    override fun indexStub(p0: CaosDefValuesListValueStub, p1: IndexSink) {
         // ignore
     }
 

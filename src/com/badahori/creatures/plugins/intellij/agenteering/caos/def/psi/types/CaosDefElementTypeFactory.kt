@@ -11,8 +11,8 @@ object CaosDefElementTypeFactory {
             "CaosDef_COMMAND_DEF_ELEMENT" -> CaosDefStubTypes.COMMAND_ELEMENT
             "CaosDef_DOC_COMMENT" -> CaosDefStubTypes.DOC_COMMENT
             "CaosDef_PARAMETER" -> CaosDefStubTypes.PARAMETER;
-            "CaosDef_TYPE_DEFINITION_ELEMENT" -> CaosDefStubTypes.TYPE_DEFINITION_ELEMENT
-            "CaosDef_TYPE_DEFINITION" -> CaosDefStubTypes.TYPE_DEFINITION_VALUE
+            "CaosDef_VALUES_LIST_ELEMENT" -> CaosDefStubTypes.VALUES_LIST_ELEMENT
+            "CaosDef_VALUES_LIST_VALUE" -> CaosDefStubTypes.VALUES_LIST_VALUE
             "CaosDef_DOC_COMMENT_HASHTAG" -> CaosDefStubTypes.HASHTAG
             else->throw IndexOutOfBoundsException("Failed to recognize token type: $debugName")
         }

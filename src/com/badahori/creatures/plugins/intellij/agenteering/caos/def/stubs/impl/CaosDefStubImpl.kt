@@ -41,22 +41,22 @@ class CaosDefParameterStubImpl(
         override val comment: String?
 ) : StubBase<CaosDefParameterImpl>(parent, CaosDefStubTypes.PARAMETER), CaosDefParameterStub
 
-class CaosDefTypeDefinitionStubImpl(
+class CaosDefValuesListStubImpl(
         parent: StubElement<*>,
         override val typeName:String,
-        override val keys: List<CaosDefTypeDefValueStruct>,
+        override val keys: List<CaosDefValuesListValueStruct>,
         override val typeNote: String?,
         override val isBitflags: Boolean
-) : StubBase<CaosDefTypeDefinitionElementImpl>(parent, CaosDefStubTypes.TYPE_DEFINITION_ELEMENT), CaosDefTypeDefinitionStub
+) : StubBase<CaosDefValuesListElementImpl>(parent, CaosDefStubTypes.VALUES_LIST_ELEMENT), CaosDefValuesListStub
 
 
-class CaosDefTypeDefValueStubImpl(
+class CaosDefValuesListValueStubImpl(
         parent: StubElement<*>,
         override val key:String,
         override val value:String,
         override val description: String?,
-        override val equality: TypeDefEq
-) : StubBase<CaosDefTypeDefinitionImpl>(parent, CaosDefStubTypes.TYPE_DEFINITION_VALUE), CaosDefTypeDefValueStub
+        override val equality: ValuesListEq
+) : StubBase<CaosDefValuesListValueImpl>(parent, CaosDefStubTypes.VALUES_LIST_VALUE), CaosDefValuesListValueStub
 
 
 data class CaosDefParameterStruct(val parameterNumber:Int, val name: String, val type: CaosDefVariableTypeStruct, val comment: String? = null)
@@ -65,17 +65,17 @@ data class CaosDefReturnTypeStruct(val type: CaosDefVariableTypeStruct, val comm
 
 data class CaosDefVariableTypeStruct(
         val type:String,
-        val typedef: String? = null,
+        val valuesList: String? = null,
         val noteText: String? = null,
         val intRange:Pair<Int, Int>? = null,
         val fileTypes:List<String>? = null,
         val length:Int? = null
 )
 
-data class CaosDefTypeDefValueStruct (
+data class CaosDefValuesListValueStruct (
         val key:String,
         val value:String,
-        val equality: TypeDefEq,
+        val equality: ValuesListEq,
         val description:String? = null
 )
 

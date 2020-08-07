@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
@@ -10,7 +10,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseCh
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
@@ -118,25 +117,25 @@ class CaosScriptHelperActionAnnotator : Annotator {
         } else {
             0
         }
-        val commandTypeDef = CaosDefCommandElementsByNameIndex
+        val valuesList = CaosDefCommandElementsByNameIndex
                 .Instance[commandString, project]
                 .filter {
                     it.isVariant(variant)
                 }
                 .mapNotNull {
-                    it.returnTypeStruct?.type?.typedef
+                    it.returnTypeStruct?.type?.valuesList
                 }
                 .firstOrNull()
                 ?: return
-        val typedefWithBitFlags = CaosDefTypeDefinitionElementsByNameIndex
-                .Instance[commandTypeDef, project]
+        val valuesListWithBitFlags = CaosDefValuesListDefinitionElementsByNameIndex
+                .Instance[valuesList, project]
                 .firstOrNull {
                     it.isBitflags && it.isVariant(variant)
                 }
                 ?: return
         wrapper.newInfoAnnotation(null)
                 .range(addTo)
-                .withFix(GenerateBitFlagIntegerIntentionAction(addTo, typedefWithBitFlags.typeName, typedefWithBitFlags.keys, currentValue))
+                .withFix(GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.keys, currentValue))
                 .create()
     }
 

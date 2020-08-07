@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -17,22 +17,22 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
 
-fun CaosScriptExpression.getTypeDefValue(): CaosDefTypeDefValueStruct? {
+fun CaosScriptExpression.getValuesListValue(): CaosDefValuesListValueStruct? {
     // Lists values can only be for expressions of string or int
     if (!(isString || isInt)) {
         return null
     }
     (parent?.parent as? CaosScriptExpectsValueOfType)?.let {
-        return getCommandParameterTypeDefValue(it, text)
+        return getCommandParameterValuesListValue(it, text)
     }
 
     getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
-        return getEqualityExpressionTypeDefValue(it, this)
+        return getEqualityExpressionValuesListValue(it, this)
     }
     return null
 }
 
-private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefTypeDefValueStruct? {
+private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefValuesListValueStruct? {
     val value = expression.intValue?.let { "$it" } ?: expression.stringValue ?: return null
     val other = equalityExpression.expressionList.let {
         when (it.size) {
@@ -53,32 +53,32 @@ private fun getEqualityExpressionTypeDefValue(equalityExpression: CaosScriptEqua
             ?.element
             ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
             ?: return null
-    val typeDef = reference
+    val valuesList = reference
             .docComment
             ?.returnTypeStruct
             ?.type
-            ?.typedef
+            ?.valuesList
             ?: return null
     val variant = expression.containingCaosFile?.variant
             ?: return null
-    return getListValue(variant, typeDef, expression.project, value)
+    return getListValue(variant, valuesList, expression.project, value)
 }
 
-internal fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefTypeDefValueStruct? {
-    val list = CaosDefTypeDefinitionElementsByNameIndex
+internal fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefValuesListValueStruct? {
+    val list = CaosDefValuesListDefinitionElementsByNameIndex
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
             ?: return null
     return list.keys.firstOrNull {
         when (it.equality) {
-            TypeDefEq.EQUAL -> it.key == key
-            TypeDefEq.NOT_EQUAL -> it.key != key
-            TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+            ValuesListEq.EQUAL -> it.key == key
+            ValuesListEq.NOT_EQUAL -> it.key != key
+            ValuesListEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
         }
     }
 }
 
-private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueOfType, key: String): CaosDefTypeDefValueStruct? {
+private fun getCommandParameterValuesListValue(valueOfType: CaosScriptExpectsValueOfType, key: String): CaosDefValuesListValueStruct? {
     val containingCommand = valueOfType.getParentOfType(CaosScriptCommandElement::class.java)
             ?: return null
     val index = valueOfType.index
@@ -95,14 +95,14 @@ private fun getCommandParameterTypeDefValue(valueOfType: CaosScriptExpectsValueO
             ?.parameterStructs
             ?.getOrNull(index)
             ?: return null
-    val typeDef = parameterStruct
+    val valuesList = parameterStruct
             .type
-            .typedef
+            .valuesList
             ?: return null
 
     val variant = valueOfType.containingCaosFile?.variant
             ?: return null
-    return getListValue(variant, typeDef, valueOfType.project, key)
+    return getListValue(variant, valuesList, valueOfType.project, key)
 }
 
 

@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionKey
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValueKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -20,26 +20,26 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
 
     private val text by lazy { myElement.text }
 
-    private val possibleTypeDefNames: List<String> by lazy lazy@{
+    private val possibleValuesListNames: List<String> by lazy lazy@{
         // If expression is in equality expression
         if (myElement.parent is CaosScriptEqualityExpression) {
-            return@lazy possibleTypeDefNamesForEquality()
+            return@lazy possibleValuesListNamesForEquality()
         }
 
         val argument = myElement.getParentOfType(CaosScriptArgument::class.java)
                 ?: return@lazy  emptyList<String>()
         val parentRaw = argument.parent as? CaosScriptCommandElement
                 ?: return@lazy  emptyList<String>()
-        // If parent is assignment, get other side typedef
+        // If parent is assignment, get other side values list
         if (parentRaw is CaosScriptCAssignment) {
-            possibleTypeDefNamesForAssignment(parentRaw)
+            possibleValuesListNamesForAssignment(parentRaw)
         } else {
-            possibleTypeDefNamesForParameter(argument, parentRaw)
+            possibleValuesListNamesForParameter(argument, parentRaw)
         }
 
     }
 
-    private fun possibleTypeDefNamesForAssignment(assignment:CaosScriptCAssignment) : List<String> {
+    private fun possibleValuesListNamesForAssignment(assignment:CaosScriptCAssignment) : List<String> {
         val commandToken = assignment.lvalue?.commandToken
                 ?: return emptyList()
         return commandToken
@@ -49,11 +49,11 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
                         ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                         ?.returnTypeStruct
                         ?.type
-                        ?.typedef
+                        ?.valuesList
                 }
     }
 
-    private fun possibleTypeDefNamesForParameter(argument:CaosScriptArgument, parentRaw:CaosScriptCommandElement) : List<String> {
+    private fun possibleValuesListNamesForParameter(argument:CaosScriptArgument, parentRaw:CaosScriptCommandElement) : List<String> {
         // Expression is in parameter
         val commandToken = parentRaw.commandToken
                 ?: return emptyList()
@@ -65,16 +65,16 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
                 .ifEmpty { null }
                 ?: return emptyList()
 
-        // Get typedefs for argument position
+        // Get values list for argument position
         val argumentNumber = argument.index
         return commandDef.mapNotNull map@{ def ->
             val parameter = def.parameterStructs.getOrNull(argumentNumber)
                     ?: return@map null
-            parameter.type.typedef
+            parameter.type.valuesList
         }
     }
 
-    private fun possibleTypeDefNamesForEquality() : List<String> {
+    private fun possibleValuesListNamesForEquality() : List<String> {
         val expression = myElement
         val equalityExpression = expression.parent as? CaosScriptEqualityExpression ?: return emptyList()
         val other = equalityExpression.expressionList.firstOrNull { it != expression }
@@ -84,38 +84,38 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
         return token
                 .reference
                 .multiResolve(true)
-                .mapNotNull { it.element?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)?.returnTypeStruct?.type?.typedef }
+                .mapNotNull { it.element?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)?.returnTypeStruct?.type?.valuesList }
     }
 
     private val project: Project by lazy { myElement.project }
 
     override fun isReferenceTo(anElement: PsiElement): Boolean {
-        if (anElement !is CaosDefTypeDefinitionKey) {
+        if (anElement !is CaosDefValuesListValueKey) {
             return false
         }
         if (anElement.text != text)
             return false
-        val parentDef = anElement.getParentOfType(CaosDefTypeDefinitionElement::class.java)
+        val parentDef = anElement.getParentOfType(CaosDefValuesListElement::class.java)
                 ?: return false
-        return parentDef.typeName in possibleTypeDefNames
+        return parentDef.typeName in possibleValuesListNames
     }
 
     override fun multiResolve(p0: Boolean): Array<ResolveResult> {
         val variant = myElement.containingCaosFile?.variant
                 ?: return ResolveResult.EMPTY_ARRAY
         val keyAsInt = text.toIntSafe()
-        val keys = possibleTypeDefNames.flatMap map@{ typeDefName ->
-            CaosDefTypeDefinitionElementsByNameIndex.Instance[typeDefName, project]
+        val keys = possibleValuesListNames.flatMap map@{ valuesListName ->
+            CaosDefValuesListDefinitionElementsByNameIndex.Instance[valuesListName, project]
                     .filter {
                         it.isVariant(variant)
                     }
-                    .flatMap matchKeys@{ typeDefElement ->
-                        if (typeDefElement.isBitflags && keyAsInt != null) {
-                            typeDefElement.typeDefinitionList.filter { typeDefValueStruct ->
-                                typeDefValueStruct.key.toIntSafe()?.let { key -> keyAsInt and key > 0 } ?: false
+                    .flatMap matchKeys@{ valuesListElement ->
+                        if (valuesListElement.isBitflags && keyAsInt != null) {
+                            valuesListElement.valuesListValueList.filter { valuesListValueStruct ->
+                                valuesListValueStruct.key.toIntSafe()?.let { key -> keyAsInt and key > 0 } ?: false
                             }
                         } else {
-                            typeDefElement.typeDefinitionList.filter { it.key == text }
+                            valuesListElement.valuesListValueList.filter { it.key == text }
                         }
                     }
         }.ifEmpty { null }

@@ -37,14 +37,14 @@ object CaosDefPsiElementFactory {
         return command.command.commandWordList[0]
     }
 
-    fun getTypeDefName(project: Project, newNameString: String): CaosDefTypeDefName {
+    fun getValuesListName(project: Project, newNameString: String): CaosDefValuesListName {
         val commentText = """
             /*
              * @param {var} (null@$newNameString)
              */
         """.trimIndent()
         val comment = createComment(project, commentText)
-        return comment.docCommentParamList[0].docCommentVariableType!!.typeDefName!!
+        return comment.docCommentParamList[0].docCommentVariableType!!.valuesListName!!
     }
 
     private val HASHTAG_VALIDATION = "[#][A-Za-z][_A-Za-z0-9]*".toRegex()

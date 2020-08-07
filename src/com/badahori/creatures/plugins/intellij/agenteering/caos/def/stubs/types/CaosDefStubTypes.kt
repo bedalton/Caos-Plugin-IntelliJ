@@ -3,9 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types
 object CaosDefStubTypes {
 
     @JvmStatic
-    val TYPE_DEFINITION_VALUE: CaosDefTypeDefValueStubType = CaosDefTypeDefValueStubType("CaosDef_TYPE_DEFINITION")
+    val VALUES_LIST_VALUE: CaosDefValuesListValueStubType = CaosDefValuesListValueStubType("CaosDef_VALUES_LIST_VALUE")
     @JvmStatic
-    val TYPE_DEFINITION_ELEMENT: CaosDefTypeDefinitionStubType = CaosDefTypeDefinitionStubType("CaosDef_TYPE_DEFINITION_ELEMENT")
+    val VALUES_LIST_ELEMENT: CaosDefValuesListStubType = CaosDefValuesListStubType("CaosDef_VALLUES_LIST_ELEMENT")
     @JvmStatic
     val COMMAND_ELEMENT = CaosDefCommandElementStubType("CaosDef_COMMAND_DEF_ELEMENT")
     @JvmStatic

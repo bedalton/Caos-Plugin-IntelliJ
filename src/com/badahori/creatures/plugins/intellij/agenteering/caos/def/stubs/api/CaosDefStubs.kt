@@ -4,7 +4,7 @@ import com.intellij.psi.stubs.StubElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 
@@ -34,21 +34,21 @@ interface CaosDefDocCommentHashtagStub: StubElement<CaosDefDocCommentHashtagImpl
     val variants:List<CaosVariant>
 }
 
-interface CaosDefTypeDefinitionStub : StubElement<CaosDefTypeDefinitionElementImpl> {
+interface CaosDefValuesListStub : StubElement<CaosDefValuesListElementImpl> {
     val typeName:String
-    val keys: List<CaosDefTypeDefValueStruct>
+    val keys: List<CaosDefValuesListValueStruct>
     val typeNote:String?
     val isBitflags:Boolean
 }
 
-interface CaosDefTypeDefValueStub : StubElement<CaosDefTypeDefinitionImpl> {
+interface CaosDefValuesListValueStub : StubElement<CaosDefValuesListValueImpl> {
     val key:String
-    val equality:TypeDefEq
+    val equality:ValuesListEq
     val value:String
     val description:String?
 }
 
-enum class TypeDefEq {
+enum class ValuesListEq {
     EQUAL,
     NOT_EQUAL,
     GREATER_THAN

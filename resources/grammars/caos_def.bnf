@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl"
-	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition|doc_comment_hashtag")="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	elementTypeFactory("command_def_element|doc_comment|parameter|values_list_element|values_list_value|doc_comment_hashtag")="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil"
 	generateTokenAccessors=true
 	tokens = [
@@ -69,7 +69,7 @@ header
 
 private def_element
 	::= command_def_element end_of_statement
-	|	type_definition_element
+	|	values_list_element
 	| 	comment
 	| 	NEWLINE
 	| 	end_of_statement
@@ -117,11 +117,11 @@ private arguments_list_recover
 	;
 
 
-type_definition_element
-	::= type_def_name (COLON type_note)? type_definition_body
+values_list_element
+	::= values_list_name (COLON type_note)? values_list_body
 	{
 		pin=1;
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefinitionStub"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
@@ -137,11 +137,11 @@ type_definition_element
 	}
 	;
 
-type_definition
-	::= type_definition_key '=' type_definition_value (DASH type_definition_description)?
+values_list_value
+	::= values_list_value_key '=' values_list_value_name (DASH values_list_value_description)?
 	{
 		pin=2;
-		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefValueStub"
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
@@ -157,23 +157,23 @@ type_definition
 		]
 	}
 	;
-private type_definition_body
-	::= OPEN_BRACE type_definition_list? CLOSE_BRACE
+private values_list_body
+	::= OPEN_BRACE values_list_values? CLOSE_BRACE
 	{
 		pin=1;
 	}
 	;
 
-private type_definition_list
-	::= type_definition_statements+
+private values_list_values
+	::= values_list_statement+
 	{
-		//recoverWhile=type_definition_list_recover
+		//recoverWhile=values_list_recover
 	}
 	;
-private type_definition_statements
-	::=	type_definition
+private values_list_statement
+	::=	values_list_value
 	|	region_heading
-	//|	type_def_exclusives
+	//|	values_list_exclusives
 	;
 
 region_heading
@@ -263,7 +263,7 @@ command_word
 	}
 	;
 
-type_def_name
+values_list_name
 	::= AT_ID
 	{
 		implements = [
@@ -278,18 +278,18 @@ type_def_name
 	}
 	;
 
-type_definition_key
-	::= TYPE_DEF_KEY
+values_list_value_key
+	::= VALUES_LIST_VALUE_KEY_LITERAL
 	;
 
-type_definition_value
-	::= TYPE_DEF_VALUE
+values_list_value_name
+	::= VALUES_LIST_VALUE_NAME_LITERAL
 	;
 
-type_definition_description
-	::= type_definition_description_element+
+values_list_value_description
+	::= values_list_value_description_element+
 	;
-type_definition_description_element
+values_list_value_description_element
 	::= TEXT_LITERAL
 	|	word_link
 	;
@@ -475,7 +475,7 @@ doc_comment_variable_type
 	;
 
 private variable_type_tail
-	::= type_def_name
+	::= values_list_name
 	|	COLON type_note
 	|	variable_tail_limits
 	|	variable_file_type
@@ -486,7 +486,7 @@ variable_file_type
 	;
 
 type_note
-	::= ID | TYPE_DEF_KEY // Typedef key overrides ID in some lexer contexts
+	::= ID | VALUES_LIST_VALUE_KEY_LITERAL // Values list key overrides ID in some lexer contexts
 	;
 
 private variable_tail_limits

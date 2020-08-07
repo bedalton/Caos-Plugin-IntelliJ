@@ -10,16 +10,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.con
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefDocCommentHashtagReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefTypeNameReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefVariableLinkReference
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
-import com.intellij.psi.util.parentOfType
 import icons.CaosScriptIcons
 import javax.swing.Icon
 
@@ -287,7 +286,7 @@ object CaosDefPsiImplUtil {
     fun toStruct(element: CaosDefDocCommentVariableType): CaosDefVariableTypeStruct? {
         val type = element.typeLiteral?.text
                 ?: return null
-        val typeDef = element.typeDefName?.text?.substring(1)
+        val typeDef = element.valuesListName?.text?.substring(1)
         val typeNote = element.typeNote?.text?.substring(1)
         var intRange: Pair<Int, Int>? = null
         var length: Int? = null
@@ -310,7 +309,7 @@ object CaosDefPsiImplUtil {
                 noteText = typeNote,
                 intRange = intRange,
                 length = length,
-                typedef = typeDef,
+                valuesList = typeDef,
                 fileTypes = fileTypes
         )
     }
@@ -335,47 +334,47 @@ object CaosDefPsiImplUtil {
 
 
     @JvmStatic
-    fun getTypeName(element: CaosDefTypeDefinitionElement): String {
-        return element.stub?.typeName ?: element.typeDefName.text.substring(1)
+    fun getTypeName(element: CaosDefValuesListElement): String {
+        return element.stub?.typeName ?: element.valuesListName.text.substring(1)
     }
 
     @JvmStatic
-    fun getTypeNoteString(element:CaosDefTypeDefinitionElement) : String? {
+    fun getTypeNoteString(element: CaosDefValuesListElement) : String? {
         return element.stub?.typeNote ?: element.typeNote?.text
     }
 
     @JvmStatic
-    fun isBitflags(element:CaosDefTypeDefinitionElement) : Boolean {
+    fun isBitflags(element: CaosDefValuesListElement) : Boolean {
         return element.stub?.isBitflags ?: getTypeNoteString(element)?.equalsIgnoreCase("BitFlags").orFalse()
     }
 
     @JvmStatic
-    fun getKeys(element: CaosDefTypeDefinitionElement): List<CaosDefTypeDefValueStruct> {
-        return element.stub?.keys ?: element.typeDefinitionList.mapNotNull {
+    fun getKeys(element: CaosDefValuesListElement): List<CaosDefValuesListValueStruct> {
+        return element.stub?.keys ?: element.valuesListValueList.mapNotNull {
             it.toStruct()
         }
     }
 
 
     @JvmStatic
-    fun getValueForKey(element: CaosDefTypeDefinitionElement, key: String): CaosDefTypeDefValueStruct? {
+    fun getValueForKey(element: CaosDefValuesListElement, key: String): CaosDefValuesListValueStruct? {
         return element.keys.firstOrNull {
             when (it.equality) {
-                TypeDefEq.EQUAL -> it.key == key
-                TypeDefEq.NOT_EQUAL -> it.key != key
-                TypeDefEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                ValuesListEq.EQUAL -> it.key == key
+                ValuesListEq.NOT_EQUAL -> it.key != key
+                ValuesListEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
             }
         }
     }
 
     @JvmStatic
-    fun getAllKeys(element: CaosDefTypeDefinitionElement, key: String): List<String> {
+    fun getAllKeys(element: CaosDefValuesListElement, key: String): List<String> {
         return element.keys.map { it.key }
     }
 
     @JvmStatic
-    fun toStruct(element: CaosDefTypeDefinition): CaosDefTypeDefValueStruct {
-        return CaosDefTypeDefValueStruct(
+    fun toStruct(element: CaosDefValuesListValue): CaosDefValuesListValueStruct {
+        return CaosDefValuesListValueStruct(
                 key = element.stub?.key ?: element.key,
                 value = element.stub?.value ?: element.value,
                 equality =  element.equality,
@@ -384,33 +383,33 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getEquality(element: CaosDefTypeDefinition) : TypeDefEq {
+    fun getEquality(element: CaosDefValuesListValue) : ValuesListEq {
         element.stub?.equality?.let { return it }
         if (element.key.isEmpty()) {
-            return TypeDefEq.EQUAL
+            return ValuesListEq.EQUAL
         }
         return element.key.trim().substring(0,1).let {
             when (it) {
-                "!" -> TypeDefEq.NOT_EQUAL
-                ">" -> TypeDefEq.GREATER_THAN
-                else -> TypeDefEq.EQUAL
+                "!" -> ValuesListEq.NOT_EQUAL
+                ">" -> ValuesListEq.GREATER_THAN
+                else -> ValuesListEq.EQUAL
             }
         }
     }
 
     @JvmStatic
-    fun getKey(element: CaosDefTypeDefinition): String {
-        return element.stub?.key ?: element.typeDefinitionKey.text
+    fun getKey(element: CaosDefValuesListValue): String {
+        return element.stub?.key ?: element.valuesListValueKey.text
     }
 
     @JvmStatic
-    fun getValue(element: CaosDefTypeDefinition): String {
-        return element.stub?.value ?: element.typeDefinitionValue?.text?.trim() ?: UnknownReturn
+    fun getValue(element: CaosDefValuesListValue): String {
+        return element.stub?.value ?: element.valuesListValueName?.text?.trim() ?: UnknownReturn
     }
 
     @JvmStatic
-    fun getDescription(element: CaosDefTypeDefinition): String? {
-        return element.stub?.description ?: element.typeDefinitionDescription?.text
+    fun getDescription(element: CaosDefValuesListValue): String? {
+        return element.stub?.description ?: element.valuesListValueDescription?.text
     }
 
     @JvmStatic
@@ -540,19 +539,19 @@ object CaosDefPsiImplUtil {
 
 
     @JvmStatic
-    fun getName(element: CaosDefTypeDefName): String {
+    fun getName(element: CaosDefValuesListName): String {
         return element.text.substring(1)
     }
 
     @JvmStatic
-    fun setName(element: CaosDefTypeDefName, newNameString: String): PsiElement {
+    fun setName(element: CaosDefValuesListName, newNameString: String): PsiElement {
         val newNameElement = CaosDefPsiElementFactory
-                .getTypeDefName(element.project, newNameString)
+                .getValuesListName(element.project, newNameString)
         return element.replace(newNameElement)
     }
 
     @JvmStatic
-    fun getReference(element: CaosDefTypeDefName): CaosDefTypeNameReference {
+    fun getReference(element: CaosDefValuesListName): CaosDefTypeNameReference {
         return CaosDefTypeNameReference(element)
     }
 
@@ -602,7 +601,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getPresentation(element:CaosDefTypeDefinition) : ItemPresentation {
+    fun getPresentation(element: CaosDefValuesListValue) : ItemPresentation {
         val struct = element.toStruct()
         return object : ItemPresentation {
             override fun getPresentableText(): String {
@@ -610,7 +609,7 @@ object CaosDefPsiImplUtil {
             }
 
             override fun getLocationString(): String {
-                val location = (struct.description ?: "") + element.getParentOfType(CaosDefTypeDefinitionElement::class.java)?.typeName?.let {
+                val location = (struct.description ?: "") + element.getParentOfType(CaosDefValuesListElement::class.java)?.typeName?.let {
                     " @ $it"
                 }
                 return location.trim()

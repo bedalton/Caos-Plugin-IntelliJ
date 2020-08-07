@@ -81,7 +81,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             if (expression?.text == "255")
                 continue
             // Get type def value.
-            val value = expression?.getTypeDefValue()?.value
+            val value = expression?.getValuesListValue()?.value
                     ?: argument.text
                     ?: continue
             val amount = chemParameters[pos + 1].toCaosVar()

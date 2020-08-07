@@ -32,14 +32,14 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
             attrKey = COMMENT_TAG
         if (tokenType == CaosDef_WORD_LINK)
             attrKey = WORD_LINK
-        if (tokenType == CaosDef_TYPE_LINK || tokenType == CaosDef_TYPE_DEF_NAME)
+        if (tokenType == CaosDef_TYPE_LINK || tokenType == CaosDef_VALUES_LIST_NAME)
             attrKey = TYPE_LINK
         if (tokenType == CaosDef_REGION_HEADING_LITERAL)
             attrKey = REGION_HEADER
-        if (tokenType == CaosDef_TYPE_DEF_VALUE)
-            attrKey = TYPE_DEF_VALUE
+        if (tokenType == CaosDef_VALUES_LIST_VALUE)
+            attrKey = VALUES_LIST_VALUE
         if (tokenType == CaosDef_TEXT_LITERAL)
-            attrKey = TYPE_DEF_VALUE_DESCRIPTION
+            attrKey = VALUES_LIST_VALUE_DESCRIPTION
         if (tokenType == CaosDef_AT_FILE)
             attrKey = TYPE_LINK
 
@@ -59,11 +59,11 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
         val COMMENT_VARIABLE_TYPE: TextAttributesKey = createTextAttributesKey("CaosDef_COMMENT_VARIABLE_TYPE", COMMENT)
         val WORD_LINK:TextAttributesKey = createTextAttributesKey("CaosDef_WORD_LINK", DefaultLanguageHighlighterColors.KEYWORD)
         val TYPE_LINK:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_LINK", DefaultLanguageHighlighterColors.KEYWORD)
-        val TYPE_DEF_NAME:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_NAME", DefaultLanguageHighlighterColors.KEYWORD)
-        val TYPE_DEF_KEY:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_KEY", DefaultLanguageHighlighterColors.CLASS_REFERENCE)
-        val TYPE_DEF_VALUE:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_VALUE", TYPE_DEF_KEY)
-        val TYPE_DEF_VALUE_DESCRIPTION:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_VALUE_DESCRIPTION", TYPE_DEF_VALUE)
-        val TYPE_DEF_WORD_LINK:TextAttributesKey = createTextAttributesKey("CaosDef_TYPE_DEF_WORD_LINK", DefaultLanguageHighlighterColors.KEYWORD)
+        val VALUES_LIST_NAME:TextAttributesKey = createTextAttributesKey("CaosDef_VALUES_LIST_NAME", DefaultLanguageHighlighterColors.KEYWORD)
+        val VALUES_LIST_VALUE_KEY:TextAttributesKey = createTextAttributesKey("CaosDef_VALUES_LIST_KEY", DefaultLanguageHighlighterColors.CLASS_REFERENCE)
+        val VALUES_LIST_VALUE:TextAttributesKey = createTextAttributesKey("CaosDef_VALUES_LIST_VALUE", VALUES_LIST_VALUE_KEY)
+        val VALUES_LIST_VALUE_DESCRIPTION:TextAttributesKey = createTextAttributesKey("CaosDef_VALUES_LIST_VALUE_DESCRIPTION", VALUES_LIST_VALUE)
+        val VALUES_LIST_WORD_LINK:TextAttributesKey = createTextAttributesKey("CaosDef_VALUES_LIST_WORD_LINK", DefaultLanguageHighlighterColors.KEYWORD)
         val REGION_HEADER:TextAttributesKey = createTextAttributesKey("CaosDef_REGION_HEADER", DefaultLanguageHighlighterColors.KEYWORD)
         val VARIABLE_LINK: TextAttributesKey = createTextAttributesKey("CaosDef_VARIABLE_LINK", DefaultLanguageHighlighterColors.KEYWORD)
         val VARIABLE_TYPE: TextAttributesKey = createTextAttributesKey("CaosDef_VARIABLE_TYPE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE)

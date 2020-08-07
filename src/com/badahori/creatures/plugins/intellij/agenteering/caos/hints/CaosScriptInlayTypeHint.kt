@@ -2,9 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
@@ -46,17 +46,17 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return getTypeList(caosCommandToken) != null
         }
 
-        private fun getTypeList(token: CaosScriptIsCommandToken): CaosDefTypeDefinitionElement? {
-            val typeDef = token.reference.resolve()
+        private fun getTypeList(token: CaosScriptIsCommandToken): CaosDefValuesListElement? {
+            val valuesList = token.reference.resolve()
                     ?.getParentOfType(CaosDefCommandDefElement::class.java)
                     ?.returnTypeStruct
                     ?.type
-                    ?.typedef
+                    ?.valuesList
                     ?: return null
             val variant = token.containingCaosFile?.variant
                     ?: return null
-            return CaosDefTypeDefinitionElementsByNameIndex
-                    .Instance[typeDef, token.project]
+            return CaosDefValuesListDefinitionElementsByNameIndex
+                    .Instance[valuesList, token.project]
                     .firstOrNull check@{
                         if (!it.isVariant(variant))
                             return@check false
@@ -120,18 +120,18 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return getTypeList(caosCommandToken, argument.index) != null
         }
 
-        private fun getTypeList(token: CaosScriptIsCommandToken, index: Int): CaosDefTypeDefinitionElement? {
-            val typeDef = token.reference.resolve()
+        private fun getTypeList(token: CaosScriptIsCommandToken, index: Int): CaosDefValuesListElement? {
+            val valuesList = token.reference.resolve()
                     ?.getParentOfType(CaosDefCommandDefElement::class.java)
                     ?.parameterStructs
                     ?.getOrNull(index)
                     ?.type
-                    ?.typedef
+                    ?.valuesList
                     ?: return null
             val variant = token.containingCaosFile?.variant
                     ?: return null
-            return CaosDefTypeDefinitionElementsByNameIndex
-                    .Instance[typeDef, token.project].firstOrNull check@{
+            return CaosDefValuesListDefinitionElementsByNameIndex
+                    .Instance[valuesList, token.project].firstOrNull check@{
                 if (!it.isVariant(variant))
                     return@check false
                 val typeNote = it.typeNote?.text ?: return@check false
@@ -188,7 +188,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return list
             if (element !is CaosScriptExpression)
                 return list
-            val typeDefValue = element.getTypeDefValue()
+            val valuesListValue = element.getValuesListValue()
                     ?: (element.parent?.parent?.parent as? CaosScriptCommandElement)?.let letCommand@{
                         val commandDef = getCommandTokenFromCommand(it, element)
                                 ?.reference
@@ -198,12 +198,12 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                                 ?.getParentOfType(CaosDefCommandDefElement::class.java)
                                 ?: return@letCommand null
 
-                        val typeDef = commandDef.returnTypeStruct?.type?.typedef ?: return@letCommand null
+                        val valuesList = commandDef.returnTypeStruct?.type?.valuesList ?: return@letCommand null
                         val variant = element.containingCaosFile?.variant
                                 ?: return emptyList()
-                        getListValue(variant, typeDef, element.project, element.text)
+                        getListValue(variant, valuesList, element.project, element.text)
                     } ?: return list
-            list.add(InlayInfo("(" + typeDefValue.value + ")", element.endOffset))
+            list.add(InlayInfo("(" + valuesListValue.value + ")", element.endOffset))
             return list
         }
 
@@ -229,7 +229,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return emptyList()
             val variant = element.containingCaosFile?.variant
                     ?: return emptyList()
-            val typeList = CaosDefTypeDefinitionElementsByNameIndex
+            val typeList = CaosDefValuesListDefinitionElementsByNameIndex
                     .Instance["EventNumbers", element.project]
                     .firstOrNull {
                         it.containingCaosDefFile.isVariant(variant)

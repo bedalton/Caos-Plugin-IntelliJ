@@ -274,7 +274,7 @@
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex" />
     <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex" />
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex" />
 
     <!-- Formatting -->
     <lang.braceMatcher language="CaosDef"

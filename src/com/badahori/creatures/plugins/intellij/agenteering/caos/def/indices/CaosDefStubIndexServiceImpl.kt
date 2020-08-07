@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices
 import com.intellij.psi.stubs.IndexSink
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefCommandDefinitionStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefDocCommentHashtagStub
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefTypeDefinitionStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub
 
 class CaosDefStubIndexServiceImpl : CaosDefStubIndexService {
 
@@ -12,8 +12,8 @@ class CaosDefStubIndexServiceImpl : CaosDefStubIndexService {
         indexSink.occurrence(CaosDefCommandElementsByNameIndex.KEY, stub.command)
     }
 
-    override fun indexTypeDef(stub: CaosDefTypeDefinitionStub, indexSink: IndexSink) {
-        indexSink.occurrence(CaosDefTypeDefinitionElementsByNameIndex.KEY, stub.typeName)
+    override fun indexValuesList(stub: CaosDefValuesListStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosDefValuesListDefinitionElementsByNameIndex.KEY, stub.typeName)
     }
 
     override fun indexDocCommentHashtag(stub: CaosDefDocCommentHashtagStub, indexSink: IndexSink) {
