@@ -2033,7 +2033,7 @@ OBSV (integer) direction (integer);
  * @rvalue
  * @return (variable)
  */
-OBVX (variable);
+OBVx (variable);
 
 /*
  * Sets/returns the room's organic nutrients at [targ]
@@ -2082,7 +2082,7 @@ OVER (command);
  * @rvalue
  * @return (variable)
  */
-OVXX (variable);
+OVxx (variable);
 
 /*
  * default object (owner of script, or pet if [DDE])
@@ -3335,7 +3335,7 @@ UNTL (command) condition (condition);
  * @rvalue
  * @return (variable)
  */
-VARX (variable);
+VARx (variable);
 
 /*
  * VA00 to VA99 are local variables, whose values are lost when the current script ends.
@@ -3346,7 +3346,7 @@ VARX (variable);
  * @rvalue
  * @return (variable)
  */
-VAXX (variable);
+VAxx (variable);
 
 /*
  * Sets/returns the object's velocity in X direction.
