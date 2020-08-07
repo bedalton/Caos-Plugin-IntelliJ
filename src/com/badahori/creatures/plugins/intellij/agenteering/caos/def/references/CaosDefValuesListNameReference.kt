@@ -1,16 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.references
 
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiReferenceBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variantsIntersect
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiReferenceBase
 
-class CaosDefTypeNameReference(element: CaosDefValuesListName) : PsiReferenceBase<CaosDefValuesListName>(element, TextRange(1, element.textLength)) {
+class CaosDefValuesListNameReference(element: CaosDefValuesListName) : PsiReferenceBase<CaosDefValuesListName>(element, TextRange(1, element.textLength)) {
 
     private val variants by lazy {
         myElement.containingCaosDefFile.variants
