@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinition
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -13,16 +13,16 @@ import com.intellij.psi.PsiReferenceBase
 class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : PsiReferenceBase<CaosScriptEventNumberElement>(element, TextRange(0, element.textLength)) {
 
     override fun isReferenceTo(element: PsiElement): Boolean {
-        if (element !is CaosDefTypeDefinition)
+        if (element !is CaosDefValuesListValue)
             return false
         val text = myElement.text
         if (element.text != text)
             return false
-        val typeDefElement = element.getParentOfType(CaosDefTypeDefinitionElement::class.java)
+        val valuesListElement = element.getParentOfType(CaosDefValuesListElement::class.java)
                 ?: return false
         val variant = myElement.containingCaosFile?.variant
                 ?: return false
-        return typeDefElement.typeName == EVENT_NUMBER_TYPE_DEF_NAME && typeDefElement.isVariant(variant)
+        return valuesListElement.typeName == EVENT_NUMBER_VALUES_LIST_NAME && valuesListElement.isVariant(variant)
     }
 
     override fun resolve(): PsiElement? {
@@ -30,16 +30,16 @@ class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : Psi
         val text = element.text
         val variant = element.containingCaosFile?.variant
                 ?: return null
-        return CaosDefTypeDefinitionElementsByNameIndex.Instance["EventNumbers", project]
+        return CaosDefValuesListDefinitionElementsByNameIndex.Instance["EventNumbers", project]
                 .filter { it.isVariant(variant) }
                 .mapNotNull {
-                    it.typeDefinitionList.firstOrNull { it.key == text }
+                    it.valuesListValueList.firstOrNull { it.key == text }
                 }
                 .firstOrNull()
     }
 
     companion object {
-        const val EVENT_NUMBER_TYPE_DEF_NAME = "EventNumbers"
+        const val EVENT_NUMBER_VALUES_LIST_NAME = "EventNumbers"
     }
 
 }

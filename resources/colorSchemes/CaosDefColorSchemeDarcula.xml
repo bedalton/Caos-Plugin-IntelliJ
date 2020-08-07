@@ -68,25 +68,25 @@
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-  <option name="CaosDef_TYPE_DEF_NAME">
+  <option name="CaosDef_VALUES_LIST_VALUE_NAME">
     <value>
       <option name="FOREGROUND" value="DDDDDD"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-  <option name="CaosDef_TYPE_DEF_KEY">
+  <option name="CaosDef_VALUE_LIST_VALUE_KEY">
     <value>
       <option name="FOREGROUND" value="DDDDDD"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-  <option name="CaosDef_TYPE_DEF_WORD_LINK">
+  <option name="CaosDef_VALUES_LIST_WORD_LINK">
     <value>
       <option name="FOREGROUND" value="ABABAB"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
-  <option name="CaosDef_TYPE_DEF_VALUE_DESCRIPTION">
+  <option name="CaosDef_VALUES_LIST_VALUE_DESCRIPTION">
     <value>
       <option name="FOREGROUND" value="C1C1C1"/>
     </value>

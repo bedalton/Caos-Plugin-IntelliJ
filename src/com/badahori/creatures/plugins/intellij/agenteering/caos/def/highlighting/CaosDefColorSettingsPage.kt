@@ -71,11 +71,11 @@ class CaosDefColorSettingsPage : ColorSettingsPage {
                 AttributesDescriptor("Comment #Hashtag", CaosDefSyntaxHighlighter.DOC_COMMENT_HASHTAG),
                 AttributesDescriptor("Variable Link", CaosDefSyntaxHighlighter.VARIABLE_LINK),
                 AttributesDescriptor("Type Link", CaosDefSyntaxHighlighter.TYPE_LINK),
-                AttributesDescriptor("Value List Name", CaosDefSyntaxHighlighter.TYPE_DEF_NAME),
-                AttributesDescriptor("Value List Key", CaosDefSyntaxHighlighter.TYPE_DEF_KEY),
-                AttributesDescriptor("Value List Value", CaosDefSyntaxHighlighter.TYPE_DEF_VALUE),
-                AttributesDescriptor("Value List Value Description", CaosDefSyntaxHighlighter.TYPE_DEF_VALUE_DESCRIPTION),
-                AttributesDescriptor("In List Command Link", CaosDefSyntaxHighlighter.TYPE_DEF_WORD_LINK),
+                AttributesDescriptor("Value List Name", CaosDefSyntaxHighlighter.VALUES_LIST_NAME),
+                AttributesDescriptor("Value List Key", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_KEY),
+                AttributesDescriptor("Value List Value", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE),
+                AttributesDescriptor("Value List Value Description", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_DESCRIPTION),
+                AttributesDescriptor("In List Command Link", CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK),
                 AttributesDescriptor("Region Header", CaosDefSyntaxHighlighter.REGION_HEADER),
                 AttributesDescriptor("Variable Name", CaosDefSyntaxHighlighter.VARIABLE_NAME),
                 AttributesDescriptor("Variable Type", CaosDefSyntaxHighlighter.VARIABLE_TYPE)
@@ -84,17 +84,17 @@ class CaosDefColorSettingsPage : ColorSettingsPage {
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
                 "command" to CaosDefSyntaxHighlighter.COMMAND,
                 "commandLink" to CaosDefSyntaxHighlighter.WORD_LINK,
-                "typeDefCommandLink" to CaosDefSyntaxHighlighter.TYPE_DEF_WORD_LINK,
-                "listName" to CaosDefSyntaxHighlighter.TYPE_DEF_NAME,
-                "listKey" to CaosDefSyntaxHighlighter.TYPE_DEF_KEY,
+                "valuesListCommandLink" to CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK,
+                "listName" to CaosDefSyntaxHighlighter.VALUES_LIST_NAME,
+                "listKey" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_KEY,
                 "typeLink" to CaosDefSyntaxHighlighter.TYPE_LINK,
                 "variableName" to CaosDefSyntaxHighlighter.VARIABLE_NAME,
                 "variableType" to CaosDefSyntaxHighlighter.VARIABLE_TYPE,
                 "commentVariableType" to CaosDefSyntaxHighlighter.COMMENT_VARIABLE_TYPE,
                 "variableLink" to CaosDefSyntaxHighlighter.VARIABLE_LINK,
-                "listValue" to CaosDefSyntaxHighlighter.TYPE_DEF_VALUE,
-                "listValueDescription" to CaosDefSyntaxHighlighter.TYPE_DEF_VALUE_DESCRIPTION,
-                "listCommandLink" to CaosDefSyntaxHighlighter.TYPE_DEF_WORD_LINK
+                "listValue" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE,
+                "listValueDescription" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_DESCRIPTION,
+                "listCommandLink" to CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK
         )
     }
 }

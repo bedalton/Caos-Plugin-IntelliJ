@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefTypeDefValueStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
@@ -22,8 +22,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import kotlin.math.floor
 
 const val UNDEF = "{UNDEF}"
@@ -1302,7 +1300,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getParameterListValue(element: CaosScriptExpression): CaosDefTypeDefValueStruct? {
+    fun getParameterListValue(element: CaosScriptExpression): CaosDefValuesListValueStruct? {
         element.getParentOfType(CaosScriptExpectsValueOfType::class.java)?.let {
             return getParameterListValue(it)
         }
@@ -1324,34 +1322,34 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Find the type def list name
-        val typeDef = reference
+        val valuesList = reference
                 .docComment
                 ?.parameterStructs
                 ?.getOrNull(0)
                 ?.type
-                ?.typedef
+                ?.valuesList
                 ?: return null
 
         // Get variant
         val variant = element.containingCaosFile?.variant
                 ?: return null
         // Find list in index
-        val list = CaosDefTypeDefinitionElementsByNameIndex
-                .Instance[typeDef, element.project]
+        val list = CaosDefValuesListDefinitionElementsByNameIndex
+                .Instance[valuesList, element.project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
         // Get actual value for literal in list
         return list.keys.firstOrNull {
             when (it.equality) {
-                TypeDefEq.EQUAL -> it.key == element.text
-                TypeDefEq.NOT_EQUAL -> it.key != element.text
-                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                ValuesListEq.EQUAL -> it.key == element.text
+                ValuesListEq.NOT_EQUAL -> it.key != element.text
+                ValuesListEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
             }
         }
     }
 
     @JvmStatic
-    fun getParameterListValue(element: CaosScriptExpectsValueOfType): CaosDefTypeDefValueStruct? {
+    fun getParameterListValue(element: CaosScriptExpectsValueOfType): CaosDefValuesListValueStruct? {
         val containingCommand = element.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return null
 
@@ -1370,28 +1368,28 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Find the type def list name
-        val typeDef = reference
+        val valuesList = reference
                 .docComment
                 ?.parameterStructs
                 ?.getOrNull(element.index)
                 ?.type
-                ?.typedef
+                ?.valuesList
                 ?: return null
 
         // Get variant
         val variant = element.containingCaosFile?.variant
                 ?: return null
         // Find list in index
-        val list = CaosDefTypeDefinitionElementsByNameIndex
-                .Instance[typeDef, element.project]
+        val list = CaosDefValuesListDefinitionElementsByNameIndex
+                .Instance[valuesList, element.project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
         // Get actual value for literal in list
         return list.keys.firstOrNull {
             when (it.equality) {
-                TypeDefEq.EQUAL -> it.key == element.text
-                TypeDefEq.NOT_EQUAL -> it.key != element.text
-                TypeDefEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                ValuesListEq.EQUAL -> it.key == element.text
+                ValuesListEq.NOT_EQUAL -> it.key != element.text
+                ValuesListEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
             }
         }
     }

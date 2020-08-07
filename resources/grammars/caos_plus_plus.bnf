@@ -11,7 +11,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl"
-	elementTypeFactory("command_def_element|doc_comment|parameter|type_definition_element|type_definition")="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
+	elementTypeFactory("command_def_element|doc_comment|parameter|values_list_element|values_list_values")="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil"
 	generateTokenAccessors=true
 	tokens = [

@@ -1,13 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices
 
 import com.intellij.psi.stubs.StubIndexKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefTypeDefinitionElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
 
-class CaosDefTypeDefinitionElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBase<CaosDefTypeDefinitionElement>(CaosDefTypeDefinitionElement::class.java) {
+class CaosDefValuesListDefinitionElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBase<CaosDefValuesListElement>(CaosDefValuesListElement::class.java) {
 
-    override fun getKey(): StubIndexKey<String, CaosDefTypeDefinitionElement> = KEY
+    override fun getKey(): StubIndexKey<String, CaosDefValuesListElement> = KEY
 
     override fun getVersion(): Int {
         return super.getVersion() + VERSION
@@ -16,10 +16,10 @@ class CaosDefTypeDefinitionElementsByNameIndex : CaosScriptCaseInsensitiveString
     companion object {
         private const val VERSION = 2
         @JvmStatic
-        val KEY = IndexKeyUtil.create(CaosDefTypeDefinitionElementsByNameIndex::class.java)
+        val KEY = IndexKeyUtil.create(CaosDefValuesListDefinitionElementsByNameIndex::class.java)
 
         @JvmStatic
-        val Instance = CaosDefTypeDefinitionElementsByNameIndex()
+        val Instance = CaosDefValuesListDefinitionElementsByNameIndex()
     }
 
 }
