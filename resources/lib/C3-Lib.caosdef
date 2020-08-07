@@ -3981,7 +3981,7 @@ MVTO (command) x (float) y (float);
  * @rvalue
  * @return (variable)
  */
-MVXX (variable);
+MVxx (variable);
 
 /*
  * This is a named variable, similar to a [GAME] variable, only local to the target agent. See also
@@ -4400,7 +4400,7 @@ OVER (command);
  * @rvalue
  * @return (variable)
  */
-OVXX (variable);
+OVxx (variable);
 
 /*
  * Returns the agent who's virtual machine the script is running on. Returns [NULL] for injected or
@@ -6943,7 +6943,7 @@ VARC (float);
  * @rvalue
  * @return (variable)
  */
-VAXX (variable);
+VAxx (variable);
 
 /*
  * Returns a normalised vector for the given angle (X coordinate).
