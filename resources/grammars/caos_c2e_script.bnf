@@ -1356,6 +1356,7 @@ var_token
 			getLastAssignment
 			getName
 			setName
+			isEquivalentTo
 		]
 	}
 	;
