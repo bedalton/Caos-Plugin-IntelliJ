@@ -1,14 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util
 
-import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.usageView.UsageViewUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefDocCommentHashtagReference
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefTypeNameReference
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefValuesListNameReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefVariableLinkReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
@@ -17,8 +13,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.usageView.UsageViewUtil
 import icons.CaosScriptIcons
 import javax.swing.Icon
 
@@ -551,8 +553,8 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(element: CaosDefValuesListName): CaosDefTypeNameReference {
-        return CaosDefTypeNameReference(element)
+    fun getReference(element: CaosDefValuesListName): CaosDefValuesListNameReference {
+        return CaosDefValuesListNameReference(element)
     }
 
     @JvmStatic
@@ -619,6 +621,16 @@ object CaosDefPsiImplUtil {
                 return null
             }
         }
+    }
+
+    @JvmStatic
+    fun isEquivalentTo(element:CaosDefCommandWord, another:PsiElement) : Boolean {
+        return element.text.equalsIgnoreCase(another.text) ||
+                (another as? CaosScriptVarToken)
+                        ?.varGroup
+                        ?.value
+                        ?.let { element.text.toUpperCase().equalsIgnoreCase(it) }
+                        .orFalse()
     }
 
     private fun formatParameters(parameters: List<CaosDefParameterStruct>) : String {
