@@ -4,5 +4,5 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 
 interface CaosScriptExpectsValueOfType : CaosScriptCompositeElement, CaosScriptArgument {
     val rvalue: CaosScriptRvalueLike?
-    val parameterListValues:CaosDefValuesListValueStruct?
+    val parameterListValue:CaosDefValuesListValueStruct?
 }
