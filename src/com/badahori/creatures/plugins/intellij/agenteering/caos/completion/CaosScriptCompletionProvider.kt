@@ -101,14 +101,14 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val type = parent.getEnclosingCommandType()
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
-        // If has parent of value, add typedef completion if needed
+        // If has parent of value, add values list completion if needed
         // ie. Chemicals by name, or file names
         (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
-            CaosScriptTypeDefValueCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
+            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
         }
 
         // If token is expected, return
-        // Token completions will have been added with CaosScriptTypeDefValueCompletionProvider#addParameterTypeDefValueCompletions,
+        // Token completions will have been added with CaosScriptValuesListValuesCompletionProvider#addParameterTypeDefValueCompletions,
         // called in the command previously
         if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
             resultSet.stopHere()
@@ -144,7 +144,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
             val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpression::class.java)
             if (equalityExpression != null) {
-                CaosScriptTypeDefValueCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
+                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
             }
         }
     }

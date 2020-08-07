@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
@@ -13,7 +13,6 @@ import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -34,7 +33,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx() {
                 ?: return null
         val variant = element.containingCaosFile?.variant
                 ?: return null
-        val typeList = CaosDefTypeDefinitionElementsByNameIndex
+        val typeList = CaosDefValuesListDefinitionElementsByNameIndex
                 .Instance["EventNumbers", element.project]
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
@@ -46,7 +45,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx() {
     }
 
     private fun getExpressionFoldingText(expression: CaosScriptExpression): String? {
-        return expression.getTypeDefValue()?.value
+        return expression.getValuesListValue()?.value
     }
 
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {

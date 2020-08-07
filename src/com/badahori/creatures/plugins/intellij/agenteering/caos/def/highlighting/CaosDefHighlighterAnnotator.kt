@@ -19,17 +19,17 @@ class CaosDefHighlighterAnnotator : Annotator {
                 val attributeKey = if (element.hasParentOfType(CaosDefDocComment::class.java))
                     CaosDefSyntaxHighlighter.WORD_LINK
                 else
-                    CaosDefSyntaxHighlighter.TYPE_DEF_WORD_LINK
+                    CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK
                 addColor(element, annotationHolder, attributeKey)
             }
-            is CaosDefTypeDefName -> {
-                if (!element.hasParentOfType(CaosDefTypeDefinitionElement::class.java))
+            is CaosDefValuesListName -> {
+                if (!element.hasParentOfType(CaosDefValuesListElement::class.java))
                     addColor(element, annotationHolder, CaosDefSyntaxHighlighter.TYPE_LINK)
                 else
-                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.TYPE_DEF_NAME)
+                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.VALUES_LIST_NAME)
             }
-            is CaosDefTypeDefinitionKey ->
-                addColor(element, annotationHolder, CaosDefSyntaxHighlighter.TYPE_DEF_KEY)
+            is CaosDefValuesListValueKey ->
+                addColor(element, annotationHolder, CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_KEY)
             is CaosDefVariableLink
                 -> addColor(element, annotationHolder, CaosDefSyntaxHighlighter.VARIABLE_LINK)
             is CaosDefTypeLiteral -> {

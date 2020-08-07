@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefTypeDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.TypeDefEq
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
@@ -21,14 +21,20 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.parentOfType
 
-object CaosScriptTypeDefValueCompletionProvider {
+/**
+ * Adds completions for known value lists
+ */
+object CaosScriptValuesListValuesCompletionProvider {
 
+    /**
+     * Adds completions for a known value list, based on argument position and parent command
+     */
     fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptExpectsValueOfType) {
         val containingCommand = valueOfType.getSelfOrParentOfType(CaosScriptCommandElement::class.java)
                 ?: return
         val index = valueOfType.index
+        // Get parent command entry in CaosDef
         val reference = containingCommand
                 .commandToken
                 ?.reference
@@ -38,11 +44,13 @@ object CaosScriptTypeDefValueCompletionProvider {
                 ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return
 
+        // Get arguments parameter definition
         val parameterStruct = reference
                 .docComment
                 ?.parameterStructs
                 ?.getOrNull(index)
                 ?: return
+        // Get the expected type of this argument
         val type =
                 if (containingCommand is CaosScriptCAssignment) {
                     containingCommand.lvalue
@@ -58,11 +66,13 @@ object CaosScriptTypeDefValueCompletionProvider {
                     parameterStruct.type
                 }
                         ?: return
+
         val variant = valueOfType.containingCaosFile?.variant
                 ?: return
         val addSpace = reference.parameterStructs.size - 1 > index
-        if (type.typedef != null) {
-            addListValues(resultSet, variant, type.typedef, valueOfType.project, valueOfType.text, addSpace)
+        // If type definition contains values list annotation, add list values
+        if (type.valuesList != null) {
+            addListValues(resultSet, variant, type.valuesList, valueOfType.project, valueOfType.text, addSpace)
         } else if (!type.fileTypes.isNullOrEmpty()) {
             // RValue requires a file type, so fill in filenames with matching types
             val project = valueOfType.project
@@ -135,7 +145,7 @@ object CaosScriptTypeDefValueCompletionProvider {
                 .docComment
                 ?.returnTypeStruct
                 ?.type
-                ?.typedef
+                ?.valuesList
                 ?: return
         val variant = expression.containingCaosFile?.variant
                 ?: return
@@ -143,12 +153,12 @@ object CaosScriptTypeDefValueCompletionProvider {
     }
 
     private fun addListValues(resultSet: CompletionResultSet, variant: CaosVariant, listName: String, project: Project, string: String, addSpace: Boolean) {
-        val def = CaosDefTypeDefinitionElementsByNameIndex
+        val def = CaosDefValuesListDefinitionElementsByNameIndex
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return
         val values = def.keys
-                .filter { it.equality == TypeDefEq.EQUAL }
+                .filter { it.equality == ValuesListEq.EQUAL }
                 .ifEmpty { null }
                 ?.sortedBy { it.key.toIntSafe() ?: 1000 }
                 ?: return
