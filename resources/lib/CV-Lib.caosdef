@@ -3556,7 +3556,7 @@ MVTO (command) x (float) y (float);
  * @rvalue
  * @return (variable)
  */
-MVXX (variable);
+MVxx (variable);
 
 /*
  * Finds the next agent in the agent list which also matches the given classifier. If the previous
@@ -3938,7 +3938,7 @@ OVER (command);
  * @rvalue
  * @return (variable)
  */
-OVXX (variable);
+OVxx (variable);
 
 /*
  * Returns the agent who's virtual machine the script is running on. Returns [NULL] for injected or
@@ -6280,7 +6280,7 @@ URGE WRIT (command) creature (agent) nounId (integer) nounStim (float) verbId (i
  * @rvalue
  * @return (variable)
  */
-VAXX (variable);
+VAxx (variable);
 
 /*
  * Set velocity, measured in pixels per tick.

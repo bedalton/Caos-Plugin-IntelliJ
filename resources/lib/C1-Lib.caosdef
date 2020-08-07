@@ -1262,7 +1262,7 @@ OBJP (agent);
  * @rvalue
  * @return (variable)
  */
-OBVX (variable);
+OBVx (variable);
 
 /*
  * sets the {var} to the {var} bit-wise or with {value}
@@ -2145,7 +2145,7 @@ UNTL (command) condition (condition);
  * @rvalue
  * @return (variable)
  */
-VARX (variable);
+VARx (variable);
 
 /*
  * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{VRSN
