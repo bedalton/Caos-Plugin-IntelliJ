@@ -2,10 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
@@ -21,8 +22,6 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import kotlin.math.abs
 import kotlin.math.floor
 
