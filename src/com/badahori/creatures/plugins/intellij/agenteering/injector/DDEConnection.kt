@@ -72,7 +72,8 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
             connection = conn
             return conn
         } catch (e: Exception) {
-            LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running")
+            e.printStackTrace()
+            LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running. Error: " + e.message)
             return null
         }
     }
