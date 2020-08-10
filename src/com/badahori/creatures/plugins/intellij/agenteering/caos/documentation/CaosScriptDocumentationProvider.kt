@@ -3,8 +3,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.documentation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
@@ -18,21 +20,27 @@ import com.intellij.psi.util.PsiTreeUtil
 class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
-        return when (element) {
-            is CaosScriptIsCommandToken -> getDescriptiveText(element)
-            is CaosScriptVarToken -> getDescriptiveText(element)
+        return when {
+            element is CaosScriptVarToken -> getDescriptiveText(element)
+            originalElement is CaosScriptVarToken -> getDescriptiveText(originalElement)
+            element is CaosScriptIsCommandToken -> getDescriptiveText(element)
+            originalElement is CaosScriptIsCommandToken -> getDescriptiveText(originalElement)
             else -> null
         }
     }
 
     private fun getDescriptiveText(element: CaosScriptIsCommandToken): String {
-        val declarationElement = element
-                .reference
-                .multiResolve(true)
-                .firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return CaosScriptPresentationUtil.getDescriptiveText(element)
+        var declarationElement = element.parent?.parent as? CaosDefCommandDefElement
+                ?: element.parent as? CaosDefCommandDefElement
+        if (declarationElement == null) {
+            declarationElement = element
+                    .reference
+                    .multiResolve(true)
+                    .firstOrNull()
+                    ?.element
+                    ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+                    ?: return CaosScriptPresentationUtil.getDescriptiveText(element)
+        }
         val fullCommand = declarationElement.fullCommand
         declarationElement.comment?.nullIfEmpty()?.let {
             return "<b>$fullCommand</b>\n$it"
@@ -67,12 +75,12 @@ class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
      * for the given element
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        if (originalElement !is CaosScriptVarToken && originalElement !is CaosScriptIsCommandToken)
-            return null
         val baseElement = element
                 ?: when (originalElement) {
                     is CaosScriptIsCommandToken -> originalElement.reference.multiResolve(true).firstOrNull()?.element
-                    is CaosScriptVarToken -> originalElement.reference.multiResolve(true).firstOrNull()?.element
+                    is CaosScriptVarToken -> originalElement.reference.multiResolve(true).let { results ->
+                        results.firstOrNull { it.element is CaosDefCompositeElement } ?: results.firstOrNull()
+                    }?.element
                     else -> return null
                 }
         val command = baseElement?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
