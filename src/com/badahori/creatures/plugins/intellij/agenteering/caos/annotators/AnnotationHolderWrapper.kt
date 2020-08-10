@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.codeInsight.daemon.HighlightDisplayKey
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -15,8 +17,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import org.jetbrains.annotations.Contract
 
 /**
@@ -71,11 +71,10 @@ internal data class AnnotationBuilderData(
         internal val tooltip: String? = null
 )
 
-class AnnotationBuilder private constructor(internal val annotationHolder: AnnotationHolder, internal val data: AnnotationBuilderData) {
+class AnnotationBuilder private constructor(private val annotationHolder: AnnotationHolder, internal val data: AnnotationBuilderData) {
 
     constructor(annotationHolder: AnnotationHolder, severity: HighlightSeverity, message: String?)
-            : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message
-            ?: ""))
+            : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message?: ""))
 
     @Contract(pure = true)
     fun range(range: TextRange): AnnotationBuilder {
