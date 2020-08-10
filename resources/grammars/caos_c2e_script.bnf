@@ -1346,7 +1346,6 @@ var_token
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase"
-			"com.intellij.psi.PsiNamedElement"
 		]
 		methods = [
 			getVarGroup
@@ -1354,9 +1353,9 @@ var_token
 			getReference
 			getInferredType
 			getLastAssignment
+			isEquivalentTo
 			getName
 			setName
-			isEquivalentTo
 		]
 	}
 	;
@@ -1810,7 +1809,7 @@ incomplete ::= ID |	ERROR_WORD;
 
 command_call
 	::= command_call_by_args // I think private values all have equal priority
-	|		incomplete
+	|	incomplete
 	{
 		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCommandCallStub"
