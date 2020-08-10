@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
@@ -51,7 +51,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return null
             val variant = token.containingCaosFile?.variant
                     ?: return null
-            return CaosDefValuesListDefinitionElementsByNameIndex
+            return CaosDefValuesListElementsByNameIndex
                     .Instance[valuesList, token.project]
                     .firstOrNull check@{
                         if (!it.isVariant(variant))
@@ -126,7 +126,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return null
             val variant = token.containingCaosFile?.variant
                     ?: return null
-            return CaosDefValuesListDefinitionElementsByNameIndex
+            return CaosDefValuesListElementsByNameIndex
                     .Instance[valuesList, token.project].firstOrNull check@{
                 if (!it.isVariant(variant))
                     return@check false
@@ -225,7 +225,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return emptyList()
             val variant = element.containingCaosFile?.variant
                     ?: return emptyList()
-            val typeList = CaosDefValuesListDefinitionElementsByNameIndex
+            val typeList = CaosDefValuesListElementsByNameIndex
                     .Instance["EventNumbers", element.project]
                     .firstOrNull {
                         it.containingCaosDefFile.isVariant(variant)
@@ -361,6 +361,6 @@ private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expres
 
 
 private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptExpression): CaosScriptIsCommandToken? {
-    val other = if (parent.first == expression) parent.second else parent.first
-    return other.varToken?.lastAssignment ?: other.rvaluePrime?.commandToken
+    val other:CaosScriptExpression? = if (parent.first == expression) parent.second else parent.first
+    return other?.varToken?.lastAssignment ?: other?.rvaluePrime?.commandToken
 }

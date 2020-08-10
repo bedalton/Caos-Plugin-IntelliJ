@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
@@ -153,7 +153,7 @@ object CaosScriptValuesListValuesCompletionProvider {
     }
 
     private fun addListValues(resultSet: CompletionResultSet, variant: CaosVariant, listName: String, project: Project, string: String, addSpace: Boolean) {
-        val def = CaosDefValuesListDefinitionElementsByNameIndex
+        val def = CaosDefValuesListElementsByNameIndex
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return

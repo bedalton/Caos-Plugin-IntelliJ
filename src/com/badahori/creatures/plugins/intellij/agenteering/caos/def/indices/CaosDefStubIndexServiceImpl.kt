@@ -13,7 +13,7 @@ class CaosDefStubIndexServiceImpl : CaosDefStubIndexService {
     }
 
     override fun indexValuesList(stub: CaosDefValuesListStub, indexSink: IndexSink) {
-        indexSink.occurrence(CaosDefValuesListDefinitionElementsByNameIndex.KEY, stub.typeName)
+        indexSink.occurrence(CaosDefValuesListElementsByNameIndex.KEY, stub.typeName)
     }
 
     override fun indexDocCommentHashtag(stub: CaosDefDocCommentHashtagStub, indexSink: IndexSink) {

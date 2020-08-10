@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
@@ -33,7 +33,7 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx() {
                 ?: return null
         val variant = element.containingCaosFile?.variant
                 ?: return null
-        val typeList = CaosDefValuesListDefinitionElementsByNameIndex
+        val typeList = CaosDefValuesListElementsByNameIndex
                 .Instance["EventNumbers", element.project]
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
