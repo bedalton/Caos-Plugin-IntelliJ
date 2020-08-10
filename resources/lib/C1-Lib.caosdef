@@ -1,4 +1,8 @@
 @variant(C1 = Creatures 1)
+/*
+ * #{kill targ}
+ */
+CMND (command);
 
 /*
  * object that [OWNR] creature was attending to
@@ -100,7 +104,7 @@ ASLP (integer);
 
 /*
  * [_IT_] object that [OWNR] creature is attending to (may be NULL)
- * NOTE: only [OWNR]'s #{IT} can be determined, not [TARG]'s
+ * NOTE: only [OWNR]'s [_IT_] can be determined, not [TARG]'s
  * #Creatures
  *
  * @rvalue
@@ -140,14 +144,14 @@ BABY (integer);
  * The example below is from the Cloud Butterfly COB and shows the use of the BASE command –
  * in all other ways the two subroutines below are identical.
  * #{
- * 	subr left
- * 	base 0 anim 0123 over anim [450]
- * 	mvby -3 0
- * 	retn
- * 	subr rite
- * 	base 6 anim 0123 over anim [450]
- * 	mvby 3 0
- * 	retn
+  	subr left
+  	base 0 anim 0123 over anim [450]
+  	mvby -3 0
+  	retn
+  	subr rite
+  	base 6 anim 0123 over anim [450]
+  	mvby 3 0
+    retn
  * }#
  * #AgentSprites
  *
@@ -592,8 +596,8 @@ DROP (command);
 
 /*
  * Returns the id of the highest drive for the target creature.
- * retuns #{0} (pain) if no drives pressing
- * Can use in: #{DOIF DRIV DRV! GT 128} to test level of strongest drive
+ * returns '0' (pain) if no drives pressing
+ * Can use in: #{doif driv drv! gt 128} to test level of strongest drive
  * #Creatures
  *
  * @rvalue
@@ -837,7 +841,7 @@ IMPT (command) value (integer);
 INST (command);
 
 /*
- * Delete the object whose address is {agent}, eg. #{kill edit} removes any object that's been
+ * Delete the object whose address is {agent}, eg. #{kill targ} removes any object that's been
  * shift-clicked on (EditObject),
  * THIS INSTRUCTION MUST BE LAST ONE IN MACRO IF IT KILLS THE OWNER OF THAT MACRO!
  * #{kill targ} deletes the target object.
@@ -850,7 +854,7 @@ KILL (command) agent (agent);
 
 /*
  * Attach a Compound object's activation function (ACT1=0, ACT2=1...) to a given hotspot
- * (eg. to make hotspot# 0 into a Deactivate button, use #{KNOB 2 0}) set KNOB {activationfn} to
+ * (eg. to make hotspot# 0 into a Deactivate button, use #{knob 2 0}) set KNOB {activationfn} to
  * -1 to disable an action button
  * knobs 0-2 are activate 1, activate 2, deactivate for creature; knobs 3-5 are activate
  * 1,activate 2, deactivate for hand.
@@ -1127,8 +1131,8 @@ NEW: COMP (command) spriteFile (token) numimages (integer) firstImage (integer) 
  * EGG Objects must have OBV0 set to specify the moniker of the developing creature.
  * If I need to store a moniker in a macro as a token, then I must use the [TOKN] rvalue to
  * convert it to integer.
- * @example: #{NEW: CREA OBV0 0} - create creature bred from moniker stored in var
- * @example: #{NEW: CREA TOKN EVE1 0} - create from explicitely named genome
+ * @example: #{new: crea obv0 0} - create creature bred from moniker stored in var
+ * @example: #{new: crea tokn EVE1 0} - create from explicitely named genome
  * 0=random 1=male 2=female
  * #Creatures
  *
@@ -1929,7 +1933,7 @@ SYS: CMRA (command) x (integer) y (integer);
 
 /*
  * Set CDisplay::EditBox, so that a rectangle is drawn on screen at the given WORLD co-ordinates.
- * Use #{SYS: EDIT 0 0 0 0} to remove the box when finished.
+ * Use #{sys: edit 0 0 0 0} to remove the box when finished.
  * This macro is used by map editors and suchlike to mark out rooms and floor levels during map
  * construction
  * #World
@@ -2002,10 +2006,10 @@ SYS: WTOP (command);
 TARG (agent);
 
 /*
- * Set TARG object agent to point at given object #{TARG OWNR} - (re)set [Targ] to point at
+ * Set TARG object agent to point at given object #{targ ownr} - (re)set [Targ] to point at
  * default object (macro owner, or pet if DDE)
- * #{TARG FROM} - set Targ to point at cause of this event (no change if isn't an event macro)
- * #{TARG NORN} - set Targ to point at the current Pet
+ * #{targ from} - set Targ to point at cause of this event (no change if isn't an event macro)
+ * #{targ norn} - set Targ to point at the current Pet
  * #AgentVars
  *
  * @param {agent} (agent) - agent to set [targ] to
@@ -2054,7 +2058,7 @@ TEMP (integer);
 TICK (command) tickRate (integer);
 
 /*
- * convert 4 characters into an integer e.g. #{TOKN 1234} = integer '4321'
+ * convert 4 characters into an integer e.g. #{tokn abcd} = integer '4321'
  * #Creatures
  *
  * @rvalue
@@ -2079,7 +2083,7 @@ TOOL (command) fsp [string] menutext [string] helptext [string] glyph (integer);
 /*
  * returns the number of objects in the world who fit this description. Family, Genus and/or
  * Species can be zero
- * to act as wildcards. Examples:- #{setv totl 4 2 0} ;returns number of grendels
+ * to act as wildcards. Examples:- #{totl 4 2 0} ;returns number of grendels
  * #Agents
  *
  * @rvalue
@@ -2103,7 +2107,7 @@ TOTL (integer) family (integer) genus (integer) species (integer);
 TOUC (command);
 
 /*
- * two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are
+ * two objects are in contact, e.g. #{doif touc targ ownr gt 0} means do if [ownr] and [targ] are
  * touching
  * == System Operands
  * #Agents
@@ -2148,8 +2152,8 @@ UNTL (command) condition (condition);
 VARx (variable);
 
 /*
- * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{VRSN
- * 2} then Creatures must be version 1.0.2 or higher to run this script.
+ * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{vrsn 2}
+ * then Creatures must be version 1.0.2 or higher to run this script.
  * #World
  *
  * @param {version} (integer)

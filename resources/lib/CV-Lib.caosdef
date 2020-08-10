@@ -1326,14 +1326,14 @@ DOCA (command) noOfUpdates (integer);
  * [ENDI]. A condition is composed of one or more comparisons joined by AND or OR. A comparison
  * compares two values with EQ, NE, GT, GE, LT, LE, or alternatively =, <>, >, >=, <, <=.
  * #{
- * 	DOIF ov00 GE 5 AND ov00 LT 10
- * 	*--- code block 1 ---
- * 	[ELIF] ov00 GE 10 OR ov00 LT 100
- * 	*--- code block 2 ---
- * 	[ELSE]
- * 	*--- code block 3 ---
- * 	[ENDI]
- * }
+  	doif ov00 GE 5 AND ov00 LT 10
+  	*--- code block 1 ---
+  	elif ov00 GE 10 OR ov00 LT 100
+  	*--- code block 2 ---
+  	else
+  	*--- code block 3 ---
+  	endi
+  }
  * Conditions are evaluated simply from left to right, so "a AND b OR c" is the same as "(a AND b)
  * OR c", not "a AND ( b OR c )".
  * Conditional statements may not work correctly with commands overloaded by rvalue.
