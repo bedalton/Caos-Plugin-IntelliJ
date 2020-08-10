@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValueKey
@@ -105,7 +105,7 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
                 ?: return ResolveResult.EMPTY_ARRAY
         val keyAsInt = text.toIntSafe()
         val keys = possibleValuesListNames.flatMap map@{ valuesListName ->
-            CaosDefValuesListDefinitionElementsByNameIndex.Instance[valuesListName, project]
+            CaosDefValuesListElementsByNameIndex.Instance[valuesListName, project]
                     .filter {
                         it.isVariant(variant)
                     }
