@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
@@ -30,7 +30,7 @@ class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : Psi
         val text = element.text
         val variant = element.containingCaosFile?.variant
                 ?: return null
-        return CaosDefValuesListDefinitionElementsByNameIndex.Instance["EventNumbers", project]
+        return CaosDefValuesListElementsByNameIndex.Instance["EventNumbers", project]
                 .filter { it.isVariant(variant) }
                 .mapNotNull {
                     it.valuesListValueList.firstOrNull { it.key == text }

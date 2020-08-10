@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variantsIntersect
@@ -26,7 +26,7 @@ class CaosDefValuesListNameReference(element: CaosDefValuesListName) : PsiRefere
     override fun resolve(): PsiElement? {
         if (element.parent is CaosDefValuesListElement)
             return null
-        return CaosDefValuesListDefinitionElementsByNameIndex.Instance[element.name, element.project]
+        return CaosDefValuesListElementsByNameIndex.Instance[element.name, element.project]
                 .firstOrNull {
                     it.variantsIntersect(variants) && it.containingFile == element.containingFile
                 }

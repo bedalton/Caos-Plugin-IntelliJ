@@ -137,8 +137,6 @@
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptCommandCaseAnnotator" />
     <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
-    <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptGhostElementAnnotator" />
 
     <!-- Inspections -->
@@ -194,16 +192,24 @@
                      shortName="UndocumentedCommandUsage"
     />
 
+    <localInspection language="CaosScript"
+                     level="INFORMATION"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Collapse Expand Lines"
+                     shortName="CollapseExpandLines"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
     <documentationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider" />
 
-    <!--lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptRValueFoldingBuilder"/-->
     <lang.foldingBuilder language="CaosScript"
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
+    <lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBlockFoldingBuilder" />
     <lang.braceMatcher language="CaosScript"
                        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBraceMatcher" />
     <lang.quoteHandler
@@ -262,7 +268,11 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml" />
     <additionalTextAttributes scheme="Darcula" file="colorSchemes/CaosDefColorSchemeDarcula.xml" />
 
-
+    <lang.elementManipulator forClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCodeBlockImpl"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockManipulator"/>
+    <languageInjector
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockInjector"
+        />
     <!-- Indices -->
     <stubElementTypeHolder
         class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
@@ -274,7 +284,7 @@
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex" />
     <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex" />
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex" />
 
     <!-- Formatting -->
     <lang.braceMatcher language="CaosDef"
@@ -321,7 +331,9 @@
 
   <module-components>
     <component>
-      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent</implementation-class>
+      <implementation-class>
+        com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent
+      </implementation-class>
     </component>
   </module-components>
 

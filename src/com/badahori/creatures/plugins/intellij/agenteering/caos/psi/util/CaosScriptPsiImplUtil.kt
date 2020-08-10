@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommand
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
@@ -22,7 +22,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentO
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.floor
@@ -1338,7 +1337,7 @@ object CaosScriptPsiImplUtil {
         val variant = element.containingCaosFile?.variant
                 ?: return null
         // Find list in index
-        val list = CaosDefValuesListDefinitionElementsByNameIndex
+        val list = CaosDefValuesListElementsByNameIndex
                 .Instance[valuesList, element.project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
@@ -1384,7 +1383,7 @@ object CaosScriptPsiImplUtil {
         val variant = element.containingCaosFile?.variant
                 ?: return null
         // Find list in index
-        val list = CaosDefValuesListDefinitionElementsByNameIndex
+        val list = CaosDefValuesListElementsByNameIndex
                 .Instance[valuesList, element.project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
@@ -1475,11 +1474,10 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isEquivalentTo(element:CaosScriptVarToken, another: PsiElement): Boolean {
-        LOGGER.info("Check if is equivalent: ${another.text}")
         if (another is CaosDefCommandWord) {
             return element.varGroup.value.equalsIgnoreCase(another.text)
         }
-        return another is CaosScriptVarToken && another.name == element.name
+        return another is CaosScriptVarToken && another.text.equalsIgnoreCase(element.text)
     }
 }
 

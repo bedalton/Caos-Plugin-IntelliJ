@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
@@ -65,7 +65,7 @@ private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptE
 }
 
 internal fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefValuesListValueStruct? {
-    val list = CaosDefValuesListDefinitionElementsByNameIndex
+    val list = CaosDefValuesListElementsByNameIndex
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
             ?: return null

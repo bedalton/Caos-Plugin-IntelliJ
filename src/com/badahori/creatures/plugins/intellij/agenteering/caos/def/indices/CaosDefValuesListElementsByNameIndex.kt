@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
 
-class CaosDefValuesListDefinitionElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBase<CaosDefValuesListElement>(CaosDefValuesListElement::class.java) {
+class CaosDefValuesListElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBase<CaosDefValuesListElement>(CaosDefValuesListElement::class.java) {
 
     override fun getKey(): StubIndexKey<String, CaosDefValuesListElement> = KEY
 
@@ -16,10 +16,10 @@ class CaosDefValuesListDefinitionElementsByNameIndex : CaosScriptCaseInsensitive
     companion object {
         private const val VERSION = 2
         @JvmStatic
-        val KEY = IndexKeyUtil.create(CaosDefValuesListDefinitionElementsByNameIndex::class.java)
+        val KEY = IndexKeyUtil.create(CaosDefValuesListElementsByNameIndex::class.java)
 
         @JvmStatic
-        val Instance = CaosDefValuesListDefinitionElementsByNameIndex()
+        val Instance = CaosDefValuesListElementsByNameIndex()
     }
 
 }
