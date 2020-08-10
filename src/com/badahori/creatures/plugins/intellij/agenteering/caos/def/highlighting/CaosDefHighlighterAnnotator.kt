@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.intellij.psi.util.PsiTreeUtil
 
 class CaosDefHighlighterAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
@@ -43,7 +44,7 @@ class CaosDefHighlighterAnnotator : Annotator {
             }
             is CaosDefCommand -> {
                 if (element.parent is CaosDefCommandDefElement)
-                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMAND)
+                    addColor(element, annotationHolder, CaosDefSyntaxHighlighter.COMMAND, true)
             }
             is CaosDefBracketString -> {
                 if (element.hasParentOfType(CaosDefDocComment::class.java)) {
@@ -66,7 +67,12 @@ class CaosDefHighlighterAnnotator : Annotator {
         }
     }
 
-    private fun addColor(element:PsiElement, annotationHolder: AnnotationHolder, color:TextAttributesKey) {
-        annotationHolder.createInfoAnnotation(element, "").textAttributes = color
+    private fun addColor(element:PsiElement, annotationHolder: AnnotationHolder, color:TextAttributesKey, recursive:Boolean = false) {
+        val elements = if (recursive) PsiTreeUtil.collectElementsOfType(element, PsiElement::class.java) + element else listOf(element)
+        for(anElement in elements) {
+            val annotation = annotationHolder.createInfoAnnotation(anElement, null)
+            annotation.textAttributes = color
+            annotation.enforcedTextAttributes = color.defaultAttributes
+        }
     }
 }
