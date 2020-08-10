@@ -8,6 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNum
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -17,7 +19,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction {
+class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction, LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
@@ -33,9 +35,18 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
     override fun getText(): String = collapseChar.text
 
+    override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
+        val file = problemDescriptor.psiElement?.containingFile ?: return
+        invoke(project, file)
+    }
+
     override fun invoke(project: Project, editor: Editor, fileIn: PsiFile?) {
         val file = fileIn ?: return
-        val document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: fileIn.document
+        invoke(project, file)
+    }
+
+    private fun invoke(project: Project, file:PsiFile) {
+        val document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: file.document
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
@@ -55,7 +66,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         runWriteAction {
             file.document?.let {
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                CodeStyleManager.getInstance(project).reformat(fileIn, true)
+                CodeStyleManager.getInstance(project).reformat(file, true)
             }
         }
     }

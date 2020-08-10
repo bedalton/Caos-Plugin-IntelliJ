@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListDefinitionElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
@@ -14,100 +14,83 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.Annotator
+import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemHighlightType
+import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementVisitor
 
 /**
  * Adds helper actions to command elements
  */
-class CaosScriptHelperActionAnnotator : Annotator {
-    override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
-        val wrapper = AnnotationHolderWrapper(annotationHolder)
-        val variant = element.containingFile.module?.variant ?: CaosVariant.UNKNOWN
-        when {
-            element is CaosScriptCommandLike -> {
-                // Annnotate assignment commands
-                (element as? CaosScriptCAssignment)?.let {
-                    annotateAssignment(variant, it, wrapper)
+class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
+
+    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getShortName(): String = "CollapseExpandLines"
+    override fun getDisplayName(): String = "Collapse Expand Lines"
+
+    override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
+            override fun visitCommandCall(o: CaosScriptCommandCall) {
+
+                var child: PsiElement? = o.firstChild
+                if (child != null && child !is CaosScriptCommandLike) {
+                    child = child.firstChild
+                }
+                (child as? CaosScriptCAssignment)?.let {
+                    val variant = o.containingFile.module?.variant ?: CaosVariant.UNKNOWN
+                    annotateAssignment(variant, it, holder)
                 }
                 //Anotatte
-                addExpandCollapseLinesActions(element, wrapper)
+                addExpandCollapseLinesActions(o, holder)
             }
-            // Annotate SpaceLike with expand collapse
-            element is CaosScriptSpaceLikeOrNewline -> {
-                expandCollapseOnSpaceOrNewline(element, wrapper)
-            }
-            else -> {
+
+            override fun visitSpaceLikeOrNewline(o: CaosScriptSpaceLikeOrNewline) {
+                expandCollapseOnSpaceOrNewline(o, holder)
             }
         }
     }
 
-    private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, wrapper: AnnotationHolderWrapper) {
+
+    private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, holder: ProblemsHolder) {
         val next = element.next
-        if (next == null) {
-            var intention = wrapper.newInfoAnnotation(null)
-                    .range(element)
-                    .withFix(CaosScriptExpandCommasIntentionAction)
-            if (element.containingFile.text.contains("\n")) {
-                intention = intention
-                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-            }
-            intention.create()
-            return
-        }
 
         // If there are only commas next, simply allow for expansion
-        if (COMMAS_ONLY_REGEX.matches(next.text)) {
-            wrapper.newInfoAnnotation(null)
-                    .range(element)
-                    .withFix(CaosScriptExpandCommasIntentionAction)
-                    .create()
-        // if next is a newline element, allow collapse with commas or spaces
+        if (next != null && COMMAS_ONLY_REGEX.matches(next.text)) {
+            holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, CaosScriptExpandCommasIntentionAction)
+            // if next is a newline element, allow collapse with commas or spaces
         } else if (next is CaosScriptSpaceLikeOrNewline && next.textContains('\n')) {
-            wrapper.newInfoAnnotation(null)
-                    .range(element)
-                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-                    .create()
+            holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA), CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
         } else {
             // Next does not include commas or newlines
             // Always allow expand lines
-            var intention = wrapper.newInfoAnnotation(null)
-                    .range(element)
-                    .withFix(CaosScriptExpandCommasIntentionAction)
+            val fixes = mutableListOf<LocalQuickFix>(CaosScriptExpandCommasIntentionAction)
             // If there are newlines in file, also allow collapsing of lines
             if (element.containingFile.text.contains("\n")) {
-                intention = intention
-                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                        .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+                fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
             }
-            intention.create()
-            return
+            holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, *fixes.toTypedArray())
         }
     }
 
     /**
      *
      */
-    private fun expandCollapseOnSpaceOrNewline(element:CaosScriptSpaceLikeOrNewline, wrapper: AnnotationHolderWrapper) {
+    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptSpaceLikeOrNewline, holder: ProblemsHolder) {
+        val fixes = mutableListOf<LocalQuickFix>()
         if (element.text == "," || element.text == " ") {
-            wrapper.newInfoAnnotation(null)
-                    .range(element)
-                    .withFix(CaosScriptExpandCommasIntentionAction)
-                    .create()
+            fixes.add(CaosScriptExpandCommasIntentionAction)
         }
         if (element.text.contains("\n")) {
-            wrapper.newInfoAnnotation(null)
-                    .range(element)
-                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
-                    .withFix(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
-                    .create()
+            fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+            fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
         }
+        holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, *fixes.toTypedArray())
     }
 
-    private fun annotateAssignment(variant:CaosVariant, assignment:CaosScriptCAssignment, wrapper: AnnotationHolderWrapper) {
+    private fun annotateAssignment(variant: CaosVariant, assignment: CaosScriptCAssignment, holder: ProblemsHolder) {
         val commandString = assignment.lvalue?.commandStringUpper.nullIfEmpty()
                 ?: return
         val project = assignment.project
@@ -127,16 +110,13 @@ class CaosScriptHelperActionAnnotator : Annotator {
                 }
                 .firstOrNull()
                 ?: return
-        val valuesListWithBitFlags = CaosDefValuesListDefinitionElementsByNameIndex
+        val valuesListWithBitFlags = CaosDefValuesListElementsByNameIndex
                 .Instance[valuesList, project]
                 .firstOrNull {
                     it.isBitflags && it.isVariant(variant)
                 }
                 ?: return
-        wrapper.newInfoAnnotation(null)
-                .range(addTo)
-                .withFix(GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.keys, currentValue))
-                .create()
+        holder.registerProblem(addTo, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.keys, currentValue))
     }
 
     companion object {

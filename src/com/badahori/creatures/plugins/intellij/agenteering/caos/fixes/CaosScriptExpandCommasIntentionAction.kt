@@ -14,11 +14,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 
-object CaosScriptExpandCommasIntentionAction : IntentionAction {
+object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+
 
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
@@ -28,6 +31,16 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction {
     override fun getText(): String = CaosBundle.message("caos.intentions.commands-on-new-line")
 
     override fun invoke(project: Project, editor: Editor?, fileIn: PsiFile?) {
+        invoke(project, fileIn)
+    }
+
+    override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
+        val file = problemDescriptor.psiElement.containingFile
+                ?: return
+        invoke(project, file)
+    }
+
+    private fun invoke(project: Project, fileIn: PsiFile?) {
         val file = fileIn ?: return
         var document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: fileIn.document
         if (document != null) {

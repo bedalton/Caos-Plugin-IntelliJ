@@ -5,12 +5,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -34,14 +37,13 @@ internal class GenerateBitFlagIntegerAction(private val valuesListName: String, 
 /**
  * Intention action to insert/change bit-flag integer
  */
-class GenerateBitFlagIntegerIntentionAction(element: PsiElement, private val valuesListName: String, private val valuesListValues: List<CaosDefValuesListValueStruct>, private val currentValue: Int = 0) : IntentionAction {
+class GenerateBitFlagIntegerIntentionAction(element: PsiElement, private val valuesListName: String, private val valuesListValues: List<CaosDefValuesListValueStruct>, private val currentValue: Int = 0) : IntentionAction, LocalQuickFix {
 
     private val pointer = SmartPointerManager.createPointer(element)
 
     override fun startInWriteAction(): Boolean = false
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
-
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return file is CaosScriptFile && editor != null && valuesListValues.isNotEmpty()
     }
@@ -53,6 +55,18 @@ class GenerateBitFlagIntegerIntentionAction(element: PsiElement, private val val
                 ?: return
         val element = pointer.element
                 ?: return
+        invoke(element, editor)
+    }
+
+    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        val element = descriptor.psiElement
+                ?: return
+        val editor = element.editor
+                ?: return
+        invoke(element, editor)
+    }
+
+    private fun invoke(element: PsiElement, editor: Editor) {
         val position = element.startOffset
         val length = element.textRange.let { it.endOffset - it.startOffset }
         val values = valuesListValues
