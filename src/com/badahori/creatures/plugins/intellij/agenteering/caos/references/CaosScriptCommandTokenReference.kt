@@ -2,15 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommand
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
@@ -21,13 +20,30 @@ import com.intellij.psi.ResolveResult
 
 class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
 
-    private val name: String? by lazy {
-        element.name
+    private val name: String by lazy {
+        element.name ?: "{{UNDEF}}"
+    }
+
+    private val variants:List<CaosVariant> by lazy {
+        if (myElement is CaosDefCompositeElement)
+            myElement.variants
+        else if (myElement is CaosScriptCompositeElement)
+            myElement.containingCaosFile?.variant?.let { listOf(it) } ?: emptyList()
+        else
+            emptyList()
     }
 
     override fun isReferenceTo(element: PsiElement): Boolean {
-        if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name?.toUpperCase()) {
+        if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name.toUpperCase()) {
             return true
+        }
+        if (element.text.equalsIgnoreCase(name)) {
+            return if (element is CaosDefCompositeElement)
+                element.variantsIntersect(variants)
+            else if (element is CaosScriptCompositeElement)
+                element.containingCaosFile?.variant in variants
+            else
+                false
         }
         return super.isReferenceTo(element)
     }
