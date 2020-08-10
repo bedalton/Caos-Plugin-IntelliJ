@@ -408,6 +408,17 @@ type_link
 	;
 code_block
 	::= CODE_BLOCK_LITERAL
+	{
+		implements = [
+			"com.intellij.psi.PsiLanguageInjectionHost"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			isValidHost
+			updateText
+			createLiteralTextEscaper
+		]
+	}
 	;
 
 rvalue

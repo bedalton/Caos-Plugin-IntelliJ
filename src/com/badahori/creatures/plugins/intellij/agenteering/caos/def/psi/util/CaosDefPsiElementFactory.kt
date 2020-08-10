@@ -61,4 +61,12 @@ object CaosDefPsiElementFactory {
         return comment.docCommentHashtagList[0]
     }
 
+    fun createCodeBlock(project: Project, text: String): CaosDefCodeBlock {
+        val code = """
+            /* #{$text} */
+        """.trimIndent()
+        val comment = createComment(project, code)
+        return comment.docCommentFrontComment!!.docCommentLineList.first().codeBlockList.first()
+    }
+
 }

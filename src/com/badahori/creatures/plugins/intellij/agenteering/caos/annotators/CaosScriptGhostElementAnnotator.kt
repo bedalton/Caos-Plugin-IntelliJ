@@ -1,16 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.Annotator
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.AppendStatementTerminator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 
 /**
  * Marks 'Ghost' elements which are required elements in CAOS, that are not required in BNF grammar
@@ -24,7 +27,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         ProgressIndicatorProvider.checkCanceled()
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
-        if (element !is CaosScriptCompositeElement)
+        if (element !is CaosScriptCompositeElement || element.hasParentOfType(CaosDefCompositeElement::class.java))
             return
         // Get the expected terminator
         val terminator = when (element) {

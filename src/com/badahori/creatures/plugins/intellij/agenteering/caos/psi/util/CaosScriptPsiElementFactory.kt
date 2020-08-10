@@ -122,4 +122,9 @@ object CaosScriptPsiElementFactory {
                 .firstChild
                 .getChildOfType(CaosScriptSpaceLikeOrNewline::class.java)!!
     }
+
+    fun createCodeBlock(project:Project, text:String) : CaosScriptCodeBlock {
+        return createFileFromText(project, text).firstChild.firstChild.firstChild as CaosScriptCodeBlock
+    }
+
 }

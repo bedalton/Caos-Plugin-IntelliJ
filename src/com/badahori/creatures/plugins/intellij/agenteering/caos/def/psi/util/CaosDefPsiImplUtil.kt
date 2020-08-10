@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockStringEscaper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
@@ -12,17 +13,22 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.LiteralTextEscaper
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiLanguageInjectionHost
+import com.intellij.testFramework.LightPlatformTestCase.getProject
 import com.intellij.usageView.UsageViewUtil
 import icons.CaosScriptIcons
 import javax.swing.Icon
+
 
 @Suppress("UNUSED_PARAMETER")
 object CaosDefPsiImplUtil {
@@ -648,6 +654,22 @@ object CaosDefPsiImplUtil {
             typeText
         else
             "($typeText)"
+    }
+
+    @JvmStatic
+    fun isValidHost(block:CaosDefCodeBlock) : Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun updateText(block:CaosDefCodeBlock, text: String): CaosDefCodeBlock {
+        val expression = CaosScriptPsiElementFactory.createCodeBlock(getProject(), text)
+        return block.replace(expression) as CaosDefCodeBlock
+    }
+
+    @JvmStatic
+    fun createLiteralTextEscaper(block:CaosDefCodeBlock): LiteralTextEscaper<out PsiLanguageInjectionHost?>? {
+        return CaosDefCodeBlockStringEscaper(block)
     }
 
 }
