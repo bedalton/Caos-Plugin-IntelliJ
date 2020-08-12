@@ -53,7 +53,7 @@ object Injector {
     }
 
     private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String): InjectionStatus? {
-        val connection = connection(variant)
+        val connection = connection(variant, project)
                 ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
         if (!creditsCalled.containsKey(variant)) {
             creditsCalled[variant] = false
@@ -69,8 +69,8 @@ object Injector {
         return connection.inject(caos)
     }
 
-    private fun connection(variant: CaosVariant): CaosConnection? {
-        val conn = getConnection(variant)
+    private fun connection(variant: CaosVariant, project: Project): CaosConnection? {
+        val conn = getConnection(variant, project)
         if (conn == null || !conn.connect()) {
             return null
         }
@@ -102,10 +102,9 @@ object Injector {
 
     private fun getConnection(variant: CaosVariant, project: Project): CaosConnection? {
         val injectUrl = CaosScriptProjectSettings.getInjectURL(project)
-        if (injectUrl) {
-            return
+        if (injectUrl != null) {
+            return PostConnection(injectUrl, variant)
         }
-        if (CaosScriptProjectSettings.isIgnoredUndocumentedCommand())
         return when (variant) {
             CaosVariant.C1 -> DDEConnection(variant)
             CaosVariant.C2 -> DDEConnection(variant)

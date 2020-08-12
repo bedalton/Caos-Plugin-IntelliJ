@@ -117,7 +117,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
         file.navigate(true)
     }
 
-    if (!System.getProperty("os.name").contains("Windows")) {
+    if (!System.getProperty("os.name").contains("Windows") || CaosScriptProjectSettings.getInjectURL(project).isNotNullOrBlank()) {
         toolbar.showInjectionButton(false)
     }
 
