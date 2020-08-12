@@ -1,6 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.contents
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.FileIndex
+import com.intellij.psi.search.FilenameIndex
 
 object CaosScriptProjectSettings {
 
@@ -34,6 +38,8 @@ object CaosScriptProjectSettings {
     fun isIgnoredUndocumentedCommand(command:String) : Boolean {
         return command.toUpperCase() in ignoredUndocumentedCommands
     }
+
+    fun getInjectURL(project:Project) = FilenameIndex.getAllFilesByExt(project, "caosurl").firstOrNull()?.contents
 
     fun ignoreUndocumentedCommand(commandIn:String, ignore:Boolean = true) {
         val command = commandIn.toUpperCase()
