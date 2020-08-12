@@ -2,6 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosPluginSettingsUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.notification.NotificationType
@@ -98,7 +100,12 @@ object Injector {
         CaosInjectorNotifications.show(project, title, message, NotificationType.WARNING)
     }
 
-    private fun getConnection(variant: CaosVariant): CaosConnection? {
+    private fun getConnection(variant: CaosVariant, project: Project): CaosConnection? {
+        val injectUrl = CaosScriptProjectSettings.getInjectURL(project)
+        if (injectUrl) {
+            return
+        }
+        if (CaosScriptProjectSettings.isIgnoredUndocumentedCommand())
         return when (variant) {
             CaosVariant.C1 -> DDEConnection(variant)
             CaosVariant.C2 -> DDEConnection(variant)
