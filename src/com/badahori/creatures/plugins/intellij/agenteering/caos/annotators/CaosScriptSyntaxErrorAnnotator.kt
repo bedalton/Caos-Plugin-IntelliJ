@@ -78,15 +78,22 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptTrailingSpace -> annotationTrailingWhiteSpace(variant, element, annotationWrapper)
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
-                    annotateErrorElement(element, annotationWrapper)
+                    annotateErrorElement(variant, element, annotationWrapper)
             }
         }
     }
 
-    private fun annotateErrorElement(element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+    /**
+     * Further annotates an error element as it may possibly be an LValue used as a command
+     */
+    private fun annotateErrorElement(variant:CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val command = element.text
         val commandUpperCase = element.text.toUpperCase()
-        if (commandUpperCase == "CLAS" || commandUpperCase == "CLS2") {
+        val isLvalue = commandUpperCase == "CLAS" || commandUpperCase == "CLS2" || CaosDefCommandElementsByNameIndex.Instance[commandUpperCase, element.project]
+                .any {
+                    it.isVariant(variant) && it.isLvalue
+                }
+        if (isLvalue) {
             val setv = "SETV".matchCase(command)
             annotationWrapper
                     .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.clas-is-lvalue-and-requires-setv", commandUpperCase))
@@ -96,6 +103,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         }
     }
 
+    /**
+     * Annotates a number if it is a float used outside of C2+
+     */
     private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
         if (variant != CaosVariant.C1 || element.decimal == null)
             return
@@ -477,7 +487,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 4 == variants.intersect(listOf(CaosVariant.C2, CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "C2+"
                 3 == variants.intersect(listOf(CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "CV+"
                 2 == variants.intersect(listOf(CaosVariant.C3, CaosVariant.DS)).size -> "C3+"
-                else -> variants.joinToString(",")
+                else -> variants.joinToString(",") { it.code }
             }
         }
     }
