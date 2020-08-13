@@ -128,7 +128,7 @@ values_list_element
 		]
 		methods = [
 			getTypeName
-			getKeys
+			getValuesListValues
 			getValueForKey
 			getAllKeys
 			getTypeNoteString
