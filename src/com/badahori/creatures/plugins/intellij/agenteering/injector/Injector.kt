@@ -116,7 +116,6 @@ object Injector {
         var out = caos
         out = out.replace("[ ]+".toRegex(), " ")
         out = out.replace("[ ]*,[ ]*".toRegex(), ",").trim()
-        LOGGER.info("Injecting: <$out>")
         return out
     }
 
