@@ -11,7 +11,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
@@ -27,11 +29,15 @@ import com.intellij.psi.search.GlobalSearchScope
  */
 object CaosScriptValuesListValuesCompletionProvider {
 
+    private val startsWithNumber = "^[0-9].*".toRegex()
     /**
      * Adds completions for a known value list, based on argument position and parent command
      */
     fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptExpectsValueOfType) {
         val containingCommand = valueOfType.getSelfOrParentOfType(CaosScriptCommandElement::class.java)
+                ?: return
+
+        val variant = valueOfType.containingCaosFile?.variant
                 ?: return
         val index = valueOfType.index
         // Get parent command entry in CaosDef
@@ -44,12 +50,27 @@ object CaosScriptValuesListValuesCompletionProvider {
                 ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return
 
-        // Get arguments parameter definition
-        val parameterStruct = reference
+        val parameterStructs = reference
                 .docComment
                 ?.parameterStructs
+        // Get arguments parameter definition
+        val parameterStruct = parameterStructs
                 ?.getOrNull(index)
                 ?: return
+        if (valueOfType.parent is CaosScriptGenus || (index != 0 && parameterStruct.name.equalsIgnoreCase("genus"))) {
+            if (startsWithNumber.matches(valueOfType.text))
+                return
+            val family = valueOfType.getPreviousNonEmptySibling(false)?.text?.toIntSafe()
+                    ?: return
+            addGenusCompletions(resultSet, variant, valueOfType.project, family, parameterStructs.size > index + 1)
+            return
+        } else if (valueOfType.parent is CaosScriptFamily || (valueOfType.parent !is CaosScriptFamily && parameterStruct.name.equalsIgnoreCase("family"))) {
+            val next = parameterStructs.getOrNull(index + 1)
+                    ?: return
+            if (next.name.equalsIgnoreCase("genus"))
+                addGenusCompletions(resultSet, variant, valueOfType.project, null, parameterStructs.size > index + 1)
+            return
+        }
         // Get the expected type of this argument
         val type =
                 if (containingCommand is CaosScriptCAssignment) {
@@ -67,8 +88,6 @@ object CaosScriptValuesListValuesCompletionProvider {
                 }
                         ?: return
 
-        val variant = valueOfType.containingCaosFile?.variant
-                ?: return
         val addSpace = reference.parameterStructs.size - 1 > index
         // If type definition contains values list annotation, add list values
         if (type.valuesList != null) {
@@ -121,6 +140,37 @@ object CaosScriptValuesListValuesCompletionProvider {
         }
     }
 
+    private fun addGenusCompletions(resultSet: CompletionResultSet, variant: CaosVariant, project: Project, family: Int?, addSpace: Boolean) {
+        val def = CaosDefValuesListElementsByNameIndex
+                .Instance["Genus", project]
+                .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
+                ?: return
+        if (family == 0) {
+            return
+        }
+        val hasFamily = family != null
+        val values = if (hasFamily)
+            def.valuesListValues.filter { it.key.startsWith("$family") }
+        else
+            def.valuesListValues
+        for (value in values) {
+            val key = if (hasFamily) {
+                value.key.split(" ").lastOrNull() ?: continue
+            } else
+                value.key
+            var lookupElement = LookupElementBuilder
+                    .create(key)
+                    .withLookupString(value.value)
+                    .withPresentableText(value.key + ": " + value.value)
+                    .withTailText(value.description)
+            if (addSpace) {
+                lookupElement = lookupElement
+                        .withInsertHandler(AddSpaceInsertHandler(true))
+            }
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
+        }
+    }
+
     fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression) {
         val other = equalityExpression.expressionList.let {
             when (it.size) {
@@ -157,7 +207,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                 .Instance[listName, project]
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return
-        val values = def.keys
+        val values = def.valuesListValues
                 .filter { it.equality == ValuesListEq.EQUAL }
                 .ifEmpty { null }
                 ?.sortedBy { it.key.toIntSafe() ?: 1000 }
