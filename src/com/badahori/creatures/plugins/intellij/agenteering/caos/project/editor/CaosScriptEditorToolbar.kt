@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
@@ -116,8 +117,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
         }
         file.navigate(true)
     }
-
-    if (!System.getProperty("os.name").contains("Windows") || CaosScriptProjectSettings.getInjectURL(project).isNotNullOrBlank()) {
+    if (!System.getProperty("os.name").contains("Windows") && CaosScriptProjectSettings.getInjectURL(project).isNullOrBlank()) {
         toolbar.showInjectionButton(false)
     }
 
