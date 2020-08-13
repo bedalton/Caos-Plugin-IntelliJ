@@ -1441,11 +1441,15 @@ subroutine_name
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
 		]
 		methods = [
 			getName
 			setName
 			getReference
+			getIndex
+			toCaosVar
+			getExpectedType
 		]
 	};
 
