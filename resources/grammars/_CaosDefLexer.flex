@@ -61,6 +61,17 @@ VARIABLE_LINK=[{]{ID}[}]
 AT_VARIANTS=[@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
 VARIANT_ID=[A-Za-z][A-Za-z0-9]
 VARIANT_NAME=[A-Za-z0-9 _]+
+EQ=[Ee][Qq]|[Nn][Ee]|[Ll][Tt]|[Gg][Tt]|[Ll][Ee]|[Gg][Ee]|[Bb][Tt]|[Bb][Ff]|"="|"<>"|">"|">="|"<"|"<="
+INT_SIGN=[-+]
+INT = [0-9]+
+NUMBER={INT_SIGN}?({INT}[.])?{INT}
+ANIMATION=\[({INT}[ ]?)+R?\]
+BRACKET_STRING=\[ [^\]] \]
+QUOTE_STRING=\"(\\\"|[^\"])*\"
+STRING={QUOTE_STRING}|{BRACKET_STRING}
+AND=[Aa][Nn][Dd]
+OR=[Oo][Rr]
+AND_OR={AND}|{OR}
 %state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME IN_CODE_BLOCK_LITERAL
 
 %%
@@ -140,9 +151,15 @@ VARIANT_NAME=[A-Za-z0-9 _]+
 }
 
 <IN_CODE_BLOCK_LITERAL> {
-	{WORD} / [a-zA-Z0-9_$#:!]   { return CaosDef_WORD; }
-    '}'							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
- 	[^]							{ return WHITE_SPACE; }
+	{ANIMATION}					{ return CaosDef_CODE_BLOCK_ANIMATION; }
+    {STRING}					{ return CaosDef_CODE_BLOCK_STRING; }
+	{WORD}   					{ return CaosDef_WORD; }
+ 	{NUMBER}					{ return CaosDef_CODE_BLOCK_NUMBER; }
+ 	{EQ}						{ return CaosDef_CODE_BLOCK_EQ; }
+    {AND_OR}					{ return CaosDef_CODE_BLOCK_AND_OR; }
+    "}"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
+    \s+							{ return WHITE_SPACE; }
+ 	[^]							{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
 
 <IN_COMMENT> {

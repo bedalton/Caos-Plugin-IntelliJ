@@ -407,7 +407,7 @@ type_link
 	::= TYPE_LINK_LITERAL
 	;
 code_block
-	::= CODE_BLOCK_OPEN_BRACE WORD+ CLOSE_BRACE
+	::= CODE_BLOCK_OPEN_BRACE (command_word|code_block_primitive)* CLOSE_BRACE
 	{
 		implements = [
 			"com.intellij.psi.PsiLanguageInjectionHost"
@@ -419,6 +419,14 @@ code_block
 			createLiteralTextEscaper
 		]
 	}
+	;
+
+code_block_primitive
+	::= CODE_BLOCK_NUMBER
+	|	CODE_BLOCK_EQ
+	|	CODE_BLOCK_STRING
+	|	CODE_BLOCK_ANIMATION
+	| 	CODE_BLOCK_AND_OR
 	;
 
 rvalue
