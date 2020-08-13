@@ -1176,8 +1176,7 @@ symbol_comma
 	;
 
 space_like_or_newline
-	::= (space_like new_line_like?) (new_line_like|space_like)*
-	|	(new_line_like space_like?) (new_line_like|space_like)*
+	::= (new_line_like|space_like)+
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"

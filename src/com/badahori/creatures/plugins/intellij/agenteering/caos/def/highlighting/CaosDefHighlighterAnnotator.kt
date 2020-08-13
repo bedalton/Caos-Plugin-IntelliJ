@@ -17,7 +17,9 @@ class CaosDefHighlighterAnnotator : Annotator {
             return
         when(element) {
             is CaosDefWordLink -> {
-                val attributeKey = if (element.hasParentOfType(CaosDefDocComment::class.java))
+                val attributeKey = if (element.hasParentOfType(CaosDefCodeBlock::class.java))
+                    CaosDefSyntaxHighlighter.CODE_BLOCK
+                else if (element.hasParentOfType(CaosDefDocComment::class.java))
                     CaosDefSyntaxHighlighter.WORD_LINK
                 else
                     CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK

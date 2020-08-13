@@ -38,7 +38,7 @@
 		CLOSE_BRACE = '}';
 		LEADING_ASTRISK = '*';
 		DASH = '-';
-		CODE_BLOCK_LITERAL = 'regexp:#\{[^}]*}';
+		CODE_BLOCK_OPEN_BRACE = '#{';
 		TYPE_LINK_LITERAL = 'regexp:@\{[a-zA-Z_0-9#$!]+}'
 		AT_RVALUE = "regexp:[@][rR][vV][aA][lL][uU][eE]";
 		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
@@ -407,7 +407,7 @@ type_link
 	::= TYPE_LINK_LITERAL
 	;
 code_block
-	::= CODE_BLOCK_LITERAL
+	::= CODE_BLOCK_OPEN_BRACE WORD+ CLOSE_BRACE
 	{
 		implements = [
 			"com.intellij.psi.PsiLanguageInjectionHost"

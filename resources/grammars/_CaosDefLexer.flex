@@ -34,7 +34,7 @@ import static com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer
 %unicode
 
 WHITE_SPACE=\s+
-TEXT=([^*\n \[]|"*"[^/])+
+TEXT=([^*\n \[#]|[#][^{]|[#]\$|"*"[^/])+
 DOC_COMMENT_OPEN="/"[*]+
 DOC_COMMENT_CLOSE=[*]+"/"
 LINE_COMMENT="//"[^\n]*
@@ -61,7 +61,7 @@ VARIABLE_LINK=[{]{ID}[}]
 AT_VARIANTS=[@][Vv][Aa][Rr][Ii][Aa][Nn][Tt][Ss]?
 VARIANT_ID=[A-Za-z][A-Za-z0-9]
 VARIANT_NAME=[A-Za-z0-9 _]+
-%state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME
+%state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME IN_CODE_BLOCK_LITERAL
 
 %%
 
@@ -139,8 +139,14 @@ VARIANT_NAME=[A-Za-z0-9 _]+
   	[^]							{ yybegin(inLink); yypushback(yylength()); }
 }
 
+<IN_CODE_BLOCK_LITERAL> {
+	{WORD} / [a-zA-Z0-9_$#:!]   { return CaosDef_WORD; }
+    '}'							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
+ 	[^]							{ return WHITE_SPACE; }
+}
+
 <IN_COMMENT> {
-	{CODE_BLOCK_LITERAL}       	{ return CaosDef_CODE_BLOCK_LITERAL; }
+	[#][{]       				{ yybegin(IN_CODE_BLOCK_LITERAL); return CaosDef_CODE_BLOCK_OPEN_BRACE; }
     {VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK_LITERAL; }
   	//"["	/{WORD}					{ return CaosDef_COMMENT_TEXT_LITERAL; }

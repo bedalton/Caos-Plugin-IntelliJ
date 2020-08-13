@@ -1,5 +1,4 @@
 @variant(C2 = Creatures 2)
-@variant(C2 = Creatures 2)
 
 /*
  * Object that [OWNR] creature was attending to.
@@ -159,7 +158,7 @@ ASLP (command) asleep (integer);
  *
  * @lvalue
  * @rvalue
- * @return (integer)
+ * @return (integer@Attributes)
  */
 ATTR (integer);
 
