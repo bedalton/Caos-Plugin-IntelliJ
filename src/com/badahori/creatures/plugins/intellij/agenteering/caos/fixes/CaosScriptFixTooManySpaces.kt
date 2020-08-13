@@ -41,7 +41,8 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
             siblings.add(0, sibling)
             sibling = sibling.previous
         }
-        sibling = spaces.next
+        val trueNext = spaces.next
+        sibling = trueNext
         while (sibling != null && WHITE_SPACE_OR_COMMAS.matches(sibling.text)) {
             if (sibling.text.contains(","))
                 hasComma = true
@@ -58,10 +59,12 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
         if (sibling?.text?.contains("\n").orFalse()) {
             hasNewline = true
         }
-        if (siblings.isEmpty())
+        if (siblings.isEmpty() && trueNext != null) {
             return
-        val hasNext = sibling?.text?.trim()?.isNotEmpty().orFalse()
+        }
+        val hasNext = sibling?.text?.trim(' ','\t','\n',',')?.isNotEmpty().orFalse()
         val replacement = when {
+            sibling == null -> ""
             hasNewline -> ""
             hasComma -> ","
             hasNext -> " "
