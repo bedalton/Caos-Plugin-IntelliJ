@@ -279,7 +279,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
 }
 
+private val ideaRulezzTrimFromEndLength = CompletionUtilCore.DUMMY_IDENTIFIER.length - 1
 /**
  * Gets element text minus the weird IntelliJ completion string appended to the end
  */
-private val PsiElement.textWithoutCompletionIdString get() = text.substringBefore(CompletionUtilCore.DUMMY_IDENTIFIER)
+private val PsiElement.textWithoutCompletionIdString get() = text.substringFromEnd(0, ideaRulezzTrimFromEndLength)
