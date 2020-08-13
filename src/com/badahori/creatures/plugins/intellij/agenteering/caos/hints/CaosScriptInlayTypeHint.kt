@@ -8,16 +8,22 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 
 
@@ -78,7 +84,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val typeList = getTypeList(commandToken)
                     ?: return emptyList()
             val values = mutableListOf<String>()
-            for (key in typeList.keys) {
+            for (key in typeList.valuesListValues) {
                 try {
                     if (attr and key.key.toInt() > 0)
                         values.add(key.value)
@@ -131,7 +137,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 if (!it.isVariant(variant))
                     return@check false
                 val typeNote = it.typeNote?.text ?: return@check false
-               typeNote.toLowerCase().contains("bitflags").orFalse()
+                typeNote.toLowerCase().contains("bitflags").orFalse()
             }
         }
 
@@ -151,7 +157,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val typeList = getTypeList(commandToken, argumentIndex)
                     ?: return emptyList()
             val values = mutableListOf<String>()
-            for (key in typeList.keys) {
+            for (key in typeList.valuesListValues) {
                 try {
                     if (attr and key.key.toInt() > 0)
                         values.add(key.value)
@@ -172,7 +178,63 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
         }
     },
-    ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
+    ASSUMED_GENUS_NAME_HINT("Show genus simple name", true, 102) {
+
+        override fun isApplicable(element: PsiElement): Boolean {
+            if (!option.isEnabled())
+                return false
+            if (element !is CaosScriptExpression || !element.isInt)
+                return false
+            if (element.parent?.parent?.parent is CaosScriptGenus) {
+                return true
+            }
+            val argument = element.getParentOfType(CaosScriptArgument::class.java)
+                    ?: return false
+            val commandToken = argument.getParentOfType(CaosScriptCommandElement::class.java)?.commandToken
+                    ?: return false
+            val command = commandToken.reference.resolve()?.getParentOfType(CaosDefCommandDefElement::class.java)
+                    ?: return false
+            val index = argument.index
+            if (index < 1) // Cannot have preceding FAMILY value if index is 0
+                return false
+            val parameters = command.parameterStructs
+            val thisParameter = parameters.getOrNull(index) ?: return false
+            if (!thisParameter.name.equalsIgnoreCase("genus"))
+                return false
+            val previousParameter = parameters.getOrNull(index - 1)
+                    ?: return false
+            return (previousParameter.name.equalsIgnoreCase("family"))
+        }
+
+        override fun getHintInfo(element: PsiElement): HintInfo? {
+            return HintInfo.MethodInfo("Genus", listOf("family", "genus"), CaosScriptLanguage.instance)
+        }
+        override fun provideHints(element: PsiElement): List<InlayInfo> {
+            val variant = (element.containingFile as? CaosScriptFile)?.variant
+                    ?: return emptyList()
+            val genus = element.text.toIntSafe()
+                    ?: return emptyList()
+            val family = element.getPreviousNonEmptySibling(true)?.text?.toIntSafe()
+                    ?: return emptyList()
+            return getGenusInlayInfo(variant, element, family, genus)
+        }
+
+        private fun getGenusInlayInfo(variant:CaosVariant, element:PsiElement, family:Int, genus:Int) : List<InlayInfo> {
+            val value: CaosDefValuesListValueStruct = CaosDefValuesListElementsByNameIndex
+                    .Instance["Genus", element.project]
+                    .filter {
+                        it.isVariant(variant)
+                    }
+                    .map {
+                        it.getValueForKey("$family $genus")
+                    }
+                    .firstOrNull()
+                    ?: return emptyList()
+            return listOf(InlayInfo("(${value.value})", element.endOffset))
+        }
+    },
+    ASSUMED_VALUE_NAME_HINT("Show assumed value name", true)
+    {
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptExpression
         }
@@ -214,7 +276,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
         }
     },
-    ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true) {
+    ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true)
+    {
 
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptEventNumberElement
@@ -250,7 +313,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
         }
     },
-    DDE_PIC_DIMENSIONS("Show DDE: PICT dimensions", true) {
+    DDE_PIC_DIMENSIONS("Show DDE: PICT dimensions", true)
+    {
 
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptPictDimensionLiteral
@@ -272,7 +336,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosScriptLanguage.instance)
         }
     },
-    RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true) {
+    RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true)
+    {
 
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptRvalue
@@ -361,6 +426,8 @@ private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expres
 
 
 private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptExpression): CaosScriptIsCommandToken? {
-    val other:CaosScriptExpression? = if (parent.first == expression) parent.second else parent.first
+    val other: CaosScriptExpression? = if (parent.first == expression) parent.second else parent.first
     return other?.varToken?.lastAssignment ?: other?.rvaluePrime?.commandToken
 }
+
+private val GENUS_KEY = Key<String>("com.badahori.creatures.plugins.intellij.agenteering.caos.psi.hints.GENUS")
