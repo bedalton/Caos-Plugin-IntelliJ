@@ -25,14 +25,6 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            (element as? CaosScriptClassifier)?.let {
-                return listOfNotNull(
-                        element.family.let { InlayInfo("family:", it.startOffset) },
-                        element.genus?.let { InlayInfo("genus:", it.startOffset) },
-                        element.species?.let { InlayInfo("species:", it.startOffset) }
-                ).toMutableList()
-            }
-
             val commandElement = element as? CaosScriptCommandElement
                     ?: return mutableListOf()
             val referencedCommand = getCommand(commandElement)
