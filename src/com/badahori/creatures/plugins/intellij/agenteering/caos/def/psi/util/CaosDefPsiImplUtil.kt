@@ -24,7 +24,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.LiteralTextEscaper
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
-import com.intellij.testFramework.LightPlatformTestCase.getProject
 import com.intellij.usageView.UsageViewUtil
 import icons.CaosScriptIcons
 import javax.swing.Icon
@@ -663,7 +662,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun updateText(block:CaosDefCodeBlock, text: String): CaosDefCodeBlock {
-        val expression = CaosScriptPsiElementFactory.createCodeBlock(getProject(), text)
+        val expression = CaosScriptPsiElementFactory.createCodeBlock(block.project, text)
         return block.replace(expression) as CaosDefCodeBlock
     }
 
