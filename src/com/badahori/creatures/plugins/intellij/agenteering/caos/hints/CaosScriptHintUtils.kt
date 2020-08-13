@@ -69,7 +69,7 @@ internal fun getListValue(variant: CaosVariant, listName: String, project: Proje
             .Instance[listName, project]
             .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
             ?: return null
-    return list.keys.firstOrNull {
+    return list.valuesListValues.firstOrNull {
         when (it.equality) {
             ValuesListEq.EQUAL -> it.key == key
             ValuesListEq.NOT_EQUAL -> it.key != key
