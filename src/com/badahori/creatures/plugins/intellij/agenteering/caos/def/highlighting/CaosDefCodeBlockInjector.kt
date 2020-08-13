@@ -38,7 +38,7 @@ class CaosDefCodeBlockInjector : LanguageInjector {
                 else -> null
             }
         } else null
-        injectionPlacesRegistrar.addPlace(CaosScriptLanguage.instance, TextRange(2, host.textLength - 1), codePrefix, " $suffix")
+        //injectionPlacesRegistrar.addPlace(CaosScriptLanguage.instance, TextRange(2, host.textLength - 1), codePrefix, " $suffix")
     }
 }
 
@@ -79,7 +79,7 @@ class CaosDefCodeBlockManipulator : AbstractElementManipulator<CaosDefCodeBlockI
 
     companion object {
         fun getStringTokenRange(element: CaosDefCodeBlockImpl): TextRange {
-            return TextRange.from(1, element.getTextLength() - 2)
+            return TextRange.from(1, element.textLength - 2)
         }
     }
 }
