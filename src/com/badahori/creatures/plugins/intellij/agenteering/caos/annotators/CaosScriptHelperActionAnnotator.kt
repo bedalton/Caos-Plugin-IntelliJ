@@ -123,7 +123,7 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
             addTo
         else
             addTo.next ?: addTo.previous ?: return
-        holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.keys, currentValue))
+        holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.valuesListValues, currentValue))
     }
 
     companion object {
