@@ -43,7 +43,7 @@ class CaosDefValuesListStubType(debugName:String) : com.badahori.creatures.plugi
         return CaosDefValuesListStubImpl (
                 parent = parent,
                 typeName = element.typeName,
-                keys = element.keys,
+                keys = element.valuesListValues,
                 typeNote = element.typeNoteString,
                 isBitflags = element.isBitflags
         )

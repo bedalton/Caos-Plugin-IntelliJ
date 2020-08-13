@@ -13,7 +13,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
@@ -357,7 +356,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getKeys(element: CaosDefValuesListElement): List<CaosDefValuesListValueStruct> {
+    fun getValuesListValues(element: CaosDefValuesListElement): List<CaosDefValuesListValueStruct> {
         return element.stub?.keys ?: element.valuesListValueList.mapNotNull {
             it.toStruct()
         }
@@ -366,7 +365,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getValueForKey(element: CaosDefValuesListElement, key: String): CaosDefValuesListValueStruct? {
-        return element.keys.firstOrNull {
+        return element.valuesListValues.firstOrNull {
             when (it.equality) {
                 ValuesListEq.EQUAL -> it.key == key
                 ValuesListEq.NOT_EQUAL -> it.key != key
@@ -377,7 +376,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getAllKeys(element: CaosDefValuesListElement, key: String): List<String> {
-        return element.keys.map { it.key }
+        return element.valuesListValues.map { it.key }
     }
 
     @JvmStatic
