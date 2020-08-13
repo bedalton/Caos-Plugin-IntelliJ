@@ -1,13 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValueKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
@@ -68,9 +69,13 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
         // Get values list for argument position
         val argumentNumber = argument.index
         return commandDef.mapNotNull map@{ def ->
-            val parameter = def.parameterStructs.getOrNull(argumentNumber)
+            val parameters = def.parameterStructs
+            val parameter = parameters.getOrNull(argumentNumber)
                     ?: return@map null
-            parameter.type.valuesList
+            if (parameter.name.equalsIgnoreCase("genus") && parameters.getOrNull(argumentNumber - 1)?.name?.equalsIgnoreCase("family").orFalse()) {
+                "Genus"
+            } else
+                parameter.type.valuesList
         }
     }
 
@@ -114,6 +119,9 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
                             valuesListElement.valuesListValueList.filter { valuesListValueStruct ->
                                 valuesListValueStruct.key.toIntSafe()?.let { key -> keyAsInt and key > 0 } ?: false
                             }
+                        } else if (valuesListName == "Genus") {
+                            val family = myElement.getPreviousNonEmptySibling(false)?.text?.toIntSafe() ?: return@matchKeys emptyList<CaosDefValuesListValue>()
+                            valuesListElement.valuesListValueList.filter { it.key == "$family $keyAsInt" }
                         } else {
                             valuesListElement.valuesListValueList.filter { it.key == text }
                         }
