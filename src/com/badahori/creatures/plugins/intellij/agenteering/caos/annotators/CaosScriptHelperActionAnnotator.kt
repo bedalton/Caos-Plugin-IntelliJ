@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
@@ -18,6 +19,7 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
@@ -94,7 +96,7 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
         val commandString = assignment.lvalue?.commandStringUpper.nullIfEmpty()
                 ?: return
         val project = assignment.project
-        val addTo = assignment.lastChild
+        val addTo:PsiElement = assignment.lastChild
         val currentValue = if (addTo is CaosScriptExpectsValueOfType) {
             addTo.text.toIntSafe() ?: 0
         } else {
@@ -116,7 +118,12 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                     it.isBitflags && it.isVariant(variant)
                 }
                 ?: return
-        holder.registerProblem(addTo, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.valuesListValues, currentValue))
+
+        val range = if (addTo.text.isNotEmpty())
+            addTo
+        else
+            addTo.next ?: addTo.previous ?: return
+        holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.keys, currentValue))
     }
 
     companion object {
