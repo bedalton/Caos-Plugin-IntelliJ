@@ -51,7 +51,6 @@ AT_FILE=[@][Ff][Ii][Ll][Ee][.][a-zA-Z_][a-zA-Z_0-9/]*
 VALUES_LIST_VALUE_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+([ ]+ [a-zA-Z0-9_#-]+)*
 VALUES_LIST_VALUE_NAME=([^-\n]|-[^ ])+
 DEF_TEXT=[^\n\[]+
-INT=[-+]?[0-9]+
 TO=([.]{2,3}|[Tt][Oo])
 UNTIL=[uU][nN][tT][iI][lL]
 EXCLUSIVE=[!][Ee][Xx][Cc][Ll][Uu][Ss][Ii][Vv][Ee]
@@ -72,6 +71,7 @@ STRING={QUOTE_STRING}|{BRACKET_STRING}
 AND=[Aa][Nn][Dd]
 OR=[Oo][Rr]
 AND_OR={AND}|{OR}
+COMMENT=[*][^\n\*]*
 %state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME IN_CODE_BLOCK_LITERAL
 
 %%
@@ -110,7 +110,7 @@ AND_OR={AND}|{OR}
     "{"							{ return CaosDef_OPEN_BRACE;  }
     "}"							{ needs_type = true; return CaosDef_CLOSE_BRACE; }
 	{VARIABLE_LINK}				{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_VARIABLE_LINK_LITERAL; }
-    {INT}						{ return CaosDef_INT_LITERAL; }
+    {NUMBER}					{ return CaosDef_INT_LITERAL; }
 	{WHITE_SPACE}          		{ return WHITE_SPACE; }
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
@@ -120,7 +120,7 @@ AND_OR={AND}|{OR}
     {UNTIL}						{ return CaosDef_UNTIL; }
     {AT_FILE}					{ return CaosDef_AT_FILE; }
     {AT_ID}						{ return CaosDef_AT_ID; }
-    {INT}						{ return CaosDef_INT_LITERAL; }
+    {NUMBER}						{ return CaosDef_INT_LITERAL; }
     {ID}						{ return CaosDef_ID; }
     "("							{ paren_depth++; return CaosDef_OPEN_PAREN; }
 	")"						 	{ paren_depth--; yybegin(IN_COMMENT);return CaosDef_CLOSE_PAREN; }
@@ -157,6 +157,7 @@ AND_OR={AND}|{OR}
  	{NUMBER}					{ return CaosDef_CODE_BLOCK_NUMBER; }
  	{EQ}						{ return CaosDef_CODE_BLOCK_EQ; }
     {AND_OR}					{ return CaosDef_CODE_BLOCK_AND_OR; }
+  	{COMMENT}					{ return CaosDef_CODE_BLOCK_COMMENT;}
     "}"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
     \s+							{ return WHITE_SPACE; }
  	[^]							{ yybegin(IN_COMMENT); yypushback(yylength()); }

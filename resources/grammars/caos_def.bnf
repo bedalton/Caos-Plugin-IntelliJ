@@ -427,6 +427,7 @@ code_block_primitive
 	|	CODE_BLOCK_STRING
 	|	CODE_BLOCK_ANIMATION
 	| 	CODE_BLOCK_AND_OR
+	|	CODE_BLOCK_COMMENT
 	;
 
 rvalue
