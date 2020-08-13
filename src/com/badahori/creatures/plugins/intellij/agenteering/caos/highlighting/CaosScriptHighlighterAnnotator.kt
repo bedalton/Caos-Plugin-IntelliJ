@@ -17,12 +17,11 @@ class CaosScriptHighlighterAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val wrapper = AnnotationHolderWrapper(annotationHolder)
-        if (element !is CaosScriptCompositeElement)
-            return
         when {
             element is CaosScriptToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
             element is CaosScriptExpectsToken -> if (element.textLength == 4) colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
             element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken-> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
+            element is CaosScriptIsCommandKeywordToken || (element.parent is CaosScriptIsCommandKeywordToken && element.parent.firstChild != element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
             element is CaosScriptAnimationString -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
             element is CaosScriptByteString && isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
@@ -53,6 +52,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
         annotationHolder.newInfoAnnotation(message)
                 .range(psiElement)
                 .textAttributes(attribute)
+                .enforcedTextAttributes(attribute.defaultAttributes)
                 .create()
     }
 

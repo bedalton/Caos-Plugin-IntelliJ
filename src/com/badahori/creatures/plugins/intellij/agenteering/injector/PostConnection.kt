@@ -30,6 +30,8 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
         } catch (e:IOException) {
             return InjectionStatus.BadConnection("Failed to open caos connection. Error: ${e.message}")
         }
+        connection.doOutput = true
+        connection.doInput = true
             connection.setRequestMethod("POST")
         try {
             connection.outputStream.let {
@@ -75,6 +77,6 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
     override fun connect(silent: Boolean): Boolean = true
 
     override fun showAttribution(project: Project, variant: CaosVariant) {
-        TODO("Not yet implemented")
+        Injector.postInfo(project, "", "Requires CAOS injector server from Bedalton")
     }
 }

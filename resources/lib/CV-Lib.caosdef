@@ -324,7 +324,7 @@ ATTR (command) attributes (integer);
  * #AgentAttributes
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Attributes)
  */
 ATTR (integer);
 
