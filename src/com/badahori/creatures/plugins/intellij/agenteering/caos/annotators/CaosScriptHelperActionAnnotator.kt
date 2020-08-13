@@ -116,7 +116,7 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                     it.isBitflags && it.isVariant(variant)
                 }
                 ?: return
-        holder.registerProblem(addTo, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.keys, currentValue))
+        holder.registerProblem(addTo, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.valuesListValues, currentValue))
     }
 
     companion object {
