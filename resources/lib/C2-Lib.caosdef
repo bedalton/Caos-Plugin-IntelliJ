@@ -735,10 +735,10 @@ DDE: GIDS FMLY (command) family (integer);
  * #Debug
  *
  * @param {family} (integer)
- * @param {gnus} (integer)
+ * @param {genus} (integer)
  *
  */
-DDE: GIDS GNUS (command) family (integer) gnus (integer);
+DDE: GIDS GNUS (command) family (integer) genus (integer);
 
 /*
  * Returns a list of all the Family numbers that exist, separated with a space.
@@ -3975,7 +3975,7 @@ YVEC (integer);
 	3 6 = LeftRight
 	3 7 = Incubator
 	3 8 = Teleporter
-	3 9 = &lt;Empty slot&gt;
+	3 9 = <Empty slot>
 	3 10 = Machine
 	4 1 = Norn
 	4 2 = Grendel
@@ -3989,7 +3989,7 @@ YVEC (integer);
 	2 31 = Leftright
 	2 32 = Incubator
 	2 33 = Teleporter
-	2 34 = &lt;Empty slot&gt;
+	2 34 = <Empty slot>
 	2 35 = Machine
 	2 36 = Norn
 	2 37 = Grendel
