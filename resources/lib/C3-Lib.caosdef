@@ -1609,7 +1609,7 @@ DOCA (command) noOfUpdates (integer);
   	doif ov00 GE 5 AND ov00 LT 10
   	*--- code block 1 ---
   	elif ov00 GE 10 OR ov00 LT 100
-  	--- code block 2 ---
+  	* --- code block 2 ---
   	else
   	*--- code block 3 ---
   	endi
