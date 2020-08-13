@@ -45,7 +45,6 @@ class CaosScriptVarReferencesSearch : QueryExecutorBase<PsiReference, References
         }
         val reference = parameters.elementToSearch.getSelfOrParentOfType(CaosScriptVarToken::class.java)
                 ?: return
-        LOGGER.info("Process references for token")
         parameters.optimizer.searchWord(reference.varGroup.value, parameters.effectiveSearchScope, false, reference)
         parameters.optimizer.searchWord(reference.text, parameters.effectiveSearchScope, false, reference)
     }
