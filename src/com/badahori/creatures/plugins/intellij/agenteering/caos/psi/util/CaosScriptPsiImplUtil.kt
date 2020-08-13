@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
@@ -923,7 +922,12 @@ object CaosScriptPsiImplUtil {
         val parent = lastParent?.parent as? CaosScriptCommandElement
                 ?: return 0
         if (lastParent !is CaosScriptArgument) {
-            return 0
+            return when (element.parent) {
+                is CaosScriptFamily -> 0
+                is CaosScriptGenus -> 1
+                is CaosScriptSpecies -> 2
+                else -> 0
+            }
         }
         return parent.arguments.indexOf(lastParent)
     }
@@ -954,6 +958,30 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getArguments(command: CaosScriptEnumHeaderCommand): List<CaosScriptArgument> {
+        command.classifier?.let {
+            return listOfNotNull(
+                    it.family.expectsInt,
+                    it.genus?.expectsInt,
+                    it.species?.expectsInt
+            )
+        }
+        return listOf(command.expectsAgent as CaosScriptArgument)
+    }
+
+    @JvmStatic
+    fun getArguments(command: CaosScriptEscnHeader): List<CaosScriptArgument> {
+        command.classifier?.let {
+            return listOfNotNull(
+                    it.family.expectsInt,
+                    it.genus?.expectsInt,
+                    it.species?.expectsInt
+            )
+        }
+        return listOf()
+    }
+
+    @JvmStatic
     fun getArgumentValues(command: CaosScriptCommandCall): List<CaosVar> {
         return command.stub?.argumentValues ?: command.arguments.map { it.toCaosVar() }
     }
@@ -970,9 +998,24 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getArgumentValues(element: CaosScriptCommandElement): List<CaosVar> {
-        return element.getChildrenOfType(CaosScriptArgument::class.java).map {
+        return element.arguments.map {
             it.toCaosVar()
         }
+    }
+
+    @JvmStatic
+    fun toCaosVar(element:CaosScriptSubroutineName) : CaosVar {
+        return CaosVar.CaosLiteral.CaosToken(element.text)
+    }
+
+    @JvmStatic
+    fun getIndex(element:CaosScriptSubroutineName) : Int {
+        return 0
+    }
+
+    @JvmStatic
+    fun getExpectedType(element:CaosScriptSubroutineName) : CaosExpressionValueType {
+        return CaosExpressionValueType.TOKEN
     }
 
     @JvmStatic
@@ -1342,7 +1385,7 @@ object CaosScriptPsiImplUtil {
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
         // Get actual value for literal in list
-        return list.keys.firstOrNull {
+        return list.valuesListValues.firstOrNull {
             when (it.equality) {
                 ValuesListEq.EQUAL -> it.key == element.text
                 ValuesListEq.NOT_EQUAL -> it.key != element.text
@@ -1388,7 +1431,7 @@ object CaosScriptPsiImplUtil {
                 .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
                 ?: return null
         // Get actual value for literal in list
-        return list.keys.firstOrNull {
+        return list.valuesListValues.firstOrNull {
             when (it.equality) {
                 ValuesListEq.EQUAL -> it.key == element.text
                 ValuesListEq.NOT_EQUAL -> it.key != element.text
