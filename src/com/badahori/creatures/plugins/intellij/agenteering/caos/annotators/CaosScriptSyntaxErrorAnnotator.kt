@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
@@ -30,6 +31,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (DumbService.isDumb(element.project))
             return
+        if (element.isOrHasParentOfType(CaosDefCompositeElement::class.java))
+            return
+        if (!element.isPhysical)
+            return;
         val annotationWrapper = AnnotationHolderWrapper(holder)
         val variant = (element.containingFile as? CaosScriptFile)?.variant
                 ?: return
@@ -214,19 +219,21 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             }
             return
         }
-        val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
+        //val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
         val text = element.text
-        if (text.isEmpty() && (nextIsCommaOrSpace||nextText.contains("\n")))
+        if (text.trim(' ',' ',',').isEmpty() && !previousIsCommaOrSpace)
             return
         // Is a single space, and not followed by terminating comma or newline
-        if (text.length == 1 && !COMMA_NEW_LINE_REGEX.matches(nextText))
+        if (text.length == 1 && !(COMMA_NEW_LINE_REGEX.matches(nextText) || previousIsCommaOrSpace))
             return
-        if (text.isEmpty())  {
+        if (text.isEmpty()) {
             // Did check for trailing comma, but this is assumed to be removed before injection
             // I think bobcob does this and Cyberlife CAOS tool strips this as well.
-            if (true || nextText.startsWith("\n"))// && variant != CaosVariant.C1)
+            if (true || nextText.startsWith("\n")) {// && variant != CaosVariant.C1) {
+                LOGGER.info("Skipping trailing comma due to newline")
                 return
+            }
             val next = element.next
                     ?: return
             val toMark = TextRange(element.endOffset - 1, next.startOffset+1)
@@ -236,10 +243,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     .create()
             return
         }
-        val errorTextRange = if (element.text.contains("\n") || nextText.contains("\n") || previousIsCommaOrSpace)
-            element.textRange
-        else
-            TextRange.create(element.textRange.startOffset + 1, element.textRange.endOffset + 1)
+        val errorTextRange = element.textRange
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                 .range(errorTextRange)
                 .withFix(CaosScriptFixTooManySpaces(element))
@@ -394,13 +398,14 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotationTrailingWhiteSpace(variant: CaosVariant, element: CaosScriptTrailingSpace, annotationWrapper: AnnotationHolderWrapper) {
+        if (element.textContains(',')) {
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-whitespace"))
+                    .range(element)
+                    .withFix(CaosScriptFixTooManySpaces(element))
+                    .create()
+        }
         if (variant.isNotOld)
             return
-        /*
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-whitespace"))
-                .range(element)
-                .withFix(CaosScriptFixTooManySpaces(element))
-                .create()*/
     }
 
     companion object {
@@ -409,7 +414,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         private val COMMA_SPACED = "(\\s+,\\s*)||(\\s*,\\s+)".toRegex()
         private val TRAILING_SPACE_REGEX = "[ ]+[,]?\n".toRegex()
         private val WHITE_SPACE = "[ ]+".toRegex()
-        private val COMMA_NEW_LINE_REGEX = "([,]|[\\s])+".toRegex()
+        private val COMMA_NEW_LINE_REGEX = "([,]|\\s)+".toRegex()
 
         internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
             if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
