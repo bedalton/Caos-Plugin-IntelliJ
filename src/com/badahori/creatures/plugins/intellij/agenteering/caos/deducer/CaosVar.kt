@@ -60,3 +60,5 @@ sealed class CaosAnimation {
     data class Animation(val poseList:List<Int>, val repeats:Boolean, val repeatsFrom:Int? = null) : CaosAnimation()
     data class ErrorAnimation(val errorMessage:String) : CaosAnimation()
 }
+
+val CaosVar.isNumeric get() = this is CaosVar.CaosLiteral.CaosInt || this is CaosVar.CaosLiteral.CaosFloat
