@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.intellij.codeInspection.IntentionAndQuickFixAction
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
@@ -23,7 +24,7 @@ class AppendStatementTerminator(elementIn: PsiElement, private val replacementTe
 
     private val pointer = SmartPointerManager.createPointer(elementIn)
 
-    override fun getFamilyName(): String = "CaosScript"
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun applyFix(project: Project, file: PsiFile?, editor: Editor?) {
         val element = pointer.element
