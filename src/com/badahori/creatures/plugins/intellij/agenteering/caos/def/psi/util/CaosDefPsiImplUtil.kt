@@ -293,7 +293,7 @@ object CaosDefPsiImplUtil {
         val type = element.typeLiteral?.text
                 ?: return null
         val typeDef = element.valuesListName?.text?.substring(1)
-        val typeNote = element.typeNote?.text?.substring(1)
+        val typeNote = element.typeNoteStatement?.typeNote?.text?.substring(1)
         var intRange: Pair<Int, Int>? = null
         var length: Int? = null
         when {
@@ -346,7 +346,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getTypeNoteString(element: CaosDefValuesListElement) : String? {
-        return element.stub?.typeNote ?: element.typeNote?.text
+        return element.stub?.typeNote ?: element.typeNoteStatement?.typeNote?.text
     }
 
     @JvmStatic
