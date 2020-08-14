@@ -1,7 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.CaosFloat
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.CaosInt
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.isNumeric
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
@@ -12,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
@@ -79,7 +81,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         }
         val numParameters = chemParameters.size / 2
         val stringBuilder = StringBuilder()
-        val isStim = numParameters == 1 && STIM.matches(commandCall.commandString)
+        val format = ValuesFormat.getFormat(variant, commandCall.commandString)
         for (i in 0 until numParameters) {
             val pos = i * 2
             val argument = chemParameters[pos]
@@ -94,30 +96,37 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
                     ?: argument.text
                     ?: continue
             val amount = chemParameters[pos + 1].toCaosVar()
-            formatChemAmount(variant, stringBuilder, value, amount, isStim)
+            formatChemAmount(variant, stringBuilder, value, amount, format)
         }
         return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
     }
 
-    private fun formatChemAmount(variant: CaosVariant, stringBuilder: StringBuilder, value:String, amountVar:CaosVar, isStim:Boolean = false) {
+    private fun formatChemAmount(variant: CaosVariant, stringBuilder: StringBuilder, value:String, amountVar:CaosVar, format:ValuesFormat = ValuesFormat.NORMAL) {
 
-        val amount = if (amountVar is CaosVar.CaosLiteral.CaosInt)
-            amountVar.value * 1.0f
-        else if (amountVar is CaosVar.CaosLiteral.CaosFloat)
-            amountVar.value
-        else
-            0.0f
+        val amount = when (amountVar) {
+            is CaosInt -> amountVar.value * 1.0f
+            is CaosFloat -> amountVar.value
+            else -> 0.0f
+        }
 
-        if (isStim) {
+        if (format == ValuesFormat.STIM) {
             stringBuilder.append(value).append(" * ").append(amount)
             return
         }
         if (abs(amount) < 0.0003)
             return
+
         stringBuilder.append(", ")
-        if (amount > 0)
-            stringBuilder.append("+")
-        stringBuilder.append(amount).append(" ").append(value)
+        if (format == ValuesFormat.REVERSED) {
+            stringBuilder.append(value).append(" ")
+            if (amount > 0)
+                stringBuilder.append("+")
+            stringBuilder.append(amount)
+        } else {
+            if (amount > 0)
+                stringBuilder.append("+")
+            stringBuilder.append(amount).append(" ").append(value)
+        }
     }
 
 
@@ -169,8 +178,27 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     companion object {
         private val STIM = "[Ss][Tt][Ii][Mm]([ ][^ ]{4})*".toRegex()
         private val shouldFoldAll = "([Dd][Rr][Ii][Vv]|[Cc][Hh][Ee][Mm])".toRegex()
-        private val shouldFold = "([Ss][Tt][Ii][Mm]|[Dd][Rr][Ii][Vv]|[Ss][Ww][Aa][Yy]|[Cc][Hh][Ee][Mm])([ ][^ ]{4})*".toRegex()
-        private val firstFoldParameterRegex = "([Dd][Rr][Ii][Vv]([Ee])?)|([Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?)|([Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?)[0-9]*".toRegex()
+        private val shouldFold = "([Ss][Tt][Ii][Mm]|[Dd][Rr][Ii][Vv]|[Ss][Ww][Aa][Yy]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])([ ][^ ]{4})*".toRegex()
+        private val STIMULUS = "[Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?"
+        private val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
+        private val CHEMICAL = "[Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?"
+        private val CA = "[Cc][Aa][^0-9]*"
+        private val firstFoldParameterRegex = "($STIMULUS|$DRIVE|$CHEMICAL|$CA)[0-9]*".toRegex()
+
+        private enum class ValuesFormat {
+            NORMAL,
+            STIM,
+            REVERSED;
+            companion object {
+                fun getFormat(variant: CaosVariant, commandString: String): ValuesFormat {
+                    return when {
+                        variant.isNotOld && CaosScriptStimFoldingBuilder.STIM.matches(commandString) -> STIM
+                        commandString.equalsIgnoreCase("emit") -> REVERSED
+                        else -> NORMAL
+                    }
+                }
+            }
+        }
     }
 
 }
