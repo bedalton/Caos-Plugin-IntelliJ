@@ -231,7 +231,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             // Did check for trailing comma, but this is assumed to be removed before injection
             // I think bobcob does this and Cyberlife CAOS tool strips this as well.
             if (true || nextText.startsWith("\n")) {// && variant != CaosVariant.C1) {
-                LOGGER.info("Skipping trailing comma due to newline")
                 return
             }
             val next = element.next
