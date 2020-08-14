@@ -31,15 +31,15 @@ class CaosDefColorSettingsPage : ColorSettingsPage {
  */
 <command>SNDQ</command> (<variableType>command</variableType>) <variableName>filename</variableName> (<variableType>token</variableType>) <variableName>delay</variableName> (<variableType>integer</variableType>);
 
-<listName>@OiTo</listName> {
-	<listKey>0</listKey> = <listValue>No one</listValue>
+<valuesListName>@OiTo</valuesListName><valuesListType>:BitFlags</valuesListType> {
+	<valuesListKey>0</valuesListKey> = <valuesListValueName>No one</valuesListValueName>
     # Animals
-	<listKey>2</listKey> = <listValue>Kitty</listValue>
-	<listKey>4</listKey> = <listValue>The fishies - <listValueDescription>in the deep blue <listCommandLink>[sea]</listCommandLink></listValueDescription>
+	<valuesListKey>2</valuesListKey> = <valuesListValueName>Kitty</valuesListValueName>
+	<valuesListKey>4</valuesListKey> = <valuesListValueName>The fishies</valuesListValueName> - <valuesListValueDescription>in the deep blue <valuesListCommandLink>[sea]</valuesListCommandLink></valuesListValueDescription>
     #People
-    <listKey>8</listKey> = <listValue>Haji</listValue> - <listValueDescription>a punk just like any other boy</listValueDescription>
-    <listKey>16</listKey> = <listValue>Skins</listValue> - <listValueDescription>Trevor and his gang</listValueDescription>
-	<listKey>8</listKey> = <listValue>The World</listValue>
+    <valuesListKey>8</valuesListKey> = <valuesListValueName>Haji</valuesListValueName> - <valuesListValueDescription>a punk just like any other boy</valuesListValueDescription>
+    <valuesListKey>16</valuesListKey> = <valuesListValueName>Skins</valuesListValueName> - <valuesListValueDescription>Trevor and his gang</valuesListValueDescription>
+	<valuesListKey>8</valuesListKey> = <valuesListValueName>The World</valuesListValueName>
 }
         """
     }
@@ -64,16 +64,17 @@ class CaosDefColorSettingsPage : ColorSettingsPage {
         private val DESCRIPTORS = arrayOf(
                 AttributesDescriptor("Code Block", CaosDefSyntaxHighlighter.CODE_BLOCK),
                 AttributesDescriptor("Command", CaosDefSyntaxHighlighter.COMMAND),
-                AttributesDescriptor("Command Link", CaosDefSyntaxHighlighter.WORD_LINK),
-                AttributesDescriptor("Comment", CaosDefSyntaxHighlighter.COMMENT),
-                AttributesDescriptor("Comment Variable Type", CaosDefSyntaxHighlighter.COMMENT_VARIABLE_TYPE),
-                AttributesDescriptor("Comment @Tag", CaosDefSyntaxHighlighter.COMMENT_TAG),
+                AttributesDescriptor("Command Link", CaosDefSyntaxHighlighter.DOC_COMMENT_WORD_LINK),
+                AttributesDescriptor("Comment", CaosDefSyntaxHighlighter.DOC_COMMENT),
+                AttributesDescriptor("Comment Variable Type", CaosDefSyntaxHighlighter.DOC_COMMENT_VARIABLE_TYPE),
+                AttributesDescriptor("Comment @Tag", CaosDefSyntaxHighlighter.DOC_COMMENT_TAG),
                 AttributesDescriptor("Comment #Hashtag", CaosDefSyntaxHighlighter.DOC_COMMENT_HASHTAG),
-                AttributesDescriptor("Variable Link", CaosDefSyntaxHighlighter.VARIABLE_LINK),
-                AttributesDescriptor("Type Link", CaosDefSyntaxHighlighter.TYPE_LINK),
+                AttributesDescriptor("Variable Link", CaosDefSyntaxHighlighter.DOC_COMMENT_VARIABLE_LINK),
+                AttributesDescriptor("Type Link", CaosDefSyntaxHighlighter.DOC_COMMENT_TYPE_LINK),
                 AttributesDescriptor("Value List Name", CaosDefSyntaxHighlighter.VALUES_LIST_NAME),
+                AttributesDescriptor("Value List Type", CaosDefSyntaxHighlighter.VALUES_LIST_TYPE),
                 AttributesDescriptor("Value List Key", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_KEY),
-                AttributesDescriptor("Value List Value", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE),
+                AttributesDescriptor("Value List Value", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_NAME),
                 AttributesDescriptor("Value List Value Description", CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_DESCRIPTION),
                 AttributesDescriptor("In List Command Link", CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK),
                 AttributesDescriptor("Region Header", CaosDefSyntaxHighlighter.REGION_HEADER),
@@ -83,18 +84,19 @@ class CaosDefColorSettingsPage : ColorSettingsPage {
 
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
                 "command" to CaosDefSyntaxHighlighter.COMMAND,
-                "commandLink" to CaosDefSyntaxHighlighter.WORD_LINK,
-                "valuesListCommandLink" to CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK,
-                "listName" to CaosDefSyntaxHighlighter.VALUES_LIST_NAME,
-                "listKey" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_KEY,
-                "typeLink" to CaosDefSyntaxHighlighter.TYPE_LINK,
+                "commandLink" to CaosDefSyntaxHighlighter.DOC_COMMENT_WORD_LINK,
+                "typesLink" to CaosDefSyntaxHighlighter.DOC_COMMENT_TYPE_LINK,
                 "variableName" to CaosDefSyntaxHighlighter.VARIABLE_NAME,
                 "variableType" to CaosDefSyntaxHighlighter.VARIABLE_TYPE,
-                "commentVariableType" to CaosDefSyntaxHighlighter.COMMENT_VARIABLE_TYPE,
-                "variableLink" to CaosDefSyntaxHighlighter.VARIABLE_LINK,
-                "listValue" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE,
-                "listValueDescription" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_DESCRIPTION,
-                "listCommandLink" to CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK
+                "commentVariableType" to CaosDefSyntaxHighlighter.DOC_COMMENT_VARIABLE_TYPE,
+                "variableLink" to CaosDefSyntaxHighlighter.DOC_COMMENT_VARIABLE_LINK,
+                "valuesListCommandLink" to CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK,
+                "valuesListName" to CaosDefSyntaxHighlighter.VALUES_LIST_NAME,
+                "valuesListType" to CaosDefSyntaxHighlighter.VALUES_LIST_TYPE,
+                "valuesListKey" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_KEY,
+                "valuesListValueName" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_NAME,
+                "valuesListValueDescription" to CaosDefSyntaxHighlighter.VALUES_LIST_VALUE_DESCRIPTION,
+                "valuesListCommandLink" to CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK
         )
     }
 }

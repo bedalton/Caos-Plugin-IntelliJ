@@ -118,7 +118,7 @@ private arguments_list_recover
 
 
 values_list_element
-	::= values_list_name (COLON type_note)? values_list_body
+	::= values_list_name type_note_statement? values_list_body
 	{
 		pin=1;
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub"
@@ -497,13 +497,20 @@ doc_comment_variable_type
 
 private variable_type_tail
 	::= values_list_name
-	|	COLON type_note
+	|	type_note_statement
 	|	variable_tail_limits
 	|	variable_file_type
 	;
 
 variable_file_type
 	::= AT_FILE
+	;
+
+type_note_statement
+	::= COLON type_note
+	{
+		pin=1
+	}
 	;
 
 type_note
