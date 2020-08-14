@@ -95,7 +95,6 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
                     ?: continue
             val amount = chemParameters[pos + 1].toCaosVar()
             formatChemAmount(variant, stringBuilder, value, amount, isStim)
-            stringBuilder.append(value)
         }
         return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
     }
