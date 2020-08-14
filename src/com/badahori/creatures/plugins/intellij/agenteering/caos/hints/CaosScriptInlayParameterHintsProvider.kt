@@ -5,7 +5,6 @@ import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.psi.PsiElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
@@ -14,9 +13,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 
 enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
@@ -25,6 +24,15 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
+            (element as? CaosScriptClassifier)?.let { classifier ->
+                if (classifier.getPreviousNonEmptySibling(false)?.text?.equalsIgnoreCase("scrp").orFalse()) {
+                    return listOfNotNull(
+                            InlayInfo("family:", element.family.startOffset),
+                            element.genus?.let { InlayInfo("genus:", it.startOffset) },
+                            element.species?.let { InlayInfo("species:", it.startOffset) }
+                    ).toMutableList()
+                }
+            }
             val commandElement = element as? CaosScriptCommandElement
                     ?: return mutableListOf()
             val referencedCommand = getCommand(commandElement)
