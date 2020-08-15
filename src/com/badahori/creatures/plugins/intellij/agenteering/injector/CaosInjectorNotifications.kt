@@ -50,7 +50,7 @@ object CaosInjectorNotifications {
      * @param content   notification text
      * @param type      notification type
      */
-    public fun show(project: Project, title: String, content: String,
+    fun show(project: Project, title: String, content: String,
                     type: NotificationType) {
         show(project, title, content, NOTIFICATION_GROUP, type, null);
     }
@@ -64,7 +64,7 @@ object CaosInjectorNotifications {
      * @param type      notification type
      * @param listener  optional listener
      */
-    public fun show(project: Project, title: String, content: String,
+    fun show(project: Project, title: String, content: String,
                     type: NotificationType, listener: NotificationListener?) {
         show(project, title, content, NOTIFICATION_GROUP, type, listener);
     }
@@ -79,7 +79,7 @@ object CaosInjectorNotifications {
      * @param type     notification type
      * @param listener optional listener
      */
-    public fun show(project: Project, title: String, content: String,
+    fun show(project: Project, title: String, content: String,
                     group: NotificationGroup, type: NotificationType,
                     listener: NotificationListener?) {
         val notification: Notification = group.createNotification(title, content, type, listener);
