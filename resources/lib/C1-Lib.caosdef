@@ -152,7 +152,7 @@ BABY (integer);
   	base 6 anim 0123 over anim [450]
   	mvby 3 0
     retn
- * }#
+   }#
  * #AgentSprites
  *
  * @param {index} (integer) - new base image
