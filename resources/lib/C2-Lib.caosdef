@@ -810,11 +810,17 @@ DDE: LNEU (command) flags (integer);
  * Output locations and information about brain lobes. The first number returned is the number of
  * lobes, and then the information about them is returned in the following format, with the
  * ‘|’ symbol separating fields:
- * X position start Y position start Width
- * Height
- * Flags
- * Number of Dendrites Dendrite type 0 source Dendrite type 0 minimum Dendrite type 0 maximum
- * Dendrite type 1 source Dendrite type 1 minimum Dendrite type 1 maximum
+ * 	-X position start
+ * 	-Y position start Width
+ * 	-Height
+ * 	-Flags
+ * 	-Number of Dendrites
+ * 	-Dendrite type 0 source
+ *	-Dendrite type 0 minimum
+ *	-Dendrite type 0 maximum
+ * 	-Dendrite type 1 source
+ *	-Dendrite type 1 minimum
+ *	-Dendrite type 1 maximum
  * #Debug
  *
  */
