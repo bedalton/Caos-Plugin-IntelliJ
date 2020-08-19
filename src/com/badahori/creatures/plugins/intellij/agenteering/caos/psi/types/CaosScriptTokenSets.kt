@@ -1,9 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
@@ -67,9 +65,9 @@ class CaosScriptTokenSets {
                 TokenType.WHITE_SPACE,
                 CaosScript_SPACE,
                 CaosScript_NEWLINE,
-                CaosScript_NEW_LINE
+                CaosScript_NEW_LINE,
+                CaosScript_NEW_LINE_LIKE
         )
-
         @JvmStatic
         val NUMBER_LITERALS = create(
                 CaosScript_INT,
