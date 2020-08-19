@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.*
+import kotlin.contracts.contract
 
 fun String?.nullIfEmpty(): String? {
     return if (this.isNullOrBlank())
@@ -12,10 +13,16 @@ fun String?.nullIfEmpty(): String? {
 }
 
 fun String?.isNotNullOrEmpty() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNullOrEmpty != null)
+    }
     return this != null && this.isNotEmpty()
 }
 
 fun String?.isNotNullOrBlank() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNullOrBlank != null)
+    }
     return this != null && this.isNotBlank()
 }
 
