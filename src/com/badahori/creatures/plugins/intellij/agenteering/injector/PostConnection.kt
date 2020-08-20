@@ -33,7 +33,7 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
         }
         connection.doOutput = true
         connection.doInput = true
-        connection.connectTimeout = 3000
+        connection.connectTimeout = 4000
         connection.requestMethod = "POST"
         try {
             connection.outputStream.let {
