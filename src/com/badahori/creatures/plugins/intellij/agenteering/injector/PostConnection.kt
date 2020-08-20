@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.openapi.project.Project
 import java.io.BufferedReader
 import java.io.IOException
@@ -24,7 +25,7 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
             URL("http://$path")
     }
 
-    override fun inject(caos: String): InjectionStatus {
+    override fun inject(caos:String): InjectionStatus  {
         val connection: HttpURLConnection = try {
             url.openConnection() as HttpURLConnection
         } catch (e:IOException) {
@@ -32,7 +33,8 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
         }
         connection.doOutput = true
         connection.doInput = true
-            connection.setRequestMethod("POST")
+        connection.connectTimeout = 3000
+        connection.requestMethod = "POST"
         try {
             connection.outputStream.let {
                 it.write(caos.toByteArray())
@@ -55,6 +57,7 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
         } catch (e:Exception) {
             return InjectionStatus.Bad("Failed to read response from caos server. Error: ${e.message}")
         }
+        LOGGER.info("RESPONSE: $response")
         val json = com.google.gson.JsonParser().parse(response)
         return json.asJsonObject.let {
             val message = try {
