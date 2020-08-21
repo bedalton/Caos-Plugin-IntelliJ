@@ -1644,6 +1644,7 @@ private expects_string
 
 expects_value ::= <<pushExpectation 'ANY'>>rvalue<<popExpectation>>
 	{
+		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptExpectsValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
