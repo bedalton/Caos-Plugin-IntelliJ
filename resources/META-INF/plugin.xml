@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.3</version>
+  <version>0.01.04</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -33,6 +33,18 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.04</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>BASE command not registering due to bad doc comment</li>
+          <li>Erroneous error on char '\\'</li>
+          <li>Extra spaces not being marked as errors</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Fold commands to single line</li>
+        </ul>
       <li>
         <b>Version: 0.01.03</b><br/>
         <b>#Fixes</b>

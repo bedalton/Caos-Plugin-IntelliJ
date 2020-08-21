@@ -143,6 +143,7 @@ class CaosScriptTypesInspection : LocalInspectionTool()  {
         private val ANY_TYPE = listOf(CaosExpressionValueType.ANY, CaosExpressionValueType.VARIABLE, CaosExpressionValueType.UNKNOWN)
         private val NUMERIC = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL, CaosExpressionValueType.INT)
         private val AGENT_LIKE = listOf(CaosExpressionValueType.AGENT, CaosExpressionValueType.NULL)
+        private val STRING_LIKE = listOf(CaosExpressionValueType.STRING, CaosExpressionValueType.C1_STRING, CaosExpressionValueType.HEXADECIMAL)
         /**
          * Determine whether types are similar despite having different types
          */
@@ -156,6 +157,8 @@ class CaosScriptTypesInspection : LocalInspectionTool()  {
             if (actualType in FLOAT_LIKE && expectedType in FLOAT_LIKE)
                 return true
             if (actualType in AGENT_LIKE && expectedType in AGENT_LIKE)
+                return true
+            if (actualType in STRING_LIKE && expectedType in STRING_LIKE)
                 return true
             if (variant.isNotOld)
                 return actualType in NUMERIC && expectedType in NUMERIC

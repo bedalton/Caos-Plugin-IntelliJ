@@ -1198,7 +1198,7 @@ new_line
 	::= NEWLINE
 	{
 		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
 			"com.intellij.psi.PsiWhiteSpace"
 		]
 	}
@@ -1220,6 +1220,12 @@ private space
 
 trailing_space
 	::= space_like_or_newline+
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+			"com.intellij.psi.PsiWhiteSpace"
+		]
+	}
 	;
 
 expression

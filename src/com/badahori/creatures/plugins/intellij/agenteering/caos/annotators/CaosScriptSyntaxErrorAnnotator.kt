@@ -54,7 +54,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
             is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper)
             is CaosScriptCharacter -> {
-                if (element.charChar?.textLength.orElse(0) > 1) {
+                if (element.charChar?.textLength.orElse(0) > 1 && element.charChar?.text != "\\\\") {
                     simpleError(element.charChar?:element, "Char value can be only one character", annotationWrapper)
                 }
             }
@@ -222,27 +222,31 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         //val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
         val text = element.text
-        if (text.trim(' ',' ',',').isEmpty() && !previousIsCommaOrSpace)
-            return
         // Is a single space, and not followed by terminating comma or newline
         if (text.length == 1 && !(COMMA_NEW_LINE_REGEX.matches(nextText) || previousIsCommaOrSpace))
             return
-        if (text.isEmpty()) {
-            // Did check for trailing comma, but this is assumed to be removed before injection
-            // I think bobcob does this and Cyberlife CAOS tool strips this as well.
-            if (true || nextText.startsWith("\n")) {// && variant != CaosVariant.C1) {
-                return
-            }
+        // Psi element is empty, denoting a missing space, possible after quote or bytestring or number
+        if (text.isEmpty() && variant.isOld) {
             val next = element.next
                     ?: return
-            val toMark = TextRange(element.endOffset - 1, next.startOffset+1)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.missing-whitespace"))
+            val toMark = TextRange(element.startOffset - 1, next.startOffset+1)
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                     .range(toMark)
                     .withFix(CaosScriptInsertSpaceFix(next))
                     .create()
             return
         }
-        val errorTextRange = element.textRange
+        // Did check for trailing comma, but this is assumed to be removed before injection
+        // I think bobcob does this and Cyberlife CAOS tool strips this as well.
+        if (nextText.startsWith("\n") || element.node.isDirectlyPrecededByNewline()) {// && variant != CaosVariant.C1) {
+            return
+        }
+        val errorTextRange = element.textRange.let {
+            if (element.text.length > 1)
+                TextRange(it.startOffset + 1, it.endOffset)
+            else
+                it
+        }
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                 .range(errorTextRange)
                 .withFix(CaosScriptFixTooManySpaces(element))
@@ -251,6 +255,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .key(CaosScriptTrimErrorSpaceBatchFix.HIGHLIGHT_DISPLAY_KEY)
                 .registerFix()
                 .create()
+        return
     }
 
     private fun annotateComment(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
