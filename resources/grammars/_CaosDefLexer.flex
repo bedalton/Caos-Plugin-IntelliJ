@@ -158,7 +158,7 @@ COMMENT=[*][^\n\*]*
  	{EQ}						{ return CaosDef_CODE_BLOCK_EQ; }
     {AND_OR}					{ return CaosDef_CODE_BLOCK_AND_OR; }
   	{COMMENT}					{ return CaosDef_CODE_BLOCK_COMMENT;}
-    "}"							{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
+    \}#?						{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
     \s+							{ return WHITE_SPACE; }
  	[^]							{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }

@@ -14,8 +14,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
@@ -143,7 +145,9 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
             Injector.postError(project, "Variant error", "File variant could not be determined")
             return@handler
         }
-        Injector.inject(project, variant, content)
+        executeOnPooledThread {
+            Injector.inject(project, variant, content)
+        }
     }
     return toolbar.panel
 }
