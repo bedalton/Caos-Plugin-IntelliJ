@@ -49,28 +49,30 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
+
+        // Get previous token, in case a special completion is in order
+        val previousToken = element.getPreviousNonEmptySibling(false)
+        val previousTokenText = previousToken?.text?.toUpperCase()
+
+        // Previous token is CLAS, add class generator
+        if (previousTokenText == "CLAS") {
+            val builderElement = LookupElementBuilder
+                    .create("")
+                    .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
+                    .withInsertHandler(GenerateClasIntegerInsertHandler)
+            resultSet.addElement(builderElement)
+            resultSet.stopHere()
+            return
+        }
+
         //If previous is number, return
         if (IS_NUMBER.matches( previous ?: "")) {
             resultSet.stopHere()
             return
         }
 
-        // Get previous token, in case a special completion is in order
-        val previousToken = element.getPreviousNonEmptySibling(false)?.text?.toUpperCase()
-
-        // Previous token is CLAS, add class generator
-        if (previousToken == "CLAS") {
-            val builderElement = LookupElementBuilder
-                    .create("")
-                    .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
-                    .withInsertHandler(GenerateClasIntegerAction)
-            resultSet.addElement(builderElement)
-            resultSet.stopHere()
-            return
-        }
-
         // Previous token is DDE: PICT, add PICT value generator
-        if (previousToken == "DDE: PICT") {
+        if (previousTokenText == "DDE: PICT") {
             val builderElement = LookupElementBuilder
                     .create("")
                     .withPresentableText(GENERATE_DDE_PICT_LOOKUP_STRING)

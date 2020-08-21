@@ -1,19 +1,33 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementFactory
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.xml.util.PsiElementPointer
 import javax.swing.*
 
 
 internal const val GENERATE_CLAS_LOOKUP_STRING = "Generate CLAS value"
 
-internal object GenerateClasIntegerAction : InsertHandler<LookupElement> {
+internal object GenerateClasIntegerInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
         val position = context.editor.caretModel.currentCaret.offset
         invokeLater {
@@ -22,7 +36,51 @@ internal object GenerateClasIntegerAction : InsertHandler<LookupElement> {
     }
 }
 
-class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(editor.project, true) {
+class GenerateClasIntegerAction(element:CaosScriptExpectsValueOfType) : LocalQuickFix {
+    private val pointer = SmartPointerManager.createPointer(element)
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getName(): String = "Generate CLAS value"
+    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        invokeLater {
+            ClasForm(project, pointer).showAndGet()
+        }
+    }
+
+}
+
+class ClasForm private constructor(project: Project) : DialogWrapper(project, true) {
+
+    private var insert:((value:Int) -> Unit)? = null
+
+    constructor(position: Int, editor: Editor) : this(editor.project!!) {
+        insert = { clas: Int ->
+            runWriteAction {
+                try {
+                    EditorUtil.insertText(editor, "$clas", position, true)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    LOGGER.severe("Failed to insert CLAS text with error: ${e.message}")
+                }
+            }
+        }
+    }
+
+    constructor(project: Project, pointer:SmartPsiElementPointer<CaosScriptExpectsValueOfType>) : this(project) {
+        insert = { clas: Int ->
+            runUndoTransparentWriteAction action@{
+                try {
+                    val element = pointer.element?.rvalue
+                            ?: return@action
+                    val newValue = CaosScriptPsiElementFactory.createNumber(project, clas)
+                    element.replace(newValue)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    LOGGER.severe("Failed to create CLAS value with error: ${e.message}")
+                }
+            }
+        }
+    }
+
 
     private val family = JFormattedTextField().apply {
         value = ""
@@ -65,13 +123,8 @@ class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(ed
         val fVal = family.text.toInt()
         val gVal = genus.text.toInt()
         val sVal = species.text.toInt()
-        runWriteAction {
-            try {
-                val clas = CaosAgentClassUtils.toClas(fVal, gVal, sVal)
-                EditorUtil.insertText(editor, "$clas", position, true)
-            } catch (e: Exception) {
-            }
-        }
+        val clas = CaosAgentClassUtils.toClas(fVal, gVal, sVal)
+        insert?.let { it(clas) }
         super.doOKAction()
     }
 
@@ -101,5 +154,4 @@ class ClasForm(val position: Int, private val editor: Editor) : DialogWrapper(ed
             return ValidationInfo("Value must be greater than 1", field)
         return null
     }
-
 }

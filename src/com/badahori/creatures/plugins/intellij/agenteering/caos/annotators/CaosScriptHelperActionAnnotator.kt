@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateClasIntegerAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
@@ -10,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseCh
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
@@ -44,8 +46,16 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                     val variant = o.containingFile.module?.variant ?: CaosVariant.UNKNOWN
                     annotateAssignment(variant, it, holder)
                 }
-                //Anotatte
+                //Annotate
                 addExpandCollapseLinesActions(o, holder)
+            }
+
+            override fun visitExpectsValue(o: CaosScriptExpectsValue) {
+                annotateExpectsValue(o, holder)
+            }
+
+            override fun visitExpectsInt(o: CaosScriptExpectsInt) {
+                annotateExpectsValue(o, holder)
             }
 
             override fun visitSpaceLikeOrNewline(o: CaosScriptSpaceLikeOrNewline) {
@@ -54,6 +64,29 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
         }
     }
 
+
+    private fun annotateExpectsValue(argument:CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
+        LOGGER.info("Helper Annotator: Expects value of type")
+        val index = argument.index
+        val command = argument.getParentOfType(CaosScriptCommandElement::class.java)
+                ?: return
+        val token = command
+                .commandString
+                .toUpperCase()
+        when {
+            token == "SETV" && index == 1 -> {
+                LOGGER.info("IS SETV: IS ARGUMENT 1")
+                val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
+                        ?: return
+                LOGGER.info("PREV TOKEN IS $previousToken")
+                when (previousToken) {
+                    "CLAS" -> holder.registerProblem(argument, "", ProblemHighlightType.INFORMATION, GenerateClasIntegerAction(argument))
+                }
+            }
+            token == "SETV" -> LOGGER.info("SETV with argument at index: $index")
+            else -> LOGGER.info("Token is $token")
+        }
+    }
 
     private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, holder: ProblemsHolder) {
         val next = element.next
