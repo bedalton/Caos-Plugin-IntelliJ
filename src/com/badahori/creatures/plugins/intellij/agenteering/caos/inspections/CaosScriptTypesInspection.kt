@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
@@ -68,7 +69,7 @@ class CaosScriptTypesInspection : LocalInspectionTool()  {
     private fun annotateArgument(element: CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
         val variant = element.containingCaosFile?.variant
                 ?: return
-        val rvalue = element.rvalue ?: return
+        val rvalue = try {element.rvalue } catch(e:Exception) { null } ?: return
         if ((rvalue.expression ?: rvalue).getChildOfType(CaosScriptIsVariable::class.java) != null) {
             return
         }
@@ -113,7 +114,7 @@ class CaosScriptTypesInspection : LocalInspectionTool()  {
                 ?.firstOrNull()
                 ?.element as? CaosDefCompositeElement
                 ?: return null
-        val containingCommand = containingToken.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+        val containingCommand = containingToken.getParentOfType(CaosDefCommandDefElement::class.java)
         return containingCommand?.parameterStructs?.getOrNull(index)
     }
 
@@ -125,7 +126,7 @@ class CaosScriptTypesInspection : LocalInspectionTool()  {
                 .multiResolve(true)
                 .firstOrNull()
                 ?.element as? CaosDefCompositeElement)
-                ?.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+                ?.getParentOfType(CaosDefCommandDefElement::class.java)
                 ?.returnTypeString
         return returnTypeString?.let { getCaosTypeStringAsType(it) } ?: caosVar.simpleType
     }
