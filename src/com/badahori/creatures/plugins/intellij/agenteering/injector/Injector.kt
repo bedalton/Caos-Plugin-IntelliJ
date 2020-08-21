@@ -4,9 +4,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosPluginSettingsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 
 object Injector {
@@ -33,7 +35,9 @@ object Injector {
     fun inject(project: Project, variant: CaosVariant, caosIn: String): Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
-            CaosInjectorNotifications.show(project, "ConnectionException", error, NotificationType.ERROR)
+            invokeLater {
+                CaosInjectorNotifications.show(project, "ConnectionException", error, NotificationType.ERROR)
+            }
             return false
         }
         if (variant.isOld) {
@@ -82,26 +86,34 @@ object Injector {
         val message = response.response.nullIfEmpty()?.let {
             "\n\tOutput: $it"
         } ?: ""
-        CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
+        invokeLater {
+            CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
+        }
     }
 
     @JvmStatic
     internal fun postInfo(project: Project, title: String, message: String) {
-        CaosInjectorNotifications.show(project, title, message, NotificationType.INFORMATION)
+        invokeLater {
+            CaosInjectorNotifications.show(project, title, message, NotificationType.INFORMATION)
+        }
     }
 
     @JvmStatic
     internal fun postError(project: Project, title: String, message: String) {
-        CaosInjectorNotifications.show(project, title, message, NotificationType.ERROR)
+        invokeLater {
+            CaosInjectorNotifications.show(project, title, message, NotificationType.ERROR)
+        }
     }
 
     @JvmStatic
     fun postWarning(project: Project, title: String, message: String) {
-        CaosInjectorNotifications.show(project, title, message, NotificationType.WARNING)
+        invokeLater {
+            CaosInjectorNotifications.show(project, title, message, NotificationType.WARNING)
+        }
     }
 
     private fun getConnection(variant: CaosVariant, project: Project): CaosConnection? {
-        val injectUrl = CaosScriptProjectSettings.getInjectURL(project)
+        val injectUrl = runReadAction { CaosScriptProjectSettings.getInjectURL(project) }
         if (injectUrl != null) {
             return PostConnection(injectUrl, variant)
         }

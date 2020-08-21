@@ -152,7 +152,7 @@ BABY (integer);
   	base 6 anim 0123 over anim [450]
   	mvby 3 0
     retn
- * }#
+   }#
  * #AgentSprites
  *
  * @param {index} (integer) - new base image
@@ -426,9 +426,9 @@ DDE: HATC (command);
 DDE: LIVE (command);
 
 /*
- * output the locations of the brain lobes of the subject of the macro
- * Format is """ *'*${x_start}#[']{y_start}#[']width#[']height#['] """ after a leading count of
- * the number of lobes based on the 64x48 grid of neurones
+ * Output the locations of the brain lobes of the subject of the macro
+ * Format is " 'x_start'y_start'width'height' " after a leading count
+ * of the number of lobes based on the 64x48 grid of neurones
  * #Debug
  *
  */

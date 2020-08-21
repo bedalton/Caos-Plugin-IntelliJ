@@ -966,7 +966,7 @@ object CaosScriptPsiImplUtil {
                     it.species?.expectsInt
             )
         }
-        return listOf(command.expectsAgent as CaosScriptArgument)
+        return listOfNotNull(command.expectsAgent as? CaosScriptArgument)
     }
 
     @JvmStatic
