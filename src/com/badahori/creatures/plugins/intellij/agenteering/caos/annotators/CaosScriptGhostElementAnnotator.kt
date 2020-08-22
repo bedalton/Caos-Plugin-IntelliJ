@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -30,16 +31,27 @@ class CaosScriptGhostElementAnnotator : Annotator {
         if (element !is CaosScriptCompositeElement || element.hasParentOfType(CaosDefCompositeElement::class.java))
             return
         // Get the expected terminator
-        val terminator = when (element) {
-            is CaosScriptDoifStatement -> "ENDI"
-            is CaosScriptSubroutine -> "RETN"
-            is CaosScriptEnumNextStatement -> "NEXT"
-            is CaosScriptRepeatStatement -> "REPE"
-            is CaosScriptLoopStatement -> {
-                annotate(element, listOf("UNTL","EVER"), annotationWrapper)
-                null
+        when (element) {
+            is CaosScriptDoifStatement -> annotate(element, "ENDI", annotationWrapper) {
+                it.cEndi != null
             }
-            is CaosScriptEnumSceneryStatement -> "NSCN"
+            is CaosScriptSubroutine -> annotate(element, "RETN", annotationWrapper) {
+                it.cRetn != null
+            }
+            is CaosScriptEnumNextStatement -> annotate(element, "NEXT", annotationWrapper) {
+                it.cNext != null || it.cNscn != null
+            }
+            is CaosScriptRepeatStatement -> annotate(element, "REPE", annotationWrapper) {
+                it.cRepe != null
+            }
+            is CaosScriptLoopStatement -> {
+                annotate(element, listOf("UNTL", "EVER"), annotationWrapper) { it ->
+                    it.loopTerminator?.let { it.cEver != null || it.cUntl != null}.orFalse()
+                }
+            }
+            is CaosScriptEnumSceneryStatement -> annotate(element, "NSCN", annotationWrapper) {
+                it.cNext != null || it.cNscn != null
+            }
             // Ghost element here is SETV which is optional in grammar for C1 and C2, but not optional in CAOS
             is CaosScriptCAssignment -> {
                 if (element.firstChild is CaosScriptLvalue) {
@@ -48,21 +60,16 @@ class CaosScriptGhostElementAnnotator : Annotator {
                             .withFix(CaosScriptInsertBeforeFix("Prepend SETV to statement", "SETV".matchCase(element.lastChild.text), element))
                             .create()
                 }
-                null
             }
-            // Element does not have possible ghost element
-            else -> null
-        } ?: return
-        // Annotate the statement
-        annotate(element, terminator, annotationWrapper)
+        }
     }
 
     /**
      * Actually annotate element when there is only one ghost element option
      */
-    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedToken:String, annotationWrapper: AnnotationHolderWrapper) {
+    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedToken:String, annotationWrapper: AnnotationHolderWrapper, check:(element:PsiT)->Boolean) {
         // If block ends with expected command, not need to do more
-        if (element.lastChild.text.trim().toUpperCase().endsWith(expectedToken))
+        if (check(element))
             return
         // Get next element after control block
         var range:PsiElement? = element.next
@@ -85,11 +92,9 @@ class CaosScriptGhostElementAnnotator : Annotator {
      * Annotate multiple options for ghost element.
      * Only used for LOOP.. UNTL/EVER
      */
-    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedTokens:List<String>, annotationWrapper: AnnotationHolderWrapper) {
-        for(expectedToken in expectedTokens) {
-            ProgressIndicatorProvider.checkCanceled()
-            if (element.lastChild.text.toUpperCase().contains(expectedToken))
-                return
+    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedTokens:List<String>, annotationWrapper: AnnotationHolderWrapper, check:(element:PsiT)->Boolean) {
+        if (check(element)) {
+            return
         }
         for(expectedToken in expectedTokens) {
             ProgressIndicatorProvider.checkCanceled()
