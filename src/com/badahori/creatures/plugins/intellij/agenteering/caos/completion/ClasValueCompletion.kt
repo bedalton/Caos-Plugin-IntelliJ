@@ -69,7 +69,7 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
         insert = { clas: Int ->
             runUndoTransparentWriteAction action@{
                 try {
-                    val element = pointer.element?.rvalue
+                    val element = pointer.element?.rvalue?.expression
                             ?: return@action
                     val newValue = CaosScriptPsiElementFactory.createNumber(project, clas)
                     element.replace(newValue)
