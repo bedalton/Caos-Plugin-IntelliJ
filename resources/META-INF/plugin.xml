@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.05</version>
+  <version>0.01.04</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -34,16 +34,10 @@
   <change-notes><![CDATA[
     <ul>
       <li>
-        <b>Version: 0.01.05</b><br/>
-        <b>#Fixes</b>
-        <ul>
-          <li>Missing errors on unterminated control statements (ie. missing ENDI)
-        </ul>
-      </li>
-      <li>
         <b>Version: 0.01.04</b><br/>
         <b>#Fixes</b>
         <ul>
+          <li>Missing errors on unterminated control statements (ie. missing ENDI)
           <li>BASE command not registering due to bad doc comment</li>
           <li>Erroneous error on char '\\'</li>
           <li>Extra spaces not being marked as errors</li>
@@ -51,6 +45,7 @@
         <b>#Improvements</b>
         <ul>
           <li>Fold commands to single line</li>
+          <li>Allow separate colorization of VAxx,OVx and MVxx variables</li>
         </ul>
       </li>
       <li>
