@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
@@ -26,6 +27,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
 
@@ -115,17 +117,20 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         }
         if (abs(amount) < 0.0003)
             return
-
+        val amountString = if (variant.isOld)
+            "${amount.roundToInt()}"
+        else
+            "$amount"
         stringBuilder.append(", ")
         if (format == ValuesFormat.REVERSED) {
             stringBuilder.append(value).append(" ")
             if (amount > 0)
                 stringBuilder.append("+")
-            stringBuilder.append(amount)
+            stringBuilder.append(amountString)
         } else {
             if (amount > 0)
                 stringBuilder.append("+")
-            stringBuilder.append(amount).append(" ").append(value)
+            stringBuilder.append(amountString).append(" ").append(value)
         }
     }
 
