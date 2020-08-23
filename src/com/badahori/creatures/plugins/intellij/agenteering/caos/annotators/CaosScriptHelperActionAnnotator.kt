@@ -66,7 +66,6 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
 
 
     private fun annotateExpectsValue(argument:CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
-        LOGGER.info("Helper Annotator: Expects value of type")
         val index = argument.index
         val command = argument.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return
@@ -75,16 +74,12 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                 .toUpperCase()
         when {
             token == "SETV" && index == 1 -> {
-                LOGGER.info("IS SETV: IS ARGUMENT 1")
                 val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
                         ?: return
-                LOGGER.info("PREV TOKEN IS $previousToken")
                 when (previousToken) {
                     "CLAS" -> holder.registerProblem(argument, "", ProblemHighlightType.INFORMATION, GenerateClasIntegerAction(argument))
                 }
             }
-            token == "SETV" -> LOGGER.info("SETV with argument at index: $index")
-            else -> LOGGER.info("Token is $token")
         }
     }
 
