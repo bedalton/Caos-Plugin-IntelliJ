@@ -34,9 +34,9 @@ object CaosScriptInferenceUtil {
             if (argument.namedGameVar != null || argument.expression?.namedGameVar != null) {
                 return argument.toCaosVar()
             }
-            val variable = argument.varToken
+            /*val variable = argument.varToken
                     ?: argument.expression?.varToken
-            /*variable?.let varLet@{
+            variable?.let varLet@{
                 inferPreviouslyAssignedType(it)?.let { value ->
                     if (value.simpleType !in skipTypes)
                         return value
