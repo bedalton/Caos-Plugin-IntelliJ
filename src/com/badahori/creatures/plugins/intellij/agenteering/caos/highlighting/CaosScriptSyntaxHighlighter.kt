@@ -28,7 +28,9 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             in CaosScriptTokenSets.COMMENTS -> COMMENT
             in CaosScriptTokenSets.ANIMATION_STRING -> ANIMATION
             in CaosScriptTokenSets.STRING_LIKE -> STRING
-            in CaosScriptTokenSets.Variables -> VAR_TOKEN
+            CaosScriptTypes.CaosScript_VA_XX, CaosScriptTypes.CaosScript_VAR_X -> VAR_TOKEN_VA
+            CaosScriptTypes.CaosScript_OV_XX, CaosScriptTypes.CaosScript_OBV_X -> VAR_TOKEN_OV
+            CaosScriptTypes.CaosScript_MV_XX -> VAR_TOKEN_MV
             in CaosScriptTokenSets.NUMBER_LITERALS -> NUMBER
             in CaosScriptTokenSets.KEYWORDS -> KEYWORDS
             CaosScriptTypes.CaosScript_WORD -> TOKEN
@@ -50,7 +52,13 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val COMMENT: TextAttributesKey = createTextAttributesKey("CaosScript_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         @JvmStatic
-        val VAR_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+        val VAR_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+                @JvmStatic
+        val VAR_TOKEN_VA:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN_VA", VAR_TOKEN)
+        @JvmStatic
+        val VAR_TOKEN_OV:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN_OV", VAR_TOKEN)
+        @JvmStatic
+        val VAR_TOKEN_MV:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN_MV", VAR_TOKEN)
         @JvmStatic
         val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         @JvmStatic
