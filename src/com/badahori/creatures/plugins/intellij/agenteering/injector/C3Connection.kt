@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.substringFromEnd
 import com.intellij.notification.NotificationType
@@ -12,6 +11,7 @@ import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.concurrent.TimeUnit
 
 internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
@@ -28,7 +28,11 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
      */
     override fun inject(caos: String): InjectionStatus {
         // Ensure that the exe has been extracted and placed in accessible folder
-        val file = this.file
+        val file = try {
+            this.file
+        } catch (e: Exception) {
+            return InjectionStatus.BadConnection("Failed to locate injector exe in plugin library.")
+        }
         if (!file.exists()) {
             return InjectionStatus.BadConnection("Failed to initialize communication executable")
         }
@@ -69,8 +73,10 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
         // Parse result
         return try {
+            proc.waitFor(6, TimeUnit.SECONDS)
             val response = proc.inputStream.bufferedReader().readText().substringFromEnd(0, 1).trim().nullIfEmpty()
-                    ?: proc.errorStream.bufferedReader().readText()
+                    ?: proc.errorStream.bufferedReader().readText().nullIfEmpty()
+                    ?: "!ERRInjector returned un-formatted empty response"
             val code = if (response.length >= 4) {
                 response.substring(0, 4)
             } else
@@ -79,18 +85,19 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "!CMD" -> InjectionStatus.BadConnection("Internal plugin run error. " + response.substring(4))
                 "!CON" -> InjectionStatus.BadConnection(response.substring(4))
                 "!ERR" -> InjectionStatus.Bad(response.substring(4))
+                "!RES" -> InjectionStatus.Ok(response.substringFromEnd(4, 1))
                 else -> {
-                    if (!response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none{ it.matches(response)}) {
-                        InjectionStatus.Ok(response.substringFromEnd(0, 1))
-                    } else {
+                    if (response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none { it.matches(response) }) {
                         InjectionStatus.Bad(response.substringFromEnd(0, 1))
+                    } else {
+                        InjectionStatus.Bad("INJECTOR Exception: "+response.substringFromEnd(0, 1))
                     }
                 }
             }
         } catch (e: Exception) {
-            LOGGER.severe("Caos injection failed with error: "+e.message)
+            LOGGER.severe("Caos injection failed with error: " + e.message)
             e.printStackTrace()
-            InjectionStatus.Bad("Plugin Error: Response parsing failured with error: " + e.localizedMessage)
+            InjectionStatus.Bad("Plugin Error: Response parsing failed with error: " + e.message)
         }
     }
 
@@ -115,14 +122,14 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         return true
     }
 
-    override fun showAttribution(project: Project, variant:CaosVariant) {
+    override fun showAttribution(project: Project, variant: CaosVariant) {
         CaosInjectorNotifications.show(project, "Attribution", "${variant.code} caos injector uses modified version of CAOS-CLASS-LIBRARY @ https://github.com/AlbianWarp/Caos-Class-Library", NotificationType.INFORMATION)
     }
 
     /**
      * Ensures that the bundled exe is extracted to accessible location to be run
      */
-    private fun ensureExe(clear:Boolean): File {
+    private fun ensureExe(clear: Boolean): File {
         val pathTemp = "c3engine/$exeName"
         // have to use a stream
         val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
@@ -167,7 +174,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "Path number out of range",
                 "Not a Vehicle",
                 "ATTR/PERM change caused invalid map position",
-                "Invalid map position","Invalid agent ID",
+                "Invalid map position", "Invalid agent ID",
                 "Invalid compare operator for agents",
                 "Incompatible type: decimal expected",
                 "Internal: Unexpected type when fetching value",
@@ -207,7 +214,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "Invalid parameter to DBG#/DBGA ",
                 "RECYCLE ME",
                 "Invalid pose for PUPT/PUHL",
-                "Invalid string for ANMS - not a number","Number out of range in ANMS. Values must be from 0 to 255",
+                "Invalid string for ANMS - not a number", "Number out of range in ANMS. Values must be from 0 to 255",
                 "Error parsing CAOS script-command string",
                 "Error orderising macro for CAOS script-command string",
                 "Error processing script for scriptorium in CAOS script-command string",
@@ -279,6 +286,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "Expected any rvalue",
                 "Expected byte or '\\]'"
         )
+
         /**
          * Creates error regex expressions to test for error injections
          * May be annoying if false positives
@@ -297,7 +305,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
             }
         }
 
-        private fun escape(caos:String) : String {
+        private fun escape(caos: String): String {
             var escaped = caos.trim()
             // Remove last endm, as injection requires its removal
             if (escaped.toLowerCase().endsWith("endm")) {
