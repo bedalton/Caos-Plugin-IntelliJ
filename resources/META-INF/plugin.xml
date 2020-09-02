@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.4</version>
+  <version>0.01.5</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -34,7 +34,18 @@
   <change-notes><![CDATA[
     <ul>
       <li>
-        <b>Version: 0.01.04</b><br/>
+        <b>Version: 0.01.5</b><br/>
+        <b>#Fixes</b>
+        <ul>
+            <li>C3 injector reporting success on invalid output</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Remove CV+ injector dependents on .NET 4.5</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.4</b><br/>
         <b>#Fixes</b>
         <ul>
           <li>Missing errors on unterminated control statements (ie. missing ENDI)
@@ -49,7 +60,7 @@
         </ul>
       </li>
       <li>
-        <b>Version: 0.01.03</b><br/>
+        <b>Version: 0.01.3</b><br/>
         <b>#Fixes</b>
         <ul>
           <li>Exception on concurrent access to AST expectsArray</li>
@@ -65,7 +76,7 @@
     </ul>
     </li>
     <li>
-      <b>Version: 0.01.02</b>
+      <b>Version: 0.01.2</b>
       <ul>
         <li>fix autocomplete changing numbers to variables</li>
       </ul>
