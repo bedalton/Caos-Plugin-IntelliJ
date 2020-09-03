@@ -48,12 +48,36 @@ object Injector {
             }
         }
         val response = injectPrivate(project, variant, caosIn)
+        onResponse(project, response)
+        return response is InjectionStatus.Ok
+    }
+    fun injectEventScript(project: Project, variant: CaosVariant, family: Int, genus:Int, species: Int, eventNumber: Int, caosIn: String): Boolean {
+        if (!canConnectToVariant(variant)) {
+            val error = "Injection to ${variant.fullName} is not yet implemented"
+            invokeLater {
+                CaosInjectorNotifications.show(project, "ConnectionException", error, NotificationType.ERROR)
+            }
+            return false
+        }
+        if (variant.isOld) {
+            val actualVersion = getActualVersion(project, variant)
+            if (actualVersion != variant) {
+                postError(project, "Connection Error", "Grammar set to variant [${variant}], but ide is connected to ${actualVersion.fullName}")
+                return false
+            }
+        }
+        val response = injectPrivate(project, variant, family, genus, species, eventNumber, caosIn)
+        onResponse(project, response)
+        return response is InjectionStatus.Ok
+    }
+
+    private fun onResponse(project: Project, response: InjectionStatus?) {
         when (response) {
             is InjectionStatus.Ok -> postOk(project, response)
             is InjectionStatus.BadConnection -> postError(project, "Connection Failed", response.error)
             is InjectionStatus.Bad -> postError(project, "Injection Failed", response.error)
+            else -> postError(project, "Invalid response", "Caos injection failed to respond")
         }
-        return response is InjectionStatus.Ok
     }
 
     private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String): InjectionStatus? {
@@ -73,6 +97,23 @@ object Injector {
         return connection.inject(caos)
     }
 
+    private fun injectPrivate(project: Project, variant: CaosVariant, family: Int, genus:Int, species: Int, eventNumber: Int, caosIn: String): InjectionStatus? {
+        val connection = connection(variant, project)
+                ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
+        if (!creditsCalled.containsKey(variant)) {
+            creditsCalled[variant] = false
+        }
+        if (creditsCalled[variant].orFalse()) {
+            creditsCalled[variant] = true
+            connection.showAttribution(project, variant)
+        }
+        val caos = sanitize(caosIn)
+        if (!connection.isConnected() && !connection.connect(false)) {
+            return null
+        }
+        return connection.injectEventScript(family, genus, species, eventNumber, caos)
+    }
+
     private fun connection(variant: CaosVariant, project: Project): CaosConnection? {
         val conn = getConnection(variant, project)
         if (conn == null || !conn.connect()) {
@@ -83,8 +124,9 @@ object Injector {
 
     @JvmStatic
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
-        val message = response.response.nullIfEmpty()?.let {
-            "\n\tOutput: $it"
+        val prefix = "&gt;"
+        val message = response.response.trim().nullIfEmpty()?.let {
+            "<pre>$prefix" + it.split("\n").joinToString("\n$prefix")+"</pre>"
         } ?: ""
         invokeLater {
             CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
@@ -155,6 +197,7 @@ object Injector {
 
 internal interface CaosConnection {
     fun inject(caos: String): InjectionStatus
+    fun injectEventScript(family:Int, genus:Int, species:Int, eventNumber:Int, caos:String): InjectionStatus
     fun disconnect(): Boolean
     fun isConnected(): Boolean
     fun connect(silent: Boolean = false): Boolean
