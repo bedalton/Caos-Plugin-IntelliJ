@@ -50,6 +50,14 @@ val now:Long get(){
     return Date().time
 }
 
+
+fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNullOrEmpty != null)
+    }
+    return this != null && this.isNotEmpty()
+}
+
 fun <PsiT : PsiElement> PsiElement.hasParentOfType(parentClass:Class<PsiT>) : Boolean {
     return PsiTreeUtil.getParentOfType(this, parentClass) != null;
 }

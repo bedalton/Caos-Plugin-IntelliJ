@@ -57,7 +57,7 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
         } catch (e:Exception) {
             return InjectionStatus.Bad("Failed to read response from caos server. Error: ${e.message}")
         }
-        LOGGER.info("RESPONSE: $response")
+        LOGGER.info("CAOSRESPONSE: $response")
         val json = com.google.gson.JsonParser().parse(response)
         return json.asJsonObject.let {
             val message = try {
@@ -65,12 +65,17 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
             } catch (e:Exception) {
                 return InjectionStatus.Bad("Failed to parse server response")
             }
-            when (it.get("status").asString) {
+            when (val status = it.get("status").asString) {
                 "!ERR" -> InjectionStatus.Bad(message)
                 "!CON" -> InjectionStatus.BadConnection(message)
-                else -> InjectionStatus.Ok(message)
+                "OK" -> InjectionStatus.Ok(message)
+                else -> InjectionStatus.Bad("Invalid status: '$status'  returned")
             }
         }
+    }
+
+    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus {
+        return InjectionStatus.BadConnection("Server does not implement inject event script")
     }
 
     override fun disconnect(): Boolean = true
