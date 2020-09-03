@@ -57,19 +57,19 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         private val whitespaceOrComma = "(\\s|,)+".toRegex()
         private val trailingText = "[ \n,\t]+".toRegex()
 
-        fun collapseLinesInCopy(fileIn: PsiFile, collapseChar: CollapseChar = CollapseChar.COMMA): PsiFile {
-            val project = fileIn.project
-            val document = PsiDocumentManager.getInstance(project).getCachedDocument(fileIn) ?: fileIn.document
+        fun collapseLinesInCopy(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement {
+            val project = elementIn.project
+            val document = PsiDocumentManager.getInstance(project).getCachedDocument(elementIn.containingFile) ?: elementIn.document
             if (document != null) {
                 PsiDocumentManager.getInstance(project).commitDocument(document)
             }
-            val file = fileIn.copy().let { it as? PsiFile ?: it.containingFile }
-            return collapseLines(file, collapseChar)
+            val element = elementIn.copy()
+            return collapseLines(element, collapseChar)
         }
 
-        fun collapseLines(file: PsiFile, collapseChar: CollapseChar): PsiFile {
-            val project = file.project
-            val comments = PsiTreeUtil.collectElementsOfType(file, CaosScriptComment::class.java)
+        fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement {
+            val project = element.project
+            val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
             for (comment in comments) {
                 if (comment.isValid) {
                     var replacement = CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(project)
@@ -77,26 +77,26 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                     replacement.delete()
                 }
             }
-            file.document?.let {
+            element.document?.let {
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                CodeStyleManager.getInstance(project).reformat(file, true)
+                CodeStyleManager.getInstance(project).reformat(element, true)
             }
-            val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
+            val newLines = PsiTreeUtil.collectElementsOfType(element, CaosScriptSpaceLikeOrNewline::class.java)
             for (newLine in newLines) {
                 if (newLine.isValid)
                     replaceWithSpaceOrComma(newLine, collapseChar)
             }
-            while (trailingText.matches(file.firstChild.text))
-                file.firstChild.delete()
-            while (trailingText.matches(file.lastChild.text))
-                file.lastChild.delete()
+            while (trailingText.matches(element.firstChild.text))
+                element.firstChild.delete()
+            while (trailingText.matches(element.lastChild.text))
+                element.lastChild.delete()
             runWriteAction {
-                file.document?.let {
+                element.document?.let {
                     PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                    CodeStyleManager.getInstance(project).reformat(file, true)
+                    CodeStyleManager.getInstance(project).reformat(element, true)
                 }
             }
-            return file
+            return element
         }
 
         private fun replaceWithSpaceOrComma(nextIn: PsiElement?, collapseChar: CollapseChar) {

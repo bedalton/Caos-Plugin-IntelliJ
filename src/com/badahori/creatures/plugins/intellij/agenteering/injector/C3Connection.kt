@@ -23,10 +23,19 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         file
     }
 
+
+    override fun inject(caos:String) : InjectionStatus {
+        return inject("-c", caos)
+    }
+
+    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String) : InjectionStatus {
+        return inject("--s", "$family", "$genus", "$species", "$eventNumber", caos)
+    }
+
     /**
      * Inject caos code into CV+ games
      */
-    override fun inject(caos: String): InjectionStatus {
+    private fun inject(vararg argsIn:String): InjectionStatus {
         // Ensure that the exe has been extracted and placed in accessible folder
         val file = try {
             this.file
@@ -38,20 +47,18 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         }
 
         // Escape string
-        val escaped = escape(caos)
+        val escaped = escape(argsIn.last() as String)
         if (escaped.isEmpty()) {
             return InjectionStatus.Ok("")
         }
-
         // Create cmd args for caos injector exe
         val args = listOf(
                 "cmd",
                 "/c",
                 file.path,
                 variant.code,
-                "-c",
+                *argsIn.dropLast(1).toTypedArray(),
                 escaped
-
         ).toTypedArray()
 
         // Create injection process
