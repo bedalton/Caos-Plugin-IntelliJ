@@ -37,10 +37,12 @@
         <b>Version: 0.01.5</b><br/>
         <b>#Fixes</b>
         <ul>
-            <li>C3 injector reporting success on invalid output</li>
+          <li>Parser error on space only value in C1 style strings</li>
+          <li>C3 injector reporting success on invalid output</li>
         </ul>
         <b>#Improvements</b>
         <ul>
+          <li>Add inspection for more than one event script in C1/C2 files</li>
           <li>Remove CV+ injector dependents on .NET 4.5</li>
         </ul>
       </li>
@@ -235,6 +237,16 @@
                      displayName="Collapse Expand Lines"
                      shortName="CollapseExpandLines"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Scripts defined after event script in C1/C2"
+                     shortName="ScriptAfterEventScriptC1"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
+                      />
+
 
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"

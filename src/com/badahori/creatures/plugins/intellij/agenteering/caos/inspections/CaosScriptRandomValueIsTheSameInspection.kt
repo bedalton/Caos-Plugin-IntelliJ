@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptRandomValueIsTheSameInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Rndv value is always the same"
-    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "RndvIsTheSame"
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
