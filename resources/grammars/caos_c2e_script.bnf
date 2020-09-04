@@ -321,6 +321,7 @@ macro
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike"
 		]
 		methods = [
 			getBlockType
@@ -455,6 +456,7 @@ install_script
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike"
 		]
 		methods = [
 			getBlockType
@@ -1400,7 +1402,7 @@ private string_literal
 	;
 
 c1_string
-	::= OPEN_BRACKET TEXT_LITERAL CLOSE_BRACKET
+	::= OPEN_BRACKET (TEXT_LITERAL|space_like_or_newline)? CLOSE_BRACKET
 	{
 		pin(".*")=3
 		implements = [
