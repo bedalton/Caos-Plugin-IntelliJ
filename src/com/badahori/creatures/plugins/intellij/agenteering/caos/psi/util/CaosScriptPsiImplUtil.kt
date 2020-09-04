@@ -815,7 +815,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getStringValue(string: CaosScriptC1String): String {
-        return string.textLiteral.text
+        return string.textLiteral?.text ?: ""
     }
 
     @JvmStatic
