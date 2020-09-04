@@ -19,7 +19,7 @@ import com.intellij.psi.util.PsiTreeUtil
 class CaosScriptSubroutineInspection : LocalInspectionTool()  {
 
     override fun getDisplayName(): String = "Subroutine Is Defined Check"
-    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "SubroutineIsDefined"
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {

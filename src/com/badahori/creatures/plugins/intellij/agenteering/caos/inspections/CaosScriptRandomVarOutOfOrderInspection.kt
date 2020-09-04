@@ -11,7 +11,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "RNDV values out of order"
-    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "RNDVOutOfOrder"
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {

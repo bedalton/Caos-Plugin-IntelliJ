@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRGend
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
@@ -11,7 +12,7 @@ import com.intellij.psi.PsiElementVisitor
 
 class CaosCommandUndocumentedCommandUsage : LocalInspectionTool() {
     override fun getDisplayName(): String = "Undocumented command usage"
-    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "UndocumentedCommandUsage"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
@@ -33,7 +34,7 @@ class CaosCommandUndocumentedCommandUsage : LocalInspectionTool() {
 }
 
 private class AlterIgnoredUndocumentedCommand(val command:String, val ignore:Boolean) : LocalQuickFix {
-    override fun getFamilyName(): String = "CaosScript"
+    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
     override fun getName(): String = if (ignore) "Add $command to ignored list" else "Remove $command from ignored list"
 
