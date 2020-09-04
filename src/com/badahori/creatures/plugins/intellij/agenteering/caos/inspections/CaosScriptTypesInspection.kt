@@ -16,7 +16,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptTypesInspection : LocalInspectionTool()  {
 
     override fun getDisplayName(): String = "Expected parameter type"
-    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "ExpectedParameterType"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
