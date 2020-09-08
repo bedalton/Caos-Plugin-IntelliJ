@@ -71,10 +71,8 @@ class CaosScriptMultipleScriptsInC1File : LocalInspectionTool() {
                             it.startOffset < thisScriptStart
                         }
         if (isNotDeclaredAfterEventScript) {
-            LOGGER.info("Script: ${script.text.substring(0, min(15, script.textLength))} does not follow an event script")
             return
         }
-        LOGGER.info("Script: ${script.text.substring(0, min(15, script.textLength))} follows an event script")
         problemsHolder.registerProblem(script, CaosBundle.message("caos.inspections.scripts-after-event-script.message"), ExtractEventScriptToFile)
     }
 }
@@ -125,7 +123,6 @@ private object ExtractEventScriptToFile : LocalQuickFix {
                     }
                     try {
                         val element = FileTemplateUtil.createFromTemplate(template, fileName, templateProperties, directory)
-                        LOGGER.info("Element created has text: ${element.elementType}; ${element.text}")
                         onCreate()
                         val newFile = element.containingFile?.virtualFile
                                 ?: element.originalElement?.containingFile?.virtualFile

@@ -296,8 +296,6 @@ private fun showC3InjectPanel(project: Project, variant: CaosVariant, file: Caos
                     if (installScriptsCheckBox?.isSelected.orFalse()) {
                         installScripts?.let { inject(project, variant, it) }
                     }
-                    LOGGER.info("Finished trying to inject scripts")
-
                 }
             }.showModal(true)
 }
