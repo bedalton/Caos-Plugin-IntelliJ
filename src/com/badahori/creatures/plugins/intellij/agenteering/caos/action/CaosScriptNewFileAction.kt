@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidatorEx
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiFile
 import icons.CaosScriptIcons
 import java.util.*
 
@@ -38,9 +39,7 @@ class CaosScriptNewFileAction : CreateFileFromTemplateAction(
                 .setValidator(object : InputValidatorEx {
                     override fun canClose(inputString: String?) = checkInput(inputString)
                     override fun getErrorText(inputString: String?) = CaosBundle.message("caos.actions.new-file.invalid", inputString.orEmpty())
-                    override fun checkInput(inputString: String?) = inputString?.run {
-                        this.indexOf(".") < 0 || this.endsWith(".cos")
-                    }?.or(false) ?: false
+                    override fun checkInput(inputString: String?) = inputString != null
                 })
                 .addKind("CAOS File", CaosScriptIcons.CAOS_FILE_ICON, "cos-macro")
     }
@@ -49,7 +48,7 @@ class CaosScriptNewFileAction : CreateFileFromTemplateAction(
      * Creates the file given a filename and template name
      * @todo implement more than one file type
      */
-    override fun createFileFromTemplate(fileName: String, template: FileTemplate, dir: PsiDirectory) = try {
+    override fun createFileFromTemplate(fileName: String, template: FileTemplate, dir: PsiDirectory): PsiFile? = try {
         val className = FileUtilRt.getNameWithoutExtension(fileName)
         val type = when (template.name) {
             else -> "File"
