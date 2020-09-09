@@ -38,6 +38,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             in CaosScriptTokenSets.ALL_COMMANDS -> COMMAND_TOKEN
             CaosScriptTypes.CaosScript_EQ_OP_OLD_ -> EQ_OP_KEYWORD
             CaosScriptTypes.CaosScript_EQ_OP_NEW_ -> SYMBOL
+            CaosScriptTypes.CaosScript_PICT_DIMENSION -> NUMBER
             else -> null
         }
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS
