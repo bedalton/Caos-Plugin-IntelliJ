@@ -7768,6 +7768,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 }
 
 @Chemicals {
+	0 = <<NOTHING>>
 	1 = Lactate - Neutral (see main article)
 	2 = Pyruvate - Good
 	3 = Glucose - Good
