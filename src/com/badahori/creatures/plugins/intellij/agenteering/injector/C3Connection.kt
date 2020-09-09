@@ -2,8 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.substringFromEnd
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import org.apache.commons.io.FileUtils
@@ -29,7 +29,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
     }
 
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String) : InjectionStatus {
-        return inject("--s", "$family", "$genus", "$species", "$eventNumber", caos)
+        return inject("-s", "$family", "$genus", "$species", "$eventNumber", caos)
     }
 
     /**
@@ -92,10 +92,11 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "!CMD" -> InjectionStatus.BadConnection("Internal plugin run error. " + response.substring(4))
                 "!CON" -> InjectionStatus.BadConnection(response.substring(4))
                 "!ERR" -> InjectionStatus.Bad(response.substring(4))
-                "!RES" -> InjectionStatus.Ok(response.substringFromEnd(4, 1))
                 else -> {
                     if (response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none { it.matches(response) }) {
-                        InjectionStatus.Bad(response.substringFromEnd(0, 1))
+                        InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
+                    } else if (code == "!RES") {
+                        InjectionStatus.Ok(response.substringFromEnd(4, 1))
                     } else {
                         InjectionStatus.Bad("INJECTOR Exception: "+response.substringFromEnd(0, 1))
                     }
