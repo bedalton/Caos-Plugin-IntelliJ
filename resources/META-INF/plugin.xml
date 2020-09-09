@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.5</version>
+  <version>0.01.6</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -33,6 +33,14 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.6</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Annoying request for script literal string on COS file creation</li>
+          <li>Errors in file creation</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.5</b><br/>
         <b>#Fixes</b>
