@@ -24,11 +24,13 @@ class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionActio
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
-    override fun applyFix(p0: Project, p1: ProblemDescriptor) {
-        TODO("Not yet implemented")
+    override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
+        (problemDescriptor.psiElement as? CaosScriptCRndv)?.let {element->
+            applyFix(element)
+        }
     }
 
-    override fun isAvailable(p0: Project, p1: Editor?, p2: PsiFile?): Boolean {
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         pointer.element?.let {
             return it.expectsIntList.size == 2
         }
