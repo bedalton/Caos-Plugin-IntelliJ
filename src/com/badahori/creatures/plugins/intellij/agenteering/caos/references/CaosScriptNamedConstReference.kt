@@ -7,9 +7,8 @@ import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import com.intellij.psi.search.GlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptConstAssignmentIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptConstantAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedConstant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 
 class CaosScriptNamedConstReference(element: CaosScriptNamedConstant) : PsiPolyVariantReferenceBase<CaosScriptNamedConstant>(element, TextRange.create(1, element.textLength)) {
 

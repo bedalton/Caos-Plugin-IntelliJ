@@ -13,6 +13,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 
 class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction, LocalQuickFix {
 

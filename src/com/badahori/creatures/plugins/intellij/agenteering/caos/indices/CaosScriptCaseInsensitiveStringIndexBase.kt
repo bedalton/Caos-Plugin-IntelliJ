@@ -6,7 +6,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.startsAndEndsWith
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startsAndEndsWith
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import java.util.logging.Logger
 import java.util.regex.Pattern

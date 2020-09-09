@@ -2,17 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
-import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import kotlin.math.abs
 
 class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, private val caosSettings: CaosScriptCodeStyleSettings) {

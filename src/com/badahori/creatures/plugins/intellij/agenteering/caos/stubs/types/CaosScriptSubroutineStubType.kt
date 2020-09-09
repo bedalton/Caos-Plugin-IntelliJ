@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptSubroutineImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptSubroutineStubImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
 class CaosScriptSubroutineStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubElementType<CaosScriptSubroutineStub, CaosScriptSubroutineImpl>(debugName) {

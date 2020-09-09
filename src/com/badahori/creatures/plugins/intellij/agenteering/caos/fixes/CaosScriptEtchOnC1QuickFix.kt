@@ -6,10 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.equalTo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor

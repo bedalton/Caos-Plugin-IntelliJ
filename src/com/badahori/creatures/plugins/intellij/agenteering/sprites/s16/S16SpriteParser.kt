@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt16BE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt32BE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent

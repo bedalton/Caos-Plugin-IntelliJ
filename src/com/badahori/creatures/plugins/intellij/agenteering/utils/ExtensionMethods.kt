@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil

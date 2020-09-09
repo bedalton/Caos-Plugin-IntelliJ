@@ -1,9 +1,7 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
-import org.jetbrains.annotations.NotNull
 import java.util.concurrent.Future
 
 fun invokeAndWait (modality:ModalityState, runnable:()->Unit) {

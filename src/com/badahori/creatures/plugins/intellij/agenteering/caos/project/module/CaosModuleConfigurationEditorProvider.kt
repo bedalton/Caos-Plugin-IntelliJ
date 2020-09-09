@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.intellij.openapi.module.ModuleConfigurationEditor
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationEditorProvider

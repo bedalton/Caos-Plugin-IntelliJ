@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor

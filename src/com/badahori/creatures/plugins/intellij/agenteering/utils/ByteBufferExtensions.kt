@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import java.nio.ByteBuffer
 

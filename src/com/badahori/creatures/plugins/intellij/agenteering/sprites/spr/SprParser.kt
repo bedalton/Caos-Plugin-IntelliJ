@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt16BE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt32BE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt8
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType

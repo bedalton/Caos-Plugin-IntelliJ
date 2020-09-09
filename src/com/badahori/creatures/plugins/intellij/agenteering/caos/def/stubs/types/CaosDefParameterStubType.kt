@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.Cao
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefParameterStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readVariableType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.writeVariableType

@@ -1,6 +1,6 @@
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.openapi.application.ApplicationManager
@@ -18,11 +18,9 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.sun.javafx.scene.CameraHelper
 
 object EditorUtil {
 

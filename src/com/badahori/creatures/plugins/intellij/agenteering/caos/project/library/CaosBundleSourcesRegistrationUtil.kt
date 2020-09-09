@@ -9,8 +9,8 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.openapi.vfs.VirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.roots.ModifiableRootModel
 import java.util.logging.Logger
 

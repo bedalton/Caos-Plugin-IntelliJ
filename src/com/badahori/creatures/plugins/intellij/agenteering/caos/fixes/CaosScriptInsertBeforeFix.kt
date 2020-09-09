@@ -8,7 +8,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 
 class CaosScriptInsertBeforeFix(private val fixText:String, private val wordText:String, element:PsiElement) : IntentionAction {
 

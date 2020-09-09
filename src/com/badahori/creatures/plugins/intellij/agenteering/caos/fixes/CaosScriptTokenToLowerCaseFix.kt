@@ -10,8 +10,8 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 
 class CaosScriptTokenToLowerCaseFix(element: CaosScriptShouldBeLowerCase) : LocalQuickFix, IntentionAction {
 

@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.writeUInt16
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.writeUInt32
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.writeUInt8
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt32
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt8
 import com.intellij.util.io.toByteArray
 import java.awt.Color
 import java.awt.color.ColorSpace

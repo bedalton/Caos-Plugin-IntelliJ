@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosNamedGameVar.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosNumberedVar.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 

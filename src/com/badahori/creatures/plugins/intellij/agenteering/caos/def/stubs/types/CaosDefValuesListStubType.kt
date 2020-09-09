@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.Cao
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 
 class CaosDefValuesListStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefValuesListStub, CaosDefValuesListElementImpl>(debugName) {
 

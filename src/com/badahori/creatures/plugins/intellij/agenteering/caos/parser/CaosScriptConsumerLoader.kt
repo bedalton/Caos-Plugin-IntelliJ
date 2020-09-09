@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosTokenConsumption.TokenConsumer
 import com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosTokenConsumption.TokenConsumption
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 
 object CaosScriptConsumerLoader {
 

@@ -9,7 +9,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.psi.util.PsiTreeUtil
 

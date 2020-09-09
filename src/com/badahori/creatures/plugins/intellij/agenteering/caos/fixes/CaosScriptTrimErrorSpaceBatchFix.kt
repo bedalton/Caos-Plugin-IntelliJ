@@ -9,8 +9,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosStringUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosStringUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 
 class CaosScriptTrimErrorSpaceBatchFix : IntentionAction, LocalQuickFix{
 

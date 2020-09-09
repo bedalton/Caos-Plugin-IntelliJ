@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorAction
 import com.intellij.openapi.editor.actionSystem.EditorWriteActionHandler
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosStringUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosStringUtil
 
 class StripErrorSpacesAction : EditorAction(Handler()) {
 }

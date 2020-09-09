@@ -12,7 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCom
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange

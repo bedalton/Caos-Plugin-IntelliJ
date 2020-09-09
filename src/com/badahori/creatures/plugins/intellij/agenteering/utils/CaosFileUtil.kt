@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.intellij.ide.plugins.IdeaPluginDescriptor
@@ -84,36 +84,6 @@ fun copyToClipboard(string: String) {
     val stringSelection = StringSelection(string)
     val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
     clipboard.setContents(stringSelection, null)
-}
-
-fun CaosScriptFile.trimErrorSpaces() {
-    ApplicationManager.getApplication().runWriteAction {
-        CommandProcessor.getInstance().executeCommand(project, run@{
-            val text = text
-            val trimmedText = CaosStringUtil.sanitizeCaosString(text)
-            if (trimmedText == text)
-                return@run
-            val document = document
-                    ?: return@run
-            document.replaceString(0, text.length, trimmedText)
-        }, "Strip Error Spaces", "Strip Error Spaces")
-    }
-}
-
-fun CaosScriptFile.copyAsOneLine() {
-    ApplicationManager.getApplication().runWriteAction run@{
-        val text = text
-        var trimmedText = text.split("\n").joinToString(" ") {
-            val line = it.trim()
-            if (line.startsWith("*"))
-                ""
-            else
-                line
-        }
-        trimmedText = trimmedText.replace("\\s+".toRegex(), " ")
-        trimmedText = trimmedText.replace("\\s*,\\s*".toRegex(), ",").trim()
-        copyToClipboard(trimmedText)
-    }
 }
 
 fun findFileBySharedModuleAndRelativePath(project: Project, baseFile: VirtualFile, fileRelativePath: String): VirtualFile? {
