@@ -37,8 +37,12 @@
         <b>Version: 0.01.6</b><br/>
         <b>#Fixes</b>
         <ul>
-          <li>Annoying request for script literal string on COS file creation</li>
+          <li>Removed request for script literal string on COS file creation</li>
           <li>Errors in file creation</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Added action to swap inverted min/max values in C1</li>
         </ul>
       </li>
       <li>
