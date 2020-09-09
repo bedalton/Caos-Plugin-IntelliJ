@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReorderRndvParameters
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -18,12 +20,12 @@ class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
         return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
             override fun visitCRndv(o: CaosScriptCRndv) {
                 super.visitCRndv(o)
-                annotateSubroutineName(o, holder)
+                annotateRNDV(o, holder)
             }
         }
     }
 
-    private fun annotateSubroutineName(element: CaosScriptCRndv, holder: ProblemsHolder) {
+    private fun annotateRNDV(element: CaosScriptCRndv, holder: ProblemsHolder) {
         val variant = element.containingCaosFile?.variant
                 ?: return
         if (variant != CaosVariant.C1)
@@ -39,7 +41,7 @@ class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
         }
         listOfNotNull(element.minElement, element.maxElement).forEach {
             // Todo Infer min/max values from each variable value
-            holder.registerProblem(it, CaosBundle.message("caos.annotator.command-annotator.rndv-out-of-order", variant))
+            holder.registerProblem(it, CaosBundle.message("caos.annotator.command-annotator.rndv-out-of-order"), CaosScriptReorderRndvParameters(element))
         }
     }
 }
