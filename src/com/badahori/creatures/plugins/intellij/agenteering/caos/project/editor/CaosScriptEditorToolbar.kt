@@ -15,6 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
@@ -233,26 +234,26 @@ private fun showC3InjectPanel(project: Project, variant: CaosVariant, file: Caos
     val jectSettings = file.getUserData(JectSettingsKey) ?: JectSettings()
     // Filter for removal scripts and create checkbox if needed
     val removalScripts = scriptsIn.firstOrNull { it.type == JectScriptType.REMOVAL }?.scripts
-    val removalScriptsCheckBox = if (removalScripts != null && removalScripts.isNotEmpty())
+    val removalScriptsCheckBox = if (removalScripts.isNotNullOrEmpty())
         JCheckBox(JectScriptType.REMOVAL.type).apply {
             this.isSelected = jectSettings.injectRemovalScriptsSelected
         }
     else
         null
     // Filter for event scripts and created checkbox if needed
-    val eventScripts = scriptsIn.firstOrNull { it.type == JectScriptType.REMOVAL }?.scripts
-    val eventScriptsCheckBox = if (eventScripts != null && eventScripts.isNotEmpty())
+    val eventScripts = scriptsIn.firstOrNull { it.type == JectScriptType.EVENT }?.scripts
+    val eventScriptsCheckBox = if (eventScripts.isNotNullOrEmpty())
         JCheckBox(JectScriptType.EVENT.type).apply {
-            this.isSelected = jectSettings.injectRemovalScriptsSelected
+            this.isSelected = jectSettings.injectEventScriptsSelected
         }
     else
         null
 
     // Filter for install/macro scripts and create checkbox if needed
     val installScripts = scriptsIn.firstOrNull { it.type == JectScriptType.INSTALL }?.scripts
-    val installScriptsCheckBox = if (installScripts != null && installScripts.isNotEmpty())
+    val installScriptsCheckBox = if (installScripts.isNotNullOrEmpty())
         JCheckBox(JectScriptType.INSTALL.type).apply {
-            this.isSelected = jectSettings.injectRemovalScriptsSelected
+            this.isSelected = jectSettings.injectInstallScriptsSelected
         }
     else
         null
