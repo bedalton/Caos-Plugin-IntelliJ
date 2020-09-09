@@ -3,8 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlightin
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCodeBlockImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.util.ProperTextRange
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*

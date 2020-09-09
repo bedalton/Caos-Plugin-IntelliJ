@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptVarTokenStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptVarTokenStubImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
 class CaosScriptVarTokenStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubElementType<CaosScriptVarTokenStub, CaosScriptVarTokenImpl>(debugName) {

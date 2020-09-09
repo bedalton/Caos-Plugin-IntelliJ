@@ -6,8 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqOpNew
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 
 class TransposeEqOp(val element: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqOpNew)  : IntentionAction {
 

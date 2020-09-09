@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.c16
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt16BE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.uInt32BE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage

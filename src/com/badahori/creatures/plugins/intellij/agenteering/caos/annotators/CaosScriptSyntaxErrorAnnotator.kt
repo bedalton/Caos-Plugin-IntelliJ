@@ -11,9 +11,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orElse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity

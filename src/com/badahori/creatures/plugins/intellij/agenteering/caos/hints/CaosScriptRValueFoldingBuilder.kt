@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.is
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor

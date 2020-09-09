@@ -16,9 +16,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option

@@ -2,8 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.VariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module

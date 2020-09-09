@@ -4,8 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement

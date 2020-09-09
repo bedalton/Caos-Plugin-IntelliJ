@@ -12,7 +12,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import java.util.logging.Logger
 
 

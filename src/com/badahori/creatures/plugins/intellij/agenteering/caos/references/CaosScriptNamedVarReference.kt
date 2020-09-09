@@ -9,7 +9,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarAssignmentIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedVarAssignment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 
 class CaosScriptNamedVarReference(element: CaosScriptNamedVar) : PsiPolyVariantReferenceBase<CaosScriptNamedVar>(element, TextRange.create(1, element.textLength)) {
 

@@ -13,9 +13,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isNotNullOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor

@@ -1,9 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.FileIndex
 import com.intellij.psi.search.FilenameIndex
 
 object CaosScriptProjectSettings {

@@ -12,9 +12,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 
 class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionAction, LocalQuickFix {
 

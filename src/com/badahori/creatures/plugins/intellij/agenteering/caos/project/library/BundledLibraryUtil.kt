@@ -7,8 +7,8 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScopes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import java.util.logging.Logger
 
 internal const val BUNDLE_DEFINITIONS_FOLDER = "lib"
