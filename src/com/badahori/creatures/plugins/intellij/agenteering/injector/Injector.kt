@@ -1,12 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosPluginSettingsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.escapeHTML
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -126,7 +125,7 @@ object Injector {
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
         val prefix = "&gt;"
         val message = response.response.trim().nullIfEmpty()?.let {
-            "<pre>$prefix" + it.split("\n").joinToString("\n$prefix")+"</pre>"
+            "<pre>\n$prefix" + it.split("\n").joinToString("\n$prefix").escapeHTML()+"</pre>"
         } ?: ""
         invokeLater {
             CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
