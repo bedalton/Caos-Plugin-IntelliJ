@@ -65,17 +65,17 @@ private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptE
 }
 
 internal fun getListValue(variant: CaosVariant, listName: String, project: Project, key: String): CaosDefValuesListValueStruct? {
-    val list = CaosDefValuesListElementsByNameIndex
+    return CaosDefValuesListElementsByNameIndex
             .Instance[listName, project]
-            .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
-            ?: return null
-    return list.valuesListValues.firstOrNull {
-        when (it.equality) {
-            ValuesListEq.EQUAL -> it.key == key
-            ValuesListEq.NOT_EQUAL -> it.key != key
-            ValuesListEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
-        }
-    }
+            .filter { it.containingCaosDefFile.isVariant(variant, true) }
+            .flatMap { it.valuesListValues }
+            .firstOrNull {
+                when (it.equality) {
+                    ValuesListEq.EQUAL -> it.key == key
+                    ValuesListEq.NOT_EQUAL -> it.key != key
+                    ValuesListEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                }
+            }
 }
 
 private fun getCommandParameterValuesListValue(valueOfType: CaosScriptExpectsValueOfType, key: String): CaosDefValuesListValueStruct? {
