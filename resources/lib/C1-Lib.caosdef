@@ -730,7 +730,7 @@ FMLY (integer);
 FROM (agent);
 
 /*
- * Undocumented creatures command, always seems to return 1
+ * Undocumented creatures command, always seems to return 1 regardless of gender
  * #Creatures
  *
  * @undocumented(status=undefined)
@@ -2384,7 +2384,7 @@ YVEC (integer);
 }
 
 @Chemicals {
-	0 = <NONE>
+	0 = <<NOTHING>>
 	1 = Pain
 	2 = Need for Pleasure
 	3 = Hunger
