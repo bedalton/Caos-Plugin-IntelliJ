@@ -39,6 +39,8 @@
         <ul>
           <li>Removed request for script literal string on COS file creation</li>
           <li>Errors in file creation</li>
+          <li>Fix C3/DS Raw CAOS injection</li>
+          <li>Bad parsing on SCRP element following macro</li>
         </ul>
         <b>#Improvements</b>
         <ul>
@@ -387,6 +389,11 @@
         icon="CaosScriptIcons.CAOS_FILE_ICON"
         class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptNewFileAction">
       <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile" />
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
+            class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
+            text="Copy for BoBCob" description="Copy script for BoBCob file editor formatting as neccessary">
+      <add-to-group group-id="CopyGroup" anchor="after" relative-to-action="CopyAsPlainText" />
     </action>
   </actions>
 

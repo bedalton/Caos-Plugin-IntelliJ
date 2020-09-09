@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.Cao
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListValueStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStubImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
 class CaosDefValuesListValueStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefValuesListValueStub, CaosDefValuesListValueImpl>(debugName) {

@@ -9,8 +9,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosSdkProjectRootsChangeListener
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.getModule
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import java.util.logging.Logger
 
 

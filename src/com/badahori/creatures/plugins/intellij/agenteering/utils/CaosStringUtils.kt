@@ -1,7 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import kotlin.math.max
-import kotlin.math.min
 
 object CaosStringUtil {
 
@@ -146,7 +145,8 @@ fun String.matchCase(stringToMatch:String):String {
     }
 }
 
-val String.case:Case get()  {
+val String.case: Case
+    get()  {
     val chars = toCharArray()
     if (chars.size < 2)
         return Case.LOWER_CASE
@@ -157,6 +157,10 @@ val String.case:Case get()  {
         return Case.CAPITAL_FIRST
     }
     return Case.UPPER_CASE
+}
+
+fun String.escapeHTML() : String{
+    return this.replace("<", "&lt;").replace(">", "&gt;")
 }
 
 private val numberRegex = "[-+]?[0-9]+".toRegex()

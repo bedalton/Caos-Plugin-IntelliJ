@@ -11,17 +11,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseCh
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toIntSafe
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 

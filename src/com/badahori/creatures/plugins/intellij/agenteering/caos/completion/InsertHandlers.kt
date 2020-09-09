@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 
 
 object SpaceAfterInsertHandler : InsertHandler<LookupElement> {

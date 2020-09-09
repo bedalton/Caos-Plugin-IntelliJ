@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readStringList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.writeStringList
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 

@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Ca
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefDocCommentStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 
 class CaosDefCommentElementStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefDocCommentStub, CaosDefDocCommentImpl>(debugName) {
 

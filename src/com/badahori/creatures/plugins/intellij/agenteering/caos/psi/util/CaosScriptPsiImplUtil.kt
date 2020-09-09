@@ -15,9 +15,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement

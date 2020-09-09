@@ -14,8 +14,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 
 enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
