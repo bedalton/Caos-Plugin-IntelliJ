@@ -101,6 +101,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             formatChemAmount(variant, stringBuilder, value, amount, format)
         }
         return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
+                ?: "+ <<NOTHING>>"
     }
 
     private fun formatChemAmount(variant: CaosVariant, stringBuilder: StringBuilder, value:String, amountVar:CaosVar, format:ValuesFormat = ValuesFormat.NORMAL) {
