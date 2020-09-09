@@ -4106,7 +4106,6 @@ c_kw_d_d_d_d
 	|	K_GPAS <<isNewerVariant>>
 	|	K_META
 	|	prefix_kw_new_col space_like (K_BBTX|incomplete)
-	|	K_SCRP
 	|	K_SCRX
 	|	prefix_kw_sys_col space_like (K_EDIT|incomplete)
 	|	prefix_kw_sys_col space_like (K_WPOS|incomplete)
