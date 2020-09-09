@@ -3673,6 +3673,7 @@ YVEC (integer);
 }
 
 @Chemicals {
+	0 = <<NOTHING>>
 	1 = Pain
 	2 = Need for Pleasure
 	3 = Hunger

@@ -6796,7 +6796,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 }
 
 @Chemicals {
-	0 = Null - There is no chemical zero - it's used internally as a placeholder
+	0 = <<NOTHING>> - There is no chemical zero - it's used internally as a placeholder
 	1 = Lactate
 	2 = Pyruvate
 	3 = Glucose
