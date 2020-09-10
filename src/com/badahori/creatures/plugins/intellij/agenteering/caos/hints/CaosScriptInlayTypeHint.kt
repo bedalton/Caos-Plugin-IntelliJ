@@ -208,6 +208,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun getHintInfo(element: PsiElement): HintInfo? {
             return HintInfo.MethodInfo("Genus", listOf("family", "genus"), CaosScriptLanguage.instance)
         }
+
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val variant = (element.containingFile as? CaosScriptFile)?.variant
                     ?: return emptyList()
@@ -218,7 +219,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return getGenusInlayInfo(variant, element, family, genus)
         }
 
-        private fun getGenusInlayInfo(variant:CaosVariant, element:PsiElement, family:Int, genus:Int) : List<InlayInfo> {
+        private fun getGenusInlayInfo(variant: CaosVariant, element: PsiElement, family: Int, genus: Int): List<InlayInfo> {
             val value: CaosDefValuesListValueStruct = CaosDefValuesListElementsByNameIndex
                     .Instance["Genus", element.project]
                     .filter {
@@ -232,8 +233,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return listOf(InlayInfo("(${value.value})", element.endOffset))
         }
     },
-    ASSUMED_VALUE_NAME_HINT("Show assumed value name", true)
-    {
+    ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptExpression
         }
@@ -275,8 +275,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
         }
     },
-    ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true)
-    {
+    ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptEventNumberElement
@@ -285,20 +284,20 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val eventElement = element as? CaosScriptEventNumberElement
                     ?: return emptyList()
+            val items = listOf(
+                    InlayInfo("event", eventElement.startOffset)
+            )
             val variant = element.containingCaosFile?.variant
-                    ?: return emptyList()
+                    ?: return items
             val typeList = CaosDefValuesListElementsByNameIndex
                     .Instance["EventNumbers", element.project]
                     .firstOrNull {
                         it.containingCaosDefFile.isVariant(variant)
                     }
-                    ?: return emptyList()
+                    ?: return items
             val value = typeList.getValueForKey(eventElement.text)
-                    ?: return emptyList()
-            return listOf(
-                    InlayInfo("event", eventElement.startOffset),
-                    InlayInfo("(${value.value})", eventElement.endOffset)
-            )
+                    ?: return items
+            return items + InlayInfo("(${value.value})", eventElement.endOffset)
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
@@ -312,8 +311,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
         }
     },
-    DDE_PIC_DIMENSIONS("Show DDE: PICT dimensions", true)
-    {
+    DDE_PIC_DIMENSIONS("Show DDE: PICT dimensions", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptPictDimensionLiteral
@@ -335,8 +333,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosScriptLanguage.instance)
         }
     },
-    RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true)
-    {
+    RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptRvalue
