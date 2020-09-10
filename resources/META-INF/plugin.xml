@@ -46,6 +46,13 @@
         <ul>
           <li>Added action to swap inverted min/max values in C1</li>
         </ul>
+        <b>#New Inspections</b>>
+        <ul>
+          <li>Interleaving body scripts in C3/DS</li>
+          <li>Multiple removal scripts in C3/DS</li>
+          <li>Ignored code after removal script inspection in C3/DS</li>
+        </ul>
+      </li>
       </li>
       <li>
         <b>Version: 0.01.5</b><br/>
@@ -226,6 +233,33 @@
                      displayName="RNDV values out of order"
                      shortName="RNDVOutOfOrder"
     />
+
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInterleavingBodyStatements"
+                     level="WEAK WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Interleaving body script elements"
+                     shortName="InterleavingBodyScripts"
+    />
+
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptIgnoredScriptsAfterRemovalScriptInspection"
+                     level="WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Scripts after removal scripts are ignored"
+                     shortName="ScriptsAfterRemovalScripts"
+                     />
+
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
+                     level="WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Multiple removal scripts"
+                     shortName="MultipleRemovalScripts"
+    />
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomValueIsTheSameInspection"
                      level="WEAK WARNING"
@@ -393,7 +427,7 @@
     <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
             class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
             text="Copy for BoBCob" description="Copy script for BoBCob file editor formatting as neccessary">
-      <add-to-group group-id="CopyGroup" anchor="after" relative-to-action="CopyAsPlainText" />
+      <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths" />
     </action>
   </actions>
 
