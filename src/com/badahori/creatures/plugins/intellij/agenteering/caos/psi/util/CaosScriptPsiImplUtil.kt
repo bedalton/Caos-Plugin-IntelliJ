@@ -1669,3 +1669,7 @@ val PsiElement.endOffset get() = textRange.endOffset
 val PsiElement.startOffset get() = textRange.startOffset
 
 val CaosScriptCompositeElement.scope: CaosScope? get() = (this as? CaosScriptHasCodeBlock ?: this.getParentOfType(CaosScriptHasCodeBlock::class.java))?.scope()
+
+val PsiElement.endOffsetInParent : Int  get(){
+    return startOffsetInParent + textLength
+}
