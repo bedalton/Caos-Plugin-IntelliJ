@@ -60,7 +60,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 *argsIn.dropLast(1).toTypedArray(),
                 escaped
         ).toTypedArray()
-
+        LOGGER.info(args.joinToString(" "))
         // Create injection process
         val proc: Process
         try {
@@ -159,6 +159,15 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
     companion object {
 
+        private val ESCAPED_PLACEHOLDER = "/;__ESCAPED__/;"
+        private val ESCAPED_QUOTE_PLACEHOLDER = "/;__ESCAPED_QUOTE__/;"
+        private val NEED_ESCAPE = listOf(
+                "^",
+                ">",
+                "<",
+                "&",
+                "|"
+        )
         private val errorPrefix = listOf(
 
                 "Invalid command",
@@ -319,8 +328,14 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
             if (escaped.toLowerCase().endsWith("endm")) {
                 escaped = escaped.substringFromEnd(0, 4).trim()
             }
+
             // Escape escaped chars
-            escaped = escaped.replace("\"", "\\\"").replace("\n", "\\\n")
+            escaped = escaped.replace("\\\"", ESCAPED_QUOTE_PLACEHOLDER)
+                    .replace("\"", "\\\"")
+                    .replace("\n", "^\n")
+            for(char in NEED_ESCAPE) {
+                escaped = escaped.replace(char, "^$char")
+            }
             // Return
             return escaped
         }
