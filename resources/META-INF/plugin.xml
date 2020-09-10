@@ -301,7 +301,7 @@
                      enabledByDefault="true"
                      displayName="Invalid script header value"
                      shortName="InvalidScriptHeaderValue"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidScriptHeaderValueInspection"
     />
 
     <!-- Documentation & Hints -->
