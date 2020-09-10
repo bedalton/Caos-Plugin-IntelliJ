@@ -328,6 +328,8 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex" />
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex" />
 
     <!-- Actions -->
     <!--enterHandlerDelegate
