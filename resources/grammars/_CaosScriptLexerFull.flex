@@ -86,7 +86,8 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 %%
 
 <START_OF_LINE> {
-	\s+						{ return WHITE_SPACE; }
+	\n						{ return CaosScript_NEWLINE; }
+	[\s\t]+					{ return WHITE_SPACE; }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
