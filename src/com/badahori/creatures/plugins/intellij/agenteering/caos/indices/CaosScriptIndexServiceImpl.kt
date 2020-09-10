@@ -29,4 +29,8 @@ class CaosScriptIndexServiceImpl : CaosScriptIndexService {
         indexSink.occurrence(CaosScriptNamedVarAssignmentIndex.KEY, stub.name)
     }
 
+    override fun indexEventScript(stub: CaosScriptEventScriptStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosScriptEventScriptIndex.KEY, CaosScriptEventScriptIndex.toIndexKey(stub.family, stub.genus, stub.species, stub.eventNumber))
+    }
+
 }
