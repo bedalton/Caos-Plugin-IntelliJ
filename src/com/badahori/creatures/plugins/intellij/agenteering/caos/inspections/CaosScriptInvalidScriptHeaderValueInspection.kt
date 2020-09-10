@@ -52,7 +52,8 @@ class CaosScriptInvalidScriptHeaderValueInspection : LocalInspectionTool() {
             return
         }
         val max = if (variant.isOld) 255 else 65535
-        if (max < value)
+
+        if (max >= value)
             return
         problemsHolder.registerProblem(o, CaosBundle.message("caos.inspection.invalid-script-header-value.value-over-max.message", name.upperCaseFirstLetter(), max, value % max))
     }
