@@ -315,6 +315,15 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInFileInspection"
     />
 
+    <localInspection language="CaosScript"
+                     level="WEAK WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Duplicate event script in module"
+                     shortName="DuplicateEventScriptInModule"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInModuleInspection"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
