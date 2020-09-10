@@ -295,6 +295,14 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
                       />
 
+    <localInspection language="CaosScript"
+                     level="WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Invalid script header value"
+                     shortName="InvalidScriptHeaderValue"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
+    />
 
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
