@@ -41,6 +41,7 @@
           <li>Errors in file creation</li>
           <li>Fix C3/DS Raw CAOS injection</li>
           <li>Bad parsing on SCRP element following macro</li>
+          <li>'event' type hint prefix not showing on event numbers without named event</li>
         </ul>
         <b>#Improvements</b>
         <ul>
@@ -51,6 +52,7 @@
           <li>Interleaving body scripts in C3/DS</li>
           <li>Multiple removal scripts in C3/DS</li>
           <li>Ignored code after removal script inspection in C3/DS</li>
+          <li>Duplicate event script numbers</li>
         </ul>
       </li>
       </li>
@@ -302,6 +304,15 @@
                      displayName="Invalid script header value"
                      shortName="InvalidScriptHeaderValue"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidScriptHeaderValueInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Duplicate event script in file"
+                     shortName="DuplicateEventScriptInFile"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInFileInspection"
     />
 
     <!-- Documentation & Hints -->
