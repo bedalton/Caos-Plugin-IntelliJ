@@ -3287,7 +3287,7 @@ ITOF (float) numberToConvert (integer);
  * #Scripts
  *
  * @param {cosFile} (string)
- * @param {flags} (integer)
+ * @param {flags} (integer@JectFlags)
  *
  */
 JECT (command) cosFile (string) flags (integer);
@@ -7875,6 +7875,12 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 @ImageExists {
 	0 = Does Not Exist
 	1 = Image Exists
+}
+
+@JectFlags:BitFlags {
+	1 = Remove sctipt
+	2 = Event scripts
+	4 = Install script
 }
 
 @JournalSpot {
