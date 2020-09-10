@@ -1,11 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptEventScriptImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptEventScriptStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptEventScriptStubImpl
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
 
 class CaosScriptEventScriptStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubElementType<CaosScriptEventScriptStub, CaosScriptEventScriptImpl>(debugName) {
     override fun createPsi(parent: CaosScriptEventScriptStub): CaosScriptEventScriptImpl {
@@ -37,6 +40,10 @@ class CaosScriptEventScriptStubType(debugName:String) : com.badahori.creatures.p
                 species = element.species,
                 eventNumber = element.eventNumber
         )
+    }
+
+    override fun indexStub(stub: CaosScriptEventScriptStub, indexSink: IndexSink) {
+        ServiceManager.getService(CaosScriptIndexService::class.java).indexEventScript(stub, indexSink)
     }
 
 }
