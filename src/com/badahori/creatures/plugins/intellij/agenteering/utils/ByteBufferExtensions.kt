@@ -5,27 +5,31 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import java.nio.ByteBuffer
 
 
-private fun byte2int(b: Byte): Int {
+private fun byteToUInt(b: Byte): Int {
     return if (b < 0) b + 256 else b.toInt()
 }
 
 
+val ByteBuffer.byte :Int get() {
+    return byteToUInt(get())
+}
+
 val ByteBuffer.uInt8: Int
-    get() = byte2int(get())
+    get() = byteToUInt(get())
 
 
 val ByteBuffer.uInt16: Int
     get() {
         var result = 0
-        result += byte2int(get()) shl 8
-        result += byte2int(get())
+        result += byteToUInt(get()) shl 8
+        result += byteToUInt(get())
         return result
     }
 
 val ByteBuffer.uInt16BE:Int get() {
     var result = 0
-    result += byte2int(get())
-    result += byte2int(get()) shl 8
+    result += byteToUInt(get())
+    result += byteToUInt(get()) shl 8
     return result
 }
 
@@ -49,14 +53,34 @@ val ByteBuffer.uInt32: Long
 val ByteBuffer.uInt24: Int get() {
     var result = 0
     result += uInt16 shl 8
-    result += byte2int(get())
+    result += byteToUInt(get())
     return result
 }
 
-private fun ByteBuffer.getBytes(length: Int): List<Byte> {
+fun ByteBuffer.cString(length:Int) : String {
+    return bytes(length).joinToString("") { it.toChar()+"" }
+}
+
+val ByteBuffer.cString : String get() {
+    val stringBuilder = StringBuilder()
+    while(true) {
+        val byte = get()
+        if (byte == 0.toByte()) {
+            break;
+        }
+        stringBuilder.append(byte.toChar())
+    }
+    return stringBuilder.toString()
+}
+
+fun ByteBuffer.bytes(length: Int): ByteArray {
     return (0..length).map {
         get()
-    }
+    }.toByteArray()
+}
+
+fun ByteBuffer.skip(length:Int) {
+    bytes(length)
 }
 
 fun ByteBuffer.writeUInt64(u: Long) {
