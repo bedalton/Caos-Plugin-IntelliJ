@@ -13,7 +13,7 @@ object CaosScriptPsiElementFactory {
     private val SUBROUTINE_NAME_REGEX = "[a-z_A-Z_0-9:$]{4}".toRegex()
 
     private fun createFileFromText(project: Project, text: String): CaosScriptFile {
-        return PsiFileFactory.getInstance(project).createFileFromText("dummy.caosdef", CaosScriptLanguage.instance, text) as CaosScriptFile
+        return PsiFileFactory.getInstance(project).createFileFromText("dummy.cos", CaosScriptLanguage.instance, text) as CaosScriptFile
     }
 
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
