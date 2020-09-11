@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
@@ -14,10 +15,11 @@ import java.nio.ByteBuffer
  * Based on c2ephp by telyn
  * @see https://github.com/telyn/c2ephp
  */
-class S16SpriteFile(file: VirtualFile) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
+class S16SpriteFile(rawBytes:ByteArray) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
+
+    constructor(file: VirtualFile) : this(file.contentsToByteArray())
 
     init {
-        val rawBytes = file.contentsToByteArray()
         val bytesBuffer = ByteBuffer.wrap(rawBytes)
         val buffer = bytesBuffer.uInt32BE
         val encoding = if (buffer == 1L)
@@ -69,6 +71,23 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
     private fun decode(bytes: ByteBuffer, offset: Long): BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
+        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val color = SpriteColorUtil.getColor(bytesBuffer.uInt16BE, encoding)
+                if (color[0] == 0 && color[1] == 0 && color[2] == 0)
+                    image.alphaRaster.setPixel(x, y, transparent)
+                else {
+                    image.raster.setPixel(x, y, color)
+                    image.alphaRaster.setPixel(x, y, solid)
+                }
+            }
+        }
+        return image
+    }
+
+    private fun decode(bytesBuffer: ByteBuffer, position:Int, encoding: ColorEncoding, width:Int, height:Int) : BufferedImage? {
+        bytesBuffer.position(position)
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {
             for (x in 0 until width) {

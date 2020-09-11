@@ -1,15 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.createTransformed
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.Color
+import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 
@@ -40,7 +42,7 @@ object SprParser {
  *
  * @see http://sheeslostknowledge.blogspot.com/2014/11/parsing-creatures-1-spr-files.html
  */
-class SprSpriteFile(file:VirtualFile) : SpriteFile<SprSpriteFrame>(SpriteType.Spr) {
+class SprSpriteFile(file: VirtualFile) : SpriteFile<SprSpriteFrame>(SpriteType.Spr) {
 
     init {
         val rawBytes = file.contentsToByteArray()
@@ -74,11 +76,11 @@ class SprSpriteFile(file:VirtualFile) : SpriteFile<SprSpriteFrame>(SpriteType.Sp
     }
 }
 
-class SprSpriteFrame private constructor(width:Int, height:Int) : SpriteFrame<SprSpriteFrame>(width, height, SpriteType.Spr) {
+class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<SprSpriteFrame>(width, height, SpriteType.Spr) {
 
     private lateinit var getImage:()->BufferedImage?
 
-    constructor(bytes:ByteBuffer, offset:Long, width:Int, height:Int) : this(width, height){
+    constructor(bytes: ByteBuffer, offset: Long, width: Int, height: Int) : this(width, height){
         getImage = {
             decode(bytes, offset)
         }
@@ -94,10 +96,10 @@ class SprSpriteFrame private constructor(width:Int, height:Int) : SpriteFrame<Sp
         return null
     }
 
-    private fun decode(bytes:ByteBuffer, offset:Long) : BufferedImage? {
+    private fun decode(bytes: ByteBuffer, offset: Long) : BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
-        val pixels = (0 until (width * height)).map pixels@{_ ->
+        val pixels = (0 until (width * height)).map pixels@{ _ ->
             bytesBuffer.uInt8.let {
                 if (it < 0 || it > 256) {
                     LOGGER.severe("Color value '$it' is invalid")
@@ -109,19 +111,19 @@ class SprSpriteFrame private constructor(width:Int, height:Int) : SpriteFrame<Sp
         return decode(pixels)
     }
 
-    private fun decode(pixels:List<Int>) : BufferedImage? {
+    private fun decode(pixels: List<Int>) : BufferedImage? {
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val alphaRaster = bufferedImage.alphaRaster
-        val black = Color(0,0,0).rgb
-        val solid = intArrayOf(255,255,255,255)
-        val transparent = intArrayOf(0,0,0,0)
-        (0 until height).map {y ->
+        val black = Color(0, 0, 0).rgb
+        val solid = intArrayOf(255, 255, 255, 255)
+        val transparent = intArrayOf(0, 0, 0, 0)
+        (0 until height).map { y ->
             val base = y * width
             (0 until width).mapIndexed { i, x ->
-                val rgb = pixels[base+i]
-                bufferedImage.setRGB(x,y,rgb)
+                val rgb = pixels[base + i]
+                bufferedImage.setRGB(x, y, rgb)
                 val alpha = if (rgb == black) transparent else solid
-                alphaRaster.setPixel(x,y,alpha)
+                alphaRaster.setPixel(x, y, alpha)
             }
         }
         return bufferedImage
@@ -137,4 +139,5 @@ class SprSpriteFrame private constructor(width:Int, height:Int) : SpriteFrame<Sp
             getImage = myGetImage
         }
     }
+
 }
