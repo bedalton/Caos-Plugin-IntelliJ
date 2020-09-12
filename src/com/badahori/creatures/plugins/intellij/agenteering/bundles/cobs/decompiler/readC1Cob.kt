@@ -33,7 +33,10 @@ internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
     val pictureWidth = uInt16
     val pictureHeight = uInt16
     uInt8
-    val image = SprSpriteFrame(this, position().toLong(), pictureWidth, pictureHeight).image?.flip()
+    val image = if (pictureWidth > 0 && pictureHeight > 0)
+        SprSpriteFrame(this, position().toLong(), pictureWidth, pictureHeight).image?.flip()
+    else
+        null
     val agentName = cString
     return CobBlock.AgentBlock(
             format = CobFormat.C1,
@@ -52,7 +55,7 @@ internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
     )
 }
 
-private fun ByteBuffer.readC1Script() : String {
+private fun ByteBuffer.readC1Script(): String {
     val scriptSize = get().toInt().let {
         if (it == 255)
             uInt16
