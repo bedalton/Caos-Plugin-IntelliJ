@@ -64,3 +64,11 @@ val PsiFile.module: Module?
     get() {
         return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
     }
+
+val RUN_INSPECTIONS_KEY = Key<Boolean?>("com.badahori.creatures.plugins.intellij.agenteering.caos.RUN_INSPECTIONS")
+
+var PsiFile.runInspections:Boolean get() {
+    return getUserData(RUN_INSPECTIONS_KEY) ?: true
+} set(value) {
+    putUserData(RUN_INSPECTIONS_KEY, value)
+}
