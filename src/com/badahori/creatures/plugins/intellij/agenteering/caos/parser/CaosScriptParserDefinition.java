@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser;
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobCompiledFile;
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptLexerAdapter;
 import com.intellij.lang.ASTNode;
@@ -67,6 +69,9 @@ public class CaosScriptParserDefinition implements ParserDefinition {
 
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
+        if (fileViewProvider.getFileType() == CobFileType.getINSTANCE()) {
+            return new CobCompiledFile(fileViewProvider);
+        }
         return new CaosScriptFile(fileViewProvider);
     }
 
