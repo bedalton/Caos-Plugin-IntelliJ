@@ -443,7 +443,21 @@
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
               fieldName="INSTANCE"
               language="CreaturesC16" extensions="c16" />
-    <!-- Add your extensions here -->
+
+
+    <!-- =========================== -->
+    <!-- ======== COB Files ======== -->
+    <!-- =========================== -->
+    <!--filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobBinaryDecompiler" / -->
+    <lang.parserDefinition
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
+        language="CreaturesCOB" />
+    <fileType name="COBFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType"
+              fieldName="INSTANCE"
+              language="CaosScript"
+              extensions="cob"
+              />
   </extensions>
 
   <actions>
