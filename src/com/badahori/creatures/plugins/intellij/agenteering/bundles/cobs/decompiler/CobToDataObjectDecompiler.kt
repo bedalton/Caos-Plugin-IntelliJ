@@ -1,12 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.util.io.toByteArray
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.zip.InflaterOutputStream
 
-object CobDecompiler {
+object CobToDataObjectDecompiler {
 
     public fun decompile(buffer: ByteBuffer): CobFileData {
         val header = buffer.cString(4)
@@ -26,6 +27,7 @@ object CobDecompiler {
 
     private fun decompileC1Cob(buffer: ByteBuffer): CobFileData.C1CobData {
         val version = buffer.uInt8
+        LOGGER
         if (version > 4)
             throw Exception("Invalid COB file")
         return CobFileData.C1CobData(buffer.readC1Cob())
