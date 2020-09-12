@@ -17,9 +17,9 @@ public class CaosScriptFileTypeFactory extends FileTypeFactory {
                     FileTypeConsumer fileTypeConsumer) {
         fileTypeConsumer.consume(CaosScriptFileType.INSTANCE, CaosScriptFileType.DEFAULT_EXTENSION);
         fileTypeConsumer.consume(CaosDefFileType.INSTANCE, CaosDefFileType.DEFAULT_EXTENSION);
-        fileTypeConsumer.consume(SprFileType.getINSTANCE(), SprFileType.Companion.getDEFAULT_EXTENSION());
-        fileTypeConsumer.consume(C16FileType.getINSTANCE(), C16FileType.Companion.getDEFAULT_EXTENSION());
-        fileTypeConsumer.consume(S16FileType.getINSTANCE(), S16FileType.Companion.getDEFAULT_EXTENSION());
+        fileTypeConsumer.consume(SprFileType.getINSTANCE(), SprFileType.getDEFAULT_EXTENSION());
+        fileTypeConsumer.consume(C16FileType.getINSTANCE(), C16FileType.getDEFAULT_EXTENSION());
+        fileTypeConsumer.consume(S16FileType.getINSTANCE(), S16FileType.getDEFAULT_EXTENSION());
         fileTypeConsumer.consume(CobFileType.getINSTANCE(), CobFileType.getDEFAULT_EXTENSION());
     }
 }
