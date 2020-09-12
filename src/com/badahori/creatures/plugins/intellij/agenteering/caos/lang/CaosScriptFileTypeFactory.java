@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang;
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType;
 import com.intellij.openapi.fileTypes.FileTypeConsumer;
@@ -19,5 +20,6 @@ public class CaosScriptFileTypeFactory extends FileTypeFactory {
         fileTypeConsumer.consume(SprFileType.getINSTANCE(), SprFileType.Companion.getDEFAULT_EXTENSION());
         fileTypeConsumer.consume(C16FileType.getINSTANCE(), C16FileType.Companion.getDEFAULT_EXTENSION());
         fileTypeConsumer.consume(S16FileType.getINSTANCE(), S16FileType.Companion.getDEFAULT_EXTENSION());
+        fileTypeConsumer.consume(CobFileType.getINSTANCE(), CobFileType.getDEFAULT_EXTENSION());
     }
 }
