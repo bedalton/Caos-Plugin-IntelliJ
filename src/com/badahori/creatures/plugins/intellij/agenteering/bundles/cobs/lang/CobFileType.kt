@@ -8,7 +8,7 @@ import javax.swing.Icon
 
 class CobFileType private constructor() : FileType {
     override fun getName(): String {
-        return "COB file"
+        return "COBFile"
     }
 
     override fun getDescription(): String {
