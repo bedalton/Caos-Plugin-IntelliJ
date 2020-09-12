@@ -1,11 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFile
 import java.awt.image.BufferedImage
+import java.nio.ByteBuffer
 import java.util.*
 
+sealed class CobFileData {
+    data class C2CobData(private val cobBlocks:List<CobBlock>) : CobFileData() {
+        val agentBlocks by lazy { cobBlocks.filterIsInstance(CobBlock.AgentBlock::class.java) }
+        val authorBlocks by lazy { cobBlocks.filterIsInstance(CobBlock.AuthorBlock::class.java) }
+        private val fileBlocks by lazy { cobBlocks.filterIsInstance<CobBlock.FileBlock>() }
+        val spriteFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SpriteBlock>()
+        val soundFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SoundBlock>()
+    }
+    data class C1CobData(val cobBlock: AgentBlock) : CobFileData()
+}
 
 sealed class CobBlock {
     data class AgentBlock(
@@ -17,7 +29,7 @@ sealed class CobBlock {
             val quantityAvailable: Int,
             val quantityUsed: Int? = null,
             val expiry: Calendar,
-            val dependencies: List<Any> = emptyList(),
+            val dependencies: List<CobDependency> = emptyList(),
             val installScript: AgentScript.InstallScript,
             val removalScript: AgentScript.RemovalScript? = null,
             val eventScripts: List<AgentScript>,
