@@ -20,7 +20,7 @@ open class AgentScript(val code: String, val scriptName: String, val type:AgentS
             fun parse(project:Project, variant:CaosVariant, code:String) : AgentScript {
                 val uuid = UUID.randomUUID().toString()
                 val psiFile = PsiFileFactory.getInstance(project)
-                        .createFileFromText("$uuid.cos", CaosScriptLanguage.instance, code) as CaosScriptFile
+                        .createFileFromText("$uuid.cos", CaosScriptLanguage, code) as CaosScriptFile
                 psiFile.variant = variant
                 val eventScript = PsiTreeUtil.collectElementsOfType(psiFile, CaosScriptEventScript::class.java)
                         .firstOrNull()
@@ -33,7 +33,7 @@ open class AgentScript(val code: String, val scriptName: String, val type:AgentS
     class RemovalScript(code:String, scriptName:String = "InstallScript") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
     fun toCaosFile(project: Project, caosVariant: CaosVariant): CaosScriptFile {
         val psiFile = PsiFileFactory.getInstance(project)
-                .createFileFromText("$scriptName.cos", CaosScriptLanguage.instance, code) as CaosScriptFile
+                .createFileFromText("$scriptName.cos", CaosScriptLanguage, code) as CaosScriptFile
         psiFile.variant = caosVariant
         /*val provider = object : SingleRootFileViewProvider(PsiManager.getInstance(project),
                 psiFile.virtualFile,

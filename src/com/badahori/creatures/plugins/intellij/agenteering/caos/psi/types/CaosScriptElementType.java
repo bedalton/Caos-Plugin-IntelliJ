@@ -9,6 +9,6 @@ public class CaosScriptElementType extends IElementType {
     public CaosScriptElementType(
             @NotNull
                     String debugName) {
-        super(debugName, CaosScriptLanguage.getInstance());
+        super(debugName, CaosScriptLanguage.INSTANCE);
     }
 }

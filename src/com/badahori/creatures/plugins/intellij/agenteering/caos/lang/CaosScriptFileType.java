@@ -18,7 +18,7 @@ public class CaosScriptFileType extends LanguageFileType {
     public static final String DOT_DEFAULT_EXTENSION = "."+DEFAULT_EXTENSION;
 
     private CaosScriptFileType() {
-        super(CaosScriptLanguage.Companion.getInstance());
+        super(CaosScriptLanguage.INSTANCE);
     }
 
     @NotNull
