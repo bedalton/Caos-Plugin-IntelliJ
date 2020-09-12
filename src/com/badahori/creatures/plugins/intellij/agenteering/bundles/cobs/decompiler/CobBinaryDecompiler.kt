@@ -1,7 +1,5 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobDecompiler
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobFileData
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.BinaryFileDecompiler
 import com.intellij.openapi.vfs.VirtualFile
@@ -15,7 +13,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
     companion object {
 
         internal fun decompileToString(fileName:String, byteArray:ByteArray) : String {
-            val cobData = CobDecompiler.decompile(ByteBuffer.wrap(byteArray))
+            val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(byteArray))
             return presentCobData(fileName, cobData)
         }
 
