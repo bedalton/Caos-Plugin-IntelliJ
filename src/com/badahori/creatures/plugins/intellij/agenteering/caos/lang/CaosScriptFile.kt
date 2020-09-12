@@ -15,7 +15,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptFile(viewProvider: FileViewProvider)
-    : PsiFileBase(viewProvider, CaosScriptLanguage.instance) {
+    : PsiFileBase(viewProvider, CaosScriptLanguage) {
     var variant: CaosVariant?
         get() {
             val module = module ?: originalFile.module
