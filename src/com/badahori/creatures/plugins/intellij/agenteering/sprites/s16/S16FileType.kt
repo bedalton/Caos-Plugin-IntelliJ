@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
 
-class S16FileType private constructor() : FileType {
+object S16FileType : FileType {
     override fun getName(): String {
         return "S16 Sprite File"
     }
@@ -35,10 +35,6 @@ class S16FileType private constructor() : FileType {
         return Charsets.UTF_8.name()
     }
 
-    companion object {
-        @JvmStatic
-        val INSTANCE = S16FileType()
-        @JvmStatic
-        val DEFAULT_EXTENSION = "s16"
-    }
+    @JvmStatic
+    val DEFAULT_EXTENSION = "s16"
 }
