@@ -1,17 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.createTransformed
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.ui.UIUtil
 import java.awt.Color
-import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 
@@ -40,23 +36,23 @@ object SprParser {
  * Parses Creatures 1 SPR sprite files
  * Based on python code by Shee's Lost Knowledge
  *
- * @see http://sheeslostknowledge.blogspot.com/2014/11/parsing-creatures-1-spr-files.html
+ * @url http://sheeslostknowledge.blogspot.com/2014/11/parsing-creatures-1-spr-files.html
  */
 class SprSpriteFile(file: VirtualFile) : SpriteFile<SprSpriteFrame>(SpriteType.Spr) {
 
     init {
         val rawBytes = file.contentsToByteArray()
         val numRawBytes = rawBytes.size
-        val bytesBuffer = ByteBuffer.wrap(rawBytes)
-        val numImages = bytesBuffer.uInt16BE
+        val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
+        val numImages = bytesBuffer.uInt16
         _frames =  (0 until numImages).map {
-            val offsetForData = bytesBuffer.uInt32BE
+            val offsetForData = bytesBuffer.uInt32
             if (offsetForData < 0) {
                 LOGGER.severe("OffsetForData returned negative number. $offsetForData")
                 return@map null
             }
-            val width = bytesBuffer.uInt16BE
-            val height = bytesBuffer.uInt16BE
+            val width = bytesBuffer.uInt16
+            val height = bytesBuffer.uInt16
             if (width < 1 || height < 1) {
                 LOGGER.severe("OffsetForData Width Height invalid. <${width}x${height}>")
                 return@map null
@@ -112,7 +108,7 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
     }
 
     private fun decode(pixels: List<Int>) : BufferedImage? {
-        val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val bufferedImage = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val alphaRaster = bufferedImage.alphaRaster
         val black = Color(0, 0, 0).rgb
         val solid = intArrayOf(255, 255, 255, 255)
