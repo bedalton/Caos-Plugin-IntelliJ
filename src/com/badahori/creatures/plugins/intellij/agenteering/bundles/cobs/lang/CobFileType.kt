@@ -7,6 +7,7 @@ import javax.swing.Icon
 
 
 object CobFileType : FileType {
+
     override fun getName(): String = "COBFile"
 
     override fun getDescription(): String = "Creatures COB File"
@@ -19,7 +20,7 @@ object CobFileType : FileType {
 
     override fun getIcon(): Icon? = null
 
-    override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.UTF_8.name()
+    override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.US_ASCII.name()
 
     @JvmStatic
     val DEFAULT_EXTENSION = "cob"
