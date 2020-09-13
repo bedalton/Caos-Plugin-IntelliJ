@@ -9,6 +9,9 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 
 
+/**
+ * Editor provider for sprite files. Wires up Sprite files to the viewer
+ */
 class SpriteFileEditorProvider : FileEditorProvider, DumbAware {
 
 
