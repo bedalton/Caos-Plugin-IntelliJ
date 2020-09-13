@@ -5,7 +5,9 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
-
+/**
+ * Creatures 1 sprite file
+ */
 object SprFileType : FileType {
     override fun getName(): String {
         return "SPR file"
