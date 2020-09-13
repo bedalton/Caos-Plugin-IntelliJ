@@ -2,42 +2,48 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.flip
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprSpriteFrame
-import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import java.nio.ByteBuffer
 import java.util.*
 
 
 internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
-    val quantityAvailable = uInt8
-    val expiresMonth = uInt16
-    val expiresDay = uInt16
-    val expiresYear = uInt16
+    val quantityAvailable = int16
+
+    val expiresMonth = int32
+    val expiresDay = int32
+    val expiresYear = int32
     val expiry = Calendar.getInstance(TimeZone.getDefault()).apply {
         set(expiresYear, expiresMonth, expiresDay, 0, 0, 0)
     }
-    val numObjectScripts = uInt8
-    val numInstallScripts = uInt8
-    val quantityUsed = uInt16
+    val numObjectScripts = int16
+    if (numObjectScripts > 200)
+        throw Exception("Suspicious number of objects script. COB is expecting $numObjectScripts object scripts")
+    val numInstallScripts = int16
+    if (numInstallScripts > 200)
+        throw Exception("Suspicious number of install script. COB is expecting $numInstallScripts object scripts")
+    val quantityUsed = int32
     val objectScripts = (0 until numObjectScripts).map { index ->
         val code = readC1Script()
         AgentScript(code, "Script $index", AgentScriptType.OBJECT)
     }
-    val installScriptString = (0 until numInstallScripts).joinToString("* INSTALL SCRIPT PART") { index ->
+    val installScriptString = (0 until numInstallScripts).joinToString("*** INSTALL SCRIPT PART ***") {
         readC1Script()
     }
     val installScript = AgentScript.InstallScript(installScriptString)
-    val pictureWidth = uInt16
-    val pictureHeight = uInt16
-    uInt8
+    val pictureWidth = int32
+    val pictureHeight = int32
+    skip(2)
     val image = if (pictureWidth > 0 && pictureHeight > 0)
-        SprSpriteFrame(this, position().toLong(), pictureWidth, pictureHeight).image?.flip()
+        SprSpriteFrame(this, position().toLong(), pictureWidth, pictureHeight).image?.flipVertical()
     else
         null
-    val agentName = cString
+    val agentName = cString(uInt8)
     return CobBlock.AgentBlock(
             format = CobFormat.C1,
             name = agentName,
@@ -56,9 +62,9 @@ internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
 }
 
 private fun ByteBuffer.readC1Script(): String {
-    val scriptSize = get().toInt().let {
+    val scriptSize = uInt8.let {
         if (it == 255)
-            uInt16
+            int16
         else
             it
     }

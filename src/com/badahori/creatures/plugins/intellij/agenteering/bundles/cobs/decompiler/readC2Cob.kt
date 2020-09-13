@@ -2,6 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -28,9 +30,9 @@ private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
     val quantityAvailable = uInt8.let { if (it == 0xffff) -1 else it }
     val lastUsageDate = uInt16
     val reuseInterval = uInt16
-    val expiryDay = byte
-    val expiryMonth = byte
-    val expiryYear = uInt8
+    val expiryDay = uInt8
+    val expiryMonth = uInt8
+    val expiryYear = uInt16
     val expiry = Calendar.getInstance().apply {
         set (expiryYear, expiryMonth, expiryDay, 0, 0, 0)
     }
@@ -70,14 +72,14 @@ private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
 }
 
 private fun ByteBuffer.readC2AuthorBlock() : CobBlock.AuthorBlock {
-    val creationDay = byte
-    val creationMonth = byte
-    val creationYear = uInt8
+    val creationDay = uInt8
+    val creationMonth = uInt8
+    val creationYear = uInt16
     val creationDate = Calendar.getInstance(TimeZone.getDefault()).apply {
         set(creationYear, creationMonth, creationDay, 0, 0, 0)
     }
-    val version = byte
-    val revision = byte
+    val version = uInt8
+    val revision = uInt8
     val authorName = cString
     val authorEmail = cString
     val authorUrl = cString
@@ -95,8 +97,8 @@ private fun ByteBuffer.readC2AuthorBlock() : CobBlock.AuthorBlock {
 
 private fun ByteBuffer.readC2FileBlock() : CobBlock.FileBlock {
     val type = if (uInt8 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
-    val reserved = uInt16
-    val size = uInt16
+    val reserved = uInt32.toInt()
+    val size = uInt32
     val fileName = cString
     val contents = bytes(size)
     return if (type == CobFileBlockType.SPRITE)
