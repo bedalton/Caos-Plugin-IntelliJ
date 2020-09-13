@@ -5,18 +5,24 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.Agent
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFile
 import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 import java.util.*
 
 sealed class CobFileData {
     data class C2CobData(private val cobBlocks:List<CobBlock>) : CobFileData() {
-        val agentBlocks by lazy { cobBlocks.filterIsInstance(CobBlock.AgentBlock::class.java) }
+        val agentBlocks by lazy { cobBlocks.filterIsInstance(AgentBlock::class.java) }
         val authorBlocks by lazy { cobBlocks.filterIsInstance(CobBlock.AuthorBlock::class.java) }
         private val fileBlocks by lazy { cobBlocks.filterIsInstance<CobBlock.FileBlock>() }
         val spriteFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SpriteBlock>()
         val soundFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SoundBlock>()
+        override val variant:CaosVariant get() = CaosVariant.C2
     }
-    data class C1CobData(val cobBlock: AgentBlock) : CobFileData()
+    data class C1CobData(val cobBlock: AgentBlock) : CobFileData() {
+        override val variant:CaosVariant get() = CaosVariant.C1
+    }
+    data class InvalidCobData(val message:String) : CobFileData() {
+        override val variant:CaosVariant get() = CaosVariant.UNKNOWN
+    }
+    abstract val variant:CaosVariant
 }
 
 sealed class CobBlock {
@@ -30,7 +36,7 @@ sealed class CobBlock {
             val quantityUsed: Int? = null,
             val expiry: Calendar,
             val dependencies: List<CobDependency> = emptyList(),
-            val installScript: AgentScript.InstallScript,
+            val installScript: AgentScript.InstallScript? = null,
             val removalScript: AgentScript.RemovalScript? = null,
             val eventScripts: List<AgentScript>,
             val image: BufferedImage?
@@ -57,7 +63,7 @@ sealed class CobBlock {
                 reserved: Int,
                 contents: ByteArray
         ) : FileBlock(CobFileBlockType.SPRITE, fileName, reserved, contents) {
-            private val sprite: S16SpriteFile by lazy {
+            val sprite: S16SpriteFile by lazy {
                 S16SpriteFile(contents)
             }
         }
@@ -69,7 +75,23 @@ sealed class CobBlock {
         ) : FileBlock(CobFileBlockType.SOUND, fileName, reserved, contents)
     }
 
-    data class UnknownCobBlock(val type:String, val contents: ByteArray) : CobBlock()
+    data class UnknownCobBlock(val type:String, val contents: ByteArray) : CobBlock() {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is UnknownCobBlock) return false
+
+            if (type != other.type) return false
+            if (!contents.contentEquals(other.contents)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = type.hashCode()
+            result = 31 * result + contents.contentHashCode()
+            return result
+        }
+    }
 
 }
 
