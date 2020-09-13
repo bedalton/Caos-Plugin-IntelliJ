@@ -1,9 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
@@ -15,22 +18,30 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptFile(viewProvider: FileViewProvider)
-    : PsiFileBase(viewProvider, CaosScriptLanguage) {
-    var variant: CaosVariant?
+    : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
+    override var variant: CaosVariant?
         get() {
-            val module = module ?: originalFile.module
-            return module?.variant ?: this.virtualFile
+            getUserData(VariantUserDataKey)?.let {
+                return it
+            }
+            return this.virtualFile
                     ?.let {
-                        VariantFilePropertyPusher.readFromStorage(it)
+                        (it as? CaosVirtualFile)?.variant
+                                ?: VariantFilePropertyPusher.readFromStorage(it)
                                 ?: it.getUserData(VariantUserDataKey)
                     }
-                    ?: CaosScriptProjectSettings.variant
+                    ?: getUserData(VariantUserDataKey)
+                    ?: (module ?: originalFile.module)?.variant
         }
         set(newVariant) {
+            putUserData(VariantUserDataKey, newVariant)
             this.virtualFile
                     ?.let {
-                        VariantFilePropertyPusher.writeToStorage(it, newVariant ?: CaosVariant.UNKNOWN)
-                        it.putUserData(VariantUserDataKey, newVariant ?: CaosVariant.UNKNOWN)
+                        (it as? CaosVirtualFile)?.variant = variant
+                        if (it is com.intellij.openapi.vfs.VirtualFileWithId) {
+                            VariantFilePropertyPusher.writeToStorage(it, newVariant ?: CaosVariant.UNKNOWN)
+                        }
+                        it.putUserData(VariantUserDataKey, newVariant)
                     }
         }
 
@@ -55,7 +66,7 @@ class CaosScriptFile(viewProvider: FileViewProvider)
 
     companion object {
         @JvmStatic
-        val VariantUserDataKey = Key<CaosVariant>("com.badahori.creatures.plugins.intellij.agenteering.caos.SCRIPT_VARIANT_KEY")
+        val VariantUserDataKey = Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.SCRIPT_VARIANT_KEY")
 
     }
 }
