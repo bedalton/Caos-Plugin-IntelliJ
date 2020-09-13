@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
@@ -66,11 +67,11 @@ get() {
     }*/
 
 
-class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosVariant> {
+class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosVariant?> {
 
     override fun getDefaultValue(): CaosVariant = CaosScriptProjectSettings.variant
 
-    override fun getFileDataKey(): Key<CaosVariant> {
+    override fun getFileDataKey(): Key<CaosVariant?> {
         return CaosScriptFile.VariantUserDataKey
     }
 
@@ -81,7 +82,8 @@ class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosV
     override fun getImmediateValue(project: Project, file: VirtualFile?): CaosVariant? {
         if (file == null)
             return null
-        return file.getUserData(CaosScriptFile.VariantUserDataKey)
+        return (file as? CaosVirtualFile)?.variant
+                ?: file.getUserData(CaosScriptFile.VariantUserDataKey)
                 ?: readFromStorage(file)
     }
 
@@ -98,7 +100,7 @@ class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosV
     }
 
     override fun acceptsFile(file: VirtualFile): Boolean {
-        return (file.fileType as? LanguageFileType) is CaosScriptFileType
+        return file is CaosVirtualFile || (file.fileType as? LanguageFileType) is CaosScriptFileType
     }
 
     companion object {
