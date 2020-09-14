@@ -22,23 +22,20 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
-import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 
 class CobFileTreeNode(
         private val nonNullProject: Project,
         private val file: VirtualFile
-) : AbstractTreeNode<VirtualFile>(nonNullProject, file) {
+) : AbstractTreeNode<VirtualFile>(nonNullProject, file), SortableTreeElement {
 
     val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
 
     private val cobVirtualFile: CaosVirtualFile by lazy {
-        val parentFolder = CaosVirtualFile(UUID.randomUUID().toString(), null, true)
-        CaosVirtualFileSystem.instance.addFile(parentFolder)
-        CaosVirtualFile(file.name, null, true).apply { parentFolder.addChild(this) }
+        getCobVirtualFileDirectory(file)
     }
 
     override fun expandOnDoubleClick(): Boolean {
@@ -85,6 +82,11 @@ class CobFileTreeNode(
         }
     }
 
+
+    override fun getAlphaSortKey(): String {
+        return file.name
+    }
+
     override fun update(presentationData: PresentationData) {
         presentationData.setIcon(null)
         presentationData.presentableText = file.name
@@ -93,7 +95,7 @@ class CobFileTreeNode(
 }
 
 class AuthorTreeNode(project: Project, private val enclosingCobFileName: String, block: AuthorBlock)
-    : AbstractTreeNode<AuthorBlock>(project, block) {
+    : AbstractTreeNode<AuthorBlock>(project, block), SortableTreeElement {
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(p0: Boolean) {}
     override fun canNavigate(): Boolean = false
@@ -103,13 +105,20 @@ class AuthorTreeNode(project: Project, private val enclosingCobFileName: String,
         presentationData.locationString = enclosingCobFileName
         presentationData.setIcon(null)
     }
+
+
+    override fun getAlphaSortKey(): String {
+        return "$weight"
+    }
+
+    override fun getWeight(): Int = 0
 }
 
 class SpriteFileTreeNode(
         project: Project,
         private val enclosingCobFileName: String,
         private val block: SpriteBlock
-) : AbstractTreeNode<SpriteBlock>(project, block) {
+) : AbstractTreeNode<SpriteBlock>(project, block), SortableTreeElement {
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(p0: Boolean) {}
     override fun canNavigate(): Boolean = false
@@ -118,11 +127,17 @@ class SpriteFileTreeNode(
         presentationData.presentableText = block.fileName
         presentationData.locationString = enclosingCobFileName
         presentationData.setIcon(null)
+    }
+
+    override fun getWeight(): Int = 1
+
+    override fun getAlphaSortKey(): String {
+        return "$weight"
     }
 }
 
 class SoundFileTreeNode(project: Project, private val enclosingCobFileName: String, private val block: SoundBlock)
-    : AbstractTreeNode<SoundBlock>(project, block) {
+    : AbstractTreeNode<SoundBlock>(project, block) , SortableTreeElement{
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(p0: Boolean) {}
     override fun canNavigate(): Boolean = false
@@ -132,6 +147,12 @@ class SoundFileTreeNode(project: Project, private val enclosingCobFileName: Stri
         presentationData.locationString = enclosingCobFileName
         presentationData.setIcon(null)
     }
+
+
+    override fun getAlphaSortKey(): String {
+        return "$weight"
+    }
+    override fun getWeight(): Int = 2
 
 }
 
@@ -141,7 +162,7 @@ class CobScriptFileTreeNode(
         private val scriptIndex: Int,
         private val presentableTextIn: String? = null,
         private val alwaysLeaf: Boolean = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java).size < 2
-) : AbstractTreeNode<CaosScriptFile>(caosFile.project, caosFile) {
+) : AbstractTreeNode<CaosScriptFile>(caosFile.project, caosFile), SortableTreeElement  {
 
     override fun isAlwaysLeaf(): Boolean {
         return alwaysLeaf
@@ -190,6 +211,20 @@ class CobScriptFileTreeNode(
         presentationData.presentableText = getPresentableText()
         presentationData.locationString = "(Decompiled)"
     }
+
+    override fun getAlphaSortKey(): String {
+        return "$weight"
+    }
+
+    override fun getWeight(): Int {
+        val script = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
+                .firstOrNull { it !is CaosScriptMacro }
+        return when (script) {
+            is CaosScriptInstallScript -> 7
+            is CaosScriptRemovalScript -> 8
+            else -> 9
+        }
+    }
 }
 
 
@@ -233,6 +268,12 @@ internal class SubScriptLeafNode(
         presentationData.presentableText = text
         presentationData.locationString = enclosingCobFileName
     }
+
+    override fun getWeight(): Int = when(script) {
+        is CaosScriptInstallScript -> 7
+        is CaosScriptRemovalScript -> 8
+        else -> 9
+    }
 }
 
 internal fun quickFormat(caosFile: CaosScriptFile) {
@@ -248,4 +289,11 @@ internal fun quickFormat(caosFile: CaosScriptFile) {
         }
     }
     command.execute()
+}
+
+private val decompiledId = AtomicInteger(0)
+
+internal fun getCobVirtualFileDirectory(file: VirtualFile) : CaosVirtualFile {
+    val path = "Decompiled (${decompiledId.incrementAndGet()})/${file.name}"
+    return CaosVirtualFileSystem.instance.getDirectory(path, true)!!
 }

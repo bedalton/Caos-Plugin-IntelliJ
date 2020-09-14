@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.ide.util.treeView.smartTree.TreeElement
@@ -38,9 +39,8 @@ class CobFileViewTreeElement(
 
     val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
 
-    private val cobVirtualFile:CaosVirtualFile by lazy {
-        val parentFolder = CaosVirtualFile(UUID.randomUUID().toString(), null, true)
-        CaosVirtualFile(file.name, null, true).apply { parent = parentFolder }
+    private val cobVirtualFile: CaosVirtualFile by lazy {
+        getCobVirtualFileDirectory(file)
     }
 
     override fun getValue(): Any {
