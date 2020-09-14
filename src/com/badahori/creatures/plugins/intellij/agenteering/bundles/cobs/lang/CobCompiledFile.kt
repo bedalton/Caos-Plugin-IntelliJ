@@ -30,7 +30,7 @@ class CobCompiledFile(provider:FileViewProvider)
         val text = myProvider.caos
         val fileName = virtualFile.name
         val psiFile = PsiFileFactory.getInstance(project)
-                .createFileFromText("(Decompiled) $fileName.cos", CaosScriptLanguage, text) as CaosScriptFile
+                .createFileFromText("$fileName (Decompiled)", CaosScriptLanguage, text) as CaosScriptFile
 
         psiFile.variant = myProvider.variant
         assertEquals (myProvider.variant, psiFile.variant,"PsiFile should have had variant set to ${myProvider.variant.fullName}")
