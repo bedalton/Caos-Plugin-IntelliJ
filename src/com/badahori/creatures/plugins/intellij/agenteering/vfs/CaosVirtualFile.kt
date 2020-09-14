@@ -7,10 +7,7 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
 import com.intellij.openapi.vfs.VirtualFileWithId
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -21,7 +18,9 @@ import java.util.concurrent.atomic.AtomicInteger
 class CaosVirtualFile internal constructor(
         private var fileName:String,
         private var content: String?,
-        private val isDirectory: Boolean) : VirtualFile(), ModificationTracker, VirtualFileWithId, HasVariant {
+        private val isDirectory: Boolean,
+        private val allowSubdirectories:Boolean = isDirectory
+        ) : VirtualFile(), ModificationTracker, VirtualFileWithId, HasVariant {
 
     constructor(name: String, content: String?) : this(name, content,false)
 
@@ -86,6 +85,8 @@ class CaosVirtualFile internal constructor(
     fun addChild(file: CaosVirtualFile) {
         if (!isDirectory)
             throw IllegalStateException("Cannot add files to non-directory parent")
+        if (file.isDirectory && !allowSubdirectories)
+            throw IllegalStateException("Cannot add directory to directory with 'no subdirectories' set to true")
         file.parent = this
         children[file.name.toLowerCase()] = file
     }
@@ -96,7 +97,7 @@ class CaosVirtualFile internal constructor(
     }
 
     /** {@inheritDoc}  */
-    @Throws(java.io.IOException::class)
+    @Throws(IOException::class)
     override fun getOutputStream(requestor: Any?,
                         l: Long,
                         l1: Long): OutputStream {
@@ -104,7 +105,7 @@ class CaosVirtualFile internal constructor(
     }
 
     /** {@inheritDoc}  */
-    @Throws(java.io.IOException::class)
+    @Throws(IOException::class)
     override fun contentsToByteArray(): ByteArray {
         return content?.toByteArray() ?: ByteArray(0)
     }
@@ -122,7 +123,7 @@ class CaosVirtualFile internal constructor(
     }
 
     /** {@inheritDoc}  */
-    @Throws(java.io.IOException::class)
+    @Throws(IOException::class)
     override fun getInputStream(): InputStream = ByteArrayInputStream(contentsToByteArray())
 
     /** {@inheritDoc}  */
