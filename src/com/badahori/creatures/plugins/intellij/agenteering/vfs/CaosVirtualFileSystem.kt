@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
+
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.vfs.*
 import java.io.IOException
-import java.util.*
 
 
 /**
@@ -15,7 +15,9 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     /**
      * Listeners for file system events.
      */
-    private val listeners: MutableList<VirtualFileListener> = ArrayList()
+    private val listeners: MutableList<VirtualFileListener> = mutableListOf()
+
+    private val saveListeners:MutableList<CaosVirtualFileSaveListener> = mutableListOf()
 
     /** {@inheritDoc}  */
     override fun addVirtualFileListener(virtualFileListener: VirtualFileListener) {
@@ -29,25 +31,33 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         listeners.remove(virtualFileListener)
     }
 
+    fun addOnSaveListener(listener:CaosVirtualFileSaveListener) {
+        saveListeners.add(listener)
+    }
+
+    fun removeOnSaveListener(listener:CaosVirtualFileSaveListener) {
+        saveListeners.remove(listener)
+    }
+
     /**
      * Add a file to the file system.
      * @param file the file to add
      */
     fun addFile(file: CaosVirtualFile) {
         root.addChild(file)
-        fireFileCreated(file)
+        fireFileCreated(null, file)
     }
 
     /**
      * Notifies listeners
      * @param file newly created file
      */
-    private fun fireFileCreated(file: CaosVirtualFile) {
+    override fun fireFileCreated(requestor: Any?, file: VirtualFile) {
         val e = VirtualFileEvent(this,
                 file,
                 file.name,
-                file.getParent())
-        for (listener in listeners) {
+                file.parent)
+        listeners.forEach { listener ->
             listener.fileCreated(e)
         }
     }
@@ -71,27 +81,74 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                                    virtualFile: VirtualFile) {
         if (virtualFile !is CaosVirtualFile)
             throw IOException("Cannot delete non-CAOSVirtualFile from CAOS VFS")
-        //fireBeforeFileDeletion(requestor, virtualFile)
-        (virtualFile.parent ?: root).let {
-            it.deleteChild(virtualFile)
+        fireBeforeFileDeletion(requestor, virtualFile)
+        (virtualFile.parent ?: root).deleteChild(virtualFile)
+        fireFileDeleted(requestor, virtualFile, virtualFile.name, virtualFile.parent)
+    }
+
+    /**
+     * Notifies listeners
+     * @param file newly created file
+     */
+    override fun fireBeforeFileDeletion(requestor: Any?, file: VirtualFile) {
+        val e = VirtualFileEvent(this,
+                file,
+                file.name,
+                file.parent)
+        listeners.forEach { listener ->
+            listener.beforeFileDeletion(e)
         }
-        //fireBeforeFileDeletion(requestor, virtualFile)
+    }
+
+    override fun fireFileDeleted(requestor: Any?, file: VirtualFile, fileName: String, parent: VirtualFile?) {
+        val e = VirtualFileEvent(this,
+                file,
+                file.name,
+                parent)
+        listeners.forEach { listener ->
+            listener.fileDeleted(e)
+        }
     }
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
     public override fun moveFile(requestor: Any?,
-                                 virtualFile: VirtualFile,
+                                 virtualFileIn: VirtualFile,
                                  newParentIn: VirtualFile) {
-        if (virtualFile !is CaosVirtualFile)
-            throw Exception("Cannot move non-CaosVirtualFile to CAOS virtual file parent")
-        val oldParent = virtualFile.parent ?: root
         val newParent = newParentIn as? CaosVirtualFile
                 ?: throw Exception("Cannot move file. Parent file is not CAOS Virtual file")
-        //fireBeforeFileMovement(requestor, virtualFile, newParent)
+        // Ensure is CAOS file or copy to allow use in Caos VFS
+        val virtualFile = if (virtualFileIn !is CaosVirtualFile) {
+            val temp = CaosVirtualFile(virtualFileIn.name, virtualFileIn.contents, virtualFileIn.isDirectory)
+            virtualFileIn.delete(requestor)
+            temp
+        } else
+            virtualFileIn
+        val oldParent = virtualFile.parent ?: root
+        fireBeforeFileMovement(requestor, virtualFile, newParent)
         oldParent.deleteChild(virtualFile)
         newParent.addChild(virtualFile)
-        //fireFileMoved(requestor, virtualFile, oldParent)
+        fireFileMoved(requestor, virtualFile, oldParent)
+    }
+
+    override fun fireBeforeFileMovement(requestor: Any?, file: VirtualFile, newParent: VirtualFile) {
+        val e = VirtualFileMoveEvent(this,
+                file,
+                file.parent,
+                newParent)
+        listeners.forEach{  listener ->
+            listener.beforeFileMovement(e)
+        }
+    }
+
+    override fun fireFileMoved(requestor: Any?, file: VirtualFile, oldParent: VirtualFile) {
+        val e = VirtualFileMoveEvent(this,
+                file,
+                oldParent,
+                file.parent)
+        listeners.forEach{  listener ->
+            listener.fileMoved(e)
+        }
     }
 
     /** {@inheritDoc}  */
@@ -117,9 +174,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         val file = CaosVirtualFile(name, null)
         file.parent = parentIn as? CaosVirtualFile
         addFile(file)
-        //fireFileCreated(requestor, file)
+        fireFileCreated(requestor, file)
         return file
     }
+
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
@@ -130,7 +188,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         if (!parent.isDirectory)
             throw IOException("Cannot add child directory to non-directory parent: ${parent.name}")
         (parent as CaosVirtualFile).addChild(file)
-        //fireFileCreated(requestor, file)
+        fireFileCreated(requestor, file)
         return file
     }
 
@@ -144,10 +202,11 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         addFile(file)
         return file
     }
+
     /**
      * Get file in file system
      */
-    override fun findFileByPath(filePath: String) : CaosVirtualFile? {
+    override fun findFileByPath(filePath: String): CaosVirtualFile? {
         return findFileByPath(filePath, false)
     }
 
@@ -165,7 +224,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         var currentFile: CaosVirtualFile = getOrCreateRootChildDirectory(parentName)
         while (names.isNotEmpty()) {
             val name = names.removeAt(0)
-            currentFile = currentFile.findChild(name) as? CaosVirtualFile
+            currentFile = currentFile.findChild(name)
                     ?: if (names.isNotEmpty() && createSubFolders)
                         createChildDirectory(null, currentFile, name)
                     else
@@ -222,8 +281,20 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
             throw IOException("Cannot copy Caos Virtual file to non-Caos Virtual file directory")
         return CaosVirtualFile(copyName, virtualFile.contents, virtualFile.isDirectory).apply {
             parent = newParent
-            //fireFileCopied(requestor, virtualFile, this)
+            fireFileCopied(requestor, virtualFile, this)
         }
+    }
+
+    override fun fireFileCopied(requestor: Any?, originalFile: VirtualFile, createdFile: VirtualFile) {
+        val event = VirtualFileCopyEvent(
+                requestor,
+                originalFile,
+                createdFile
+        )
+        listeners.forEach{  listener ->
+            listener.fileCopied(event)
+        }
+        super.fireFileCopied(requestor, originalFile, createdFile)
     }
 
     /** {@inheritDoc}  */
@@ -236,9 +307,36 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         return virtualFile.isDirectory
     }
 
+    fun fireOnSaveEvent(virtualFile: CaosVirtualFile) {
+        val event = CaosVirtualFileEvent(
+                null,
+                virtualFile,
+                virtualFile.name,
+                virtualFile.parent
+        )
+        saveListeners.forEach { listener ->
+            listener(event)
+        }
+        listeners.filterIsInstance<CaosVirtualFileListener>().forEach{ listener ->
+            listener.onFileSave(event)
+        }
+    }
+
     companion object {
         val instance: CaosVirtualFileSystem by lazy {
             VirtualFileManager.getInstance().getFileSystem(CAOS_VFS_PROTOCOL) as CaosVirtualFileSystem
         }
+    }
+}
+
+class CaosVirtualFileEvent(requestor:Any?, file:CaosVirtualFile, fileName:String, parent:VirtualFile?)
+    : VirtualFileEvent(requestor, file, fileName, parent)
+
+typealias CaosVirtualFileSaveListener = (e: CaosVirtualFileEvent) -> Unit
+
+interface CaosVirtualFileListener : VirtualFileListener {
+    @JvmDefault
+    fun onFileSave(e: CaosVirtualFileEvent) {
+
     }
 }
