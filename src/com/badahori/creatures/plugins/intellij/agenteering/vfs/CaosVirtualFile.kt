@@ -1,27 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
-/*
- * Copyright 2007 Steve Chaloner
- * Modified by Bedalton
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed
- * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
-
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileSystem
 import com.intellij.openapi.vfs.VirtualFileWithId
 import java.io.ByteArrayInputStream
@@ -39,14 +22,24 @@ class CaosVirtualFile internal constructor(
         private var fileName:String,
         private var content: String?,
         private val isDirectory: Boolean) : VirtualFile(), ModificationTracker, VirtualFileWithId, HasVariant {
+
+    constructor(name: String, content: String?) : this(name, content,false)
+
+    // To support VirtualFileWithId
     private val myId:Int = nextId.getAndIncrement()
 
+    /** {@inheritDoc}  */
     override fun getId():Int = myId
 
+    /** Allows Quick access to CAOS Variant */
     override var variant:CaosVariant? = null
 
     /** {@inheritDoc}  */
     override fun getName(): String = fileName
+
+    fun setName(name:String) {
+        fileName = name
+    }
 
     /** {@inheritDoc}  */
     override fun getNameWithoutExtension() : String = FileUtil.getNameWithoutExtension(name)
@@ -59,10 +52,11 @@ class CaosVirtualFile internal constructor(
      */
     private val children: MutableMap<String, CaosVirtualFile> = HashMap()
 
-    internal var parent: VirtualFile? = null
+    /** Parent Virtual file */
+    internal var parent: CaosVirtualFile? = null
 
     /** {@inheritDoc}  */
-    override fun getParent() = parent
+    override fun getParent():CaosVirtualFile? = parent
 
     /**
      * Immutability flag
@@ -77,40 +71,23 @@ class CaosVirtualFile internal constructor(
         isWritable = writable
     }
 
-    /**
-     * Initialises a new instance of this class.
-     *
-     * @param name the name of the file
-     * @param content the content of the file
-     */
-    constructor(name: String, content: String?) : this(name, content,false)
+    /** {@inheritDoc}  */
+    override fun getFileSystem(): VirtualFileSystem = CaosVirtualFileSystem.instance
 
     /** {@inheritDoc}  */
-    override fun getFileSystem(): VirtualFileSystem = VirtualFileManager.getInstance().getFileSystem(CAOS_VFS_PROTOCOL)
-
-    /** {@inheritDoc}  */
-    override fun getPath(): String {
-            val parent = parent
-            return if (parent == null) name else parent.path + '/' + name
-        }
+    @Suppress("RecursivePropertyAccessor")
+    override fun getPath(): String = parent?.path?.let { "$it/$name" } ?: name
 
     /** {@inheritDoc}  */
     override fun isValid(): Boolean = true
 
-    /**
-     * Add the given file to the child list of this directory.
-     *
-     * @param file the file to add to the list of children
-     * @throws java.lang.IllegalStateException if this file is not a directory
-     */
+    /** {@inheritDoc}  */
     @Throws(java.lang.IllegalStateException::class)
     fun addChild(file: CaosVirtualFile) {
-        if (isDirectory) {
-            file.parent = this
-            children[file.name] = file
-        } else {
-            throw IllegalStateException("files can only be added to a directory")
-        }
+        if (!isDirectory)
+            throw IllegalStateException("Cannot add files to non-directory parent")
+        file.parent = this
+        children[file.name.toLowerCase()] = file
     }
 
     /** {@inheritDoc}  */
@@ -148,14 +125,9 @@ class CaosVirtualFile internal constructor(
     @Throws(java.io.IOException::class)
     override fun getInputStream(): InputStream = ByteArrayInputStream(contentsToByteArray())
 
-    /**
-     * Gets the file from this directory's children.
-     *
-     * @param name the name of the child to retrieve
-     * @return the file, or null if it cannot be found
-     */
-    fun getChild(name: String?): CaosVirtualFile? {
-        return children[name]
+    /** {@inheritDoc}  */
+    override fun findChild(name: String): CaosVirtualFile? {
+        return children[name.toLowerCase()]
     }
 
     /** {@inheritDoc}  */
@@ -165,12 +137,14 @@ class CaosVirtualFile internal constructor(
     override fun getUrl(): String = CAOS_VFS_SCHEMA + path
 
     /**
-     * Deletes the specified file.
-     *
-     * @param file the file to delete
+     * Deletes the specified file, if it is a child of this file
      */
     fun deleteChild(file: CaosVirtualFile) {
-        children.remove(file.name)
+        val fileName = file.name.toLowerCase()
+        children.let {
+            if (it[fileName] == file)
+                it.remove(fileName)
+        }
     }
 
     override fun toString(): String {
@@ -179,10 +153,11 @@ class CaosVirtualFile internal constructor(
 
     /** {@inheritDoc}  */
     override fun getModificationCount(): Long {
-        TODO("Not yet implemented")
+        return children.values.map { it.modificationCount }.sum()
     }
 
     companion object {
+        /** The next id for use in VirtualFileWithId */
         val nextId = AtomicInteger(1)
     }
 }
