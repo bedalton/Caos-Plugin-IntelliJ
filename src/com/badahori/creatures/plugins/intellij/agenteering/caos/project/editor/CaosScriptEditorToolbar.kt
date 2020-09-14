@@ -119,7 +119,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
             return@addDocsButtonClickListener
         }
         val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
-        val virtualFile = CaosVirtualFileSystem.instance.getFileAtPath(docRelativePath)
+        val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
                 ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
         val file = virtualFile?.getPsiFile(project)
                 ?: FilenameIndex.getFilesByName(project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))

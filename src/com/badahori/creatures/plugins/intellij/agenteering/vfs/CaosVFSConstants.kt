@@ -10,4 +10,4 @@ internal const val CAOS_VFS_PROTOCOL = "caosvfs"
  */
 const val CAOS_VFS_SCHEMA = "$CAOS_VFS_PROTOCOL://"
 
-const val CAOS_VFS_ROOT = "ROOT"
+const val CAOS_VFS_ROOT = "CaosVFS"
