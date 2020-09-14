@@ -3,36 +3,20 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
-import com.intellij.psi.util.PsiTreeUtil
-import java.util.*
 
 
 open class AgentScript(val code: String, val scriptName: String, val type: AgentScriptType) {
-    class EventScript(val family: Int, val genus: Int, val species: Int, val eventNumber: Int, code: String) : AgentScript(code, "$family $genus $species $eventNumber", AgentScriptType.EVENT) {
-        companion object {
-            fun parse(project: Project, variant: CaosVariant, index: Int, code: String): AgentScript {
-                val uuid = UUID.randomUUID().toString()
-                val psiFile = PsiFileFactory.getInstance(project)
-                        .createFileFromText("$uuid.cos", CaosScriptLanguage, code) as CaosScriptFile
-                psiFile.variant = variant
-                val eventScript = PsiTreeUtil.collectElementsOfType(psiFile, CaosScriptEventScript::class.java)
-                        .firstOrNull()
-                        ?: return AgentScript(code, "Script $index", AgentScriptType.OBJECT)
-                return EventScript(eventScript.family, eventScript.genus, eventScript.species, eventScript.eventNumber, code)
-            }
-        }
-    }
-
     class InstallScript(code: String, scriptName: String = "InstallScript") : AgentScript(code, scriptName, AgentScriptType.INSTALL)
-    class RemovalScript(code: String, scriptName: String = "InstallScript") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
-
+    class RemovalScript(code: String, scriptName: String = "RemovalScript") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
     fun toCaosFile(project: Project, cobPath: CaosVirtualFile, caosVariant: CaosVariant): CaosScriptFile {
-        val file = CaosVirtualFile("$scriptName.cos", code, false).apply {
+        val fileName = getEventScriptName(code) ?: scriptName
+        val file = CaosVirtualFile("$fileName.cos", code, false).apply {
             cobPath.addChild(this)
             this.variant = caosVariant
             isWritable = true
@@ -43,7 +27,37 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
         psiFile.variant = caosVariant
         return psiFile
     }
+
+    companion object {
+        private fun getEventScriptName(code:String) : String? {
+            val codeToLower = code.toLowerCase().trim(' ','\t', ',', '\n')
+            val splits = "([,\\s]+scrp|^scrp)".toRegex()
+                    .splitWithDelimiter(codeToLower)
+                    .map { it.trim(' ','\t', ',', '\n')}
+            LOGGER.info("Splits: [${splits.joinToString("::")}]")
+            val valid = mutableListOf<String>()
+            var i = if (codeToLower.startsWith("scrp")) 0 else 1
+            while(++i < splits.size) {
+                val prev = splits[i++].trim()
+                if (prev == "scrp") {
+                    // Only 4 parts needed as SCRP was removed earlier, and have
+                    valid.add(splits[i++].split("[\\s,]+".toRegex(), 5).drop(0).dropLast(1).joinToString(" "))
+                }
+                if (splits.getOrNull(i)?.endsWith("dde:").orFalse())
+                    i++
+            }
+            LOGGER.info("VALIDS: [${valid.joinToString("::")}]")
+            return if (valid.size == 1)
+                valid[0]
+            else
+                null
+        }
+    }
 }
+private const val withDelimiter = "((?<=%1\$s)|(?=%1\$s))"
+
+fun Regex.splitWithDelimiter(input: CharSequence) =
+        Regex(withDelimiter.format(this.pattern)).split(input)
 
 enum class AgentScriptType {
     INSTALL,
