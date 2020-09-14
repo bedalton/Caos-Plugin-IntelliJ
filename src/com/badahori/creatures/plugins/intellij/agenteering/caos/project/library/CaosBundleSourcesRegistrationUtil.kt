@@ -11,6 +11,8 @@ import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.openapi.vfs.VirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.openapi.roots.ModifiableRootModel
 import java.util.logging.Logger
 
@@ -34,7 +36,22 @@ object CaosBundleSourcesRegistrationUtil {
         }
     }
 
-    fun deregisterSources(module:Module) {
+    fun registerSourcesWithoutModule(module:Module? = null) : Boolean {
+        module?.let { deregisterSources(module) }
+        val definitionsFolder = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
+                ?: return false
+        val vfsDefinitionsFolder = CaosVirtualFile(BUNDLE_DEFINITIONS_FOLDER, null, true).apply {
+            CaosVirtualFileSystem.instance.addFile(this)
+        }
+        for(file in definitionsFolder.children) {
+            CaosVirtualFile(file.name, file.contents, false).apply {
+                vfsDefinitionsFolder.addChild(this)
+            }
+        }
+        return CaosVirtualFileSystem.instance.exists("$BUNDLE_DEFINITIONS_FOLDER/C1-Lib.caosdef")
+    }
+
+    internal fun deregisterSources(module:Module) {
         val rootModel = ModuleRootManager.getInstance(module).modifiableModel
         val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
         val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return
