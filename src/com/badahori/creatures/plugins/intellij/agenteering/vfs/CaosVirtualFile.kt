@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.now
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -15,14 +16,24 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Virtual File for Caos Scripts Plugin
  */
-class CaosVirtualFile internal constructor(
+class CaosVirtualFile private constructor(
         private var fileName:String,
-        private var content: String?,
+        private var stringContents: String? = null,
+        private var byteArrayContents:ByteArray? = null,
         private val isDirectory: Boolean,
         private val allowSubdirectories:Boolean = isDirectory
         ) : VirtualFile(), ModificationTracker, VirtualFileWithId, HasVariant {
 
-    constructor(name: String, content: String?) : this(name, content,false)
+    constructor(name: String, content: String?) : this(name, content, null, false)
+
+    constructor(name: String, content: String?, isDirectory: Boolean) : this(name, content, null, isDirectory)
+
+    constructor(name:String, content:ByteArray) : this(name, null, content, false)
+
+    constructor(name:String, content:ByteArray, isDirectory: Boolean) : this(name, null, content, isDirectory)
+
+    private var timestamp = now
+    private var modificationStamp:Long = timestamp
 
     // To support VirtualFileWithId
     private val myId:Int = nextId.getAndIncrement()
@@ -38,6 +49,16 @@ class CaosVirtualFile internal constructor(
 
     fun setName(name:String) {
         fileName = name
+    }
+
+    fun setContent(contents:ByteArray?) {
+        stringContents = null
+        byteArrayContents = contents
+    }
+
+    fun setContent(contents:String?) {
+        stringContents = contents
+        byteArrayContents = null
     }
 
     /** {@inheritDoc}  */
@@ -81,7 +102,7 @@ class CaosVirtualFile internal constructor(
     override fun isValid(): Boolean = true
 
     /** {@inheritDoc}  */
-    @Throws(java.lang.IllegalStateException::class)
+    @Throws(IllegalStateException::class)
     fun addChild(file: CaosVirtualFile) {
         if (!isDirectory)
             throw IllegalStateException("Cannot add files to non-directory parent")
@@ -107,14 +128,14 @@ class CaosVirtualFile internal constructor(
     /** {@inheritDoc}  */
     @Throws(IOException::class)
     override fun contentsToByteArray(): ByteArray {
-        return content?.toByteArray() ?: ByteArray(0)
+        return byteArrayContents ?: stringContents?.toByteArray() ?: ByteArray(0)
     }
 
     /** {@inheritDoc}  */
     override fun getTimeStamp(): Long = 0L
 
     /** {@inheritDoc}  */
-    override fun getLength(): Long = content?.length?.toLong() ?: 0L
+    override fun getLength(): Long = byteArrayContents?.size?.toLong() ?: stringContents?.length?.toLong() ?: 0L
 
     /** {@inheritDoc}  */
     override fun refresh(b: Boolean,
@@ -132,7 +153,7 @@ class CaosVirtualFile internal constructor(
     }
 
     /** {@inheritDoc}  */
-    override fun getModificationStamp(): Long = 0
+    override fun getModificationStamp(): Long = modificationStamp
 
     /** {@inheritDoc}  */
     override fun getUrl(): String = CAOS_VFS_SCHEMA + path
@@ -155,6 +176,29 @@ class CaosVirtualFile internal constructor(
     /** {@inheritDoc}  */
     override fun getModificationCount(): Long {
         return children.values.map { it.modificationCount }.sum()
+    }
+
+
+    fun createChildWithContent(name:String, content:String) : CaosVirtualFile {
+        return (createChildData(null, name) as CaosVirtualFile).apply {
+            this.setContent(content)
+        }
+    }
+
+    fun createChildWithContent(name:String, content:ByteArray?) : CaosVirtualFile {
+        return (createChildData(null, name) as CaosVirtualFile).apply {
+            this.setContent(content)
+        }
+    }
+
+    override fun setBinaryContent(content: ByteArray, newModificationStamp: Long, newTimeStamp: Long) {
+        setBinaryContent(content, newModificationStamp, newTimeStamp, null)
+    }
+
+    override fun setBinaryContent(content: ByteArray, newModificationStamp: Long, newTimeStamp: Long, requestor: Any?) {
+        timestamp = newTimeStamp
+        modificationStamp = newModificationStamp
+        setContent(content)
     }
 
     companion object {
