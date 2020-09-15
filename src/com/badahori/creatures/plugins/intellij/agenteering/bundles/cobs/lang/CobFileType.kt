@@ -2,6 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang
 
 
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.KeyWithDefaultValue
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
@@ -24,4 +26,8 @@ object CobFileType : FileType {
 
     @JvmStatic
     val DEFAULT_EXTENSION = "cob"
+}
+
+val IS_COB_USER_DATA_KEY:Key<Boolean> = object:KeyWithDefaultValue<Boolean>("com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.IS_COB_VIRTUAL_FILE") {
+    override fun getDefaultValue(): Boolean = false
 }
