@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.project.Project
@@ -34,7 +33,6 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
             val splits = "([,\\s]+scrp|^scrp)".toRegex()
                     .splitWithDelimiter(codeToLower)
                     .map { it.trim(' ','\t', ',', '\n')}
-            LOGGER.info("Splits: [${splits.joinToString("::")}]")
             val valid = mutableListOf<String>()
             var i = if (codeToLower.startsWith("scrp")) 0 else 1
             while(++i < splits.size) {
@@ -46,7 +44,6 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
                 if (splits.getOrNull(i)?.endsWith("dde:").orFalse())
                     i++
             }
-            LOGGER.info("VALIDS: [${valid.joinToString("::")}]")
             return if (valid.size == 1)
                 valid[0]
             else

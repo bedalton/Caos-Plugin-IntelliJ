@@ -69,8 +69,6 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
             val module = file.getModule(project)
             if (module != null) {
                 CaosBundleSourcesRegistrationUtil.register(module, project)
-            } else {
-                LOGGER.severe("Failed to locate CAOS module")
             }
         }
     }
