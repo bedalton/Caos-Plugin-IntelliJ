@@ -17,13 +17,16 @@ object CobToDataObjectDecompiler {
         buffer.position(0)
         return if (header == "cob2") {
             decompileC2Cob(buffer)
-        } else try {
-            val decompressed = ByteArrayOutputStream()
-            val decompressor = InflaterOutputStream(decompressed)
-            decompressor.write(buffer.toByteArray())
-            decompileC2Cob(ByteBuffer.wrap(decompressed.toByteArray()).littleEndian() )
-        } catch (e: Exception) {
-            decompileC1Cob(buffer)
+        } else {
+            val decompressed = try {
+                val decompressed = ByteArrayOutputStream()
+                val decompressor = InflaterOutputStream(decompressed)
+                decompressor.write(buffer.toByteArray())
+                decompressed
+            } catch (e: Exception) {
+                return decompileC1Cob(buffer)
+            }
+            decompileC2Cob(ByteBuffer.wrap(decompressed.toByteArray()).littleEndian())
         }
     }
 
@@ -32,7 +35,7 @@ object CobToDataObjectDecompiler {
         buffer.position(0)
         val version = buffer.uInt16
         if (version > 4) {
-            val message = "Invalid COB file with version: $version. Data(20: \"${buffer.bytes(20).joinToString("") { "${it.toChar()}" }}\""
+            val message = "Invalid COB file with version: $version. Data(\"${buffer.bytes(20).joinToString("") { "${it.toChar()}" }}\")"
             val top = (0 until message.length + 4).joinToString("") {"*"}
             val error = "$top\n* $message *\n$top"
             LOGGER.severe(error)
