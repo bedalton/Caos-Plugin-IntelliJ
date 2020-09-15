@@ -2,11 +2,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.vfs.VfsUtil
+import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -17,43 +18,57 @@ internal fun ByteBuffer.readC2CobBlock() : CobBlock? {
     } catch (e: Exception) {
         return null
     }
-    val size = uInt16
+    val size = uInt32
     return when (type) {
         "agnt" -> readC2AgentBlock()
         "auth" -> readC2AuthorBlock()
         "file" -> readC2FileBlock()
-        else -> CobBlock.UnknownCobBlock(type, bytes(size))
+        else -> {
+            LOGGER.severe("Encountered BAD C2 COB Block. Type: $type; Size: $size")
+            CobBlock.UnknownCobBlock(type, bytes(size))
+        }
     }
 }
 
 private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
-    val quantityAvailable = uInt8.let { if (it == 0xffff) -1 else it }
-    val lastUsageDate = uInt16
-    val reuseInterval = uInt16
+    val quantityAvailable = uInt16.let { if (it == 0xffff) -1 else it }
+    LOGGER.info("QuantityAvailable: $quantityAvailable")
+    val lastUsageDate = uInt32
+    val reuseInterval = uInt32
+    LOGGER.info("LastUsage: $lastUsageDate; ReuseInterval: $reuseInterval")
     val expiryDay = uInt8
     val expiryMonth = uInt8
     val expiryYear = uInt16
+    LOGGER.info("Expiry: $expiryMonth/$expiryDay/$expiryYear")
     val expiry = Calendar.getInstance().apply {
         set (expiryYear, expiryMonth, expiryDay, 0, 0, 0)
     }
-    skip(12)
+    skip(12) // Reserved?
     val agentName = cString
+    LOGGER.info("AgentName: $agentName")
     val description = cString
+    LOGGER.info("Description: $description")
     val installScript = AgentScript.InstallScript(cString)
+    LOGGER.info("InstallScript: ${installScript.code}")
     val removalScript = AgentScript.RemovalScript(cString)
-    val eventScripts = (0 until uInt8).map {index ->
-        AgentScript(cString, "Script $index", AgentScriptType.EVENT)
+    LOGGER.info("InstallScript: ${removalScript.code}")
+    val eventScripts = (0 until uInt16).map {index ->
+        val script = cString
+        LOGGER.info("EventScript: $index: $script")
+        AgentScript(script, "Script $index", AgentScriptType.EVENT)
     }
-    val dependencies = (0 until uInt8).map {
-        val type = if (uInt8 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
+    val dependencies = (0 until uInt16).map {
+        val type = if (uInt16 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
         val name = cString
+        LOGGER.info("Dependencies: $type, $name")
         CobDependency(type, name)
     }
 
-    val thumbWidth = uInt8
-    val thumbHeight = uInt8
-    val image = S16SpriteFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.x565).image
-    skip((thumbWidth * thumbHeight * 0.5).toInt())
+    val thumbWidth = uInt16
+    val thumbHeight = uInt16
+    LOGGER.info("ThumbSize: ${thumbWidth}x$thumbHeight")
+    val image = S16SpriteFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565).image
+    skip(thumbWidth * thumbHeight * 2)
     return CobBlock.AgentBlock(
             format = CobFormat.C2,
             name = agentName,
@@ -62,8 +77,8 @@ private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
             quantityAvailable = quantityAvailable,
             quantityUsed = null,
             expiry = expiry,
-            lastUsageDate = lastUsageDate,
-            useInterval = reuseInterval,
+            lastUsageDate = lastUsageDate.toInt(),
+            useInterval = reuseInterval.toInt(),
             eventScripts = eventScripts,
             installScript = installScript,
             removalScript = removalScript,
@@ -96,10 +111,11 @@ private fun ByteBuffer.readC2AuthorBlock() : CobBlock.AuthorBlock {
 }
 
 private fun ByteBuffer.readC2FileBlock() : CobBlock.FileBlock {
-    val type = if (uInt8 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
+    val type = if (uInt16 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
     val reserved = uInt32.toInt()
     val size = uInt32
     val fileName = cString
+    LOGGER.info("File: ${type.name}; FileName: $fileName; Size: $size")
     val contents = bytes(size)
     return if (type == CobFileBlockType.SPRITE)
         CobBlock.FileBlock.SpriteBlock(
