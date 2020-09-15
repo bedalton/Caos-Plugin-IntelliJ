@@ -1,13 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
-import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.ui.UIUtil
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 
@@ -23,8 +21,8 @@ class S16SpriteFile(rawBytes:ByteArray) : SpriteFile<S16SpriteFrame>(SpriteType.
     init {
         val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
         val encoding = when (val buffer = bytesBuffer.uInt32) {
-            1L -> ColorEncoding.x565
-            2L -> ColorEncoding.x555
+            1L -> ColorEncoding.X_565
+            0L -> ColorEncoding.X_555
             else -> throw Exception("File encoding not recognized. ('$buffer')")
         }
         val numImages = bytesBuffer.uInt16
@@ -57,7 +55,7 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         }
     }
 
-    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.x565) : this(image.width, image.height, encoding) {
+    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.X_565) : this(image.width, image.height, encoding) {
         getImage = { image }
     }
 
@@ -70,10 +68,11 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
     private fun decode(bytes: ByteBuffer, offset: Long): BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
-        val image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {
             for (x in 0 until width) {
-                val color = SpriteColorUtil.getColor(bytesBuffer.uInt16, encoding)
+                val pixel = bytesBuffer.uInt16
+                val color = SpriteColorUtil.getColor(pixel, encoding)
                 if (color[0] == 0 && color[1] == 0 && color[2] == 0)
                     image.alphaRaster.setPixel(x, y, transparent)
                 else {

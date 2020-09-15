@@ -80,6 +80,7 @@ public class SprFileEditor {
             cellRenderer.setScale(newScale);
             imageList.updateUI();
         });
+
     }
 
     /**
@@ -118,6 +119,7 @@ public class SprFileEditor {
 
     private void createUIComponents() {
         imageList = new JBList<>(images);
+        cellRenderer.setColor(TRANSPARENT_COLOR);
         imageList.setCellRenderer(cellRenderer);
         backgroundColor = new ComboBox<>(new String[]{
                 TRANSPARENT,
