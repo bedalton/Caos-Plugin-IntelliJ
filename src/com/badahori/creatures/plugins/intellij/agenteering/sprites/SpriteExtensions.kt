@@ -1,8 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites
 
 import com.intellij.util.ui.UIUtil
+import java.awt.Image
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
+import java.awt.image.RenderedImage
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 
 fun BufferedImage.createTransformed(at: AffineTransform) : BufferedImage {
@@ -27,4 +31,23 @@ fun BufferedImage.flipHorizontal() : BufferedImage? {
     at.concatenate(AffineTransform.getScaleInstance(-1.0, 1.0))
     at.concatenate(AffineTransform.getTranslateInstance(0.0, -height.toDouble()))
     return createTransformed(at)
+}
+
+fun RenderedImage.toPngByteArray() : ByteArray {
+    return toByteArray("png")
+}
+
+fun RenderedImage.toJpgByteArray() : ByteArray {
+    return toByteArray("jpg")
+}
+
+fun RenderedImage.toByteArray(formatName:String) : ByteArray {
+    ImageIO.getWriterFormatNames().let { formats ->
+        assert(formatName in formats) {
+            "Cannot convert image to byte array for format: '$formatName'. Available types: [${formats.joinToString()}]"
+        }
+    }
+    val outputStream = ByteArrayOutputStream()
+    ImageIO.write(this, formatName, outputStream)
+    return outputStream.toByteArray()
 }
