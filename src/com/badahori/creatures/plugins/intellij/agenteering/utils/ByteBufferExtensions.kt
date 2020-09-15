@@ -25,10 +25,42 @@ val ByteBuffer.int16: Int
         return short.toInt()
     }
 
+val ByteBuffer.int16BE: Int get() {
+    val currentEncoding = order()
+    order(ByteOrder.BIG_ENDIAN)
+    val value = short.toInt()
+    order(currentEncoding)
+    return value
+}
+
+val ByteBuffer.int16LE: Int get() {
+    val currentEncoding = order()
+    order(ByteOrder.LITTLE_ENDIAN)
+    val value = short.toInt()
+    order(currentEncoding)
+    return value
+}
+
 val ByteBuffer.uInt16: Int
     get() {
-        return short.toInt() and 0xffff
+        return byteToUInt(get()) + (byteToUInt(get()) shl 8)
     }
+
+val ByteBuffer.uInt16LE: Int get() {
+    val currentEncoding = order()
+    order(ByteOrder.LITTLE_ENDIAN)
+    val value = (get().toInt() shl 8) + get()
+    order(currentEncoding)
+    return value
+}
+
+val ByteBuffer.uInt16BE: Int get() {
+    val currentEncoding = order()
+    order(ByteOrder.BIG_ENDIAN)
+    val value = short.toInt() and 0xffff
+    order(currentEncoding)
+    return value
+}
 
 val ByteBuffer.int32:Int get() = int
 
@@ -38,32 +70,35 @@ val ByteBuffer.uInt32: Long
     }
 
 fun ByteBuffer.cString(length: Int) : String {
-    return bytes(length - 1).joinToString("") { it.toChar()+"" }
+    return bytes(length).joinToString("") { it.toChar()+"" }
 }
 fun ByteBuffer.cString(length: Long) : String {
-    return bytes(length - 1).joinToString("") { it.toChar()+"" }
+    return bytes(length).joinToString("") { it.toChar()+"" }
 }
 
 val ByteBuffer.cString : String get() {
     val stringBuilder = StringBuilder()
     while(true) {
-        val byte = get()
-        if (byte == 0.toByte()) {
-            break;
-        }
-        stringBuilder.append(byte.toChar())
+        try {
+            val byte = get()
+            if (byte == 0.toByte()) {
+                break
+            }
+            stringBuilder.append(byte.toChar())
+        } catch(e:Exception) { break }
+
     }
     return stringBuilder.toString()
 }
 
 fun ByteBuffer.bytes(length: Int): ByteArray {
-    return (0..length).map {
+    return (0 until length).map {
         get()
     }.toByteArray()
 }
 
 fun ByteBuffer.bytes(length: Long): ByteArray {
-    return (0..length).map {
+    return (0 until length).map {
         get()
     }.toByteArray()
 }
