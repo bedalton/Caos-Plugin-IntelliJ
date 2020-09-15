@@ -4,17 +4,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.impl.PsiFileEx
+import com.intellij.psi.impl.PsiManagerImpl
+import com.intellij.psi.impl.file.PsiBinaryFileImpl
 import kotlin.test.assertEquals
 
-
 class CobCompiledFile(provider:FileViewProvider)
-    : PsiFileBase(provider, CaosScriptLanguage), PsiCompiledFile, PsiFileEx, PsiBinaryFile
+    : PsiBinaryFileImpl(provider.manager as PsiManagerImpl, provider), PsiCompiledFile, PsiFileEx, PsiBinaryFile
 {
     private val myProvider:CobEditorProvider by lazy {
         provider as CobEditorProvider
@@ -26,7 +26,6 @@ class CobCompiledFile(provider:FileViewProvider)
 
     private val file:CaosScriptFile by lazy {
         putUserData(CaosScriptFile.VariantUserDataKey, myProvider.variant)
-        LOGGER.info("Making PSI File")
         val text = myProvider.caos
         val fileName = virtualFile.name
         val psiFile = PsiFileFactory.getInstance(project)
