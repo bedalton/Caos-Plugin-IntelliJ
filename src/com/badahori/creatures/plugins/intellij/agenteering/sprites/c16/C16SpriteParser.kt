@@ -22,7 +22,7 @@ class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C1
         val rawBytes = file.contentsToByteArray()
         val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
         val buffer = bytesBuffer.uInt32
-        val encoding = if (buffer and 1L == 1L) ColorEncoding.x565 else ColorEncoding.x555
+        val encoding = if (buffer and 1L == 1L) ColorEncoding.X_565 else ColorEncoding.X_555
         if (buffer and 2L == 0L) {
             throw Exception("C16 parse exception. This file is probably a S16 masquerading as a C16!")
         } else if (buffer > 3) {
@@ -61,7 +61,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
         }
     }
 
-    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.x565) : this(image.width, image.height, encoding) {
+    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.X_565) : this(image.width, image.height, encoding) {
         getImage = { image }
     }
 
