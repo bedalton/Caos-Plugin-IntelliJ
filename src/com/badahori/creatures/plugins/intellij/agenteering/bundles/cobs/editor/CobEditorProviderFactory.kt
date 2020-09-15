@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.lang.Language
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
