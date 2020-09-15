@@ -54,7 +54,7 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
         file.variant = variant
-        //CodeStyleManager.getInstance(project).reformat(fileIn, true)
+        CodeStyleManager.getInstance(project).reformat(file, true)
         //file.variant = variant
     }
 
