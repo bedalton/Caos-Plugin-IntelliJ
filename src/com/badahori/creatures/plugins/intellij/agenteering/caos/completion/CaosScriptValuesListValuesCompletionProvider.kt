@@ -226,6 +226,9 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .withLookupString(value.value.matchCase(string))
                     .withPresentableText(value.key + ": " + value.value)
                     .withTailText(value.description)
+            if (value.value.contains("(Disabled)")) {
+                lookupElement = lookupElement.withStrikeoutness(true)
+            }
             if (addSpace) {
                 lookupElement = lookupElement
                         .withInsertHandler(AddSpaceInsertHandler(true))
