@@ -3025,6 +3025,17 @@ SYS: ABRT (command);
 SYS: CAMT (command);
 
 /*
+ * Issue an ID_XXX command message to the application. This allows macros to activate ANY menu
+ * command. Note that command will get executed LATER - fn doesn't wait before returning!
+ * id#	int	the decimal ID_XXX value - look these up in the resource file & list them for users
+ * #World
+ *
+ * @param {id} (integer@SysCommands)
+ *
+ */
+SYS: CMND (command) id (integer);
+
+/*
  * Position camera with this co-ordinate as the top-left
  * #Camera
  *
@@ -4236,6 +4247,111 @@ YVEC (integer);
 @Success {
 	0 = Unsuccessful
 	1 = Successful
+}
+
+@SysCommands {
+	# File
+	32863 = Export Current Creature...
+	32864 = Import Creature...
+	33004 = Ambient Music
+	32957 = Send To Mail Recipient...
+	57665 = Exit
+	# World
+	57600 = New
+	57601 = Open...
+	57603 = Save the world
+	57604 = Save As...
+	# Testing
+	32774 = Activate Game States
+	32995 = Show Map ( Draws rooms limits on screen)
+	32804 = Create a male norn
+	32805 = Create a female norn
+	32865 = Force Ageing
+	32777 = Instant Vocabulary
+	33002 = Instant Goal Direction
+	32998 = Next Creature Facial Expression
+	33000 = Next Creature Walking Gait
+	32786 = Creatures burble
+	32807 = Infect current norn
+	32840 = Euthanasia
+	32956 = Reset mutation count
+	33006 = Mark All Rooms Visited ( i.e visible on ecology kit map
+	# Log (Completely Disabled)
+	32869 = Log Window
+	32870 = Verbose Output (Disabled)
+	32814 = Actions (Disabled)
+	32813 = Attention (Disabled)
+	32823 = Brain (Disabled)
+	32812 = Chemistry (Disabled)
+	32819 = Environment (Disabled)
+	32817 = Genetics (Disabled)
+	32811 = Graphics (Disabled)
+	32818 = Life changes (Disabled)
+	32809 = Macros (Disabled)
+	32822 = Objects (Disabled)
+	32821 = OLE events (Disabled)
+	32815 = Senses (Disabled)
+	32810 = Serialisation (Disabled)
+	32808 = Sound (Disabled)
+	32816 = Stimuli (Disabled)
+	32820 = User (Disabled)
+	# View
+	32771 = Creature's View
+	# Toolbars
+	32929 = Standard
+	32930 = Pointer
+	32933 = Applets
+	32931 = Favourites
+	32960 = Text Labels
+	59393 = Status Bar
+	33007 = ToolTips for Objects
+	32988 = Full Screen
+	# Camera
+	32783 = Track Norn
+	209 = Norn Indicator
+	32866 = Smooth Scrolling
+	32839 = Add Favorite Place...
+	32867 = Remove Favorite Places...
+	# Tools
+	32959 = The Hatchery
+	# Norns
+	32803 = None Available
+	32934 = Norn 0
+	32935 = Norn 1
+	32936 = Norn 2
+	32937 = Norn 3
+	32938 = Norn 4
+	32939 = Norn 5
+	32940 = Norn 6
+	32941 = Norn 7
+	32942 = Norn 8
+	32943 = Norn 9
+	32944 = Norn 10
+	32945 = Norn 11
+	32946 = Norn 12
+	32955 = Norn..Last
+	32851 = Favorite Place 0
+	32852 = Favorite Place 1
+	32853 = Favorite Place 2
+	32854 = Favorite Place 3
+	32855 = Favorite Place 4
+	32856 = Favorite Place 5
+	32857 = Favorite Place 6
+	32858 = Favorite Place 7
+	32859 = Favorite Place 8
+	32860 = Favorite Place 9
+	32861 = Favorite Place 10
+	32862 = Favorite Place 11
+	# Help
+	57667 = Help Topics
+	105 = Tip of the Day...
+	# Creatures on the Web
+	33009 = Free Stuff
+	33010 = Product News
+	33011 = Frequently Asked Questions
+	33012 = Online Support
+	33033 = Creatures  Home Page
+	57664 = About Creatures 2...
 }
 
 @TimeOfDay {

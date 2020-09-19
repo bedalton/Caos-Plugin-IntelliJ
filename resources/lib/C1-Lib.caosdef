@@ -1915,7 +1915,7 @@ SYS: CAMT (command);
  * id#	int	the decimal ID_XXX value - look these up in the resource file & list them for users
  * #World
  *
- * @param {id} (integer)
+ * @param {id} (integer@SysCommands)
  *
  */
 SYS: CMND (command) id (integer);
@@ -2701,4 +2701,90 @@ YVEC (integer);
 	33 = Involuntary Action 5
 	34 = Involuntary Action 6
 	35 = Involuntary Action 7
+}
+
+
+@SysCommands {
+	# File
+	57600 = New World
+	57601 = Open World
+	57603 = Save World
+	57604 = Save World As
+	57665 = Exit
+	# Creature Commands
+	32864 = ImportCreature
+	32863 = Export Current Creature
+	32804 = Create a male norn
+	32805 = Create a female norn
+	# Testing
+	32774 = Infinite scroll
+	32777 = Instant verb vocabulary
+	32865 = Force Ageing
+	32786 = Creatures burble
+	32807 = Infect current norn
+	32840 = Euthanasia
+	# Other
+	32832 = Web Connect
+	# Logging (Disabled)
+	32808 = Sound
+	32809 = Macros (Disabled)
+	32810 = Serialisation (Disabled)
+	32811 = Graphics (Disabled)
+	32812 = Chemistry (Disabled)
+	32813 = Attention (Disabled)
+	32814 = Actions (Disabled)
+	32815 = Senses (Disabled)
+	32816 = Stimuli (Disabled)
+	32817 = Genetics (Disabled)
+	32818 = Life changes (Disabled)
+	32819 = Environment (Disabled)
+	32820 = User (Disabled)
+	32821 = OLE events (Disabled)
+	32822 = Objects (Disabled)
+	32823 = Brain (Disabled)
+	32869 = Log Window (Disabled)
+	# View
+	59392 = Show/hide Toolbar
+	59393 = Show/hide Status Bar
+	# Camera
+	32783 = Track Norn
+	32866 = Smooth Scrolling
+	113 = Which is my norn?
+	32839 = Add to Favorite places...
+	32867 = Remove from Favorite places...
+	# Tool Menu
+	32771 = Creature's View
+	# Creatures Selection Menu
+	32803 = Creature Menu Item None available
+	32788 = Norn 0 - Norn menu item 0
+	32789 = Norn 1 - Norn menu item 1
+	32790 = Norn 2 - Norn menu item 2
+	32791 = Norn 3 - Norn menu item 3
+	32792 = Norn 4 - Norn menu item 4
+	32793 = Norn 5 - Norn menu item 5
+	32794 = Norn 6 - Norn menu item 6
+	32795 = Norn 7 - Norn menu item 7
+	32796 = Norn 8 - Norn menu item 8
+	32797 = Norn 9 - Norn menu item 9
+	32798 = Norn 10 - Norn menu item 10
+	32799 = Norn 11 - Norn menu item 11
+	32800 = Norn 12 - Norn menu item 12
+	32801 = Norn "Last" - Norn menu item "last"
+	# Favorite Places
+	32851 = Favorite Place 0
+	32852 = Favorite Place 1
+	32853 = Favorite Place 2
+	32854 = Favorite Place 3
+	32855 = Favorite Place 4
+	32856 = Favorite Place 5
+	32857 = Favorite Place 6
+	32858 = Favorite Place 7
+	32859 = Favorite Place 8
+	32860 = Favorite Place 9
+	32861 = Favorite Place 10
+	32862 = Favorite Place 11
+	57667 = Help Topics
+	32871 = Life Kit #1
+	107 = Tip of the Day
+	57664 = About Creatures...
 }
