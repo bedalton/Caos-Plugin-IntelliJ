@@ -14,7 +14,7 @@ internal fun SfcReader.readSimpleObject() : SfcSimpleObject {
     return SfcSimpleObject(baseObject, entity)
 }
 
-internal fun SfcReader.readPointer(): SfcPointer {
+internal fun SfcReader.readPointerTool(): SfcPointer {
     val simpleObject = readSimpleObject()
     // Discard Uknown bytes
     if (variant == CaosVariant.C1)
@@ -34,4 +34,8 @@ internal fun SfcReader.readCallButton(): SfcCallButton {
             ourLift,
             liftId
     )
+}
+
+internal fun SfcReader.readScenery() : SfcScenery {
+    return SfcScenery(readSimpleObject())
 }
