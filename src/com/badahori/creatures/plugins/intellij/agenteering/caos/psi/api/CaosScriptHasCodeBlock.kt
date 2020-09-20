@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPare
 interface CaosScriptHasCodeBlock : CaosScriptCompositeElement {
     val codeBlock: CaosScriptCodeBlock?
     val blockType:CaosScriptBlockType
+    val isClosed:Boolean
 }
 
 fun CaosScriptHasCodeBlock.scope() : CaosScope {
