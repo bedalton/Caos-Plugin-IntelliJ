@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 
 private fun byte2int(b: Byte): Int {
@@ -105,4 +106,12 @@ fun ByteBuffer.writeUInt8(iIn:Int) {
     var i = iIn
     i = i and 0xFF
     this.put(i.toByte())
+}
+
+fun ByteBuffer.littleEndian() {
+    order(ByteOrder.LITTLE_ENDIAN)
+}
+
+fun ByteBuffer.bigEndian() {
+    order(ByteOrder.LITTLE_ENDIAN)
 }
