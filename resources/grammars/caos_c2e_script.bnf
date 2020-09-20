@@ -325,6 +325,7 @@ macro
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -342,6 +343,7 @@ removal_script
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -411,6 +413,7 @@ event_script
 			getGenus
 			getSpecies
 			getEventNumber
+			isClosed
 		]
 	}
 	;
@@ -436,13 +439,6 @@ c_scrp ::= K_SCRP
 
 private event_script_body
 	::= code_block
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
-		]
-		//recoverWhile=event_script_body_recover
-	}
 	;
 
 
@@ -460,6 +456,7 @@ install_script
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -495,6 +492,7 @@ subroutine
 		methods = [
 			getBlockType
 			getName
+			isClosed
 		]
 	}
 	;
@@ -596,6 +594,7 @@ loop_statement
 			isUntil
 			getBlockType
 			getCommandString
+			isClosed
 		]
 	}
 	;
@@ -638,6 +637,7 @@ repeat_statement
 
 		methods = [
 			getBlockType
+			isClosed
 		]
 
 	}
@@ -679,6 +679,7 @@ enum_next_statement
 		methods = [
 			codeBlock="code_block"
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -713,6 +714,7 @@ enum_scenery_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
    }
    ;
@@ -773,6 +775,7 @@ doif_statement_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -787,6 +790,7 @@ else_if_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -800,6 +804,7 @@ else_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
