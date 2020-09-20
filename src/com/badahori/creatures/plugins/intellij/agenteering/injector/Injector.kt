@@ -156,6 +156,9 @@ object Injector {
     private fun getConnection(variant: CaosVariant, project: Project): CaosConnection? {
         val injectUrl = runReadAction { CaosScriptProjectSettings.getInjectURL(project) }
         if (injectUrl != null) {
+            if (injectUrl.startsWith("wine:")) {
+                return WineConnection(injectUrl.substring(5), variant);
+            }
             return PostConnection(injectUrl, variant)
         }
         return when (variant) {
