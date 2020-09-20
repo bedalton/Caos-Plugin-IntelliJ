@@ -2,7 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosAnimation.Animation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import kotlin.math.max
@@ -12,6 +11,7 @@ import kotlin.math.min
  * SFC data entity representing a parsed SFC world file
  */
 data class SfcFile(
+        val mapData:SfcData.SfcMapData,
         val variant: CaosVariant,
         val objects:List<SfcData.SfcObject>,
         val scenery:List<SfcData.SfcObject.SfcScenery>,
@@ -79,7 +79,7 @@ sealed class SfcData {
                 gravityData: Int?,
                 frozen: Boolean?,
                 scripts: List<SfcScript>,
-                val parts: List<SfcEntity>,
+                val parts: List<SfcEntity?>,
                 val hotspots: List<SfcHotspot>
         ) : SfcObject(
                 classifier,
@@ -109,7 +109,7 @@ sealed class SfcData {
              */
             constructor(
                     baseObject: SfcObject,
-                    parts: List<SfcEntity>,
+                    parts: List<SfcEntity?>,
                     hotspots: List<SfcHotspot>
             ) : this(
                     classifier = baseObject.classifier,
@@ -162,7 +162,7 @@ sealed class SfcData {
                 gravityData: Int?,
                 frozen: Boolean?,
                 scripts: List<SfcScript>,
-                parts: List<SfcEntity>,
+                parts: List<SfcEntity?>,
                 hotspots: List<SfcHotspot>,
                 val textPosition: Vector2,
                 val backgroundColor: Int,
@@ -261,7 +261,7 @@ sealed class SfcData {
                 gravityData: Int?,
                 frozen: Boolean?,
                 scripts: List<SfcScript>,
-                parts: List<SfcEntity>,
+                parts: List<SfcEntity?>,
                 hotspots: List<SfcHotspot>,
                 val cabinBounds: Bounds,
                 val movementVector: Vector2,
@@ -355,7 +355,7 @@ sealed class SfcData {
                 gravityData: Int?,
                 frozen: Boolean?,
                 scripts: List<SfcScript>,
-                parts: List<SfcEntity>,
+                parts: List<SfcEntity?>,
                 hotspots: List<SfcHotspot>,
                 cabinBounds: Bounds,
                 movementVector: Vector2,
@@ -776,7 +776,7 @@ sealed class SfcData {
     data class SfcMacro(
             val ownr: SfcObject,
             val from: SfcObject,
-            val targ: SfcObject,
+            val targ: SfcObject?,
             val script: String
     ) : SfcData() {
         companion object
@@ -799,7 +799,7 @@ sealed class SfcData {
      * SFC Door info object
      */
     data class SfcDoor(
-            val openness: Boolean,
+            val openness: Int,
             val otherRoom: Int
     ) : SfcData() {
         companion object
@@ -808,7 +808,7 @@ sealed class SfcData {
     /**
      * an SFC data class for rooms in C1/C2
      */
-    sealed class SfcRoom(
+    open class SfcRoom(
             open val id: Int,
             open val bounds: Bounds,
             open val roomType: Int
@@ -820,6 +820,7 @@ sealed class SfcData {
                 override val id: Int,
                 override val bounds: Bounds,
                 override val roomType: Int,
+                val doors: Map<Int,List<SfcDoor>>,
                 val floorValue: Int,
                 val inorganicNutrients: Int,
                 val organicNutrients: Int,
@@ -831,8 +832,7 @@ sealed class SfcData {
                 val pressureSource: Int,
                 val lightSource: Int,
                 val radiationSource: Int,
-                val windX: Int,
-                val windY: Int,
+                val windVector:Vector2,
                 val floorPoints: List<Vector2>,
                 val music: String,
                 val dropStatus: Int
@@ -851,7 +851,7 @@ sealed class SfcData {
     data class SfcMapData(
             val gallery: SfcGallery,
             val rooms: List<SfcRoom>,
-            val groundLevels: List<Int> // Should be 261 points
+            val groundLevels: List<Int>? = null // Should be 261 points
     ) : SfcData() {
         companion object
     }
@@ -865,14 +865,14 @@ sealed class SfcData {
             val imageOffset: Int,
             val zOrder: Int,
             val position: Vector2,
-            val animationFrame: Int,
-            val animationString: Animation,
-            val relativePosition: Vector2,
-            val partZOrder: Int,
-            val behaviorClicks: List<Int>,
-            val behaviorTouch: Int,
-            val pickupHandles: List<Vector2>,
-            val pickupPoints: List<Vector2>
+            val animationFrame: Int?,
+            val animationString: String?,
+            val relativePosition: Vector2? = null,
+            val partZOrder: Int? = null,
+            val behaviorClicks: List<Int>? = null,
+            val behaviorTouch: Int? = null,
+            val pickupHandles: List<Vector2>? = null,
+            val pickupPoints: List<Vector2>? = null
     ) : SfcData() {
         companion object
     }
