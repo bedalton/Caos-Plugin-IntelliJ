@@ -4,8 +4,10 @@ import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import kotlin.math.abs
 
@@ -33,6 +35,9 @@ class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, p
             }
             return Indent.getNormalIndent()
         }
-        return Indent.getNoneIndent()
+        val containingCodeBlock = firstChild?.psi?.getSelfOrParentOfType(CaosScriptHasCodeBlock::class.java)
+        if (containingCodeBlock?.parent is CaosScriptScriptElement)
+            return Indent.getNoneIndent()
+        return Indent.getNormalIndent()
     }
 }
