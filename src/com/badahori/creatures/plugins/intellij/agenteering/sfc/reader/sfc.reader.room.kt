@@ -1,10 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcC2Room
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcDoor
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoomImpl
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 
 
 internal fun SfcReader.readC1Room(id: Int): SfcRoom {
@@ -22,10 +19,9 @@ internal fun SfcReader.readGroundLevels(): List<Int>? {
     if (variant == CaosVariant.C2)
         return null
 
-    val levels = (0 until 261).map {
+    return (0 until 261).map {
         uInt32
     }
-    return levels
 }
 
 internal fun SfcReader.readDoor(): SfcDoor {
@@ -44,7 +40,7 @@ internal fun SfcReader.readC2Room() : SfcC2Room {
     val bounds = bounds
     val doors = (0 until 4).map {i ->
         i to (0 until uInt16).mapNotNull {
-           readClass(TYPE_CDOOR) as? SfcDoor
+           readClass(SfcType.DOOR) as? Ptr.SfcDoorPtr
         }
     }.toMap()
     val roomType = uInt32

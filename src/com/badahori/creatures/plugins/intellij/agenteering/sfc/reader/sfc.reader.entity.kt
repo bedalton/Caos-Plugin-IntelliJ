@@ -1,13 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcGalleryPtr
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcEntity
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcGallery
 
 
 internal fun SfcReader.readEntity(): SfcEntity {
 
-    val sprite = readClass(TYPE_CGALLERY) as SfcGallery
+    val sprite = readClass(SfcType.GALLERY) as SfcGalleryPtr
     val currentFrame = uInt8
     val imageOffset = uInt8
     val zOrder = uInt32
@@ -19,9 +21,10 @@ internal fun SfcReader.readEntity(): SfcEntity {
         assert(animationByte == 1) { "Animation byte has value other than 0 or 1" }
         frame = uInt8
         animationString = if (variant == C1)
-            string(32).trim()
+            string(32)
         else
-            string(99).trim()
+            string(99)
+        animationString = animationString.split(0x00.toChar()).first()
     }
     if (readingScenery) {
         return SfcEntity(
