@@ -458,7 +458,7 @@
 
     <!-- SFC File Handling -->
 
-    <filetype.decompiler filetype="SFCFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBinaryDecompiler" />
+    <!--filetype.decompiler filetype="SFCFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBinaryDecompiler" /-->
 
     <fileType name="SFCFile"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
