@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
@@ -12,25 +12,24 @@ import java.nio.ByteBuffer
 /**
  * Parses Creatures S16 sprite file
  * Based on c2ephp by telyn
- * @see https://github.com/telyn/c2ephp
+ * @url https://github.com/telyn/c2ephp
  */
-class S16SpriteFile(file: VirtualFile) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
+class S16SpriteFile(rawBytes:ByteArray) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
+
+    constructor(file: VirtualFile) : this(file.contentsToByteArray())
 
     init {
-        val rawBytes = file.contentsToByteArray()
-        val bytesBuffer = ByteBuffer.wrap(rawBytes)
-        val buffer = bytesBuffer.uInt32BE
-        val encoding = if (buffer == 1L)
-            ColorEncoding.x565
-        else if (buffer == 2L)
-            ColorEncoding.x555
-        else
-            throw Exception("File encoding not recognized. ('$buffer')")
-        val numImages = bytesBuffer.uInt16BE
+        val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
+        val encoding = when (val buffer = bytesBuffer.uInt32) {
+            1L -> ColorEncoding.X_565
+            0L -> ColorEncoding.X_555
+            else -> throw Exception("File encoding not recognized. ('$buffer')")
+        }
+        val numImages = bytesBuffer.uInt16
         _frames = (0 until numImages).map {
-            val offsetForData = bytesBuffer.uInt32BE
-            val width = bytesBuffer.uInt16BE
-            val height = bytesBuffer.uInt16BE
+            val offsetForData = bytesBuffer.uInt32
+            val width = bytesBuffer.uInt16
+            val height = bytesBuffer.uInt16
             S16SpriteFrame(
                     bytes = bytesBuffer,
                     offset = offsetForData,
@@ -56,7 +55,7 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         }
     }
 
-    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.x565) : this(image.width, image.height, encoding) {
+    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.X_565) : this(image.width, image.height, encoding) {
         getImage = { image }
     }
 
@@ -72,7 +71,8 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {
             for (x in 0 until width) {
-                val color = SpriteColorUtil.getColor(bytesBuffer.uInt16BE, encoding)
+                val pixel = bytesBuffer.uInt16
+                val color = SpriteColorUtil.getColor(pixel, encoding)
                 if (color[0] == 0 && color[1] == 0 && color[2] == 0)
                     image.alphaRaster.setPixel(x, y, transparent)
                 else {
@@ -83,6 +83,23 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         }
         return image
     }
+
+    /*private fun decode(bytesBuffer: ByteBuffer, position:Int, encoding: ColorEncoding, width:Int, height:Int) : BufferedImage? {
+        bytesBuffer.position(position)
+        val image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val color = SpriteColorUtil.getColor(bytesBuffer.uInt16, encoding)
+                if (color[0] == 0 && color[1] == 0 && color[2] == 0)
+                    image.alphaRaster.setPixel(x, y, transparent)
+                else {
+                    image.raster.setPixel(x, y, color)
+                    image.alphaRaster.setPixel(x, y, solid)
+                }
+            }
+        }
+        return image
+    }*/
 
     override fun encode(): ByteArray {
         TODO("Not yet implemented")
