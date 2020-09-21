@@ -234,6 +234,7 @@
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
 		K_XIST = "regexp:[Xx][Ii][Ss][Tt]"
+		K_F__K = "regexp:[Ff][*]{2}[Kk]"
 		K_XX_DEF = " "
 		K_XX_EXPR = " "
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
@@ -2344,7 +2345,7 @@ r_kw_cv_tran
 
 
 
-private c_none ::= c_kw_none;
+private c_none ::= ;
 
 private c_d ::= c_kw_d space_like expects_decimal_or_int
 	{
@@ -3362,6 +3363,7 @@ c_kw_none
 	|	K_WDOW
 	|	K_WIND
 	|	K_CRETN
+	|	K_F__K
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
