@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
 
 import com.intellij.openapi.fileTypes.FileType
