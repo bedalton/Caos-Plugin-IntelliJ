@@ -5,40 +5,25 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
+/**
+ * Sprite file type for CV+
+ * Is compressed version of S16 files
+ */
+object C16FileType : FileType {
+    override fun getName(): String = "C16 Sprite File"
 
-class C16FileType private constructor() : FileType {
-    override fun getName(): String {
-        return "C16 Sprite File"
-    }
+    override fun getDescription(): String = "Creatures C16 Sprite File"
 
-    override fun getDescription(): String {
-        return "Creatures C16 Sprite File"
-    }
+    override fun isBinary() = true
 
-    override fun isBinary(): Boolean {
-        return true
-    }
+    override fun isReadOnly(): Boolean = true
 
-    override fun isReadOnly(): Boolean {
-        return true
-    }
+    override fun getDefaultExtension(): String = DEFAULT_EXTENSION
 
-    override fun getDefaultExtension(): String {
-        return DEFAULT_EXTENSION
-    }
+    override fun getIcon(): Icon? = null
 
-    override fun getIcon(): Icon? {
-        return null
-    }
+    override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.UTF_8.name()
 
-    override fun getCharset(p0: VirtualFile, p1: ByteArray): String? {
-        return Charsets.UTF_8.name()
-    }
-
-    companion object {
-        @JvmStatic
-        val INSTANCE = C16FileType()
-        @JvmStatic
-        val DEFAULT_EXTENSION = "c16"
-    }
+    @JvmStatic
+    val DEFAULT_EXTENSION = "c16"
 }

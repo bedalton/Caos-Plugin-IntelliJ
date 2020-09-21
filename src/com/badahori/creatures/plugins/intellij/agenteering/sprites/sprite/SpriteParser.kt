@@ -17,4 +17,6 @@ object SpriteParser {
         }
     }
 
+    val VALID_SPRITE_EXTENSIONS = listOf("spr", "c16", "s16")
+
 }
