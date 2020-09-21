@@ -453,7 +453,33 @@
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
               fieldName="INSTANCE"
               language="CreaturesC16" extensions="c16" />
-    <!-- Add your extensions here -->
+
+
+
+    <!-- SFC File Handling -->
+
+    <filetype.decompiler filetype="SFCFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBinaryDecompiler" />
+
+    <fileType name="SFCFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
+              fieldName="INSTANCE"
+              language="PlainText"
+              extensions="sfc"
+    />
+
+    <!--fileType.fileViewProviderFactory
+        filetype="SfcFile"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcEditorProviderFactory"
+    /-->
+
+    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.sfc.tree.SfcTreeStructureProvider" />
+
+
+    <!-- Virtual File System -->
+    <virtualFileSystem
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
+        key="caosvfs"
+    />
   </extensions>
 
   <actions>
