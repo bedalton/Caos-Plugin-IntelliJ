@@ -4,8 +4,85 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import kotlin.math.max
 import kotlin.math.min
+
+sealed class Ptr<DClassT>(
+        open val type: Int,
+        open var pointed: DClassT?
+) {
+    data class SfcBlackboardPtr(override val type: Int, override var pointed: SfcBlackboard? = null) : SfcObjectPtr<SfcBlackboard>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcCallButtonPtr(override val type: Int, override var pointed: SfcCallButton? = null) : SfcObjectPtr<SfcCallButton>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcCompoundObjectPtr(override val type: Int, override var pointed: SfcCompoundObject? = null) : SfcObjectPtr<SfcCompoundObject>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcDoorPtr(override val type: Int, override var pointed: SfcDoor? = null) : Ptr<SfcDoor>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcEntityPtr(override val type: Int, override var pointed: SfcEntity? = null) : Ptr<SfcEntity>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcGalleryPtr(override val type: Int, override var pointed: SfcGallery? = null) : Ptr<SfcGallery>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcLiftPtr(override val type: Int, override var pointed: SfcLift? = null) : SfcObjectPtr<SfcLift>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcMacroPtr(override val type: Int, override var pointed: SfcMacro? = null) : Ptr<SfcMacro>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcMapDataPtr(override val type: Int, override var pointed: SfcMapData? = null) : Ptr<SfcMapData>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    abstract class SfcObjectPtr<ObjT : SfcObject>(override val type: Int, override var pointed: ObjT? = null) : Ptr<ObjT>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcObjectImplPtr(override val type: Int, override var pointed: SfcObject? = null) : Ptr<SfcObject>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcPointerToolPtr(override val type: Int, override var pointed: SfcPointerTool? = null) : SfcObjectPtr<SfcPointerTool>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcRoomPtr(override val type: Int, override var pointed: SfcRoom? = null) : Ptr<SfcRoom>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcSimpleObjectPtr(override val type: Int, override var pointed: SfcSimpleObject? = null) : SfcObjectPtr<SfcSimpleObject>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcSceneryPtr(override val type: Int, override var pointed: SfcScenery? = null) : SfcObjectPtr<SfcScenery>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcVehiclePtr(override val type: Int, override var pointed: SfcVehicle? = null) : SfcObjectPtr<SfcVehicle>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    override fun toString(): String = toString(this)
+
+    companion object {
+        fun toString(ptr: Ptr<*>): String = ptr.pointed?.toString() ?: "$className.NULL"
+    }
+}
 
 /**
  * SFC data entity representing a parsed SFC world file
@@ -35,8 +112,8 @@ interface SfcObject : SfcData {
     val attr: Int
     val bounds: Bounds
     val actv: Int
-    val currentSound: String
-    val sprite: SfcGallery
+    val currentSound: String?
+    val sprite: SfcGalleryPtr
     val tickReset: Int
     val tickState: Int
     val variables: List<Int>
@@ -56,7 +133,7 @@ interface SfcObject : SfcData {
  * Interfaces for compound objects
  */
 interface SfcCompoundObject : SfcObject {
-    val parts: List<SfcEntity?>
+    val parts: List<SfcEntityPtr?>
     val hotspots: List<SfcHotspot>
 }
 
@@ -73,7 +150,7 @@ interface SfcVehicle : SfcCompoundObject {
  * Interface for SFC Simple agent objects
  */
 interface SfcSimpleObject : SfcObject {
-    val entity: SfcEntity
+    val entity: SfcEntityPtr
 }
 
 /**
@@ -85,8 +162,8 @@ open class SfcObjectImpl(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -113,8 +190,8 @@ data class SfcCompoundObjectImpl(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -128,7 +205,7 @@ data class SfcCompoundObjectImpl(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
+        override val parts: List<SfcEntityPtr?>,
         override val hotspots: List<SfcHotspot>
 ) : SfcCompoundObject {
 
@@ -137,7 +214,7 @@ data class SfcCompoundObjectImpl(
      */
     constructor(
             baseObject: SfcObject,
-            parts: List<SfcEntity?>,
+            parts: List<SfcEntityPtr?>,
             hotspots: List<SfcHotspot>
     ) : this(
             classifier = baseObject.classifier,
@@ -176,8 +253,8 @@ data class SfcBlackboard(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -191,7 +268,7 @@ data class SfcBlackboard(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
+        override val parts: List<SfcEntityPtr?>,
         override val hotspots: List<SfcHotspot>,
         val textPosition: Vector2,
         val backgroundColor: Int,
@@ -252,8 +329,8 @@ data class SfcVehicleImpl(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -267,7 +344,7 @@ data class SfcVehicleImpl(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
+        override val parts: List<SfcEntityPtr?>,
         override val hotspots: List<SfcHotspot>,
         override val cabinBounds: Bounds,
         override val movementVector: Vector2,
@@ -323,8 +400,8 @@ data class SfcLift(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -338,7 +415,7 @@ data class SfcLift(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
+        override val parts: List<SfcEntityPtr?>,
         override val hotspots: List<SfcHotspot>,
         override val cabinBounds: Bounds,
         override val movementVector: Vector2,
@@ -401,8 +478,8 @@ data class SfcSimpleObjectImpl(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -416,13 +493,13 @@ data class SfcSimpleObjectImpl(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val entity: SfcEntity
+        override val entity: SfcEntityPtr
 ) : SfcSimpleObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
-    constructor(baseObject: SfcObject, entity: SfcEntity) : this(
+    constructor(baseObject: SfcObject, entity: SfcEntityPtr) : this(
             classifier = baseObject.classifier,
             unId = baseObject.unId,
             attr = baseObject.attr,
@@ -453,14 +530,14 @@ data class SfcSimpleObjectImpl(
 /**
  * An SFC data class for the pointer agent in C1/C2
  */
-data class SfcPointer(
+data class SfcPointerTool(
         override val classifier: AgentClass,
         override val unId: Int?,
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -474,7 +551,7 @@ data class SfcPointer(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val entity: SfcEntity
+        override val entity: SfcEntityPtr
 ) : SfcSimpleObject {
 
     /**
@@ -516,8 +593,8 @@ data class SfcCallButton(
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -531,8 +608,8 @@ data class SfcCallButton(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val entity: SfcEntity,
-        val ourLift: SfcLift,
+        override val entity: SfcEntityPtr,
+        val ourLift: SfcLiftPtr,
         val liftId: Int
 ) : SfcSimpleObject {
 
@@ -541,7 +618,7 @@ data class SfcCallButton(
      */
     constructor(
             baseObject: SfcSimpleObjectImpl,
-            ourLift: SfcLift,
+            ourLift: SfcLiftPtr,
             liftId: Int
     ) : this(
             classifier = baseObject.classifier,
@@ -575,14 +652,14 @@ data class SfcCallButton(
 /**
  * An SFC data class for scenery objects in C1/C2
  */
-class SfcScenery(
+data class SfcScenery(
         override val classifier: AgentClass,
         override val unId: Int?,
         override val attr: Int,
         override val bounds: Bounds,
         override val actv: Int,
-        override val currentSound: String,
-        override val sprite: SfcGallery,
+        override val currentSound: String?,
+        override val sprite: SfcGalleryPtr,
         override val tickReset: Int,
         override val tickState: Int,
         override val variables: List<Int>,
@@ -596,7 +673,7 @@ class SfcScenery(
         override val gravityData: Int?,
         override val frozen: Boolean?,
         override val scripts: List<SfcScript>,
-        override val entity: SfcEntity
+        override val entity: SfcEntityPtr
 ) : SfcSimpleObject {
 
     /**
@@ -644,9 +721,9 @@ data class SfcScript(
  * An SFC data object for scripts in C1/C2
  */
 data class SfcMacro(
-        val ownr: SfcObject,
-        val from: SfcObject,
-        val targ: SfcObject?,
+        val ownr: SfcObjectPtr<*>,
+        val from: SfcObjectPtr<*>,
+        val targ: SfcObjectPtr<*>?,
         val script: String
 ) : SfcData {
     companion object
@@ -675,7 +752,7 @@ data class SfcDoor(
     companion object
 }
 
-interface SfcRoom: SfcData {
+interface SfcRoom : SfcData {
     val id: Int
     val bounds: Bounds
     val roomType: Int
@@ -689,7 +766,7 @@ data class SfcRoomImpl(
         override val bounds: Bounds,
         override val roomType: Int
 ) : SfcRoom {
-   companion object
+    companion object
 }
 
 /**
@@ -699,7 +776,7 @@ data class SfcC2Room(
         override val id: Int,
         override val bounds: Bounds,
         override val roomType: Int,
-        val doors: Map<Int, List<SfcDoor>>,
+        val doors: Map<Int, List<SfcDoorPtr>>,
         val floorValue: Int,
         val inorganicNutrients: Int,
         val organicNutrients: Int,
@@ -723,8 +800,8 @@ data class SfcC2Room(
  * SFC map data object
  */
 data class SfcMapData(
-        val gallery: SfcGallery,
-        val rooms: List<SfcRoom>,
+        val gallery: SfcGalleryPtr,
+        val rooms: List<SfcRoomPtr>,
         val groundLevels: List<Int>? = null // Should be 261 points
 ) : SfcData {
     companion object
@@ -734,7 +811,7 @@ data class SfcMapData(
  * An SFC data class for an entity/agent part
  */
 data class SfcEntity(
-        val gallery: SfcGallery,
+        val gallery: SfcGalleryPtr,
         val currentFrame: Int,
         val imageOffset: Int,
         val zOrder: Int,
@@ -767,6 +844,7 @@ data class Bounds(
         Size(width = width, height = height)
     }
 }
+
 /**
  * Gets the origin for the bounds object from the Creatures runtime basis of 0,0 being bottom left
  */

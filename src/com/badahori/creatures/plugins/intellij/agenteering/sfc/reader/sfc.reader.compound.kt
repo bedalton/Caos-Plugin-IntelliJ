@@ -9,13 +9,13 @@ internal fun SfcReader.readCompoundObject() : SfcCompoundObject {
     val base = readObject()
     val numberOfParts = uInt32
     val parts = (0 until numberOfParts).map {i ->
-        val entity = readClass(TYPE_ENTITY) as? SfcEntity
+        val entity = readClass(SfcType.ENTITY) as? Ptr.SfcEntityPtr
         if (entity == null) {
             assert(i != 0)
             skip(8)
         }
         if (i == 0) {
-            assert(entity?.relativePosition == Vector2.zero)
+            assert(entity?.pointed?.relativePosition == Vector2.zero) { "Failed to assert that relative position of entity 1 is (0,0)"}
         }
         entity
     }
