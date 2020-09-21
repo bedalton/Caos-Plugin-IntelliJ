@@ -295,9 +295,24 @@ expression_factory
 	;
 
 private file_body
-	::= script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
-	{
-	}
+	::= ((<<isOldVariant>> | <<isNewerVariant>>) file_body_with_variant)
+	|	raw_token_stream
+	;
+
+raw_token_stream
+	::= !(<<isOldVariant>> | <<isNewerVariant>>) token_stream_tokens+
+	;
+
+private token_stream_tokens
+	::= all_tokens
+	|	expression
+	|	eq_op
+	|	token
+	|	space_like_or_newline
+	;
+
+private file_body_with_variant
+	::=script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
 	;
 
 script_body_element
