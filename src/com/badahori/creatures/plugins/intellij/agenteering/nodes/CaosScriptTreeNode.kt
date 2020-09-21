@@ -2,22 +2,23 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.psi.util.PsiTreeUtil
-import java.util.concurrent.atomic.AtomicInteger
+import com.intellij.util.FileContentUtilCore
 
 
-internal class CobScriptFileTreeNode(
+internal class CaosScriptFileTreeNode(
         private val caosFile: CaosScriptFile,
-        private val enclosingCobFileName: String,
         private val scriptIndex: Int,
         private val presentableTextIn: String? = null,
         private val alwaysLeaf: Boolean = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java).size < 2
@@ -28,8 +29,14 @@ internal class CobScriptFileTreeNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
-        quickFormat(caosFile)
-        caosFile.navigate(requestFocus)
+        //quickFormat(caosFile)
+        runWriteAction {
+            FileContentUtilCore.reparseFiles()
+            DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
+        }
+        invokeLater {
+            caosFile.navigate(requestFocus)
+        }
     }
 
     override fun canNavigate(): Boolean {
@@ -41,7 +48,7 @@ internal class CobScriptFileTreeNode(
     }
 
     private fun getPresentableText(): String {
-        this@CobScriptFileTreeNode.presentableTextIn?.let {
+        this@CaosScriptFileTreeNode.presentableTextIn?.let {
             return it
         }
         val scripts = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
@@ -60,7 +67,7 @@ internal class CobScriptFileTreeNode(
         val scripts = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
         if (scripts.size != 1 || scripts.filter { it !is CaosScriptMacro }.size != 1) {
             return scripts.map {
-                SubScriptLeafNode(it, enclosingCobFileName)
+                SubScriptLeafNode(it, it.containingFile.name)
             }
         }
         return emptyList()
@@ -106,7 +113,6 @@ internal class SubScriptLeafNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
-        virtualFile?.isWritable = false
         (script as? Navigatable)?.navigate(requestFocus)
     }
 
@@ -133,7 +139,7 @@ internal class SubScriptLeafNode(
         presentationData.locationString = enclosingCobFileName
     }
 
-    override fun getWeight(): Int = when(script) {
+    override fun getWeight(): Int = when (script) {
         is CaosScriptInstallScript -> 7
         is CaosScriptRemovalScript -> 8
         else -> 9
@@ -141,15 +147,10 @@ internal class SubScriptLeafNode(
 }
 
 internal fun quickFormat(caosFile: CaosScriptFile) {
-    val variant = caosFile.variant ?: CaosVariant.C1
     val command: WriteCommandAction<Void?> = object : WriteCommandAction.Simple<Void?>(caosFile.project, caosFile) {
         override fun run() {
             caosFile.virtualFile?.isWritable = true
-            caosFile.variant = variant
             CaosScriptExpandCommasIntentionAction.invoke(project, caosFile)
-            caosFile.variant = variant
-            /*CodeStyleManager.getInstance(project).reformat(caosFile, false)
-            caosFile.variant = variant*/
             caosFile.virtualFile?.isWritable = false
         }
     }
