@@ -1,4 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
+
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData
 
 
 internal fun SfcReader.slurp(requiredType: Int): SfcData? {

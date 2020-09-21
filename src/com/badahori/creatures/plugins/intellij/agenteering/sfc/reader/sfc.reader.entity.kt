@@ -1,6 +1,8 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcEntity
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcGallery
 
 
 internal fun SfcReader.readEntity(): SfcEntity {
