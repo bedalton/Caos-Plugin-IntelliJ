@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject.SfcLift
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject.SfcVehicle
 
 
 internal fun SfcReader.readVehicle() : SfcVehicle {
@@ -23,7 +21,7 @@ internal fun SfcReader.readVehicle() : SfcVehicle {
             bottom = uInt32
     )
     assert(uInt32 == 0)
-    return SfcVehicle(
+    return SfcVehicleImpl(
             baseObject = base,
             cabinBounds = bounds,
             movementVector = directionVector,

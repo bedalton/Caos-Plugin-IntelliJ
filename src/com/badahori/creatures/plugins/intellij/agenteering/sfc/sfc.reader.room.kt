@@ -1,15 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcDoor
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcRoom.SfcC2Room
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom.SfcC2Room
 
 
-internal fun SfcReader.readC1Room(id: Int): SfcData.SfcRoom {
+internal fun SfcReader.readC1Room(id: Int): SfcRoom {
     val bounds = bounds
     val roomType = uInt32
     assert(roomType < 3) { "Invalid C1 room type '$roomType' should be between 0 and 3" }
-    return SfcData.SfcRoom(
+    return SfcRoom(
             id = id,
             bounds = bounds,
             roomType = roomType

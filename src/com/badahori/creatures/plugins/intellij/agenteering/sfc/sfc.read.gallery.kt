@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcGallery
-
 internal fun SfcReader.readGallery() : SfcGallery {
     val numberOfFrames = uInt32
     val fileName = fileNameToken

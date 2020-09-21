@@ -2,8 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcGallery
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcMapData
 
 internal fun SfcReader.readMapData(): SfcMapData {
     variant = when (val version = uInt32) {
@@ -23,7 +21,7 @@ internal fun SfcReader.readMapData(): SfcMapData {
             groundLevels = groundLevels
     )
 }
-private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcData.SfcRoom> {
+private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoom> {
     var numberOfRooms = numberOfRoomsIn
 
     // Read C1 rooms in
@@ -34,9 +32,9 @@ private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcData.SfcRoom> {
 
     // Read C2 rooms in through slurping
     var i = 0
-    val rooms = mutableListOf<SfcData.SfcRoom.SfcC2Room>()
+    val rooms = mutableListOf<SfcRoom.SfcC2Room>()
     while (i < numberOfRooms) {
-        val room = slurp(TYPE_CROOM) as? SfcData.SfcRoom.SfcC2Room
+        val room = slurp(TYPE_CROOM) as? SfcRoom.SfcC2Room
         if (room != null)
             rooms.add(room)
         else
