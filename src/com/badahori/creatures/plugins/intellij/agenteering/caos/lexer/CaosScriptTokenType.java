@@ -10,6 +10,6 @@ public class CaosScriptTokenType extends IElementType {
     public CaosScriptTokenType(
             @NotNull
                     String debug) {
-        super(debug, CaosScriptLanguage.getInstance());
+        super(debug, CaosScriptLanguage.INSTANCE);
     }
 }
