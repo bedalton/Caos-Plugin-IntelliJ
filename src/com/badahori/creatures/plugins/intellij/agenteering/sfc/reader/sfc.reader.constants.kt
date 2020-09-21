@@ -1,38 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.*
 
-internal const val TYPE_MAPDATA = 1
-internal const val TYPE_CGALLERY = 2
-internal const val TYPE_CDOOR = 3
-internal const val TYPE_CROOM = 4
-internal const val TYPE_ENTITY = 5
-internal const val TYPE_COMPOUNDOBJECT = 6
-internal const val TYPE_BLACKBOARD = 7
-internal const val TYPE_VEHICLE = 8
-internal const val TYPE_LIFT = 9
-internal const val TYPE_SIMPLEOBJECT = 10
-internal const val TYPE_POINTERTOOL = 11
-internal const val TYPE_CALLBUTTON = 12
-internal const val TYPE_SCENERY = 13
-internal const val TYPE_MACRO = 14
-internal const val TYPE_OBJECT = 100
-
-internal fun typeToString(type:Int) : String {
-    return when(type) {
-        TYPE_MAPDATA -> "MapData"
-        TYPE_CGALLERY -> "Gallery"
-        TYPE_CDOOR -> "Door"
-        TYPE_CROOM -> "C2Room"
-        TYPE_ENTITY -> "Entity"
-        TYPE_COMPOUNDOBJECT -> "CompoundObject"
-        TYPE_BLACKBOARD -> "BlackBoard"
-        TYPE_VEHICLE -> "Vehicle"
-        TYPE_LIFT -> "Lift"
-        TYPE_SIMPLEOBJECT -> "SimpleObject"
-        TYPE_POINTERTOOL -> "PointerTool"
-        TYPE_CALLBUTTON -> "CallButton"
-        TYPE_SCENERY -> "Scenery"
-        TYPE_MACRO -> "Macro"
-        else -> "UNKNOWN"
-    }
+enum class SfcType(val value:Int, val type:String, val pointer:(pid:Int)->Ptr<*>) {
+    ANY(0, "Any", { pid -> throw SfcReadException("Cannot create sfc data object of type '(0)->ANY'")} ),
+    MAP_DATA(1, "MapData", { pid -> SfcMapDataPtr(pid) }),
+    GALLERY(2, "Gallery", {pid -> SfcGalleryPtr(pid) }),
+    DOOR(3, "Door", { pid -> SfcDoorPtr(pid) }),
+    ROOM(4, "Room", { pid -> SfcRoomPtr(pid) }),
+    ENTITY(5, "Entity", {pid -> SfcEntityPtr(pid)}),
+    COMPOUNDOBJECT(6, "CompoundObject", { pid -> SfcCompoundObjectPtr(pid) }),
+    BLACKBOARD(7, "Blackboard", { pid -> SfcBlackboardPtr(pid) }),
+    VEHICLE(8, "Vehicle", { pid -> SfcVehiclePtr(pid) }),
+    LIFT(9, "Lift", { pid -> SfcLiftPtr(pid) }),
+    SIMPLEOBJECT(10, "SimpleObject", { pid -> SfcSimpleObjectPtr(pid) }),
+    POINTERTOOL(11, "PointerTool", { pid -> SfcPointerToolPtr(pid) }),
+    CALLBUTTON(12, "CallButton", { pid -> SfcCallButtonPtr(pid) }),
+    SCENERY(13, "Scenery", { pid -> SfcSceneryPtr(pid) }),
+    MACRO(14, "Macro", { pid -> SfcMacroPtr(pid) }),
+    OBJECT(100, "Object", { pid -> SfcObjectImplPtr(pid) }),
 }

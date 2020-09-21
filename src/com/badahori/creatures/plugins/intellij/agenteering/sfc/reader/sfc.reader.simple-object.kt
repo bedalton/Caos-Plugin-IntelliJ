@@ -2,6 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcEntityPtr
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcLiftPtr
 import com.badahori.creatures.plugins.intellij.agenteering.utils.skip
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
 
@@ -10,24 +12,24 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
  */
 internal fun SfcReader.readSimpleObject() : SfcSimpleObjectImpl {
     val baseObject = readObject()
-    val entity = readClass(TYPE_ENTITY) as SfcEntity
+    val entity = readClass(SfcType.ENTITY) as SfcEntityPtr
     return SfcSimpleObjectImpl(baseObject, entity)
 }
 
-internal fun SfcReader.readPointerTool(): SfcPointer {
+internal fun SfcReader.readPointerTool(): SfcPointerTool {
     val simpleObject = readSimpleObject()
     // Discard Uknown bytes
     if (variant == CaosVariant.C1)
         byteBuffer.skip(35)
     else
         byteBuffer.skip(51)
-    return SfcPointer(simpleObject)
+    return SfcPointerTool(simpleObject)
 }
 
 
 internal fun SfcReader.readCallButton(): SfcCallButton {
     val simpleObject = readSimpleObject()
-    val ourLift = readClass(TYPE_LIFT) as SfcLift
+    val ourLift = readClass(SfcType.LIFT) as SfcLiftPtr
     val liftId = byteBuffer.uInt8
     return SfcCallButton(
             simpleObject,

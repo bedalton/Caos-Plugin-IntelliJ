@@ -3,10 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcC2Room
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcGallery
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcMapData
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcRoomPtr
 
 internal fun SfcReader.readMapData(): SfcMapData {
     variant = when (val version = uInt32) {
@@ -16,7 +14,7 @@ internal fun SfcReader.readMapData(): SfcMapData {
     }
 
     skip(if (variant == C1) 4 else 12)
-    val background = readClass(TYPE_CGALLERY) as SfcGallery
+    val background = readClass(SfcType.GALLERY) as Ptr.SfcGalleryPtr
     val numberOfRooms = uInt32
     val rooms = readRooms(numberOfRooms)
     val groundLevels = readGroundLevels()
@@ -28,22 +26,22 @@ internal fun SfcReader.readMapData(): SfcMapData {
             groundLevels = groundLevels
     )
 }
-private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoom> {
+private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoomPtr> {
     var numberOfRooms = numberOfRoomsIn
 
     // Read C1 rooms in
     if (variant == C1) {
         LOGGER.info("Reading: $numberOfRooms rooms")
         return (0 until numberOfRooms).map { id ->
-            readC1Room(id)
+            SfcRoomPtr(type = SfcType.ROOM.value, pointed = readC1Room(id))
         }
     }
 
     // Read C2 rooms through class reader
     var i = 0
-    val rooms = mutableListOf<SfcC2Room>()
+    val rooms = mutableListOf<SfcRoomPtr>()
     while (i < numberOfRooms) {
-        val room = readClass(TYPE_CROOM) as? SfcC2Room
+        val room = (readClass(SfcType.ROOM) as? SfcRoomPtr)
         if (room != null)
             rooms.add(room)
         else

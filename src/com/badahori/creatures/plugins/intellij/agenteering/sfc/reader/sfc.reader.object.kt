@@ -1,9 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcGalleryPtr
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 
 internal fun SfcReader.readObject(): SfcObject {
     val family: Int
@@ -15,7 +18,6 @@ internal fun SfcReader.readObject(): SfcObject {
         species = uInt8
         genus = uInt8
         family = uInt8
-        skip(1)
         unId = null
     } else {
         genus = uInt8
@@ -23,27 +25,23 @@ internal fun SfcReader.readObject(): SfcObject {
         assert(uInt16 == 0)
         species = uInt8
         unId = uInt32
-        skip(1)
     }
+    skip(1)
     val classifier = AgentClass(family, genus, species)
 
     val attr = if (variant == C1) uInt8 else uInt16
     // Read unknown coordinates
-
-    val bounds = Bounds(
-            left = uInt32,
-            top = uInt32,
-            right = uInt32,
-            bottom = uInt32
-    )
+    if (variant == C2)
+        assert (uInt16 == 0)
+    val bounds = bounds
     skip(2)
     val actv = uInt8
-    val sprite = readClass(TYPE_CGALLERY) as SfcGallery
+    val sprite = readClass(SfcType.GALLERY) as SfcGalleryPtr
     val tickReset = uInt32
     val tickState = uInt32
     assert(tickReset >= tickState)
     assert(uInt16 == 0)
-    val currentSound = byteBuffer.cString(4)
+    val currentSound = string(4).nullIfEmpty()
     val variables = (0 until (if (variant == C1) 3 else 100)).map {
         uInt32
     }
