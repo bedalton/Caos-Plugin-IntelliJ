@@ -5,8 +5,10 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
-
-class SprFileType private constructor() : FileType {
+/**
+ * Creatures 1 sprite file
+ */
+object SprFileType : FileType {
     override fun getName(): String {
         return "SPR file"
     }
@@ -35,10 +37,6 @@ class SprFileType private constructor() : FileType {
         return Charsets.UTF_8.name()
     }
 
-    companion object {
-        @JvmStatic
-        val INSTANCE = SprFileType()
-        @JvmStatic
-        val DEFAULT_EXTENSION = "spr"
-    }
+    @JvmStatic
+    val DEFAULT_EXTENSION = "spr"
 }
