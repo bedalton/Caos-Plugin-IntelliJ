@@ -1,7 +1,8 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcReader
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.*
 import com.intellij.psi.impl.PsiFileEx
@@ -15,8 +16,10 @@ class CobCompiledFile(provider:FileViewProvider)
         return file.children
     }
 
-    private val file: PsiLargeTextFile by lazy {
-        val sfcDump = SfcReader.readFile(virtualFile.contentsToByteArray())
+    private val file: PsiFile by lazy {
+        val sfcDump = SfcReader.readFile(virtualFile.contentsToByteArray()).toString()
+        val virtualFile = CaosVirtualFile(file.name+".txt", sfcDump, false)
+        virtualFile.getPsiFile(project)!!
     }
 
     override fun isPhysical(): Boolean = true
@@ -31,11 +34,11 @@ class CobCompiledFile(provider:FileViewProvider)
         return file
     }
 
-    override fun getDecompiledPsiFile(): PsiLargeTextFile {
+    override fun getDecompiledPsiFile(): PsiFile {
         return file
     }
 
     override fun toString(): String {
-        return "COB.$name"
+        return "SFC.$name"
     }
 }
