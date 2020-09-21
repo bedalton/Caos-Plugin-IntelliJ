@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcReader
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.fileTypes.FileType
