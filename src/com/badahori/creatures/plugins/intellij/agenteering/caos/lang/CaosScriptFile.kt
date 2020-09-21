@@ -5,7 +5,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ProjectRootManager
@@ -14,21 +16,20 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.FileContentUtilCore
+import com.sun.glass.ui.Application
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
     override var variant: CaosVariant?
         get() {
-            getUserData(VariantUserDataKey)?.let {
-                return it
-            }
-            return this.virtualFile
-                    ?.let {
-                        (it as? CaosVirtualFile)?.variant
-                                ?: VariantFilePropertyPusher.readFromStorage(it)
-                                ?: it.getUserData(VariantUserDataKey)
-                    }
-                    ?: getUserData(VariantUserDataKey)
+            return getUserData(VariantUserDataKey)
+                    ?: this.virtualFile
+                            ?.let {
+                                (it as? CaosVirtualFile)?.variant
+                                        ?: VariantFilePropertyPusher.readFromStorage(it)
+                                        ?: it.getUserData(VariantUserDataKey)
+                            }
                     ?: (module ?: originalFile.module)?.variant
         }
         set(newVariant) {
@@ -40,7 +41,12 @@ class CaosScriptFile(viewProvider: FileViewProvider)
                             VariantFilePropertyPusher.writeToStorage(it, newVariant ?: CaosVariant.UNKNOWN)
                         }
                         it.putUserData(VariantUserDataKey, newVariant)
+                        if (Application.isEventThread())
+                            FileContentUtilCore.reparseFiles(it)
                     }
+            if (Application.isEventThread()) {
+                DaemonCodeAnalyzer.getInstance(project).restart(this)
+            }
         }
 
     override fun getFileType(): FileType {
@@ -76,8 +82,10 @@ val PsiFile.module: Module?
 
 val RUN_INSPECTIONS_KEY = Key<Boolean?>("com.badahori.creatures.plugins.intellij.agenteering.caos.RUN_INSPECTIONS")
 
-var PsiFile.runInspections:Boolean get() {
-    return getUserData(RUN_INSPECTIONS_KEY) ?: true
-} set(value) {
-    putUserData(RUN_INSPECTIONS_KEY, value)
-}
+var PsiFile.runInspections: Boolean
+    get() {
+        return getUserData(RUN_INSPECTIONS_KEY) ?: true
+    }
+    set(value) {
+        putUserData(RUN_INSPECTIONS_KEY, value)
+    }
