@@ -874,7 +874,8 @@ class CaosScriptTokenSets {
                 CaosScript_K_MON1,
                 CaosScript_K_CLS2,
                 CaosScript_K_WORD,
-                CaosScript_K_XIST
+                CaosScript_K_XIST,
+                CaosScript_K_F__K
         )
 
         @JvmStatic
