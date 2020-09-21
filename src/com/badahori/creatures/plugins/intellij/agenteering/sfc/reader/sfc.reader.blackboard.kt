@@ -17,9 +17,9 @@ internal fun SfcReader.readBlackBoard() : SfcBlackboard {
     val chalkColor:Int = readColor()
     val aliasColor:Int = readColor()
     val textPosition = Vector2(uInt8, uInt8)
-    val words = (0 until (if (variant == C1 ) 12 else 48)).map {
+    val words = (0 until (if (variant == C1 ) 16 else 48)).map {
         val value = uInt32
-        val string = byteBuffer.cString(11)
+        val string = byteBuffer.cString(11).trim()
         value to string
     }.toMap()
     return SfcBlackboard(
