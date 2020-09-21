@@ -1,16 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcC2Room
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcDoor
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom.SfcC2Room
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoomImpl
 
 
 internal fun SfcReader.readC1Room(id: Int): SfcRoom {
     val bounds = bounds
     val roomType = uInt32
     assert(roomType < 3) { "Invalid C1 room type '$roomType' should be between 0 and 3" }
-    return SfcRoom(
+    return SfcRoomImpl(
             id = id,
             bounds = bounds,
             roomType = roomType
@@ -21,10 +22,9 @@ internal fun SfcReader.readGroundLevels(): List<Int>? {
     if (variant == CaosVariant.C2)
         return null
 
-    val levels = (0 until 161).map {
+    val levels = (0 until 261).map {
         uInt32
     }
-    skip(800)
     return levels
 }
 

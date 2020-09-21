@@ -7,7 +7,7 @@ internal fun SfcReader.readGallery() : SfcGallery {
     val fileName = fileNameToken
     val firstImage = uInt32
     skip(4)
-    skip (15 * numberOfFrames) // Unknown(3) width(4) height(4) offset(4)
+    skip(15 * numberOfFrames)
     return SfcGallery(
             numberOfFrames = numberOfFrames,
             firstImage = firstImage,
