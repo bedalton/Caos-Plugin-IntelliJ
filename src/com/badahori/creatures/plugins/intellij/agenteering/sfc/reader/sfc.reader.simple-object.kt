@@ -9,8 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
  * Reads a simple object from a byte buffer of an SFC File
  */
 internal fun SfcReader.readSimpleObject() : SfcSimpleObjectImpl {
-    val baseObject = readSimpleObject()
-    val entity = slurp(TYPE_ENTITY) as SfcEntity
+    val baseObject = readObject()
+    val entity = readClass(TYPE_ENTITY) as SfcEntity
     return SfcSimpleObjectImpl(baseObject, entity)
 }
 
@@ -27,7 +27,7 @@ internal fun SfcReader.readPointerTool(): SfcPointer {
 
 internal fun SfcReader.readCallButton(): SfcCallButton {
     val simpleObject = readSimpleObject()
-    val ourLift = slurp(TYPE_LIFT) as SfcLift
+    val ourLift = readClass(TYPE_LIFT) as SfcLift
     val liftId = byteBuffer.uInt8
     return SfcCallButton(
             simpleObject,

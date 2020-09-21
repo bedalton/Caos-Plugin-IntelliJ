@@ -42,9 +42,9 @@ internal fun SfcReader.readMacro() : SfcMacro {
         skip  (128)
     } else
         skip(488)
-    val owner = slurp(TYPE_OBJECT) as SfcObject
-    val from = slurp(TYPE_OBJECT) as SfcObject
-    val targ = slurp(TYPE_OBJECT) as? SfcObject
+    val owner = readClass(TYPE_OBJECT) as SfcObject
+    val from = readClass(TYPE_OBJECT) as SfcObject
+    val targ = readClass(TYPE_OBJECT) as? SfcObject
     skip(if (variant == C1) 18 else 34)
     return SfcMacro(
             script = script,
