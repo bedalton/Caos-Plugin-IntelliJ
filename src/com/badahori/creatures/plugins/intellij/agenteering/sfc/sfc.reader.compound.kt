@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcEntity
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject.SfcCompoundObject
 
 
 internal fun SfcReader.readCompoundObject() : SfcCompoundObject {
@@ -21,7 +19,7 @@ internal fun SfcReader.readCompoundObject() : SfcCompoundObject {
         entity
     }
     val hotspots = readHotspots()
-    return SfcCompoundObject(
+    return SfcCompoundObjectImpl(
             baseObject = base,
             parts = parts,
             hotspots = hotspots

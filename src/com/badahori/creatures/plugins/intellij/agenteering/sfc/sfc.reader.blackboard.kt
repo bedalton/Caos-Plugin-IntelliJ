@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject.SfcBlackboard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
 
 internal fun SfcReader.readBlackBoard() : SfcBlackboard {

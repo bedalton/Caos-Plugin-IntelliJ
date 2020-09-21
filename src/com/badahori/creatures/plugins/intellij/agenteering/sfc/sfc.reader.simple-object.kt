@@ -1,17 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.skip
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
 
 /**
  * Reads a simple object from a byte buffer of an SFC File
  */
-internal fun SfcReader.readSimpleObject() : SfcSimpleObject {
+internal fun SfcReader.readSimpleObject() : SfcSimpleObjectImpl {
     val baseObject = readSimpleObject()
-    val entity = slurp(TYPE_ENTITY) as SfcData.SfcEntity
-    return SfcSimpleObject(baseObject, entity)
+    val entity = slurp(TYPE_ENTITY) as SfcEntity
+    return SfcSimpleObjectImpl(baseObject, entity)
 }
 
 internal fun SfcReader.readPointerTool(): SfcPointer {

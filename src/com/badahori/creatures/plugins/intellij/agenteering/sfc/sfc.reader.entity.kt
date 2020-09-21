@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcEntity
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcGallery
 
 
 internal fun SfcReader.readEntity(): SfcEntity {
@@ -31,7 +29,7 @@ internal fun SfcReader.readEntity(): SfcEntity {
                 zOrder = zOrder,
                 position = position,
                 animationFrame = frame,
-                animationString = animationString,
+                animationString = animationString
         )
     }
 
