@@ -1,6 +1,8 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcDoor
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom.SfcC2Room
 
 

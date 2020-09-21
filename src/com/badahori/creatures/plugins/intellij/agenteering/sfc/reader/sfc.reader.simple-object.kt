@@ -1,6 +1,7 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.skip
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
 

@@ -1,7 +1,10 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcGallery
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcMapData
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcRoom
 
 internal fun SfcReader.readMapData(): SfcMapData {
     variant = when (val version = uInt32) {

@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 
 internal const val TYPE_MAPDATA = 1

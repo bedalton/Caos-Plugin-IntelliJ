@@ -1,7 +1,10 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sfc
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcMacro
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcObject
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcScript
 
 
 internal fun SfcReader.readScript(): SfcScript {
