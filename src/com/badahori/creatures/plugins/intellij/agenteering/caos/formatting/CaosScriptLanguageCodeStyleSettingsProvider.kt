@@ -10,7 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 class CaosScriptLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {
 
     override fun getLanguage(): Language {
-        return CaosScriptLanguage.instance
+        return CaosScriptLanguage
     }
 
     override fun getCodeSample(p0: SettingsType): String? {
