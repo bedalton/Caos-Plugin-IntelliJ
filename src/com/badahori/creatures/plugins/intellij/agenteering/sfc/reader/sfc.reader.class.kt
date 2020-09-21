@@ -8,7 +8,6 @@ private const val SFC_BINARY_CONST = 0x8000
 
 internal fun SfcReader.readClass(requiredType: SfcType): Ptr<*>? {
     val pid = uInt16
-    LOGGER.info("Reading PID: '$pid'")
     return when {
         pid == 0 -> null
         pid == 0xFFFF -> readNewMfc()
@@ -41,7 +40,6 @@ private fun SfcReader.readNewMfc() : Ptr<*>? {
     // Push null object in place as reference to this type
     // Checked for later when creating instances of type
     storage.add(null)
-    LOGGER.info("Reading: (${pidType.type})->$className. PID: $pid")
     types[pid] = pidType
     return read(pidType, pid)
 }
@@ -102,7 +100,6 @@ private fun SfcReader.read(pidType:SfcType, pid:Int) : Ptr<*> {
         readingCompoundObject = false
     else if (pidType == SfcType.SCENERY)
         readingScenery = false
-    LOGGER.info("Read($pid)->$pointer")
     return pointer
 }
 

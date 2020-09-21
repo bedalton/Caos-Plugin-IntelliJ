@@ -31,7 +31,6 @@ private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoomPtr> {
 
     // Read C1 rooms in
     if (variant == C1) {
-        LOGGER.info("Reading: $numberOfRooms rooms")
         return (0 until numberOfRooms).map { id ->
             SfcRoomPtr(type = SfcType.ROOM.value, pointed = readC1Room(id))
         }
