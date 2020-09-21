@@ -16,7 +16,7 @@ internal fun SfcReader.readMapData(): SfcMapData {
     }
 
     skip(if (variant == C1) 4 else 12)
-    val background = slurp(TYPE_CGALLERY) as SfcGallery
+    val background = readClass(TYPE_CGALLERY) as SfcGallery
     val numberOfRooms = uInt32
     val rooms = readRooms(numberOfRooms)
     val groundLevels = readGroundLevels()
@@ -39,11 +39,11 @@ private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoom> {
         }
     }
 
-    // Read C2 rooms in through slurping
+    // Read C2 rooms through class reader
     var i = 0
     val rooms = mutableListOf<SfcC2Room>()
     while (i < numberOfRooms) {
-        val room = slurp(TYPE_CROOM) as? SfcC2Room
+        val room = readClass(TYPE_CROOM) as? SfcC2Room
         if (room != null)
             rooms.add(room)
         else

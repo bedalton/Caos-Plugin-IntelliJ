@@ -18,17 +18,17 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer) {
 
     fun readFile(): SfcFile {
         byteBuffer.position(0)
-        val mapData = slurp(TYPE_MAPDATA) as SfcMapData
+        val mapData = readClass(TYPE_MAPDATA) as SfcMapData
         assert(this::variant.isInitialized) { "Variant should have been set at this point" }
         var x = 0
         while (x == 0)
             x = uInt8
-        byteBuffer.position(x - 1)
+        byteBuffer.position(byteBuffer.position() - 1)
         val objects = readList {
-            slurp(TYPE_OBJECT) as SfcObject
+            readClass(TYPE_OBJECT) as SfcObject
         }
         val scenery = readList {
-            slurp(TYPE_SCENERY) as SfcScenery
+            readClass(TYPE_SCENERY) as SfcScenery
         }
         val scripts = readList {
             readScript()
@@ -44,7 +44,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer) {
             sfcString
         }
         val macros = readList {
-            slurp(TYPE_MACRO) as? SfcMacro
+            readClass(TYPE_MACRO) as? SfcMacro
         }.filterNotNull()
         return SfcFile(
                 variant = variant,

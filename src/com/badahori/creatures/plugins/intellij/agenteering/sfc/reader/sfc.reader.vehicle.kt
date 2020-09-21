@@ -1,7 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.bytes
 
 
 internal fun SfcReader.readVehicle() : SfcVehicle {
@@ -10,17 +11,13 @@ internal fun SfcReader.readVehicle() : SfcVehicle {
     val bump = uInt8
     //Discard
     skip(2)
-    if (variant == CaosVariant.C1)
+    if (variant == C2) {
         assert(uInt16 == 0)
-    else
+        skip(2)
+    } else
         skip(4)
     assert(uInt8 == 0)
-    val bounds = Bounds(
-            left = uInt32,
-            top = uInt32,
-            right = uInt32,
-            bottom = uInt32
-    )
+    val bounds = bounds
     assert(uInt32 == 0)
     return SfcVehicleImpl(
             baseObject = base,
@@ -30,22 +27,20 @@ internal fun SfcReader.readVehicle() : SfcVehicle {
     )
 }
 
+private val LIFT_CHECK_BYTE_SEQUENCE = byteArrayOf(0xFF.toByte(),0xFF.toByte(),0xFF.toByte(),0xFF.toByte(),0x00)
+
 internal fun SfcReader.readLift() : SfcLift {
     val base = readVehicle()
     val numberOfButtons = uInt32
     val currentButton = uInt32
-    assert((0 until 5).any {
-        it != 0xFF
-    }) {
-        "SFC file invalid at read lift"
-    }
+    assert(byteBuffer.bytes(5).contentEquals(LIFT_CHECK_BYTE_SEQUENCE)) { "Invalid lift check sequence sequence" }
     val callButtonY = (0 until 8).map {
-        uInt32
+        uInt32.apply { assert(uInt16 == 0) } // Ignores internal check for bytes, returning original read
     }
-    assert (uInt16 == 0) {
-        "Invalid SFC file at read lift"
-    }
-    val alignWithCabin = variant == CaosVariant.C2 && uInt32 != 0
+    val alignWithCabin = if (variant == C2)
+        uInt32 != 0
+    else
+        false
     return SfcLift(
             baseObject = base,
             numberOfButtons = numberOfButtons,

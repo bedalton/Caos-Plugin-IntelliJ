@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcGallery
 
 internal fun SfcReader.readEntity(): SfcEntity {
 
-    val sprite = slurp(TYPE_CGALLERY) as SfcGallery
+    val sprite = readClass(TYPE_CGALLERY) as SfcGallery
     val currentFrame = uInt8
     val imageOffset = uInt8
     val zOrder = uInt32

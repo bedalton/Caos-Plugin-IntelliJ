@@ -16,3 +16,23 @@ internal const val TYPE_CALLBUTTON = 12
 internal const val TYPE_SCENERY = 13
 internal const val TYPE_MACRO = 14
 internal const val TYPE_OBJECT = 100
+
+internal fun typeToString(type:Int) : String {
+    return when(type) {
+        TYPE_MAPDATA -> "MapData"
+        TYPE_CGALLERY -> "Gallery"
+        TYPE_CDOOR -> "Door"
+        TYPE_CROOM -> "C2Room"
+        TYPE_ENTITY -> "Entity"
+        TYPE_COMPOUNDOBJECT -> "CompoundObject"
+        TYPE_BLACKBOARD -> "BlackBoard"
+        TYPE_VEHICLE -> "Vehicle"
+        TYPE_LIFT -> "Lift"
+        TYPE_SIMPLEOBJECT -> "SimpleObject"
+        TYPE_POINTERTOOL -> "PointerTool"
+        TYPE_CALLBUTTON -> "CallButton"
+        TYPE_SCENERY -> "Scenery"
+        TYPE_MACRO -> "Macro"
+        else -> "UNKNOWN"
+    }
+}

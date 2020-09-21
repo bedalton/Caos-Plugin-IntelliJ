@@ -38,7 +38,7 @@ internal fun SfcReader.readObject(): SfcObject {
     )
     skip(2)
     val actv = uInt8
-    val sprite = slurp(TYPE_CGALLERY) as SfcGallery
+    val sprite = readClass(TYPE_CGALLERY) as SfcGallery
     val tickReset = uInt32
     val tickState = uInt32
     assert(tickReset >= tickState)

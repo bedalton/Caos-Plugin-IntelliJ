@@ -9,7 +9,7 @@ internal fun SfcReader.readCompoundObject() : SfcCompoundObject {
     val base = readObject()
     val numberOfParts = uInt32
     val parts = (0 until numberOfParts).map {i ->
-        val entity = slurp(TYPE_ENTITY) as? SfcEntity
+        val entity = readClass(TYPE_ENTITY) as? SfcEntity
         if (entity == null) {
             assert(i != 0)
             skip(8)

@@ -3,13 +3,15 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData
 
+private const val SFC_BINARY_CONST = 0x8000
 
-internal fun SfcReader.slurp(requiredType: Int): SfcData? {
+internal fun SfcReader.readClass(requiredType: Int): SfcData? {
     val pid = uInt16
+    LOGGER.info("Reading PID: '$pid'")
     return when {
         pid == 0 -> null
         pid == 0xFFFF -> readNewMfc(requiredType)
-        pid and 0x8000 != 0x8000 -> returnExisting(requiredType, pid)
+        (pid and SFC_BINARY_CONST) != SFC_BINARY_CONST -> returnExistingObject(requiredType, pid)
         else -> createNewFromExisting(requiredType, pid)
     }
 }
@@ -18,7 +20,6 @@ private fun SfcReader.readNewMfc(requiredType: Int) : SfcData? {
     skip(2) // Schema ID -> Seems to be ignored in C2e
     val className = string(uInt16).trim()
     val pid = storage.size
-    storage.add(null) // Push a null onto the stack. Not sure why
     val pidType = when(className) {
         "MapData" -> TYPE_MAPDATA
         "CGallery" -> TYPE_CGALLERY
@@ -36,37 +37,46 @@ private fun SfcReader.readNewMfc(requiredType: Int) : SfcData? {
         "Macro" -> TYPE_MACRO
         else -> throw SfcReadException("Failed to understand MFC class name: '$className'")
     }
+    // Push null object in place as reference to this type
+    // Checked for later when creating instances of type
+    storage.add(null)
     LOGGER.info("Reading: ($pidType)->$className. PID: $pid")
     types[pid] = pidType
     return read(requiredType, pid, pidType)
 }
 
-private fun SfcReader.returnExisting(requiredType:Int, pidIn:Int) : SfcData {
+private fun SfcReader.returnExistingObject(requiredType:Int, pidIn:Int) : SfcData {
     val pid = pidIn - 1
+    assert(pid < storage.size) { "PID '$pid' out of bounds for read class. Valid range: (0 to ${storage.size})" }
     val pidType = types[pid]
-            ?: throw SfcReadException("Cannot return existing MFC data. Type for PID '$pid' does not exist. Types.Size == ${types.size}")
-    assert(pid < storage.size) { "SFC reader tried slurping PID out of bounds" }
-    assert(validSfcType(pidType, requiredType))
+            ?: throw SfcReadException("Type for PID($pid) is null")
+    assert(validSfcType(pidType, requiredType)) {
+        val pidTypeString = typeToString(pidType)
+        val requiredTypeString = typeToString(requiredType)
+        "Failed to assert that pid type: $pidTypeString is compatible with required type: $requiredTypeString"
+    }
+    assert(storage[pid] != null) {
+        "Object in storage at PID '$pid' is null. Expected $pidType. Previous: ${storage[pid - 1]?.let {it::class.java.name}}. Next: ${storage[pid + 1]?.let {it::class.java.name}}"
+    }
     return storage[pid]!!
 }
 
 private fun SfcReader.createNewFromExisting(requiredType: Int, pidIn:Int) : SfcData {
-    val pid = (pidIn xor 0x8000) - 1
-    val pidType = types[pid]
-    assert(pidType != null) { "PidType is null for pid($pid)->original($pidIn)" }
+    val pid = (pidIn xor SFC_BINARY_CONST) - 1
     assert(pid < storage.size) { "Pid should be less than size"}
     assert(storage[pid] == null) { "Storage for pid '$pid' should be null" }
-    return read(requiredType, pid, pidType!!)
+    val pidType = types[pid]
+            ?: throw SfcReadException("PidType is null for pid($pid)->original($pidIn)")
+    return read(requiredType, pid, pidType)
 }
 
 private fun SfcReader.read(requiredType: Int, pid:Int, pidType:Int) : SfcData {
-    assert(validSfcType(pidType, requiredType)) { "Actual type '$pidType' does not match required type '$requiredType'" }
+    types[storage.size] = pidType
     if (validSfcType(pidType, TYPE_COMPOUNDOBJECT))
         readingCompoundObject = true
     else if (pidType == TYPE_SCENERY)
         readingScenery = true
-    assert(storage[pid] == null) { "SFC MFC storage should not contain object for PID" }
-    types[storage.size] = pidType
+    
     val data = when(pidType) {
         TYPE_MAPDATA -> readMapData()
         TYPE_CGALLERY -> readGallery()

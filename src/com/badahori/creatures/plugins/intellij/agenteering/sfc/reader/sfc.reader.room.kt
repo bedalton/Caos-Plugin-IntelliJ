@@ -44,7 +44,7 @@ internal fun SfcReader.readC2Room() : SfcC2Room {
     val bounds = bounds
     val doors = (0 until 4).map {i ->
         i to (0 until uInt16).mapNotNull {
-           slurp(TYPE_CDOOR) as? SfcDoor
+           readClass(TYPE_CDOOR) as? SfcDoor
         }
     }.toMap()
     val roomType = uInt32
