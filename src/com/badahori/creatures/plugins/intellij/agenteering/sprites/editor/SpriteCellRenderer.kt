@@ -8,6 +8,9 @@ import java.awt.Image
 import java.awt.image.BufferedImage
 import javax.swing.*
 
+/**
+ * Cell renderer for individual sprite image in Sprite file list
+ */
 class SpriteCellRenderer : ListCellRenderer<Image> {
     var color:Color = EditorColorsManager.getInstance().globalScheme.defaultBackground
     var fontColor = EditorColorsManager.getInstance().globalScheme.defaultForeground

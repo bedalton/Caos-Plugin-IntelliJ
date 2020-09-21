@@ -1,10 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.c16
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16BE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32BE
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.ui.UIUtil
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 
@@ -12,27 +14,27 @@ import java.nio.ByteBuffer
 /**
  * Parses Creatures C16 sprite file
  * Based on c2ephp by telyn
- * @see https://github.com/telyn/c2ephp
+ * @link https://github.com/telyn/c2ephp
  */
 class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C16) {
 
     init {
         val rawBytes = file.contentsToByteArray()
-        val bytesBuffer = ByteBuffer.wrap(rawBytes)
-        val buffer = bytesBuffer.uInt32BE
-        val encoding = if (buffer and 1L == 1L) ColorEncoding.x565 else ColorEncoding.x555
+        val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
+        val buffer = bytesBuffer.uInt32
+        val encoding = if (buffer and 1L == 1L) ColorEncoding.X_565 else ColorEncoding.X_555
         if (buffer and 2L == 0L) {
             throw Exception("C16 parse exception. This file is probably a S16 masquerading as a C16!")
         } else if (buffer > 3) {
             throw Exception("File encoding not recognised. ('$buffer')")
         }
-        val numImages = bytesBuffer.uInt16BE
+        val numImages = bytesBuffer.uInt16
         _frames =  (0 until numImages).map {
-            val offsetForData = bytesBuffer.uInt32BE
-            val width = bytesBuffer.uInt16BE
-            val height = bytesBuffer.uInt16BE
+            val offsetForData = bytesBuffer.uInt32
+            val width = bytesBuffer.uInt16
+            val height = bytesBuffer.uInt16
             (0 until height - 1).forEach { _ ->
-                bytesBuffer.uInt32BE
+                bytesBuffer.uInt32
             }
             C16SpriteFrame(
                     bytes = bytesBuffer,
@@ -59,7 +61,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
         }
     }
 
-    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.x565) : this(image.width, image.height, encoding) {
+    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.X_565) : this(image.width, image.height, encoding) {
         getImage = { image }
     }
 
@@ -72,11 +74,11 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
     private fun decode(bytes:ByteBuffer, offset:Long) : BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
-        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {
             var x = 0
             while (x < width) {
-                val run = bytesBuffer.uInt16BE
+                val run = bytesBuffer.uInt16
                 val runLength = (run and 0x7FFF) shr 1
                 val z = x+runLength
                 if (z > width) {
@@ -90,7 +92,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
                     }
                 } else {
                     while (x < z) {
-                        val color = SpriteColorUtil.getColor(bytesBuffer.uInt16BE, encoding)
+                        val color = SpriteColorUtil.getColor(bytesBuffer.uInt16, encoding)
                         image.raster.setPixel(x,y,color)
                         image.alphaRaster.setPixel(x, y, SpriteColorUtil.solid)
                         x++
@@ -98,7 +100,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
                 }
             }
             if (x == width) {
-                bytesBuffer.uInt16BE
+                bytesBuffer.uInt16
             }
         }
         return image
