@@ -675,44 +675,48 @@ data class SfcDoor(
     companion object
 }
 
+interface SfcRoom: SfcData {
+    val id: Int
+    val bounds: Bounds
+    val roomType: Int
+}
+
 /**
  * an SFC data class for rooms in C1/C2
  */
-open class SfcRoom(
-        open val id: Int,
-        open val bounds: Bounds,
-        open val roomType: Int
-) : SfcData {
-    /**
-     * An C2 specific SFC room data object
-     */
-    data class SfcC2Room(
-            override val id: Int,
-            override val bounds: Bounds,
-            override val roomType: Int,
-            val doors: Map<Int, List<SfcDoor>>,
-            val floorValue: Int,
-            val inorganicNutrients: Int,
-            val organicNutrients: Int,
-            val temperature: Int,
-            val pressure: Int,
-            val lightLevel: Int,
-            val radiation: Int,
-            val heatSource: Int,
-            val pressureSource: Int,
-            val lightSource: Int,
-            val radiationSource: Int,
-            val windVector: Vector2,
-            val floorPoints: List<Vector2>,
-            val music: String,
-            val dropStatus: Int
-    ) : SfcRoom(
-            id = id,
-            bounds = bounds,
-            roomType = roomType
-    ) {
-        companion object
-    }
+data class SfcRoomImpl(
+        override val id: Int,
+        override val bounds: Bounds,
+        override val roomType: Int
+) : SfcRoom {
+   companion object
+}
+
+/**
+ * An C2 specific SFC room data object
+ */
+data class SfcC2Room(
+        override val id: Int,
+        override val bounds: Bounds,
+        override val roomType: Int,
+        val doors: Map<Int, List<SfcDoor>>,
+        val floorValue: Int,
+        val inorganicNutrients: Int,
+        val organicNutrients: Int,
+        val temperature: Int,
+        val pressure: Int,
+        val lightLevel: Int,
+        val radiation: Int,
+        val heatSource: Int,
+        val pressureSource: Int,
+        val lightSource: Int,
+        val radiationSource: Int,
+        val windVector: Vector2,
+        val floorPoints: List<Vector2>,
+        val music: String,
+        val dropStatus: Int
+) : SfcRoom {
+    companion object
 }
 
 /**
