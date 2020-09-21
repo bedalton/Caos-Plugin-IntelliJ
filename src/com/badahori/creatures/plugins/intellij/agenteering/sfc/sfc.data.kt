@@ -100,7 +100,7 @@ data class SfcFile(
         val speechHistory: List<String>
 ) {
     val allScripts:Set<String> by lazy {
-        (macros.map { it.script } + (scripts + objects.flatMap { it.scripts }).map { script -> "scrp ${script.classifier.let {c -> "${c.family} ${c.genus} + ${c.species}"} } ${script.eventNumber} ${script.script}" }).toSet()
+        (macros.map { it.script } + (scripts + objects.flatMap { it.scripts }).map { script -> "scrp ${script.classifier.let {c -> "${c.family} ${c.genus} ${c.species}"} } ${script.eventNumber} ${script.script}" }).toSet()
     }
 }
 
