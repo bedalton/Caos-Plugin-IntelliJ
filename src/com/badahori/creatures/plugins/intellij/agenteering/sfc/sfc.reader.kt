@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -18,7 +17,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer) {
 
     fun readFile(): SfcFile {
         byteBuffer.position(0)
-        val mapData = slurp(TYPE_MAPDATA) as SfcData.SfcMapData
+        val mapData = slurp(TYPE_MAPDATA) as SfcMapData
         assert(this::variant.isInitialized) { "Variant should have been set at this point" }
         var x = 0
         while (x == 0)
@@ -28,7 +27,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer) {
             slurp(TYPE_OBJECT) as SfcObject
         }
         val scenery = readList {
-            slurp(TYPE_SCENERY) as SfcObject.SfcScenery
+            slurp(TYPE_SCENERY) as SfcScenery
         }
         val scripts = readList {
             readScript()
@@ -44,7 +43,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer) {
             sfcString
         }
         val macros = readList {
-            slurp(TYPE_MACRO) as? SfcData.SfcMacro
+            slurp(TYPE_MACRO) as? SfcMacro
         }.filterNotNull()
         return SfcFile(
                 variant = variant,

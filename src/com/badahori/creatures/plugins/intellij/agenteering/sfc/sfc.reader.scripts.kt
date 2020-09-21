@@ -2,11 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcMacro
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject
 
 
-internal fun SfcReader.readScript(): SfcData.SfcScript {
+internal fun SfcReader.readScript(): SfcScript {
     if (!variant.isOld) {
         throw OutOfVariantException(variant)
     }
@@ -27,7 +25,7 @@ internal fun SfcReader.readScript(): SfcData.SfcScript {
     }
     val classifier = AgentClass(family, genus, species)
     val script = sfcString
-    return SfcData.SfcScript(
+    return SfcScript(
             classifier = classifier,
             eventNumber = eventNumber,
             script = script

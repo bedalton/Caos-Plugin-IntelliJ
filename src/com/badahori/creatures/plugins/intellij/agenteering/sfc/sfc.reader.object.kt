@@ -2,8 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcGallery
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcData.SfcObject
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
 
 internal fun SfcReader.readObject(): SfcObject {
@@ -49,7 +47,7 @@ internal fun SfcReader.readObject(): SfcObject {
         uInt32
     }
     if (variant == C1) {
-        return SfcObject(
+        return SfcObjectImpl(
                 classifier = classifier,
                 attr = attr,
                 actv = actv,
@@ -73,7 +71,7 @@ internal fun SfcReader.readObject(): SfcObject {
     val threat = uInt8
     val flags = uInt8
     val frozen = flags and 0x02 != 0
-    return SfcObject(
+    return SfcObjectImpl(
             classifier = classifier,
             unId = unId,
             attr = attr,
@@ -97,7 +95,7 @@ internal fun SfcReader.readObject(): SfcObject {
     )
 }
 
-internal fun SfcReader.readScripts(): List<SfcData.SfcScript> {
+internal fun SfcReader.readScripts(): List<SfcScript> {
     return (0 until uInt32).map {
         readScript()
     }
