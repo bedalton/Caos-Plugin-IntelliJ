@@ -2345,7 +2345,7 @@ r_kw_cv_tran
 
 
 
-private c_none ::= ;
+private c_none ::= c_kw_none;
 
 private c_d ::= c_kw_d space_like expects_decimal_or_int
 	{
