@@ -15,7 +15,7 @@ import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
 import java.io.IOException
 
-class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, CaosScriptLanguage.instance) {
+class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, CaosScriptLanguage) {
 
     override fun getBuilder(): StubBuilder {
         return CaosScriptFileStubBuilder()

@@ -61,7 +61,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
             if (element is CaosScriptClassifier) {
-                return HintInfo.MethodInfo("family (integer) genus (integer) species (integer)", listOf("family", "genus", "species"), CaosScriptLanguage.instance)
+                return HintInfo.MethodInfo("family (integer) genus (integer) species (integer)", listOf("family", "genus", "species"), CaosScriptLanguage)
             }
             val commandElement = element as? CaosScriptCommandElement
                     ?: return null

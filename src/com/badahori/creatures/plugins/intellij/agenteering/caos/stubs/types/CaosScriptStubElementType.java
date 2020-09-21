@@ -14,7 +14,7 @@ public abstract class CaosScriptStubElementType<StubT extends StubElement<PsiT>,
     public CaosScriptStubElementType(
             @NotNull
                     String debugName) {
-        super(debugName, CaosScriptLanguage.getInstance());
+        super(debugName, CaosScriptLanguage.INSTANCE);
     }
 
     /*@NotNull

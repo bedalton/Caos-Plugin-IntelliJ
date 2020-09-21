@@ -37,7 +37,7 @@ class CaosDefCodeBlockInjector : LanguageInjector {
                 else -> null
             }
         } else null
-        //injectionPlacesRegistrar.addPlace(CaosScriptLanguage.instance, TextRange(2, host.textLength - 1), codePrefix, " $suffix")
+        //injectionPlacesRegistrar.addPlace(CaosScriptLanguage, TextRange(2, host.textLength - 1), codePrefix, " $suffix")
     }
 }
 
