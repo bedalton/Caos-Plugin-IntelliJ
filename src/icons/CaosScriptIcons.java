@@ -10,6 +10,7 @@ public interface CaosScriptIcons {
     Icon MODULE_ICON = IconLoader.getIcon("/icons/sdk-icon.png");
     Icon CAOS_FILE_ICON = IconLoader.getIcon("/icons/caos-script-file-icon.png");
     Icon CAOS_DEF_FILE_ICON = IconLoader.getIcon("/icons/caos-def-file-icon.png");
+    Icon SFC_FILE_ICON = IconLoader.getIcon("/icons/sdk-icon.png"); // Todo: Create actual sfc icon
     Icon COMMAND = IconLoader.getIcon("/icons/command-icon.png");
     Icon RVALUE = IconLoader.getIcon("/icons/right-value-icon.png");
     Icon LVALUE = IconLoader.getIcon("/icons/left-value-icon.png");
