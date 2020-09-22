@@ -37,9 +37,9 @@
         <b>Version: 0.01.7</b><br/>
         <b>#Added</b>
         <ul>
-          <li>COB decompiler and viewer</li>
-          <li>Expanded sprite viewer</li>
           <li>SFC script viewer</li>
+          <li>COB decompiler and viewer</li>
+          <li>Drag to copy sprite frames to filesystem as PNG. **Copy/Paste does NOT work **</li>
         </ul>
       </li>
       <li>
@@ -474,8 +474,7 @@
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
               fieldName="INSTANCE"
               language="PlainText"
-              extensions="sfc"
-    />
+              extensions="sfc" />
     <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.SfcTreeStructureProvider" />
 
     <!-- =========================== -->
