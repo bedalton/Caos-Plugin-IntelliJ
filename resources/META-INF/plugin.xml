@@ -325,6 +325,16 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInModuleInspection"
     />
 
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="OBJP used without OWNR scope"
+                     shortName="OBJPNoOwnrScope"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptObjpUsedOutsideOwnerScopeInspection"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />

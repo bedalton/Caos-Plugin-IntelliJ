@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
@@ -13,7 +14,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
 object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
@@ -38,9 +38,11 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
     }
 
     fun invoke(project: Project, fileIn: PsiFile?) {
+
         val file = fileIn as? CaosScriptFile ?: return
         val variant = file.variant
         var document = fileIn.document ?: PsiDocumentManager.getInstance(project).getCachedDocument(file)
+
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
@@ -53,9 +55,7 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
             file.variant = variant
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
-        file.variant = variant
-        CodeStyleManager.getInstance(project).reformat(file, true)
-        //file.variant = variant
+        //CodeStyleManager.getInstance(project).reformat(file, true)
     }
 
     private fun replaceIfBlankOrComma(next: PsiElement?) {
