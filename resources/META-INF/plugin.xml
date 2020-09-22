@@ -140,7 +140,8 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
     <lang.parserDefinition
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
-        language="CaosScript" />
+        language="CaosScript"
+    />
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
@@ -252,7 +253,7 @@
                      enabledByDefault="true"
                      displayName="Scripts after removal scripts are ignored"
                      shortName="ScriptsAfterRemovalScripts"
-                     />
+    />
 
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
@@ -295,7 +296,7 @@
                      displayName="Scripts defined after event script in C1/C2"
                      shortName="ScriptAfterEventScriptC1"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
-                      />
+    />
 
     <localInspection language="CaosScript"
                      level="WARNING"
@@ -442,18 +443,46 @@
     <fileType name="SPR file"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
               fieldName="INSTANCE"
-              language="CreaturesSPR" extensions="spr" />
+              language="CreaturesSPR"
+              extensions="spr" />
 
     <fileType name="S16 Sprite File"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType"
               fieldName="INSTANCE"
-              language="CreaturesS16" extensions="s16" />
+              language="CreaturesS16"
+              extensions="s16" />
 
     <fileType name="C16 Sprite File"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
               fieldName="INSTANCE"
-              language="CreaturesC16" extensions="c16" />
-    <!-- Add your extensions here -->
+              language="CreaturesC16"
+              extensions="c16" />
+
+
+    <!-- =========================== -->
+    <!-- ======== COB Files ======== -->
+    <!-- =========================== -->
+    <filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" />
+
+    <fileType name="COBFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType"
+              fieldName="INSTANCE"
+              language="CaosScript"
+              extensions="cob"
+    />
+
+    <fileType.fileViewProviderFactory
+        filetype="COBFile"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
+    />
+
+    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
+
+    <virtualFileSystem
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
+        key="caosvfs"
+    />
+
   </extensions>
 
   <actions>

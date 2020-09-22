@@ -99,7 +99,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
                     ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage)
             }
         }
     },
@@ -173,7 +173,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
                     ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage)
             }
         }
     },
@@ -206,7 +206,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            return HintInfo.MethodInfo("Genus", listOf("family", "genus"), CaosScriptLanguage.instance)
+            return HintInfo.MethodInfo("Genus", listOf("family", "genus"), CaosScriptLanguage)
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -271,7 +271,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
                     ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage)
             }
         }
     },
@@ -307,7 +307,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
                     ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage)
             }
         }
     },
@@ -330,7 +330,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptPictDimensionLiteral) {
                 return null
             }
-            return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosScriptLanguage.instance)
+            return HintInfo.MethodInfo("DDE: PICT " + element.text, listOf(), CaosScriptLanguage)
         }
     },
     RVALUE_RETURN_TYPE_HINT("Show rvalue return type", true) {
@@ -392,7 +392,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
                     ?: element.getParentOfType(CaosScriptEqualityExpression::class.java)
             return parent?.let {
-                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage.instance)
+                HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage)
             }
         }
     };
