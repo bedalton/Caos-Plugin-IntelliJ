@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
+import icons.CaosScriptIcons
 import javax.swing.Icon
 
 /**
@@ -20,7 +21,7 @@ object S16FileType : FileType {
 
     override fun getDefaultExtension(): String = DEFAULT_EXTENSION
 
-    override fun getIcon(): Icon? = null
+    override fun getIcon(): Icon? = CaosScriptIcons.S16_FILE_ICON
 
     override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.UTF_8.name()
 
