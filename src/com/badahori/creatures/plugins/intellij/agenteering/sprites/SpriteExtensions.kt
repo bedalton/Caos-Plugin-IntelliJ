@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage
 import java.awt.image.RenderedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
+import javax.xml.bind.DatatypeConverter
 
 
 fun BufferedImage.createTransformed(at: AffineTransform) : BufferedImage {
@@ -50,4 +51,11 @@ fun RenderedImage.toByteArray(formatName:String) : ByteArray {
     val outputStream = ByteArrayOutputStream()
     ImageIO.write(this, formatName, outputStream)
     return outputStream.toByteArray()
+}
+
+fun RenderedImage.toPngDataUri() : String {
+    return "data:image/png;base64," + DatatypeConverter.printBase64Binary(toPngByteArray())
+}
+fun RenderedImage.toJpgDataUri() : String {
+    return "data:image/jpg;base64," + DatatypeConverter.printBase64Binary(toJpgByteArray())
 }
