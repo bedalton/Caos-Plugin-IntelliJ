@@ -2,21 +2,22 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.google.gson.Gson
 import com.intellij.openapi.project.Project
 import java.io.File
 import java.util.*
 
-internal class WineConnection(path:String, private val variant:CaosVariant) : CaosConnection {
+internal class WineConnection(path: String, private val variant: CaosVariant) : CaosConnection {
 
-    val prefix:String? by lazy {
-        var file:File? = File(basePath)
+    val prefix: String? by lazy {
+        var file: File? = File(basePath)
         while (file != null && file.parentFile.nameWithoutExtension != "drive_c")
             file = file.parentFile
         file?.parentFile?.path
     }
 
-    val homePath:String? by lazy {
+    val homePath: String? by lazy {
         File(basePath).parentFile?.path?.let {
             if (it.endsWith("/"))
                 it
@@ -25,7 +26,7 @@ internal class WineConnection(path:String, private val variant:CaosVariant) : Ca
         }
     }
 
-    val basePath:String by lazy {
+    val basePath: String by lazy {
         when {
             path.endsWith("CaosQueue") -> path + "/"
             path.endsWith("CaosQueue/") -> path
@@ -34,12 +35,12 @@ internal class WineConnection(path:String, private val variant:CaosVariant) : Ca
         }
     }
 
-    val writeDirectory:String by lazy {
-        basePath+"input/"
+    val writeDirectory: String by lazy {
+        basePath + "input/"
     }
 
-    val readDirectory:String by lazy {
-        basePath+"out/"
+    val readDirectory: String by lazy {
+        basePath + "out/"
     }
 
     override fun connect(silent: Boolean): Boolean = true /*{
@@ -81,7 +82,7 @@ internal class WineConnection(path:String, private val variant:CaosVariant) : Ca
         val readFile = File("$readDirectory$uuid.response.json")
         var timeOut = 6000L
         val sleepInterval = 200L
-        while(!readFile.exists() && timeOut > 0) {
+        while (!readFile.exists() && timeOut > 0) {
             timeOut -= sleepInterval
             Thread.sleep(sleepInterval)
         }
@@ -89,19 +90,21 @@ internal class WineConnection(path:String, private val variant:CaosVariant) : Ca
             val response = try {
                 val response = Gson().fromJson(readFile.readText(), WineCaosResponse::class.java)
                 when (response.status) {
-                    "NO_CONNECTION" -> InjectionStatus.BadConnection(response.error ?: response.response
-                    ?: "Failed to connect to Creatures executable")
-                    "BAD" -> InjectionStatus.Bad(response.error ?: response.response ?: "An unknown error occurred")
+                    "NO_CONNECTION" -> {
+                        val message = response.messageOr { "Failed to connect to Creatures executable" }
+                        InjectionStatus.BadConnection(message)
+                    }
+                    "BAD" -> InjectionStatus.Bad(response.messageOr { "An unknown error occurred" })
                     "OK" -> InjectionStatus.Ok(response.response ?: "")
                     else -> InjectionStatus.Bad("Invalid response received. Data: '" + readFile.readText() + "'")
                 }
-            } catch (e:Exception) {
+            } catch (e: Exception) {
                 InjectionStatus.Bad("Invalid response received. Data: '" + readFile.readText() + "'")
             }
             try {
                 readFile.delete()
-            } catch (e:Exception) {
-                LOGGER.info("Failed to delete response file: ${readFile.path}")
+            } catch (e: Exception) {
+                LOGGER.severe("Failed to delete response file: ${readFile.path}")
             }
             response
         } else {
@@ -135,5 +138,12 @@ internal class WineConnection(path:String, private val variant:CaosVariant) : Ca
     }*/
 }
 
-internal data class WineCaosResponse(var status:String, var response:String? = null, var error:String? = null)
+internal data class WineCaosResponse(var status: String, var response: String? = null, var error: String? = null) {
+    val errorOrMessage: String?
+        get() = error?.nullIfEmpty() ?: response?.nullIfEmpty()
+
+    fun messageOr(producer: () -> String): String {
+        return errorOrMessage ?: producer()
+    }
+}
 
