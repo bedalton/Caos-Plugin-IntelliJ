@@ -111,7 +111,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun psiFile(builder_: PsiBuilder): PsiFile? {
         return builder_.getUserData(FileContextUtil.CONTAINING_FILE_KEY).apply {
             if (this == null)
-                LOGGER.info("PsiFile is null in CaosScriptParserUtil")
+                LOGGER.severe("PsiFile is null in CaosScriptParserUtil")
         }
     }
 
