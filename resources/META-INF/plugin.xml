@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.6</version>
+  <version>0.01.7</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -33,6 +33,15 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.7</b><br/>
+        <b>#Added</b>
+        <ul>
+          <li>COB decompiler and viewer</li>
+          <li>Expanded sprite viewer</li>
+          <li>SFC script viewer</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.6</b><br/>
         <b>#Fixes</b>
@@ -140,7 +149,8 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
     <lang.parserDefinition
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
-        language="CaosScript" />
+        language="CaosScript"
+    />
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
     <lang.findUsagesProvider language="CaosScript"
@@ -252,7 +262,7 @@
                      enabledByDefault="true"
                      displayName="Scripts after removal scripts are ignored"
                      shortName="ScriptsAfterRemovalScripts"
-                     />
+    />
 
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
@@ -295,7 +305,7 @@
                      displayName="Scripts defined after event script in C1/C2"
                      shortName="ScriptAfterEventScriptC1"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
-                      />
+    />
 
     <localInspection language="CaosScript"
                      level="WARNING"
@@ -442,38 +452,50 @@
     <fileType name="SPR file"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
               fieldName="INSTANCE"
-              language="CreaturesSPR" extensions="spr" />
+              language="CreaturesSPR"
+              extensions="spr" />
 
     <fileType name="S16 Sprite File"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType"
               fieldName="INSTANCE"
-              language="CreaturesS16" extensions="s16" />
+              language="CreaturesS16"
+              extensions="s16" />
 
     <fileType name="C16 Sprite File"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
               fieldName="INSTANCE"
-              language="CreaturesC16" extensions="c16" />
+              language="CreaturesC16"
+              extensions="c16" />
 
 
 
     <!-- SFC File Handling -->
-
-    <!--filetype.decompiler filetype="SFCFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBinaryDecompiler" /-->
-
     <fileType name="SFCFile"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
               fieldName="INSTANCE"
               language="PlainText"
               extensions="sfc"
     />
-
-    <!--fileType.fileViewProviderFactory
-        filetype="SfcFile"
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcEditorProviderFactory"
-    /-->
-
     <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.SfcTreeStructureProvider" />
 
+    <!-- =========================== -->
+    <!-- ======== COB Files ======== -->
+    <!-- =========================== -->
+    <filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" />
+
+    <fileType name="COBFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType"
+              fieldName="INSTANCE"
+              language="CaosScript"
+              extensions="cob"
+    />
+
+    <fileType.fileViewProviderFactory
+        filetype="COBFile"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
+    />
+
+    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
 
     <!-- Virtual File System -->
     <virtualFileSystem

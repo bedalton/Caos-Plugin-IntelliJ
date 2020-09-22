@@ -5,16 +5,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.FileContentUtilCore
 
 
 internal class CaosScriptFileTreeNode(
@@ -32,6 +29,7 @@ internal class CaosScriptFileTreeNode(
         quickFormat(caosFile)
         invokeLater {
             caosFile.navigate(requestFocus)
+            caosFile.virtualFile?.isWritable = false
         }
     }
 
