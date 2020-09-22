@@ -40,13 +40,8 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
         val scripts = sfc.allScripts
         val maxIndexLength = "${scripts.size}".length
         scripts.mapIndexed { index, script ->
-            val fileName = getScriptName(index, maxIndexLength, script) + ".cos"
-            val file = rootDirectory.createChildWithContent(fileName, script).apply {
-                isWritable = true
-            }.getPsiFile(project)
-            (file  as? CaosScriptFile)?.apply {
-                this.variant = sfcVariant
-            }
+            val fileName = getScriptName(index, maxIndexLength, script)
+            rootDirectory.createChildCaosScript(project, sfcVariant, fileName, script)
         }.filterNotNull()
     }
 
