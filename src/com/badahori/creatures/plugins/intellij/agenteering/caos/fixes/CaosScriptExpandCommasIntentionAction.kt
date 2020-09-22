@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.codeInsight.intention.IntentionAction
@@ -20,8 +21,6 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
-
-
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return file is CaosScriptFile
     }
@@ -37,13 +36,14 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
                 ?: return
         invoke(project, file)
     }
+
     fun invoke(project: Project, fileIn: PsiFile?) {
         val file = fileIn as? CaosScriptFile ?: return
         var document = fileIn.document ?: PsiDocumentManager.getInstance(project).getCachedDocument(file)
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
-        val newLines = PsiTreeUtil.collectElementsOfType(file, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline::class.java)
+        val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
         for (newLine in newLines) {
             replaceIfBlankOrComma(newLine)
         }
