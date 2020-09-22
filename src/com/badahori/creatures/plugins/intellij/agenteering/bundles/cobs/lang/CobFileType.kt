@@ -5,6 +5,7 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
 import com.intellij.openapi.vfs.VirtualFile
+import icons.CaosScriptIcons
 import javax.swing.Icon
 
 
@@ -20,7 +21,7 @@ object CobFileType : FileType {
 
     override fun getDefaultExtension(): String = DEFAULT_EXTENSION
 
-    override fun getIcon(): Icon? = null
+    override fun getIcon(): Icon? = CaosScriptIcons.COB_FILE_ICON
 
     override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.US_ASCII.name()
 
