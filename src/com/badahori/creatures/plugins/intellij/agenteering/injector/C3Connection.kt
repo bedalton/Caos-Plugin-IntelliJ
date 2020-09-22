@@ -60,7 +60,6 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 *argsIn.dropLast(1).toTypedArray(),
                 escaped
         ).toTypedArray()
-        LOGGER.info(args.joinToString(" "))
         // Create injection process
         val proc: Process
         try {
