@@ -900,6 +900,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Rr][Nn][Dd][Rr]       	{ return CaosScript_K_RNDR; }
 	[Ll][Nn][Gg][+]        	{ return CaosScript_K_LNG_PLUS; }
     [Xx][Ii][Ss][Tt]       	{ return CaosScript_K_XIST; }
+    [Ff][*][*][Kk]			{ return CaosScript_K_F__K; }
 	[Aa][Nn][Dd]           	{ return CaosScript_K_AND; }
 	[Oo][Rr]               	{ return CaosScript_K_OR; }
     "____X____DEF__"		{ return CaosScript_K_XX_DEF; }

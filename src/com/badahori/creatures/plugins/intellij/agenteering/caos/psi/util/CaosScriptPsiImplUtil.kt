@@ -1239,6 +1239,65 @@ object CaosScriptPsiImplUtil {
         return CaosScriptPresentationUtil.getPresentation(element)
     }
 
+    @JvmStatic
+    fun isClosed(element:CaosScriptDoifStatementStatement) : Boolean {
+        return element.parent.lastChild != element
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptElseIfStatement) : Boolean {
+        return element.parent.lastChild != element
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptElseStatement) : Boolean {
+        return element.parent.lastChild != element
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptEnumNextStatement) : Boolean {
+        return element.cNext != null || element.cNscn != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptEnumSceneryStatement) : Boolean {
+        return element.cNext != null || element.cNscn != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptEventScript) : Boolean {
+        return element.scriptTerminator != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptInstallScript) : Boolean {
+        return element.scriptTerminator != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptLoopStatement) : Boolean {
+        return element.loopTerminator != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptMacro) : Boolean {
+        return element.scriptTerminator != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptRepeatStatement) : Boolean {
+        return element.cRepe != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptRemovalScript) : Boolean {
+        return element.scriptTerminator != null
+    }
+
+    @JvmStatic
+    fun isClosed(element:CaosScriptSubroutine) : Boolean {
+        return element.cRetn != null
+    }
 
     /*
     @JvmStatic
