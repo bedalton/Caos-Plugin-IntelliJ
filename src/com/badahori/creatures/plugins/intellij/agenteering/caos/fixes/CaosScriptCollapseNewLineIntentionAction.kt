@@ -1,8 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
@@ -69,6 +72,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
         fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement {
             val project = element.project
+            val variant = (element as? CaosScriptCompositeElement)?.variant
             val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
             for (comment in comments) {
                 if (comment.isValid) {
@@ -84,7 +88,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             val newLines = PsiTreeUtil.collectElementsOfType(element, CaosScriptSpaceLikeOrNewline::class.java)
             for (newLine in newLines) {
                 if (newLine.isValid)
-                    replaceWithSpaceOrComma(newLine, collapseChar)
+                    replaceWithSpaceOrComma(variant, newLine, collapseChar)
             }
             while (trailingText.matches(element.firstChild.text))
                 element.firstChild.delete()
@@ -99,7 +103,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             return element
         }
 
-        private fun replaceWithSpaceOrComma(nextIn: PsiElement?, collapseChar: CollapseChar) {
+        private fun replaceWithSpaceOrComma(variant:CaosVariant?, nextIn: PsiElement?, collapseChar: CollapseChar) {
 
             if (nextIn == null)
                 return
