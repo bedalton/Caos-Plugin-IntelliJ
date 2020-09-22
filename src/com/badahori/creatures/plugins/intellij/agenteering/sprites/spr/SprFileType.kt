@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
+import icons.CaosScriptIcons
 import javax.swing.Icon
 
 /**
@@ -29,9 +30,7 @@ object SprFileType : FileType {
         return DEFAULT_EXTENSION
     }
 
-    override fun getIcon(): Icon? {
-        return null
-    }
+    override fun getIcon(): Icon? = CaosScriptIcons.SPR_FILE_ICON
 
     override fun getCharset(p0: VirtualFile, p1: ByteArray): String? {
         return Charsets.UTF_8.name()
