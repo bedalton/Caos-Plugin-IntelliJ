@@ -38,7 +38,7 @@ class CaosScriptSubroutineStubType(debugName:String) : com.badahori.creatures.pl
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return (node?.psi as? CaosScriptSubroutine)?.name.nullIfEmpty() != null
+        return super.shouldCreateStub(node) && (node?.psi as? CaosScriptSubroutine)?.name.nullIfEmpty() != null
     }
 
     override fun indexStub(stub: CaosScriptSubroutineStub, indexSink: IndexSink) {
