@@ -15,7 +15,7 @@ import javax.swing.JComponent
 /**
  * Sprite viewer (eventually will be editor) for various Creatures file types
  */
-class SpriteEditorImpl : UserDataHolderBase, FileEditor {
+internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     private var myFile: VirtualFile
     private var myProject: Project? = null
 
