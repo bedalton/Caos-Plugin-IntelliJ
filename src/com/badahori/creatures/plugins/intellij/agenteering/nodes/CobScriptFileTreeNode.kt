@@ -19,6 +19,7 @@ import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import icons.CaosScriptIcons
 import org.apache.commons.io.FilenameUtils
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
@@ -92,7 +93,12 @@ class CobFileTreeNode(
     }
 
     override fun update(presentationData: PresentationData) {
-        presentationData.setIcon(null)
+        val icon = when (cobData.variant) {
+            CaosVariant.C1 -> CaosScriptIcons.C1_COB_FILE_ICON
+            CaosVariant.C2 -> CaosScriptIcons.C2_COB_FILE_ICON
+            else -> CaosScriptIcons.COB_FILE_ICON
+        }
+        presentationData.setIcon(icon)
         presentationData.presentableText = file.name
         presentationData.locationString = null
     }
