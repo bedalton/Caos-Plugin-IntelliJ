@@ -730,6 +730,14 @@ FMLY (integer);
 FROM (agent);
 
 /*
+ * Pass any waiting sperm to female (if IT is a female of same genus).
+ * Female will conceive if she's in the right condition (fertile & receptive)
+ * #Creatures
+ *
+ */
+F**K (command);
+
+/*
  * Undocumented creatures command, always seems to return 1 regardless of gender
  * #Creatures
  *
@@ -2702,6 +2710,7 @@ YVEC (integer);
 	34 = Involuntary Action 6
 	35 = Involuntary Action 7
 }
+
 
 @SysCommands {
 	# File

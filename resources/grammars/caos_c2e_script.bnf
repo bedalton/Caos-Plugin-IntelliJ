@@ -234,6 +234,7 @@
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
 		K_XIST = "regexp:[Xx][Ii][Ss][Tt]"
+		K_F__K = "regexp:[Ff][*]{2}[Kk]"
 		K_XX_DEF = " "
 		K_XX_EXPR = " "
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
@@ -294,9 +295,24 @@ expression_factory
 	;
 
 private file_body
-	::= script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
-	{
-	}
+	::= ((<<isOldVariant>> | <<isNewerVariant>>) file_body_with_variant)
+	|	raw_token_stream
+	;
+
+raw_token_stream
+	::= !(<<isOldVariant>> | <<isNewerVariant>>) token_stream_tokens+
+	;
+
+private token_stream_tokens
+	::= all_tokens
+	|	expression
+	|	eq_op
+	|	token
+	|	space_like_or_newline
+	;
+
+private file_body_with_variant
+	::=script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
 	;
 
 script_body_element
@@ -325,6 +341,7 @@ macro
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -342,6 +359,7 @@ removal_script
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -411,6 +429,7 @@ event_script
 			getGenus
 			getSpecies
 			getEventNumber
+			isClosed
 		]
 	}
 	;
@@ -436,13 +455,6 @@ c_scrp ::= K_SCRP
 
 private event_script_body
 	::= code_block
-	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
-		]
-		//recoverWhile=event_script_body_recover
-	}
 	;
 
 
@@ -460,6 +472,7 @@ install_script
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -495,6 +508,7 @@ subroutine
 		methods = [
 			getBlockType
 			getName
+			isClosed
 		]
 	}
 	;
@@ -596,6 +610,7 @@ loop_statement
 			isUntil
 			getBlockType
 			getCommandString
+			isClosed
 		]
 	}
 	;
@@ -638,6 +653,7 @@ repeat_statement
 
 		methods = [
 			getBlockType
+			isClosed
 		]
 
 	}
@@ -679,6 +695,7 @@ enum_next_statement
 		methods = [
 			codeBlock="code_block"
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -713,6 +730,7 @@ enum_scenery_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
    }
    ;
@@ -773,6 +791,7 @@ doif_statement_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -787,6 +806,7 @@ else_if_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -800,6 +820,7 @@ else_statement
 		]
 		methods = [
 			getBlockType
+			isClosed
 		]
 	}
 	;
@@ -3357,6 +3378,7 @@ c_kw_none
 	|	K_WDOW
 	|	K_WIND
 	|	K_CRETN
+	|	K_F__K
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"

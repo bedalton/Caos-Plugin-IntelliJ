@@ -37,10 +37,12 @@ class CaosScriptRoundNumberFix(element: CaosScriptNumber, float:Float, val round
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+        val element = pointer.element
+                ?: return
         val newElement = CaosScriptPsiElementFactory.createNumber(project, newValue)
                 .number
                 ?: return
-        pointer.element?.replace(newElement)
+        element.replace(newElement)
     }
 
 
