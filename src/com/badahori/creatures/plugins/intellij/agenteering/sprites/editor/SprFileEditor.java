@@ -2,30 +2,24 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.components.JBList;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import static java.awt.Color.BLACK;
 
 @SuppressWarnings("UseJBColor")
 public class SprFileEditor {
     private JPanel main;
-    private JList<Image> imageList;
+    private JList<ImageTransferItem> imageList;
     private JComboBox<String> backgroundColor;
     private JComboBox<String> scale;
-    @SuppressWarnings({
-            "FieldCanBeLocal",
-            "unused"
-    })
-    private final VirtualFile virtualFile;
-    private final List<BufferedImage> images;
+    private final List<ImageTransferItem> images;
     public static final String TRANSPARENT = "Transparent";
     public static final String BLACK = "Black";
     public static final String LIGHT_GREY = "Light Grey";
@@ -37,10 +31,16 @@ public class SprFileEditor {
     private static final Color TRANSPARENT_COLOR = new Color(0, 0, 0, 0);
     private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
 
-
     SprFileEditor(VirtualFile file) {
-        this.virtualFile = file;
-        this.images = SpriteParser.parse(file).getImages();
+        List<BufferedImage> rawImages = SpriteParser.parse(file).getImages();
+        final int padLength = (rawImages.size() + "").length();
+        final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
+        final String suffix = ".png";
+        images = new ArrayList<>();
+        for (int i = 0; i < rawImages.size(); i++) {
+            final String fileName = prefix + pad(i, padLength) + suffix;
+            images.add(new ImageTransferItem(fileName, rawImages.get(i)));
+        }
         $$$setupUI$$$();
         backgroundColor.addItemListener((itemEvent) -> {
             final String color = (String) itemEvent.getItem();
@@ -117,8 +117,16 @@ public class SprFileEditor {
         return main;
     }
 
+    private String pad(final int index, final int padLength) {
+        StringBuilder out = new StringBuilder(index + "");
+        while (out.length() < padLength) {
+            out.insert(0, "0");
+        }
+        return out.toString();
+    }
+
     private void createUIComponents() {
-        imageList = new JBList<>(images);
+        imageList = new ImageListPanel(images);
         cellRenderer.setColor(TRANSPARENT_COLOR);
         imageList.setCellRenderer(cellRenderer);
         backgroundColor = new ComboBox<>(new String[]{
@@ -141,6 +149,5 @@ public class SprFileEditor {
                 "4x",
                 "5x"
         });
-
     }
 }
