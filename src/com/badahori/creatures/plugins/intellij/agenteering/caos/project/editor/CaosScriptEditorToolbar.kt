@@ -16,6 +16,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
@@ -78,7 +80,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
     toolbar.addTrimSpacesListener {
         caosFile.trimErrorSpaces()
     }
-    if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN }) {
+    if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFile.virtualFile !is CaosVirtualFile) {
         toolbar.setVariantIsVisible(true)
         caosFile.variant.let {
             toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(it))
@@ -117,7 +119,8 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
             return@addDocsButtonClickListener
         }
         val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
-        val virtualFile = CaosFileUtil.getPluginResourceFile(docRelativePath)
+        val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
+                ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
         val file = virtualFile?.getPsiFile(project)
                 ?: FilenameIndex.getFilesByName(project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
                         .firstOrNull()

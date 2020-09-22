@@ -4257,10 +4257,10 @@ YVEC (integer);
 	32957 = Send To Mail Recipient...
 	57665 = Exit
 	# World
-	57600 = New
-	57601 = Open...
-	57603 = Save the world
-	57604 = Save As...
+	57600 = New World
+	57601 = Open World
+	57603 = Save World
+	57604 = Save World As
 	# Testing
 	32774 = Activate Game States
 	32995 = Show Map ( Draws rooms limits on screen)
