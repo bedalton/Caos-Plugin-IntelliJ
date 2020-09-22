@@ -14,7 +14,7 @@ open class CaosScriptStubBasedElementImpl<StubT : StubElement<out PsiElement>>: 
 
     constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
     constructor(node: ASTNode) : super(node)
-    override fun getLanguage(): Language = CaosScriptLanguage.instance
+    override fun getLanguage(): Language = CaosScriptLanguage
     override fun toString(): String  = elementType.toString()
     override fun <PsiT: PsiElement> getChildOfType(childType:Class<PsiT>):PsiT? = PsiTreeUtil.getChildOfType(this, childType)
     override fun <PsiT: PsiElement> getChildrenOfType(childType:Class<PsiT>):List<PsiT> = PsiTreeUtil.getChildrenOfTypeAsList(this, childType)
