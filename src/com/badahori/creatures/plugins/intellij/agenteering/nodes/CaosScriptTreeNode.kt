@@ -29,15 +29,7 @@ internal class CaosScriptFileTreeNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
-<<<<<<< HEAD
-        //quickFormat(caosFile)
-        runWriteAction {
-            FileContentUtilCore.reparseFiles()
-            DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
-        }
-=======
         quickFormat(caosFile)
->>>>>>> master
         invokeLater {
             caosFile.navigate(requestFocus)
         }
@@ -155,10 +147,7 @@ internal fun quickFormat(caosFile: CaosScriptFile) {
         override fun run() {
             caosFile.virtualFile?.isWritable = true
             CaosScriptExpandCommasIntentionAction.invoke(project, caosFile)
-<<<<<<< HEAD
             caosFile.virtualFile?.isWritable = false
-=======
->>>>>>> master
         }
     }
     command.execute()
