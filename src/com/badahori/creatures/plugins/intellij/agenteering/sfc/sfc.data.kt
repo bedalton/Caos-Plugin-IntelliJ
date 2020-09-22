@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import com.google.gson.Gson
 import kotlin.math.max
 import kotlin.math.min
 
@@ -102,6 +103,11 @@ data class SfcFile(
     val allScripts:Set<String> by lazy {
         (macros.map { it.script } + (scripts + objects.flatMap { it.scripts }).map { script -> "scrp ${script.classifier.let {c -> "${c.family} ${c.genus} ${c.species}"} } ${script.eventNumber} ${script.script}" }).toSet()
     }
+
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
 }
 
 
@@ -182,6 +188,10 @@ open class SfcObjectImpl(
         override val frozen: Boolean? = null,
         override val scripts: List<SfcScript>
 ) : SfcObject {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -244,6 +254,10 @@ data class SfcCompoundObjectImpl(
             parts = parts,
             hotspots = hotspots
     )
+
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
 
     companion object
 } // End SfcCompound Object
@@ -321,6 +335,10 @@ data class SfcBlackboard(
             strings = strings
     )
 
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 } // End SfcBlackboard
 
@@ -390,6 +408,10 @@ data class SfcVehicleImpl(
             movementVector = movementVector,
             bump = bump
     )
+
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
 
     companion object
 } // End SfcVehicle
@@ -470,6 +492,10 @@ data class SfcLift(
             alignWithCabin = alignWithCabin
     )
 
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 } // End SfcLift
 
@@ -526,6 +552,10 @@ data class SfcSimpleObjectImpl(
             scripts = baseObject.scripts,
             entity = entity
     )
+
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
 
     companion object
 } // End SfcSimpleObject
@@ -584,6 +614,10 @@ data class SfcPointerTool(
             scripts = baseObject.scripts,
             entity = baseObject.entity
     )
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
 
     companion object
 } // End SfcPointer
@@ -649,6 +683,10 @@ data class SfcCallButton(
             ourLift = ourLift,
             liftId = liftId
     )
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
 
     companion object
 } // End SfcCallButton
@@ -707,6 +745,10 @@ data class SfcScenery(
             entity = baseObject.entity
     )
 
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 } // End SfcScenery
 
@@ -718,6 +760,10 @@ data class SfcScript(
         val eventNumber: Int,
         val script: String
 ) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -730,6 +776,10 @@ data class SfcMacro(
         val targ: SfcObjectPtr<*>?,
         val script: String
 ) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -742,6 +792,10 @@ data class SfcGallery(
         val firstImage: Int,
         val fileName: String
 ) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -753,6 +807,10 @@ data class SfcDoor(
         val openness: Int,
         val otherRoom: Int
 ) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -770,6 +828,10 @@ data class SfcRoomImpl(
         override val bounds: Bounds,
         override val roomType: Int
 ) : SfcRoom {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -797,6 +859,10 @@ data class SfcC2Room(
         val music: String,
         val dropStatus: Int
 ) : SfcRoom {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -808,6 +874,10 @@ data class SfcMapData(
         val rooms: List<SfcRoomPtr>,
         val groundLevels: List<Int>? = null // Should be 261 points
 ) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -829,6 +899,10 @@ data class SfcEntity(
         val pickupHandles: List<Vector2>? = null,
         val pickupPoints: List<Vector2>? = null
 ) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+
     companion object
 }
 
@@ -846,6 +920,9 @@ data class Bounds(
         val width = max(left, right) - min(left, right)
         val height = max(top, bottom) - min(top, bottom)
         Size(width = width, height = height)
+    }
+    override fun toString(): String {
+        return Gson().toJson(this);
     }
 }
 
@@ -866,7 +943,11 @@ val Bounds.javaOrigin: Vector2 get() = Vector2(left, min(bottom, top))
 data class Rect(
         val origin: Vector2,
         val size: Size
-)
+) {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+}
 
 /**
  * Size data class
@@ -874,12 +955,19 @@ data class Rect(
 data class Size(
         val width: Int,
         val height: Int
-)
+) {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+}
 
 /**
  * Vector 2 data class
  */
 data class Vector2(val x: Int, val y: Int) {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
     companion object {
         val zero by lazy {
             Vector2(0, 0)
@@ -895,4 +983,8 @@ data class SfcHotspot(
         val function: Int,
         val message: Int? = null,
         val mask: Int? = null
-)
+) {
+    override fun toString(): String {
+        return Gson().toJson(this);
+    }
+}
