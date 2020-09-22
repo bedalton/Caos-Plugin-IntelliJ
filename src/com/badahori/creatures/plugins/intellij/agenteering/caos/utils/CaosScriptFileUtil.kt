@@ -31,13 +31,13 @@ fun copyForBobCob(caosFile:CaosScriptFile) {
     if (caosFile.variant?.isNotOld.orFalse()) {
         copyToClipboard(caosFile.text)
     }
-    val lines = caosFile.text.split("\n+".toRegex())
+    val lines = caosFile.text.split("[\n,]+".toRegex())
             .mapNotNull { line ->
                 line.trim(' ', '\t', '\n',',').let {
                     if (it.startsWith("*"))
                         null
                     else
-                        line.nullIfEmpty()
+                        it.nullIfEmpty()
                 }
             }
     val value = lines.joinToString("\n")
