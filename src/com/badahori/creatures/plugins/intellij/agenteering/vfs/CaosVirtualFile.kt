@@ -27,7 +27,7 @@ class CaosVirtualFile private constructor(
         private var byteArrayContents:ByteArray? = null,
         private val isDirectory: Boolean,
         private val allowSubdirectories:Boolean = isDirectory
-        ) : VirtualFile(), ModificationTracker, VirtualFileWithId, HasVariant {
+        ) : VirtualFile(), ModificationTracker, HasVariant {
 
     constructor(name: String, content: String?) : this(name, content, null, false)
 
@@ -44,7 +44,7 @@ class CaosVirtualFile private constructor(
     private val myId:Int = nextId.getAndIncrement()
 
     /** {@inheritDoc}  */
-    override fun getId():Int = myId
+    //override fun getId():Int = myId
 
     /** Allows Quick access to CAOS Variant */
     override var variant:CaosVariant? = null
