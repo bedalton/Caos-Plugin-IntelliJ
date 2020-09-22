@@ -12,8 +12,8 @@ object CaosScriptPsiElementFactory {
 
     private val SUBROUTINE_NAME_REGEX = "[a-z_A-Z_0-9:$]{4}".toRegex()
 
-    private fun createFileFromText(project: Project, text: String): CaosScriptFile {
-        return PsiFileFactory.getInstance(project).createFileFromText("dummy.caosdef", CaosScriptLanguage.instance, text) as CaosScriptFile
+    fun createFileFromText(project: Project, text: String, fileName: String = "dummy.cos"): CaosScriptFile {
+        return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile)
     }
 
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
@@ -71,20 +71,20 @@ object CaosScriptPsiElementFactory {
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
     }
 
-    fun createStringRValue(project: Project, newNameString: String, start:Char, end:Char = start): CaosScriptRvalue {
+    fun createStringRValue(project: Project, newNameString: String, start: Char, end: Char = start): CaosScriptRvalue {
         val script = "$start$newNameString$end"
-        return createRValue(project,script)
+        return createRValue(project, script)
     }
 
-    fun createNumber(project:Project, number:Int) : CaosScriptExpression {
+    fun createNumber(project: Project, number: Int) : CaosScriptExpression {
         return createRValue(project, "$number").expression!!
     }
 
-    fun createFloat(project:Project, number:Int) : CaosScriptExpression {
+    fun createFloat(project: Project, number: Int) : CaosScriptExpression {
         return createRValue(project, "$number").expression!!
     }
 
-    private fun getCommandCall(project:Project, script:String, throws:Boolean = true) : CaosScriptCommandCall? {
+    private fun getCommandCall(project: Project, script: String, throws: Boolean = true) : CaosScriptCommandCall? {
         val file = createFileFromText(project, script)
         var first = file.firstChild
         while (first != null && first !is CaosScriptCommandCall) {
@@ -97,20 +97,24 @@ object CaosScriptPsiElementFactory {
         return null
     }
 
-    private fun createRValue(project:Project, expr:String) : CaosScriptRvalue {
+    private fun createRValue(project: Project, expr: String) : CaosScriptRvalue {
         val script = "____X____EXPR__ $expr"
         return PsiTreeUtil.findChildOfType(createFileFromText(project, script).firstChild, CaosScriptRvalue::class.java)!!
     }
 
     fun newLine(project: Project): PsiElement {
-        val file = createFileFromText(project, "enum 0 0 0\nnext")
-        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first()
+        val file = createFileFromText(project, "inst\nendm")
+        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first().apply{
+            assert (text == "\n") { "Newline factory method returned non-newline space. Text: '$text'" }
+        }
     }
 
-    fun newLines(project: Project, numNewLines:Int): PsiElement {
+    fun newLines(project: Project, numNewLines: Int): PsiElement {
         val lines = (0 until numNewLines).joinToString("") { "\n" }
-        val file = createFileFromText(project, "enum 0 0 0${lines}next")
-        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first()
+        val file = createFileFromText(project, "inst${lines}endm")
+        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first().apply{
+            assert (text == lines) { "Newline factory method returned non-newline space. Actual: '$text'" }
+        }
     }
 
     fun comma(project: Project): PsiElement {
@@ -129,7 +133,7 @@ object CaosScriptPsiElementFactory {
                 .getChildOfType(CaosScriptSpaceLikeOrNewline::class.java)!!
     }
 
-    fun createCodeBlock(project:Project, text:String) : CaosScriptCodeBlock {
+    fun createCodeBlock(project: Project, text: String) : CaosScriptCodeBlock {
         return createFileFromText(project, text).firstChild.firstChild.firstChild as CaosScriptCodeBlock
     }
 

@@ -74,23 +74,23 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun isVariant(builder_: PsiBuilder,
                   level: Int,
                   variant: CaosVariant): Boolean {
-        val fileVariant = (psiFile(builder_) as? CaosScriptFile)?.variant
+        val fileVariant = variant(builder_)
                 ?: return false//CaosScriptProjectSettings.variant
         return variant == fileVariant
     }
 
     @JvmStatic
     fun isOldVariant(builder_: PsiBuilder,
-                  level: Int): Boolean {
-        val fileVariant = (psiFile(builder_) as? CaosScriptFile)?.variant
+                     level: Int): Boolean {
+        val fileVariant = variant(builder_)
                 ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isOld
     }
 
     @JvmStatic
     fun isNewerVariant(builder_: PsiBuilder,
-                     level: Int): Boolean {
-        val fileVariant = (psiFile(builder_) as? CaosScriptFile)?.variant
+                       level: Int): Boolean {
+        val fileVariant = variant(builder_)
                 ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isNotOld
     }
@@ -99,11 +99,24 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
      * Will not be CaosPsiFile
      */
     @JvmStatic
-    fun psiFile(builder_: PsiBuilder) : PsiFile? {
+    fun psiFile(builder_: PsiBuilder): PsiFile? {
         return builder_.getUserData(FileContextUtil.CONTAINING_FILE_KEY).apply {
             if (this == null)
                 LOGGER.info("PsiFile is null in CaosScriptParserUtil")
         }
+    }
+
+    @JvmStatic
+    fun variant(builder_: PsiBuilder): CaosVariant? {
+        val file = (psiFile(builder_) as? CaosScriptFile)
+        if (file == null) {
+            LOGGER.info("CaosParser is parsing non-caos-script file")
+            return null
+        }
+        val variant = file.variant
+                ?: (file.originalFile as? CaosScriptFile)?.variant
+                ?: file.virtualFile?.getUserData(CaosScriptFile.VariantUserDataKey)
+        return variant
     }
 
     @JvmStatic
@@ -119,7 +132,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun enterBlock(builder_: PsiBuilder,
                    level: Int): Boolean {
-        builder_.putUserData(BLOCKS_KEY, builder_.getUserData(BLOCKS_KEY)?.let { it + 1 }.orElse (1))
+        builder_.putUserData(BLOCKS_KEY, builder_.getUserData(BLOCKS_KEY)?.let { it + 1 }.orElse(1))
         return true
     }
 
@@ -181,7 +194,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun expects(builder_: PsiBuilder,
                 level: Int,
                 expectation: Int,
-                default:Boolean
+                default: Boolean
     ): Boolean {
         if (ignoreExpects())
             return default
@@ -196,8 +209,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun expectsValue(builder_: PsiBuilder,
-                level: Int,
-                 default:Boolean
+                     level: Int,
+                     default: Boolean
     ): Boolean {
         if (ignoreExpects())
             return default
@@ -206,7 +219,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         }
     }
 
-    private fun ignoreExpects() : Boolean {
+    private fun ignoreExpects(): Boolean {
         return false && (CaosScriptProjectSettings.variant == C3 || CaosScriptProjectSettings.variant == DS)
     }
 
@@ -235,7 +248,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun getVirtualFile(builder_: PsiBuilder) : VirtualFile? {
+    fun getVirtualFile(builder_: PsiBuilder): VirtualFile? {
         return psiFile(builder_)?.virtualFile
     }
 
