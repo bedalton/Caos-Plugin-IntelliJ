@@ -67,7 +67,7 @@ internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConne
             }
             when (val status = it.get("status").asString) {
                 "!ERR" -> InjectionStatus.Bad(message)
-                "!CON" -> InjectionStatus.BadConnection(message)
+                "!CON", "!CONN" -> InjectionStatus.BadConnection(message)
                 "OK" -> InjectionStatus.Ok(message)
                 else -> InjectionStatus.Bad("Invalid status: '$status'  returned")
             }
