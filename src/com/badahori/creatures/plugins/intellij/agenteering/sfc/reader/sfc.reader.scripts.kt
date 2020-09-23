@@ -1,9 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcMacro
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcMacro
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcScript
 
 
@@ -35,18 +36,18 @@ internal fun SfcReader.readScript(): SfcScript {
     )
 }
 
-internal fun SfcReader.readMacro() : SfcMacro {
+internal fun SfcReader.readMacro() : PointerSfcMacro {
     skip(12)
     val script = sfcString
     if (variant == C1) {
         skip  (128)
     } else
         skip(488)
-    val owner = readClass(SfcType.OBJECT) as Ptr.SfcObjectPtr
-    val from = readClass(SfcType.OBJECT) as Ptr.SfcObjectPtr
-    val targ = readClass(SfcType.OBJECT) as? Ptr.SfcObjectPtr
+    val owner = readClass(SfcType.OBJECT) as SfcObjectPtr
+    val from = readClass(SfcType.OBJECT) as SfcObjectPtr
+    val targ = readClass(SfcType.OBJECT) as? SfcObjectPtr
     variantSkip(18, 34)
-    return SfcMacro(
+    return PointerSfcMacro(
             script = script,
             ownr = owner,
             from = from,

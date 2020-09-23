@@ -1,13 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFile
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -26,13 +28,16 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
 
     val sfc: SfcFile? by lazy {
         try {
-            myVirtualFile.getUserData(SFC_FILE_KEY) ?: SfcReader.readFile(myVirtualFile.contentsToByteArray())
-        } catch (e: Exception) {
-            null
+            // Dump JSON if virtual file has actual path and not a virtual one
+            val path = if (myVirtualFile is CaosVirtualFile) null else myVirtualFile.path
+            myVirtualFile.getUserData(SFC_FILE_KEY) ?: SfcReader.readFile(myVirtualFile.contentsToByteArray(), path)
+        } catch (e:Exception) {
+            CaosInjectorNotifications.show(project, "SFC Error", "Failed to parse SFC file. Non-Eden.sfc files are unparseable.", NotificationType.ERROR)
+            throw e
         }
     }
 
-    val eventScriptRegex = "^\\s*[Ss][Cc][Rr][Pp]\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
+    private val eventScriptRegex = "^\\s*[Ss][Cc][Rr][Pp]\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
 
     val scripts: List<CaosScriptFile> by lazy {
         val sfc = sfc ?: return@lazy emptyList<CaosScriptFile>()
@@ -42,7 +47,7 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
         scripts.mapIndexed { index, script ->
             val fileName = getScriptName(index, maxIndexLength, script)
             rootDirectory.createChildCaosScript(project, sfcVariant, fileName, script)
-        }.filterNotNull()
+        }
     }
 
     fun getScriptName(index: Int, maxIndexLength: Int, script: String): String {
