@@ -22,11 +22,14 @@ object CobToDataObjectDecompiler {
                 val decompressed = ByteArrayOutputStream()
                 val decompressor = InflaterOutputStream(decompressed)
                 decompressor.write(buffer.toByteArray())
-                decompressed
+                ByteBuffer.wrap(decompressed.toByteArray())
             } catch (e: Exception) {
-                return decompileC1Cob(buffer)
+                buffer.position(0)
+                if (buffer.cString(4) != "cob2")
+                    return decompileC1Cob(buffer)
+                buffer
             }
-            decompileC2Cob(ByteBuffer.wrap(decompressed.toByteArray()).littleEndian())
+            decompileC2Cob(decompressed.littleEndian())
         }
     }
 
