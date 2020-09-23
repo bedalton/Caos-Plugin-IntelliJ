@@ -1,14 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcObject
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcObjectImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcGalleryPtr
-import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 
-internal fun SfcReader.readObject(): SfcObject {
+internal fun SfcReader.readObject(): PointerSfcObject<*> {
     val family: Int
     val genus: Int
     val species: Int
@@ -23,12 +25,11 @@ internal fun SfcReader.readObject(): SfcObject {
         genus = uInt8
         family = uInt8
         assert(uInt16 == 0)
-        species = uInt8
+        species = uInt16
         unId = uInt32
     }
     skip(1)
     val classifier = AgentClass(family, genus, species)
-
     val attr = if (variant == C1) uInt8 else uInt16
     // Read unknown coordinates
     if (variant == C2)
@@ -40,13 +41,14 @@ internal fun SfcReader.readObject(): SfcObject {
     val tickReset = uInt32
     val tickState = uInt32
     assert(tickReset >= tickState)
-    assert(uInt16 == 0)
+    assert (uInt16 == 0)
     val currentSound = string(4).nullIfEmpty()
-    val variables = (0 until (if (variant == C1) 3 else 100)).map {
+    val numberOfObjectVariables = if (variant == C1) 3 else 100
+    val variables = (0 until numberOfObjectVariables).map {
         uInt32
     }
     if (variant == C1) {
-        return SfcObjectImpl(
+        return PointerSfcObjectImpl(
                 classifier = classifier,
                 attr = attr,
                 actv = actv,
@@ -60,7 +62,7 @@ internal fun SfcReader.readObject(): SfcObject {
         )
     }
     val size = uInt8
-    val range = uInt8
+    val range = uInt32
     val gravityData = uInt32
     val accg = uInt32
     val velocity = Vector2(uInt32, uInt32)
@@ -70,7 +72,7 @@ internal fun SfcReader.readObject(): SfcObject {
     val threat = uInt8
     val flags = uInt8
     val frozen = flags and 0x02 != 0
-    return SfcObjectImpl(
+    return PointerSfcObjectImpl(
             classifier = classifier,
             unId = unId,
             attr = attr,

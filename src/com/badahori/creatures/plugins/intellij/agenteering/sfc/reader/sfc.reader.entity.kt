@@ -1,13 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcEntity
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcGalleryPtr
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcEntity
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcGallery
 
 
-internal fun SfcReader.readEntity(): SfcEntity {
+internal fun SfcReader.readEntity(): PointerSfcEntity {
 
     val sprite = readClass(SfcType.GALLERY) as SfcGalleryPtr
     val currentFrame = uInt8
@@ -27,7 +25,7 @@ internal fun SfcReader.readEntity(): SfcEntity {
         animationString = animationString.split(0x00.toChar()).first()
     }
     if (readingScenery) {
-        return SfcEntity(
+        return PointerSfcEntity(
                 gallery = sprite,
                 currentFrame = currentFrame,
                 imageOffset = imageOffset,
@@ -39,7 +37,7 @@ internal fun SfcReader.readEntity(): SfcEntity {
     }
 
     if (readingCompoundObject) {
-        return SfcEntity(
+        return PointerSfcEntity(
                 gallery = sprite,
                 currentFrame = currentFrame,
                 imageOffset = imageOffset,
@@ -55,7 +53,7 @@ internal fun SfcReader.readEntity(): SfcEntity {
     val behaviorClicks = (0 until 3).map { uInt8 }
     val behaviorTouch = uInt8
     if (variant == C1) {
-        return SfcEntity(
+        return PointerSfcEntity(
                 gallery = sprite,
                 currentFrame = currentFrame,
                 imageOffset = imageOffset,
@@ -77,7 +75,7 @@ internal fun SfcReader.readEntity(): SfcEntity {
     }
 
 
-    return SfcEntity(
+    return PointerSfcEntity(
             gallery = sprite,
             currentFrame = currentFrame,
             imageOffset = imageOffset,

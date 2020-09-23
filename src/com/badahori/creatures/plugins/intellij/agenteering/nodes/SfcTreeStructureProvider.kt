@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
