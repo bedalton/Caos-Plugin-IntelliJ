@@ -1,11 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcBlackboard
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBlackboard
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
 
-internal fun SfcReader.readBlackBoard() : SfcBlackboard {
+internal fun SfcReader.readBlackBoard() : PointerSfcBlackboard {
     val baseObject = readCompoundObject()
     val readColor:()->Int  = {
         if (variant == C1)
@@ -22,7 +22,7 @@ internal fun SfcReader.readBlackBoard() : SfcBlackboard {
         val string = byteBuffer.cString(11).trim()
         value to string
     }.toMap()
-    return SfcBlackboard(
+    return PointerSfcBlackboard(
             baseObject = baseObject,
             textPosition = textPosition,
             backgroundColor = backgroundColor,

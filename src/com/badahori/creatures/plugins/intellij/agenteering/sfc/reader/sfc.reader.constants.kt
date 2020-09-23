@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
 
 enum class SfcType(val value:Int, val type:String, val pointer:(pid:Int)->Ptr<*>) {
     ANY(0, "Any", { pid -> throw SfcReadException("Cannot create sfc data object of type '(0)->ANY'")} ),

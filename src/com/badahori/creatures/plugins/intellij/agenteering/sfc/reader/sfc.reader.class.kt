@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 
 private const val SFC_BINARY_CONST = 0x8000
@@ -37,6 +37,7 @@ private fun SfcReader.readNewMfc() : Ptr<*>? {
         "Macro" -> SfcType.MACRO
         else -> throw SfcReadException("Failed to understand MFC class name: '$className'")
     }
+    LOGGER.info("Reading next $className")
     // Push null object in place as reference to this type
     // Checked for later when creating instances of type
     storage.add(null)

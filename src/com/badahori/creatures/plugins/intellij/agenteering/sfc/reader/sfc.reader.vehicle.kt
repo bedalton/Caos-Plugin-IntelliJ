@@ -1,11 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcLift
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcVehicle
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcVehicleImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C2
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 import com.badahori.creatures.plugins.intellij.agenteering.utils.bytes
 
 
-internal fun SfcReader.readVehicle() : SfcVehicle {
+internal fun SfcReader.readVehicle() : PointerSfcVehicle<*> {
     val base = readCompoundObject()
     val directionVector = Vector2(uInt32, uInt32)
     val bump = uInt8
@@ -19,7 +22,7 @@ internal fun SfcReader.readVehicle() : SfcVehicle {
     assert(uInt8 == 0)
     val bounds = bounds
     assert(uInt32 == 0)
-    return SfcVehicleImpl(
+    return PointerSfcVehicleImpl(
             baseObject = base,
             cabinBounds = bounds,
             movementVector = directionVector,
@@ -29,7 +32,7 @@ internal fun SfcReader.readVehicle() : SfcVehicle {
 
 private val LIFT_CHECK_BYTE_SEQUENCE = byteArrayOf(0xFF.toByte(),0xFF.toByte(),0xFF.toByte(),0xFF.toByte(),0x00)
 
-internal fun SfcReader.readLift() : SfcLift {
+internal fun SfcReader.readLift() : PointerSfcLift {
     val base = readVehicle()
     val numberOfButtons = uInt32
     val currentButton = uInt32
@@ -41,7 +44,7 @@ internal fun SfcReader.readLift() : SfcLift {
         uInt32 != 0
     else
         false
-    return SfcLift(
+    return PointerSfcLift(
             baseObject = base,
             numberOfButtons = numberOfButtons,
             currentButton = currentButton,

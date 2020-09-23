@@ -1,15 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcCompoundObject
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcCompoundObjectImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
 
 
-internal fun SfcReader.readCompoundObject() : SfcCompoundObject {
+internal fun SfcReader.readCompoundObject() : PointerSfcCompoundObject<*> {
 
     val base = readObject()
     val numberOfParts = uInt32
     val parts = (0 until numberOfParts).map {i ->
-        val entity = readClass(SfcType.ENTITY) as? Ptr.SfcEntityPtr
+        val entity = readClass(SfcType.ENTITY) as? SfcEntityPtr
         if (entity == null) {
             assert(i != 0)
             skip(8)
@@ -20,7 +23,7 @@ internal fun SfcReader.readCompoundObject() : SfcCompoundObject {
         entity
     }
     val hotspots = readHotspots()
-    return SfcCompoundObjectImpl(
+    return PointerSfcCompoundObjectImpl(
             baseObject = base,
             parts = parts,
             hotspots = hotspots
@@ -53,7 +56,7 @@ internal fun SfcReader.readHotspots() : List<SfcHotspot> {
         }
     }
     val messages = (0 until 6).map {
-        uInt16
+        uInt16.apply { skip(2) }
     }
     val masks = (0 until 6).map {
         uInt8

@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcMapData
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.SfcGalleryPtr
+import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.SfcRoomPtr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.Ptr.SfcRoomPtr
 
-internal fun SfcReader.readMapData(): SfcMapData {
+internal fun SfcReader.readMapData(): PointerSfcMapData {
     variant = when (val version = uInt32) {
         0 -> C1
         1 -> CaosVariant.C2
@@ -14,13 +14,13 @@ internal fun SfcReader.readMapData(): SfcMapData {
     }
 
     skip(if (variant == C1) 4 else 12)
-    val background = readClass(SfcType.GALLERY) as Ptr.SfcGalleryPtr
+    val background = readClass(SfcType.GALLERY) as SfcGalleryPtr
     val numberOfRooms = uInt32
     val rooms = readRooms(numberOfRooms)
     val groundLevels = readGroundLevels()
     if (variant == C1)
         skip(800)
-    return SfcMapData(
+    return PointerSfcMapData(
             gallery = background,
             rooms = rooms,
             groundLevels = groundLevels

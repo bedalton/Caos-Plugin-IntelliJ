@@ -20,6 +20,12 @@ val ByteBuffer.int8:Int get() = get().toInt()
 val ByteBuffer.uInt8: Int
     get() = byte and 0xFF
 
+fun ByteBuffer.peakUInt8(): Int {
+    return uInt8.apply {
+        seek(-1)
+    }
+}
+
 val ByteBuffer.int16: Int
     get() {
         return short.toInt()
@@ -104,7 +110,12 @@ fun ByteBuffer.bytes(length: Long): ByteArray {
 }
 
 fun ByteBuffer.skip(length: Int) {
-    bytes(length)
+    seek(length)
+}
+
+fun ByteBuffer.seek(offset:Int) : ByteBuffer {
+    position(position() + offset)
+    return this
 }
 
 fun ByteBuffer.writeUInt64(u: Long) {
