@@ -7,6 +7,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import kotlin.reflect.KClass
 
 object CaosScriptPsiElementFactory {
 
@@ -19,9 +20,8 @@ object CaosScriptPsiElementFactory {
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
         if (!SUBROUTINE_NAME_REGEX.matches(newNameString))
             return null
-        val file = createFileFromText(project, "____X____DEF__ $newNameString")
-        val factoryElement = file.firstChild as CaosScriptWordFactoryElement
-        return factoryElement.aWord
+        val factoryElement = createAndGet(project, "____X____DEF__ $newNameString", CaosScriptWordFactoryElement::class.java)
+        return factoryElement?.aWord
     }
 
     fun createSubroutineNameElement(project: Project, newNameString: String): CaosScriptSubroutineName? {
@@ -85,21 +85,12 @@ object CaosScriptPsiElementFactory {
     }
 
     private fun getCommandCall(project: Project, script: String, throws: Boolean = true) : CaosScriptCommandCall? {
-        val file = createFileFromText(project, script)
-        var first = file.firstChild
-        while (first != null && first !is CaosScriptCommandCall) {
-            first = first.firstChild
-        }
-        if (first is CaosScriptCommandCall)
-           return first
-        if (throws)
-            throw NullPointerException("Failed to find command call in element type factory for script: '${script}'")
-        return null
+        return createAndGet(project, script, CaosScriptCommandCall::class.java)
     }
 
     private fun createRValue(project: Project, expr: String) : CaosScriptRvalue {
         val script = "____X____EXPR__ $expr"
-        return PsiTreeUtil.findChildOfType(createFileFromText(project, script).firstChild, CaosScriptRvalue::class.java)!!
+        return createAndGet(project, script, CaosScriptRvalue::class.java)!!
     }
 
     fun newLine(project: Project): PsiElement {
@@ -118,23 +109,19 @@ object CaosScriptPsiElementFactory {
     }
 
     fun comma(project: Project): PsiElement {
-        return createFileFromText(project, "slim,slim")
-                .firstChild
-                .firstChild
-                .firstChild
-                .getChildOfType(CaosScriptSpaceLikeOrNewline::class.java)!!
+        return createAndGet(project, "slim,slim", CaosScriptSpaceLikeOrNewline::class.java)!!
     }
 
     fun spaceLikeOrNewlineSpace(project: Project): PsiElement {
-        return createFileFromText(project, "slim slim")
-                .firstChild
-                .firstChild
-                .firstChild
-                .getChildOfType(CaosScriptSpaceLikeOrNewline::class.java)!!
+        return createAndGet(project, "slim slim", CaosScriptSpaceLikeOrNewline::class.java)!!
+    }
+
+    fun <PsiT:PsiElement> createAndGet(project:Project, script:String, type:Class<PsiT>) : PsiT? {
+        return PsiTreeUtil.collectElementsOfType(createFileFromText(project, script), type).first()
     }
 
     fun createCodeBlock(project: Project, text: String) : CaosScriptCodeBlock {
-        return createFileFromText(project, text).firstChild.firstChild.firstChild as CaosScriptCodeBlock
+        return createAndGet(project, text, CaosScriptCodeBlock::class.java)!!
     }
 
 }
