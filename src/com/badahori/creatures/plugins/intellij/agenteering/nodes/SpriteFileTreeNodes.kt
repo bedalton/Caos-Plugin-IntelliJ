@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArra
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
+import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
@@ -12,13 +13,19 @@ import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import icons.CaosScriptIcons
+import icons.ImagesIcons
 import org.apache.commons.io.FilenameUtils
+import java.awt.dnd.DragSourceDragEvent
+import java.awt.dnd.DragSourceDropEvent
+import java.awt.dnd.DragSourceEvent
+import java.awt.dnd.DragSourceListener
 
 
 internal class SpriteFileTreeNode(
         project: Project,
         spriteVirtualFile:VirtualFile
-) : AbstractTreeNode<VirtualFile>(project, spriteVirtualFile), SortableTreeElement {
+) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile), SortableTreeElement {
     override fun getVirtualFile(): VirtualFile = value
 
     private val spritesVirtualFileContainer:CaosVirtualFile by lazy {
@@ -37,7 +44,7 @@ internal class SpriteFileTreeNode(
     }
 
     private val myChildren:List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FilenameUtils.getBaseName(value.name) +"_"
+        val fileNameBase = FilenameUtils.getBaseName(value.name) +"."
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{index, image ->
@@ -61,7 +68,13 @@ internal class SpriteFileTreeNode(
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = value.name
         presentationData.locationString = null
-        presentationData.setIcon(null)
+        val icon = when (virtualFile.extension?.toLowerCase()) {
+            "spr" -> CaosScriptIcons.SPR_FILE_ICON
+            "s16" -> CaosScriptIcons.S16_FILE_ICON
+            "c16" -> CaosScriptIcons.C16_FILE_ICON
+            else -> null
+        }
+        presentationData.setIcon(icon)
     }
 
     override fun getWeight(): Int = 1
@@ -76,8 +89,10 @@ internal class SpriteImageTreeNode(
         enclosingImage: CaosVirtualFile,
         private val fileName:String,
         data:ByteArray?
-) : AbstractTreeNode<VirtualFile>(project, enclosingImage.createChildWithContent("$fileName.png", data)), SortableTreeElement {
-    override fun getVirtualFile(): VirtualFile = value
+) : VirtualFileBasedNode<VirtualFile>(project, enclosingImage.createChildWithContent("$fileName.png", data)),
+        SortableTreeElement
+{
+    override fun getVirtualFile(): VirtualFile = myVirtualFile
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(focus: Boolean) {
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
@@ -87,7 +102,7 @@ internal class SpriteImageTreeNode(
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = fileName
         presentationData.locationString = null
-        presentationData.setIcon(null)
+        presentationData.setIcon(ImagesIcons.ImagesFileType)
     }
 
     override fun getWeight(): Int = 1
