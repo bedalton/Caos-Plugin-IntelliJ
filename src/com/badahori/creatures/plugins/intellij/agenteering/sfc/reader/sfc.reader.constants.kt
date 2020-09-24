@@ -1,9 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 
-enum class SfcType(val value:Int, val type:String, val pointer:(pid:Int)->Ptr<*>) {
+enum class SfcType(val value:Int, val type:String, val pointer:(pid:Int)-> Ptr<*>) {
     ANY(0, "Any", { pid -> throw SfcReadException("Cannot create sfc data object of type '(0)->ANY'")} ),
     MAP_DATA(1, "MapData", { pid -> SfcMapDataPtr(pid) }),
     GALLERY(2, "Gallery", {pid -> SfcGalleryPtr(pid) }),
@@ -19,5 +18,7 @@ enum class SfcType(val value:Int, val type:String, val pointer:(pid:Int)->Ptr<*>
     CALLBUTTON(12, "CallButton", { pid -> SfcCallButtonPtr(pid) }),
     SCENERY(13, "Scenery", { pid -> SfcSceneryPtr(pid) }),
     MACRO(14, "Macro", { pid -> SfcMacroPtr(pid) }),
+    CREATURE(15, "Creature", { pid -> SfcCreaturePtr(pid) }),
+    BIOCHEMISTRY(16, "Biochemistry", { pid -> SfcBiochemistryPtr(pid)}),
     OBJECT(100, "Object", { pid -> SfcObjectImplPtr(pid) }),
 }

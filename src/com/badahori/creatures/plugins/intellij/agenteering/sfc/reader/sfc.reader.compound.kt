@@ -1,10 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcCompoundObject
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcCompoundObjectImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 
 
 internal fun SfcReader.readCompoundObject() : PointerSfcCompoundObject<*> {

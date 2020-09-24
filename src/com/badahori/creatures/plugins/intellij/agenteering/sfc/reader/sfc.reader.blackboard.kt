@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcBlackboard
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString

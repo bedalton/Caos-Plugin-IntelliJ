@@ -1,8 +1,7 @@
 @file:Suppress("unused", "UNUSED_PARAMETER", "MemberVisibilityCanBePrivate")
+package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-package com.badahori.creatures.plugins.intellij.agenteering.PointerSfc
-
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
@@ -13,6 +12,10 @@ sealed class Ptr<DClassT>(
         open var pointed: DClassT?
 ) {
     data class SfcBlackboardPtr(override val type: Int, override var pointed: PointerSfcBlackboard? = null) : SfcObjectPtr<PointerSfcBlackboard>(type, pointed) {
+        override fun toString(): String = toString(this)
+    }
+
+    data class SfcBiochemistryPtr(override val type: Int, override var pointed: SfcBiochemistry? = null) : Ptr<SfcBiochemistry>(type, pointed) {
         override fun toString(): String = toString(this)
     }
 
@@ -43,6 +46,8 @@ sealed class Ptr<DClassT>(
     data class SfcMacroPtr(override val type: Int, override var pointed: PointerSfcMacro? = null) : Ptr<PointerSfcMacro>(type, pointed) {
         override fun toString(): String = toString(this)
     }
+
+    data class SfcCreaturePtr(override val type:Int, override var pointed: PointerSfcCreature? = null) : Ptr<PointerSfcCreature>(type, pointed)
 
     data class SfcMapDataPtr(override val type: Int, override var pointed: PointerSfcMapData? = null) : Ptr<PointerSfcMapData>(type, pointed) {
         override fun toString(): String = toString(this)
@@ -166,7 +171,7 @@ open class PointerSfcObjectImpl(
         override val scripts: List<SfcScript>
 ) : PointerSfcObject<SfcObject> {
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     override fun point(): SfcObject {
@@ -285,7 +290,7 @@ data class PointerSfcCompoundObjectImpl(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     companion object
@@ -397,7 +402,7 @@ data class PointerSfcBlackboard(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     companion object
@@ -501,7 +506,7 @@ data class PointerSfcVehicleImpl(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     companion object
@@ -618,7 +623,7 @@ data class PointerSfcLift(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     companion object
@@ -705,7 +710,7 @@ data class PointerSfcSimpleObjectImpl(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     companion object
@@ -793,7 +798,7 @@ data class PointerSfcPointerTool(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
 
@@ -891,7 +896,7 @@ data class PointerSfcCallButton(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
 
@@ -979,7 +984,7 @@ data class PointerSfcScenery(
     }
 
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     companion object
@@ -995,7 +1000,7 @@ data class PointerSfcMacro(
         val script: String
 ) : PointerSfcData<SfcMacro> {
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     override fun point(): SfcMacro {
@@ -1060,7 +1065,7 @@ data class PointerSfcC2Room(
         val dropStatus: Int
 ) : PointerSfcRoom<SfcC2Room> {
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     override fun point(): SfcC2Room {
@@ -1099,7 +1104,7 @@ data class PointerSfcMapData(
         val groundLevels: List<Int>? = null // Should be 261 points
 ) : PointerSfcData<SfcMapData> {
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     override fun point(): SfcMapData {
@@ -1132,7 +1137,7 @@ data class PointerSfcEntity(
         val pickupPoints: List<Vector2>? = null
 ) : PointerSfcData<SfcEntity> {
     override fun toString(): String {
-        return Gson().toJson(this);
+        return Gson().toJson(this)
     }
 
     override fun point(): SfcEntity {
@@ -1154,6 +1159,14 @@ data class PointerSfcEntity(
     }
 
     companion object
+}
+
+data class PointerSfcCreature(
+        val moniker:String
+) {
+    override fun toString(): String {
+        return Gson().toJson(this)
+    }
 }
 
 private fun List<SfcEntityPtr?>.point(): List<SfcEntity?> {

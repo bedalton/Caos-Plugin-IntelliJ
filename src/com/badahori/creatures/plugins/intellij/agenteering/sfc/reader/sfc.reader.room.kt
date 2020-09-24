@@ -1,11 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcC2Room
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcRoomImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 
 
 internal fun SfcReader.readC1Room(id: Int): PointerSfcRoomImpl {
