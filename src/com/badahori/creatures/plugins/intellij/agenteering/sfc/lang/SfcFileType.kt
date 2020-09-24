@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
 
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
@@ -29,6 +30,9 @@ object SfcFileType : FileType {
     val DEFAULT_EXTENSION = "sfc"
 }
 
-val IS_SFC_USER_DATA_KEY:Key<Boolean> = object:KeyWithDefaultValue<Boolean>("com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.IS_SFC_VIRTUAL_FILE") {
+val IS_SFC_USER_DATA_KEY:Key<Boolean> = object:KeyWithDefaultValue<Boolean>("com.badahori.creatures.plugins.intellij.agenteering.sfc.IS_SFC_VIRTUAL_FILE") {
     override fun getDefaultValue(): Boolean = false
 }
+
+
+val SFC_DECOMPILED_DATA_KEY:Key<SfcFileDataHolder?> = Key("com.badahori.creatures.plugins.intellij.agenteering.sfc.SFC_DECOMPILED_DATA_OBJECT")
