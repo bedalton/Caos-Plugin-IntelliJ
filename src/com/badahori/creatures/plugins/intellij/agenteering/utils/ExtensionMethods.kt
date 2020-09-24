@@ -71,3 +71,7 @@ fun PsiElement.isNotEquivalentTo(otherElement:PsiElement): Boolean = this.isEqui
 fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)
         = filter{ t -> elements.none{ selector(it) == selector(t) } }
 
+val Any.className:String? get() = this.javaClass.className
+
+
+val Any.canonicalName:String? get() = this.javaClass.canonicalName
