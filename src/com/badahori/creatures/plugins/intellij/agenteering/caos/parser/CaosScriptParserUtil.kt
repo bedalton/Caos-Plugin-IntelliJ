@@ -109,10 +109,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
      */
     @JvmStatic
     fun psiFile(builder_: PsiBuilder): PsiFile? {
-        return builder_.getUserData(FileContextUtil.CONTAINING_FILE_KEY).apply {
-            if (this == null)
-                LOGGER.info("PsiFile is null in CaosScriptParserUtil")
-        }
+        return builder_.getUserData(FileContextUtil.CONTAINING_FILE_KEY)
     }
 
     @JvmStatic
