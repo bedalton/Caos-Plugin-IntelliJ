@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Virtual File for Caos Scripts Plugin
  */
-class CaosVirtualFile private constructor(
+open class CaosVirtualFile private constructor(
         private var fileName:String,
         private var stringContents: String? = null,
         private var byteArrayContents:ByteArray? = null,
