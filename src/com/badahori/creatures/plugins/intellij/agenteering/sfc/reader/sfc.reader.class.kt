@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcBiochemistryPtr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 
@@ -35,6 +35,7 @@ private fun SfcReader.readNewMfc() : Ptr<*>? {
         "CallButton" -> SfcType.CALLBUTTON
         "Scenery" -> SfcType.SCENERY
         "Macro" -> SfcType.MACRO
+        "CBiochemistry" -> SfcType.BIOCHEMISTRY
         else -> throw SfcReadException("Failed to understand MFC class name: '$className'")
     }
     LOGGER.info("Reading next $className")
@@ -94,6 +95,7 @@ private fun SfcReader.read(pidType:SfcType, pid:Int) : Ptr<*> {
         SfcType.CALLBUTTON -> (pointer as Ptr.SfcCallButtonPtr).pointed = readCallButton()
         SfcType.SCENERY -> (pointer as Ptr.SfcSceneryPtr).pointed = readScenery()
         SfcType.MACRO -> (pointer as Ptr.SfcMacroPtr).pointed = readMacro()
+        SfcType.BIOCHEMISTRY -> (pointer as SfcBiochemistryPtr).pointed = readBiochemistry()
         else -> throw SfcReadException("Bad MFC type: '$pidType'")
     }
 

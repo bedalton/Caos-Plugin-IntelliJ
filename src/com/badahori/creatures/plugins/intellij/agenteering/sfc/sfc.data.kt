@@ -33,6 +33,11 @@ data class SfcFile(
 
 }
 
+data class SfcFileDataHolder(
+        val data:SfcFile? = null,
+        val error:String? = null
+)
+
 
 interface SfcData
 
@@ -545,6 +550,15 @@ data class SfcPointerTool(
 
     companion object
 } // End SfcPointer
+
+data class SfcBiochemistry(
+        val chemicals:List<Int>
+) : SfcData {
+    override fun toString(): String {
+        return Gson().toJson(this)
+    }
+}
+
 
 /**
  * An Sfc data class for call buttons in C1/C2
