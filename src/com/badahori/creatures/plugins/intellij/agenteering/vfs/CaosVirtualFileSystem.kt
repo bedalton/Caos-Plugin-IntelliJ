@@ -1,5 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.canonicalName
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.vfs.*
 import java.io.IOException
@@ -115,9 +118,13 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     public override fun moveFile(requestor: Any?,
                                  virtualFileIn: VirtualFile,
                                  newParentIn: VirtualFile) {
-        val newParent = newParentIn as? CaosVirtualFile
-                ?: throw Exception("Cannot move file. Parent file is not CAOS Virtual file")
-        // Ensure is CAOS file or copy to allow use in Caos VFS
+        if (newParentIn !is CaosVirtualFile) {
+            LOGGER.info("VirtualFileTypeMove. NewParentFileType: ${newParentIn.canonicalName}. FileSystem: ${newParentIn.fileSystem.canonicalName}")
+            (newParentIn.fileSystem as? LocalFileSystem)?.apply {
+                this.moveFile(requestor, virtualFileIn, newParentIn)
+            } ?: throw Exception("Cannot move file. Parent file is not CAOS Virtual file")
+            return
+        }
         val virtualFile = if (virtualFileIn !is CaosVirtualFile) {
             val temp = CaosVirtualFile(virtualFileIn.name, virtualFileIn.contents, virtualFileIn.isDirectory)
             virtualFileIn.delete(requestor)
@@ -125,9 +132,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         } else
             virtualFileIn
         val oldParent = virtualFile.parent ?: root
+        val newParent = (newParentIn as CaosVirtualFile)
         fireBeforeFileMovement(requestor, virtualFile, newParent)
-        oldParent.deleteChild(virtualFile)
         newParent.addChild(virtualFile)
+        oldParent.deleteChild(virtualFile)
         fireFileMoved(requestor, virtualFile, oldParent)
     }
 
