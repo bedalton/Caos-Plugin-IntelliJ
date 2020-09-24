@@ -4,6 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFile
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcDecompiledFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
@@ -28,12 +30,15 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
 
     val sfc: SfcFile? by lazy {
         try {
-            // Dump JSON if virtual file has actual path and not a virtual one
-            val path = if (myVirtualFile is CaosVirtualFile) null else myVirtualFile.path
-            myVirtualFile.getUserData(SFC_FILE_KEY) ?: SfcReader.readFile(myVirtualFile.contentsToByteArray(), path)
+            // Caching is handled by read file method in SfcReader
+            SfcReader.readFile(myVirtualFile).data
         } catch (e:Exception) {
-            CaosInjectorNotifications.show(project, "SFC Error", "Failed to parse SFC file. Non-Eden.sfc files are unparseable.", NotificationType.ERROR)
-            throw e
+            val error = "Failed to parse SFC file: '${myVirtualFile.path}' with error:\n\t${e.message}"
+            SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
+            LOGGER.severe(error)
+            e.printStackTrace()
+            CaosInjectorNotifications.show(project, "SFC Error", "Failed to parse SFC file '${myVirtualFile.name}'. Non-Eden.sfc files are un-parsable.", NotificationType.ERROR)
+            null
         }
     }
 
@@ -75,7 +80,5 @@ private fun getSfcAsFolder(virtualFile: VirtualFile): CaosVirtualFile {
     return CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory(folderName)
 }
 
-
-private val SFC_FILE_KEY = Key<SfcFile?>("caos.sfc.SFC_FILE")
 private val SFC_FOLDER_KEY = Key<String?>("caos.sfc.SFC_FILE_AS_DIRECTORY_NAME")
 private val decompiledId = AtomicInteger(0)
