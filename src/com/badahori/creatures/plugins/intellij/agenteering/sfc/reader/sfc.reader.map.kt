@@ -1,8 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.PointerSfcMapData
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.SfcGalleryPtr
-import com.badahori.creatures.plugins.intellij.agenteering.PointerSfc.Ptr.SfcRoomPtr
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcGalleryPtr
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcRoomPtr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
 
