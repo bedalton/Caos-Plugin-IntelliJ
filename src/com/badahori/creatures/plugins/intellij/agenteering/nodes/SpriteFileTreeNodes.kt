@@ -25,7 +25,7 @@ import java.awt.dnd.DragSourceListener
 internal class SpriteFileTreeNode(
         project: Project,
         spriteVirtualFile:VirtualFile
-) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile), SortableTreeElement {
+) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile) {
     override fun getVirtualFile(): VirtualFile = value
 
     private val spritesVirtualFileContainer:CaosVirtualFile by lazy {
@@ -76,12 +76,6 @@ internal class SpriteFileTreeNode(
         }
         presentationData.setIcon(icon)
     }
-
-    override fun getWeight(): Int = 1
-
-    override fun getAlphaSortKey(): String {
-        return "$weight"
-    }
 }
 
 internal class SpriteImageTreeNode(
@@ -104,8 +98,6 @@ internal class SpriteImageTreeNode(
         presentationData.locationString = null
         presentationData.setIcon(ImagesIcons.ImagesFileType)
     }
-
-    override fun getWeight(): Int = 1
 
     override fun getAlphaSortKey(): String {
         return "$weight"

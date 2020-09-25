@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
@@ -13,7 +14,11 @@ import javax.swing.JComponent
 import javax.swing.TransferHandler
 
 internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, protected val myVirtualFile:VfsT)
-    : AbstractTreeNode<VfsT>(project, myVirtualFile)
+    : AbstractTreeNode<VfsT>(project, myVirtualFile), SortableTreeElement {
+    override fun getAlphaSortKey(): String = virtualFile.name
+
+    override fun getName(): String? = virtualFile.name
+}
 
 private fun createTransferable(virtualFile: VirtualFile) : Transferable {
     try {
