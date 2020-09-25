@@ -62,6 +62,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
                 CaosScriptTypes.CaosScript_OV_XX -> "TARG variable"
                 CaosScriptTypes.CaosScript_OBV_X -> "TARG variable"
                 CaosScriptTypes.CaosScript_MV_XX -> "OWNR variable"
+                CaosScriptTypes.CaosScript_SUBROUTINE_NAME -> "SUBR"
                 else -> "element"
             }
         }

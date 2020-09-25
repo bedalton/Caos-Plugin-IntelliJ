@@ -7,22 +7,37 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : PsiReferenceBase<CaosScriptSubroutineName>(element, TextRange.create(0, element.textLength)) {
 
+    private val isDeclaration by lazy {
+        myElement.parent?.parent is CaosScriptSubroutine
+    }
+
     override fun isReferenceTo(element: PsiElement): Boolean {
-        if (element.text != myElement.text)
+        if (isDeclaration)
             return false
-        if (!myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java))
+        if (element.text != myElement.text) {
             return false
-        return (myElement.parent?.parent is CaosScriptSubroutine && element.parent is CaosScriptCGsub) ||
-                (myElement.parent is CaosScriptCGsub && element.parent?.parent is CaosScriptSubroutine)
+        }
+        LOGGER.info("${element.textLength} == ${myElement.text}")
+        if (myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)) {
+            LOGGER.info("Shares context")
+            return element.parent?.parent is CaosScriptSubroutine
+        }
+        LOGGER.info("Does not share context. Returning false")
+        return false
+    }
+
+    private fun isValidSubrGsubPair(subroutineName: PsiElement, gsubName: PsiElement): Boolean {
+        return subroutineName.parent?.parent is CaosScriptSubroutine && gsubName.hasParentOfType(CaosScriptCGsub::class.java)
     }
 
     override fun resolve(): PsiElement? {
-        if (myElement.parent is CaosScriptSubroutineHeader)
-            return null
+        //if (myElement.parent is CaosScriptSubroutineHeader)
+            //return null
         val name = myElement.name
         val resolvedElement = CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull {
             myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
@@ -31,9 +46,10 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
                     .mapNotNull { it.subroutineHeader.subroutineName }
                     .firstOrNull {
                         it.text == name
-                    }}
-        if (resolvedElement == myElement)
-            return null
+                    }
+        }
+        //if (resolvedElement == myElement)
+          //  return null
         return resolvedElement
     }
 
