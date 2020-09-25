@@ -1450,8 +1450,6 @@ quote_string_literal
 		methods = [
 			getStringValue
 			isClosed
-			openQuote="/DOUBLE_QUOTE[0]"
-			closeQuote="/DOUBLE_QUOTE[1]"
 		]
 	}
 	;
