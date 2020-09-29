@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
