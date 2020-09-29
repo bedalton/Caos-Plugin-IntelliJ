@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+
 data class AgentClass(val family: Int, val genus: Int, val species: Int) {
     fun like(otherClass: AgentClass): Boolean {
         if (notMatches(family, otherClass.family))
@@ -17,6 +19,19 @@ data class AgentClass(val family: Int, val genus: Int, val species: Int) {
 
     private fun matches(val1:Int, val2:Int) : Boolean {
         return val1 == val2 || val1 == 0 || val2 == 0
+    }
+
+    companion object {
+        val POINTER by lazy {
+            AgentClass(2, 1, 1)
+        }
+
+        val CREATURE: AgentClass by lazy {
+            AgentClass(4, 0, 0)
+        }
+        val ZERO by lazy {
+            AgentClass(0, 0, 0)
+        }
     }
 }
 
