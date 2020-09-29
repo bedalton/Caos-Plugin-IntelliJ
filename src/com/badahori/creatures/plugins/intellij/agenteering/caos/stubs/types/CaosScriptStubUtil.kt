@@ -360,3 +360,7 @@ private fun StubInputStream.readCaosRange() : CaosIntRange {
     val max = if (readBoolean()) readInt() else null
     return CaosIntRange(min, max)
 }
+
+fun StubInputStream.readSimpleType() : CaosExpressionValueType {
+    return CaosExpressionValueType.fromIntValue(readInt())
+}

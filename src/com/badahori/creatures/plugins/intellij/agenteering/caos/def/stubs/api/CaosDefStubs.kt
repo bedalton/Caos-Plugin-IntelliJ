@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 
 interface CaosDefCommandDefinitionStub : StubElement<CaosDefCommandDefElementImpl> {
     val namespace:String?
@@ -19,6 +20,7 @@ interface CaosDefCommandDefinitionStub : StubElement<CaosDefCommandDefElementImp
     val isCommand:Boolean
     val comment:String?
     val variants:List<CaosVariant>
+    val simpleReturnType: CaosExpressionValueType
 }
 
 interface CaosDefDocCommentStub : StubElement<CaosDefDocCommentImpl> {
@@ -58,4 +60,5 @@ interface CaosDefParameterStub : StubElement<CaosDefParameterImpl> {
     val parameterName:String
     val type:CaosDefVariableTypeStruct
     val comment:String?
+    val simpleType: CaosExpressionValueType
 }
