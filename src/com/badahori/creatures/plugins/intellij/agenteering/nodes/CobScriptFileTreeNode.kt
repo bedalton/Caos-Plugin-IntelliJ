@@ -87,11 +87,6 @@ class CobFileTreeNode(
         }
     }
 
-
-    override fun getAlphaSortKey(): String {
-        return file.name.toLowerCase()
-    }
-
     override fun update(presentationData: PresentationData) {
         val icon = when (cobData.variant) {
             CaosVariant.C1 -> CaosScriptIcons.C1_COB_FILE_ICON
@@ -102,6 +97,9 @@ class CobFileTreeNode(
         presentationData.presentableText = file.name
         presentationData.locationString = null
     }
+    
+    override fun getAlphaSortKey(): String = virtualFile.name
+    override fun getName(): String? = virtualFile.name
 }
 
 internal class AuthorTreeNode(project: Project, block: AuthorBlock)
@@ -116,12 +114,9 @@ internal class AuthorTreeNode(project: Project, block: AuthorBlock)
         presentationData.setIcon(null)
     }
 
+    override fun getName() = virtualFile.name
+    override fun getAlphaSortKey(): String  = virtualFile.name
 
-    override fun getAlphaSortKey(): String {
-        return "$weight"
-    }
-
-    override fun getWeight(): Int = 0
 }
 
 internal class CobSpriteFileTreeNode(
@@ -162,12 +157,8 @@ internal class CobSpriteFileTreeNode(
         presentationData.locationString = null
         presentationData.setIcon(null)
     }
-
-    override fun getWeight(): Int = 1
-
-    override fun getAlphaSortKey(): String {
-        return "$weight"
-    }
+    override fun getName() = virtualFile.name
+    override fun getAlphaSortKey(): String  = virtualFile.name
 }
 
 private fun wrapFileBlock(enclosingCob:CaosVirtualFile, block:CobBlock.FileBlock) : VirtualFile {
@@ -197,11 +188,8 @@ internal class SoundFileTreeNode(project: Project, private val enclosingCob: Cao
     }
 
 
-    override fun getAlphaSortKey(): String {
-        return "$weight"
-    }
-    override fun getWeight(): Int = 2
-
+    override fun getName() = virtualFile.name
+    override fun getAlphaSortKey(): String  = virtualFile.name
 }
 
 private val decompiledId = AtomicInteger(0)
