@@ -73,3 +73,4 @@ fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)
 
 val Any?.className:String get() = if (this == null) "NULL" else this::class.java.simpleName
 val Any?.canonicalName:String get() = if (this == null) "NULL" else this::class.java.canonicalName
+
