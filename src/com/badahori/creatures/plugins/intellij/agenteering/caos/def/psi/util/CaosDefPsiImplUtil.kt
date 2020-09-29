@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
@@ -80,6 +81,18 @@ object CaosDefPsiImplUtil {
         }
         return command.docComment?.rvalueList?.isNotEmpty()
                 ?: command.returnTypeString.let { it != "command" && it != UnknownReturn }
+    }
+
+    @JvmStatic
+    fun getSimpleType(element: CaosDefParameter): CaosExpressionValueType {
+        return element.stub?.simpleType ?: getSimpleType(element.variableType)
+    }
+
+    @JvmStatic
+    fun getSimpleType(element: CaosDefVariableType): CaosExpressionValueType {
+        val simpleName = (element.typeLiteral ?: element.bracketString)?.text
+                ?: return CaosExpressionValueType.UNKNOWN
+        return CaosExpressionValueType.fromSimpleName(simpleName)
     }
 
     @JvmStatic
@@ -289,6 +302,17 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
+    fun getSimpleReturnType(commandDefElement: CaosDefCommandDefElement): CaosExpressionValueType {
+        commandDefElement.stub?.simpleReturnType?.let {
+            return it
+        }
+        val returnTypeText = commandDefElement.stub?.returnType?.type?.type
+                ?: commandDefElement.returnType?.text
+                ?: return CaosExpressionValueType.UNKNOWN
+        return CaosExpressionValueType.fromSimpleName(returnTypeText)
+    }
+
+    @JvmStatic
     fun toStruct(element: CaosDefDocCommentVariableType): CaosDefVariableTypeStruct? {
         val type = element.typeLiteral?.text
                 ?: return null
@@ -307,9 +331,7 @@ object CaosDefPsiImplUtil {
                 length = element.variableLength?.intValue
             }
         }
-        val fileTypes = element.variableFileType?.let {
-            it.text.substring(6).split("/")
-        }
+        val fileTypes = element.variableFileType?.text?.substring(6)?.split("/")
         return CaosDefVariableTypeStruct(
                 type = type,
                 noteText = typeNote,
@@ -345,12 +367,12 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getTypeNoteString(element: CaosDefValuesListElement) : String? {
+    fun getTypeNoteString(element: CaosDefValuesListElement): String? {
         return element.stub?.typeNote ?: element.typeNoteStatement?.typeNote?.text
     }
 
     @JvmStatic
-    fun isBitflags(element: CaosDefValuesListElement) : Boolean {
+    fun isBitflags(element: CaosDefValuesListElement): Boolean {
         return element.stub?.isBitflags ?: getTypeNoteString(element)?.equalsIgnoreCase("BitFlags").orFalse()
     }
 
@@ -368,7 +390,11 @@ object CaosDefPsiImplUtil {
             when (it.equality) {
                 ValuesListEq.EQUAL -> it.key == key
                 ValuesListEq.NOT_EQUAL -> it.key != key
-                ValuesListEq.GREATER_THAN -> try { key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                ValuesListEq.GREATER_THAN -> try {
+                    key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt()
+                } catch (e: Exception) {
+                    false
+                }
             }
         }
     }
@@ -383,18 +409,18 @@ object CaosDefPsiImplUtil {
         return CaosDefValuesListValueStruct(
                 key = element.stub?.key ?: element.key,
                 value = element.stub?.value ?: element.value,
-                equality =  element.equality,
+                equality = element.equality,
                 description = element.stub?.description ?: element.description
         )
     }
 
     @JvmStatic
-    fun getEquality(element: CaosDefValuesListValue) : ValuesListEq {
+    fun getEquality(element: CaosDefValuesListValue): ValuesListEq {
         element.stub?.equality?.let { return it }
         if (element.key.isEmpty()) {
             return ValuesListEq.EQUAL
         }
-        return element.key.trim().substring(0,1).let {
+        return element.key.trim().substring(0, 1).let {
             when (it) {
                 "!" -> ValuesListEq.NOT_EQUAL
                 ">" -> ValuesListEq.GREATER_THAN
@@ -448,7 +474,7 @@ object CaosDefPsiImplUtil {
     }
 
     private fun wrapParameterType(type: String): String {
-        if (type.substring(0, 1) == "[" || type.substring(0,1) == "(")
+        if (type.substring(0, 1) == "[" || type.substring(0, 1) == "(")
             return type
         return "($type)"
     }
@@ -585,9 +611,9 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getPresentation(element: CaosDefCommandWord): ItemPresentation {
         val text = element.getParentOfType(CaosDefCommandDefElement::class.java)?.let { command ->
-            val returnType = command.returnTypeStruct?.type?.let { " " + formatType(it) }.orElse ("(???)")
+            val returnType = command.returnTypeStruct?.type?.let { " " + formatType(it) }.orElse("(???)")
             val parameters = formatParameters(command.parameterStructs)
-            command.commandName + " " + returnType  +  " " + parameters
+            command.commandName + " " + returnType + " " + parameters
         }?.trim() ?: (element.parent as? CaosDefCommand)?.text ?: element.text
         //val icon = if (declaration.isCategory) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
         val fileName = "@variants(" + element.containingCaosDefFile.variants.joinToString(",") + ")"
@@ -607,7 +633,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getPresentation(element: CaosDefValuesListValue) : ItemPresentation {
+    fun getPresentation(element: CaosDefValuesListValue): ItemPresentation {
         val struct = element.toStruct()
         return object : ItemPresentation {
             override fun getPresentableText(): String {
@@ -615,7 +641,8 @@ object CaosDefPsiImplUtil {
             }
 
             override fun getLocationString(): String {
-                val location = (struct.description ?: "") + element.getParentOfType(CaosDefValuesListElement::class.java)?.typeName?.let {
+                val location = (struct.description
+                        ?: "") + element.getParentOfType(CaosDefValuesListElement::class.java)?.typeName?.let {
                     " @ $it"
                 }
                 return location.trim()
@@ -628,7 +655,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isEquivalentTo(element:CaosDefCommandWord, another:PsiElement) : Boolean {
+    fun isEquivalentTo(element: CaosDefCommandWord, another: PsiElement): Boolean {
         return element.text.equalsIgnoreCase(another.text) ||
                 (another as? CaosScriptVarToken)
                         ?.varGroup
@@ -637,16 +664,16 @@ object CaosDefPsiImplUtil {
                         .orFalse()
     }
 
-    private fun formatParameters(parameters: List<CaosDefParameterStruct>) : String {
+    private fun formatParameters(parameters: List<CaosDefParameterStruct>): String {
         return parameters.joinToString(" ") { formatParameter(it) }
     }
 
-    private fun formatParameter(parameter: CaosDefParameterStruct) : String {
+    private fun formatParameter(parameter: CaosDefParameterStruct): String {
         val type = formatType(parameter.type)
         return parameter.name + " " + type
     }
 
-    private fun formatType(type:CaosDefVariableTypeStruct) : String {
+    private fun formatType(type: CaosDefVariableTypeStruct): String {
         val typeText = type.type
         return if (typeText.startsWith("[") || typeText.startsWith("("))
             typeText
@@ -655,18 +682,18 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isValidHost(block:CaosDefCodeBlock) : Boolean {
+    fun isValidHost(block: CaosDefCodeBlock): Boolean {
         return true
     }
 
     @JvmStatic
-    fun updateText(block:CaosDefCodeBlock, text: String): CaosDefCodeBlock {
+    fun updateText(block: CaosDefCodeBlock, text: String): CaosDefCodeBlock {
         val expression = CaosScriptPsiElementFactory.createCodeBlock(block.project, text)
         return block.replace(expression) as CaosDefCodeBlock
     }
 
     @JvmStatic
-    fun createLiteralTextEscaper(block:CaosDefCodeBlock): LiteralTextEscaper<out PsiLanguageInjectionHost?>? {
+    fun createLiteralTextEscaper(block: CaosDefCodeBlock): LiteralTextEscaper<out PsiLanguageInjectionHost?>? {
         return CaosDefCodeBlockStringEscaper(block)
     }
 
