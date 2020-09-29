@@ -21,6 +21,13 @@ interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
     val rvalue:CaosVar?
 }
 
+interface CaosScriptRtarAssignmentStub : StubElement<CaosScriptCTargImpl> {
+    val scope:CaosScope
+    val family:CaosVar?
+    val genus:CaosVar?
+    val species:CaosVar?
+}
+
 interface CaosScriptLValueStub : StubElement<CaosScriptLvalueImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
