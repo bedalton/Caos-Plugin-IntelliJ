@@ -148,7 +148,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
      */
     private fun <T> readList(getter: SfcReader.() -> T): List<T> {
         return (0 until uInt32).map {
-            this.getter()
+            this.getter() as T
         }
     }
     /**
