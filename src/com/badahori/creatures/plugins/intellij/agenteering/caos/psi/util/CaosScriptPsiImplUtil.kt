@@ -1599,6 +1599,27 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getTargClass(element:CaosScriptCRtar) : AgentClass {
+        return element.arguments.let {
+            toAgentClass(
+                    it.getOrNull(0),
+                    it.getOrNull(1),
+                    it.getOrNull(2)
+            )
+        }
+    }
+
+    @JvmStatic
+    fun getCommandToken(element:CaosScriptCRtar) : String {
+        return element.text
+    }
+
+    @JvmStatic
+    fun getTargClass(element:CaosScriptCTarg) : AgentClass? {
+        return element.expectsAgent?.rvalue?.resolveAgentClass()
+    }
+
+    @JvmStatic
     fun getTargClass(element: CaosScriptCAssignment): AgentClass? {
         if (!element.commandStringUpper.let {
                     it != "SETV" && it != "SETA"
@@ -1609,13 +1630,14 @@ object CaosScriptPsiImplUtil {
         return rvalue.resolveAgentClass()
     }
 
-    private fun getTargClass(variable: CaosScriptIsVariable): AgentClass? {
+    internal fun getTargClass(variable: CaosScriptIsVariable): AgentClass? {
         return variable.getAssignments()
                 .mapNotNull {
                     getTargClass(it)
                 }
                 .firstOrNull()
     }
+
 
     @JvmStatic
     fun isEquivalentTo(element: CaosScriptVarToken, another: PsiElement): Boolean {
@@ -1701,6 +1723,7 @@ object CaosScriptPsiImplUtil {
                 .firstOrNull()
     }
 
+    @JvmStatic
     fun getTargClass(element:CaosScriptHasCodeBlock) : AgentClass {
         return AgentClass(element.family, element.genus, element.species)
     }
@@ -1965,6 +1988,9 @@ private fun CaosScriptRvalue.resolveAgentClass(): AgentClass? {
     val offset = startOffset
     val parent = getParentOfType(CaosScriptScriptElement::class.java)
             ?: return null
+    variable?.let {
+        CaosScriptPsiImplUtil.getTargClass(it)
+    }
     return when (rvaluePrime?.commandStringUpper) {
         "NORN" -> AgentClass(4, 0, 0)
         "OWNR" -> (parent as? CaosScriptEventScript)?.let {
