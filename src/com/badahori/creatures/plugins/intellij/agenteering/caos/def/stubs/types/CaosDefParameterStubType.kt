@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.Cao
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefParameterStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readSimpleType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readVariableType
@@ -24,17 +25,20 @@ class CaosDefParameterStubType(debugName:String) : com.badahori.creatures.plugin
         stream.writeName(stub.parameterName)
         stream.writeVariableType(stub.type)
         stream.writeUTFFast(stub.comment ?: "")
+        stream.writeInt(stub.simpleType.value)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefParameterStub {
         val name = stream.readNameAsString().nullIfEmpty() ?: CaosDefPsiImplUtil.UnknownReturn
         val type = stream.readVariableType() ?: CaosDefPsiImplUtil.AnyTypeType
         val comment = stream.readUTFFast().nullIfEmpty()
+        val simpleType = stream.readSimpleType()
         return CaosDefParameterStubImpl (
                 parent = parent,
                 parameterName = name,
                 type = type,
-                comment = comment
+                comment = comment,
+                simpleType = simpleType
         )
     }
 
@@ -43,7 +47,8 @@ class CaosDefParameterStubType(debugName:String) : com.badahori.creatures.plugin
                 parent = parent,
                 parameterName = element.parameterName,
                 type = CaosDefVariableTypeStruct(type = element.parameterType),
-                comment = null
+                comment = null,
+                simpleType = element.simpleType
         )
     }
 
