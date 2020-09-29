@@ -52,6 +52,8 @@ class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionActio
     private fun getScriptText() : String? {
         val element = element.element
                 ?: return null
+        if (element.arguments.size > 1)
+            return null;
         val clasInt = (element.arguments.getOrNull(1) as? CaosScriptExpectsValueOfType)
                 ?.rvalue
                 ?.expression
