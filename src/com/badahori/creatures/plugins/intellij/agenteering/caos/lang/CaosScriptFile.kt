@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
@@ -17,7 +18,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.FileContentUtilCore
-import com.sun.glass.ui.Application
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
@@ -41,10 +41,10 @@ class CaosScriptFile(viewProvider: FileViewProvider)
                             VariantFilePropertyPusher.writeToStorage(it, newVariant ?: CaosVariant.UNKNOWN)
                         }
                         it.putUserData(VariantUserDataKey, newVariant)
-                        if (Application.isEventThread())
+                        if (ApplicationManager.getApplication().isDispatchThread)
                             FileContentUtilCore.reparseFiles(it)
                     }
-            if (Application.isEventThread()) {
+            if (ApplicationManager.getApplication().isDispatchThread) {
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
             }
         }
