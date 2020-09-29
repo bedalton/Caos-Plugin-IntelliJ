@@ -13,11 +13,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptExpectsQuoteStringImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -78,20 +78,17 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandToken(element: CaosScriptEnumHeaderCommand) : CaosScriptIsCommandToken {
+    fun getCommandToken(element: CaosScriptEnumHeaderCommand): CaosScriptIsCommandToken {
         return element.cEnum ?: element.cEcon!!
     }
 
     @JvmStatic
-    fun getInferredType(element: CaosScriptRvaluePrime) : CaosExpressionValueType {
-        return CaosScriptInferenceUtil.getFromRValuePrime(element)?.let {
-            (it as? CaosVar.CaosCommandCall)?.returnType
-                    ?: it.simpleType
-        } ?: CaosExpressionValueType.UNKNOWN
+    fun getInferredType(element: CaosScriptRvaluePrime): CaosExpressionValueType {
+        return CaosScriptInferenceUtil.getInferredType(element) ?: CaosExpressionValueType.UNKNOWN
     }
 
     @JvmStatic
-    fun getCommandString(namedGameVar: CaosScriptNamedGameVar) : String {
+    fun getCommandString(namedGameVar: CaosScriptNamedGameVar): String {
         return namedGameVar.stub?.type?.token ?: namedGameVar.commandToken.commandString
     }
 
@@ -109,7 +106,8 @@ object CaosScriptPsiImplUtil {
             CaosCommandType.LVALUE -> command
                     .getSelfOrParentOfType(CaosScriptLvalue::class.java)
                     ?.let { getCommandString(it) }
-            CaosCommandType.CONTROL_STATEMENT -> (command as? CaosScriptIsCommandToken ?:  command.getChildOfType(CaosScriptIsCommandToken::class.java))
+            CaosCommandType.CONTROL_STATEMENT -> (command as? CaosScriptIsCommandToken
+                    ?: command.getChildOfType(CaosScriptIsCommandToken::class.java))
                     ?.let { getCommandString(it) }
             CaosCommandType.UNDEFINED -> null
         } ?: UNDEF
@@ -327,32 +325,32 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(element: CaosScriptExpression) : CaosScriptExpressionReference {
+    fun getReference(element: CaosScriptExpression): CaosScriptExpressionReference {
         return CaosScriptExpressionReference(element)
     }
 
     @JvmStatic
-    fun getReference(element:CaosScriptEventNumberElement) : CaosScriptEventNumberReference {
+    fun getReference(element: CaosScriptEventNumberElement): CaosScriptEventNumberReference {
         return CaosScriptEventNumberReference(element)
     }
 
     @JvmStatic
-    fun getName(element:CaosScriptEventNumberElement) : String {
+    fun getName(element: CaosScriptEventNumberElement): String {
         return element.text
     }
 
     @JvmStatic
-    fun setName(element:CaosScriptEventNumberElement, newName:String) : PsiElement {
+    fun setName(element: CaosScriptEventNumberElement, newName: String): PsiElement {
         return element
     }
 
     @JvmStatic
-    fun getName(element:CaosScriptExpression) : String {
+    fun getName(element: CaosScriptExpression): String {
         return element.text
     }
 
     @JvmStatic
-    fun setName(element:CaosScriptExpression, newName:String) : PsiElement {
+    fun setName(element: CaosScriptExpression, newName: String): PsiElement {
         return element
     }
 
@@ -374,12 +372,12 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getRvalue(element:CaosScriptExpectsValue) : CaosScriptRvalue {
+    fun getRvalue(element: CaosScriptExpectsValue): CaosScriptRvalue {
         return element.rvalue
     }
 
     @JvmStatic
-    fun getRvalue(element:CaosScriptExpectsToken) : CaosScriptRvalueLike {
+    fun getRvalue(element: CaosScriptExpectsToken): CaosScriptRvalueLike {
         return element.tokenRvalue
     }
 
@@ -417,6 +415,23 @@ object CaosScriptPsiImplUtil {
         }
         (rvalue as? CaosScriptTokenRvalue)?.stub?.caosVar?.let {
             return it
+        }
+        if (!DumbService.isDumb(rvalue.project)) {
+            val variable: CaosScriptIsVariable? = rvalue.varToken as? CaosScriptIsVariable
+                    ?: rvalue.namedVar
+                    ?: rvalue.namedGameVar
+                    ?: rvalue.namedConstant
+                    ?: rvalue.expression?.let {
+                        it.varToken as? CaosScriptIsVariable
+                                ?: it.namedGameVar
+                                ?: it.namedVar
+                                ?: it.namedConstant
+                    }
+            if (variable != null) {
+                CaosScriptInferenceUtil.getInferredValue(variable)?.let {
+                    return it
+                }
+            }
         }
         (rvalue.varToken)?.let {
             return toCaosVar(it)
@@ -563,12 +578,12 @@ object CaosScriptPsiImplUtil {
         (lvalue.namedVar)?.let {
             return CaosVar.NamedVar(it.text)
         }
-        (lvalue.namedGameVar)?.let {parent ->
+        (lvalue.namedGameVar)?.let { parent ->
             val varName = when (parent.commandStringUpper) {
-                "NAME" ->  CaosVar.CaosNamedGameVar.NameVar(parent.expectsValue?.text ?: UNDEF)
-                "MAME" ->  CaosVar.CaosNamedGameVar.MameVar(parent.expectsValue?.text ?: UNDEF)
-                "GAME" ->  CaosVar.CaosNamedGameVar.GameVar(parent.expectsValue?.text ?: UNDEF)
-                "EAME" ->  CaosVar.CaosNamedGameVar.EameVar(parent.expectsValue?.text ?: UNDEF)
+                "NAME" -> CaosVar.CaosNamedGameVar.NameVar(parent.expectsValue?.text ?: UNDEF)
+                "MAME" -> CaosVar.CaosNamedGameVar.MameVar(parent.expectsValue?.text ?: UNDEF)
+                "GAME" -> CaosVar.CaosNamedGameVar.GameVar(parent.expectsValue?.text ?: UNDEF)
+                "EAME" -> CaosVar.CaosNamedGameVar.EameVar(parent.expectsValue?.text ?: UNDEF)
                 else -> null
             }
             varName?.let {
@@ -583,7 +598,7 @@ object CaosScriptPsiImplUtil {
                         val first = arguments[0].text.toInt()
                         val second = arguments[1].text.toInt()
                         return CaosVar.CaosNamedGameVar.C2GameVar(first, second)
-                    } catch (e:Exception) {
+                    } catch (e: Exception) {
                         return CaosVar.CaosNamedGameVar.C2GameVar(-1, -1)
                     }
                 }
@@ -632,6 +647,7 @@ object CaosScriptPsiImplUtil {
     fun toCaosVar(element: CaosScriptExpectsDecimal): CaosVar {
         return element.stub?.caosVar ?: element.rvalue.toCaosVar()
     }
+
     @JvmStatic
     fun toCaosVar(element: CaosScriptExpectsValue): CaosVar {
         return element.stub?.caosVar ?: element.rvalue.toCaosVar()
@@ -699,7 +715,7 @@ object CaosScriptPsiImplUtil {
                     stringValue.byteStringPoseElementList.map { it ->
                         it.text.toInt()
                     }
-                } catch (e:Exception) {
+                } catch (e: Exception) {
                     null
                 }
             }
@@ -829,17 +845,17 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun isClosed(stringIn: CaosScriptQuoteStringLiteral) : Boolean {
+    fun isClosed(stringIn: CaosScriptQuoteStringLiteral): Boolean {
         return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_DOUBLE_QUOTE
     }
 
     @JvmStatic
-    fun isClosed(stringIn: CaosScriptCharacter) : Boolean {
+    fun isClosed(stringIn: CaosScriptCharacter): Boolean {
         return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_SINGLE_QUOTE
     }
 
     @JvmStatic
-    fun isClosed(stringIn: CaosScriptC1String) : Boolean {
+    fun isClosed(stringIn: CaosScriptC1String): Boolean {
         return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_CLOSE_BRACKET
     }
 
@@ -1004,17 +1020,17 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(element:CaosScriptSubroutineName) : CaosVar {
+    fun toCaosVar(element: CaosScriptSubroutineName): CaosVar {
         return CaosVar.CaosLiteral.CaosToken(element.text)
     }
 
     @JvmStatic
-    fun getIndex(element:CaosScriptSubroutineName) : Int {
+    fun getIndex(element: CaosScriptSubroutineName): Int {
         return 0
     }
 
     @JvmStatic
-    fun getExpectedType(element:CaosScriptSubroutineName) : CaosExpressionValueType {
+    fun getExpectedType(element: CaosScriptSubroutineName): CaosExpressionValueType {
         return CaosExpressionValueType.TOKEN
     }
 
@@ -1240,62 +1256,62 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptDoifStatementStatement) : Boolean {
+    fun isClosed(element: CaosScriptDoifStatementStatement): Boolean {
         return element.parent.lastChild != element
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptElseIfStatement) : Boolean {
+    fun isClosed(element: CaosScriptElseIfStatement): Boolean {
         return element.parent.lastChild != element
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptElseStatement) : Boolean {
+    fun isClosed(element: CaosScriptElseStatement): Boolean {
         return element.parent.lastChild != element
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptEnumNextStatement) : Boolean {
+    fun isClosed(element: CaosScriptEnumNextStatement): Boolean {
         return element.cNext != null || element.cNscn != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptEnumSceneryStatement) : Boolean {
+    fun isClosed(element: CaosScriptEnumSceneryStatement): Boolean {
         return element.cNext != null || element.cNscn != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptEventScript) : Boolean {
+    fun isClosed(element: CaosScriptEventScript): Boolean {
         return element.scriptTerminator != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptInstallScript) : Boolean {
+    fun isClosed(element: CaosScriptInstallScript): Boolean {
         return element.scriptTerminator != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptLoopStatement) : Boolean {
+    fun isClosed(element: CaosScriptLoopStatement): Boolean {
         return element.loopTerminator != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptMacro) : Boolean {
+    fun isClosed(element: CaosScriptMacro): Boolean {
         return element.scriptTerminator != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptRepeatStatement) : Boolean {
+    fun isClosed(element: CaosScriptRepeatStatement): Boolean {
         return element.cRepe != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptRemovalScript) : Boolean {
+    fun isClosed(element: CaosScriptRemovalScript): Boolean {
         return element.scriptTerminator != null
     }
 
     @JvmStatic
-    fun isClosed(element:CaosScriptSubroutine) : Boolean {
+    fun isClosed(element: CaosScriptSubroutine): Boolean {
         return element.cRetn != null
     }
 
@@ -1448,7 +1464,11 @@ object CaosScriptPsiImplUtil {
             when (it.equality) {
                 ValuesListEq.EQUAL -> it.key == element.text
                 ValuesListEq.NOT_EQUAL -> it.key != element.text
-                ValuesListEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                ValuesListEq.GREATER_THAN -> try {
+                    element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt()
+                } catch (e: Exception) {
+                    false
+                }
             }
         }
     }
@@ -1494,7 +1514,11 @@ object CaosScriptPsiImplUtil {
             when (it.equality) {
                 ValuesListEq.EQUAL -> it.key == element.text
                 ValuesListEq.NOT_EQUAL -> it.key != element.text
-                ValuesListEq.GREATER_THAN -> try { element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt() } catch (e:Exception) { false }
+                ValuesListEq.GREATER_THAN -> try {
+                    element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt()
+                } catch (e: Exception) {
+                    false
+                }
             }
         }
     }
@@ -1526,7 +1550,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getWidth(dimensions: CaosScriptPictDimensionLiteral) : Int {
+    fun getWidth(dimensions: CaosScriptPictDimensionLiteral): Int {
         dimensions.text.toCharArray().let {
             if (it.isEmpty())
                 return -1
@@ -1535,7 +1559,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getHeight(dimensions: CaosScriptPictDimensionLiteral) : Int {
+    fun getHeight(dimensions: CaosScriptPictDimensionLiteral): Int {
         dimensions.text.toCharArray().let {
             if (it.size < 3)
                 return -1
@@ -1544,16 +1568,16 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getDimensions(dimensions: CaosScriptPictDimensionLiteral) : Pair<Int,Int> {
+    fun getDimensions(dimensions: CaosScriptPictDimensionLiteral): Pair<Int, Int> {
         dimensions.text.toCharArray().let {
             if (it.size < 3)
-                return Pair(-1,-1)
+                return Pair(-1, -1)
             return Pair(it[0].toInt(), it[2].toInt())
         }
     }
 
     @JvmStatic
-    fun getLastAssignment(varToken: CaosScriptVarToken) : CaosScriptIsCommandToken? {
+    fun getLastAssignment(varToken: CaosScriptVarToken): CaosScriptIsCommandToken? {
         val lastPos = varToken.startOffset
         val text = varToken.text
         val scope = varToken.getParentOfType(CaosScriptHasCodeBlock::class.java)?.scope()
@@ -1569,17 +1593,116 @@ object CaosScriptPsiImplUtil {
         val rvalue = (assignment.arguments.lastOrNull() as? CaosScriptExpectsValueOfType)?.rvalue
                 ?: return null
         rvalue.rvaluePrime?.let { return it.commandToken }
-        return rvalue.varToken?.let  {
+        return rvalue.varToken?.let {
             getLastAssignment(it)
         }
     }
 
     @JvmStatic
-    fun isEquivalentTo(element:CaosScriptVarToken, another: PsiElement): Boolean {
+    fun getTargClass(element: CaosScriptCAssignment): AgentClass? {
+        if (!element.commandStringUpper.let {
+                    it != "SETV" && it != "SETA"
+                }.orFalse())
+            return null
+        val rvalue = (element.arguments.getOrNull(1) as? CaosScriptRvalue)
+                ?: return null
+        return rvalue.resolveAgentClass()
+    }
+
+    private fun getTargClass(variable: CaosScriptIsVariable): AgentClass? {
+        return variable.getAssignments()
+                .mapNotNull {
+                    getTargClass(it)
+                }
+                .firstOrNull()
+    }
+
+    @JvmStatic
+    fun isEquivalentTo(element: CaosScriptVarToken, another: PsiElement): Boolean {
         if (another is CaosDefCommandWord) {
             return element.varGroup.value.equalsIgnoreCase(another.text)
         }
         return another is CaosScriptVarToken && another.text.equalsIgnoreCase(element.text)
+    }
+
+    @JvmStatic
+    fun getFamily(element: CaosScriptHasCodeBlock): Int {
+        return when (element) {
+            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { getClassInt(it, "fmly") }
+            is CaosScriptElseIfStatement -> element.equalityExpression?.let { getClassInt(it, "fmly") }
+            is CaosScriptEnumNextStatement -> element.family
+            is CaosScriptEnumSceneryStatement -> element.family
+            is CaosScriptEventScript -> element.family
+            else -> null
+        } ?: element.getParentOfType(CaosScriptHasCodeBlock::class.java)?.let {
+            getFamily(it)
+        }
+        ?: 0
+    }
+
+    @JvmStatic
+    fun getGenus(element: CaosScriptHasCodeBlock): Int {
+        return when (element) {
+            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { getClassInt(it, "gnus") }
+            is CaosScriptElseIfStatement -> element.equalityExpression?.let { getClassInt(it, "gnus") }
+            is CaosScriptEnumNextStatement -> element.genus
+            is CaosScriptEnumSceneryStatement -> element.genus
+            is CaosScriptEventScript -> element.genus
+            else -> null
+        } ?: element.getParentOfType(CaosScriptHasCodeBlock::class.java)?.let {
+            getGenus(it)
+        }
+        ?: 0
+    }
+
+    @JvmStatic
+    fun getSpecies(element: CaosScriptHasCodeBlock): Int {
+        return when (element) {
+            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { getClassInt(it, "spcs") }
+            is CaosScriptElseIfStatement -> element.equalityExpression?.let { getClassInt(it, "spcs") }
+            is CaosScriptEnumNextStatement -> element.species
+            is CaosScriptEnumSceneryStatement -> element.species
+            is CaosScriptEventScript -> element.species
+            else -> null
+        } ?: element.getParentOfType(CaosScriptHasCodeBlock::class.java)?.let {
+            getSpecies(it)
+        }
+        ?: 0
+    }
+
+    private fun getClassInt(element: CaosScriptEqualityExpression, key: String): Int? {
+        if (element.eqOp.text.let { it.equalsIgnoreCase("eq") || it == "=" }) {
+            val other = when {
+                element.first.text.equalsIgnoreCase(key) -> element.second
+                element.second.text.equalsIgnoreCase(key) -> element.first
+                else -> return null
+            }
+            other.toCaosVar().let {
+                when (it) {
+                    is CaosVar.CaosLiteral.CaosInt -> return it.value.toInt()
+                    is CaosVar.CaosLiteral.CaosFloat -> return it.value.toInt()
+                    else -> null
+                }
+            }
+        }
+        return element.equalityExpressionPlusList
+                .filter { it.eqOp.text.let { it.equalsIgnoreCase("eq") || it == "=" } }
+                .mapNotNull {
+                    val other = if (it.first.text.equalsIgnoreCase(key)) it.second else if (it.second.text.equalsIgnoreCase(key)) it.first else null
+                            ?: return@mapNotNull null
+                    other.toCaosVar().let {
+                        when (it) {
+                            is CaosVar.CaosLiteral.CaosInt -> it.value.toInt()
+                            is CaosVar.CaosLiteral.CaosFloat -> it.value.toInt()
+                            else -> null
+                        }
+                    }
+                }
+                .firstOrNull()
+    }
+
+    fun getTargClass(element:CaosScriptHasCodeBlock) : AgentClass {
+        return AgentClass(element.family, element.genus, element.species)
     }
 }
 
@@ -1593,6 +1716,28 @@ private fun <PsiT : PsiElement> CaosScriptCompositeElement.getSelfOrParentOfType
 
 val PsiElement.elementType: IElementType get() = node.elementType
 
+private fun toAgentClass(family: PsiElement?, genus: PsiElement?, species: PsiElement?): AgentClass {
+    return AgentClass(
+            toAgentClassValue(family),
+            toAgentClassValue(genus),
+            toAgentClassValue(species)
+    )
+}
+
+private fun toAgentClassValue(element: PsiElement?): Int {
+    if (element == null)
+        return 0
+    element.text?.toIntSafe()?.let {
+        return it
+    }
+    val rvalue = element.getSelfOrParentOfType(CaosScriptRvalue::class.java)
+            ?: return 0
+    val value = rvalue.toCaosVar()
+    return when (value) {
+        is CaosVar.CaosLiteral.CaosInt -> value.value.toInt()
+        else -> 0
+    }
+}
 
 enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
     UNDEF(-1, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF),
@@ -1716,19 +1861,150 @@ private val varTokenAssignmentSearchTerminatingOperands = listOf(
 
 val CaosScriptCommandLike.commandStringUpper: String get() = commandString.toUpperCase()
 
-fun CaosScriptCompositeElement.sharesScope(otherScope:CaosScope?) : Boolean {
+fun CaosScriptCompositeElement.sharesScope(otherScope: CaosScope?): Boolean {
     return scope.sharesScope(otherScope)
 }
 
-fun CaosScriptCompositeElement.sharesScope(other:CaosScriptCompositeElement) : Boolean {
+fun CaosScriptCompositeElement.sharesScope(other: CaosScriptCompositeElement): Boolean {
     return scope.sharesScope(other.scope)
 }
 
 val PsiElement.endOffset get() = textRange.endOffset
 val PsiElement.startOffset get() = textRange.startOffset
 
-val CaosScriptCompositeElement.scope: CaosScope? get() = (this as? CaosScriptHasCodeBlock ?: this.getParentOfType(CaosScriptHasCodeBlock::class.java))?.scope()
+val CaosScriptCompositeElement.scope: CaosScope?
+    get() = (this as? CaosScriptHasCodeBlock ?: this.getParentOfType(CaosScriptHasCodeBlock::class.java))?.scope()
 
-val PsiElement.endOffsetInParent : Int  get(){
-    return startOffsetInParent + textLength
+val PsiElement.endOffsetInParent: Int
+    get() {
+        return startOffsetInParent + textLength
+    }
+
+fun CaosScriptAssignsTarg.isTargClass(classifier: AgentClass): Boolean {
+    return isTargClass(classifier.family, classifier.genus, classifier.species)
+}
+
+fun CaosScriptAssignsTarg.isTargClass(family: Int, genus: Int, species: Int): Boolean {
+    return classComponentMatches(this.family, family)
+            && classComponentMatches(this.genus, genus)
+            && classComponentMatches(this.species, species);
+}
+
+private fun classComponentMatches(value1: Int, value2: Int): Boolean {
+    return value1 == 0 || value2 == 0 || value1 == value2
+}
+
+fun getDepth(element: PsiElement): Int {
+    var depth: Int = 0
+    var parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
+    while (parent != null) {
+        depth++
+        parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
+    }
+    return depth
+}
+
+private val INT_ASSIGNMENT_COMMANDS = listOf(
+        "ADDV",
+        "ANDV",
+        "SUBV",
+        "DIVV",
+        "MULV",
+        "MODV",
+        "ORRV",
+        "NEW: GENE",
+        "NET: RUSO"
+)
+
+private val STRING_ASSIGNMENT_COMMANDS = listOf(
+        "ADDS",
+        "CHAR",
+        "NET: UNIK",
+        "SETS"
+)
+
+fun CaosScriptCAssignment.getAssignedType(): CaosExpressionValueType? {
+    if (cKwAssignNumber != null) {
+        return if (this.variant?.isOld.orFalse())
+            CaosExpressionValueType.INT
+        else
+            CaosExpressionValueType.DECIMAL
+    }
+    return when (commandStringUpper.replace("\\s\\s+".toRegex(), " ")) {
+        "SETV" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
+        in INT_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.INT
+        "RTAR" -> CaosExpressionValueType.AGENT
+        "SETA" -> CaosExpressionValueType.AGENT
+        in STRING_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.STRING
+        "ABSV" -> CaosExpressionValueType.DECIMAL
+        "NOTV" -> CaosExpressionValueType.DECIMAL
+        else -> null
+    }?.let { type ->
+        return type
+    }
+}
+
+private fun getSetvValue(rvalue: CaosScriptRvalue?): CaosExpressionValueType? {
+    if (rvalue == null)
+        return null
+    return if (rvalue.variant?.isNotOld.orTrue()) {
+        if (rvalue.expression?.isInt.orFalse())
+            CaosExpressionValueType.INT
+        else if (rvalue.expression?.isFloat.orFalse())
+            CaosExpressionValueType.FLOAT
+        else if (rvalue.expression?.isNumeric.orFalse())
+            CaosExpressionValueType.DECIMAL
+        else
+            rvalue.inferredType
+    } else
+        rvalue.inferredType
+}
+
+private fun CaosScriptRvalue.resolveAgentClass(): AgentClass? {
+    val scope = scope
+    val offset = startOffset
+    val parent = getParentOfType(CaosScriptScriptElement::class.java)
+            ?: return null
+    return when (rvaluePrime?.commandStringUpper) {
+        "NORN" -> AgentClass(4, 0, 0)
+        "OWNR" -> (parent as? CaosScriptEventScript)?.let {
+            AgentClass(it.family, it.genus, it.species)
+        }
+        "CREA" -> if (variant == CaosVariant.C2) AgentClass(4, 0, 0) else null
+        "_IT_" -> AgentClass.ZERO
+        "AGNT" -> AgentClass.ZERO
+        "CARR" -> AgentClass.ZERO
+        "EDIT" -> AgentClass.ZERO
+        "FROM" -> AgentClass.ZERO
+        "HELD" -> AgentClass.ZERO
+        "HHLD" -> AgentClass.CREATURE
+        "HOTS" -> AgentClass.ZERO
+        "IITT" -> AgentClass.ZERO
+        "MTOA" -> AgentClass.ZERO
+        "MTOC" -> AgentClass.CREATURE
+        "NCLS", "PCLS" -> arguments.let {
+            toAgentClass(
+                    it.getOrNull(1),
+                    it.getOrNull(2),
+                    it.getOrNull(3)
+            )
+        }
+        "NULL" -> null
+        "OBJP" -> AgentClass.ZERO
+        "PNTR" -> AgentClass.POINTER
+        "PRT: FRMA" -> AgentClass.ZERO
+        "SEEN" -> AgentClass.ZERO
+        "TACK" -> AgentClass.ZERO
+        "TCAR" -> AgentClass.ZERO
+        "TRCK" -> AgentClass.ZERO
+        "TWIN" -> (arguments.firstOrNull() as? CaosScriptRvalue)?.resolveAgentClass()
+        "UNID" -> AgentClass.ZERO
+        else -> PsiTreeUtil.collectElementsOfType(parent, CaosScriptAssignsTarg::class.java)
+                .filter { it.startOffset < offset && scope.sharesScope(it.scope) }
+                .sortedByDescending { it.startOffset }
+                .mapNotNull {
+                    it.targClass
+                }
+                .firstOrNull()
+    }
 }
