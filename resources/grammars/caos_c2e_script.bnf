@@ -14,7 +14,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|constant_assignment|named_constant|named_var_assignment|named_var|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|c_rtar")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -342,6 +342,10 @@ macro
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -360,6 +364,10 @@ removal_script
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -430,6 +438,7 @@ event_script
 			getSpecies
 			getEventNumber
 			isClosed
+			getTargClass
 		]
 	}
 	;
@@ -473,6 +482,10 @@ install_script
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -509,6 +522,10 @@ subroutine
 			getBlockType
 			getName
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -589,9 +606,9 @@ classifier
 private control_statement
    ::=  subroutine
    |	loop_statement
-   |	  	repeat_statement
-   |	  	enum_next_statement
-   |	  	enum_scenery_statement
+   |	repeat_statement
+   |	enum_next_statement
+   |	enum_scenery_statement
    |	doif_statement
    ;
 
@@ -611,6 +628,10 @@ loop_statement
 			getBlockType
 			getCommandString
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -654,6 +675,10 @@ repeat_statement
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 
 	}
@@ -691,11 +716,17 @@ enum_next_statement
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			codeBlock="code_block"
 			getBlockType
 			isClosed
+			getTargClass
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -727,10 +758,16 @@ enum_scenery_statement
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getBlockType
 			isClosed
+			getTargClass
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
    }
    ;
@@ -757,10 +794,6 @@ escn_header
 private enum_body
    ::= code_block
    {
-      implements = [
-         "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-         "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
-      ]
       //recoverWhile=enum_body_recover
    }
    ;
@@ -792,6 +825,10 @@ doif_statement_statement
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -807,6 +844,10 @@ else_if_statement
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -821,6 +862,10 @@ else_statement
 		methods = [
 			getBlockType
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
+			getTargClass
 		]
 	}
 	;
@@ -1314,7 +1359,7 @@ equality_expression
    }
    ;
 
-private equality_expression_prime
+equality_expression_prime
 	::= expression space_like eq_op_with_expression
 	{
 		pin = 1
@@ -1868,11 +1913,11 @@ command_call
 
 private command_call_by_args
 	::= c_targ
+	|	c_rtar
 	|	c_d_d
 	|	c_l
 	|	c_f
 	|	c_d_s
-	|	c_l_s
 	|	c_d_d_f_d
 	|	c_d_d_f
 	|	c_bs
@@ -1884,7 +1929,6 @@ private command_call_by_args
 	|	c_d_s_d
 	|	c_d_d_d_f
 	|	c_d_v_v
-	|	c_l_d_d
 	|	c_d_f
 	|	c_f_f_f_f
 	|	c_cond
@@ -1907,7 +1951,6 @@ private command_call_by_args
 	|	c_d_d_d_d_f
 	|	c_a_d_v_v_d
 	|	c_l_l_l_l
-	|	c_s_l
 	|	c_s_s_d_v_v
 	|	c_t_d_d_d_d_d_d_d
 	|	c_t_d_d_d
@@ -1915,7 +1958,6 @@ private command_call_by_args
 	|	c_d_d_d_s_d_d_d
 	|	c_d_a_d_d_d_s_d_d_d
 	|	c_d_a_d_d_d
-	|	c_d_d_l
 	|	c_t_d_d
 	|	c_d_d_d_d_d
 	|	c_t_d_d_d_d
@@ -1952,7 +1994,6 @@ private command_call_by_args
 	|	c_d
 	|	c_gsub
 	|	c_pict
-	|	c_cv_char
 	{
 		//recoverWhile=command_call_recover
 	}
@@ -1968,6 +2009,12 @@ c_assignment
 	|	c_assign_string
 	|	c_setv
 	|	c_negv
+	|	c_cv_char
+	|	c_assign_l
+	|	c_assign_net_unik
+	|	c_assign_gene
+	|	c_assign_char
+	|	c_adds
 	{
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptAssignmentStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -1975,6 +2022,7 @@ c_assignment
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getOp
@@ -1985,6 +2033,34 @@ c_assignment
 			getLVar
 			getArguments
 			getArgumentValues
+			getLvalue
+			getTargClass
+		]
+	}
+	;
+
+private c_assign_l
+	::= c_assign_kw_l space_like lvalue
+	;
+
+c_assign_kw_l
+	::= K_ABSV
+	|	prefix_kw_net_col space_like (K_RUSO|incomplete)
+	|	K_NOTV
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
 		]
 	}
 	;
@@ -2060,7 +2136,7 @@ c_gsub
 		]
 	}
 	;
-private c_cv_char
+c_cv_char
 	::= kw_cv_char space_like lvalue space_like expects_int space_like expects_int
 	;
 
@@ -2238,6 +2314,7 @@ c_targ
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getCommandToken
@@ -2247,11 +2324,56 @@ c_targ
 			getRVar
 			getArguments
 			getArgumentValues
+			getTargClass
 		]
 	}
 
 c_kw_targ
 	::= K_TARG
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_rtar
+	::= c_kw_rtar args_d_d_d
+	{
+		pin = 1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRtarAssignmentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getRVar
+			getArguments
+			getArgumentValues
+			getTargClass
+		]
+	}
+	;
+
+c_kw_rtar
+	::= K_RTAR
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -2397,7 +2519,7 @@ private c_d_s ::= c_kw_d_s args_d_s
 	}
 	;
 
-private c_l_s ::= c_kw_l_s space_like lvalue space_like expects_string
+private c_adds ::= c_kw_adds space_like lvalue space_like expects_string
 	{
 		pin=1
 	}
@@ -2480,7 +2602,7 @@ private c_d_v_v ::= c_kw_d_v_v args_d_v_v
 	}
 	;
 
-private c_l_d_d ::= c_kw_l_d_d args_l_d_d
+private c_assign_char ::= c_kw_assign_char args_l_d_d
 	{
 		pin=1
 	}
@@ -2638,7 +2760,7 @@ private c_l_l_l_l ::= c_kw_l_l_l_l args_l_l_l_l
 	}
 	;
 
-private c_s_l ::= c_kw_s_l args_s_l
+private c_assign_net_unik ::= c_assign_kw_net_unik args_s_l
 	{
 		pin=1
 	}
@@ -2692,7 +2814,7 @@ private c_d_a_d_d_d ::= c_kw_d_a_d_d_d args_d_a_d_d_d
 	;
 
 
-private c_d_d_l ::= c_kw_d_d_l args_d_d_l
+private c_assign_gene ::= c_kw_assign_gene args_d_d_l
 	{
 		pin=1
 	}
@@ -2955,7 +3077,6 @@ rvalue_prime
      		toCaosVar
 			getArguments
 			getArgumentValues
-     		getInferredType
 		]
 	}
 	;
@@ -3083,7 +3204,7 @@ private r_d_d_d_d ::= r_kw_d_d_d_d args_d_d_d_d
 
 
 
-private r_a_d_d_d ::= r_kw_a_d_d_d args_a_d_d_d
+private r_a_d_d_d ::= r_kw_prev_next_class args_a_d_d_d
 	{
 		pin=1
 	}
@@ -3818,10 +3939,7 @@ c_dde_gids_d_d
 	;
 
 c_kw_l
-	::= K_ABSV
-	|	K_NAMN
-	|	prefix_kw_net_col space_like (K_RUSO|incomplete)
-	|	K_NOTV
+	::= K_NAMN
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -3895,7 +4013,7 @@ c_kw_d_s
 	}
 	;
 
-c_kw_l_s
+c_kw_adds
 	::= K_ADDS
 	{
 		implements = [
@@ -4051,7 +4169,6 @@ c_kw_d_d_d
 	|	prefix_kw_pat_col space_like (K_MOVE|incomplete)
 	|	K_PUHL
 	|	K_PUPT
-	|	K_RTAR
 	|	K_STAR
 	|	K_SWAP
 	|	K_TNTC
@@ -4077,6 +4194,7 @@ c_kw_d_d_d
 		]
 	}
 	;
+
 
 dde_col_getb_d_d_d ::= K_LVOB
 	{
@@ -4231,7 +4349,7 @@ c_kw_d_v_v
 	}
 	;
 
-c_kw_l_d_d
+c_kw_assign_char
 	::= K_CHAR (!<<isVariant 'CV'>>)
 	{
 		implements = [
@@ -4318,7 +4436,6 @@ c_kw_cond
 
 c_kw_a
 	::= prefix_kw_dbg_col space_like (K_TACK|incomplete)
-	|	K_ECON
 	|	K_EVNT
 	|	K_FORF
 	|	K_FREL
@@ -4725,7 +4842,7 @@ c_kw_l_l_l_l
 	}
 	;
 
-c_kw_s_l
+c_assign_kw_net_unik
 	::= prefix_kw_net_col space_like (K_UNIK|incomplete)
 	{
 		implements = [
@@ -4890,7 +5007,7 @@ c_kw_d_a_d_d_d
 	}
 	;
 
-c_kw_d_d_l
+c_kw_assign_gene
 	::= prefix_kw_new_col space_like (K_GENE|incomplete)
 	{
 		implements = [
@@ -6247,7 +6364,7 @@ r_kw_d_d_d_d
 	}
 	;
 
-r_kw_a_d_d_d
+r_kw_prev_next_class
 	::= K_NCLS
 	|	K_PCLS
 	{
@@ -6376,6 +6493,7 @@ r_kw_d_s_d_s_l
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
 		]
 		methods = [
 			getReference

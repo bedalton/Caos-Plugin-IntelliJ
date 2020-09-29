@@ -13,10 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 
 class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction, LocalQuickFix {
 
@@ -52,10 +49,13 @@ class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction,
     private fun getScriptText() : String? {
         val element = element.element
                 ?: return null
+        if (!element.commandToken?.commandString?.equalsIgnoreCase("cls2").orFalse())
+            return null;
         val familyAndGenus = element.lvalue?.getChildrenOfType(CaosScriptArgument::class.java)
                 ?: return null
         if (familyAndGenus.size != 2)
             return null
+
         val clasText = "CLAS".matchCase(element.commandString)
         val clas:Int
         val setv = "setv".matchCase(element.commandString)

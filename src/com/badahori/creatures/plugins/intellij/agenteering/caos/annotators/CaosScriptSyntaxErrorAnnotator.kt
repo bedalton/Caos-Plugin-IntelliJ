@@ -184,7 +184,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (args.size == 2) {
             return
         }
-        if (element.cKwNegv != null && args.size == 1)
+        if ((element.cKwNegv != null || element.cAssignKwL != null) && args.size == 1)
             return
         val lvalue = args.getOrNull(0) as? CaosScriptLvalue
         if (lvalue?.argumentsLength.orElse(0) > 0)
