@@ -71,25 +71,25 @@ internal fun SfcReader.readObject(): PointerSfcObject<*> {
     val frozen = flags and 0x02 != 0
     return PointerSfcObjectImpl(
             classifier = classifier,
-            unId = unId,
+            accelerationG = accg,
+            actv = actv,
+            aero = aero,
             attr = attr,
             bounds = bounds,
-            actv = actv,
             currentSound = currentSound,
+            frozen = frozen,
+            gravityData = gravityData,
+            range = range,
+            restitution = restitution,
+            scripts = readScripts(),
+            size = size,
             sprite = sprite,
+            threat = threat,
             tickReset = tickReset,
             tickState = tickState,
+            unId = unId,
             variables = variables,
-            size = size,
-            threat = threat,
-            range = range,
-            accelerationG = accg,
-            velocity = velocity,
-            restitution = restitution,
-            aero = aero,
-            gravityData = gravityData,
-            frozen = frozen,
-            scripts = readScripts()
+            velocity = velocity
     )
 }
 
