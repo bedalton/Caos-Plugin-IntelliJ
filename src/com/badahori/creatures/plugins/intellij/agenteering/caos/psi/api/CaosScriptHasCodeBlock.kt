@@ -3,11 +3,15 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptBlockType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 
-interface CaosScriptHasCodeBlock : CaosScriptCompositeElement {
+interface CaosScriptHasCodeBlock : CaosScriptCompositeElement, CaosScriptAssignsTarg {
     val codeBlock: CaosScriptCodeBlock?
     val blockType:CaosScriptBlockType
     val isClosed:Boolean
+    val family:Int
+    val genus:Int
+    val species:Int
 }
 
 fun CaosScriptHasCodeBlock.scope() : CaosScope {

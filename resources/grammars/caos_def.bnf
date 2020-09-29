@@ -98,6 +98,7 @@ command_def_element
 			getParameterStructs
 			getReturnTypeString
 			getReturnTypeStruct
+			getSimpleReturnType
 			getVariants
 			isVariant
 			getParameterStruct
@@ -194,6 +195,7 @@ parameter
 			getParameterName
 			getParameterType
 			toStruct
+			getSimpleType
 		]
 	}
 	;
@@ -223,6 +225,11 @@ return_type
 variable_type
 	::= '(' type_literal ')'
 	|	bracket_string
+	{
+		methods = [
+			toSimpleType
+		]
+	}
 	;
 
 type_literal
