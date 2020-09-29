@@ -15,9 +15,8 @@ import com.intellij.psi.impl.PsiFileEx
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
 
-class CobCompiledFile(provider:FileViewProvider)
-    : PsiBinaryFileImpl(provider.manager as PsiManagerImpl, provider), PsiCompiledFile, PsiFileEx, PsiBinaryFile
-{
+class CobCompiledFile(provider: FileViewProvider)
+    : PsiBinaryFileImpl(provider.manager as PsiManagerImpl, provider), PsiCompiledFile, PsiFileEx, PsiBinaryFile {
     /**
      * Gets children from the in memory json psi file
      */
@@ -35,7 +34,7 @@ class CobCompiledFile(provider:FileViewProvider)
         // Get the plugin temp directory.
         val tmp = CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory("tmp")
         // Create a temporary virtual file
-        val virtualFile = tmp.createChildWithContent(virtualFile.name+".json", sfcDump)
+        val virtualFile = tmp.createChildWithContent(virtualFile.name + ".json", sfcDump)
         // Reformat and return the JSON psi file
         virtualFile.getPsiFile(project)!!.apply {
             // If this is run on the Event thread,
@@ -48,7 +47,7 @@ class CobCompiledFile(provider:FileViewProvider)
         }
     }
 
-    private fun decompileToJson() : String {
+    private fun decompileToJson(): String {
         // Check if file was already decompiled, and json data written.
         // If it was, return it
         virtualFile.getUserData(SFC_JSON_KEY)?.let {
@@ -65,10 +64,10 @@ class CobCompiledFile(provider:FileViewProvider)
         }
 
         // Read and create json response object
-        val json:String = try {
+        val json: String = try {
             SfcReader.readFile(virtualFile).let {
                 it.data?.toString()
-                    ?: generateErrorJson(virtualFile, "SFC decompile failed ${ it.error ?:  "without error message."}")
+                        ?: generateErrorJson(virtualFile, "SFC decompile failed ${it.error ?: "without error message."}")
             }
         } catch (e: Exception) {
             generateErrorJson(virtualFile, "SFC Decompile failed. ${e.message}")
@@ -102,7 +101,7 @@ class CobCompiledFile(provider:FileViewProvider)
 
 private val SFC_JSON_KEY = Key<String>("caos.sfc.decompiled.JSON")
 
-fun generateErrorJson(virtualFile:VirtualFile, errorMessageIn:String?, status:String = "DECOMPILE_FAILED") : String {
+fun generateErrorJson(virtualFile: VirtualFile, errorMessageIn: String?, status: String = "DECOMPILE_FAILED"): String {
     val json = JsonObject()
     json.addProperty("file", virtualFile.path)
     json.addProperty("status", status)
