@@ -83,7 +83,11 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
                 out.append(stream.readChar())
             }
             stream.close()
-            return Gson().fromJson(out.toString(), SfcFileDataHolder::class.java)
+            try {
+                return Gson().fromJson(out.toString(), SfcFileDataHolder::class.java)
+            } catch (e:Exception) {
+                return null
+            }
         }
 
         internal fun writeToStorage(file: VirtualFile, holder: SfcFileDataHolder) {

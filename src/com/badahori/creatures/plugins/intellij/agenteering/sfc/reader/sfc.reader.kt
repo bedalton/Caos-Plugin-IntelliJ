@@ -210,7 +210,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
             // If desired, read from cache. This is preferred. As parsing takes a while
             if (cache) {
                 val cached = virtualFile.getUserData(SFC_DECOMPILED_DATA_KEY)
-                        ?: SfcDecompiledFilePropertyPusher.readFromStorage(virtualFile)
+                        ?: try { SfcDecompiledFilePropertyPusher.readFromStorage(virtualFile) } catch(e:Exception) { null }
                 cached?.let {
                     return it
                 }

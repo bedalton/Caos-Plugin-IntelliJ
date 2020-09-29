@@ -2,9 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.google.gson.JsonObject
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.util.Key
@@ -14,7 +14,6 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.impl.PsiFileEx
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
-import com.sun.glass.ui.Application
 
 class CobCompiledFile(provider:FileViewProvider)
     : PsiBinaryFileImpl(provider.manager as PsiManagerImpl, provider), PsiCompiledFile, PsiFileEx, PsiBinaryFile
@@ -41,7 +40,7 @@ class CobCompiledFile(provider:FileViewProvider)
         virtualFile.getPsiFile(project)!!.apply {
             // If this is run on the Event thread,
             // Reformat it
-            if (Application.isEventThread()) {
+            if (ApplicationManager.getApplication().isDispatchThread) {
                 runWriteAction {
                     CodeStyleManager.getInstance(project).reformat(this)
                 }
@@ -57,7 +56,7 @@ class CobCompiledFile(provider:FileViewProvider)
         }
         // Deserialize virtual data if present.
         val holder = virtualFile.getUserData(SFC_DECOMPILED_DATA_KEY)
-                ?: SfcDecompiledFilePropertyPusher.readFromStorage(virtualFile)
+                ?: try { SfcDecompiledFilePropertyPusher.readFromStorage(virtualFile) } catch(e:Exception) { null }
         // Check if file was decompiled before, and if it was
         // return the json result
         holder?.let {
