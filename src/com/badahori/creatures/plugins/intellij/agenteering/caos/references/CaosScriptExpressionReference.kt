@@ -80,7 +80,7 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
 
     private fun possibleValuesListNamesForEquality() : List<String> {
         val expression = myElement
-        val equalityExpression = expression.parent as? CaosScriptEqualityExpression ?: return emptyList()
+        val equalityExpression = expression.parent as? CaosScriptEqualityExpressionPrime ?: return emptyList()
         val other = equalityExpression.expressionList.firstOrNull { it != expression }
                 ?: return emptyList()
         val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)

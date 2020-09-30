@@ -26,13 +26,13 @@ fun CaosScriptExpression.getValuesListValue(): CaosDefValuesListValueStruct? {
         return getCommandParameterValuesListValue(it, text)
     }
 
-    getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
+    getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let {
         return getEqualityExpressionValuesListValue(it, this)
     }
     return null
 }
 
-private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefValuesListValueStruct? {
+private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression): CaosDefValuesListValueStruct? {
     val value = expression.intValue?.let { "$it" } ?: expression.stringValue ?: return null
     val other = equalityExpression.expressionList.let {
         when (it.size) {
@@ -160,13 +160,13 @@ fun CaosScriptExpression.getCommand(): CaosDefCommandDefElement? {
         return getCommand(it)
     }
 
-    getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
+    getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let {
         return getCommand(it, this)
     }
     return null
 }
 
-private fun getCommand(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefCommandDefElement? {
+private fun getCommand(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression): CaosDefCommandDefElement? {
     val other = equalityExpression.expressionList.let {
         when (it.size) {
             0, 1 -> return null
@@ -197,5 +197,4 @@ private fun getCommand(valueOfType: CaosScriptExpectsValueOfType): CaosDefComman
             ?.firstOrNull()
             ?.element
             ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-            ?: return null
 }
