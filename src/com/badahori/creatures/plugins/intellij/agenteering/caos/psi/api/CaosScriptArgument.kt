@@ -49,7 +49,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
                 "float" -> FLOAT
                 "hexadecimal" -> HEXADECIMAL
                 "int", "integer" -> INT
-                "pict_dimensions", "picdemensions", "pict dimensions" -> PICT_DIMENSION
+                "pict_dimension", "pict_dimensions", "picdemensions", "picdemension", "pict dimensions",  "pict dimension" -> PICT_DIMENSION
                 "string" -> STRING
                 "[string]" -> C1_STRING
                 "token" -> TOKEN
