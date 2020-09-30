@@ -1,7 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types;
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRemovalScript;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.stubs.IStubElementType;
+import com.intellij.psi.stubs.StubElement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface CaosScriptStubTypes {
     //@NotNull
@@ -89,4 +93,6 @@ public interface CaosScriptStubTypes {
 
     CaosScriptFileStubType FILE = new CaosScriptFileStubType();
     CaosScriptRValuePrimeStubType RVALUE_PRIME = new CaosScriptRValuePrimeStubType("CaosScript_RVALUE_PRIME");
+    @NotNull
+    CaosScriptExpressionStubType EXPRESSION = new CaosScriptExpressionStubType("CaosScript_EXPRESSION");
 }
