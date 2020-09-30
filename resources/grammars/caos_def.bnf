@@ -155,6 +155,7 @@ values_list_value
 			getDescription
 			getEquality
 			getPresentation
+			getPresentationText
 		]
 	}
 	;
@@ -227,7 +228,7 @@ variable_type
 	|	bracket_string
 	{
 		methods = [
-			toSimpleType
+			getSimpleType
 		]
 	}
 	;
@@ -288,6 +289,18 @@ values_list_name
 
 values_list_value_key
 	::= VALUES_LIST_VALUE_KEY_LITERAL
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getPresentationText
+			getReference
+		]
+	}
 	;
 
 values_list_value_name

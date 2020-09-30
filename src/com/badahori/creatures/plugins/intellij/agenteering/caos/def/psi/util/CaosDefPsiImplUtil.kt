@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefDocCommentHashtagReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefValuesListNameReference
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefValuesListValueKeyReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefVariableLinkReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
@@ -13,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
@@ -522,19 +524,24 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(hashtag: CaosDefDocCommentHashtag): CaosDefDocCommentHashtagReference {
-        return CaosDefDocCommentHashtagReference(hashtag)
+    fun setName(element:CaosDefValuesListValueKey, newNameString:String) : PsiElement {
+        if (newNameString.isEmpty())
+            return element
+        val newNameElement = CaosDefPsiElementFactory
+                .createNewValuesListValueKey(element.project, newNameString)
+                ?: return element
+        return element.replace(newNameElement)
     }
 
     @JvmStatic
-    fun getTextOffset(variableLink: CaosDefVariableLink): Int {
-        return 1
+    fun getName(element:CaosDefValuesListValueKey) : String {
+        return element.text.trim()
     }
 
 
     @JvmStatic
     fun getName(element: CaosDefCommandWord): String {
-        return element.text
+        return element.text.trim()
     }
 
     @JvmStatic
@@ -542,6 +549,56 @@ object CaosDefPsiImplUtil {
         val newNameElement = CaosDefPsiElementFactory
                 .getCommandWordElement(element.project, newNameString)
         return element.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getName(element: CaosDefValuesListName): String {
+        return element.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(element: CaosDefValuesListName, newNameString: String): PsiElement {
+        val newNameElement = CaosDefPsiElementFactory
+                .getValuesListName(element.project, newNameString)
+        return element.replace(newNameElement)
+    }
+
+    @JvmStatic
+    fun getPresentationText(element:CaosDefValuesListValueKey) : String {
+        return (element.parent as? CaosDefValuesListValue)?.let {
+            getPresentationText(it)
+        } ?: "Value ${element.text}"
+    }
+
+    @JvmStatic
+    fun getPresentationText(element:CaosDefValuesListValue) : String {
+        val valueListValueName
+                = element.getParentOfType(CaosDefValuesListElement::class.java)
+                ?.valuesListName
+                ?.let {
+                    " : @$it"
+                }
+                ?: ""
+        val key = element.stub?.key ?: element.valuesListValueKey.text
+        val name = element.stub?.value ?: element.valuesListValueName?.text ?: return key
+        return "$key = $name$valueListValueName)"
+    }
+
+
+
+    @JvmStatic
+    fun getReference(hashtag: CaosDefDocCommentHashtag): CaosDefDocCommentHashtagReference {
+        return CaosDefDocCommentHashtagReference(hashtag)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosDefValuesListValueKey) : CaosDefValuesListValueKeyReference {
+        return CaosDefValuesListValueKeyReference(element)
+    }
+
+    @JvmStatic
+    fun getTextOffset(variableLink: CaosDefVariableLink): Int {
+        return 1
     }
 
     @JvmStatic
@@ -569,18 +626,6 @@ object CaosDefPsiImplUtil {
         return CaosDefVariableLinkReference(element)
     }
 
-
-    @JvmStatic
-    fun getName(element: CaosDefValuesListName): String {
-        return element.text.substring(1)
-    }
-
-    @JvmStatic
-    fun setName(element: CaosDefValuesListName, newNameString: String): PsiElement {
-        val newNameElement = CaosDefPsiElementFactory
-                .getValuesListName(element.project, newNameString)
-        return element.replace(newNameElement)
-    }
 
     @JvmStatic
     fun getReference(element: CaosDefValuesListName): CaosDefValuesListNameReference {
@@ -637,7 +682,7 @@ object CaosDefPsiImplUtil {
         val struct = element.toStruct()
         return object : ItemPresentation {
             override fun getPresentableText(): String {
-                return struct.key + " = " + struct.value
+                return getPresentationText(element)
             }
 
             override fun getLocationString(): String {
@@ -684,6 +729,13 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun isValidHost(block: CaosDefCodeBlock): Boolean {
         return true
+    }
+
+    @JvmStatic
+    fun toSimpleName(element:CaosDefVariableType) : CaosExpressionValueType {
+        val simpleName = (element.typeLiteral ?: element.bracketString)?.text
+            ?: return CaosExpressionValueType.UNKNOWN
+        return CaosExpressionValueType.fromSimpleName(simpleName)
     }
 
     @JvmStatic
