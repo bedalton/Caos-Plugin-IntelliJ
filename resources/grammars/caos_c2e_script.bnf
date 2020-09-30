@@ -1353,8 +1353,8 @@ equality_expression
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
 		]
 		methods = [
-			first="/expression[0]"
-			second="/expression[1]"
+			first="/equality_expression_prime/expression[0]"
+			second="/equality_expression_prime/expression[1]"
 		]
    }
    ;
@@ -1363,6 +1363,11 @@ equality_expression_prime
 	::= expression space_like eq_op_with_expression
 	{
 		pin = 1
+		methods = [
+			first="/expression[0]"
+			second="/expression[1]"
+			eqOp="/eq_op"
+		]
 	}
 	;
 
@@ -1378,8 +1383,9 @@ equality_expression_plus
 	{
 		pin(".*")=1
 		methods = [
-			first="/expression[0]"
-			second="/expression[1]"
+			first="/equality_expression_prime/expression[0]"
+			second="/equality_expression_prime/expression[1]"
+			eqOp="/equality_expression_prime/eq_op"
 		]
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
@@ -3255,6 +3261,9 @@ private r_s_d_l ::= r_kw_s_d_l args_s_d_l
 private r_d_s_d_s_l ::= r_kw_d_s_d_s_l args_d_s_d_s_l
 	{
 		pin=1
+		methods= [
+			lvalue="/args_d_s_d_s_l/lvalue"
+		]
 	}
 	;
 
@@ -6491,7 +6500,6 @@ r_kw_d_s_d_s_l
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
 		]
 		methods = [
 			getReference
