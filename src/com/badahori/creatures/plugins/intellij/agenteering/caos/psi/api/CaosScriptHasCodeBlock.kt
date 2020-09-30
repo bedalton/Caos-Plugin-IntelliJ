@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 
-interface CaosScriptHasCodeBlock : CaosScriptCompositeElement, CaosScriptAssignsTarg {
+interface CaosScriptHasCodeBlock : CaosScriptCompositeElement {
     val codeBlock: CaosScriptCodeBlock?
     val blockType:CaosScriptBlockType
     val isClosed:Boolean
