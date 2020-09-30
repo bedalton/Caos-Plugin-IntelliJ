@@ -49,8 +49,8 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
                 type = CaosDefPsiImplUtil.AnyTypeType,
                 comment = null
         )
-        val simpleReturnType = stream.readSimpleType()
         val comment = stream.readUTFFast().nullIfEmpty()
+        val simpleReturnType = stream.readSimpleType()
         return CaosDefCommandDefinitionStubImpl(
                 parent = parent,
                 namespace = namespace,
