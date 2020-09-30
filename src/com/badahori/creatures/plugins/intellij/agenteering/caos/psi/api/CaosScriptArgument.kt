@@ -38,8 +38,8 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
          * Gets the expression type from its simple name
          */
         fun fromSimpleName(simpleName: String): CaosExpressionValueType {
-            return when (val typeToLower = simpleName.toLowerCase()) {
-                "any " -> ANY
+            return when (val typeToLower = simpleName.trim().toLowerCase()) {
+                "any" -> ANY
                 "agent" -> AGENT
                 "[anim]" -> ANIMATION
                 "[byte_string]", "[byte string]", "byte string", "bytestring" -> BYTE_STRING
