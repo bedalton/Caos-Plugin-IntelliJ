@@ -9,9 +9,6 @@ interface CaosScriptHasCodeBlock : CaosScriptCompositeElement {
     val codeBlock: CaosScriptCodeBlock?
     val blockType:CaosScriptBlockType
     val isClosed:Boolean
-    val family:Int
-    val genus:Int
-    val species:Int
 }
 
 fun CaosScriptHasCodeBlock.scope() : CaosScope {
