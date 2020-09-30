@@ -427,6 +427,9 @@ event_script
 			getBlockType
 			getEventNumber
 			isClosed
+			getFamily
+			getGenus
+			getSpecies
 		]
 	}
 	;
