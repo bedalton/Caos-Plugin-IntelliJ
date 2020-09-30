@@ -30,6 +30,7 @@ import com.intellij.psi.search.GlobalSearchScope
 object CaosScriptValuesListValuesCompletionProvider {
 
     private val startsWithNumber = "^[0-9].*".toRegex()
+
     /**
      * Adds completions for a known value list, based on argument position and parent command
      */
@@ -108,12 +109,11 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .map { it.nameWithoutExtension }
             // Loop through all files and format them as needed.
             for (file in allFiles) {
-                val fileName = file
                 val isToken = parameterStruct.type.type.toLowerCase() == "token"
                 val text = when {
-                    isToken -> fileName
-                    variant.isOld -> "[$fileName"
-                    else -> "\"$fileName"
+                    isToken -> file
+                    variant.isOld -> "[$file"
+                    else -> "\"$file"
                 }
                 val openQuote = when {
                     isToken -> null
@@ -128,9 +128,9 @@ object CaosScriptValuesListValuesCompletionProvider {
                 // Create lookup element
                 var lookupElement = LookupElementBuilder
                         .create(text)
-                        .withStrikeoutness(isToken && fileName.length != 4)
-                        .withLookupString("$openQuote$fileName$closeQuote")
-                        .withPresentableText(fileName)
+                        .withStrikeoutness(isToken && file.length != 4)
+                        .withLookupString("$openQuote$file$closeQuote")
+                        .withPresentableText(file)
                 if (closeQuote != null) {
                     lookupElement = lookupElement
                             .withInsertHandler(CloseQuoteInsertHandler(closeQuote))
@@ -171,7 +171,7 @@ object CaosScriptValuesListValuesCompletionProvider {
         }
     }
 
-    fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression) {
+    fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression) {
         val other = equalityExpression.expressionList.let {
             when (it.size) {
                 0, 1 -> return

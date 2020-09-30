@@ -144,7 +144,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         // Add equality expression completions for known types
         (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
-            val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpression::class.java)
+            val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)
             if (equalityExpression != null) {
                 CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
             }

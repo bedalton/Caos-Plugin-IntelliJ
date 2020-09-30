@@ -120,8 +120,19 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandString(element: CaosScriptRvalue): String? {
-        return (element.stub?.caosVar ?: element.toCaosVar()).commandString
-                ?: return UNDEF
+        element.stub?.commandString.nullIfUndefOrBlank()?.let {
+            return it
+        }
+        element.stub?.caosVar?.commandString.nullIfUndefOrBlank()?.let {
+            return it
+        }
+        element.incomplete?.text.nullIfEmpty()?.let {
+            return it
+        }
+        element.rvaluePrime?.commandString.nullIfUndefOrBlank()?.let {
+            return it
+        }
+        return null
     }
 
     @JvmStatic
@@ -148,7 +159,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandString(call: CaosScriptCommandCall): String {
-        return call.stub?.command
+        return call.stub?.command.nullIfUndefOrBlank()
                 ?: getCommandToken(call)
                         ?.text
                         .orEmpty()
@@ -159,7 +170,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandStringUpper(element: CaosScriptCommandCall): String? {
-        return element.stub?.commandUpper ?: getCommandString(element).toUpperCase()
+        return element.stub?.commandUpper.nullIfUndefOrBlank() ?: getCommandString(element).toUpperCase()
     }
 
     @JvmStatic
@@ -184,7 +195,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandTokens(call: CaosScriptCommandCall): List<String> {
-        return call.stub?.commandTokens
+        return call.stub?.commandTokens?.let { if (it.firstOrNull() == UNDEF) null else it}
                 ?: getCommandToken(call)
                         ?.text
                         .orEmpty()
@@ -1402,12 +1413,6 @@ object CaosScriptPsiImplUtil {
         return expression.token != null
     }
 
-    fun isVar(expression: CaosScriptExpression): Boolean {
-        return expression.varToken != null
-                || expression.namedGameVar != null
-                || expression.namedVar != null
-    }
-
     fun isConst(expression: CaosScriptExpression): Boolean {
         return expression.namedConstant != null
     }
@@ -1610,8 +1615,8 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandToken(element:CaosScriptCRtar) : String {
-        return element.text
+    fun getCommandToken(element:CaosScriptCRtar) : CaosScriptCKwRtar {
+        return element.cKwRtar
     }
 
     @JvmStatic
@@ -1709,9 +1714,13 @@ object CaosScriptPsiImplUtil {
         }
         return element.equalityExpressionPlusList
                 .filter { it.eqOp.text.let { it.equalsIgnoreCase("eq") || it == "=" } }
-                .mapNotNull {
-                    val other = if (it.first.text.equalsIgnoreCase(key)) it.second else if (it.second.text.equalsIgnoreCase(key)) it.first else null
-                            ?: return@mapNotNull null
+                .mapNotNull { eqPlus ->
+                    val other = when {
+                        eqPlus.first.text.equalsIgnoreCase(key) -> eqPlus.second
+                        eqPlus.second.text.equalsIgnoreCase(key) -> eqPlus.first
+                        else -> null
+                                ?: return@mapNotNull null
+                    }
                     other.toCaosVar().let {
                         when (it) {
                             is CaosVar.CaosLiteral.CaosInt -> it.value.toInt()
@@ -1755,13 +1764,13 @@ private fun toAgentClassValue(element: PsiElement?): Int {
     }
     val rvalue = element.getSelfOrParentOfType(CaosScriptRvalue::class.java)
             ?: return 0
-    val value = rvalue.toCaosVar()
-    return when (value) {
+    return when (val value = rvalue.toCaosVar()) {
         is CaosVar.CaosLiteral.CaosInt -> value.value.toInt()
         else -> 0
     }
 }
 
+@Suppress("SpellCheckingInspection")
 enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
     UNDEF(-1, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF),
     NAME(1, "NAME"),
@@ -1868,13 +1877,20 @@ val PsiElement.case: Case
         return Case.UPPER_CASE
     }
 
-fun String?.nullIfUndef(): String? {
-    if (this == null || this == UNDEF)
-        return null
-    return this
+fun String?.nullIfUndefOrBlank() : String? {
+    return if(this == null || this == UNDEF || this.isBlank())
+        null
+    else
+        this
 }
 
+@Suppress("SpellCheckingInspection")
 private val varTokenAssignmentSearchTerminatingOperands = listOf(
+        "NOTV",
+        "ANDV",
+        "SUBV",
+        "ADDV",
+        "ORRV",
         "MULV",
         "DIVV",
         "MODV",
@@ -1910,7 +1926,7 @@ fun CaosScriptAssignsTarg.isTargClass(classifier: AgentClass): Boolean {
 fun CaosScriptAssignsTarg.isTargClass(family: Int, genus: Int, species: Int): Boolean {
     return classComponentMatches(this.family, family)
             && classComponentMatches(this.genus, genus)
-            && classComponentMatches(this.species, species);
+            && classComponentMatches(this.species, species)
 }
 
 private fun classComponentMatches(value1: Int, value2: Int): Boolean {
@@ -1927,6 +1943,7 @@ fun getDepth(element: PsiElement): Int {
     return depth
 }
 
+@Suppress("SpellCheckingInspection")
 private val INT_ASSIGNMENT_COMMANDS = listOf(
         "ADDV",
         "ANDV",
@@ -1939,6 +1956,7 @@ private val INT_ASSIGNMENT_COMMANDS = listOf(
         "NET: RUSO"
 )
 
+@Suppress("SpellCheckingInspection")
 private val STRING_ASSIGNMENT_COMMANDS = listOf(
         "ADDS",
         "CHAR",
@@ -1971,14 +1989,12 @@ private fun getSetvValue(rvalue: CaosScriptRvalue?): CaosExpressionValueType? {
     if (rvalue == null)
         return null
     return if (rvalue.variant?.isNotOld.orTrue()) {
-        if (rvalue.expression?.isInt.orFalse())
-            CaosExpressionValueType.INT
-        else if (rvalue.expression?.isFloat.orFalse())
-            CaosExpressionValueType.FLOAT
-        else if (rvalue.expression?.isNumeric.orFalse())
-            CaosExpressionValueType.DECIMAL
-        else
-            rvalue.inferredType
+        when {
+            rvalue.expression?.isInt.orFalse() -> CaosExpressionValueType.INT
+            rvalue.expression?.isFloat.orFalse() -> CaosExpressionValueType.FLOAT
+            rvalue.expression?.isNumeric.orFalse() -> CaosExpressionValueType.DECIMAL
+            else -> rvalue.inferredType
+        }
     } else
         rvalue.inferredType
 }
