@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.6</version>
+  <version>0.01.7</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -33,6 +33,31 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.7</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix completions in equality expressions</li>
+          <li>Fix</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Added COB contents explorer.
+            <ul>
+              <span style="font-size:0.8em">*Cob view requires file placement in proper C1/C2 module</span></li>
+            </ul>
+          <li>Added ability to copy* images from sprite image list to project view</li>
+          <li>Added ability to copy* scripts, sounds, and sprites from expanded COB view to project view</li>
+        </ul>
+        <div>
+          <div style="font-size:0.8em">*Copy Notes*</div>
+          <ul style="font-size:0.7em">
+            <li style="font-size:1em">Cannot copy to file system directly. Must copy and paste in project view</li>
+            <li style="font-size:1em">Copy requires shortcut key copy/paste or right-click or menu copy/paste</li>
+            <listyle="font-size:1em">Copy by drag does not work</li>
+          </ul>
+        </div>
+      </li>
       <li>
         <b>Version: 0.01.6</b><br/>
         <b>#Fixes</b>
@@ -351,6 +376,9 @@
         language="CaosScript"
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
 
+    <referencesSearch
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandSearch" />
+
     <!-- Indices -->
     <applicationService
         serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
@@ -369,6 +397,8 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptExpressionIndex" />
 
     <!-- Actions -->
     <!--enterHandlerDelegate

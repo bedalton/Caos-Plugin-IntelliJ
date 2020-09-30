@@ -109,6 +109,11 @@ interface CaosScriptBlockStub {
     val blockType:CaosScriptBlockType
 }
 
+interface CaosScriptExpressionStub  : StubElement<CaosScriptExpressionImpl> {
+    val enclosingScope:CaosScope?
+    val caosVar:CaosVar
+}
+
 interface CaosScriptDoIfStub : StubElement<CaosScriptDoifStatementStatementImpl>, CaosScriptBlockStub {
     val condition:CaosBlockCondition
 }
