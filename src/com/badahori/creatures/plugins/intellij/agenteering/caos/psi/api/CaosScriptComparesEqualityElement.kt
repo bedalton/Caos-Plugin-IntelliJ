@@ -7,5 +7,4 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 interface CaosScriptComparesEqualityElement : CaosScriptCompositeElement{
     val first: CaosScriptExpression
     val second: CaosScriptExpression
-    val eqOp: CaosScriptEqOp
 }

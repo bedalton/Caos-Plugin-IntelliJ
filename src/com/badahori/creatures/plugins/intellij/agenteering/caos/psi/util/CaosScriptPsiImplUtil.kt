@@ -15,7 +15,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
@@ -1092,7 +1091,7 @@ object CaosScriptPsiImplUtil {
     fun getBlockType(enumStatement: CaosScriptEnumNextStatement): CaosScriptBlockType = CaosScriptBlockType.ENUM
 
     @JvmStatic
-    fun getFamily(script: CaosScriptEventScript): Int {
+    fun hasFamily(script: CaosScriptEventScript): Int {
         return try {
             script.stub?.family ?: script.classifier?.family?.text?.toInt() ?: -1
         } catch (e: Exception) {
@@ -1101,7 +1100,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getGenus(script: CaosScriptEventScript): Int {
+    fun hasGenus(script: CaosScriptEventScript): Int {
         return try {
             script.stub?.genus ?: script.classifier?.genus?.text?.toInt() ?: -1
         } catch (e: Exception) {
@@ -1110,7 +1109,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getSpecies(script: CaosScriptEventScript): Int {
+    fun hasSpecies(script: CaosScriptEventScript): Int {
         return try {
             script.stub?.species ?: script.classifier?.species?.text?.toInt() ?: -1
         } catch (e: Exception) {
@@ -1602,14 +1601,8 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getTargClass(element:CaosScriptCRtar) : AgentClass {
-        return element.arguments.let {
-            toAgentClass(
-                    it.getOrNull(0),
-                    it.getOrNull(1),
-                    it.getOrNull(2)
-            )
-        }
+    fun hasTargClass(element:CaosScriptCRtar, family:Int, genus:Int, species:Int) : Boolean {
+        return element.arguments.hasTargClass(family, genus, species)
     }
 
     @JvmStatic
@@ -1618,25 +1611,25 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getTargClass(element:CaosScriptCTarg) : AgentClass? {
-        return element.expectsAgent?.rvalue?.resolveAgentClass()
+    fun hasTargClass(element:CaosScriptCTarg, family:Int, genus:Int, species:Int) : Boolean {
+        return element.expectsAgent?.rvalue?.hasTargClass(family, genus, species).orFalse()
     }
 
     @JvmStatic
-    fun getTargClass(element: CaosScriptCAssignment): AgentClass? {
+    fun hasTargClass(element: CaosScriptCAssignment, family:Int, genus:Int, species:Int): Boolean? {
         if (!element.commandStringUpper.let {
                     it != "SETV" && it != "SETA"
                 }.orFalse())
             return null
         val rvalue = (element.arguments.getOrNull(1) as? CaosScriptRvalue)
                 ?: return null
-        return rvalue.resolveAgentClass()
+        return rvalue.hasTargClass(family, genus, species)
     }
 
-    internal fun getTargClass(variable: CaosScriptIsVariable): AgentClass? {
+    internal fun hasTargClass(variable: CaosScriptIsVariable, family:Int, genus:Int, species:Int): Boolean? {
         return variable.getAssignments()
-                .mapNotNull {
-                    getTargClass(it)
+                .map map@{ c ->
+                    hasTargClass(c, family, genus, species)
                 }
                 .firstOrNull()
     }
@@ -1651,88 +1644,80 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFamily(element: CaosScriptHasCodeBlock): Int {
+    fun hasFamily(element: CaosScriptHasCodeBlock, family:Int): Boolean {
         return when (element) {
-            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { getClassInt(it, "fmly") }
-            is CaosScriptElseIfStatement -> element.equalityExpression?.let { getClassInt(it, "fmly") }
-            is CaosScriptEnumNextStatement -> element.family
-            is CaosScriptEnumSceneryStatement -> element.family
-            is CaosScriptEventScript -> element.family
-            else -> null
+            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { hasClassInt(it, "fmly", family) }
+            is CaosScriptElseIfStatement -> element.equalityExpression?.let { hasClassInt(it, "fmly", family) }
+            is CaosScriptEnumNextStatement -> element.family == family
+            is CaosScriptEnumSceneryStatement -> element.family == family
+            is CaosScriptEventScript -> element.family == family
+            else -> false
         } ?: element.getParentOfType(CaosScriptHasCodeBlock::class.java)?.let {
-            getFamily(it)
+            hasFamily(it, family)
         }
-        ?: 0
+        ?: false
     }
 
     @JvmStatic
-    fun getGenus(element: CaosScriptHasCodeBlock): Int {
+    fun hasGenus(element: CaosScriptHasCodeBlock, genus:Int): Boolean {
+        if (genus == 0)
+            return true
         return when (element) {
-            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { getClassInt(it, "gnus") }
-            is CaosScriptElseIfStatement -> element.equalityExpression?.let { getClassInt(it, "gnus") }
-            is CaosScriptEnumNextStatement -> element.genus
-            is CaosScriptEnumSceneryStatement -> element.genus
-            is CaosScriptEventScript -> element.genus
-            else -> null
+            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { hasClassInt(it, "gnus", genus) }
+            is CaosScriptElseIfStatement -> element.equalityExpression?.let { hasClassInt(it, "gnus", genus) }
+            is CaosScriptEnumNextStatement -> element.genus == genus
+            is CaosScriptEnumSceneryStatement -> element.genus == genus
+            is CaosScriptEventScript -> element.genus == genus
+            else -> false
         } ?: element.getParentOfType(CaosScriptHasCodeBlock::class.java)?.let {
-            getGenus(it)
+            hasGenus(it, genus)
         }
-        ?: 0
+        ?: false
     }
 
     @JvmStatic
-    fun getSpecies(element: CaosScriptHasCodeBlock): Int {
+    fun hasSpecies(element: CaosScriptHasCodeBlock, species:Int): Boolean {
         return when (element) {
-            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { getClassInt(it, "spcs") }
-            is CaosScriptElseIfStatement -> element.equalityExpression?.let { getClassInt(it, "spcs") }
-            is CaosScriptEnumNextStatement -> element.species
-            is CaosScriptEnumSceneryStatement -> element.species
-            is CaosScriptEventScript -> element.species
+            is CaosScriptDoifStatementStatement -> element.equalityExpression?.let { hasClassInt(it, "spcs", species) }
+            is CaosScriptElseIfStatement -> element.equalityExpression?.let { hasClassInt(it, "spcs", species) }
+            is CaosScriptEnumNextStatement -> element.species == species
+            is CaosScriptEnumSceneryStatement -> element.species == species
+            is CaosScriptEventScript -> element.species == species
             else -> null
         } ?: element.getParentOfType(CaosScriptHasCodeBlock::class.java)?.let {
-            getSpecies(it)
+            hasSpecies(it, species)
         }
-        ?: 0
+        ?: false
     }
 
-    private fun getClassInt(element: CaosScriptEqualityExpression, key: String): Int? {
-        if (element.eqOp.text.let { it.equalsIgnoreCase("eq") || it == "=" }) {
+    private fun hasClassInt(element:CaosScriptEqualityExpression, key:String, value:Int) : Boolean {
+        return hasClassInt(element.equalityExpressionPrime, key, value) || element.equalityExpressionPlusList.any { hasClassInt(it.equalityExpressionPrime, key, value)}
+    }
+
+    private fun hasClassInt(element: CaosScriptEqualityExpressionPrime?, key: String, value:Int): Boolean {
+        if (value == 0)
+            return true
+        if (element == null)
+            return false
+        return if (element.eqOp?.text?.let { it.equalsIgnoreCase("eq") || it == "=" }.orFalse()) {
             val other = when {
                 element.first.text.equalsIgnoreCase(key) -> element.second
                 element.second.text.equalsIgnoreCase(key) -> element.first
-                else -> return null
+                else -> return false
             }
             other.toCaosVar().let {
                 when (it) {
-                    is CaosVar.CaosLiteral.CaosInt -> return it.value.toInt()
-                    is CaosVar.CaosLiteral.CaosFloat -> return it.value.toInt()
-                    else -> null
+                    is CaosVar.CaosLiteral.CaosInt -> return it.value.toInt().let { it == 0 || it == value}
+                    is CaosVar.CaosLiteral.CaosFloat -> return it.value.toInt().let { it == 0 || it == value}
+                    else -> false
                 }
             }
-        }
-        return element.equalityExpressionPlusList
-                .filter { equalityExpression -> equalityExpression.eqOp.text.let { eqOp -> eqOp.equalsIgnoreCase("eq") || eqOp == "=" } }
-                .mapNotNull { eqPlus ->
-                    val other = when {
-                        eqPlus.first.text.equalsIgnoreCase(key) -> eqPlus.second
-                        eqPlus.second.text.equalsIgnoreCase(key) -> eqPlus.first
-                        else -> null
-                                ?: return@mapNotNull null
-                    }
-                    other.toCaosVar().let {
-                        when (it) {
-                            is CaosVar.CaosLiteral.CaosInt -> it.value.toInt()
-                            is CaosVar.CaosLiteral.CaosFloat -> it.value.toInt()
-                            else -> null
-                        }
-                    }
-                }
-                .firstOrNull()
+        } else false
     }
 
     @JvmStatic
-    fun getTargClass(element:CaosScriptHasCodeBlock) : AgentClass {
-        return AgentClass(element.family, element.genus, element.species)
+    fun hasTargClass(element:CaosScriptHasCodeBlock, family:Int, genus:Int, species:Int) : Boolean {
+        return hasFamily(element, family) && hasGenus(element, genus) && hasSpecies(element, species)
     }
 }
 
