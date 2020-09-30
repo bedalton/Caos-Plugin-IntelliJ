@@ -21,6 +21,7 @@ public class CaosScriptElementTypeFactory {
                 "CaosScript_NAMED_CONSTANT" -> CaosScriptStubTypes.NAMED_CONSTANT
                 "CaosScript_CONSTANT_ASSIGNMENT" -> CaosScriptStubTypes.CONSTANT_ASSIGNMENT
                 "CaosScript_C_TARG" -> CaosScriptStubTypes.TARG_ASSIGNMENT
+                "CaosScript_EXPRESSION" -> CaosScriptStubTypes.EXPRESSION
                 "CaosScript_EXPECTS_INT" -> CaosScriptStubTypes.EXPECTS_INT
                 "CaosScript_EXPECTS_QUOTE_STRING" -> CaosScriptStubTypes.EXPECTS_QUOTE_STRING
                 "CaosScript_EXPECTS_FLOAT" -> CaosScriptStubTypes.EXPECTS_FLOAT
