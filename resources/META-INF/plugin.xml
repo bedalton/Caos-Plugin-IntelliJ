@@ -377,7 +377,7 @@
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
 
     <referencesSearch
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandSearch" />
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />
 
     <!-- Indices -->
     <applicationService
