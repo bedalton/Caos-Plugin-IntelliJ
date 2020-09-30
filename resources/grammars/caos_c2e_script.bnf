@@ -342,11 +342,6 @@ macro
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -365,11 +360,6 @@ removal_script
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -435,13 +425,8 @@ event_script
 		]
 		methods = [
 			getBlockType
-			hasFamily
-			hasGenus
-			hasSpecies
 			getEventNumber
 			isClosed
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -485,11 +470,6 @@ install_script
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -526,11 +506,6 @@ subroutine
 			getBlockType
 			getName
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -633,11 +608,6 @@ loop_statement
 			getBlockType
 			getCommandString
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -681,11 +651,6 @@ repeat_statement
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 
 	}
@@ -723,19 +688,11 @@ enum_next_statement
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			codeBlock="code_block"
 			getBlockType
 			isClosed
-			hasTargClass
-			getQueryableTargClass
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -767,18 +724,10 @@ enum_scenery_statement
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getBlockType
 			isClosed
-			hasTargClass
-			getQueryableTargClass
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
    }
    ;
@@ -836,11 +785,6 @@ doif_statement_statement
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -856,11 +800,6 @@ else_if_statement
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -875,11 +814,6 @@ else_statement
 		methods = [
 			getBlockType
 			isClosed
-			hasFamily
-			hasGenus
-			hasSpecies
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -2042,7 +1976,6 @@ c_assignment
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getOp
@@ -2053,8 +1986,6 @@ c_assignment
 			getLVar
 			getArguments
 			getArgumentValues
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;
@@ -2334,7 +2265,6 @@ c_targ
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getCommandToken
@@ -2344,8 +2274,6 @@ c_targ
 			getRVar
 			getArguments
 			getArgumentValues
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 
@@ -2378,7 +2306,6 @@ c_rtar
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getCommandToken
@@ -2387,8 +2314,6 @@ c_rtar
 			getScope
 			getArguments
 			getArgumentValues
-			hasTargClass
-			getQueryableTargClass
 		]
 	}
 	;

@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-
 data class AgentClass(val family: Int, val genus: Int, val species: Int) {
     fun like(otherClass: AgentClass): Boolean {
         if (notMatches(family, otherClass.family))
