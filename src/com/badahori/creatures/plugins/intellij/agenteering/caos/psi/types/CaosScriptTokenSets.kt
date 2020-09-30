@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
@@ -97,7 +98,6 @@ class CaosScriptTokenSets {
         )
 
         val LITERALS: TokenSet = create(
-                CaosScript_INT,
                 CaosScript_DECIMAL,
                 CaosScript_NUMBER,
                 CaosScript_QUOTE_STRING_LITERAL,
@@ -902,7 +902,8 @@ class CaosScriptTokenSets {
                     CaosDef_HASH_TAG,
                     CaosScript_INT,
                     CaosScript_WORD,
-                    CaosScript_SUBROUTINE_NAME
+                    CaosScript_SUBROUTINE_NAME,
+                    CaosDef_VALUES_LIST_VALUE_KEY_LITERAL
             )
             val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
                     .types + otherTokens)
