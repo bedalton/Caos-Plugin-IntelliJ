@@ -40,13 +40,25 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             resultSet.stopHere()
             return
         }
-
         val previous = element.previous?.text
 
-        // If previous is not whitespace and not square of double quote symbol, return
+        // If previous is not whitespace and not square or double quote symbol, return
         if (previous != "[" && previous != "\"" && previous.nullIfEmpty()?.let { !WHITESPACE.matches(it) }.orFalse()) {
             resultSet.stopHere()
             return
+        }
+
+        // Add equality expression completions for known types
+        (element.getSelfOrParentOfType(CaosScriptExpression::class.java))?.let { expression ->
+            // If has parent RValue, should continue with normal completion
+            // Else use special EQ expression completion
+            if (!element.hasParentOfType(CaosScriptRvalue::class.java)) {
+                expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let { equalityExpression ->
+                    CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
+                    addCommandCompletions(resultSet, variant, CaosCommandType.RVALUE, element)
+                    resultSet.stopHere()
+                }
+            }
         }
 
 
@@ -66,7 +78,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         //If previous is number, return
-        if (IS_NUMBER.matches( previous ?: "")) {
+        if (IS_NUMBER.matches(previous ?: "")) {
             resultSet.stopHere()
             return
         }
@@ -96,13 +108,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         // Element has no command parent
         if (parent == null) {
+            LOGGER.info("ELEMENT ${element.elementType}(${element.text}) HAS NO COMMAND VALUE")
             resultSet.stopHere()
             return
         }
         // Get command type, ie RVALUE, LVALUE, COMMAND
         val type = parent.getEnclosingCommandType()
-        val case = element.case
-        val allowUppercase = variant !in VARIANT_OLD
         // If has parent of value, add values list completion if needed
         // ie. Chemicals by name, or file names
         (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
@@ -118,6 +129,18 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         // Add command name completions
+        if (type == CaosCommandType.RVALUE) {
+
+        }
+        addCommandCompletions(resultSet, variant, type, element)
+        // If type is Lvalue or Rvalue, add variable name completions
+        if (type != CaosCommandType.COMMAND)
+            addVariableCompletions(variant, element, resultSet)
+    }
+
+    private fun addCommandCompletions(resultSet: CompletionResultSet, variant: CaosVariant, type:CaosCommandType, element: PsiElement) {
+        val case = element.case
+        val allowUppercase = variant !in VARIANT_OLD
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
@@ -138,17 +161,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     createCommandTokenLookupElement(allowUppercase, element, case, it.commandName, it.isCommand, it.parameterStructs, it.returnTypeString)
                 }
         resultSet.addAllElements(singleCommands)
-        // If type is Lvalue or Rvalue, add variable name completions
-        if (type != CaosCommandType.COMMAND)
-            addVariableCompletions(variant, element, resultSet)
-
-        // Add equality expression completions for known types
-        (element.getParentOfType(CaosScriptExpression::class.java))?.let { expression ->
-            val equalityExpression = expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)
-            if (equalityExpression != null) {
-                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
-            }
-        }
     }
 
     /**
@@ -163,8 +175,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             (0..9).forEach {
                 resultSet.addElement(LookupElementBuilder.create("var$it"))
             }
-        }
-        else if (variant == CaosVariant.C2) {
+        } else if (variant == CaosVariant.C2) {
             (0..9).forEach {
                 resultSet.addElement(LookupElementBuilder.create("obv$it"))
             }
@@ -191,7 +202,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     /**
      * Creates a completion lookup element for a command
      */
-    private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, parameters:List<CaosDefParameterStruct>, returnType: String, prefixIn: String? = null): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, isCommand: Boolean, parameters: List<CaosDefParameterStruct>, returnType: String, prefixIn: String? = null): LookupElementBuilder {
         // Tail text for command display element
         val tailText = if (isCommand)
             "command"
@@ -263,7 +274,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     /**
      * Adds completion for subroutine names in a given SCRP element
      */
-    private fun addSubroutineNames(element:PsiElement, resultSet: CompletionResultSet) {
+    private fun addSubroutineNames(element: PsiElement, resultSet: CompletionResultSet) {
         val project = element.project
         val file = element.containingFile
         val scope = GlobalSearchScope.everythingScope(project)
@@ -273,7 +284,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 }
                 .mapNotNull { it.name.nullIfEmpty() }
                 .toSet()
-        for(subr in subroutines) {
+        for (subr in subroutines) {
             val builder = LookupElementBuilder.create(subr)
             resultSet.addElement(builder)
         }
@@ -282,6 +293,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 }
 
 private val ideaRulezzTrimFromEndLength = CompletionUtilCore.DUMMY_IDENTIFIER.length - 1
+
 /**
  * Gets element text minus the weird IntelliJ completion string appended to the end
  */
