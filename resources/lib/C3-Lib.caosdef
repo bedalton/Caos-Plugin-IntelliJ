@@ -414,7 +414,7 @@ ASIN (float) x (float);
  * Make the creature asleep or awake. 1 for asleep, 0 for awake.
  * #Creatures
  *
- * @param {asleep} (integer)
+ * @param {asleep} (integer@Sleeping)
  *
  */
 ASLP (command) asleep (integer);
@@ -1739,7 +1739,7 @@ DROP (command);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Drives)
  */
 DRV! (integer);
 
