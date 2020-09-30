@@ -307,7 +307,7 @@ object CaosDefPsiImplUtil {
             return it
         }
         val returnTypeText = commandDefElement.stub?.returnType?.type?.type
-                ?: commandDefElement.returnType?.text
+                ?: commandDefElement.returnType?.variableType?.let { it.typeLiteral ?: it.bracketString }?.text
                 ?: return CaosExpressionValueType.UNKNOWN
         return CaosExpressionValueType.fromSimpleName(returnTypeText)
     }
