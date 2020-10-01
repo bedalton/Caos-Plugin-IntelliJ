@@ -5,7 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variantsIntersect
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
