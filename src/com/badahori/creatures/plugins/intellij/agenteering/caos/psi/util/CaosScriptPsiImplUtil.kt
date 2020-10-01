@@ -15,8 +15,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -1612,6 +1614,62 @@ object CaosScriptPsiImplUtil {
             return element.varGroup.value.equalsIgnoreCase(another.text)
         }
         return another is CaosScriptVarToken && another.text.equalsIgnoreCase(element.text)
+    }
+
+    @JvmStatic
+    fun getDescriptiveText(family:CaosScriptFamily) : String {
+        (family.parent?.parent as? CaosScriptEventScript)?.let {parent->
+            return getDescriptiveText(parent)
+        }
+        (family.parent?.parent as? CaosScriptEventScript)?.let { parent ->
+            return getDescriptiveText(parent)
+        }
+        return "Family: ${family.text}"
+    }
+
+    @JvmStatic
+    fun getDescriptiveText(genus:CaosScriptGenus) : String {
+        (genus.parent?.parent as? CaosScriptEventScript)?.let { parent->
+            return getDescriptiveText(parent)
+        }
+        (genus.parent?.parent as? CaosScriptEventScript)?.let { parent ->
+            return getDescriptiveText(parent)
+        }
+        return "Genus: ${genus.text}"
+    }
+
+    @JvmStatic
+    fun getDescriptiveText(species:CaosScriptSpecies) : String {
+        (species.parent?.parent as? CaosScriptEventScript)?.let { parent->
+            return getDescriptiveText(parent)
+        }
+        (species.parent?.parent as? CaosScriptEventScript)?.let { parent ->
+            return getDescriptiveText(parent)
+        }
+        return "Species: ${species.text}"
+    }
+
+    @JvmStatic
+    fun getDescriptiveText(classifier: CaosScriptClassifier, prefixIn:String? = null) : String {
+        val classifierText = "${classifier.family} ${classifier.genus} ${classifier.species}"
+        return prefixIn.nullIfEmpty()?.let {prefix ->
+            return if (prefix.endsWith(" "))
+                "$prefix$classifierText"
+            else
+                "$prefix $classifierText"
+
+        } ?: classifierText
+    }
+
+    @JvmStatic
+    fun getDescriptiveText(eventScript: CaosScriptEventScript) : String {
+        val classifierText = eventScript.classifier?.let {classifier ->
+            getDescriptiveText(classifier)
+        } ?: return "Event Script"
+        val eventNumber = eventScript.eventNumber
+        if (eventNumber < 0)
+            return "scrp $classifierText {?}"
+        return "srcp $classifierText $eventNumber"
     }
 }
 
