@@ -7,7 +7,6 @@ import com.intellij.psi.tree.IStubFileElementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefFileStub
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefFileStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readList
