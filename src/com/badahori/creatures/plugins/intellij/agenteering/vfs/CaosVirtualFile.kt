@@ -2,12 +2,16 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariants
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.VariantsFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.now
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.openapi.externalSystem.service.execution.NotSupportedException
+import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
-import com.intellij.openapi.vfs.VirtualFileWithId
 import java.io.*
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,7 +26,7 @@ class CaosVirtualFile private constructor(
         private var byteArrayContents:ByteArray? = null,
         private val isDirectory: Boolean,
         private val allowSubdirectories:Boolean = isDirectory
-        ) : VirtualFile(), ModificationTracker, HasVariant {
+        ) : VirtualFile(), ModificationTracker, HasVariant, HasVariants {
 
     constructor(name: String, content: String?) : this(name, content, null, false)
 
@@ -35,14 +39,28 @@ class CaosVirtualFile private constructor(
     private var timestamp = now
     private var modificationStamp:Long = timestamp
 
-    // To support VirtualFileWithId
-    private val myId:Int = nextId.getAndIncrement()
 
     /** {@inheritDoc}  */
     //override fun getId():Int = myId
 
     /** Allows Quick access to CAOS Variant */
     override var variant:CaosVariant? = null
+    private var _variants:List<CaosVariant>? = null
+    override var variants:List<CaosVariant> get() = _variants
+            ?: VariantsFilePropertyPusher.readFromStorageCatching(this).nullIfEmpty()
+            ?: listOfNotNull(variant)
+        set(list) {
+            _variants = list
+        }
+    private var _fileType:FileType? = null
+
+    fun setFileType(newFileType:FileType) {
+        _fileType = newFileType
+    }
+
+    override fun getFileType(): FileType {
+        return _fileType ?: super.getFileType()
+    }
 
     /** {@inheritDoc}  */
     override fun getName(): String = fileName
@@ -70,7 +88,7 @@ class CaosVirtualFile private constructor(
     /**
      * The children of this file, if the file is a directory.
      */
-    private val children: MutableMap<String, CaosVirtualFile> = HashMap()
+    private val children: CaseInsensitiveHashMap<CaosVirtualFile> = CaseInsensitiveHashMap()
 
     /** Parent Virtual file */
     internal var parent: CaosVirtualFile? = null
@@ -91,6 +109,10 @@ class CaosVirtualFile private constructor(
         isWritable = writable
     }
 
+    fun hasChild(fileName:String) : Boolean {
+        return children.containsKey(fileName)
+    }
+
     /** {@inheritDoc}  */
     override fun getFileSystem(): VirtualFileSystem = CaosVirtualFileSystem.instance
 
@@ -109,11 +131,11 @@ class CaosVirtualFile private constructor(
         if (file.isDirectory && !allowSubdirectories)
             throw IllegalStateException("Cannot add directory to directory with 'no subdirectories' set to true")
         file.parent = this
-        children[file.name.toLowerCase()] = file
+        children[file.name] = file
     }
 
     /** {@inheritDoc}  */
-    override fun getChildren(): Array<VirtualFile> {
+    override fun getChildren(): Array<CaosVirtualFile> {
         return children.values.toTypedArray()
     }
 
@@ -149,7 +171,7 @@ class CaosVirtualFile private constructor(
 
     /** {@inheritDoc}  */
     override fun findChild(name: String): CaosVirtualFile? {
-        return children[name.toLowerCase()]
+        return children[name]
     }
 
     /** {@inheritDoc}  */
@@ -161,12 +183,16 @@ class CaosVirtualFile private constructor(
     /**
      * Deletes the specified file, if it is a child of this file
      */
-    fun deleteChild(file: CaosVirtualFile) {
-        val fileName = file.name.toLowerCase()
+    fun delete(file: CaosVirtualFile) {
+        val fileName = file.name
         children.let {
             if (it[fileName] == file)
                 it.remove(fileName)
         }
+    }
+
+    fun delete() {
+        parent?.delete(this)
     }
 
     override fun toString(): String {
@@ -179,16 +205,36 @@ class CaosVirtualFile private constructor(
     }
 
 
-    fun createChildWithContent(name:String, content:String) : CaosVirtualFile {
-        return (createChildData(null, name) as CaosVirtualFile).apply {
-            this.setContent(content)
+    fun createChildWithContent(name:String, content:String?, overwrite:Boolean = true) : CaosVirtualFile {
+        if (hasChild(name) && !overwrite)
+            throw IOException("Child with name '$name' already exists in $name")
+        return CaosVirtualFile(name, content, false).let {
+            it.setContent(content)
+            this.addChild(it)
+            if (!this.hasChild(name))
+                throw IOException("Failed to properly add child to filesystem")
+            it
         }
     }
 
-    fun createChildWithContent(name:String, content:ByteArray?) : CaosVirtualFile {
-        return (createChildData(null, name) as CaosVirtualFile).apply {
-            this.setContent(content)
+    fun createChildWithContent(name:String, content:ByteArray, overwrite:Boolean = true) : CaosVirtualFile {
+        if (hasChild(name) && !overwrite)
+            throw IOException("Child with name '$name' already exists $name")
+        return CaosVirtualFile(name, content, false).let {
+            it.setContent(content)
+            this.addChild(it)
+            if (!this.hasChild(name))
+                throw IOException("Failed to properly add child to filesystem")
+            it
         }
+    }
+
+    fun createChildDirectory(name:String) : CaosVirtualFile {
+        if (!isDirectory)
+            throw NotSupportedException("Cannot create child directory in non-directory virtual file")
+        val file = CaosVirtualFile(name, null, true)
+        addChild(file)
+        return file
     }
 
     override fun setBinaryContent(content: ByteArray, newModificationStamp: Long, newTimeStamp: Long) {
