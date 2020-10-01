@@ -1,18 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AuthorBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SpriteBlock
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobFileData
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobToDataObjectDecompiler
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
@@ -22,7 +19,6 @@ import com.intellij.psi.PsiManager
 import icons.CaosScriptIcons
 import org.apache.commons.io.FilenameUtils
 import java.nio.ByteBuffer
-import java.util.concurrent.atomic.AtomicInteger
 
 
 class CobFileTreeNode(
@@ -33,7 +29,7 @@ class CobFileTreeNode(
     val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
 
     private val cobVirtualFile: CaosVirtualFile by lazy {
-        getCobVirtualFileDirectory(file)
+        CobVirtualFileUtil.getOrCreateCobVirtualFileDirectory(file)
     }
 
     override fun expandOnDoubleClick(): Boolean {
@@ -97,7 +93,7 @@ class CobFileTreeNode(
         presentationData.presentableText = file.name
         presentationData.locationString = null
     }
-    
+
     override fun getAlphaSortKey(): String = virtualFile.name
     override fun getName(): String? = virtualFile.name
 }
@@ -135,13 +131,15 @@ internal class CobSpriteFileTreeNode(
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{index, image ->
-            SpriteImageTreeNode(
-                    project,
-                    spritesVirtualFileContainer,
-                    fileNameBase+"$index".padStart(padLength, '0'),
-                    image?.toPngByteArray()
-            )
-        }
+            image?.toPngByteArray()?.let {
+                SpriteImageTreeNode(
+                        project,
+                        spritesVirtualFileContainer,
+                        fileNameBase + "$index".padStart(padLength, '0'),
+                        it
+                )
+            }
+        }.filterNotNull()
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren
@@ -190,13 +188,4 @@ internal class SoundFileTreeNode(project: Project, private val enclosingCob: Cao
 
     override fun getName() = virtualFile.name
     override fun getAlphaSortKey(): String  = virtualFile.name
-}
-
-private val decompiledId = AtomicInteger(0)
-
-internal fun getCobVirtualFileDirectory(file: VirtualFile) : CaosVirtualFile {
-    val path = "Decompiled (${decompiledId.incrementAndGet()})/${file.name}"
-    return CaosVirtualFileSystem.instance.getDirectory(path, true)!!.apply {
-        isWritable = false
-    }
 }
