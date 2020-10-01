@@ -64,7 +64,6 @@ private object CombineBodyScriptsToTopOfFile : LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val file = descriptor.psiElement.containingFile
-        val variant = file.variant
         val allBodyElements = PsiTreeUtil.collectElementsOfType(file, CaosScriptScriptElement::class.java)
                 .sortedBy { it.startOffset }
 

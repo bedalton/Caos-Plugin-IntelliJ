@@ -7,7 +7,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import kotlin.reflect.KClass
 
 object CaosScriptPsiElementFactory {
 
@@ -84,7 +83,7 @@ object CaosScriptPsiElementFactory {
         return createRValue(project, "$number").expression!!
     }
 
-    private fun getCommandCall(project: Project, script: String, throws: Boolean = true) : CaosScriptCommandCall? {
+    private fun getCommandCall(project: Project, script: String) : CaosScriptCommandCall? {
         return createAndGet(project, script, CaosScriptCommandCall::class.java)
     }
 
