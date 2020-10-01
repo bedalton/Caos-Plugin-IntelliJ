@@ -137,17 +137,17 @@ object CaosScriptInferenceUtil {
                 return false
             if (element.varType != otherElement.varType)
                 return false
-            return element.name == otherElement.name
+            return element.name == (otherElement as CaosScriptNamedGameVar).name
         }
         if (element is CaosScriptNamedVar) {
             if (otherElement !is CaosScriptNamedVar)
                 return false
-            return element.name == otherElement.name
+            return element.name == (otherElement as CaosScriptNamedVar).name
         }
         if (element is CaosScriptNamedConstant) {
             if (otherElement !is CaosScriptNamedConstant)
                 return false
-            return element.name == otherElement.name
+            return element.name == (otherElement as CaosScriptNamedConstant).name
         }
         return false
     }
