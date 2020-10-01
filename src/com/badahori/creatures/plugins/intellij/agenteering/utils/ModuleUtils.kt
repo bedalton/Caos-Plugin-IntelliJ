@@ -19,10 +19,6 @@ import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.util.messages.MessageBus
 
-
-fun findOrCreate(baseDir: VirtualFile, dir: String, module: Module) =
-        baseDir.findChild(dir) ?: baseDir.createChildDirectory(module, dir)
-
 private const val NOTIFICATION_ERROR_TAG = "CAOS Project: Error"
 private const val NOTIFICATION_WARN_TAG = "CAOS Project: Warning"
 
