@@ -1802,9 +1802,27 @@ comment_body
 	::= COMMENT_TEXT+
 	;
 
-family ::= expects_int;
-genus ::= expects_int;
-species ::= expects_int;
+family
+	::= expects_int
+	{
+		methods = [
+			getDescriptiveText
+		]
+	};
+genus
+	::= expects_int
+	{
+		methods = [
+			getDescriptiveText
+		]
+	}
+species
+	::= expects_int
+	{
+		methods = [
+			getDescriptiveText
+		]
+	};
 
 event_number_element
 	::= INT
@@ -1817,6 +1835,7 @@ event_number_element
 			getReference
 			getName
 			setName
+			getDescriptiveText
 		]
 	}
 	;
