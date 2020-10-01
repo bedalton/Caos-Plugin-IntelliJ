@@ -5,7 +5,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.psi.util.PsiTreeUtil
@@ -22,12 +21,9 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
         if (element.text != myElement.text) {
             return false
         }
-        LOGGER.info("${element.textLength} == ${myElement.text}")
         if (myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)) {
-            LOGGER.info("Shares context")
             return element.parent?.parent is CaosScriptSubroutine
         }
-        LOGGER.info("Does not share context. Returning false")
         return false
     }
 
@@ -39,7 +35,9 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
         //if (myElement.parent is CaosScriptSubroutineHeader)
             //return null
         val name = myElement.name
-        val resolvedElement = CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull {
+        //if (resolvedElement == myElement)
+          //  return null
+        return CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull {
             myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
         } ?: myElement.getParentOfType(CaosScriptScriptElement::class.java)?.let { scriptElement ->
             PsiTreeUtil.collectElementsOfType(scriptElement, CaosScriptSubroutine::class.java)
@@ -48,9 +46,6 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
                         it.text == name
                     }
         }
-        //if (resolvedElement == myElement)
-          //  return null
-        return resolvedElement
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
