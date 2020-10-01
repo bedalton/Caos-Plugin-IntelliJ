@@ -9,14 +9,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefValuesListValueKeyReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefVariableLinkReference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
