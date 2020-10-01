@@ -108,7 +108,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         // Element has no command parent
         if (parent == null) {
-            LOGGER.info("ELEMENT ${element.elementType}(${element.text}) HAS NO COMMAND VALUE")
             resultSet.stopHere()
             return
         }

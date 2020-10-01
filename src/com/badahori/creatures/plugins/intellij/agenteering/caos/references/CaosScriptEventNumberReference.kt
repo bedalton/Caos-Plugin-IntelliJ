@@ -20,7 +20,6 @@ class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : Psi
     private val text by lazy { element.text.trim() }
 
     override fun isReferenceTo(element: PsiElement): Boolean {
-        LOGGER.info("Finding Event Number for value: '${text}'")
         if (element.text.trim() != text)
             return false
         if (!element.isOrHasParentOfType(CaosDefValuesListValueKey::class.java))
@@ -28,15 +27,11 @@ class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : Psi
         val valuesListElement = element.getParentOfType(CaosDefValuesListElement::class.java)
                 ?: return false
         if (valuesListElement.typeName != EVENT_NUMBER_VALUES_LIST_NAME) {
-            LOGGER.info("Values list '${valuesListElement.typeName} != '$EVENT_NUMBER_VALUES_LIST_NAME'")
             return false
-        } else {
-            LOGGER.info("Values list '${valuesListElement.typeName} MATCHES! '$EVENT_NUMBER_VALUES_LIST_NAME'")
         }
         val variant = myElement.containingCaosFile?.variant
                 ?: return false
         if (!valuesListElement.isVariant(variant)) {
-            LOGGER.info("Found matching event list, but list is out of variant")
             return super.isReferenceTo(element)
         }
         return true

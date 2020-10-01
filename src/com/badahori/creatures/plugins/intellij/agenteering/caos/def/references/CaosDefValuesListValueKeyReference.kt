@@ -23,7 +23,6 @@ class CaosDefValuesListValueKeyReference(element:CaosDefValuesListValueKey)
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element is CaosDefValuesListValueKey)
             return false
-        LOGGER.info("Checking is reference to this($text) equals ${element.elementType}(${element.text})")
         if (element.text != text)
             return false
         val valuesList = myElement.getSelfOrParentOfType(CaosDefValuesListElement::class.java)
@@ -31,22 +30,17 @@ class CaosDefValuesListValueKeyReference(element:CaosDefValuesListValueKey)
                 ?: return false
         // If element is event number, return if this items list if EventNumbers
         element.getSelfOrParentOfType(CaosScriptEventNumberElement::class.java)?.let {
-            LOGGER.info("Checking if list ($valuesList) equals value list of $EVENT_NUMBER_VALUES_LIST_NAME")
             return valuesList.equalsIgnoreCase(EVENT_NUMBER_VALUES_LIST_NAME)
         }
-        LOGGER.info("Checking if element is expression")
         // Check that element is an expression value. If not, bail out
         val expression = element.getSelfOrParentOfType(CaosScriptExpression::class.java)
                 ?: return false
-        LOGGER.info("Element is expression")
         // If expression is part of equality express
         // Check for matching values list names
         (expression.parent as? CaosScriptEqualityExpressionPrime)?.let {
-            LOGGER.info("Element in expression prime")
             return it.getValuesList(expression)?.equalsIgnoreCase(valuesList).orFalse()
         }
         (expression.getParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
-            LOGGER.info("Element is expects value of type")
             return isRvalueReference(valuesList, it)
         }
         return false
