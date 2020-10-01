@@ -8,10 +8,10 @@ import java.awt.image.BufferedImage
 import java.util.*
 
 sealed class CobFileData {
-    data class C2CobData(private val cobBlocks:List<CobBlock>) : CobFileData() {
-        val agentBlocks by lazy { cobBlocks.filterIsInstance(AgentBlock::class.java) }
-        val authorBlocks by lazy { cobBlocks.filterIsInstance(CobBlock.AuthorBlock::class.java) }
-        private val fileBlocks by lazy { cobBlocks.filterIsInstance<CobBlock.FileBlock>() }
+    data class C2CobData(val blocks:List<CobBlock>) : CobFileData() {
+        val agentBlocks by lazy { blocks.filterIsInstance(AgentBlock::class.java) }
+        val authorBlocks by lazy { blocks.filterIsInstance(CobBlock.AuthorBlock::class.java) }
+        private val fileBlocks by lazy { blocks.filterIsInstance<CobBlock.FileBlock>() }
         val spriteFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SpriteBlock>()
         val soundFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SoundBlock>()
         override val variant:CaosVariant get() = CaosVariant.C2
