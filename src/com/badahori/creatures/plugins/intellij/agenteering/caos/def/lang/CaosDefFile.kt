@@ -38,6 +38,6 @@ class CaosDefFile(viewProvider: FileViewProvider)
             PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
 
     override fun toString(): String {
-        return "Caos Script"
+        return "Caos Def"
     }
 }
