@@ -38,16 +38,19 @@
         <b>#Fixes</b>
         <ul>
           <li>Fix completions in equality expressions</li>
-          <li>Fix</li>
+          <li>Fixed event number definitions not resolving to actual event scripts</li>
         </ul>
         <b>#Improvements</b>
         <ul>
+          <li>Improved find usages from definitions to code. Including previously opened COB files</li>
+          <li>Minor improvements to values list navigation</li>
           <li>Added COB contents explorer.
             <ul>
               <span style="font-size:0.8em">*Cob view requires file placement in proper C1/C2 module</span></li>
             </ul>
           <li>Added ability to copy* images from sprite image list to project view</li>
           <li>Added ability to copy* scripts, sounds, and sprites from expanded COB view to project view</li>
+          <li>Removed annoying insert of space after insert value in equality comparisons</li>
         </ul>
         <div>
           <div style="font-size:0.8em">*Copy Notes*</div>
