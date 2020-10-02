@@ -209,7 +209,7 @@ object CaosScriptValuesListValuesCompletionProvider {
             }
             if (addSpace) {
                 lookupElement = lookupElement
-                        .withInsertHandler(AddSpaceInsertHandler(true))
+                        .withInsertHandler(SpaceAfterInsertHandler)
             }
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
         }
