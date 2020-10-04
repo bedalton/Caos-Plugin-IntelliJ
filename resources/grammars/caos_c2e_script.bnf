@@ -234,6 +234,10 @@
 		K_DRIV = "regexp:[dD][rR][iI][vV]"
 		K_TOKN = "regexp:[tT][oO][kK][nN]"
 		K_XIST = "regexp:[Xx][Ii][Ss][Tt]"
+		K_SSFC = "regexp:[Ss][Ss][Ff][Ss]";
+		K_DEND = "regexp:[Dd][Ee][Nn][Dd]"
+		K_RCPR = "regexp:[Rr][Cc][Pp][Rr]"
+		K_APP_COL = "regexp:[Aa][Pp][Pp][:]"
 		K_F__K = "regexp:[Ff][*]{2}[Kk]"
 		K_XX_DEF = " "
 		K_XX_EXPR = " "
@@ -1888,7 +1892,8 @@ command_call
 	;
 
 private command_call_by_args
-	::= c_targ
+	::= c_ssfc
+	|	c_targ
 	|	c_rtar
 	|	c_d_d
 	|	c_l
@@ -2129,6 +2134,43 @@ private setv_prime
 	::= (<<isOldVariant>>) expects_value
 	|	(<<isNewerVariant>>) expects_decimal
 	;
+
+c_ssfc
+	::= c_kw_ssfc space_like expects_int space_like expects_int (space_like expects_int)*
+	{
+		pin = 1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getArguments
+			getArgumentValues
+		]
+	}
+	;
+
+c_kw_ssfc ::= prefix_kw_dde_col space_like (K_GETB (space_like (K_SSFC|incomplete))|incomplete)
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
 
 c_kw_setv ::= K_SETV
 	{
@@ -2380,7 +2422,7 @@ c_kw_gsub
 	}
 	;
 
-r_gend ::= K_GEND <<isVariant 'C1'>>;
+r_gend ::= K_GEND (<<isOldVariant>>);
 
 caos_named_var_kw
 	::= K_MAME
@@ -3624,6 +3666,16 @@ prefix_kw_stm_num
 	}
 	;
 
+prefix_kw_app_col
+	::= K_APP_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
 
 prefix_kw_stim
 	::= K_STIM
@@ -3711,8 +3763,7 @@ c_kw_dde_getb_none
 		]
 	}
 	;
-c_kw_d
-	::= prefix_kw_cd space_like (K_PAWS|incomplete)
+c_kw_d 	::= prefix_kw_cd space_like (K_PAWS|incomplete)
 	|	K_AERO
 	|	K_AGES
 	|	K_AIM_COL
@@ -3736,9 +3787,9 @@ c_kw_d
 	|	prefix_kw_dbg_col space_like (K_OUTV|incomplete)
 	|	prefix_kw_dbg_col space_like (K_WTIK|incomplete)
 	|	K_DCOR
-	|	prefix_kw_dde_col space_like (incomplete |	K_GETB space_like (c_kw_dde_getb_d|incomplete))
-	|	prefix_kw_dde_col space_like (incomplete |	K_GIDS space_like (c_kw_dde_gids_d|incomplete))
-	|	prefix_kw_dde_col space_like (K_GETB|incomplete)
+	|	prefix_kw_dde_col space_like (incomplete | K_GETB space_like (c_kw_dde_getb_d|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete | K_GIDS space_like (c_kw_dde_gids_d|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete |(K_GETB space_like (K_RCPR|incomplete)))
 	|	prefix_kw_dde_col space_like (K_LNEU|incomplete)
 	|	prefix_kw_dde_col space_like (K_WORD|incomplete)
 	|	K_DELM
@@ -3762,6 +3813,7 @@ c_kw_d
 	|	prefix_kw_mesg space_like (K_SHOU|incomplete)
 	|	prefix_kw_mesg space_like (K_SIGN|incomplete)
 	|	prefix_kw_mesg space_like (K_TACT|incomplete)
+	|	prefix_kw_app_col space_like (K_QUIT|incomplete)
 	|	K_MIND
 	|	K_MIRA
 	|	K_MOTR
@@ -4127,6 +4179,7 @@ c_kw_d_d_d
 	|	K_CLIK
 	|	K_CMRA
 	|	K_CMRP
+	|	prefix_kw_dde_col space_like (K_DEND|incomplete)
 	|	prefix_kw_dde_col space_like (K_CELL|incomplete)
 	|	prefix_kw_dde_col space_like (incomplete | K_GETB space_like (dde_col_getb_d_d_d|incomplete))
 	|	prefix_kw_dde_col space_like (incomplete | K_GIDS space_like (dde_col_gids_d_d_d|incomplete))
@@ -4715,6 +4768,7 @@ c_kw_s_d_s
 c_kw_s_s
 	::= prefix_kw_hist space_like (K_NAME|incomplete)
 	|	prefix_kw_net_col space_like (K_PASS|incomplete)
+	|	K_EXEC
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6840,6 +6894,9 @@ all_tokens
 	|	K_ANIM
 	|	K_ANMS
 	|	K_APPR
+	| 	K_APP_COL
+	|	K_DEND
+	|	K_SSFC
 	|	K_APRO
 	|	K_ASEA
 	|	K_ASIN
@@ -7131,7 +7188,7 @@ all_tokens
 	|	K_LITE
 	|	K_LIVE
 	|	K_LNEU
-	|	K_LNG+
+	|	K_LNG_PLUS
 	|	K_LOAD
 	|	K_LOBE
 	|	K_LOCI
@@ -7506,7 +7563,7 @@ all_tokens
 	|	K_WPOS
 	|	K_WRIT
 	|	K_WRLD
-	|	K_WRT+
+	|	K_WRT_PLUS
 	|	K_WTIK
 	|	K_WTNT
 	|	K_WTOP
@@ -7518,6 +7575,7 @@ all_tokens
 	|	K_YVEC
 	|	K_ZOMB
 	|	K_ZOOM
+	|	K_RCPR
 	;
 
 

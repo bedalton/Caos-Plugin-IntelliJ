@@ -1671,6 +1671,11 @@ object CaosScriptPsiImplUtil {
             return "scrp $classifierText {?}"
         return "srcp $classifierText $eventNumber"
     }
+
+    @JvmStatic
+    fun getCommandToken(element:CaosScriptCSsfc) : CaosScriptIsCommandToken {
+        return element.cKwSsfc
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
