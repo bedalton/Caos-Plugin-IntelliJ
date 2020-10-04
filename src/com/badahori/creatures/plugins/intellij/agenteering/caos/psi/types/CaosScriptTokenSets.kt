@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixKwUrge
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
@@ -106,6 +107,32 @@ class CaosScriptTokenSets {
                 CaosScript_ANIMATION_STRING,
                 CaosScript_QUOTE_STRING_LITERAL,
                 CaosScript_CHARACTER
+        )
+
+        @JvmStatic
+        val PREFIX_KEYWORDS = create(
+                CaosScript_K_APP_COL,
+                CaosScript_K_BBD_COL,
+                CaosScript_K_BRN_COL,
+                CaosScript_K_CD_,
+                CaosScript_K_DBG_COL,
+                CaosScript_K_DDE_COL,
+                CaosScript_K_FILE,
+                CaosScript_K_GENE,
+                CaosScript_K_GIDS,
+                CaosScript_K_HIST,
+                CaosScript_K_NET_COL,
+                CaosScript_K_NEW_COL,
+                CaosScript_K_PAT_COL,
+                CaosScript_K_PRAY,
+                CaosScript_K_PRT_COL,
+                CaosScript_K_MESG,
+                CaosScript_K_ORDR,
+                CaosScript_K_STM_NUM,
+                CaosScript_K_STIM,
+                CaosScript_K_SYS_COL,
+                CaosScript_K_SWAY,
+                CaosScript_K_URGE
         )
 
         @JvmStatic

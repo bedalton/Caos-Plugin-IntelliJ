@@ -24,6 +24,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             return EMPTY_KEYS
         }
         val attrKey: TextAttributesKey? = when (tokenType) {
+            in CaosScriptTokenSets.PREFIX_KEYWORDS -> PREFIX_TOKEN
             CaosScriptTypes.CaosScript_SUBROUTINE_NAME -> SUBROUTINE_NAME
             in CaosScriptTokenSets.COMMENTS -> COMMENT
             in CaosScriptTokenSets.ANIMATION_STRING -> ANIMATION
