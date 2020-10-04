@@ -902,7 +902,11 @@ class CaosScriptTokenSets {
                 CaosScript_K_CLS2,
                 CaosScript_K_WORD,
                 CaosScript_K_XIST,
-                CaosScript_K_F__K
+                CaosScript_K_F__K,
+                CaosScript_K_SSFC,
+                CaosScript_K_APP_COL,
+                CaosScript_K_DEND,
+                CaosScript_K_RCPR
         )
 
         @JvmStatic
