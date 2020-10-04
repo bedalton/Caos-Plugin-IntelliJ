@@ -65,7 +65,7 @@ class CobFileTreeNode(
             is AgentBlock -> {
                 val scripts = listOfNotNull(
                         block.installScript?.let { CaosScriptFileTreeNode(it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, "Install Script") },
-                        block.removalScript?.let { CaosScriptFileTreeNode(it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, "Install Script") }
+                        block.removalScript?.let { CaosScriptFileTreeNode(it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, "Removal Script") }
                 )
                 val previews:List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
                     SpriteImageTreeNode(
