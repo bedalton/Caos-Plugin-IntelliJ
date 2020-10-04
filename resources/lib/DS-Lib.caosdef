@@ -85,6 +85,7 @@ _CD_ STOP (command);
  * valid if [OWNR] is a creature. Compare [IITT].
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -975,6 +976,7 @@ CAOS (string) inline (integer) stateTrans (integer) p1 (any) p2 (any) commands (
  * Returns the the agent currently holding the target, or [NULL] if there is none.
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -1606,9 +1608,9 @@ DOCA (command) noOfUpdates (integer);
  * [ENDI]. A condition is composed of one or more comparisons joined by AND or OR. A comparison
  * compares two values with EQ, NE, GT, GE, LT, LE, or alternatively =, <>, >, >=, <, <=.
  * #{
- 	doif ov00 GE 5 AND ov00 LT 10
+  	doif ov00 ge 5 and ov00 lt 10
   	*--- code block 1 ---
-  	elif ov00 GE 10 OR ov00 LT 100
+  	elif ov01 >= 10 or ov01 lt -10
   	*--- code block 2 ---
   	else
   	*--- code block 3 ---
@@ -1905,6 +1907,7 @@ ERID (string) metaroomId (integer);
  * [TARG] is used instead.
  * #Enums
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -1918,6 +1921,7 @@ ESEE (command) family (integer) genus (integer) species (integer);
  * no [OWNR], [TARG] is used instead.
  * #Enums
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -3501,6 +3505,7 @@ LTCY (command) action (integer) min (integer) max (integer);
  * This is the same difference as between [MVxx] and [OVxx].
  * #Variables
  *
+ * @Ownr
  * @lvalue
  * @rvalue
  * @param {variableName} (any)
@@ -3977,11 +3982,12 @@ MVTO (command) x (float) y (float);
  * @range(0 to 99)
  * #Variables
  *
+ * @Ownr
  * @lvalue
  * @rvalue
  * @return (variable)
  */
-MVxx (variable);
+MVXX (variable);
 
 /*
  * This is a named variable, similar to a [GAME] variable, only local to the target agent. See also
@@ -4673,13 +4679,14 @@ OVER (command);
  * @rvalue
  * @return (variable)
  */
-OVxx (variable);
+OVXX (variable);
 
 /*
  * Returns the agent who's virtual machine the script is running on. Returns [NULL] for injected or
  * install scripts.
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -6443,6 +6450,7 @@ SQRT (float) value (float);
  * the script. It then sets [TARG] to that agent. See [ESEE] for an explanation of seeing.
  * #AgentVars
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -6467,6 +6475,7 @@ STEP (command) facultyid (integer);
  * chemical change. See the table of Stimulus Numbers.
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
@@ -6477,6 +6486,7 @@ STIM SHOU (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who can see [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
@@ -6487,6 +6497,7 @@ STIM SIGN (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who are touching [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
@@ -6627,6 +6638,7 @@ SVEL (float);
  * Stimulate all creatures that can hear [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
+ * @Ownr
  * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
  * @param {drive2} (integer@Drives)
@@ -6643,6 +6655,7 @@ SWAY SHOU (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * Stimulate all creatures that can see [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
+ * @Ownr
  * @param {drive} (integer@Drives)
  * @param {adjust} (float)
  * @param {drive2} (integer@Drives)
@@ -6659,6 +6672,7 @@ SWAY SIGN (command) drive (integer) adjust (float) drive2 (integer) adjust2 (flo
  * Stimulate all creatures that are touching [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
+ * @Ownr
  * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
  * @param {drive2} (integer@Drives)
@@ -7143,6 +7157,7 @@ UPPA (string) anyOld (string);
  * from -1 to 1, ranging from discourage to encourage.
  * #Creatures
  *
+ * @Ownr
  * @param {nounStim} (float)
  * @param {verbId} (integer)
  * @param {verbStim} (float)
@@ -7154,6 +7169,7 @@ URGE SHOU (command) nounStim (float) verbId (integer) verbStim (float);
  * Urge all creatures who can see [OWNR] to perform an action on [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {nounStim} (float)
  * @param {verbId} (integer)
  * @param {verbStim} (float)
@@ -7165,6 +7181,7 @@ URGE SIGN (command) nounStim (float) verbId (integer) verbStim (float);
  * Urge all creatures who are touching [OWNR] to perform an action on [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {nounStim} (float)
  * @param {verbId} (integer)
  * @param {verbStim} (float)
@@ -7214,7 +7231,7 @@ VARC (float);
  * @rvalue
  * @return (variable)
  */
-VAxx (variable);
+VAXX (variable);
 
 /*
  * Returns a normalised vector for the given angle (X coordinate).
@@ -7768,7 +7785,6 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 }
 
 @Chemicals {
-	0 = <<NOTHING>>
 	1 = Lactate - Neutral (see main article)
 	2 = Pyruvate - Good
 	3 = Glucose - Good
@@ -7921,6 +7937,7 @@ ZOOM (command) pixels (integer) x (integer) y (integer);
 	211 = Brain chemical 14 - Not used.
 	212 = Pre-REM - Controls dreaming. Your creature learns its instinctual behaviors while it dreams.
 	213 = REM - Controls dreaming.
+	0 = <NOTHING>
 }
 
 @ClikWhich {

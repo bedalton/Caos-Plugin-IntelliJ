@@ -20,7 +20,8 @@ class CaosDefCommandDefinitionStubImpl(
         override val lvalue: Boolean,
         override val isCommand: Boolean,
         override val variants:List<CaosVariant>,
-        override val simpleReturnType: CaosExpressionValueType
+        override val simpleReturnType: CaosExpressionValueType,
+        override val requiresOwner:Boolean
 ) : StubBase<CaosDefCommandDefElementImpl>(parent, CaosDefStubTypes.COMMAND_ELEMENT), CaosDefCommandDefinitionStub {
     override val commandWords:List<String> by lazy {
         command.split(" ")
@@ -33,6 +34,7 @@ class CaosDefDocCommentStubImpl(
         override val comment: String?,
         override val returnType: CaosDefReturnTypeStruct,
         override val rvalue: Boolean,
+        override val requiresOwner:Boolean,
         override val lvalue: Boolean
 ) : StubBase<CaosDefDocCommentImpl>(parent, CaosDefStubTypes.DOC_COMMENT), CaosDefDocCommentStub
 

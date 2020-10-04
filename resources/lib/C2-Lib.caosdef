@@ -5,6 +5,7 @@
  * Note: Only [OWNR]’s IT can be determined, not [TARG]’s.
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -116,6 +117,15 @@ ANDV (command) var (variable) value (integer);
 ANIM (command) anim [anim];
 
 /*
+ * Close the applet with the given id
+ * #World
+ *
+ * @param {appletId} (integer) - The applet id that should be closed.
+ *
+ */
+APP: QUIT (command) appletId (integer);
+
+/*
  * Approach [_IT_]
  * Chose a walking gait according to chemo-receptors, then start walking towards [_IT_].
  * Continue with next instruction when you are within reach
@@ -151,6 +161,17 @@ ASLP (integer);
  *
  */
 ASLP (command) asleep (integer);
+
+/*
+ * [_IT_] object that [OWNR] creature is attending to (may be [NULL])
+ * NOTE: only [OWNR]'s [_IT_] can be determined, not [TARG]'s
+ * #Creatures
+ *
+ * @Ownr
+ * @rvalue
+ * @return (agent)
+ */
+ATTN (agent);
 
 /*
  * Sets/returns an objects Attributes. See reference section for values.
@@ -359,6 +380,7 @@ CAMN (command);
  * For carryer of [TARG] see [TCAR]]
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -405,6 +427,15 @@ CHEM (integer) chemical (integer);
  *
  */
 CHEM (command) chemical (integer) amount (integer);
+
+/*
+ * Returns [TARG] agent's CLAS as an integer.
+ * #AgentAttributes
+ *
+ * @rvalue
+ * @return (integer)
+ */
+CLAS (integer);
 
 /*
  * Used when creating an object, this is how you assign it a unique classifier
@@ -502,6 +533,19 @@ DBUG (command) rvalue (any);
 DDE: CELL (command) lobe (integer) cell (integer) dentype (integer);
 
 /*
+ * Returns dendrite information for a lobe, cell and dend type.
+ * Output is: NUM_DENDRITES|SRC_LOBE|{dentrite_data}*
+ * Dendrite Data: XY{Strength}
+ * #Debug
+ *
+ * @param {lobe} (integer)
+ * @param {cell} (integer)
+ * @param {denType} (integer)
+ *
+ */
+DDE: DEND (command) lobe (integer) cell (integer) denType (integer);
+
+/*
  * Update the number of norns that have died in the world
  * #Debug
  *
@@ -526,21 +570,6 @@ DDE: DIED (command);
  *
  */
 DDE: GENE (command);
-
-/*
- * Get Receptor Buffer. Returns an integer specifying how many receptors the Targ creature’s
- * specified organ contains followed by the data for each receptor in the format “1|2|33|”.
- * The sequence of organ data is as follows:
- * Locus organ identifier (byte) Locus tissue identifier (byte) Locus specifier (byte) Chemical
- * monitored (byte) Reception threshold (byte) Gain (byte)
- * Effect flags (byte)
- * Current value of destination locus (byte).
- * #Debug
- *
- * @param {organ} (integer) - organ number
- *
- */
-DDE: GETB (command) organ (integer);
 
 /*
  * ALL Rooms property value. Returns a particular property for all rooms.
@@ -616,11 +645,7 @@ DDE: GETB EMTR (command) organ (integer);
  * Locate Visited Objects. Returns a list of X / Y positions for all the objects matching <f, g,
  * s> that are in rooms that have been visited. After each objects details is an ampersand to
  * allow later expansion if needed.
- * Returns:
- * Xvalue | Yvalue | and |
- * family	int
- * genus	int
- * species	int
+ * Returns: X|Y|&|
  * #Debug
  *
  * @param {family} (integer)
@@ -684,6 +709,18 @@ DDE: GETB ORGN (command);
 DDE: GETB OVVD (command);
 
 /*
+ * Gets Receptor information for a given ORGAN.
+ * Output Format: NUM_RECEPTORS|*RECEPTOR_INFORMATION*
+ * Receptor Infomation each receptor =
+ * ORGAN_ID|TISSUE_ID|LOCUS_ID|CHEMICAL|THRESHOLD|GAIN|EFFECT|DEST
+ * #Debug
+ *
+ * @param {organ} (integer@OrganNumbers) - Organ number
+ *
+ */
+DDE: GETB RCPR (command) organ (integer);
+
+/*
  * Get Reaction Buffer. Returns an integer specifying how many reactions the Targ creature’s
  * specified organ contains followed by the data for each reaction in the format “1|2|33|”.
  * The sequence of organ data is as follows:
@@ -719,6 +756,22 @@ DDE: GETB RPTY (command) room (integer);
  *
  */
 DDE: GETB RRCT (command);
+
+
+/*
+ * Set SurFaCe points in a room.
+ * Second parameter is the number of points to set, and controls how many arguments this command
+ * takes.
+ * Every floor point requires 2 arguments, the X and Y
+ * Example: ${ dde: getb ssfc 0 1 2 2 }  Gives us a room with one floor point at (2,2)
+ * Example: ${ dde: getb ssfc 0 2 1 1 3 2} Gives us a room with two floor points [ (1,1),(3,2) ]
+ * #World
+ *
+ * @param {roomId} (integer)
+ * @param {numberOfPoints} (integer) - The number of floor points that are planned to be set
+ *
+ */
+DDE: GETB SSFC (command) roomId (integer) numberOfPoints (integer);
 
 /*
  * Returns a list of all genuses that exist from within a certain family number.
@@ -811,16 +864,17 @@ DDE: LNEU (command) flags (integer);
  * lobes, and then the information about them is returned in the following format, with the
  * ‘|’ symbol separating fields:
  * 	-X position start
- * 	-Y position start Width
+ * 	-Y position start
+ * 	-Width
  * 	-Height
  * 	-Flags
- * 	-Number of Dendrites
- * 	-Dendrite type 0 source
- *	-Dendrite type 0 minimum
- *	-Dendrite type 0 maximum
- * 	-Dendrite type 1 source
- *	-Dendrite type 1 minimum
- *	-Dendrite type 1 maximum
+ * 	-Number of Dendrites 
+ * 	-Dendrite type 0 source 
+ * 	-Dendrite type 0 minimum 
+ * 	-Dendrite type 0 maximum 
+ * 	-Dendrite type 1 source 
+ * 	-Dendrite type 1 minimum 
+ * 	-Dendrite type 1 maximum
  * #Debug
  *
  */
@@ -1137,6 +1191,7 @@ ESCN (command) family (integer) genus (integer) species (integer);
  * event scripts) after enumeration.
  * #Enums
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -1151,6 +1206,7 @@ ESEE (command) family (integer) genus (integer) species (integer);
  * event scripts) after enumeration.
  * #Enums
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -1176,6 +1232,32 @@ EVER (command);
  *
  */
 EVNT (command) targ (agent);
+
+/*
+ * Execute a tool or other application.
+ * Example: exec [fsp.exe] [params]
+ * Example: exec [c:\path\fsp.exe] [params]
+ * If fsp contains backslashes, it must be a full path, so execute GP program.
+ * If no backslashes, assume it's a tool, so try both hard drive AND CD-ROM
+ * [params] are the command-line params for the program (or use [] if none)
+ * #World
+ *
+ * @param {fsp} [string] - Executable name or absolute path.
+ * @param {params} [string] - Parameters to pass to executable
+ *
+ */
+EXEC (command) fsp [string] params [string];
+
+/*
+ * object who EXECuted the tool who owns this
+ * return (int)Exec; dde macro. NOTE: only valid for DDE
+ * tools who *know* that they were executed by an object
+ * #World
+ *
+ * @rvalue
+ * @return (agent)
+ */
+EXEC (agent);
 
 /*
  * Fade out any controlled sound currently playing with this [TARG].
@@ -1235,7 +1317,7 @@ FROM (agent);
 FRZN (integer);
 
 /*
- * Game flow state.
+ * Game flow state. 
  * Sets or queries game flow state.
  * Category: 0 = Applet custom condition,
  * Variable: Applet slot number.
@@ -1253,6 +1335,34 @@ FRZN (integer);
  *
  */
 GAME (variable) category (integer) variable (integer);
+
+/*
+ * Returns [OWNR] Creature's gender
+ * #Creatures
+ *
+ * @Ownr
+ * @rvalue
+ * @return (integer)
+ */
+GEND (integer);
+
+/*
+ * Number of ground level data on map
+ * #Map
+ *
+ * @rvalue
+ * @return (integer)
+ */
+GND# (integer);
+
+/*
+ * Number of pixels per ground datum
+ * #Map
+ *
+ * @rvalue
+ * @return (integer)
+ */
+GNDW (integer);
 
 /*
  * Returns the object's genus
@@ -1463,7 +1573,7 @@ KNOB (command) function (integer) hotspot (integer);
 LACB (integer);
 
 /*
- *
+ * 
  * Primary LANGuage of Windows desktop. Values are (in hexidecimal) as follows:
  * Neutral = 0x00
  * Chinese = 0x04
@@ -1627,6 +1737,7 @@ MCRT (command) x (integer) y (integer);
  * Shout message to all creatures that can hear the object
  * #Agents
  *
+ * @Ownr
  * @param {message} (integer)
  *
  */
@@ -1636,6 +1747,7 @@ MESG SHOU (command) message (integer);
  * Send message to all creatures that can see the object
  * #Agents
  *
+ * @Ownr
  * @param {message} (integer)
  *
  */
@@ -1645,13 +1757,15 @@ MESG SIGN (command) message (integer);
  * Send message to all creatures that are touching the object
  * #Agents
  *
+ * @Ownr
  * @param {message} (integer)
  *
  */
 MESG TACT (command) message (integer);
 
 /*
- *
+ * "write" send message to a specific object. Object is a pointer to an object ([TARG], [OWNR],
+ * [FROM] or [NORN])
  * #Agents
  *
  * @param {agent} (agent)
@@ -1974,6 +2088,7 @@ NSCN (command);
 
 /*
  * Returns a null agent pointer.
+ * #Agents
  *
  * @rvalue
  * @return (agent)
@@ -1997,6 +2112,7 @@ OBDT (integer) direction (integer);
  * Legacy command from Creatures 1. Can now use normal variables instead.
  * #AgentVars
  *
+ * @Ownr
  * @lvalue
  * @rvalue
  * @return (agent)
@@ -2039,7 +2155,7 @@ OBSV (integer) direction (integer);
  * @rvalue
  * @return (variable)
  */
-OBVx (variable);
+OBVX (variable);
 
 /*
  * Sets/returns the room's organic nutrients at [targ]
@@ -2088,7 +2204,7 @@ OVER (command);
  * @rvalue
  * @return (variable)
  */
-OVxx (variable);
+OVXX (variable);
 
 /*
  * default object (owner of script, or pet if [DDE])
@@ -2344,6 +2460,7 @@ RCLR (command);
  * Returns the relative x-position of object [Targ] from the script [OWNR] object.
  * #Motion
  *
+ * @Ownr
  * @rvalue
  * @return (integer)
  */
@@ -2353,6 +2470,7 @@ RELX (integer);
  * Returns the relative y-position of object [Targ] from the script [OWNR] object.
  * #Motion
  *
+ * @Ownr
  * @rvalue
  * @return (integer)
  */
@@ -2482,6 +2600,7 @@ RMSC (command) x (integer) y (integer) trackName [string];
 
 /*
  * Renderer image format. Returns 0 if image format is 555 and 1 if it is 565.
+ * #AgentSprites
  *
  * @rvalue
  * @return (integer@RenderFormat)
@@ -2784,6 +2903,17 @@ SNDL (command) filename (token);
 SNDQ (command) filename (token) delay (integer);
 
 /*
+ * sound status
+ * Bit 0 = Sound on/off
+ * Bit 1 = Sound mode (foreground only\continuous)
+ * #Sounds
+ *
+ * @rvalue
+ * @return (integer)
+ */
+SNDS (integer);
+
+/*
  * Creature sneezes – this will infect any nearby creatures or environment with any live
  * bacteria it has in it.
  * #Creatures
@@ -2832,6 +2962,7 @@ SPOT (command) spot (integer) left (integer) top (integer) right (integer) botto
  * Pick a random object that can be seen by [OWNR] object matching the given family genus species
  * #AgentVars
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -2847,6 +2978,7 @@ STAR (command) family (integer) genus (integer) species (integer);
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - Amount to nudge the source lobe neurone by. This decides the significance of the object
  * @param {input} (integer) - Which neuron in the General Sense Lobe to fire
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
@@ -2871,6 +3003,7 @@ STIM SHOU (command) significance (integer) input (integer) intensity (integer) f
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - Amount to nudge the source lobe neurone by. This decides the significance of the object
  * @param {input} (integer) - Which neuron in the General Sense Lobe to fire
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
@@ -2895,6 +3028,7 @@ STIM SIGN (command) significance (integer) input (integer) intensity (integer) f
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - the amount to nudge the General Sense neurone selected as input
@@ -2914,7 +3048,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
 /*
  * Send stimulus to a specific creature.
  * Significance – amount to nudge the Source lobe neurone by, this decides the significance of
- * the object.
+ * the object. 
  * Input – which neurone in the General Sense lobe to fire (or 255 for none)
  * List 4 chemicals to emit and the amounts.
  * If less than 4 chemicals are required then the remaining values should be set to 0
@@ -2941,6 +3075,7 @@ STIM WRIT (command) agent (agent) significance (integer) input (integer) intensi
  * Shout {stimulus} to all creatures within earshot
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  *
  */
@@ -2950,6 +3085,7 @@ STM# SHOU (command) stimulus (integer);
  * Send {stimulus} to all creatures that can see the object
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  *
  */
@@ -2959,6 +3095,7 @@ STM# SIGN (command) stimulus (integer);
  * Send {stimulus} to all creatures that are touching the object
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  *
  */
@@ -3091,6 +3228,17 @@ SYS: DMAP (command);
  *
  */
 SYS: EDIT (command) left (integer) top (integer) right (integer) bottom (integer);
+
+/*
+ * set ground level at position x (worldx/GROUNDW) (see [GND#] and [GNDW] macros for establishing
+ * useful constants)
+ * #World
+ *
+ * @param {x} (integer)
+ * @param {y} (integer) - y
+ *
+ */
+SYS: GRND (command) x (integer) y (integer);
 
 /*
  * Saves the world and closes the game window
@@ -3241,6 +3389,18 @@ TMOD (integer);
 TOKN (integer) token (token);
 
 /*
+ * Issued by a DDE tool app to register itself with the toolbar
+ * #World
+ *
+ * @param {fsp} [string]
+ * @param {menutext} [string]
+ * @param {helptext} [string]
+ * @param {glyph} (integer)
+ *
+ */
+TOOL (command) fsp [string] menutext [string] helptext [string] glyph (integer);
+
+/*
  * Returns the number of objects in the world who fit this specifier
  * #Agents
  *
@@ -3264,7 +3424,7 @@ TOUC (command);
 
 /*
  * Returns 1 if these two objects are in contact.
- * @example: #{doif touc targ ownr GT 0} - [DOIF] [TARG] and [OWNR] are touching
+ * @example: #{doif touc targ ownr gt 0} - [DOIF] [TARG] and [OWNR] are touching
  * #Agents
  *
  * @rvalue
@@ -3332,9 +3492,9 @@ UNLK (command);
  * NE – Not equal
  * GT – Greater than
  * LT – Less than
- * GE – Greater than or equal to
- * LE – Less than or equal to
- * BT – Bit-wise AND function
+ * GE – Greater than or equal to 
+ * LE – Less than or equal to 
+ * BT – Bit-wise AND function 
  * BF – Bit-wise NAND function
  * #Flow
  *
@@ -3352,7 +3512,7 @@ UNTL (command) condition (condition);
  * @rvalue
  * @return (variable)
  */
-VARx (variable);
+VARX (variable);
 
 /*
  * VA00 to VA99 are local variables, whose values are lost when the current script ends.
@@ -3363,7 +3523,7 @@ VARx (variable);
  * @rvalue
  * @return (variable)
  */
-VAxx (variable);
+VAXX (variable);
 
 /*
  * Sets/returns the object's velocity in X direction.
@@ -3441,6 +3601,36 @@ WALL (integer);
 WDTH (integer);
 
 /*
+ * Wind speed near [TARG] object
+ * Legacy C1 command. Returns [WNDX] in C2
+ * #Map
+ *
+ * @rvalue
+ * @return (integer)
+ */
+WIND (integer);
+
+/*
+ * Max allowed view window height (WORLD coords)
+ * #Map
+ *
+ * @lvalue
+ * @rvalue
+ * @return (integer)
+ */
+WINH (integer);
+
+/*
+ * Max allowed view window width (WORLD coords)
+ * #Map
+ *
+ * @lvalue
+ * @rvalue
+ * @return (integer)
+ */
+WINW (integer);
+
+/*
  * World Height, in pixels.
  * #Map
  *
@@ -3478,6 +3668,7 @@ WNDY (integer);
 
 /*
  * Returns 1 if specified agent exists, or 0 otherwise (ie, if it is null).
+ * #Agents
  *
  * @rvalue
  * @param {agent} (agent)
@@ -3684,7 +3875,6 @@ YVEC (integer);
 }
 
 @Chemicals {
-	0 = <<NOTHING>>
 	1 = Pain
 	2 = Need for Pleasure
 	3 = Hunger
@@ -3835,6 +4025,7 @@ YVEC (integer);
 	253 = Antigen 5
 	254 = Antigen 6
 	255 = Antigen 7
+	0 = <NOTHING>
 }
 
 @Dead {
@@ -3992,7 +4183,7 @@ YVEC (integer);
 	3 6 = LeftRight
 	3 7 = Incubator
 	3 8 = Teleporter
-	3 9 = <Empty slot>
+	3 9 = &lt;Empty slot&gt;
 	3 10 = Machine
 	4 1 = Norn
 	4 2 = Grendel
@@ -4006,7 +4197,7 @@ YVEC (integer);
 	2 31 = Leftright
 	2 32 = Incubator
 	2 33 = Teleporter
-	2 34 = <Empty slot>
+	2 34 = &lt;Empty slot&gt;
 	2 35 = Machine
 	2 36 = Norn
 	2 37 = Grendel
@@ -4061,6 +4252,11 @@ YVEC (integer);
 	0x1F = Turkish
 }
 
+@LocusOrEmitter {
+	0 = Receptor
+	1 = Emitter
+}
+
 @LocusType {
 	0 = Receptor Loci
 	1 = Emmiter Loci
@@ -4096,6 +4292,29 @@ YVEC (integer);
 @OnOff {
 	0 = Off
 	1 = On
+}
+
+@OrganNumbers {
+	1 = Brain
+	2 = DriveLobeSupport
+	3 = ConceptLobeSupport
+	4 = DecisionLobeSupport
+	5 = RegulatorLobeSupport
+	6 = Times Arrow
+	7 = Environmental If
+	8 = Muscle
+	9 = Heart
+	10 = Lung
+	11 = Liver
+	12 = PancreasAlpha
+	13 = PancreasBeta
+	14 = Tummy
+	15 = Kidney
+	16 = Bones
+	17 = Spleen
+	18 = Skin
+	19 = Gonad
+	20 = Uterus
 }
 
 @Paused {
@@ -4257,10 +4476,10 @@ YVEC (integer);
 	32957 = Send To Mail Recipient...
 	57665 = Exit
 	# World
-	57600 = New World
-	57601 = Open World
-	57603 = Save World
-	57604 = Save World As
+	57600 = New
+	57601 = Open...
+	57603 = Save the world
+	57604 = Save As...
 	# Testing
 	32774 = Activate Game States
 	32995 = Show Map ( Draws rooms limits on screen)
@@ -4360,6 +4579,14 @@ YVEC (integer);
 	2 = Afternoon
 	3 = Evening
 	4 = Night
+}
+
+@TissueNumbers {
+	1 = Circulatory - Loci that can have an emitter AND a receptor attached
+	2 = Reproductive - Things to do with sex urges and acts
+	3 = Immunity - Things to do with disease resistance
+	4 = SensoryMotor - Boredom, air temp, constants & other sensorimotor i/o
+	5 = Drives - Receptors for each drive. Can also be used as emitters
 }
 
 @Unconscious {
