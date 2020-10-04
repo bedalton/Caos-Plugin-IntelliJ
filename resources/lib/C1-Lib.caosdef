@@ -1,13 +1,10 @@
 @variant(C1 = Creatures 1)
-/*
- * #{kill targ}
- */
-CMND (command);
 
 /*
  * object that [OWNR] creature was attending to
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -74,6 +71,15 @@ ANIM (command) anim [anim];
 ANIM (command) anim [anim];
 
 /*
+ * Close the applet with the given id
+ * #World
+ *
+ * @param {appletId} (integer) - The applet id that should be closed.
+ *
+ */
+APP: QUIT (command) appletId (integer);
+
+/*
  * Approach [_IT_]
  * Choose a walking gait according to chemo-receptors, then start walking towards [_IT_]. Continue
  * with next instruction when you are WITHIN REACH
@@ -107,6 +113,7 @@ ASLP (integer);
  * NOTE: only [OWNR]'s [_IT_] can be determined, not [TARG]'s
  * #Creatures
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -151,7 +158,7 @@ BABY (integer);
   	subr rite
   	base 6 anim 0123 over anim [450]
   	mvby 3 0
-    retn
+  	retn
    }#
  * #AgentSprites
  *
@@ -177,8 +184,7 @@ BBD: EDIT (command) n (integer);
  * i.e. to those creatures looking at bbd, with no visible consequences. If n>0 word will be
  * broadcast as if it were a sound, i.e. it is sent to all creatures in EARSHOT, and the word
  * appears in a speech bubble above the bbd. Use n=0 in timer ticks for posters etc. and n=1 when
- * eg. a norn presses a button on a
- * language computer to change the picture.
+ * eg. a norn presses a button on a language computer to change the picture.
  * #Blackboard
  *
  * @param {n} (integer@EmitType)
@@ -267,6 +273,7 @@ CAMN (integer);
  * object that's carrying [OWNR] (may be NULL)
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -304,6 +311,15 @@ CHEM (command) chemical (integer) amount (integer);
  * @return (variable)
  */
 CLAS (variable);
+
+/*
+ * Returns [TARG] agent's CLAS as an integer.
+ * #AgentAttributes
+ *
+ * @rvalue
+ * @return (integer)
+ */
+CLAS (integer);
 
 /*
  * Does nothing in release version, but debug version sends String as a TRACE message that I can
@@ -427,8 +443,8 @@ DDE: LIVE (command);
 
 /*
  * Output the locations of the brain lobes of the subject of the macro
- * Format is " 'x_start'y_start'width'height' " after a leading count
- * of the number of lobes based on the 64x48 grid of neurones
+ * Format is " 'x_start'y_start'width'height' " after a leading count of the number of lobes based
+ * on the 64x48 grid of neurones
  * #Debug
  *
  */
@@ -596,7 +612,7 @@ DROP (command);
 
 /*
  * Returns the id of the highest drive for the target creature.
- * returns '0' (pain) if no drives pressing
+ * retuns '0' (pain) if no drives pressing
  * Can use in: #{doif driv drv! gt 128} to test level of strongest drive
  * #Creatures
  *
@@ -692,6 +708,30 @@ EVNT (command) targ (agent);
 EXEC (agent);
 
 /*
+ * Execute a tool or other application.
+ * Example: exec [fsp.exe] [params] 
+ * Example: exec [c:\path\fsp.exe] [params]
+ * If fsp contains backslashes, it must be a full path, so execute GP program.
+ * If no backslashes, assume it's a tool, so try both hard drive AND CD-ROM
+ * [params] are the command-line params for the program (or use [] if none)
+ * #World
+ *
+ * @param {fsp} [string] - Executable name or absolute path.
+ * @param {params} [string] - Parameters to pass to executable
+ *
+ */
+EXEC (command) fsp [string] params [string];
+
+/*
+ * Only relevant to male creatures:
+ * Pass any waiting sperm to female (if IT is a female of same genus).
+ * Female will conceive if she's in the right condition (fertile & receptive)
+ * #Creatures
+ *
+ */
+F**K (command);
+
+/*
  * Fade out any controlled sound currently playing with this [TARG].
  * #Sounds
  *
@@ -730,18 +770,10 @@ FMLY (integer);
 FROM (agent);
 
 /*
- * Pass any waiting sperm to female (if IT is a female of same genus).
- * Female will conceive if she's in the right condition (fertile & receptive)
+ * Returns [OWNR] Creature's gender. Appears to return 1 on non-creature [OWNR] agents
  * #Creatures
  *
- */
-F**K (command);
-
-/*
- * Undocumented creatures command, always seems to return 1 regardless of gender
- * #Creatures
- *
- * @undocumented(status=undefined)
+ * @Ownr
  * @rvalue
  * @return (integer)
  */
@@ -849,7 +881,7 @@ IMPT (command) value (integer);
 INST (command);
 
 /*
- * Delete the object whose address is {agent}, eg. #{kill targ} removes any object that's been
+ * Delete the object whose address is {agent}, eg. #{kill edit} removes any object that's been
  * shift-clicked on (EditObject),
  * THIS INSTRUCTION MUST BE LAST ONE IN MACRO IF IT KILLS THE OWNER OF THAT MACRO!
  * #{kill targ} deletes the target object.
@@ -960,6 +992,7 @@ MCRT (command) x (integer) y (integer);
  * Send message to all creatures that can hear [OWNR] object
  * #Agents
  *
+ * @Ownr
  * @param {message} (integer@MessageNumbers)
  *
  */
@@ -969,6 +1002,7 @@ MESG SHOU (command) message (integer);
  * Send message to all creatures that can see the object
  * #Agents
  *
+ * @Ownr
  * @param {message} (integer)
  *
  */
@@ -978,6 +1012,7 @@ MESG SIGN (command) message (integer);
  * "tactile" are in contact with [OWNR]]
  * #Agents
  *
+ * @Ownr
  * @param {message} (integer@MessageNumbers)
  *
  */
@@ -988,6 +1023,7 @@ MESG TACT (command) message (integer);
  * [FROM] or [NORN])
  * #Agents
  *
+ * @Ownr
  * @param {agent} (agent)
  * @param {messageId} (integer@MessageNumbers)
  *
@@ -1254,11 +1290,13 @@ NEXT (command);
 NORN (agent);
 
 /*
- * a agent to objects that will survive. NOTE: This shouldn’t really be set to a Norn –
- * there’s nothing stopping you using it but things have the potential to go wrong if OBJP
- * points to a norn who then dies.
+ * [OWNR] object pointer to another agent which will survive. Attempting to use from install
+ * script will lead to failure.
+ * NOTE: This shouldn’t really be set to a Norn – there’s nothing stopping you using it but
+ * things have the potential to go wrong if OBJP points to a norn who then dies.
  * #AgentVars
  *
+ * @Ownr
  * @lvalue
  * @rvalue
  * @return (agent)
@@ -1274,7 +1312,7 @@ OBJP (agent);
  * @rvalue
  * @return (variable)
  */
-OBVx (variable);
+OBVX (variable);
 
 /*
  * sets the {var} to the {var} bit-wise or with {value}
@@ -1476,7 +1514,7 @@ RNDV (command) var (variable) min (integer) max (integer);
 ROOM (integer) roomNumber (integer) edge (integer);
 
 /*
- * Set up a room on map. LEFT, TOP, RIGHT, BOTTOM are the room rectangle in world coords
+ * Set up a room on map. LEFT, TOP, RIGHT, BOTTOM are the room rectangle in world coords 
  * Room Type is 0=INDOORS 1=SURFACE 2=UNDERSEA
  * #Map
  *
@@ -1595,8 +1633,8 @@ SLIM (command);
 SNDC (command) filename (token);
 
 /*
- * Play sound effect if [TARG] object is visible on screen.
- * Change volume according to distance from screen.
+ * Play sound effect if [TARG] object is visible on screen. 
+ * Change volume according to distance from screen. 
  * This replaced [SNDV] and doesn't require surrounding brackets( ie. [])
  * #Sounds
  *
@@ -1647,7 +1685,7 @@ SNDQ (command) filename (token) delay (integer);
 SNDS (integer);
 
 /*
- * Play sound if [TARG] object is visible on screen
+ * Play sound if [TARG] object is visible on screen 
  * Change volume according to distance from screen
  * Now replaced by [SNDE] (sound effect) which doesn't require surrounding brackets (ie. []'s)
  * #Sounds
@@ -1700,13 +1738,14 @@ SPCS (integer);
 SPOT (command) spot (integer) left (integer) top (integer) right (integer) bottom (integer);
 
 /*
- * Send a stimulus to all creatures who can see [OWNR].
+ * Undocummented command. Send a stimulus to [FROM] agent.  Theoretically similar to #{ stim writ from }#
  * significance – amount to nudge the Source lobe neurone by, this decides the significance of
  * the object. input – which neurone in the General Sense lobe to fire (or 255 for none)
  * List 4 chemicals to emit and the amounts. If less than 4 chemicals are required then the
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
@@ -1731,6 +1770,7 @@ STIM FROM (command) significance (integer) input (integer) intensity (integer) f
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
@@ -1755,6 +1795,7 @@ STIM SHOU (command) significance (integer) input (integer) intensity (integer) f
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
@@ -1779,6 +1820,7 @@ STIM SIGN (command) significance (integer) input (integer) intensity (integer) f
  * remaining values should be set to 0
  * #Creatures
  *
+ * @Ownr
  * @param {significance} (integer) - amount to nudge significance neurone by
  * @param {input} (integer) - sensory lobe neurone# (or 255 if none)
  * @param {intensity} (integer) - Amount to nudge input neurone by
@@ -1798,7 +1840,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
 /*
  * Send stimulus to a specific creature.
  * {significance} – amount to nudge the Source lobe neurone by, this decides the significance of
- * the object.
+ * the object. 
  * {input} – which neurone in the General Sense lobe to fire (or 255 for none)
  * List 4 chemicals to emit and the amounts.
  * If less than 4 chemicals are required then the remaining values should be set to 0
@@ -1825,6 +1867,7 @@ STIM WRIT (command) agent (agent) significance (integer) input (integer) intensi
  * Emit one of the hard-wired stimuli to all creatures that can hear [OWNR]]
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  *
  */
@@ -1834,6 +1877,7 @@ STM# SHOU (command) stimulus (integer);
  * Send {stimulus} to all creatures that can see the object
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  *
  */
@@ -1843,6 +1887,7 @@ STM# SIGN (command) stimulus (integer);
  * Emit one of the hard-wired stimuli
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  *
  */
@@ -1941,7 +1986,7 @@ SYS: CMRA (command) x (integer) y (integer);
 
 /*
  * Set CDisplay::EditBox, so that a rectangle is drawn on screen at the given WORLD co-ordinates.
- * Use #{sys: edit 0 0 0 0} to remove the box when finished.
+ * Use #{SYS: EDIT 0 0 0 0} to remove the box when finished.
  * This macro is used by map editors and suchlike to mark out rooms and floor levels during map
  * construction
  * #World
@@ -2115,7 +2160,7 @@ TOTL (integer) family (integer) genus (integer) species (integer);
 TOUC (command);
 
 /*
- * two objects are in contact, e.g. #{doif touc targ ownr gt 0} means do if [ownr] and [targ] are
+ * two objects are in contact, e.g. #{DOIF TOUC TARG OWNR GT 0} means do if [ownr] and [targ] are
  * touching
  * == System Operands
  * #Agents
@@ -2140,7 +2185,7 @@ TOUC (integer) first (agent) second (agent);
 TRIG (command) lobe (integer) cell (integer) amount (integer);
 
 /*
- *
+ * 
  * #Flow
  *
  * @param {condition} (condition)
@@ -2157,10 +2202,10 @@ UNTL (command) condition (condition);
  * @rvalue
  * @return (variable)
  */
-VARx (variable);
+VARX (variable);
 
 /*
- * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{vrsn 2}
+ * only run this script if Creatures build ID is equivalent or higher. Ie. If macro starts #{vrsn 2} 
  * then Creatures must be version 1.0.2 or higher to run this script.
  * #World
  *
@@ -2227,7 +2272,7 @@ WDTH (integer);
 WIND (integer);
 
 /*
- * max allowed view window height (WORLD coords)
+ * Max allowed view window height (WORLD coords)
  * #Map
  *
  * @lvalue
@@ -2237,7 +2282,7 @@ WIND (integer);
 WINH (integer);
 
 /*
- * max allowed view window width (WORLD coords)
+ * Max allowed view window width (WORLD coords)
  * #Map
  *
  * @lvalue
@@ -2260,6 +2305,7 @@ XVEC (integer);
  * Sets/returns the vehicles y-movement vector in 1/256th of a pixel.
  * #Motion
  *
+ * @Ownr
  * @lvalue
  * @rvalue
  * @return (integer)
@@ -2392,7 +2438,7 @@ YVEC (integer);
 }
 
 @Chemicals {
-	0 = <<NOTHING>>
+	0 = <NONE>
 	1 = Pain
 	2 = Need for Pleasure
 	3 = Hunger
@@ -2731,8 +2777,8 @@ YVEC (integer);
 }
 
 @PutBOption {
-	data = set all creatures details
-	cnam = set the creature's name from the string
+	DATA = set all creatures details
+	CNAM = set the creature's name from the string
 }
 
 @RoomEdge {
@@ -2799,7 +2845,6 @@ YVEC (integer);
 	34 = Involuntary Action 6
 	35 = Involuntary Action 7
 }
-
 
 @SysCommands {
 	# File
