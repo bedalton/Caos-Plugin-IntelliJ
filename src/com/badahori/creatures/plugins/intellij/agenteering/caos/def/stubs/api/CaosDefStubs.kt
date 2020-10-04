@@ -20,6 +20,7 @@ interface CaosDefCommandDefinitionStub : StubElement<CaosDefCommandDefElementImp
     val isCommand:Boolean
     val comment:String?
     val variants:List<CaosVariant>
+    val requiresOwner:Boolean
     val simpleReturnType: CaosExpressionValueType
 }
 
@@ -28,6 +29,7 @@ interface CaosDefDocCommentStub : StubElement<CaosDefDocCommentImpl> {
     val returnType:CaosDefReturnTypeStruct
     val lvalue:Boolean
     val rvalue:Boolean
+    val requiresOwner:Boolean
     val comment:String?
 }
 

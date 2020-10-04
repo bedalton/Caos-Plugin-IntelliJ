@@ -35,6 +35,7 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
         stream.writeReturnType(stub.returnType)
         stream.writeUTFFast(stub.comment ?: "")
         stream.writeInt(stub.simpleReturnType.value)
+        stream.writeBoolean(stub.requiresOwner)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefCommandDefinitionStub {
@@ -51,6 +52,7 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
         )
         val comment = stream.readUTFFast().nullIfEmpty()
         val simpleReturnType = stream.readSimpleType()
+        val requiresOwner = stream.readBoolean()
         return CaosDefCommandDefinitionStubImpl(
                 parent = parent,
                 namespace = namespace,
@@ -62,7 +64,8 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
                 returnType = returnType,
                 comment = comment,
                 variants = variants,
-                simpleReturnType = simpleReturnType
+                simpleReturnType = simpleReturnType,
+                requiresOwner = requiresOwner
         )
     }
 
@@ -78,7 +81,8 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
                 returnType = element.returnTypeStruct ?: CaosDefPsiImplUtil.UnknownReturnType,
                 comment = element.comment,
                 variants = element.variants,
-                simpleReturnType = element.simpleReturnType
+                simpleReturnType = element.simpleReturnType,
+                requiresOwner = element.requiresOwner
         )
     }
 

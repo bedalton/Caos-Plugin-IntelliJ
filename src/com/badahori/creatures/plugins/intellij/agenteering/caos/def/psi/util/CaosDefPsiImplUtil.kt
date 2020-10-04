@@ -15,7 +15,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
@@ -82,6 +81,19 @@ object CaosDefPsiImplUtil {
         }
         return command.docComment?.rvalueList?.isNotEmpty()
                 ?: command.returnTypeString.let { it != "command" && it != UnknownReturn }
+    }
+
+    @JvmStatic
+    fun getRequiresOwner(command: CaosDefCommandDefElement): Boolean {
+        command.stub?.requiresOwner?.let {
+            return it
+        }
+        return command.docComment?.requiresOwner ?: false
+    }
+
+    @JvmStatic
+    fun getRequiresOwner(docComment: CaosDefDocComment): Boolean {
+        return docComment.ownrList.isNotEmpty()
     }
 
     @JvmStatic

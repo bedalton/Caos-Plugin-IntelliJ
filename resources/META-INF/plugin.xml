@@ -51,6 +51,7 @@
           <li>Added ability to copy* images from sprite image list to project view</li>
           <li>Added ability to copy* scripts, sounds, and sprites from expanded COB view to project view</li>
           <li>Removed annoying insert of space after insert value in equality comparisons</li>
+          <li>Added warning for commands that require OWNR that are used in a macro</li>
         </ul>
         <div>
           <div style="font-size:0.8em">*Copy Notes*</div>
@@ -301,12 +302,12 @@
     />
 
     <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosCommandUndocumentedCommandUsage"
-                     level="WEAK WARNING"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCommandHasOwnrInspection"
+                     level="WARNING"
                      groupName="Caos Script"
                      enabledByDefault="true"
-                     displayName="Undocumented command usage"
-                     shortName="UndocumentedCommandUsage"
+                     displayName="Command used without OWNR object"
+                     shortName="NoOwnrObject"
     />
 
     <localInspection language="CaosScript"
@@ -353,14 +354,13 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInModuleInspection"
     />
 
-
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="Caos Script"
                      enabledByDefault="true"
-                     displayName="OBJP used without OWNR scope"
-                     shortName="OBJPNoOwnrScope"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptObjpUsedOutsideOwnerScopeInspection"
+                     displayName="SSFC number of arguments"
+                     shortName="SSFCArgumentsCheck"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSsfcPointsCheck"
     />
 
     <!-- Documentation & Hints -->
