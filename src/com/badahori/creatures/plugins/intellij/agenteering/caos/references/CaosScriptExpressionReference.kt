@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
@@ -80,15 +81,9 @@ class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVari
 
     private fun possibleValuesListNamesForEquality() : List<String> {
         val expression = myElement
-        val equalityExpression = expression.parent as? CaosScriptEqualityExpression ?: return emptyList()
-        val other = equalityExpression.expressionList.firstOrNull { it != expression }
+        val equalityExpression = expression.parent as? CaosScriptEqualityExpressionPrime
                 ?: return emptyList()
-        val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
-                ?: return emptyList()
-        return token
-                .reference
-                .multiResolve(true)
-                .mapNotNull { it.element?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)?.returnTypeStruct?.type?.valuesList }
+        return listOfNotNull(equalityExpression.getValuesList(expression))
     }
 
     private val project: Project by lazy { myElement.project }

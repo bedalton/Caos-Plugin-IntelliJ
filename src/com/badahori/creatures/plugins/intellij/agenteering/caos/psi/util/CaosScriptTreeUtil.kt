@@ -111,8 +111,8 @@ fun ASTNode?.getPreviousPossiblyEmptySibling(): ASTNode? {
 }
 
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.previous ?: return null
-    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
+    var out: ASTNode = this?.previous ?: return null
+    while (shouldSkipNode(out, ignoreLineTerminator)) {
         out = out.previous ?: return null
     }
     return out
@@ -188,13 +188,9 @@ fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode?
 }
 
 fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.node?.treeNext
-    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
-        out = if (out.treeNext == null) {
-            out.treeParent.treeNext
-        } else {
-            out.treeNext
-        }
+    var out: ASTNode = this?.node?.next ?: return null
+    while (shouldSkipNode(out, ignoreLineTerminator)) {
+        out = out.next ?: return null
     }
     return out
 }
@@ -310,15 +306,12 @@ fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<PsiElement>?
 }
 
 fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?, stubClass: Class<StubT>): List<StubT> {
-    return if (children == null) {
-        emptyList()
-    } else
-        children.mapNotNull{ child ->
-            if (stubClass.isInstance(child))
-                stubClass.cast(child)
-            else
-                null
-        }
+    return children?.mapNotNull{ child ->
+        if (stubClass.isInstance(child))
+            stubClass.cast(child)
+        else
+            null
+    }.orEmpty()
 
 }
 
@@ -329,8 +322,10 @@ internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boole
     }
     return if (ignoreLineTerminator && out.elementType === CaosScriptTypes.CaosScript_NEWLINE)
         true
+    else if (out.elementType == TokenType.WHITE_SPACE)
+        true
     else {
-        return out.text.let {
+        out.text.let {
             if (!ignoreLineTerminator && it.contains("\n"))
                 false
             else

@@ -9,6 +9,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getAssignedType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -30,7 +33,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     private fun annotateAssignment(element: CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
         val variant = element.containingCaosFile?.variant
                 ?: return
-        val type = getType(element)
+        val type = element.getAssignedType()
                 ?: return
         when (element.commandString.toUpperCase()) {
             "SETV" -> annotateSetv(variant, element, type, problemsHolder)
@@ -39,18 +42,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
     }
 
-    private fun getType(element: CaosScriptCAssignment): CaosExpressionValueType? {
-        val rvalue = element.getChildrenOfType(CaosScriptArgument::class.java).getOrNull(1) as? CaosScriptRvalue
-                ?: return null
-        return rvalue.varToken?.let {
-            CaosScriptInferenceUtil.getInferredType(it)
-        } ?: rvalue.toCaosVar().let {
-            if (it is CaosVar.CaosCommandCall) {
-                it.returnType ?: it.simpleType
-            } else
-                it.simpleType
-        }
-    }
+
 
     private fun annotateSetv(variant: CaosVariant, element: CaosScriptCAssignment, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (variant.isOld) {

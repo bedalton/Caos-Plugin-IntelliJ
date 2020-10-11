@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
     val index: Int
@@ -9,6 +10,9 @@ interface CaosScriptArgument : CaosScriptCompositeElement {
     fun toCaosVar(): CaosVar
 }
 
+/**
+ * Represents the base types for a CaosScript expression
+ */
 enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     INT(1, "integer"),
     FLOAT(2, "float"),
@@ -29,8 +33,62 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     UNKNOWN(-1, "UNKNOWN");
 
     companion object {
+
+        /**
+         * Gets the expression type from its simple name
+         */
         fun fromSimpleName(simpleName: String): CaosExpressionValueType {
-            return values().firstOrNull { it.simpleName == simpleName } ?: UNKNOWN
+            return when (val typeToLower = simpleName.trim().toLowerCase()) {
+                "any" -> ANY
+                "agent" -> AGENT
+                "[anim]" -> ANIMATION
+                "[byte_string]", "[byte string]", "byte string", "bytestring" -> BYTE_STRING
+                "command" -> COMMAND
+                "condition" -> CONDITION
+                "decimal" -> DECIMAL
+                "float" -> FLOAT
+                "hexadecimal" -> HEXADECIMAL
+                "int", "integer" -> INT
+                "pict_dimension", "pict_dimensions", "picdemensions", "picdemension", "pict dimensions",  "pict dimension" -> PICT_DIMENSION
+                "string" -> STRING
+                "[string]" -> C1_STRING
+                "token" -> TOKEN
+                "variable" -> VARIABLE
+                "null" -> NULL
+                else -> {
+                    LOGGER.severe("Cannot find command def simple type of: $typeToLower")
+                    UNKNOWN
+                }
+            }
+        }
+
+        /**
+         * Gets the expression type from its int representation
+         */
+        fun fromIntValue(value: Int): CaosExpressionValueType {
+            return when (value) {
+                1 -> INT
+                2 -> FLOAT
+                3 -> TOKEN
+                4 -> STRING
+                6 -> VARIABLE
+                8 -> COMMAND
+                9 -> C1_STRING
+                10 -> BYTE_STRING
+                11 -> AGENT
+                13 -> ANY
+                15 -> CONDITION
+                16 -> DECIMAL
+                17 -> ANIMATION
+                18 -> HEXADECIMAL
+                0 -> NULL
+                19 -> PICT_DIMENSION
+                -1 -> UNKNOWN
+                else -> {
+                    LOGGER.severe("Failed to find Expression type from value: '$value'")
+                    return UNKNOWN
+                }
+            }
         }
     }
 }

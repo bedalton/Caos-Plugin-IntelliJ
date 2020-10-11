@@ -5,7 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArra
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
-import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
@@ -16,21 +15,17 @@ import com.intellij.psi.PsiManager
 import icons.CaosScriptIcons
 import icons.ImagesIcons
 import org.apache.commons.io.FilenameUtils
-import java.awt.dnd.DragSourceDragEvent
-import java.awt.dnd.DragSourceDropEvent
-import java.awt.dnd.DragSourceEvent
-import java.awt.dnd.DragSourceListener
 
 
 internal class SpriteFileTreeNode(
         project: Project,
-        spriteVirtualFile:VirtualFile
+        spriteVirtualFile: VirtualFile
 ) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile) {
     override fun getVirtualFile(): VirtualFile = value
 
-    private val spritesVirtualFileContainer:CaosVirtualFile by lazy {
+    private val spritesVirtualFileContainer: CaosVirtualFile by lazy {
         val modulePath = ModuleUtil.findModuleForFile(spriteVirtualFile, project)?.moduleFilePath
-        val originalPath = value.path.let {path ->
+        val originalPath = value.path.let { path ->
             if (modulePath != null && path.startsWith(modulePath))
                 path.substring(modulePath.length)
             else
@@ -43,18 +38,20 @@ internal class SpriteFileTreeNode(
         SpriteParser.parse(value)
     }
 
-    private val myChildren:List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FilenameUtils.getBaseName(value.name) +"."
+    private val myChildren: List<SpriteImageTreeNode> by lazy {
+        val fileNameBase = FilenameUtils.getBaseName(value.name) + "."
         val images = sprite.images
         val padLength = "${images.size}".length
-        images.mapIndexed map@{index, image ->
-            SpriteImageTreeNode(
-                    project,
-                    spritesVirtualFileContainer,
-                    fileNameBase+"$index".padStart(padLength, '0'),
-                    image?.toPngByteArray()
-            )
-        }
+        images.mapIndexed map@{ index, image ->
+            image?.toPngByteArray()?.let {
+                SpriteImageTreeNode(
+                        project,
+                        spritesVirtualFileContainer,
+                        fileNameBase + "$index".padStart(padLength, '0'),
+                        it
+                )
+            }
+        }.filterNotNull()
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren
@@ -62,6 +59,7 @@ internal class SpriteFileTreeNode(
     override fun navigate(focus: Boolean) {
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
     }
+
     override fun expandOnDoubleClick(): Boolean = false
     override fun canNavigate(): Boolean = PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
     override fun canNavigateToSource(): Boolean = false
@@ -81,16 +79,16 @@ internal class SpriteFileTreeNode(
 internal class SpriteImageTreeNode(
         project: Project,
         enclosingImage: CaosVirtualFile,
-        private val fileName:String,
-        data:ByteArray?
+        private val fileName: String,
+        data: ByteArray
 ) : VirtualFileBasedNode<VirtualFile>(project, enclosingImage.createChildWithContent("$fileName.png", data)),
-        SortableTreeElement
-{
+        SortableTreeElement {
     override fun getVirtualFile(): VirtualFile = myVirtualFile
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(focus: Boolean) {
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
     }
+
     override fun canNavigate(): Boolean = PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
     override fun canNavigateToSource(): Boolean = false
     override fun update(presentationData: PresentationData) {

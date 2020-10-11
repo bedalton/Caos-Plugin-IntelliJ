@@ -66,7 +66,6 @@ private object MoveElementBeforeRemovalScript : LocalQuickFix {
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val element = descriptor.psiElement.getSelfOrParentOfType(CaosScriptScriptBodyElement::class.java)
                 ?: return
-        val variant = element.variant
         val firstRemovalScript = PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptScriptElement::class.java)
                 .sortedBy {
                     it.startOffset
