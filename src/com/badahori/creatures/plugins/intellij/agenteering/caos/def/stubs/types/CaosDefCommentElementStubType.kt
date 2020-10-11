@@ -24,6 +24,7 @@ class CaosDefCommentElementStubType(debugName:String) : com.badahori.creatures.p
         stream.writeBoolean(stub.rvalue)
         stream.writeBoolean(stub.lvalue)
         stream.writeReturnType(stub.returnType)
+        stream.writeBoolean(stub.requiresOwner)
         stream.writeUTFFast(stub.comment ?: "")
     }
 
@@ -35,13 +36,16 @@ class CaosDefCommentElementStubType(debugName:String) : com.badahori.creatures.p
                 type = CaosDefPsiImplUtil.AnyTypeType,
                 comment = null
         )
+        val requiresOwner = stream.readBoolean()
         val comment = stream.readUTFFast().nullIfEmpty()
+
         return CaosDefDocCommentStubImpl(
                 parent = parent,
                 parameters = parameters,
                 rvalue = rvalue,
                 lvalue = lvalue,
                 returnType = returnType,
+                requiresOwner = requiresOwner,
                 comment = comment
         )
     }
@@ -53,6 +57,7 @@ class CaosDefCommentElementStubType(debugName:String) : com.badahori.creatures.p
                 rvalue = element.rvalueList.isNotEmpty(),
                 lvalue = element.lvalueList.isNotEmpty(),
                 returnType = element.returnTypeStruct ?: CaosDefPsiImplUtil.UnknownReturnType,
+                requiresOwner = element.requiresOwner,
                 comment = element.docCommentFrontComment?.text
         )
     }

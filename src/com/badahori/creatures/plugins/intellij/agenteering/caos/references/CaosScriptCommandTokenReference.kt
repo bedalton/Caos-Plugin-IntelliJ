@@ -4,14 +4,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -24,7 +20,7 @@ import com.intellij.psi.ResolveResult
 class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
 
     private val name: String by lazy {
-        element.name ?: "{{UNDEF}}"
+        element.name?.replace("\\s+".toRegex(), " ") ?: "{{UNDEF}}"
     }
 
     private val VARx = "[Vv][Aa][Rr][0-9]".toRegex()
@@ -45,21 +41,19 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name.toUpperCase()) {
             return true
         }
-        if (element.text.equalsIgnoreCase(name)) {
-            return when (element) {
-                is CaosDefCompositeElement -> if (element.variantsIntersect(variants)) {
-                    if (myElement.parent is CaosDefCodeBlock || myElement.parent?.parent is CaosDefWordLink) {
-                        element.parent?.parent is CaosDefCommandDefElement
-                    } else
-                        false
-                } else {
-                    false
-                }
-                is CaosScriptCompositeElement -> element.containingCaosFile?.variant in variants
-                else -> false
-            }
+        if (element !is CaosDefCommandWord && element !is CaosDefCommand)
+            return false
+        val elementText = (element.parent as? CaosDefCommand ?: element).text.replace("\\s+".toRegex(), " ")
+        val matches = names.any { name ->
+            name.equalsIgnoreCase(elementText)
         }
-        return super.isReferenceTo(element)
+        if (!matches) {
+            return false
+        }
+        if (variants.intersect((element as CaosDefCompositeElement).variants).isEmpty()) {
+            return false
+        }
+        return myElement.parent?.parent !is CaosDefCommandDefElement || myElement.parent is CaosDefCodeBlock
     }
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
@@ -199,7 +193,23 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 .filter { it != myElement }
     }
 
-    private fun matchesWords(words:List<String>) : Boolean {
+    private val names by lazy {
+        if (myElement.parent is CaosDefCommand)
+            listOf(myElement.parent!!.text.replace("\\s+".toRegex(), " "))
+        else if (myElement.parent is CaosDefCodeBlock) {
+            val previousSibling = myElement.getPreviousNonEmptySibling(false)
+            val nextSibling = myElement.getNextNonEmptySibling(false)
+            listOfNotNull(
+                    name,
+                    previousSibling?.let { "${it.text} $name" },
+                    nextSibling?.let { "$name ${it.text}" }
+            )
+        } else {
+            listOf(name)
+        }
+    }
+
+    private fun matchesWords(words: List<String>): Boolean {
         when (words.indexOf(name.toLowerCase())) {
             0 -> {
                 var next: CaosDefCommandWord? = myElement as? CaosDefCommandWord

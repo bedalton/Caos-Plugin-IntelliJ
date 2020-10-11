@@ -78,7 +78,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 }
                 simpleError(element, "invalid element", annotationWrapper)
             }
-            is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
+            //is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> annotateNewLineLike(variant, element, annotationWrapper)
             is CaosScriptTrailingSpace -> annotationTrailingWhiteSpace(variant, element, annotationWrapper)
             is LeafPsiElement -> {
@@ -184,10 +184,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (args.size == 2) {
             return
         }
-        if (element.cKwNegv != null && args.size == 1)
+        if ((element.cKwNegv != null || element.cAssignKwL != null) && args.size == 1)
             return
         val lvalue = args.getOrNull(0) as? CaosScriptLvalue
-        if (lvalue?.argumentsLength.orElse(0) > 0)
+                ?: return
+        if (lvalue.argumentsLength.orElse(0) > 0)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.expects-a-value"))
                 .range(TextRange(element.endOffset-1, element.endOffset))

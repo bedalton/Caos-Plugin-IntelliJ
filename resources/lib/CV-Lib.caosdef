@@ -5,6 +5,7 @@
  * valid if [OWNR] is a creature. Compare [IITT].
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -275,7 +276,7 @@ ASIN (float) x (float);
  * Make the creature asleep or awake. 1 for asleep, 0 for awake.
  * #Creatures
  *
- * @param {asleep} (integer)
+ * @param {asleep} (integer@Sleeping)
  *
  */
 ASLP (command) asleep (integer);
@@ -747,6 +748,7 @@ CAOS (string) inline (integer) stateTrans (integer) p1 (any) p2 (any) commands (
  * Returns the the agent currently holding the target, or [NULL] if there is none.
  * #AgentVars
  *
+ * @Ownr
  * @rvalue
  * @return (agent)
  */
@@ -1322,18 +1324,19 @@ DMAP (command) debugMap (integer);
 DOCA (command) noOfUpdates (integer);
 
 /*
- * Execute a block of code if the condition is true. The code block ends at the next [ELSE], [ELIF] or
- * [ENDI]. A condition is composed of one or more comparisons joined by AND or OR. A comparison
- * compares two values with EQ, NE, GT, GE, LT, LE, or alternatively =, <>, >, >=, <, <=.
+ * Execute a block of code if the condition is true. The code block ends at the next [ELSE],
+ * [ELIF] or [ENDI]. A condition is composed of one or more comparisons joined by AND or OR. A
+ * comparison compares two values with EQ, NE, GT, GE, LT, LE, or alternatively =, <>, >, >=, <,
+ * <=.
  * #{
-  	doif ov00 GE 5 AND ov00 LT 10
+  	DOIF ov00 GE 5 AND ov00 LT 10
   	*--- code block 1 ---
-  	elif ov00 GE 10 OR ov00 LT 100
-  	*--- code block 2 ---
-  	else
-  	*--- code block 3 ---
-  	endi
-  }
+  	elif ov01 >= 10 or ov00 <= -10
+ 	*--- code block 2 ---
+ 	else
+ 	*--- code block 3 ---
+ 	endi
+ }
  * Conditions are evaluated simply from left to right, so "a AND b OR c" is the same as "(a AND b)
  * OR c", not "a AND ( b OR c )".
  * Conditional statements may not work correctly with commands overloaded by rvalue.
@@ -1450,7 +1453,7 @@ DROP (command);
  * #Creatures
  *
  * @rvalue
- * @return (integer)
+ * @return (integer@Drives)
  */
 DRV! (integer);
 
@@ -1598,6 +1601,7 @@ ERID (string) metaroomId (integer);
  * [TARG] is used instead.
  * #Enums
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -1611,6 +1615,7 @@ ESEE (command) family (integer) genus (integer) species (integer);
  * no [OWNR], [TARG] is used instead.
  * #Enums
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -3552,11 +3557,12 @@ MVTO (command) x (float) y (float);
  * @range(0 to 99)
  * #Variables
  *
+ * @Ownr
  * @lvalue
  * @rvalue
  * @return (variable)
  */
-MVxx (variable);
+MVXX (variable);
 
 /*
  * Finds the next agent in the agent list which also matches the given classifier. If the previous
@@ -3938,7 +3944,7 @@ OVER (command);
  * @rvalue
  * @return (variable)
  */
-OVxx (variable);
+OVXX (variable);
 
 /*
  * Returns the agent who's virtual machine the script is running on. Returns [NULL] for injected or
@@ -5576,6 +5582,7 @@ SQRT (float) value (float);
  * the script. It then sets [TARG] to that agent. See [ESEE] for an explanation of seeing.
  * #AgentVars
  *
+ * @Ownr
  * @param {family} (integer)
  * @param {genus} (integer)
  * @param {species} (integer)
@@ -5591,6 +5598,7 @@ STAR (command) family (integer) genus (integer) species (integer);
  * Stimulus Numbers.
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
@@ -5601,6 +5609,7 @@ STIM SHOU (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who can see [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
@@ -5611,6 +5620,7 @@ STIM SIGN (command) stimulus (integer) strength (float);
  * Send a stimulus to all creatures who are touching [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {stimulus} (integer@Stimulus)
  * @param {strength} (float)
  *
@@ -5752,6 +5762,7 @@ SWAP (command) variant (integer) bodypartId (integer) commitChanges (integer);
  * Stimulate all creatures that can hear [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
+ * @Ownr
  * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
  * @param {drive2} (integer@Drives)
@@ -5768,6 +5779,7 @@ SWAY SHOU (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * Stimulate all creatures that can see [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
+ * @Ownr
  * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
  * @param {drive2} (integer@Drives)
@@ -5784,6 +5796,7 @@ SWAY SIGN (command) drive1 (integer) adjust1 (float) drive2 (integer) adjust2 (f
  * Stimulate all creatures that are touching [OWNR] to adjust four drives by the given amounts.
  * #Creatures
  *
+ * @Ownr
  * @param {drive1} (integer@Drives)
  * @param {adjust1} (float)
  * @param {drive2} (integer@Drives)
@@ -6227,6 +6240,7 @@ UNTL (command) condition (condition);
  * from -1 to 1, ranging from discourage to encourage.
  * #Creatures
  *
+ * @Ownr
  * @param {nounStim} (float)
  * @param {verbId} (integer)
  * @param {verbStim} (float)
@@ -6238,6 +6252,7 @@ URGE SHOU (command) nounStim (float) verbId (integer) verbStim (float);
  * Urge all creatures who can see [OWNR] to perform an action on [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {nounStim} (float)
  * @param {verbId} (integer)
  * @param {verbStim} (float)
@@ -6249,6 +6264,7 @@ URGE SIGN (command) nounStim (float) verbId (integer) verbStim (float);
  * Urge all creatures who are touching [OWNR] to perform an action on [OWNR].
  * #Creatures
  *
+ * @Ownr
  * @param {nounStim} (float)
  * @param {verbId} (integer)
  * @param {verbStim} (float)
@@ -6280,7 +6296,7 @@ URGE WRIT (command) creature (agent) nounId (integer) nounStim (float) verbId (i
  * @rvalue
  * @return (variable)
  */
-VAxx (variable);
+VAXX (variable);
 
 /*
  * Set velocity, measured in pixels per tick.
@@ -6671,7 +6687,7 @@ WTNT (command) index (integer) redTint (integer) greenTint (integer) blueTint (i
 
 /*
  * Returns the unique identifier of the currently loaded world.
- *
+ * 
  * #World
  *
  * @rvalue

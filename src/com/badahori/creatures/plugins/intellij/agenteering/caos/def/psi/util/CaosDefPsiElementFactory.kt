@@ -5,6 +5,7 @@ import com.intellij.psi.PsiFileFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
+import com.intellij.psi.util.PsiTreeUtil
 
 object CaosDefPsiElementFactory {
 
@@ -67,6 +68,16 @@ object CaosDefPsiElementFactory {
         """.trimIndent()
         val comment = createComment(project, code)
         return comment.docCommentFrontComment!!.docCommentLineList.first().codeBlockList.first()
+    }
+
+    fun createNewValuesListValueKey(project: Project, newNameString: String): CaosDefValuesListValueKey? {
+        val code = """
+            @List {
+                $newNameString = A value
+            }
+        """.trimIndent()
+        val script = createFileFromText(project, code)
+        return PsiTreeUtil.findChildOfType(script, CaosDefValuesListValueKey::class.java)
     }
 
 }

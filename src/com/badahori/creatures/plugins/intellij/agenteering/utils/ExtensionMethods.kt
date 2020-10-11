@@ -12,6 +12,25 @@ fun String?.nullIfEmpty(): String? {
         this
 }
 
+fun <T> Collection<T>.filterNotNull() : List<T> {
+    return this.mapNotNull { it }
+}
+fun <R, T:Collection<R>> T?.nullIfEmpty(): T? {
+    if (this == null || isEmpty())
+        return null
+    return this
+}
+
+fun <R, T:Collection<R>> T?.nullIfEmpty(filterNullsFirst:Boolean): T? {
+    if (this == null)
+        return null
+    val isEmpty = if (filterNullsFirst)
+        this.filterNotNull().isEmpty()
+    else
+        this.isEmpty()
+    return if (isEmpty) null else this
+}
+
 fun String?.isNotNullOrEmpty() : Boolean {
     contract {
         returns(true) implies (this@isNotNullOrEmpty != null)

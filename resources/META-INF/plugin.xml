@@ -34,13 +34,33 @@
   <change-notes><![CDATA[
     <ul>
       <li>
-        <b>Version: 0.01.7</b><br/>
-        <b>#Added</b>
+        <b>Version: 0.01.7</b>
+        <b>#Fixes</b>
         <ul>
-          <li>SFC script viewer</li>
-          <li>COB decompiler and viewer</li>
-          <li>Drag to copy sprite frames to filesystem as PNG. **Copy/Paste does NOT work **</li>
+          <li>Fix completions in equality expressions</li>
+          <li>Fixed event number definitions not resolving to actual event scripts</li>
         </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Improved find usages from definitions to code. Including previously opened COB files</li>
+          <li>Minor improvements to values list navigation</li>
+          <li>Added COB contents explorer.
+            <ul>
+              <span style="font-size:0.8em">*Cob view requires file placement in proper C1/C2 module</span></li>
+            </ul>
+          <li>Added ability to copy* images from sprite image list to project view</li>
+          <li>Added ability to copy* scripts, sounds, and sprites from expanded COB view to project view</li>
+          <li>Removed annoying insert of space after insert value in equality comparisons</li>
+          <li>Added warning for commands that require OWNR that are used in a macro</li>
+        </ul>
+        <div>
+          <div style="font-size:0.8em">*Copy Notes*</div>
+          <ul style="font-size:0.7em">
+            <li style="font-size:1em">Cannot copy to file system directly. Must copy and paste in project view</li>
+            <li style="font-size:1em">Copy requires shortcut key copy/paste or right-click or menu copy/paste</li>
+            <listyle="font-size:1em">Copy by drag does not work</li>
+          </ul>
+        </div>
       </li>
       <li>
         <b>Version: 0.01.6</b><br/>
@@ -282,12 +302,12 @@
     />
 
     <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosCommandUndocumentedCommandUsage"
-                     level="WEAK WARNING"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCommandHasOwnrInspection"
+                     level="WARNING"
                      groupName="Caos Script"
                      enabledByDefault="true"
-                     displayName="Undocumented command usage"
-                     shortName="UndocumentedCommandUsage"
+                     displayName="Command used without OWNR object"
+                     shortName="NoOwnrObject"
     />
 
     <localInspection language="CaosScript"
@@ -334,14 +354,13 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInModuleInspection"
     />
 
-
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="Caos Script"
                      enabledByDefault="true"
-                     displayName="OBJP used without OWNR scope"
-                     shortName="OBJPNoOwnrScope"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptObjpUsedOutsideOwnerScopeInspection"
+                     displayName="SSFC number of arguments"
+                     shortName="SSFCArgumentsCheck"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSsfcPointsCheck"
     />
 
     <!-- Documentation & Hints -->
@@ -359,6 +378,9 @@
     <lang.quoteHandler
         language="CaosScript"
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
+
+    <referencesSearch
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />
 
     <!-- Indices -->
     <applicationService
@@ -378,6 +400,8 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex" />
+    <stubIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptExpressionIndex" />
 
     <!-- Actions -->
     <!--enterHandlerDelegate

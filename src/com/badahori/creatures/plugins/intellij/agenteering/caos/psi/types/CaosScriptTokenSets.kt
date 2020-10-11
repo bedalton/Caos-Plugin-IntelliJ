@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixKwUrge
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
@@ -97,7 +99,6 @@ class CaosScriptTokenSets {
         )
 
         val LITERALS: TokenSet = create(
-                CaosScript_INT,
                 CaosScript_DECIMAL,
                 CaosScript_NUMBER,
                 CaosScript_QUOTE_STRING_LITERAL,
@@ -106,6 +107,32 @@ class CaosScriptTokenSets {
                 CaosScript_ANIMATION_STRING,
                 CaosScript_QUOTE_STRING_LITERAL,
                 CaosScript_CHARACTER
+        )
+
+        @JvmStatic
+        val PREFIX_KEYWORDS = create(
+                CaosScript_K_APP_COL,
+                CaosScript_K_BBD_COL,
+                CaosScript_K_BRN_COL,
+                CaosScript_K_CD_,
+                CaosScript_K_DBG_COL,
+                CaosScript_K_DDE_COL,
+                CaosScript_K_FILE,
+                CaosScript_K_GENE,
+                CaosScript_K_GIDS,
+                CaosScript_K_HIST,
+                CaosScript_K_NET_COL,
+                CaosScript_K_NEW_COL,
+                CaosScript_K_PAT_COL,
+                CaosScript_K_PRAY,
+                CaosScript_K_PRT_COL,
+                CaosScript_K_MESG,
+                CaosScript_K_ORDR,
+                CaosScript_K_STM_NUM,
+                CaosScript_K_STIM,
+                CaosScript_K_SYS_COL,
+                CaosScript_K_SWAY,
+                CaosScript_K_URGE
         )
 
         @JvmStatic
@@ -875,7 +902,11 @@ class CaosScriptTokenSets {
                 CaosScript_K_CLS2,
                 CaosScript_K_WORD,
                 CaosScript_K_XIST,
-                CaosScript_K_F__K
+                CaosScript_K_F__K,
+                CaosScript_K_SSFC,
+                CaosScript_K_APP_COL,
+                CaosScript_K_DEND,
+                CaosScript_K_RCPR
         )
 
         @JvmStatic
@@ -902,7 +933,8 @@ class CaosScriptTokenSets {
                     CaosDef_HASH_TAG,
                     CaosScript_INT,
                     CaosScript_WORD,
-                    CaosScript_SUBROUTINE_NAME
+                    CaosScript_SUBROUTINE_NAME,
+                    CaosDef_VALUES_LIST_VALUE_KEY_LITERAL
             )
             val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
                     .types + otherTokens)

@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api
 
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.variants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 
 interface CaosDefCompositeElement : PsiElement {

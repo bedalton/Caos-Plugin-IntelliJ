@@ -5,12 +5,22 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.bytes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.toByteArray
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.zip.InflaterOutputStream
 
 object CobToDataObjectDecompiler {
+
+    fun decompile(virtualFile:VirtualFile) : CobFileData? {
+        val buffer = ByteBuffer.wrap(virtualFile.contentsToByteArray()).littleEndian()
+        return try {
+            decompile(buffer)
+        } catch(e:Exception) {
+            null
+        }
+    }
 
     fun decompile(buffer: ByteBuffer): CobFileData {
         val header = buffer.cString(4)

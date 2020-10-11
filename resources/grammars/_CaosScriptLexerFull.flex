@@ -898,8 +898,12 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Mm][Oo][Nn][1]        	{ return CaosScript_K_MON1; }
 	[Mm][Oo][Nn][2]        	{ return CaosScript_K_MON2; }
 	[Rr][Nn][Dd][Rr]       	{ return CaosScript_K_RNDR; }
+    [Ss][Ss][Ff][Cc]		{ return CaosScript_K_SSFC; }
 	[Ll][Nn][Gg][+]        	{ return CaosScript_K_LNG_PLUS; }
     [Xx][Ii][Ss][Tt]       	{ return CaosScript_K_XIST; }
+    [Dd][Ee][Nn][Dd]		{ return CaosScript_K_DEND; }
+    [Rr][Cc][Pp][Rr]		{ return CaosScript_K_RCPR; }
+    [Aa][Pp][Pp][:]			{ return CaosScript_K_APP_COL; }
     [Ff][*][*][Kk]			{ return CaosScript_K_F__K; }
 	[Aa][Nn][Dd]           	{ return CaosScript_K_AND; }
 	[Oo][Rr]               	{ return CaosScript_K_OR; }

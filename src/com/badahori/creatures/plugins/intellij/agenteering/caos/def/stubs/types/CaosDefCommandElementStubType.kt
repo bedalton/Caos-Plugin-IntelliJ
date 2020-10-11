@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Ca
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefCommandDefinitionStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readSimpleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 
@@ -33,6 +34,8 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
         stream.writeBoolean(stub.lvalue)
         stream.writeReturnType(stub.returnType)
         stream.writeUTFFast(stub.comment ?: "")
+        stream.writeInt(stub.simpleReturnType.value)
+        stream.writeBoolean(stub.requiresOwner)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosDefCommandDefinitionStub {
@@ -48,6 +51,8 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
                 comment = null
         )
         val comment = stream.readUTFFast().nullIfEmpty()
+        val simpleReturnType = stream.readSimpleType()
+        val requiresOwner = stream.readBoolean()
         return CaosDefCommandDefinitionStubImpl(
                 parent = parent,
                 namespace = namespace,
@@ -58,7 +63,9 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
                 lvalue = lvalue,
                 returnType = returnType,
                 comment = comment,
-                variants = variants
+                variants = variants,
+                simpleReturnType = simpleReturnType,
+                requiresOwner = requiresOwner
         )
     }
 
@@ -73,7 +80,9 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
                 lvalue = element.isLvalue,
                 returnType = element.returnTypeStruct ?: CaosDefPsiImplUtil.UnknownReturnType,
                 comment = element.comment,
-                variants = element.variants
+                variants = element.variants,
+                simpleReturnType = element.simpleReturnType,
+                requiresOwner = element.requiresOwner
         )
     }
 

@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
@@ -26,7 +27,7 @@ internal class CaosScriptFileTreeNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
-        quickFormat(caosFile)
+        caosFile.quickFormat()
         invokeLater {
             caosFile.navigate(requestFocus)
             caosFile.virtualFile?.isWritable = false
@@ -138,15 +139,4 @@ internal class SubScriptLeafNode(
         is CaosScriptRemovalScript -> 8
         else -> 9
     }
-}
-
-internal fun quickFormat(caosFile: CaosScriptFile) {
-    val command: WriteCommandAction<Void?> = object : WriteCommandAction.Simple<Void?>(caosFile.project, caosFile) {
-        override fun run() {
-            caosFile.virtualFile?.isWritable = true
-            CaosScriptExpandCommasIntentionAction.invoke(project, caosFile)
-            caosFile.virtualFile?.isWritable = false
-        }
-    }
-    command.execute()
 }

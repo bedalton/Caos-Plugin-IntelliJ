@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobVirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
@@ -15,9 +16,7 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
     class RemovalScript(code: String, scriptName: String = "RemovalScript") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
     fun toCaosFile(project: Project, cobPath: CaosVirtualFile, caosVariant: CaosVariant): CaosScriptFile {
         val fileName = getEventScriptName(code) ?: scriptName
-        val file = CaosVirtualFile("$fileName.cos", code, false).apply {
-            cobPath.addChild(this)
-            this.variant = caosVariant
+        val file = CobVirtualFileUtil.createChildCaosScript(project, cobPath, caosVariant, "$fileName.cos", code).apply {
             isWritable = true
         }
         val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
