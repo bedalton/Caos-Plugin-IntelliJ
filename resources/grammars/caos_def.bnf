@@ -44,6 +44,7 @@
 		AT_LVALUE = "regexp:[@][lL][vV][aA][lL][uU][eE]";
 		AT_PARAM = "regexp:[@][pP][aA][rR][aA][mM]"
 		AT_RETURN = "regexp:[@][rR][eE][tT][uU][rR][nN][sS]?"
+		AT_OWNR = "regexp:[Oo][Ww][Nn][Rr]"
 
 		AT_ID = "regexp:[@][a-zA-Z_][a-zA-Z_0-9]";
 		AT_FILE = "regexp:[@][Ff][Ii][Ll][Ee][.][a-zA-Z_][a-zA-Z_0-9/]+"
@@ -98,10 +99,12 @@ command_def_element
 			getParameterStructs
 			getReturnTypeString
 			getReturnTypeStruct
+			getSimpleReturnType
 			getVariants
 			isVariant
 			getParameterStruct
 			getFullCommand
+			getRequiresOwner
 		]
 	}
 	;
@@ -154,6 +157,7 @@ values_list_value
 			getDescription
 			getEquality
 			getPresentation
+			getPresentationText
 		]
 	}
 	;
@@ -194,6 +198,7 @@ parameter
 			getParameterName
 			getParameterType
 			toStruct
+			getSimpleType
 		]
 	}
 	;
@@ -223,6 +228,11 @@ return_type
 variable_type
 	::= '(' type_literal ')'
 	|	bracket_string
+	{
+		methods = [
+			getSimpleType
+		]
+	}
 	;
 
 type_literal
@@ -281,6 +291,18 @@ values_list_name
 
 values_list_value_key
 	::= VALUES_LIST_VALUE_KEY_LITERAL
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
+		]
+		methods = [
+			getName
+			setName
+			getPresentationText
+			getReference
+		]
+	}
 	;
 
 values_list_value_name
@@ -307,6 +329,7 @@ doc_comment
 			getParameterStruct
 			getParameterStructs
 			getReturnTypeStruct
+			getRequiresOwner
 		]
 	}
 	;
@@ -335,12 +358,15 @@ private doc_comment_element
 	|	doc_comment_with_tag
 	|	rvalue comment_end_of_line?
 	|	lvalue comment_end_of_line?
+	|	ownr comment_end_of_line?
 	|	LEADING_ASTRISK
 	|	comment_end_of_line
 	{
 		pin(".*")=1;
 	}
 	;
+
+
 
 private doc_comment_hashtag_set
 	::= doc_comment_hashtag+
@@ -435,6 +461,10 @@ rvalue
 	;
 lvalue
 	::= AT_LVALUE
+	;
+
+ownr
+	::= AT_OWNR
 	;
 
 doc_comment_return

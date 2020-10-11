@@ -121,34 +121,33 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
         val commandString = assignment.lvalue?.commandStringUpper.nullIfEmpty()
                 ?: return
         val project = assignment.project
-        val addTo:PsiElement = assignment.lastChild
-        val currentValue = if (addTo is CaosScriptExpectsValueOfType) {
-            addTo.text.toIntSafe() ?: 0
-        } else {
-            0
-        }
-        val valuesList = CaosDefCommandElementsByNameIndex
-                .Instance[commandString, project]
-                .filter {
-                    it.isVariant(variant)
-                }
-                .mapNotNull {
-                    it.returnTypeStruct?.type?.valuesList
-                }
-                .firstOrNull()
-                ?: return
-        val valuesListWithBitFlags = CaosDefValuesListElementsByNameIndex
-                .Instance[valuesList, project]
-                .firstOrNull {
-                    it.isBitflags && it.isVariant(variant)
-                }
-                ?: return
+        for (addTo in assignment.arguments) {
+            if (addTo is CaosScriptLvalue || (addTo as? CaosScriptRvalue)?.varToken != null)
+                continue;
+            val currentValue= addTo.text.toIntSafe() ?: 0
+            val valuesList = CaosDefCommandElementsByNameIndex
+                    .Instance[commandString, project]
+                    .filter {
+                        it.isVariant(variant)
+                    }
+                    .mapNotNull {
+                        it.returnTypeStruct?.type?.valuesList
+                    }
+                    .firstOrNull()
+                    ?: return
+            val valuesListWithBitFlags = CaosDefValuesListElementsByNameIndex
+                    .Instance[valuesList, project]
+                    .firstOrNull {
+                        it.isBitflags && it.isVariant(variant)
+                    }
+                    ?: return
 
-        val range = if (addTo.text.isNotEmpty())
-            addTo
-        else
-            addTo.next ?: addTo.previous ?: return
-        holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.valuesListValues, currentValue))
+            val range = if (addTo.text.isNotEmpty())
+                addTo
+            else
+                addTo.next ?: addTo.previous ?: return
+            holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.valuesListValues, currentValue))
+        }
     }
 
     companion object {

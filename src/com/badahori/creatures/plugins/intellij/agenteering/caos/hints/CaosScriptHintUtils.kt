@@ -10,8 +10,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
@@ -26,40 +27,19 @@ fun CaosScriptExpression.getValuesListValue(): CaosDefValuesListValueStruct? {
         return getCommandParameterValuesListValue(it, text)
     }
 
-    getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
+    getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let {
         return getEqualityExpressionValuesListValue(it, this)
     }
     return null
 }
 
-private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefValuesListValueStruct? {
-    val value = expression.intValue?.let { "$it" } ?: expression.stringValue ?: return null
-    val other = equalityExpression.expressionList.let {
-        when (it.size) {
-            0, 1 -> return null
-            2 -> if (it[0].isEquivalentTo(expression)) it[1] else it[0]
-            else -> {
-                LOGGER.severe("Equality operator expects exactly TWO expressions")
-                return null
-            }
-        }
-    } ?: return null
-    val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
+private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression): CaosDefValuesListValueStruct? {
+    val value = expression.intValue?.let { "$it" }
+            ?: expression.stringValue
             ?: return null
-    val reference = token
-            .reference
-            .multiResolve(true)
-            .firstOrNull()
-            ?.element
-            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+    val valuesList = equalityExpression.getValuesList(expression)
             ?: return null
-    val valuesList = reference
-            .docComment
-            ?.returnTypeStruct
-            ?.type
-            ?.valuesList
-            ?: return null
-    val variant = expression.containingCaosFile?.variant
+    val variant = expression.variant
             ?: return null
     return getListValue(variant, valuesList, expression.project, value)
 }
@@ -160,13 +140,13 @@ fun CaosScriptExpression.getCommand(): CaosDefCommandDefElement? {
         return getCommand(it)
     }
 
-    getParentOfType(CaosScriptEqualityExpression::class.java)?.let {
+    getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let {
         return getCommand(it, this)
     }
     return null
 }
 
-private fun getCommand(equalityExpression: CaosScriptEqualityExpression, expression: CaosScriptExpression): CaosDefCommandDefElement? {
+private fun getCommand(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression): CaosDefCommandDefElement? {
     val other = equalityExpression.expressionList.let {
         when (it.size) {
             0, 1 -> return null
@@ -197,5 +177,4 @@ private fun getCommand(valueOfType: CaosScriptExpectsValueOfType): CaosDefComman
             ?.firstOrNull()
             ?.element
             ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-            ?: return null
 }

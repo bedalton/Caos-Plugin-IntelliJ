@@ -9,10 +9,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
@@ -30,6 +31,7 @@ import com.intellij.psi.search.GlobalSearchScope
 object CaosScriptValuesListValuesCompletionProvider {
 
     private val startsWithNumber = "^[0-9].*".toRegex()
+
     /**
      * Adds completions for a known value list, based on argument position and parent command
      */
@@ -108,12 +110,11 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .map { it.nameWithoutExtension }
             // Loop through all files and format them as needed.
             for (file in allFiles) {
-                val fileName = file
                 val isToken = parameterStruct.type.type.toLowerCase() == "token"
                 val text = when {
-                    isToken -> fileName
-                    variant.isOld -> "[$fileName"
-                    else -> "\"$fileName"
+                    isToken -> file
+                    variant.isOld -> "[$file"
+                    else -> "\"$file"
                 }
                 val openQuote = when {
                     isToken -> null
@@ -128,9 +129,9 @@ object CaosScriptValuesListValuesCompletionProvider {
                 // Create lookup element
                 var lookupElement = LookupElementBuilder
                         .create(text)
-                        .withStrikeoutness(isToken && fileName.length != 4)
-                        .withLookupString("$openQuote$fileName$closeQuote")
-                        .withPresentableText(fileName)
+                        .withStrikeoutness(isToken && file.length != 4)
+                        .withLookupString("$openQuote$file$closeQuote")
+                        .withPresentableText(file)
                 if (closeQuote != null) {
                     lookupElement = lookupElement
                             .withInsertHandler(CloseQuoteInsertHandler(closeQuote))
@@ -171,33 +172,10 @@ object CaosScriptValuesListValuesCompletionProvider {
         }
     }
 
-    fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpression, expression: com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression) {
-        val other = equalityExpression.expressionList.let {
-            when (it.size) {
-                0, 1 -> return
-                2 -> if (it[0].isEquivalentTo(expression)) it[1] else it[0]
-                else -> {
-                    LOGGER.severe("Equality operator expects exactly TWO expressions")
-                    return
-                }
-            }
-        } ?: return
-        val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
+    fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression) {
+        val typeDef = equalityExpression.getValuesList(expression)
                 ?: return
-        val reference = token
-                .reference
-                .multiResolve(true)
-                .firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return
-        val typeDef = reference
-                .docComment
-                ?.returnTypeStruct
-                ?.type
-                ?.valuesList
-                ?: return
-        val variant = expression.containingCaosFile?.variant
+        val variant = expression.variant
                 ?: return
         addListValues(resultSet, variant, typeDef, expression.project, expression.text, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
@@ -231,7 +209,7 @@ object CaosScriptValuesListValuesCompletionProvider {
             }
             if (addSpace) {
                 lookupElement = lookupElement
-                        .withInsertHandler(AddSpaceInsertHandler(true))
+                        .withInsertHandler(SpaceAfterInsertHandler)
             }
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
         }

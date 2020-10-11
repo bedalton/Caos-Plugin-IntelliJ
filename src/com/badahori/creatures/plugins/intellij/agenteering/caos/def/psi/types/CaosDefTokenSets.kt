@@ -31,7 +31,8 @@ class CaosDefTokenSets {
                 CaosDef_AT_LVALUE,
                 CaosDef_AT_RVALUE,
                 CaosDef_AT_PARAM,
-                CaosDef_AT_VARIANT
+                CaosDef_AT_VARIANT,
+                CaosDef_AT_OWNR
         )
     }
 }

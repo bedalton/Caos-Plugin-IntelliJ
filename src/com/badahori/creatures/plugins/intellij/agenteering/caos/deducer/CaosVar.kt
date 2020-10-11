@@ -25,7 +25,9 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
     }
     data class CaosCommandCall(override val text:String, val returnType: CaosExpressionValueType? = null) : CaosVar(text, CaosExpressionValueType.ANY)
     object CaosLiteralVal: CaosVar("", CaosExpressionValueType.ANY)
-    data class CaosInferredVariableType(val varName:String, val value:CaosExpressionValueType) : CaosVar("$varName", value)
+    object CaosLiteralStringVal: CaosVar("", CaosExpressionValueType.STRING)
+    object CaosLiteralIntVal: CaosVar("", CaosExpressionValueType.INT)
+    data class CaosInferredVariableType(val varName:String, val value:CaosExpressionValueType) : CaosVar(varName, value)
     sealed class CaosLiteral(text:String, simpleType: CaosExpressionValueType) : CaosVar(text, simpleType) {
         data class CaosString(val value:String) : CaosLiteral(value, CaosExpressionValueType.STRING)
         data class CaosC1String(val value:String) : CaosLiteral(value, CaosExpressionValueType.C1_STRING)
@@ -34,6 +36,7 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         data class CaosFloat(val value:Float) : CaosLiteral("$value", CaosExpressionValueType.FLOAT)
         data class CaosAnimationString(val value:String, val animation:CaosAnimation?) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
         data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
+        data class CaosAgent(val family:Int, val genus:Int, val species:Int) : CaosLiteral("Agent: $family $genus $species", CaosExpressionValueType.AGENT)
         data class CaosIntRange(private val minIn:Int?, private val maxIn:Int?) : CaosLiteral("[$minIn...$maxIn]", CaosExpressionValueType.INT) {
             val min:Int? by lazy {
                 if (minIn == null || maxIn == null)
@@ -42,6 +45,20 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
                     min(minIn, maxIn)
             }
             val max:Int? by lazy {
+                if (minIn == null || maxIn == null)
+                    max
+                else
+                    max(minIn, maxIn)
+            }
+        }
+        data class CaosFloatRange(private val minIn:Float?, private val maxIn:Float?) : CaosLiteral("[$minIn...$maxIn]", CaosExpressionValueType.FLOAT) {
+            val min:Float? by lazy {
+                if (minIn == null || maxIn == null)
+                    min
+                else
+                    min(minIn, maxIn)
+            }
+            val max:Float? by lazy {
                 if (minIn == null || maxIn == null)
                     max
                 else
@@ -62,3 +79,8 @@ sealed class CaosAnimation {
 }
 
 val CaosVar.isNumeric get() = this is CaosVar.CaosLiteral.CaosInt || this is CaosVar.CaosLiteral.CaosFloat
+
+val CaosVar.isVariable
+    get() = this is CaosVar.NamedVar
+            || this is CaosVar.CaosNamedGameVar
+            || this is CaosVar.CaosNumberedVar

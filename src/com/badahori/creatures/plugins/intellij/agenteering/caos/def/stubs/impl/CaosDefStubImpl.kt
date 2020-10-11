@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 
 
 class CaosDefCommandDefinitionStubImpl(
@@ -18,7 +19,9 @@ class CaosDefCommandDefinitionStubImpl(
         override val rvalue: Boolean,
         override val lvalue: Boolean,
         override val isCommand: Boolean,
-        override val variants:List<CaosVariant>
+        override val variants:List<CaosVariant>,
+        override val simpleReturnType: CaosExpressionValueType,
+        override val requiresOwner:Boolean
 ) : StubBase<CaosDefCommandDefElementImpl>(parent, CaosDefStubTypes.COMMAND_ELEMENT), CaosDefCommandDefinitionStub {
     override val commandWords:List<String> by lazy {
         command.split(" ")
@@ -31,6 +34,7 @@ class CaosDefDocCommentStubImpl(
         override val comment: String?,
         override val returnType: CaosDefReturnTypeStruct,
         override val rvalue: Boolean,
+        override val requiresOwner:Boolean,
         override val lvalue: Boolean
 ) : StubBase<CaosDefDocCommentImpl>(parent, CaosDefStubTypes.DOC_COMMENT), CaosDefDocCommentStub
 
@@ -38,7 +42,8 @@ class CaosDefParameterStubImpl(
         parent:StubElement<*>,
         override val parameterName: String,
         override val type:CaosDefVariableTypeStruct,
-        override val comment: String?
+        override val comment: String?,
+        override val simpleType: CaosExpressionValueType
 ) : StubBase<CaosDefParameterImpl>(parent, CaosDefStubTypes.PARAMETER), CaosDefParameterStub
 
 class CaosDefValuesListStubImpl(
