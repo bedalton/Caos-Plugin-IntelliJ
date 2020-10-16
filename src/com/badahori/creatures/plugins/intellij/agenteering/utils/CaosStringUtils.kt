@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import kotlin.math.max
+import kotlin.math.pow
 
 object CaosStringUtil {
 
@@ -177,4 +178,14 @@ enum class Case {
     UPPER_CASE,
     LOWER_CASE,
     CAPITAL_FIRST
+}
+
+fun binaryToInteger(binary: String): Long {
+    val numbers = binary.toCharArray()
+    var result = 0L
+    for (i in numbers.indices.reversed()) if (numbers[i] == '1') {
+        val next = 2.0f.pow((numbers.size - i - 1)).toLong()
+        result += next
+    }
+    return result
 }

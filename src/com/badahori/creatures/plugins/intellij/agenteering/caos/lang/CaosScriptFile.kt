@@ -2,10 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -18,10 +16,12 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.FileContentUtilCore
 import java.util.concurrent.atomic.AtomicBoolean
 
 class CaosScriptFile(viewProvider: FileViewProvider)
@@ -29,14 +29,13 @@ class CaosScriptFile(viewProvider: FileViewProvider)
     private val didFormatInitial = AtomicBoolean(false)
     override var variant: CaosVariant?
         get() {
-            return getUserData(VariantUserDataKey)
-                    ?: this.virtualFile
-                            ?.let {
-                                (it as? CaosVirtualFile)?.variant
-                                        ?: VariantFilePropertyPusher.readFromStorage(it)
-                                        ?: it.getUserData(VariantUserDataKey)
-                            }
+            val storedVariant = getUserData(VariantUserDataKey)
+                    ?: this.virtualFile?.cachedVariant
                     ?: (module ?: originalFile.module)?.variant
+            return if (storedVariant == CaosVariant.UNKNOWN)
+                null
+            else
+                storedVariant
         }
         set(newVariant) {
             putUserData(VariantUserDataKey, newVariant)
@@ -143,3 +142,8 @@ var PsiFile.runInspections: Boolean
     set(value) {
         putUserData(RUN_INSPECTIONS_KEY, value)
     }
+
+val VirtualFile.cachedVariant:CaosVariant?
+    get() = (this as? CaosVirtualFile)?.variant
+            ?: VariantFilePropertyPusher.readFromStorage(this)
+            ?: this.getUserData(CaosScriptFile.VariantUserDataKey)

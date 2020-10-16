@@ -29,17 +29,17 @@ import com.intellij.openapi.roots.libraries.ui.AttachRootButtonDescriptor
 import com.intellij.openapi.roots.libraries.ui.LibraryRootsComponentDescriptor
 import com.intellij.openapi.roots.libraries.ui.OrderRootTypePresentation
 import com.intellij.openapi.roots.libraries.ui.RootDetector
-import com.intellij.openapi.roots.ui.configuration.libraryEditor.DefaultLibraryRootsComponentDescriptor
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.LibraryEditor
 import com.intellij.openapi.vfs.VirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import icons.CaosScriptIcons
 import javax.swing.JComponent
 
 class CaosLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
     override fun getRootTypePresentation(type: OrderRootType): OrderRootTypePresentation? {
         if (type != OrderRootType.SOURCES)
             return null
-        return DefaultLibraryRootsComponentDescriptor.getDefaultPresentation(type)
+        return OrderRootTypePresentation("LIB", CaosScriptIcons.SDK_ICON)
     }
 
     override fun getRootDetectors(): List<RootDetector> {
@@ -52,7 +52,7 @@ class CaosLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
         return listOf(AttachUrlJavadocDescriptor())
     }
 
-    private class AttachUrlJavadocDescriptor internal constructor() : AttachRootButtonDescriptor(JavadocOrderRootType.getInstance(), ProjectBundle.message("module.libraries.javadoc.url.button")) {
+    private class AttachUrlJavadocDescriptor() : AttachRootButtonDescriptor(JavadocOrderRootType.getInstance(), ProjectBundle.message("module.libraries.javadoc.url.button")) {
 
         override fun selectFiles(parent: JComponent,
                                  initialSelection: VirtualFile?,

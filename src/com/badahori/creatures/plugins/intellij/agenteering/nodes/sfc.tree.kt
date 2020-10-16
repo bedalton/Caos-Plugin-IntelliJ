@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFile
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcDecompiledFilePropertyPusher
@@ -11,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -37,7 +36,7 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
             SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
             LOGGER.severe(error)
             e.printStackTrace()
-            CaosInjectorNotifications.show(project, "SFC Error", "Failed to parse SFC file '${myVirtualFile.name}'. Non-Eden.sfc files are un-parsable.", NotificationType.ERROR)
+            CaosNotifications.showError(project, "SFC Error", "Failed to parse SFC file '${myVirtualFile.name}'. Non-Eden.sfc files are un-parsable.")
             null
         }
     }

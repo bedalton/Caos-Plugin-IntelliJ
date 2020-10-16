@@ -97,7 +97,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
                 objects = objects.mapNotNull { it?.pointed!!.point() },
                 scenery = scenery.pointed,
                 scripts = scripts,
-                macros = macros.map { it.point() },
+                macros = macros.mapNotNull { it?.point() },
                 scrollPosition = scrollPosition,
                 favoritePlaces = favoritePlaces,
                 speechHistory = speechHistory
@@ -148,7 +148,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
      */
     private fun <T> readList(getter: SfcReader.() -> T): List<T> {
         return (0 until uInt32).map {
-            this.getter() as T
+            this.getter()
         }
     }
     /**
@@ -318,4 +318,4 @@ internal class OutOfVariantException(val variant: CaosVariant, message: String =
 /**
  * Convenience method for turning a list of PTR objects to their corresponding actual objects
  */
-private val <SfcT : SfcData, T : PointerSfcData<SfcT>> List<Ptr<T>>.pointed: List<SfcT> get() = this.mapNotNull { it.pointed?.point() }
+private val <SfcT : SfcData, T : PointerSfcData<SfcT>> List<Ptr<T>?>.pointed: List<SfcT> get() = this.mapNotNull { it?.pointed?.point() }
