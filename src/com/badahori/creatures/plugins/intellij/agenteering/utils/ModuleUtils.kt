@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
@@ -65,7 +64,7 @@ get() {
 
 class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosVariant?> {
 
-    override fun getDefaultValue(): CaosVariant = CaosScriptProjectSettings.variant
+    override fun getDefaultValue(): CaosVariant = CaosVariant.UNKNOWN
 
     override fun getFileDataKey(): Key<CaosVariant?> {
         return CaosScriptFile.VariantUserDataKey
@@ -103,8 +102,19 @@ class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosV
         private val VARIANT_FILE_ATTRIBUTE = FileAttribute("caos_script_variant", 0, true)
 
         internal fun readFromStorage(file: VirtualFile): CaosVariant? {
-            if (file !is VirtualFileWithId)
-                return null
+            // Attempt to read variant from virtual file as CaosVirtualFile
+            // It allows fall through in case CaosVirtualFile
+            // Ever extends VirtualFileWithId
+            (file as? CaosVirtualFile)?.variant?.let {
+                return it
+            }
+            // If file is not virtual file
+            // Bail out as only VirtualFileWithId files
+            // Have data that could be read through the stream.
+            if (file !is VirtualFileWithId) {
+                // Get possible session user data written on top of this file
+                return file.getUserData(CaosScriptFile.VariantUserDataKey)
+            }
             val stream = VARIANT_FILE_ATTRIBUTE.readAttribute(file)
                     ?: return null
             val length = stream.readInt()
@@ -120,6 +130,10 @@ class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosV
         }
 
         internal fun writeToStorage(file: VirtualFile, variantIn: CaosVariant) {
+            if (file is CaosVirtualFile)
+                file.variant = variantIn
+            if (file !is VirtualFileWithId)
+                return
             val stream = VARIANT_FILE_ATTRIBUTE.writeAttribute(file)
             val variant = variantIn.code
             stream.writeInt(variant.length)

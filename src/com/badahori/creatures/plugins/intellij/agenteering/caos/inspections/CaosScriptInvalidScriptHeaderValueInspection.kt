@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.utils.upperCaseFirstLetter
@@ -51,7 +52,7 @@ class CaosScriptInvalidScriptHeaderValueInspection : LocalInspectionTool() {
             problemsHolder.registerProblem(o, CaosBundle.message("caos.inspection.invalid-script-header-value.value-is-not-constant.message", name.upperCaseFirstLetter()))
             return
         }
-        val max = if (variant.isOld) 255 else 65535
+        val max = if (variant == CaosVariant.C1) 255 else 65535
 
         if (max >= value)
             return

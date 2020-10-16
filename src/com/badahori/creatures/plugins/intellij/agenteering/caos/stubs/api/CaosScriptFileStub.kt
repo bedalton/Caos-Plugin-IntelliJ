@@ -6,5 +6,5 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 
 interface CaosScriptFileStub :  PsiFileStub<CaosScriptFile> {
     val fileName: String
-    val variant:CaosVariant
+    val variant:CaosVariant?
 }

@@ -29,7 +29,7 @@ private const val INT = 9
 private const val FLOAT = 10
 private const val ANIMATION_STRING = 11
 private const val TOKEN = 12
-private const val RANGE = 13
+private const val INT_RANGE = 13
 private const val C1_STRING = 14
 private const val MAME = 15
 private const val GAME = 16
@@ -40,6 +40,10 @@ private const val NONE = 20
 private const val PICT_DIMENSIONS = 21
 private const val C2_GAME = 22
 private const val INFERRED_VARIABLE_TYPE = 23
+private const val AGENT = 24
+private const val FLOAT_RANGE = 25
+private const val INT_LITERAL = 26
+private const val STRING_LITERAL = 27
 
 
 
@@ -58,7 +62,7 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         FLOAT -> CaosFloat(readFloat())
         ANIMATION_STRING -> CaosAnimationString(value = readNameAsString() ?: "", animation = readAnimation())
         TOKEN -> CaosToken(value = readNameString() ?: "XXXX")
-        RANGE -> readCaosRange()
+        INT_RANGE -> readCaosRange()
         C1_STRING -> CaosC1String(readNameAsString() ?: "")
         EAME -> EameVar(readNameAsString()?:"???")
         GAME -> GameVar(readNameAsString()?:"???")
@@ -69,6 +73,14 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         PICT_DIMENSIONS -> CaosPictDimension(readInt(), readInt())
         C2_GAME -> C2GameVar(readInt(), readInt())
         INFERRED_VARIABLE_TYPE -> CaosInferredVariableType(readNameAsString() ?: UNDEF, CaosExpressionValueType.valueOf(readNameAsString() ?: UNDEF))
+        AGENT -> CaosAgent(readInt(),readInt(), readInt())
+        STRING_LITERAL -> CaosLiteralStringVal
+        INT_LITERAL -> CaosLiteralIntVal
+        FLOAT_RANGE -> {
+            val min = if (readBoolean()) readFloat() else null
+            val max = if (readBoolean()) readFloat() else null
+            CaosFloatRange(min, max)
+        }
         else -> throw Exception("Unexpected caos var type '$value' encountered")
     }
 }
@@ -186,7 +198,23 @@ internal fun StubOutputStream.writeCaosVar(caosVar:CaosVar) {
             writeName(caosVar.varName)
             writeName(caosVar.value.simpleName)
         }
-
+        CaosLiteralStringVal -> writeInt(STRING_LITERAL)
+        CaosLiteralIntVal -> writeInt(INT_LITERAL)
+        is CaosAgent -> {
+            writeInt(AGENT)
+            writeInt(caosVar.family)
+            writeInt(caosVar.genus)
+            writeInt(caosVar.species)
+        }
+        is CaosFloatRange -> {
+            writeInt(FLOAT_RANGE)
+            writeBoolean(caosVar.min != null)
+            if (caosVar.min != null)
+                writeFloat(caosVar.min!!)
+            writeBoolean(caosVar.max != null)
+            if (caosVar.max != null)
+                writeFloat(caosVar.max!!)
+        }
     }
 }
 
@@ -344,7 +372,7 @@ internal fun StubInputStream.readAnimation() : CaosAnimation? {
 }
 
 private fun StubOutputStream.writeCaosRange(range:CaosIntRange) {
-    writeInt(RANGE)
+    writeInt(INT_RANGE)
     writeBoolean(range.min != null)
     range.min?.let {
         writeInt(it)

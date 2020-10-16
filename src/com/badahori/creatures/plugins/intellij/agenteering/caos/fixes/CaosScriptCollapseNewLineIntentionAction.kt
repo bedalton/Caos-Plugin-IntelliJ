@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
@@ -72,7 +71,6 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
         fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement {
             val project = element.project
-            val variant = (element as? CaosScriptCompositeElement)?.variant
             val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
             for (comment in comments) {
                 if (comment.isValid) {
@@ -88,7 +86,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             val newLines = PsiTreeUtil.collectElementsOfType(element, CaosScriptSpaceLikeOrNewline::class.java)
             for (newLine in newLines) {
                 if (newLine.isValid)
-                    replaceWithSpaceOrComma(variant, newLine, collapseChar)
+                    replaceWithSpaceOrComma(newLine, collapseChar)
             }
             while (trailingText.matches(element.firstChild.text))
                 element.firstChild.delete()
@@ -103,7 +101,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             return element
         }
 
-        private fun replaceWithSpaceOrComma(variant:CaosVariant?, nextIn: PsiElement?, collapseChar: CollapseChar) {
+        private fun replaceWithSpaceOrComma(nextIn: PsiElement?, collapseChar: CollapseChar) {
 
             if (nextIn == null)
                 return

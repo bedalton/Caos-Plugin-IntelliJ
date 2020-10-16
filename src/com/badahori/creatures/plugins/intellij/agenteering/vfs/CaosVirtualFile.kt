@@ -10,12 +10,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.now
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.externalSystem.service.execution.NotSupportedException
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiManager
 import java.io.*
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 

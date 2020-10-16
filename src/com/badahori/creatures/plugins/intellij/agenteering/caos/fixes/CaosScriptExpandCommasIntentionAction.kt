@@ -81,7 +81,6 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
      */
     private fun runnable(project: Project, fileIn: PsiFile?) : Boolean {
         val file = fileIn as? CaosScriptFile ?: return false
-        val variant = file.variant
 
         // Check that there are more than two commands.
         // If not, no need to try to separate them by newlines

@@ -18,6 +18,6 @@ class CaosScriptFileTypeFactory : FileTypeFactory() {
         fileTypeConsumer.consume(C16FileType, C16FileType.DEFAULT_EXTENSION)
         fileTypeConsumer.consume(S16FileType, S16FileType.DEFAULT_EXTENSION)
         fileTypeConsumer.consume(CobFileType, CobFileType.DEFAULT_EXTENSION)
-        fileTypeConsumer.consume(SfcFileType, SfcFileType.DEFAULT_EXTENSION)
+        //fileTypeConsumer.consume(SfcFileType, SfcFileType.DEFAULT_EXTENSION)
     }
 }
