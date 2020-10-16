@@ -1397,11 +1397,15 @@ var_token
 number
 	::= INT
 	|	DECIMAL
-	|	BINARY
+	|	binary_literal
 	|	character
 	{
 
 	}
+	;
+
+binary_literal
+	::= BINARY
 	;
 
 character
@@ -2154,7 +2158,7 @@ c_ssfc
 	}
 	;
 
-c_kw_ssfc ::= prefix_kw_dde_col space_like (K_GETB (space_like (K_SSFC|incomplete))|incomplete)
+c_kw_ssfc ::= K_SSFC
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -6032,6 +6036,7 @@ r_kw_d
 	|	K_VTOS
 	|	K_WRLD
 	|	K_GRND
+	|	prefix_kw_dde_col space_like (K_GETB (space_like (K_SSFC|incomplete))|incomplete)
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
