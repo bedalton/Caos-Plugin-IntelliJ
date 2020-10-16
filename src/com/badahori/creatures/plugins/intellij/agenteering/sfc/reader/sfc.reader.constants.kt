@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 
 enum class SfcType(val value:Int, val type:String, val pointer:(pid:Int)-> Ptr<*>) {
-    ANY(0, "Any", { pid -> throw SfcReadException("Cannot create sfc data object of type '(0)->ANY'")} ),
+    ANY(0, "Any", { throw SfcReadException("Cannot create sfc data object of type '(0)->ANY'")} ),
     MAP_DATA(1, "MapData", { pid -> SfcMapDataPtr(pid) }),
     GALLERY(2, "Gallery", {pid -> SfcGalleryPtr(pid) }),
     DOOR(3, "Door", { pid -> SfcDoorPtr(pid) }),

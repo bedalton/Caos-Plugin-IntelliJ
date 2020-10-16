@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.errorNotification
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
@@ -34,13 +35,13 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
                 CaosVariant.DS
         ))
         variantComboBox.setToolTipText("CAOS Variant")
-        variantComboBox.setRenderer({ _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
+        variantComboBox.setRenderer { _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
             val label = JLabel(value.fullName)
             if (isSelected) {
                 label.background = Color.lightGray
             }
             label
-        })
+        }
         variantComboBox
     }
 
@@ -59,7 +60,9 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
 
     override fun setupRootModel(modifiableRootModel: ModifiableRootModel) {
         super.setupRootModel(modifiableRootModel)
-        CaosBundleSourcesRegistrationUtil.addLibrary(modifiableModel = modifiableRootModel)
+        /*if (!CaosBundleSourcesRegistrationUtil.addLibrary(modifiableModel = modifiableRootModel)) {
+            LOGGER.warning("Failed to add library to root model")
+        }*/
         moduleFileDirectory?.let {
             val file = File(it)
             if (!file.exists()) {
@@ -74,8 +77,10 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
         ApplicationManager.getApplication().runWriteAction {
             val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
             val variant = (variantComboBox.selectedItem as? CaosVariant) ?: CaosScriptProjectSettings.variant
-            module.putUserData(CaosScriptFile.VariantUserDataKey, variant)
-            module.variant = variant
+            variant?.let {
+                module.putUserData(CaosScriptFile.VariantUserDataKey, variant)
+                module.variant = variant
+            }
             module.rootManager.modifiableModel.apply {
                 inheritSdk()
                 moduleFileDirectory?.let {

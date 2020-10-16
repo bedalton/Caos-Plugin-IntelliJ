@@ -27,17 +27,17 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
         }
     }
 
-    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caosIn: String): InjectionStatus {
+    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
-        val caos = if (!caosIn.trim().toLowerCase().startsWith(expectedHeader)) {
-             if (removalRegex.matches(caosIn)) {
-                 caosIn.replace(removalRegex, "")
+        val caosOut = if (!caos.trim().toLowerCase().startsWith(expectedHeader)) {
+             if (removalRegex.matches(caos)) {
+                 caos.replace(removalRegex, "")
              } else
-                 expectedHeader + caosIn
+                 expectedHeader + caos
         } else
-            caosIn
-        return inject(caos)
+            caos
+        return inject(caosOut)
     }
 
     override fun disconnect(): Boolean {
