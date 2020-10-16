@@ -34,9 +34,9 @@ import com.intellij.openapi.wm.ToolWindowId
  * @author Jakub Chrzanowski <jakub@hsz.mobi>
  * @since 1.7
  */
-object CaosInjectorNotifications {
+open class CaosNotificationsBase(groupName:String) {
     private val NOTIFICATION_GROUP: NotificationGroup = NotificationGroup(
-            CaosBundle.message("caos.injector.notification.group"),
+            groupName,
             NotificationDisplayType.NONE,
             true,
             ToolWindowId.PROJECT_VIEW
@@ -53,6 +53,42 @@ object CaosInjectorNotifications {
     fun show(project: Project, title: String, content: String,
                     type: NotificationType) {
         show(project, title, content, NOTIFICATION_GROUP, type, null);
+    }
+
+    /**
+     * Shows {@link Notification} in ".ignore plugin" group.
+     *
+     * @param project   current project
+     * @param title     notification title
+     * @param content   notification text
+     * @param type      notification type
+     */
+    fun showWarning(project: Project, title: String, content: String) {
+        show(project, title, content, NOTIFICATION_GROUP, NotificationType.WARNING, null);
+    }
+
+    /**
+     * Shows {@link Notification} in ".ignore plugin" group.
+     *
+     * @param project   current project
+     * @param title     notification title
+     * @param content   notification text
+     * @param type      notification type
+     */
+    fun showError(project: Project, title: String, content: String) {
+        show(project, title, content, NOTIFICATION_GROUP, NotificationType.ERROR, null);
+    }
+
+    /**
+     * Shows {@link Notification} in ".ignore plugin" group.
+     *
+     * @param project   current project
+     * @param title     notification title
+     * @param content   notification text
+     * @param type      notification type
+     */
+    fun showInfo(project: Project, title: String, content: String) {
+        show(project, title, content, NOTIFICATION_GROUP, NotificationType.INFORMATION, null);
     }
 
     /**
@@ -86,3 +122,6 @@ object CaosInjectorNotifications {
         Notifications.Bus.notify(notification, project);
     }
 }
+
+object CaosInjectorNotifications : CaosNotificationsBase(CaosBundle.message("caos.injector.notification.group"))
+object CaosNotifications : CaosNotificationsBase(CaosBundle.message("caos.general.notification.group"))
