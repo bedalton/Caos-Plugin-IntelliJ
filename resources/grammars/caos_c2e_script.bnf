@@ -3452,7 +3452,7 @@ c_kw_none
 	|	prefix_kw_dde_col space_like (K_DIED|incomplete)
 	|	prefix_kw_dde_col space_like (K_GENE|incomplete)
 	|	prefix_kw_dde_col space_like (incomplete |	K_GETB space_like (c_kw_dde_getb_none|incomplete))
-	|	prefix_kw_dde_col space_like (incomplet | K_GIDS space_like (c_kw_dde_gids_none|incomplete))
+	|	prefix_kw_dde_col space_like (incomplete | K_GIDS space_like (c_kw_dde_gids_none|incomplete))
 	|	prefix_kw_dde_col space_like (K_HATC|incomplete)
 	|	prefix_kw_dde_col space_like (K_LIVE|incomplete)
 	|	prefix_kw_dde_col space_like (K_LOBE|incomplete)
