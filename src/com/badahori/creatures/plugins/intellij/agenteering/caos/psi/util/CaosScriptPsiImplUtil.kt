@@ -336,7 +336,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(element: CaosScriptExpression): CaosScriptExpressionReference {
+    fun getReference(element: CaosScriptLiteral): CaosScriptExpressionReference {
         return CaosScriptExpressionReference(element)
     }
 
@@ -356,12 +356,12 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getName(element: CaosScriptExpression): String {
+    fun getName(element: CaosScriptLiteral): String {
         return element.text
     }
 
     @JvmStatic
-    fun setName(element: CaosScriptExpression, newName: String): PsiElement {
+    fun setName(element: CaosScriptLiteral, newName: String): PsiElement {
         return element
     }
 
@@ -476,7 +476,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(expression: CaosScriptExpression): CaosVar {
+    fun toCaosVar(expression: CaosScriptLiteral): CaosVar {
         (expression.varToken)?.let {
             return toCaosVar(it)
         }
@@ -717,7 +717,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getByteStringArray(expression: CaosScriptExpression): List<Int>? {
+    fun getByteStringArray(expression: CaosScriptLiteral): List<Int>? {
         val variant = expression.containingCaosFile?.variant
                 ?: return null
         expression.byteString?.let { stringValue ->
@@ -736,7 +736,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getAnimation(expression: CaosScriptExpression): CaosAnimation? {
+    fun getAnimation(expression: CaosScriptLiteral): CaosAnimation? {
         val variant = expression.containingCaosFile?.variant
                 ?: return null
         if (variant.isNotOld) {
@@ -811,7 +811,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCreatureAnimation(expression: CaosScriptExpression): CaosAnimation? {
+    fun getCreatureAnimation(expression: CaosScriptLiteral): CaosAnimation? {
         val variant = expression.containingCaosFile?.variant
                 ?: return null
         val stringValue = expression.stringValue
@@ -1338,36 +1338,36 @@ object CaosScriptPsiImplUtil {
     }*/
 
     @JvmStatic
-    fun isNumeric(expression: CaosScriptExpression): Boolean {
+    fun isNumeric(expression: CaosScriptLiteral): Boolean {
         return expression.number?.let {
             it.int != null || it.decimal != null
         } ?: return false
     }
 
     @JvmStatic
-    fun isInt(expression: CaosScriptExpression): Boolean {
+    fun isInt(expression: CaosScriptLiteral): Boolean {
         return expression.number?.int != null
     }
 
     @JvmStatic
-    fun isFloat(expression: CaosScriptExpression): Boolean {
+    fun isFloat(expression: CaosScriptLiteral): Boolean {
         return expression.number?.decimal != null
     }
 
     @JvmStatic
-    fun getIntValue(expression: CaosScriptExpression): Int? {
+    fun getIntValue(expression: CaosScriptLiteral): Int? {
         return expression.number?.int?.text?.toInt()
     }
 
     @JvmStatic
-    fun getFloatValue(expression: CaosScriptExpression): Float? {
+    fun getFloatValue(expression: CaosScriptLiteral): Float? {
         return expression.number?.let {
             (it.int ?: it.decimal)?.text?.toFloat()
         }
     }
 
     @JvmStatic
-    fun getConstValue(expression: CaosScriptExpression): CaosNumber? {
+    fun getConstValue(expression: CaosScriptLiteral): CaosNumber? {
         val project = expression.project
         if (DumbService.isDumb(project))
             return null
@@ -1383,7 +1383,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun isString(expression: CaosScriptExpression): Boolean {
+    fun isString(expression: CaosScriptLiteral): Boolean {
         return expression.c1String != null
                 || expression.byteString != null
                 || expression.animationString != null
@@ -1393,32 +1393,32 @@ object CaosScriptPsiImplUtil {
 
 
     @JvmStatic
-    fun isC1String(expression: CaosScriptExpression): Boolean {
+    fun isC1String(expression: CaosScriptLiteral): Boolean {
         return expression.c1String != null
     }
 
 
     @JvmStatic
-    fun isByteString(expression: CaosScriptExpression): Boolean {
+    fun isByteString(expression: CaosScriptLiteral): Boolean {
         return expression.byteString != null
     }
 
     @JvmStatic
-    fun isQuoteString(expression: CaosScriptExpression): Boolean {
+    fun isQuoteString(expression: CaosScriptLiteral): Boolean {
         return expression.quoteStringLiteral != null
     }
 
     @JvmStatic
-    fun isToken(expression: CaosScriptExpression): Boolean {
+    fun isToken(expression: CaosScriptLiteral): Boolean {
         return expression.token != null
     }
 
-    fun isConst(expression: CaosScriptExpression): Boolean {
+    fun isConst(expression: CaosScriptLiteral): Boolean {
         return expression.namedConstant != null
     }
 
     @JvmStatic
-    fun getStringValue(expression: CaosScriptExpression): String? {
+    fun getStringValue(expression: CaosScriptLiteral): String? {
         (expression.c1String ?: expression.animationString ?: expression.byteString)?.let {
             return it.text.trim('[', ']')
         }
@@ -1426,7 +1426,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getParameterListValue(element: CaosScriptExpression): CaosDefValuesListValueStruct? {
+    fun getParameterListValue(element: CaosScriptLiteral): CaosDefValuesListValueStruct? {
         element.getParentOfType(CaosScriptExpectsValueOfType::class.java)?.let {
             return getParameterListValue(it)
         }
@@ -1714,7 +1714,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
 
     // If expression or Equality, it can only be Rvalue
     // Getting base element will skip this possibility, so check first
-    if (isOrHasParentOfType(CaosScriptExpression::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
+    if (isOrHasParentOfType(CaosScriptLiteral::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
         return CaosCommandType.RVALUE
     val parent: PsiElement? = getSelfOrParentOfType(CaosScriptBaseCommandElement::class.java)
     if (parent == null || (parent !is CaosScriptCommandElement || parent is CaosScriptNamedGameVar)) {

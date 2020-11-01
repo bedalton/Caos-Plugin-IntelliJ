@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.vari
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
@@ -166,7 +166,7 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
                     .flatMap map@{ file ->
                         if (file.variant !in variants)
                             return@map emptyList<PsiReference>()
-                        PsiTreeUtil.collectElementsOfType(file, CaosScriptExpression::class.java)
+                        PsiTreeUtil.collectElementsOfType(file, CaosScriptLiteral::class.java)
                                 .filter { expression -> reference.isReferenceTo(expression) }
                                 .mapNotNull {
                                     it.reference

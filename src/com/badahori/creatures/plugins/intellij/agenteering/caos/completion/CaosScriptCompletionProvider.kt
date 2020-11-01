@@ -49,7 +49,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         // Add equality expression completions for known types
-        (element.getSelfOrParentOfType(CaosScriptExpression::class.java))?.let { expression ->
+        (element.getSelfOrParentOfType(CaosScriptLiteral::class.java))?.let { expression ->
             // If has parent RValue, should continue with normal completion
             // Else use special EQ expression completion
             if (!element.hasParentOfType(CaosScriptRvalue::class.java)) {
