@@ -172,7 +172,7 @@ object CaosScriptValuesListValuesCompletionProvider {
         }
     }
 
-    fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression) {
+    fun addEqualityExpressionCompletions(resultSet: CompletionResultSet, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptLiteral) {
         val typeDef = equalityExpression.getValuesList(expression)
                 ?: return
         val variant = expression.variant

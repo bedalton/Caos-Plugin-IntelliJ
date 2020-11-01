@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
@@ -19,7 +19,7 @@ import com.intellij.psi.util.PsiTreeUtil
 class CaosScriptRValueFoldingBuilder : FoldingBuilderEx() {
 
     override fun getPlaceholderText(node: ASTNode): String? {
-        (node.psi as? CaosScriptExpression)?.let {
+        (node.psi as? CaosScriptLiteral)?.let {
             return getExpressionFoldingText(it)
         }
         (node.psi as? CaosScriptEventNumberElement)?.let {
@@ -44,14 +44,14 @@ class CaosScriptRValueFoldingBuilder : FoldingBuilderEx() {
         return typeList.getValueForKey(eventElement.text)?.value
     }
 
-    private fun getExpressionFoldingText(expression: CaosScriptExpression): String? {
+    private fun getExpressionFoldingText(expression: CaosScriptLiteral): String? {
         return expression.getValuesListValue()?.value
     }
 
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
         val group = FoldingGroup.newGroup("CaosScript_ListValue")
         // Get a collection of the literal expressions in the document below root
-        val literalExpressions = PsiTreeUtil.findChildrenOfType(root, CaosScriptExpression::class.java)
+        val literalExpressions = PsiTreeUtil.findChildrenOfType(root, CaosScriptLiteral::class.java)
         return literalExpressions.filter {
             ProgressIndicatorProvider.checkCanceled()
             getExpressionFoldingText(it).isNotNullOrBlank()
