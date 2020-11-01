@@ -31,10 +31,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
     ATTRIBUTE_BITFLAGS_RETURN_VALUE_HINT("Show bit flag for outer expression", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
+            return option.isEnabled() && (element as? CaosScriptLiteral)?.isInt.orFalse() && usesBitFlags(element as CaosScriptLiteral)
         }
 
-        private fun usesBitFlags(element: CaosScriptExpression): Boolean {
+        private fun usesBitFlags(element: CaosScriptLiteral): Boolean {
             val parent = element.parent
             val caosCommandToken = when {
                 parent is CaosScriptComparesEqualityElement -> getCommandTokenFromEquality(parent, element)
@@ -69,7 +69,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            val expression = element as? CaosScriptExpression
+            val expression = element as? CaosScriptLiteral
                     ?: return emptyList()
             val attr = expression.intValue
                     ?: return emptyList()
@@ -93,7 +93,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptExpression) {
+            if (element !is CaosScriptLiteral) {
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
@@ -105,10 +105,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     },
     ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && (element as? CaosScriptExpression)?.isInt.orFalse() && usesBitFlags(element as CaosScriptExpression)
+            return option.isEnabled() && (element as? CaosScriptLiteral)?.isInt.orFalse() && usesBitFlags(element as CaosScriptLiteral)
         }
 
-        private fun usesBitFlags(element: CaosScriptExpression): Boolean {
+        private fun usesBitFlags(element: CaosScriptLiteral): Boolean {
             val parent = element.parent
             val caosCommandToken = when {
                 parent is CaosScriptComparesEqualityElement -> getCommandTokenFromEquality(parent, element)
@@ -141,7 +141,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            val expression = element as? CaosScriptExpression
+            val expression = element as? CaosScriptLiteral
                     ?: return emptyList()
             val attr = expression.intValue
                     ?: return emptyList()
@@ -167,7 +167,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptExpression) {
+            if (element !is CaosScriptLiteral) {
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
@@ -182,7 +182,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun isApplicable(element: PsiElement): Boolean {
             if (!option.isEnabled())
                 return false
-            if (element !is CaosScriptExpression || !element.isInt)
+            if (element !is CaosScriptLiteral || !element.isInt)
                 return false
             if (element.parent?.parent?.parent is CaosScriptGenus) {
                 return true
@@ -235,7 +235,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     },
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && element is CaosScriptExpression
+            return option.isEnabled() && element is CaosScriptLiteral
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
@@ -243,7 +243,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val list = mutableListOf<InlayInfo>()
             if (DumbService.isDumb(project))
                 return list
-            if (element !is CaosScriptExpression)
+            if (element !is CaosScriptLiteral)
                 return list
             val valuesListValue = element.getValuesListValue()
                     ?: (element.parent?.parent?.parent as? CaosScriptCommandElement)?.let letCommand@{
@@ -265,7 +265,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptExpression) {
+            if (element !is CaosScriptLiteral) {
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
@@ -301,7 +301,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptExpression) {
+            if (element !is CaosScriptLiteral) {
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
@@ -386,7 +386,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptExpression) {
+            if (element !is CaosScriptLiteral) {
                 return null
             }
             val parent = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
@@ -401,7 +401,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 }
 
 
-private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expression: CaosScriptExpression): CaosScriptIsCommandToken? {
+private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expression: CaosScriptLiteral): CaosScriptIsCommandToken? {
     if (command is CaosScriptCAssignment) {
         if (expression.parent.parent is CaosScriptLvalue) {
             return null
@@ -421,8 +421,8 @@ private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expres
 }
 
 
-private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptExpression): CaosScriptIsCommandToken? {
-    val other: CaosScriptExpression? = if (parent.first == expression) parent.second else parent.first
+private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptLiteral): CaosScriptIsCommandToken? {
+    val other: CaosScriptLiteral? = if (parent.first == expression) parent.second else parent.first
     return other?.varToken?.lastAssignment ?: other?.rvaluePrime?.commandToken
 }
 

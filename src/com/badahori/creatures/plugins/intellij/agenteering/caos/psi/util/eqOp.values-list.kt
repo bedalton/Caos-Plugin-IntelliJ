@@ -2,14 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 
 /**
  * Finds the value list to use for the opposing expression in an equality comparison
  */
-fun CaosScriptEqualityExpressionPrime.getValuesList(expression: CaosScriptExpression) : String? {
-    val other: CaosScriptExpression = expressionList.let let@{
+fun CaosScriptEqualityExpressionPrime.getValuesList(expression: CaosScriptLiteral) : String? {
+    val other: CaosScriptLiteral = expressionList.let let@{
         when {
             it.size < 2 -> null
             it.size > 2 -> {

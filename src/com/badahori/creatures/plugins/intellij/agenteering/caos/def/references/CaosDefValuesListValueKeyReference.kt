@@ -33,7 +33,7 @@ class CaosDefValuesListValueKeyReference(element:CaosDefValuesListValueKey)
             return valuesList.equalsIgnoreCase(EVENT_NUMBER_VALUES_LIST_NAME)
         }
         // Check that element is an expression value. If not, bail out
-        val expression = element.getSelfOrParentOfType(CaosScriptExpression::class.java)
+        val expression = element.getSelfOrParentOfType(CaosScriptLiteral::class.java)
                 ?: return false
         // If expression is part of equality express
         // Check for matching values list names

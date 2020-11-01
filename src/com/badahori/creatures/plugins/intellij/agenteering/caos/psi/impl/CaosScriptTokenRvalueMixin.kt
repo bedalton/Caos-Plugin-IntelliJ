@@ -10,7 +10,7 @@ abstract class CaosScriptTokenRvalueMixin : CaosScriptStubBasedElementImpl<CaosS
     constructor(stub: CaosScriptTokenRValueStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
     constructor(node: ASTNode) : super(node)
 
-    val expression: CaosScriptExpression? get() = null
+    val expression: CaosScriptLiteral? get() = null
 
     val namedConstant: CaosScriptNamedConstant? get() = null
 

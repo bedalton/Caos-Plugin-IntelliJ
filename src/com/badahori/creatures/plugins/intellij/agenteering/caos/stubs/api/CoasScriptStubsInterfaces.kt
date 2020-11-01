@@ -109,7 +109,7 @@ interface CaosScriptBlockStub {
     val blockType:CaosScriptBlockType
 }
 
-interface CaosScriptExpressionStub  : StubElement<CaosScriptExpressionImpl> {
+interface CaosScriptExpressionStub  : StubElement<CaosScriptLiteralImpl> {
     val enclosingScope:CaosScope?
     val caosVar:CaosVar
 }

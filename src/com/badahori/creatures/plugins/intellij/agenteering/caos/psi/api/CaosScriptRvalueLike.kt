@@ -8,7 +8,7 @@ import com.intellij.psi.stubs.IStubElementType
 
 interface CaosScriptRvalueLike : CaosScriptCompositeElement {
 
-    val expression: CaosScriptExpression?
+    val expression: CaosScriptLiteral?
 
     val namedConstant: CaosScriptNamedConstant?
 

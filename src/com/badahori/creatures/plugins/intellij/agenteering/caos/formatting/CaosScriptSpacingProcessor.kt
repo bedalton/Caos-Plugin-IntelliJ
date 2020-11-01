@@ -47,7 +47,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
         return when (node1.psi) {
             is CaosScriptExpectsValueOfType -> spaceAfterIsValueOfType(node2,keepBlankLines)
             is CaosScriptIsCommandToken -> spaceAfterIsCommandToken(node2,keepBlankLines)
-            is CaosScriptExpression -> oneSpace
+            is CaosScriptLiteral -> oneSpace
             is CaosScriptEqOp -> oneSpace
             else -> anySpace
         }

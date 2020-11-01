@@ -17,7 +17,7 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
-class CaosScriptExpressionReference(element: CaosScriptExpression) : PsiPolyVariantReferenceBase<CaosScriptExpression>(element, TextRange.create(0, element.textLength)) {
+class CaosScriptExpressionReference(element: CaosScriptLiteral) : PsiPolyVariantReferenceBase<CaosScriptLiteral>(element, TextRange.create(0, element.textLength)) {
 
     private val text by lazy { myElement.text }
 

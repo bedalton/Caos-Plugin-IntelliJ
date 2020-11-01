@@ -18,7 +18,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
 
-fun CaosScriptExpression.getValuesListValue(): CaosDefValuesListValueStruct? {
+fun CaosScriptLiteral.getValuesListValue(): CaosDefValuesListValueStruct? {
     // Lists values can only be for expressions of string or int
     if (!(isString || isInt)) {
         return null
@@ -33,7 +33,7 @@ fun CaosScriptExpression.getValuesListValue(): CaosDefValuesListValueStruct? {
     return null
 }
 
-private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression): CaosDefValuesListValueStruct? {
+private fun getEqualityExpressionValuesListValue(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptLiteral): CaosDefValuesListValueStruct? {
     val value = expression.intValue?.let { "$it" }
             ?: expression.stringValue
             ?: return null
@@ -131,7 +131,7 @@ internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosDefCommandD
     }
 }
 
-fun CaosScriptExpression.getCommand(): CaosDefCommandDefElement? {
+fun CaosScriptLiteral.getCommand(): CaosDefCommandDefElement? {
     // Lists values can only be for expressions of string or int
     if (!(isString || isInt)) {
         return null
@@ -146,7 +146,7 @@ fun CaosScriptExpression.getCommand(): CaosDefCommandDefElement? {
     return null
 }
 
-private fun getCommand(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptExpression): CaosDefCommandDefElement? {
+private fun getCommand(equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptLiteral): CaosDefCommandDefElement? {
     val other = equalityExpression.expressionList.let {
         when (it.size) {
             0, 1 -> return null

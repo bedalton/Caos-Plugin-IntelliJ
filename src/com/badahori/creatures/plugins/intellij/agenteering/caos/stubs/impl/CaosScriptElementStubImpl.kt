@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpression
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
@@ -122,7 +122,7 @@ data class CaosScriptExpressionStubImpl(
         val parent:StubElement<*>?,
         override val enclosingScope: CaosScope?,
         override val caosVar: CaosVar
-) : StubBase<CaosScriptExpressionImpl>(parent, CaosScriptStubTypes.EXPRESSION), CaosScriptExpressionStub
+) : StubBase<CaosScriptLiteralImpl>(parent, CaosScriptStubTypes.EXPRESSION), CaosScriptExpressionStub
 
 
 data class CaosScriptExpectsTokenStubImpl(
