@@ -16,8 +16,6 @@
       <entry name="?*.dll" />
       <entry name="?*.exe" />
     </wildcardResourcePatterns>
-    <bytecodeTargetLevel target="8">
-      <module name="CaosPlugin" target="8" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8" />
   </component>
 </project>
