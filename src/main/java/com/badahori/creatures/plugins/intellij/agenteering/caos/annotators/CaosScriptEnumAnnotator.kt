@@ -26,7 +26,7 @@ class CaosScriptEnumAnnotator : Annotator {
     }
 
     /**
-     * Annotates [NEXT] if used in ESCN...NSCN
+     * Annotates NEXT if used in ESCN...NSCN
      * ENUM..NSCN is allowed in grammar in case it is accidentally used by user
      * this annotation marks it as invalid as it should be
      */

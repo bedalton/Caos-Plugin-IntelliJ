@@ -2,16 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobVirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValueKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variants
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -56,6 +51,11 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
     private fun executeActual(element: PsiElement, processor: Processor<in PsiReference>): Boolean {
         val project = element.project
         if (element !is CaosDefCompositeElement) {
+            (element as? CaosScriptIsCommandToken)?.let {
+                val variant = element.variant
+                        ?: return false
+                return checkCaosCommandReferences(variant, project, element, processor)
+            }
             return true
         }
 
@@ -92,6 +92,13 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
                 } + getCobCaosScriptFiles(project)
     }
 
+    private fun getCaosDefFiles(project: Project): List<CaosDefFile> {
+        return (FilenameIndex.getAllFilesByExt(project, "caosdef") + CaosVirtualFileCollector.collectFilesWithExtension("caosdef"))
+                .mapNotNull {
+                    it.getPsiFile(project) as? CaosDefFile
+                }
+    }
+
     private fun getCobCaosScriptFiles(project: Project): List<CaosScriptFile> {
         return getCobVirtualFiles(project).filter {
             it.extension == "cos"
@@ -119,6 +126,25 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
                             return@map emptyList<PsiReference>()
                         PsiTreeUtil.collectElementsOfType(file, CaosScriptVarToken::class.java)
                                 .filter { it.varGroup == varGroup }
+                                .mapNotNull { it.reference }
+                    }
+                    .all {
+                        processor.process(it)
+                    }
+        }
+    }
+    /**
+     * Checks for var references throughout all
+     */
+    private fun checkCaosCommandReferences(variant: CaosVariant, project: Project, tokenIn:CaosScriptIsCommandToken, processor: Processor<in PsiReference>): Boolean {
+        val token =tokenIn.commandString.toUpperCase().replace("\\s+".toRegex(), " ")
+        return ApplicationManager.getApplication().runReadAction<Boolean> {
+            getCaosDefFiles(project)
+                    .flatMap map@{ file ->
+                        if (variant !in file.variants)
+                            return@map emptyList<PsiReference>()
+                        PsiTreeUtil.collectElementsOfType(file, CaosDefCommandDefElement::class.java)
+                                .filter { command -> token == command.commandName }
                                 .mapNotNull { it.reference }
                     }
                     .all {
@@ -165,7 +191,7 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
                     .flatMap map@{ file ->
                         if (file.variant !in variants)
                             return@map emptyList<PsiReference>()
-                        PsiTreeUtil.collectElementsOfType(file, CaosScriptLiteral::class.java)
+                        PsiTreeUtil.collectElementsOfType(file, CaosScriptRvalue::class.java)
                                 .filter { expression -> reference.isReferenceTo(expression) }
                                 .mapNotNull {
                                     it.reference

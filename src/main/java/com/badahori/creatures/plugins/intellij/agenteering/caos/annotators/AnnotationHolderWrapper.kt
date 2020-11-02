@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
@@ -51,7 +53,7 @@ class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
 
     fun colorize(range: PsiElement, textAttributes: TextAttributesKey) {
         annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
-                .setEnforcedTextAttributes(TextAttributes.ERASE_MARKER);
+                .enforcedTextAttributes = TextAttributes.ERASE_MARKER
         val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
         annotation.textAttributes = textAttributes
         annotation.enforcedTextAttributes = textAttributes.defaultAttributes
@@ -137,12 +139,12 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
 
     @Contract(pure = true)
     fun newFix(intentionAction: IntentionAction): FixBuilder {
-        return FixBuilder.Companion._createFixBuilder(this, FixBuilderData(intentionAction = intentionAction, universal = intentionAction is LocalQuickFix))
+        return FixBuilder._createFixBuilder(this, FixBuilderData(intentionAction = intentionAction, universal = intentionAction is LocalQuickFix))
     }
 
     @Contract(pure = true)
     fun newLocalQuickFix(quickFix: LocalQuickFix, problemDescriptor: ProblemDescriptor): FixBuilder {
-        return FixBuilder.Companion._createFixBuilder(this, FixBuilderData(quickFix = quickFix, problemDescriptor = problemDescriptor))
+        return FixBuilder._createFixBuilder(this, FixBuilderData(quickFix = quickFix, problemDescriptor = problemDescriptor))
     }
 
     @Contract(pure = true)

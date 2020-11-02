@@ -2,9 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprSpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*

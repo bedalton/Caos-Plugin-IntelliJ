@@ -19,7 +19,6 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
@@ -34,7 +33,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (element.isOrHasParentOfType(CaosDefCompositeElement::class.java))
             return
         if (!element.isPhysical)
-            return;
+            return
         val annotationWrapper = AnnotationHolderWrapper(holder)
         val variant = (element.containingFile as? CaosScriptFile)?.variant
                 ?: return
@@ -52,7 +51,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
-            is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper)
+            //is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper) // Comments are striped out automatically
             is CaosScriptCharacter -> {
                 if (element.charChar?.textLength.orElse(0) > 1 && element.charChar?.text != "\\\\") {
                     simpleError(element.charChar?:element, "Char value can be only one character", annotationWrapper)
@@ -74,7 +73,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             }
             is CaosScriptIncomplete -> {
                 if (element.hasParentOfType(CaosScriptSubroutineName::class.java)) {
-                    return;
+                    return
                 }
                 simpleError(element, "invalid element", annotationWrapper)
             }
@@ -112,7 +111,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
      * Annotates a number if it is a float used outside of C2+
      */
     private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant != CaosVariant.C1 || element.decimal == null)
+        if (variant != CaosVariant.C1 || element.float == null)
             return
         val floatValue = element.text.toFloat()
         var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.float-value-not-allowed-in-variant"))
@@ -132,8 +131,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateToken(element: CaosScriptToken, annotationWrapper: AnnotationHolderWrapper) {
-        val parentExpectation = element.getParentOfType(CaosScriptExpectsValueOfType::class.java)
-        if (parentExpectation != null && parentExpectation is CaosScriptExpectsToken)
+        if (element.hasParentOfType(CaosScriptTokenRvalue::class.java))
             return
         annotationWrapper.newErrorAnnotation("Unexpected token")
                 .range(element)
@@ -155,7 +153,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
                         .range(element)
                         .create()
-            } else if (element.getParentOfType(CaosScriptExpectsValueOfType::class.java)?.parent is CaosScriptCAssignment) {
+            } else if (element.getParentOfType(CaosScriptArgument::class.java)?.parent is CaosScriptCAssignment) {
                 wrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.variable-string-assignments-not-allowed", variant))
                         .range(element)
                         .create()
@@ -226,7 +224,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         // Is a single space, and not followed by terminating comma or newline
         if (text.length == 1 && !(COMMA_NEW_LINE_REGEX.matches(nextText) || previousIsCommaOrSpace))
             return
-        // Psi element is empty, denoting a missing space, possible after quote or bytestring or number
+        // Psi element is empty, denoting a missing space, possible after quote or byte-string or number
         if (text.isEmpty() && variant.isOld) {
             val next = element.next
                     ?: return
@@ -238,7 +236,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             return
         }
         // Did check for trailing comma, but this is assumed to be removed before injection
-        // I think bobcob does this and Cyberlife CAOS tool strips this as well.
+        // I think BoBCoB does this and CyberLife CAOS tool strips this as well.
         if (nextText.startsWith("\n") || element.node.isDirectlyPrecededByNewline()) {// && variant != CaosVariant.C1) {
             return
         }
@@ -260,13 +258,16 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateComment(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
-        // Skip comment error for now, as C2 CAOS tool strips comments anyways, so we should too?
+        /*
+         //Skip comment error for now, as C2 CAOS tool strips comments anyways, so we should too?
+
         if (true || variant != CaosVariant.C1)
             return
 
         annotationWrapper.newErrorAnnotation("Comments are not allowed in [C1] variant")
                 .range(element)
                 .create()
+         */
     }
 
     private fun annotateNewEqualityOps(variant: CaosVariant, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
@@ -415,14 +416,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
 
     companion object {
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
-
-        private val COMMA_SPACED = "(\\s+,\\s*)||(\\s*,\\s+)".toRegex()
-        private val TRAILING_SPACE_REGEX = "[ ]+[,]?\n".toRegex()
-        private val WHITE_SPACE = "[ ]+".toRegex()
         private val COMMA_NEW_LINE_REGEX = "([,]|\\s)+".toRegex()
 
         internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
-            if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
+            if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {
                 annotationWrapper.colorize(element, CaosScriptSyntaxHighlighter.TOKEN)
                 return
             }
@@ -486,7 +483,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                     .range(element)
             if (variant.isOld && commands.any { it.isLvalue && it.isVariant(variant) }) {
                 builder = builder
-                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before ${commandToUpperCase}", "SETV".matchCase(element.commandString), element))
+                        .withFix(CaosScriptInsertBeforeFix("Insert SETV before $commandToUpperCase", "SETV".matchCase(element.commandString), element))
             }
             builder.create()
         }

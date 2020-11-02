@@ -48,11 +48,8 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                 addExpandCollapseLinesActions(o, holder)
             }
 
-            override fun visitExpectsValue(o: CaosScriptExpectsValue) {
-                annotateExpectsValue(o, holder)
-            }
-
-            override fun visitExpectsInt(o: CaosScriptExpectsInt) {
+            override fun visitRvalue(o: CaosScriptRvalue) {
+                super.visitRvalue(o)
                 annotateExpectsValue(o, holder)
             }
 
@@ -63,7 +60,7 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
     }
 
 
-    private fun annotateExpectsValue(argument:CaosScriptExpectsValueOfType, holder: ProblemsHolder) {
+    private fun annotateExpectsValue(argument:CaosScriptRvalue, holder: ProblemsHolder) {
         val index = argument.index
         val command = argument.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return
@@ -124,7 +121,7 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
         val project = assignment.project
         for (addTo in assignment.arguments) {
             if (addTo is CaosScriptLvalue || (addTo as? CaosScriptRvalue)?.varToken != null)
-                continue;
+                continue
             val currentValue= addTo.text.toIntSafe() ?: 0
             val valuesList = CaosDefCommandElementsByNameIndex
                     .Instance[commandString, project]

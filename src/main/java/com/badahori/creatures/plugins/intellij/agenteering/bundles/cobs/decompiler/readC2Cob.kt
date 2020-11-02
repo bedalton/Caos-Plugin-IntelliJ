@@ -6,8 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.openapi.vfs.VfsUtil
-import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
 

@@ -49,15 +49,13 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         // Add equality expression completions for known types
-        (element.getSelfOrParentOfType(CaosScriptLiteral::class.java))?.let { expression ->
+        (element.getSelfOrParentOfType(CaosScriptRvalue::class.java))?.let { expression ->
             // If has parent RValue, should continue with normal completion
             // Else use special EQ expression completion
-            if (!element.hasParentOfType(CaosScriptRvalue::class.java)) {
-                expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let { equalityExpression ->
-                    CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
-                    addCommandCompletions(resultSet, variant, CaosCommandType.RVALUE, element)
-                    resultSet.stopHere()
-                }
+            expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let { equalityExpression ->
+                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
+                addCommandCompletions(resultSet, variant, CaosCommandType.RVALUE, element)
+                resultSet.stopHere()
             }
         }
 
@@ -115,29 +113,25 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val type = parent.getEnclosingCommandType()
         // If has parent of value, add values list completion if needed
         // ie. Chemicals by name, or file names
-        (element.getSelfOrParentOfType(CaosScriptExpectsValueOfType::class.java))?.let {
+        (element.getSelfOrParentOfType(CaosScriptArgument::class.java))?.let {
             CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
         }
 
         // If token is expected, return
         // Token completions will have been added with CaosScriptValuesListValuesCompletionProvider#addParameterTypeDefValueCompletions,
         // called in the command previously
-        if (element.hasParentOfType(CaosScriptExpectsToken::class.java)) {
+        if (element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {
             resultSet.stopHere()
             return
         }
 
-        // Add command name completions
-        if (type == CaosCommandType.RVALUE) {
-
-        }
         addCommandCompletions(resultSet, variant, type, element)
         // If type is Lvalue or Rvalue, add variable name completions
         if (type != CaosCommandType.COMMAND)
             addVariableCompletions(variant, element, resultSet)
     }
 
-    private fun addCommandCompletions(resultSet: CompletionResultSet, variant: CaosVariant, type:CaosCommandType, element: PsiElement) {
+    private fun addCommandCompletions(resultSet: CompletionResultSet, variant: CaosVariant, type: CaosCommandType, element: PsiElement) {
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
         val singleCommands = CaosDefCommandElementsByNameIndex.Instance.getAll(element.project)
@@ -291,7 +285,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
 }
 
-private val ideaRulezzTrimFromEndLength = CompletionUtilCore.DUMMY_IDENTIFIER.length - 1
+@Suppress("SpellCheckingInspection")
+private const val ideaRulezzTrimFromEndLength = CompletionUtilCore.DUMMY_IDENTIFIER.length - 1
 
 /**
  * Gets element text minus the weird IntelliJ completion string appended to the end
