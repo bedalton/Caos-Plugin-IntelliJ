@@ -1,9 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptPrefixKwUrge
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
@@ -73,7 +71,7 @@ class CaosScriptTokenSets {
         @JvmStatic
         val NUMBER_LITERALS = create(
                 CaosScript_INT,
-                CaosScript_DECIMAL,
+                CaosScript_FLOAT,
                 CaosScript_PLUS,
                 CaosScript_BINARY
         )
@@ -99,7 +97,7 @@ class CaosScriptTokenSets {
         )
 
         val LITERALS: TokenSet = create(
-                CaosScript_DECIMAL,
+                CaosScript_FLOAT,
                 CaosScript_NUMBER,
                 CaosScript_QUOTE_STRING_LITERAL,
                 CaosScript_C_1_STRING,

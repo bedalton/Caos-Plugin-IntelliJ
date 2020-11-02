@@ -36,7 +36,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
             element.isOrHasParentOfType(CaosScriptNamedConstant::class.java) -> "const ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
-            element.elementType == CaosScriptTypes.CaosScript_DECIMAL -> "number ${element.text}"
+            element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "number ${element.text}"
             else -> {
                 element.getSelfOrParentOfType(CaosScriptIsCommandToken::class.java)?.let {
                     CaosScriptPresentationUtil.getDescriptiveText(it)
@@ -56,7 +56,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
                 in CaosScriptTokenSets.ALL_COMMANDS -> "Command"
                 CaosScriptTypes.CaosScript_INT -> "Integer"
                 CaosScriptTypes.CaosScript_FLOAT -> "Float"
-                CaosScriptTypes.CaosScript_DECIMAL -> "Number"
+                CaosScriptTypes.CaosScript_FLOAT -> "Number"
                 CaosScriptTypes.CaosScript_VA_XX -> "SCRP variable"
                 CaosScriptTypes.CaosScript_VAR_X -> "SCRP variable"
                 CaosScriptTypes.CaosScript_OV_XX -> "TARG variable"
