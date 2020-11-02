@@ -3,17 +3,18 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefCommandDefinitionStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
@@ -22,6 +23,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
@@ -91,7 +93,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandString(namedGameVar: CaosScriptNamedGameVar): String {
-        return namedGameVar.stub?.type?.token ?: namedGameVar.namedGameVarKw.commandString ?: UNDEF
+        return namedGameVar.stub?.type?.token ?: namedGameVar.namedGameVarKw.commandString
     }
 
     @JvmStatic
@@ -190,9 +192,45 @@ object CaosScriptPsiImplUtil {
         return element.cLoop.text
     }
 
-    @JvmStatic
-    fun getCommandDefinition(element:CaosScriptCommandElement) : CaosDefCommandDefinitionStub {
+    private val COMMAND_DEFINITION_KEY = Key<CaosCommand>("com.badahori.creatures.plugins.intellij.agenteering.caos.COMMAND_DEFINITION")
 
+    @JvmStatic
+    fun getCommandDefinition(element:CaosScriptCommandElement) : CaosCommand? {
+        element.getUserData(COMMAND_DEFINITION_KEY)?.let {
+            return it
+        }
+        val variant = element.variant
+                ?: return null
+        val token = element.commandString
+        val commandType = element.getEnclosingCommandType()
+        val command =  getCommandDefinition(variant, commandType, token)
+        if (command != null)
+            element.putUserData(COMMAND_DEFINITION_KEY, command)
+        return command
+    }
+
+    @JvmStatic
+    fun getCommandDefinition(element:CaosScriptIsCommandToken) : CaosCommand? {
+        element.getUserData(COMMAND_DEFINITION_KEY)?.let {
+            return it
+        }
+        val variant = element.variant
+                ?: return null
+        val commandType = element.getEnclosingCommandType()
+        val command = getCommandDefinition(variant, commandType, element.text)
+        if (command != null)
+            element.putUserData(COMMAND_DEFINITION_KEY, command)
+        return command
+    }
+
+    private fun getCommandDefinition(
+            variant:CaosVariant,
+            commandType:CaosCommandType,
+            tokenIn:String
+    ) : CaosCommand? {
+        val lib = CaosLibs[variant]
+        val token = tokenIn.replace(spacesRegex, " ")
+        return lib[commandType][token]
     }
 
     @JvmStatic
@@ -462,7 +500,7 @@ object CaosScriptPsiImplUtil {
         }
 
         rvalue.number?.let { number ->
-            number.decimal?.let {
+            number.float?.let {
                 return CaosVar.CaosLiteral.CaosFloat(it.text.toFloat())
             }
             number.int?.let {
@@ -1129,7 +1167,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun isNumeric(expression: CaosScriptRvalue): Boolean {
         return expression.number?.let {
-            it.int != null || it.decimal != null
+            it.int != null || it.float != null
         } ?: return false
     }
 
@@ -1140,7 +1178,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isFloat(expression: CaosScriptRvalue): Boolean {
-        return expression.number?.decimal != null
+        return expression.number?.float != null
     }
 
     @JvmStatic
@@ -1151,7 +1189,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getFloatValue(expression: CaosScriptRvalue): Float? {
         return expression.number?.let {
-            (it.int ?: it.decimal)?.text?.toFloat()
+            (it.int ?: it.float)?.text?.toFloat()
         }
     }
 
@@ -1490,7 +1528,7 @@ fun <PsiT : PsiElement> PsiElement.getChildOfType(parentClass: Class<PsiT>): Psi
 }
 
 fun <PsiT : PsiElement> PsiElement.getChildrenOfType(parentClass: Class<PsiT>): List<PsiT> {
-    return PsiTreeUtil.getChildrenOfType(this, parentClass)?.toList().orEmpty()
+    return PsiTreeUtil.getChildrenOfType(this, parentClass)?.filterNotNull().orEmpty()
 }
 
 fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass: Class<PsiT>): Boolean {
@@ -1499,6 +1537,7 @@ fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass: Class<PsiT>)
     return PsiTreeUtil.getParentOfType(this, parentClass) != null
 }
 
+val spacesRegex = "\\s+".toRegex()
 
 val PsiElement.case: Case
     get() {

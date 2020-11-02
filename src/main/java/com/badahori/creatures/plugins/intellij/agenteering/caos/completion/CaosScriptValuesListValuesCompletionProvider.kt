@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Va
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
@@ -32,7 +33,7 @@ object CaosScriptValuesListValuesCompletionProvider {
     /**
      * Adds completions for a known value list, based on argument position and parent command
      */
-    fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptExpectsValueOfType) {
+    fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptArgument) {
         val containingCommand = valueOfType.getSelfOrParentOfType(CaosScriptCommandElement::class.java)
                 ?: return
 
@@ -41,62 +42,55 @@ object CaosScriptValuesListValuesCompletionProvider {
         val index = valueOfType.index
         // Get parent command entry in CaosDef
         val reference = containingCommand
-                .commandToken
-                ?.reference
-                ?.multiResolve(true)
-                ?.firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+                .commandDefinition
                 ?: return
 
-        val parameterStructs = reference
-                .docComment
-                ?.parameterStructs
+
+        val parameters = reference
+                .parameters
+        val numParameters = parameters.size
         // Get arguments parameter definition
-        val parameterStruct = parameterStructs
-                ?.getOrNull(index)
+        val parameterStruct = parameters.getOrNull(index)
                 ?: return
+
         if (valueOfType.parent is CaosScriptGenus || (index != 0 && parameterStruct.name.equalsIgnoreCase("genus"))) {
             if (startsWithNumber.matches(valueOfType.text))
                 return
             val family = valueOfType.getPreviousNonEmptySibling(false)?.text?.toIntSafe()
                     ?: return
-            addGenusCompletions(resultSet, variant, valueOfType.project, family, parameterStructs.size > index + 1)
+            addGenusCompletions(resultSet, variant, valueOfType.project, family, numParameters > index + 1)
             return
         } else if (valueOfType.parent is CaosScriptFamily || (valueOfType.parent !is CaosScriptFamily && parameterStruct.name.equalsIgnoreCase("family"))) {
-            val next = parameterStructs.getOrNull(index + 1)
+            val next = parameters.getOrNull(index + 1)
                     ?: return
             if (next.name.equalsIgnoreCase("genus"))
-                addGenusCompletions(resultSet, variant, valueOfType.project, null, parameterStructs.size > index + 1)
+                addGenusCompletions(resultSet, variant, valueOfType.project, null, numParameters > index + 1)
             return
         }
         // Get the expected type of this argument
-        val type =
+        val valuesListId =
                 if (containingCommand is CaosScriptCAssignment) {
-                    containingCommand.lvalue
-                            ?.commandToken
-                            ?.reference
-                            ?.multiResolve(true)
-                            ?.firstOrNull()
-                            ?.element
-                            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                            ?.returnTypeStruct
-                            ?.type
+                    containingCommand.lvalue?.getChildOfType(CaosScriptCommandElement::class.java)
+                            ?.commandDefinition
+                            ?.returnValuesList
                 } else {
-                    parameterStruct.type
+                    parameterStruct.argumentList
                 }
-                        ?: return
-
-        val addSpace = reference.parameterStructs.size - 1 > index
+        val valuesList = valuesListId?.let {
+            CaosLibs.valuesList[it]
+        }
+                ?: return
+        val addSpace = numParameters - 1 > index
         // If type definition contains values list annotation, add list values
-        if (type.valuesList != null) {
-            addListValues(resultSet, variant, type.valuesList, valueOfType.project, valueOfType.text, addSpace)
-        } else if (!type.fileTypes.isNullOrEmpty()) {
+        if (valuesList.superType.equalsIgnoreCase("File")) {
+            addListValues(resultSet, variant, valuesList, valueOfType.project, valueOfType.text, addSpace)
+        } else {
             // RValue requires a file type, so fill in filenames with matching types
             val project = valueOfType.project
+            val types = valuesList.name.substring(5).split("/")
             // Get all files of for filetype list
             // List is necessary for CV-DS, as they can take C16 or S16
-            val allFiles = type.fileTypes
+            val allFiles = types
                     .flatMap { fileExtensionTemp ->
                         val fileExtension = fileExtensionTemp.toLowerCase()
                         val searchScope =
@@ -107,7 +101,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .map { it.nameWithoutExtension }
             // Loop through all files and format them as needed.
             for (file in allFiles) {
-                val isToken = parameterStruct.type.type.toLowerCase() == "token"
+                val isToken = parameterStruct.type == CaosExpressionValueType.TOKEN
                 val text = when {
                     isToken -> file
                     variant.isOld -> "[$file"

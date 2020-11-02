@@ -2,10 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile

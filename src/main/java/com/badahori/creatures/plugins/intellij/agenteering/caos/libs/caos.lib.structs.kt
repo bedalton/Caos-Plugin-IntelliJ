@@ -1,9 +1,60 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.data
+package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
+import kotlinx.serialization.Serializable
 
-private val MULTI_SPACE_REGEX = "\\s+".toRegex();
+private val MULTI_SPACE_REGEX = "\\s+".toRegex()
+
+/**
+ * Holds information on the variant in a Lib file
+ */
+@Serializable
+data class CaosVariantData(
+        val name:String,
+        val code:String,
+        val vars:CaosVarConstraints,
+        val commands:Map<String, Int>,
+        val lvalues:Map<String, Int>,
+        val rvalues:Map<String, Int>
+) {
+    val isOld:Boolean by lazy {
+        code in listOf("C1", "C2")
+    }
+    val isNew:Boolean by lazy {
+        code !in listOf("C1", "C2")
+    }
+}
+
+/**
+ * Holds the max values of a variable type
+ */
+@Serializable
+data class CaosVarConstraints(
+        /** Max variable index for VARx variables */
+        val VARx:Int?,
+        /** Max variable index for VAxx variables */
+        val VAxx:Int?,
+        /** Max variable index for OBVx variables */
+        val OBVx:Int?,
+        /** Max variable index for OVxx variables */
+        val OVxx:Int?,
+        /** Max variable index for MVxx variables */
+        val MVxx:Int?
+) : HasGetter<CaosScriptVarTokenGroup, Int?> {
+
+    // Gets the max value by variable type
+    override fun get(key: CaosScriptVarTokenGroup): Int? {
+        return when (key) {
+            CaosScriptVarTokenGroup.VARx -> VARx
+            CaosScriptVarTokenGroup.VAxx -> VAxx
+            CaosScriptVarTokenGroup.OBVx -> OBVx
+            CaosScriptVarTokenGroup.OVxx -> OVxx
+            CaosScriptVarTokenGroup.MVxx -> MVxx
+            CaosScriptVarTokenGroup.UNKNOWN -> null
+        }
+    }
+}
 
 /**
  * The base lib object struct
@@ -13,7 +64,8 @@ data class CaosLibDefinitions (
         val rvalues:Map<String, CaosCommand>,
         val lvalues:Map<String, CaosCommand>,
         val commands:Map<String, CaosCommand>,
-        val variantMap:Map<String, CaosVariant>
+        val variantMap:Map<String, CaosVariantData>,
+        val valuesLists:Map<String, CaosValuesList>
 )
 
 
@@ -87,6 +139,7 @@ data class CaosValuesList(
         val values:List<CaosValuesListValue>,
         val description:String?,
         val superType:String?
+
 )
 
 /**

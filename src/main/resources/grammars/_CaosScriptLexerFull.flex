@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lexer;
 
 import com.intellij.psi.tree.IElementType;
 
-import com.intellij.lexer.FlexLexer;
 import java.util.List;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
@@ -53,7 +52,7 @@ OBVx=[Oo][Bb][Vv][0-9]
 OVxx=[Oo][Vv][0-9][0-9]
 MVxx=[Mm][Vv][0-9][0-9]
 COMMENT_TEXT=[^ \n]+
-DECIMAL=[-]?[0-9]*\.[0-9]+
+FLOAT=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
 ID=[_a-zA-Z][_a-zA-Z0-9]*
@@ -126,7 +125,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 <IN_CONST> {
 	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
 	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
-    {DECIMAL}				{ return CaosScript_FLOAT; }
+    {FLOAT}					{ return CaosScript_FLOAT; }
 	{INT}				 	{ return CaosScript_INT; }
 	" "+				 	{ return WHITE_SPACE; }
 	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
@@ -188,7 +187,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	{VARx}				 	{ return CaosScript_VAR_X; }
 	{VAxx}				 	{ return CaosScript_VA_XX; }
  	[%][01]+				{ return CaosScript_BINARY; }
-	{DECIMAL}              	{ return CaosScript_DECIMAL; }
+	{FLOAT}              	{ return CaosScript_FLOAT; }
 	{INT}                  	{ return CaosScript_INT; }
 	[Nn][Ee][Ww][:]        	{ return CaosScript_K_NEW_COL; }
 	[Ss][Cc][Ee][Nn]       	{ return CaosScript_K_SCEN; }

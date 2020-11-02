@@ -255,7 +255,7 @@
 		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
 		N_VAR = "regexp:[$][a-zA-Z_0-9]+"
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
-		DECIMAL = "regexp:[0-9]+\.[0-9]+"
+		FLOAT = "regexp:[0-9]+\.[0-9]+"
 		INT = "regexp:[0-9]+"
 		TEXT_LITERAL = 'regexp:\[[^]]*]';
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
@@ -1929,7 +1929,7 @@ var_token
 
 number
 	::= INT
-	|	DECIMAL
+	|	FLOAT
 	|	binary_literal
 	|	character
 	{
@@ -2437,6 +2437,7 @@ lvalue
 	|	l_r_r_r_r
 	|	var_token
 	|	incomplete
+	|	error_lvalue
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptLValueStub"
@@ -2462,6 +2463,14 @@ lvalue
 			getCommandDefinition
 		]
 	}
+	;
+
+error_lvalue
+	::= string_literal
+	|	byte_string
+	|	animation_string
+	|	number
+	|	pict_dimension_literal
 	;
 
 private l_none
