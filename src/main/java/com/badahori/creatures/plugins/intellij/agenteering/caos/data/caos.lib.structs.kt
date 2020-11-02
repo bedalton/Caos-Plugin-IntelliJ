@@ -8,7 +8,7 @@ private val MULTI_SPACE_REGEX = "\\s+".toRegex();
 /**
  * The base lib object struct
  */
-@Seriali
+@Serializable
 data class CaosLibDefinitions (
         val rvalues:Map<String, CaosCommand>,
         val lvalues:Map<String, CaosCommand>,
@@ -20,6 +20,7 @@ data class CaosLibDefinitions (
 /**
  * Represents a single command in the CAOS language
  */
+@Serializable
 data class CaosCommand(
         val id:Int,
         val command:String,
@@ -42,6 +43,7 @@ data class CaosCommand(
 /**
  * Represents a a parameter to a CAOS command
  */
+@Serializable
 data class CaosParameter(
         val index:Int,
         val name:String,
