@@ -2,28 +2,30 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import kotlinx.serialization.Serializable
-
-private val MULTI_SPACE_REGEX = "\\s+".toRegex()
 
 /**
  * Holds information on the variant in a Lib file
  */
 @Serializable
 data class CaosVariantData(
-        val name:String,
-        val code:String,
-        val vars:CaosVarConstraints,
-        val commands:Map<String, Int>,
-        val lvalues:Map<String, Int>,
-        val rvalues:Map<String, Int>
+        val name: String,
+        val code: String,
+        val vars: CaosVarConstraints,
+        val commands: Map<String, Int>,
+        val lvalues: Map<String, Int>,
+        val rvalues: Map<String, Int>,
+        val valuesListIds:List<Int> = listOf()
 ) {
-    val isOld:Boolean by lazy {
+    val isOld: Boolean by lazy {
         code in listOf("C1", "C2")
     }
-    val isNew:Boolean by lazy {
+    val isNew: Boolean by lazy {
         code !in listOf("C1", "C2")
     }
+    val valuesLists:List<CaosValuesList> get() = CaosLibs.valuesLists
+
 }
 
 /**
@@ -32,15 +34,15 @@ data class CaosVariantData(
 @Serializable
 data class CaosVarConstraints(
         /** Max variable index for VARx variables */
-        val VARx:Int?,
+        val VARx: Int?,
         /** Max variable index for VAxx variables */
-        val VAxx:Int?,
+        val VAxx: Int?,
         /** Max variable index for OBVx variables */
-        val OBVx:Int?,
+        val OBVx: Int?,
         /** Max variable index for OVxx variables */
-        val OVxx:Int?,
+        val OVxx: Int?,
         /** Max variable index for MVxx variables */
-        val MVxx:Int?
+        val MVxx: Int?
 ) : HasGetter<CaosScriptVarTokenGroup, Int?> {
 
     // Gets the max value by variable type
@@ -60,12 +62,12 @@ data class CaosVarConstraints(
  * The base lib object struct
  */
 @Serializable
-data class CaosLibDefinitions (
-        val rvalues:Map<String, CaosCommand>,
-        val lvalues:Map<String, CaosCommand>,
-        val commands:Map<String, CaosCommand>,
-        val variantMap:Map<String, CaosVariantData>,
-        val valuesLists:Map<String, CaosValuesList>
+data class CaosLibDefinitions(
+        val rvalues: Map<String, CaosCommand>,
+        val lvalues: Map<String, CaosCommand>,
+        val commands: Map<String, CaosCommand>,
+        val variantMap: Map<String, CaosVariantData>,
+        val valuesLists: Map<String, CaosValuesList>
 )
 
 
@@ -74,21 +76,27 @@ data class CaosLibDefinitions (
  */
 @Serializable
 data class CaosCommand(
-        val id:Int,
-        val command:String,
-        val parameters:List<CaosParameter>,
-        val returnTypeId:Int,
+        val id: Int,
+        val command: String,
+        val parameters: List<CaosParameter>,
+        val returnTypeId: Int,
         val description: String?,
-        val returnValuesList:Int?,
-        val variants:List<String>
+        val returnValuesListIds: Map<String, Int>? = null,
+        val variants: List<String>
 ) {
 
     val returnType: CaosExpressionValueType by lazy {
         CaosExpressionValueType.fromIntValue(returnTypeId)
     }
 
-    val commandCheckRegex:Regex by lazy {
-        "^(${command.replace(MULTI_SPACE_REGEX, "\\s+")}).*".toRegex()
+    val returnValuesList: HasGetter<String, CaosValuesList?> by lazy {
+        object : HasGetter<String, CaosValuesList?> {
+            override operator fun get(key: String): CaosValuesList? {
+                val valuesListId = returnValuesListIds?.get(key)
+                        ?: return null
+                return CaosLibs.valuesList[valuesListId]
+            }
+        }
     }
 }
 
@@ -97,27 +105,27 @@ data class CaosCommand(
  */
 @Serializable
 data class CaosParameter(
-        val index:Int,
-        val name:String,
-        val typeId:Int,
-        val argumentList:Int? = null,
-        val description:String? = null,
-        val min:Int? = null,
-        val max:Int? = null
+        val index: Int,
+        val name: String,
+        val typeId: Int,
+        val valuesListIds: Map<String, Int>? = null,
+        val description: String? = null,
+        val min: Int? = null,
+        val max: Int? = null
 ) {
 
     constructor(
-            index:Int,
-            name:String,
-            type:CaosExpressionValueType,
-            argumentList:Int? = null,
-            description:String? = null,
-            min:Int? = null,
-            max:Int? = null) : this(
+            index: Int,
+            name: String,
+            type: CaosExpressionValueType,
+            valuesListIds: Map<String, Int>? = mapOf(),
+            description: String? = null,
+            min: Int? = null,
+            max: Int? = null) : this(
             index = index,
             name = name,
             typeId = type.value,
-            argumentList = argumentList,
+            valuesListIds = valuesListIds,
             description = description,
             min = min,
             max = max
@@ -126,6 +134,23 @@ data class CaosParameter(
     val type: CaosExpressionValueType by lazy {
         CaosExpressionValueType.fromIntValue(typeId)
     }
+
+    val valuesList: HasGetter<String, CaosValuesList?> by lazy {
+        if (valuesListIds.isNullOrEmpty()) {
+            object : HasGetter<String, CaosValuesList?> {
+                override operator fun get(key: String): CaosValuesList? = null
+            }
+        } else {
+            object : HasGetter<String, CaosValuesList?> {
+                override operator fun get(key: String): CaosValuesList? {
+                    val valuesListId = valuesListIds[key]
+                            ?: return null
+                    return CaosLibs.valuesList[valuesListId]
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -135,19 +160,52 @@ data class CaosParameter(
  */
 @Serializable
 data class CaosValuesList(
-        val name:String,
-        val values:List<CaosValuesListValue>,
-        val description:String?,
-        val superType:String?
+        val id:Int,
+        val name: String,
+        val values: List<CaosValuesListValue>,
+        val description: String?,
+        val superType: String?
+) {
 
-)
+    private val negative = values.filter { it.not }
+    private val greaterThan = values.filter { it.greaterThan }
+
+    operator fun get(key: String): CaosValuesListValue? {
+        key.toIntSafe()?.let { intValue ->
+            return get(intValue)
+        }
+        return values.firstOrNull { it.value == key }
+    }
+
+    operator fun get(key: Int): CaosValuesListValue? {
+        return values.firstOrNull { it.intValue == key }
+                ?: negative.firstOrNull { it.intValue != key }
+                ?: greaterThan.firstOrNull { it.intValue!! < key }
+    }
+}
 
 /**
  * Represents a value in a values list
  */
 @Serializable
 data class CaosValuesListValue(
-        val value:String,
-        val name:String,
-        val description:String?
-)
+        val value: String,
+        val name: String,
+        val description: String?
+) {
+    val intValue: Int? by lazy {
+        if (value.startsWith(">") || value.startsWith("!"))
+            value.substring(1).toIntSafe()
+        else
+            value.toIntSafe()
+    }
+
+    val not by lazy {
+        value.startsWith("!")
+    }
+
+    val greaterThan by lazy {
+        intValue != null && value.startsWith(">")
+    }
+
+}

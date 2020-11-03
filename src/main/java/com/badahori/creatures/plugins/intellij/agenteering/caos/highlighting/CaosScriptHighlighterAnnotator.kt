@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.AnnotationHolderWrapper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
@@ -20,7 +21,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
         when {
             element is CaosScriptToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
             element is CaosScriptExpectsToken -> if (element.textLength == 4) colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
-            element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken-> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
+            element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
             element is CaosScriptIsCommandKeywordToken || (element.parent is CaosScriptIsCommandKeywordToken && element.parent.firstChild != element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
             element is CaosScriptAnimationString -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
@@ -56,7 +57,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 .create()
     }
 
-    private fun isAnimationByteString(element: PsiElement) : Boolean {
+    private fun isAnimationByteString(element: PsiElement): Boolean {
         if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsByteString::class.java))
             return false
         val argumentParent = element.getParentOfType(CaosScriptArgument::class.java)
@@ -64,6 +65,10 @@ class CaosScriptHighlighterAnnotator : Annotator {
         val index = argumentParent.index
         val commandParent = element.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return false
+        commandParent.commandDefinition?.let { command ->
+            val parameter = command.parameters.getOrNull(index)
+            return parameter?.type == CaosExpressionValueType.ANIMATION
+        }
         return commandParent
                 .commandToken
                 ?.reference
