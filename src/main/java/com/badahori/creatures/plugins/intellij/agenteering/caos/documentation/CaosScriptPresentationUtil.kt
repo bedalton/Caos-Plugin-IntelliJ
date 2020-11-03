@@ -43,6 +43,5 @@ object CaosScriptPresentationUtil {
         val command = resolved.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return simpleDescription
         return command.fullCommand
-
     }
 }

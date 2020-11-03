@@ -26,7 +26,7 @@ kotlin {
     tasks.withType<KotlinCompile>().all {
         kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs += listOf(
-                "-Xjvm-default=enabled",
+                "-Xjvm-default=enable",
                 "-Xopt-in=kotlin.RequiresOptIn",
                 "-Xopt-in=kotlin.OptIn",
                 "-Xopt-in=kotlin.ExperimentalMultiplatform",

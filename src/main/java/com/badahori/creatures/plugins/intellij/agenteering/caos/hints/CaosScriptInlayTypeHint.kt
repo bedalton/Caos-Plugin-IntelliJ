@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
@@ -31,16 +32,23 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
     ATTRIBUTE_BITFLAGS_RETURN_VALUE_HINT("Show bit flag for outer expression", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && (element as? CaosScriptLiteral)?.isInt.orFalse() && usesBitFlags(element as CaosScriptLiteral)
+            return option.isEnabled() && (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
         }
 
-        private fun usesBitFlags(element: CaosScriptLiteral): Boolean {
+        private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
+            val variant = element.variant
+                    ?: return false
             val parent = element.parent
             val caosCommandToken = when {
                 parent is CaosScriptComparesEqualityElement -> getCommandTokenFromEquality(parent, element)
                 parent.parent.parent is CaosScriptCommandElement -> getCommandTokenFromCommand(parent.parent.parent as CaosScriptCommandElement, element)
                 else -> null
             } ?: return false
+            val command = (caosCommandToken.parent as? CaosScriptCommandLike)
+                    ?: return false
+            val definition = command.commandDefinition
+                    ?: return false
+            definition.returnValuesList.get(variant.code)
             caosCommandToken.commandString.toUpperCase().let {
                 if (it == "ATTR" || it == "BUMP")
                     return (parent.parent.parent !is CaosScriptCommandCall)
@@ -69,7 +77,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            val expression = element as? CaosScriptLiteral
+            val expression = element as? CaosScriptRvalue
                     ?: return emptyList()
             val attr = expression.intValue
                     ?: return emptyList()
@@ -361,6 +369,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return emptyList()
             val resolved = getCommand(token)
                     ?: return emptyList()
+
             val type = resolved.returnTypeStruct?.type?.type
                     ?: return emptyList()
             val inlayInfo = listOf(InlayInfo("($type)", token.endOffset))
@@ -401,7 +410,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 }
 
 
-private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expression: CaosScriptLiteral): CaosScriptIsCommandToken? {
+private fun getCommandTokenFromCommand(command: CaosScriptCommandElement, expression: CaosScriptRvalue): CaosScriptIsCommandToken? {
     if (command is CaosScriptCAssignment) {
         if (expression.parent.parent is CaosScriptLvalue) {
             return null
