@@ -1,13 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 
 /**
- * Finds the value list to use for the opposing expression in an equality comparison
+ * Finds the value list id to use for the opposing expression in an equality comparison
  */
-fun CaosScriptEqualityExpressionPrime.getValuesList(expression: CaosScriptLiteral) : String? {
-    val other: CaosScriptLiteral = expressionList.let let@{
+fun CaosScriptEqualityExpressionPrime.getValuesList(variant:CaosVariant, expression: CaosScriptRvalue): Int? {
+    val other: CaosScriptRvalue = rvalueList.let let@{
         when {
             it.size < 2 -> null
             it.size > 2 -> {
@@ -18,18 +20,7 @@ fun CaosScriptEqualityExpressionPrime.getValuesList(expression: CaosScriptLitera
             else -> it[0]
         }
     } ?: return null
-    val token = other.rvaluePrime?.getChildOfType(CaosScriptIsCommandToken::class.java)
+    val listIds: Map<String, Int> = other.rvaluePrime?.commandDefinition?.returnValuesListIds
             ?: return null
-    val reference = token
-            .reference
-            .multiResolve(true)
-            .firstOrNull()
-            ?.element
-            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-            ?: return null
-    return reference
-            .docComment
-            ?.returnTypeStruct
-            ?.type
-            ?.valuesList
+    return listIds[variant.code]
 }

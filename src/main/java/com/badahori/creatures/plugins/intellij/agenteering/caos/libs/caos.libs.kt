@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosLibException
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
@@ -164,19 +165,12 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
             it.variants.contains(variantCode)
         }
     }
-/*
-    /**
-     * Values list getter
-     */
-    val valuesList: HasGetter<Int, CaosValuesList?> = CaosValuesListMap(lib.typeLists)
-
 
     /**
      * Values lists getter
      */
     val valuesLists: Collection<CaosValuesList>
-        get() = lib.typeLists.values
-*/
+        get() = CaosLibs.getLists(variant.valuesListIds)
     /**
      * Getter for variable max value type
      */
@@ -229,6 +223,12 @@ object CaosLibs {
         override operator fun get(key:Int) = universalLib.valuesLists["list_$key"]
     }
 
+    fun getLists(ids:List<Int>):List<CaosValuesList> {
+        return universalLib.valuesLists.values.filter { list ->
+            list.id in ids
+        }
+    }
+
     operator fun get(variant:CaosVariant) : CaosLib = get(variant.code)
 
     operator fun get(variantCode: String): CaosLib {
@@ -239,13 +239,6 @@ object CaosLibs {
         return lib
     }
 }
-
-/*
-private class CaosValuesListMap(private val valuesList: Map<String, CaosValuesList>) : HasGetter<Int, CaosValuesList?> {
-    override fun get(key: Int): CaosValuesList? {
-        return valuesList["list_$key"]
-    }
-}*/
 
 interface HasLib {
     var caosLib: CaosLib
