@@ -39,6 +39,7 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val argumentValues: List<CaosVar>
     val commandString:String?
 }
+
 interface CaosScriptTokenRValueStub : StubElement<CaosScriptTokenRvalueImpl> {
     val caosVar:CaosVar
     val argumentValues: List<CaosVar>
@@ -99,9 +100,7 @@ interface CaosScriptEscnStub : StubElement<CaosScriptEnumSceneryStatementImpl>, 
 
 interface CaosScriptEnumNextStub : StubElement<CaosScriptEnumNextStatementImpl>, CaosScriptEnumBlockStub
 
-interface CaosScriptLoopStub : StubElement<CaosScriptLoopStatementImpl>, CaosScriptBlockStub {
-    val loopCondition:CaosLoopCondition?
-}
+interface CaosScriptLoopStub : StubElement<CaosScriptLoopStatementImpl>, CaosScriptBlockStub
 
 interface CaosScriptMacroStub : StubElement<CaosScriptMacroImpl>
 

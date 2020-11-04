@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 
-val NUMBER_REGEX = "[0-9]+".toRegex();
+val NUMBER_REGEX = "[0-9]+".toRegex()
 
 object CaosConstants {
     val VARIANTS = listOf(

@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
-import com.intellij.psi.tree.IElementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes
+import com.intellij.psi.tree.IElementType
 
-public class CaosScriptElementTypeFactory {
+class CaosScriptElementTypeFactory {
 
     companion object {
         @JvmStatic

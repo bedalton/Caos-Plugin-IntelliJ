@@ -15,10 +15,6 @@ data class AgentClass(val family: Int, val genus: Int, val species: Int) {
         return val1 != val2 && val1 != 0 && val2 != 0
     }
 
-    private fun matches(val1:Int, val2:Int) : Boolean {
-        return val1 == val2 || val1 == 0 || val2 == 0
-    }
-
     companion object {
         val POINTER by lazy {
             AgentClass(2, 1, 1)
