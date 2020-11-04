@@ -178,3 +178,11 @@ enum class Case {
     LOWER_CASE,
     CAPITAL_FIRST
 }
+
+infix fun String?.like(other:String?) : Boolean {
+    return this != null && other != null && this.equalsIgnoreCase(other)
+}
+
+infix fun String?.notLike(other:String?) : Boolean {
+    return this == null || other == null || !this.equalsIgnoreCase(other)
+}

@@ -90,6 +90,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
     }
 }
 
+@Suppress("unused")
 private val TextAttributesKey.asErrorAttribute:TextAttributesKey get() {
     val attributes = this.defaultAttributes.clone()
     attributes.effectType = EffectType.WAVE_UNDERSCORE

@@ -38,8 +38,6 @@ class CaosScriptFixQuoteType(element:PsiElement, private val quoteStart:Char, pr
                 quoteStart,
                 quoteEnd
         )
-        newElement.expression?.let {
-            expression.replace(it)
-        }
+        expression.replace(newElement)
     }
 }

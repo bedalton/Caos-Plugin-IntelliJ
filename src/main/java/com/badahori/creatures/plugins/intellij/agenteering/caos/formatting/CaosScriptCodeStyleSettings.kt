@@ -6,5 +6,5 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 
 
 class CaosScriptCodeStyleSettings internal constructor(container: CodeStyleSettings?) : CustomCodeStyleSettings(CaosScriptLanguage.id, container) {
-    var INDENT_BLOCKS = true
+    var indentBlocks = true
 }

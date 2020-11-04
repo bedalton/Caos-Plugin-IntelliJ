@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 
 
 /**
@@ -171,6 +172,12 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
      */
     val valuesLists: Collection<CaosValuesList>
         get() = CaosLibs.getLists(variant.valuesListIds)
+
+    fun valuesList(valuesListId:Int) : CaosValuesList? = CaosLibs.valuesList[valuesListId]
+
+    fun valuesList(valuesListName:String) : CaosValuesList?
+            = valuesLists.firstOrNull { it.name like valuesListName }
+
     /**
      * Getter for variable max value type
      */
@@ -226,6 +233,12 @@ object CaosLibs {
     fun getLists(ids:List<Int>):List<CaosValuesList> {
         return universalLib.valuesLists.values.filter { list ->
             list.id in ids
+        }
+    }
+
+    val valuesLists:HasGetter<CaosVariant, List<CaosValuesList>> by lazy {
+        HasGetterImpl() {variant ->
+            universalLib.variantMap[variant.code]?.valuesLists.orEmpty()
         }
     }
 

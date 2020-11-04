@@ -71,7 +71,7 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
 
 
     /**
-     * Gets block end consiming all trailing whitespace elements
+     * Gets block end consuming all trailing whitespace elements
      */
     private fun getBlockEnd(codeBlock: CaosScriptCodeBlock): Int {
         var next = codeBlock.next

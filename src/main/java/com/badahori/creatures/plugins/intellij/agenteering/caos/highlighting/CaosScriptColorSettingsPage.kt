@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting
 
 import com.intellij.openapi.editor.colors.TextAttributesKey

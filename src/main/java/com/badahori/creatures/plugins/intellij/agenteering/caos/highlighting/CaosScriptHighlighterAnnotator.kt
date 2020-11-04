@@ -20,7 +20,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
         val wrapper = AnnotationHolderWrapper(annotationHolder)
         when {
             element is CaosScriptToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
-            element is CaosScriptExpectsToken -> if (element.textLength == 4) colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
+            element is CaosScriptTokenRvalue -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
             element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
             element is CaosScriptIsCommandKeywordToken || (element.parent is CaosScriptIsCommandKeywordToken && element.parent.firstChild != element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
@@ -58,29 +58,15 @@ class CaosScriptHighlighterAnnotator : Annotator {
     }
 
     private fun isAnimationByteString(element: PsiElement): Boolean {
-        if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsByteString::class.java))
-            return false
         val argumentParent = element.getParentOfType(CaosScriptArgument::class.java)
                 ?: return false
         val index = argumentParent.index
         val commandParent = element.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return false
-        commandParent.commandDefinition?.let { command ->
+        return commandParent.commandDefinition?.let { command ->
             val parameter = command.parameters.getOrNull(index)
-            return parameter?.type == CaosExpressionValueType.ANIMATION
-        }
-        return commandParent
-                .commandToken
-                ?.reference
-                ?.multiResolve(true)
-                .orEmpty()
-                .mapNotNull { it.element?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java) }
-                .any {
-                    val parameter = it.parameterList
-                            .getOrNull(index)
-                            ?.parameterType
-                            ?: return@any false
-                    parameter == "[anim]"
-                }
+            parameter?.type == CaosExpressionValueType.ANIMATION
+        } ?: false
+
     }
 }

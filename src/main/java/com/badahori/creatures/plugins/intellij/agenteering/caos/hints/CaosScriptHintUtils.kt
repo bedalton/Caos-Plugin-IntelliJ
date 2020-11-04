@@ -8,8 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 
@@ -31,7 +30,7 @@ fun CaosScriptRvalue.getValuesListValue(): CaosValuesListValue? {
 }
 
 private fun getEqualityExpressionValuesListValue(variant:CaosVariant, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue): CaosValuesListValue? {
-    val valuesListId = equalityExpression.getValuesList(variant, expression)
+    val valuesListId = equalityExpression.getValuesListId(variant, expression)
             ?: return null
     val valuesList = CaosLibs.valuesList[valuesListId]
             ?: return null
@@ -44,7 +43,7 @@ private fun getEqualityExpressionValuesListValue(variant:CaosVariant, equalityEx
     return null
 }
 
-private fun getCommandParameterValuesListValue(variant: CaosVariant, containingCommand: CaosScriptCommandElement, expression: CaosScriptRvalue, key: String): CaosValuesListValue? {
+private fun getCommandParameterValuesListValue(variant: CaosVariant, containingCommand: CaosScriptCommandLike, expression: CaosScriptRvalue, key: String): CaosValuesListValue? {
     val index = expression.index
     val valuesListId = containingCommand.commandDefinition?.parameters?.getOrNull(index)?.valuesListIds?.get(variant.code)
             ?: return null

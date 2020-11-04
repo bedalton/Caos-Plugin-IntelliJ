@@ -250,12 +250,11 @@ object CaosDefPsiImplUtil {
                 }
                 ?: -1
         val simpleName = variableTypeElement?.let { type -> (type.typeLiteral ?: type.bracketString)?.text }
-        val simpleType = if (simpleName?.toLowerCase() == "int")
-            CaosExpressionValueType.INT
-        else if (simpleName != null)
-            CaosExpressionValueType.fromSimpleName(simpleName)
-        else
-            CaosExpressionValueType.ANY
+        val simpleType = when {
+            simpleName?.toLowerCase() == "int" -> CaosExpressionValueType.INT
+            simpleName != null -> CaosExpressionValueType.fromSimpleName(simpleName)
+            else -> CaosExpressionValueType.ANY
+        }
         return CaosDefParameterStruct(
                 parameterNumber = parameterNumber,
                 name = parameterName,

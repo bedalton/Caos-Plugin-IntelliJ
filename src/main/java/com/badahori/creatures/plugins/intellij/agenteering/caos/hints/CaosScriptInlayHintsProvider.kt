@@ -21,6 +21,8 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
         return resolved.provideHints(element)
     }
 
+    override fun isBlackListSupported(): Boolean = false
+
     override fun getInlayPresentation(inlayText: String): String = inlayText
 
     override fun getDefaultBlackList(): Set<String> {

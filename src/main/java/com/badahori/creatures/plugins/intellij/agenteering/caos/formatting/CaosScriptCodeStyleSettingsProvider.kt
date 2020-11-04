@@ -31,5 +31,5 @@ class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
     }
 
 
-    private class CaosScriptCodeStyleMainPanel internal constructor(currentSettings: CodeStyleSettings?, settings: CodeStyleSettings?) : TabbedLanguageCodeStylePanel(CaosScriptLanguage, currentSettings, settings)
+    private class CaosScriptCodeStyleMainPanel(currentSettings: CodeStyleSettings?, settings: CodeStyleSettings?) : TabbedLanguageCodeStylePanel(CaosScriptLanguage, currentSettings, settings)
 }

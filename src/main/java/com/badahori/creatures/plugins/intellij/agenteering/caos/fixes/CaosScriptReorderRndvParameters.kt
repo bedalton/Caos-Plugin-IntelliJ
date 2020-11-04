@@ -1,5 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -8,13 +15,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 
 class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionAction, LocalQuickFix {
 
@@ -32,7 +32,7 @@ class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionActio
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         pointer.element?.let {
-            return it.expectsIntList.size == 2
+            return it.rvalueList.size == 2
         }
         return false
     }

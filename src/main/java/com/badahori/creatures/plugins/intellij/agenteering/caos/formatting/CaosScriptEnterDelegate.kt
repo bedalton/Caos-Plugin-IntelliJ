@@ -1,7 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.element
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
@@ -14,7 +17,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 
 class CaosScriptEnterDelegate : EnterHandlerDelegate {
 
@@ -26,7 +28,7 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
         return handle(file, editor)//Continue
     }
 
-    private fun handle(file: PsiFile, editor:Editor): EnterHandlerDelegate.Result {
+    private fun handle(file: PsiFile, editor: Editor): EnterHandlerDelegate.Result {
         var offset = editor.caretModel.currentCaret.offset
         if (offset > 2) {
             offset -= 2
@@ -62,9 +64,9 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
                     ?: doif.elseIfStatementList.lastOrNull()
                     ?: doif.doifStatementStatement.equalityExpression
                     ?: doif.lastChild
-        }.let {
-            it.textRange.endOffset
         }
+                .textRange
+                .endOffset
         EditorUtil.insertText(editor, "\nendi", after, false)
         return doif
     }
@@ -101,16 +103,11 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
     }
 
     private fun getEditorAfterCandidate(editor: Editor, find: () -> PsiElement): PsiElement {
-        var item = getEditorAfterCandidateRaw(editor, find)
-
-        return item
+        return getEditorAfterCandidateRaw(editor, find)
     }
 
     private fun getEditorAfterCandidateRaw(editor: Editor, find: () -> PsiElement): PsiElement {
-        val editorElement = editor.element
-        if (editorElement == null) {
-            return find()
-        }
+        val editorElement = editor.element ?: return find()
         editorElement.getPreviousNonEmptySibling(true)?.let { sibling ->
             sibling.getSelfOrParentOfType(CaosScriptCodeBlockLine::class.java)?.let { return it }
             sibling.lastChild.getSelfOrParentOfType(CaosScriptCodeBlockLine::class.java)?.let { return it }

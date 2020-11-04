@@ -4,14 +4,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.CaosFloat
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.CaosInt
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.isNumeric
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsAgent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -30,6 +29,9 @@ import kotlin.math.roundToInt
 
 class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
 
+    /**
+     * Gets command call placeholder text for folding if it should be folded
+     */
     override fun getPlaceholderText(node: ASTNode): String? {
         if (DumbService.isDumb(node.psi.project))
             return null
@@ -40,55 +42,75 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         return null
     }
 
+    /**
+     * Gets the folded text for this command call
+     */
     private fun getStimFold(commandCall: CaosScriptCommandCall): String? {
         val variant = commandCall.containingCaosFile?.variant
                 ?: return null
-        val resolved = commandCall.commandToken
-                ?.reference
-                ?.multiResolve(true)
-                ?.firstOrNull()
-                ?.element
-                ?.getParentOfType(CaosDefCommandDefElement::class.java)
+        val commandDefinition = commandCall.commandDefinition
                 ?: return null
-
         return when (variant) {
-            CaosVariant.C1, CaosVariant.C2 -> foldC1ChemCall(commandCall, resolved)
-            CaosVariant.CV, CaosVariant.C3, CaosVariant.DS -> foldC3ChemCall(commandCall, resolved)
+            CaosVariant.C1, CaosVariant.C2 -> foldC1ChemCall(commandCall, commandDefinition)
+            CaosVariant.CV, CaosVariant.C3, CaosVariant.DS -> foldC3ChemCall(commandCall, commandDefinition)
             else -> null
         }
     }
 
-    private fun foldC1ChemCall(commandCall: CaosScriptCommandCall, caosDef: CaosDefCommandDefElement) = foldChemCallGeneric(commandCall, caosDef)
+    /**
+     * Folds a C1/C2 chemical call
+     */
+    private fun foldC1ChemCall(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand) = foldChemCallGeneric(commandCall, commandDefinition)
 
-    private fun foldC3ChemCall(commandCall: CaosScriptCommandCall, caosDef: CaosDefCommandDefElement) = foldChemCallGeneric(commandCall, caosDef)
+    /**
+     * Folds a CV+ chemical call
+     */
+    private fun foldC3ChemCall(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand) = foldChemCallGeneric(commandCall, commandDefinition)
 
-    private fun foldChemCallGeneric(commandCall: CaosScriptCommandCall, commandDef: CaosDefCommandDefElement): String? {
+    /**
+     * Generic method for building a chemical folded string
+     */
+    private fun foldChemCallGeneric(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand): String? {
+        // Pull arguments from call
         val arguments = commandCall.arguments
-        val parameters = commandDef.parameterStructs
+
+        // Get parameters from definition
+        val parameters = commandDefinition.parameters
+
+        // Find first parameter matching the name of the expected folding start
         val firstIndex = parameters
-                .sortedBy { it.parameterNumber }
+                .sortedBy { it.index }
                 .firstOrNull { parameter ->
                     firstFoldParameterRegex.matches(parameter.name)
                 }
-                ?.parameterNumber
+                ?.index
                 ?: return null
+        // If first index is greater than all arguments in list return
         if (firstIndex >= arguments.size)
             return null
+        // Get arguments sublist starting at start index for folding
         val chemParameters = arguments.subList(firstIndex, arguments.size)
+
+        // Ensure and get variant
         val variant = commandCall.containingCaosFile?.variant
                 ?: return null
+
+        // Ensure that chemicals and chem amounts are 1:1
         if (chemParameters.size % 2 != 0) {
             return null
         }
+        // Determine number of chemical and amount pairs
         val numParameters = chemParameters.size / 2
+
+        // Create string builder to hold folding text
         val stringBuilder = StringBuilder()
         val format = ValuesFormat.getFormat(variant, commandCall.commandString)
+
+        // Fold chemical amount pairs
         for (i in 0 until numParameters) {
             val pos = i * 2
             val argument = chemParameters[pos]
-            val expression = (argument as? CaosScriptExpectsValueOfType)
-                    ?.rvalue
-                    ?.expression
+            val expression = argument as? CaosScriptRvalue
             //Ignore blank input
             if (expression?.text == "255")
                 continue
@@ -103,31 +125,46 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
                 ?: "+ <<NOTHING>>"
     }
 
+    /**
+     * Responsible for formatting a chemical with its amount
+     */
     private fun formatChemAmount(variant: CaosVariant, stringBuilder: StringBuilder, value:String, amountVar:CaosVar, format:ValuesFormat = ValuesFormat.NORMAL) {
 
+        // Get amount as float
         val amount = when (amountVar) {
             is CaosInt -> amountVar.value * 1.0f
             is CaosFloat -> amountVar.value
             else -> 0.0f
         }
 
+        // Check how this chemical should be folded
         if (format == ValuesFormat.STIM) {
             stringBuilder.append(value).append(" * ").append(amount)
             return
         }
+        // If amount is roughly zero (with error tolerance) return without appending any data
         if (abs(amount) < 0.0003)
             return
+
+        // Format amount based on variant
+        // C1/C2 use integers
         val amountString = if (variant.isOld)
             "${amount.roundToInt()}"
+        // CV+ use floats, so use amount as is
         else
             "$amount"
         stringBuilder.append(", ")
+        // If chemical name and amount need to be reversed
         if (format == ValuesFormat.REVERSED) {
+
+            // example thirst +0.9
             stringBuilder.append(value).append(" ")
             if (amount > 0)
                 stringBuilder.append("+")
             stringBuilder.append(amountString)
+        // Chemical amounts should proceed chemical name
         } else {
+            // ie. +3 Hunger Decrease
             if (amount > 0)
                 stringBuilder.append("+")
             stringBuilder.append(amountString).append(" ").append(value)
@@ -135,6 +172,9 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     }
 
 
+    /**
+     * Base method to build the regions that should be folded
+     */
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
         val group = FoldingGroup.newGroup("CaosScript_STIM_FOLDING")
         // Get a collection of the literal expressions in the document below root
@@ -150,17 +190,21 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
                 .toTypedArray()
     }
 
+    // Helper function to get actual folding regions for command calls
     private fun getCommandCallFoldingRegion(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
         if (!shouldFold(commandCall))
             return null
         return getFoldingDescriptor(commandCall, group)
     }
 
+    // Gets the folding descriptor using the command call and the group
     private fun getFoldingDescriptor(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
         if (shouldFoldAll.matches(commandCall.commandString))
             return FoldingDescriptor(commandCall.node, commandCall.textRange, group)
         val arguments = commandCall.arguments
-        val firstArgument = if (arguments.firstOrNull() is CaosScriptExpectsAgent)
+        val parameters = commandCall.commandDefinition?.parameters
+                ?: return null
+        val firstArgument = if (parameters.firstOrNull()?.type == CaosExpressionValueType.AGENT)
             arguments.getOrNull(1)
         else
             arguments.firstOrNull()
@@ -184,10 +228,10 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         private val STIM = "[Ss][Tt][Ii][Mm]([ ][^ ]{4})*".toRegex()
         private val shouldFoldAll = "([Dd][Rr][Ii][Vv]|[Cc][Hh][Ee][Mm])".toRegex()
         private val shouldFold = "([Ss][Tt][Ii][Mm]|[Dd][Rr][Ii][Vv]|[Ss][Ww][Aa][Yy]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])([ ][^ ]{4})*".toRegex()
-        private val STIMULUS = "[Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?"
-        private val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
-        private val CHEMICAL = "[Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?"
-        private val CA = "[Cc][Aa][^0-9]*"
+        private const val STIMULUS = "[Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?"
+        private const val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
+        private const val CHEMICAL = "[Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?"
+        private const val CA = "[Cc][Aa][^0-9]*"
         private val firstFoldParameterRegex = "($STIMULUS|$DRIVE|$CHEMICAL|$CA)[0-9]*".toRegex()
 
         private enum class ValuesFormat {

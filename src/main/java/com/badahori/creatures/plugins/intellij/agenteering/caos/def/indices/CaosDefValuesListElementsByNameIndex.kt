@@ -16,7 +16,7 @@ class CaosDefValuesListElementsByNameIndex : CaosScriptCaseInsensitiveStringInde
     companion object {
         private const val VERSION = 2
         @JvmStatic
-        val KEY = IndexKeyUtil.create(CaosDefValuesListElementsByNameIndex::class.java)
+        val KEY: StubIndexKey<String, CaosDefValuesListElement> = IndexKeyUtil.create(CaosDefValuesListElementsByNameIndex::class.java)
 
         @JvmStatic
         val Instance = CaosDefValuesListElementsByNameIndex()

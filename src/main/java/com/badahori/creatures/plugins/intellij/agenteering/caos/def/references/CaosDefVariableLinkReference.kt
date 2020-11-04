@@ -5,10 +5,14 @@ import com.intellij.psi.PsiReferenceBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefVariableLink
 
+/**
+ * Finds corresponding variable from link
+ * ie. {variable1} -> variable1 (integer), {speed} -> speed (float)
+ */
 class CaosDefVariableLinkReference(element: CaosDefVariableLink) : PsiReferenceBase<CaosDefVariableLink>(element, element.offsetRange) {
 
     override fun resolve(): PsiElement? {
-        val parent = element.getParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
+        val parent = element.getParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return null
         val text = element.variableName.toLowerCase()
         return parent.parameterList.firstOrNull { it.parameterName.toLowerCase() == text }

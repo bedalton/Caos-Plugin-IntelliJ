@@ -1,7 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import kotlinx.serialization.Serializable
 
@@ -24,7 +27,9 @@ data class CaosVariantData(
     val isNew: Boolean by lazy {
         code !in listOf("C1", "C2")
     }
-    val valuesLists:List<CaosValuesList> get() = CaosLibs.valuesLists
+    val valuesLists:List<CaosValuesList> get() = CaosLibs.getLists(valuesListIds).sortedBy {
+        it.name
+    }
 
 }
 
@@ -89,13 +94,11 @@ data class CaosCommand(
         CaosExpressionValueType.fromIntValue(returnTypeId)
     }
 
-    val returnValuesList: HasGetter<String, CaosValuesList?> by lazy {
-        object : HasGetter<String, CaosValuesList?> {
-            override operator fun get(key: String): CaosValuesList? {
-                val valuesListId = returnValuesListIds?.get(key)
-                        ?: return null
-                return CaosLibs.valuesList[valuesListId]
-            }
+    val returnValuesList: HasGetter<CaosVariant, CaosValuesList?> by lazy {
+        HasGetterImpl() get@{key ->
+            val valuesListId = returnValuesListIds?.get(key.code)
+                    ?: return@get null
+            CaosLibs.valuesList[valuesListId]
         }
     }
 }
@@ -135,24 +138,21 @@ data class CaosParameter(
         CaosExpressionValueType.fromIntValue(typeId)
     }
 
-    val valuesList: HasGetter<String, CaosValuesList?> by lazy {
+    val valuesList: HasGetter<CaosVariant, CaosValuesList?> by lazy {
         if (valuesListIds.isNullOrEmpty()) {
-            object : HasGetter<String, CaosValuesList?> {
-                override operator fun get(key: String): CaosValuesList? = null
+            HasGetterImpl() {
+                null
             }
         } else {
-            object : HasGetter<String, CaosValuesList?> {
-                override operator fun get(key: String): CaosValuesList? {
-                    val valuesListId = valuesListIds[key]
-                            ?: return null
-                    return CaosLibs.valuesList[valuesListId]
-                }
+            HasGetterImpl() get@{ key ->
+                val valuesListId = valuesListIds[key.code]
+                        ?: return@get null
+                CaosLibs.valuesList[valuesListId]
             }
         }
     }
 
 }
-
 
 /**
  * A list of known values for a parameter or return value
@@ -181,6 +181,10 @@ data class CaosValuesList(
         return values.firstOrNull { it.intValue == key }
                 ?: negative.firstOrNull { it.intValue != key }
                 ?: greaterThan.firstOrNull { it.intValue!! < key }
+    }
+
+    val bitflag:Boolean by lazy {
+        superType?.equalsIgnoreCase("BitFlags").orFalse()
     }
 }
 

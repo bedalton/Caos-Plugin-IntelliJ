@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle

@@ -9,9 +9,9 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import kotlin.math.abs
 
-class CaosScriptIndentProcessor(private val settings: CommonCodeStyleSettings, private val caosSettings: CaosScriptCodeStyleSettings) {
+class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
-        if (!caosSettings.INDENT_BLOCKS) {
+        if (!caosSettings.indentBlocks) {
             return Indent.getNoneIndent()
         }
         val firstChild: ASTNode? = node
