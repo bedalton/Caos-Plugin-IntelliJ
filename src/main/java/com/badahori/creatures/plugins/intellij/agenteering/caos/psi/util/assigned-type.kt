@@ -29,6 +29,7 @@ private val STRING_ASSIGNMENT_COMMANDS = listOf(
         "SETS"
 )
 
+@Suppress("SpellCheckingInspection")
 fun CaosScriptCAssignment.getAssignedType(): CaosExpressionValueType? {
     if (cKwAssignNumber != null) {
         return if (this.variant?.isOld.orFalse())
@@ -55,9 +56,9 @@ private fun getSetvValue(rvalue: CaosScriptRvalue?): CaosExpressionValueType? {
         return null
     return if (rvalue.variant?.isNotOld.orTrue()) {
         when {
-            rvalue.expression?.isInt.orFalse() -> CaosExpressionValueType.INT
-            rvalue.expression?.isFloat.orFalse() -> CaosExpressionValueType.FLOAT
-            rvalue.expression?.isNumeric.orFalse() -> CaosExpressionValueType.DECIMAL
+            rvalue.isInt.orFalse() -> CaosExpressionValueType.INT
+            rvalue.isFloat.orFalse() -> CaosExpressionValueType.FLOAT
+            rvalue.isNumeric.orFalse() -> CaosExpressionValueType.DECIMAL
             else -> rvalue.inferredType
         }
     } else

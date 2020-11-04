@@ -23,10 +23,3 @@ internal fun binaryToInteger(binary: String): Long {
     }
     return result
 }
-
-
-internal fun toVariableNumber(variableString: String): Int {
-    val thirdChar = variableString.toCharArray()[2].toUpperCase()
-    val numberStartIndex = if (thirdChar == 'V' || thirdChar == 'R') 3 else 2
-    return variableString.substring(numberStartIndex).toInt()
-}

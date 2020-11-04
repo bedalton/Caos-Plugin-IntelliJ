@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosValidatorIllegalArgumentException
-
 enum class CaosScriptVarTokenGroup(val value:String) {
     UNKNOWN("???"),
     VARx("VARx"),
@@ -25,7 +23,7 @@ enum class CaosScriptVarTokenGroup(val value:String) {
                 "OBV" -> OBVx
                 "OV" -> OVxx
                 "MV" -> MVxx
-                else -> throw CaosValidatorIllegalArgumentException("Invalid variable prefix '$variablePrefix' found for VariableGroup.fromValue()")
+                else -> throw Exception("Invalid variable prefix '$variablePrefix' found for VariableGroup.fromValue()")
             }
         }
 

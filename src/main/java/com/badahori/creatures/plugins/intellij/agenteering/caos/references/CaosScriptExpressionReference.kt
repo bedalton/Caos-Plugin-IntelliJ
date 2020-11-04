@@ -4,9 +4,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
@@ -83,7 +84,9 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
         val expression = myElement
         val equalityExpression = expression.parent as? CaosScriptEqualityExpressionPrime
                 ?: return emptyList()
-        return listOfNotNull(equalityExpression.getValuesListId(expression))
+        val variant = expression.variant
+                ?: return emptyList()
+        return equalityExpression.getValuesList(variant, expression)?.let { listOf(it.name) }.orEmpty()
     }
 
     private val project: Project by lazy { myElement.project }

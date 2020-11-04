@@ -52,7 +52,7 @@ class CaosScriptAssignmentStubType(debugName:String) : com.badahori.creatures.pl
                 fileName = element.containingFile.name,
                 operation = element.op,
                 lvalue = element.lvalue?.toCaosVar(),
-                rvalue = element.expectsDecimal?.rvalue?.toCaosVar(),
+                rvalue = element.rvalue?.toCaosVar(),
                 enclosingScope = CaosScriptPsiImplUtil.getScope(element),
                 commandString = element.commandString
         )

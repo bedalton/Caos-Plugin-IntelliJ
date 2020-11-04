@@ -1560,20 +1560,6 @@ fun String?.nullIfUndefOrBlank(): String? {
         this
 }
 
-@Suppress("SpellCheckingInspection")
-private val varTokenAssignmentSearchTerminatingOperands = listOf(
-        "NOTV",
-        "ANDV",
-        "SUBV",
-        "ADDV",
-        "ORRV",
-        "MULV",
-        "DIVV",
-        "MODV",
-        "SETA",
-        "SETS"
-)
-
 val CaosScriptCommandLike.commandStringUpper: String get() = commandString.toUpperCase()
 
 val PsiElement.endOffsetInParent: Int

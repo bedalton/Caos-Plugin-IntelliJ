@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefVariableTypeStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readStringList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.writeStringList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -21,11 +22,13 @@ internal fun StubInputStream.readParameter() : CaosDefParameterStruct {
     val type = readVariableType() ?: CaosDefPsiImplUtil.AnyTypeType
     val comment = readUTFFast().nullIfEmpty()
     val parameterNumber = readInt()
+    val simpleType = CaosExpressionValueType.fromIntValue(readInt())
     return CaosDefParameterStruct(
             name = name,
             type = type,
             comment = comment,
-            parameterNumber = parameterNumber
+            parameterNumber = parameterNumber,
+            simpleType = simpleType
     )
 }
 
@@ -34,6 +37,7 @@ internal fun StubOutputStream.writeParameter(parameter:CaosDefParameterStruct) {
     writeVariableType(parameter.type)
     writeUTFFast(parameter.comment ?: "")
     writeInt(parameter.parameterNumber)
+    writeInt(parameter.simpleType.value)
 }
 
 internal fun StubInputStream.readReturnType() : CaosDefReturnTypeStruct? {
