@@ -12,7 +12,7 @@ import javax.swing.Icon
 import javax.swing.JComponent
 
 /**
- * Libarary type for an objective-j frameworkName
+ * Library type for an objective-j frameworkName
  */
 class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
 
