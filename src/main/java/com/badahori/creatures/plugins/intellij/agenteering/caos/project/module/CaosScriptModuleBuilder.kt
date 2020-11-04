@@ -33,14 +33,14 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
                 CaosVariant.C3,
                 CaosVariant.DS
         ))
-        variantComboBox.setToolTipText("CAOS Variant")
-        variantComboBox.setRenderer({ _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
+        variantComboBox.toolTipText = "CAOS Variant"
+        variantComboBox.setRenderer { _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
             val label = JLabel(value.fullName)
             if (isSelected) {
                 label.background = Color.lightGray
             }
             label
-        })
+        }
         variantComboBox
     }
 

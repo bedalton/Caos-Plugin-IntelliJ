@@ -12,7 +12,7 @@ class CaosScriptModuleType : ModuleType<CaosScriptModuleBuilder>("CAOS_MODULE") 
     }
 
     override fun getName(): String {
-        return CaosBundle.message("coas.module.type.name")
+        return CaosBundle.message("caos.module.type.name")
     }
 
     override fun getDescription(): String {

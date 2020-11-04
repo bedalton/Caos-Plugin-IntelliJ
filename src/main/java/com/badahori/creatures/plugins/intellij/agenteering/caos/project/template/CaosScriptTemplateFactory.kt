@@ -9,6 +9,7 @@ import javax.swing.Icon
 
 /**
  * @author Dennis.Ushakov
+ * adapted by Bedalton
  */
 class CaosScriptTemplateFactory : ProjectTemplatesFactory() {
     override fun getGroups(): Array<String> {
