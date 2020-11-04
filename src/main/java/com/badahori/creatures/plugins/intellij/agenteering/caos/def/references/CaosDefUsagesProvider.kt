@@ -13,6 +13,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefVariableName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 
+/**
+ * Establishes a find usages provider
+ */
 class CaosDefUsagesProvider : FindUsagesProvider{
 
     override fun getWordsScanner(): WordsScanner? {

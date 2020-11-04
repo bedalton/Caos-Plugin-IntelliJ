@@ -25,7 +25,7 @@ class CaosScriptTrimErrorSpaceBatchFix : IntentionAction, LocalQuickFix{
         return text != CaosStringUtil.sanitizeCaosString(text)
     }
 
-    override fun getText(): String = CaosBundle.message("caos.fixes.stip-error-spaces")
+    override fun getText(): String = CaosBundle.message("caos.fixes.strip-error-spaces")
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (file == null)
@@ -49,6 +49,6 @@ class CaosScriptTrimErrorSpaceBatchFix : IntentionAction, LocalQuickFix{
     }
 
     companion object {
-        val HIGHLIGHT_DISPLAY_KEY = HighlightDisplayKey.findOrRegister("TrimErrorSpaces", CaosBundle.message("caos.fixes.stip-error-spaces"))
+        val HIGHLIGHT_DISPLAY_KEY = HighlightDisplayKey.findOrRegister("TrimErrorSpaces", CaosBundle.message("caos.fixes.strip-error-spaces"))
     }
 }

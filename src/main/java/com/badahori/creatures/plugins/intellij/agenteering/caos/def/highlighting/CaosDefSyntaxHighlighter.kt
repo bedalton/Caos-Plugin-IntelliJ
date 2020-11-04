@@ -1,5 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefTokenSets.Companion.COMMENT_AT_KEYWORDS
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefTokenSets.Companion.COMMENT_PARTS
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
@@ -8,12 +12,6 @@ import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributes
 import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefTokenSets.Companion.COMMENT_AT_KEYWORDS
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefTokenSets.Companion.COMMENT_PARTS
-import com.badahori.creatures.plugins.intellij.agenteering.utils.brighten
-import com.intellij.openapi.editor.markup.TextAttributes
 import java.awt.Color
 
 class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
@@ -69,6 +67,7 @@ class CaosDefSyntaxHighlighter : SyntaxHighlighterBase() {
     }
 }
 
+@Suppress("unused")
 private val TextAttributesKey.asErrorAttribute:TextAttributesKey get() {
     val attributes = this.defaultAttributes.clone()
     attributes.effectType = EffectType.WAVE_UNDERSCORE
@@ -77,11 +76,4 @@ private val TextAttributesKey.asErrorAttribute:TextAttributesKey get() {
     val name = this.externalName + "_ERROR"
     val temp = createTempTextAttributesKey(name, attributes)
     return createTextAttributesKey(name, temp)
-}
-
-private fun TextAttributesKey.copy(key:String,init:(TextAttributesKey.()->Unit) = {}) : TextAttributesKey {
-    val attributesKey = TextAttributes.fromFlyweight(this.defaultAttributes.flyweight)
-    attributesKey.copyFrom(this.defaultAttributes)
-    val temp = createTempTextAttributesKey("_$key", attributesKey).apply(init)
-    return createTextAttributesKey(key, temp)
 }

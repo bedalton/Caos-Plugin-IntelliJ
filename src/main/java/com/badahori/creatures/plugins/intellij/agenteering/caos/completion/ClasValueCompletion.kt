@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
@@ -35,7 +35,7 @@ internal object GenerateClasIntegerInsertHandler : InsertHandler<LookupElement> 
     }
 }
 
-class GenerateClasIntegerAction(element:CaosScriptExpectsValueOfType) : LocalQuickFix {
+class GenerateClasIntegerAction(element:CaosScriptRvalue) : LocalQuickFix {
     private val pointer = SmartPointerManager.createPointer(element)
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
     override fun getName(): String = "Generate CLAS value"
@@ -64,11 +64,11 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
         }
     }
 
-    constructor(project: Project, pointer:SmartPsiElementPointer<CaosScriptExpectsValueOfType>) : this(project) {
+    constructor(project: Project, pointer:SmartPsiElementPointer<CaosScriptRvalue>) : this(project) {
         insert = { clas: Int ->
             runUndoTransparentWriteAction action@{
                 try {
-                    val element = pointer.element?.rvalue?.expression
+                    val element = pointer.element
                             ?: return@action
                     val newValue = CaosScriptPsiElementFactory.createNumber(project, clas)
                     element.replace(newValue)

@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex

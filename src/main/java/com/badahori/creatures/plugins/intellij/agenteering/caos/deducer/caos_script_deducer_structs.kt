@@ -1,7 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
+@file:Suppress("SpellCheckingInspection")
 
-import com.intellij.openapi.util.TextRange
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 enum class CaosOp(val value:Int) {
     SETV(0),

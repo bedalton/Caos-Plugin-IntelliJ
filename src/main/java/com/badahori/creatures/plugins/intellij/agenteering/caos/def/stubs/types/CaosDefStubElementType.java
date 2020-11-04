@@ -6,9 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.stubs.StubElement;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class CaosDefStubElementType<StubT extends StubElement<PsiT>, PsiT extends CaosDefCompositeElement> extends IStubElementType<StubT, PsiT> {

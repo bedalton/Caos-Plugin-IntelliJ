@@ -9,9 +9,6 @@ import gnu.trove.TObjectLongHashMap;
 
 public class CaosDefParserUtil extends GeneratedParserUtilBase {
 
-    static final String LOOP = "loop";
-    static final String INTERFACE = "interface";
-
     private static final Key<TObjectLongHashMap<String>> MODES_KEY = Key.create("MODES_KEY");
 
     private static TObjectLongHashMap<String> getParsingModes(PsiBuilder builder_) {

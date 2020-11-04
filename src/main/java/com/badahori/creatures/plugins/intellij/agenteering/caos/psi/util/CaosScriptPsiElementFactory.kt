@@ -10,7 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 
 object CaosScriptPsiElementFactory {
 
-    private val SUBROUTINE_NAME_REGEX = "[a-z_A-Z_0-9:$]{4}".toRegex()
+    private val SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!]{4}".toRegex()
 
     fun createFileFromText(project: Project, text: String, fileName: String = "dummy.cos"): CaosScriptFile {
         return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile)
@@ -33,39 +33,11 @@ object CaosScriptPsiElementFactory {
         throw NullPointerException("Failed to find gsub in command")
     }
 
-    private val NAMED_VAR_REGEX = "[$]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
-
-
-    fun createNamedVar(project: Project, newNameStringIn: String): CaosScriptNamedVar? {
-        if (!NAMED_VAR_REGEX.matches(newNameStringIn))
-            return null
-        val newNameString = if (!newNameStringIn.startsWith("$"))
-            newNameStringIn
-        else
-            "$${newNameStringIn}"
-        val script = createRValue(project, newNameString)
-        return script.expression?.namedVar
-
-    }
-
-    private val NAMED_CONST_REGEX = "[#]?[a-zA-Z_][a-zA-Z_0-9]*".toRegex()
-
-    fun createNamedConst(project: Project, newNameString: String): CaosScriptNamedConstant? {
-        if (!NAMED_CONST_REGEX.matches(newNameString))
-            return null
-        val script = if (newNameString.startsWith("#"))
-            newNameString
-        else
-            "#$newNameString"
-        val file = createRValue(project, script)
-        return file.expression?.namedConstant
-    }
-
     private val TOKEN_NAME_REGEX = "[a-zA-Z_0-9]*".toRegex()
     fun createTokenElement(project: Project, newNameString: String): CaosScriptToken? {
         if (!TOKEN_NAME_REGEX.matches(newNameString))
             return null
-        val script = "sndf $newNameString"
+        @Suppress("SpellCheckingInspection") val script = "sndf $newNameString"
         val file = createFileFromText(project, script)
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
     }
@@ -75,12 +47,12 @@ object CaosScriptPsiElementFactory {
         return createRValue(project, script)
     }
 
-    fun createNumber(project: Project, number: Int) : CaosScriptLiteral {
-        return createRValue(project, "$number").expression!!
+    fun createNumber(project: Project, number: Int) : CaosScriptRvalue {
+        return createRValue(project, "$number")
     }
 
-    fun createFloat(project: Project, number: Int) : CaosScriptLiteral {
-        return createRValue(project, "$number").expression!!
+    fun createFloat(project: Project, number: Int) : CaosScriptRvalue {
+        return createRValue(project, "$number")
     }
 
     private fun getCommandCall(project: Project, script: String) : CaosScriptCommandCall? {
