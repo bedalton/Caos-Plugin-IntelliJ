@@ -1,9 +1,9 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage.Companion.instance
 import com.intellij.openapi.fileTypes.LanguageFileType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFileType
 import icons.CaosScriptIcons
 import org.jetbrains.annotations.NonNls
 import javax.swing.Icon
@@ -29,5 +29,5 @@ object CaosDefFileType : LanguageFileType(instance) {
         val DEFAULT_EXTENSION = "caosdef"
 
         @NonNls
-        val DOT_DEFAULT_EXTENSION = "." + DEFAULT_EXTENSION
+        val DOT_DEFAULT_EXTENSION = ".$DEFAULT_EXTENSION"
 }

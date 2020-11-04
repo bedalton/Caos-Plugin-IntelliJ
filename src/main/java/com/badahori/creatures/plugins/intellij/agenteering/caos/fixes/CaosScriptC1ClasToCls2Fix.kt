@@ -11,7 +11,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptExpectsValueOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
@@ -53,10 +53,8 @@ class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionActio
         val element = element.element
                 ?: return null
         if (element.arguments.size > 1)
-            return null;
-        val clasInt = (element.arguments.getOrNull(1) as? CaosScriptExpectsValueOfType)
-                ?.rvalue
-                ?.expression
+            return null
+        val clasInt = (element.arguments.getOrNull(1) as? CaosScriptRvalue)
                 ?.intValue
                 ?: return null
         val clas = CaosAgentClassUtils.parseClas(clasInt)

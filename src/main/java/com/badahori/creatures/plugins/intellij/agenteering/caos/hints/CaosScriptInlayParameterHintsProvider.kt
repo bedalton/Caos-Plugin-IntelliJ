@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "SpellCheckingInspection")
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.intellij.codeInsight.hints.HintInfo

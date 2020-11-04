@@ -20,12 +20,11 @@ class CaosDefHighlighterAnnotator : Annotator {
         when {
             element is CaosDefComment -> CaosDefSyntaxHighlighter.DOC_COMMENT
             element is CaosDefWordLink -> {
-                val attributeKey = if (element.hasParentOfType(CaosDefCodeBlock::class.java))
-                    CaosDefSyntaxHighlighter.CODE_BLOCK
-                else if (element.hasParentOfType(CaosDefDocComment::class.java))
-                    CaosDefSyntaxHighlighter.DOC_COMMENT_WORD_LINK
-                else
-                    CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK
+                val attributeKey = when {
+                    element.hasParentOfType(CaosDefCodeBlock::class.java) -> CaosDefSyntaxHighlighter.CODE_BLOCK
+                    element.hasParentOfType(CaosDefDocComment::class.java) -> CaosDefSyntaxHighlighter.DOC_COMMENT_WORD_LINK
+                    else -> CaosDefSyntaxHighlighter.VALUES_LIST_WORD_LINK
+                }
                 addColor(element, annotationHolder, attributeKey)
             }
             element is CaosDefValuesListName -> {

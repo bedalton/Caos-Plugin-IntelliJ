@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
@@ -83,7 +83,7 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
         val expression = myElement
         val equalityExpression = expression.parent as? CaosScriptEqualityExpressionPrime
                 ?: return emptyList()
-        return listOfNotNull(equalityExpression.getValuesList(expression))
+        return listOfNotNull(equalityExpression.getValuesListId(expression))
     }
 
     private val project: Project by lazy { myElement.project }

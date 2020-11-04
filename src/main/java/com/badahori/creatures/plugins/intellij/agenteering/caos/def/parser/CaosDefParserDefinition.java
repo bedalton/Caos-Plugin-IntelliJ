@@ -2,6 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser;
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefTokenSets;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubTypes;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
@@ -13,11 +16,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.types.CaosDefTokenSets;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubTypes;
 import org.jetbrains.annotations.NotNull;
 
 public class CaosDefParserDefinition implements ParserDefinition {

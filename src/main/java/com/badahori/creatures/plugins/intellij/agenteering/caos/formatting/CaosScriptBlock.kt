@@ -33,7 +33,7 @@ class CaosScriptBlock internal constructor(
         CaosScriptSpacingProcessor(node, settings)
     }
     private val indentProcessor: CaosScriptIndentProcessor by lazy {
-        CaosScriptIndentProcessor(settings, caosSettings)
+        CaosScriptIndentProcessor(caosSettings)
     }
 
     override fun buildChildren(): List<Block> {
@@ -55,7 +55,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
-        if (!caosSettings.INDENT_BLOCKS) {
+        if (!caosSettings.indentBlocks) {
             return noneIndent
         }
         val elementType = myNode.elementType
@@ -73,7 +73,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getIndent(): Indent? {
-        if (!(CaosScriptProjectSettings.indent || caosSettings.INDENT_BLOCKS))
+        if (!(CaosScriptProjectSettings.indent || caosSettings.indentBlocks))
             return Indent.getNoneIndent()
         return indentProcessor.getChildIndent(node)
     }
