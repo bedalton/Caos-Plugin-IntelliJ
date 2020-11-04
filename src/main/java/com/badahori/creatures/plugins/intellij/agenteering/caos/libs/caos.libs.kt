@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosLibException
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
@@ -237,7 +236,7 @@ object CaosLibs {
     }
 
     val valuesLists:HasGetter<CaosVariant, List<CaosValuesList>> by lazy {
-        HasGetterImpl() {variant ->
+        HasGetterImpl { variant ->
             universalLib.variantMap[variant.code]?.valuesLists.orEmpty()
         }
     }

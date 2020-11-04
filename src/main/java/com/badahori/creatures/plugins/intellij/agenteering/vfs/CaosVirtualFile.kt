@@ -13,7 +13,6 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
 import java.io.*
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -39,6 +38,12 @@ class CaosVirtualFile private constructor(
     private var timestamp = now
     private var modificationStamp:Long = timestamp
 
+    /**
+     * Gets a child file by name, if this virtual file is a directory
+     */
+    operator fun get(fileName:String) : CaosVirtualFile? {
+        return findChild(fileName)
+    }
 
     /** {@inheritDoc}  */
     //override fun getId():Int = myId
@@ -171,6 +176,8 @@ class CaosVirtualFile private constructor(
 
     /** {@inheritDoc}  */
     override fun findChild(name: String): CaosVirtualFile? {
+        if (!this.isDirectory)
+            throw IOException("Cannot get child file from non-directory CAOS virtual file")
         return children[name]
     }
 

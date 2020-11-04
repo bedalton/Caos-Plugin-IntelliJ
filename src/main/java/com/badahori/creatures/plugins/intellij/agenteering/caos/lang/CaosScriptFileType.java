@@ -12,10 +12,9 @@ public class CaosScriptFileType extends LanguageFileType {
 
     @NonNls
     public static final CaosScriptFileType INSTANCE = new CaosScriptFileType();
+
     @NonNls
     public static final String DEFAULT_EXTENSION = "cos";
-    @NonNls
-    public static final String DOT_DEFAULT_EXTENSION = "."+DEFAULT_EXTENSION;
 
     private CaosScriptFileType() {
         super(CaosScriptLanguage.INSTANCE);
