@@ -87,7 +87,11 @@ data class CaosCommand(
         val returnTypeId: Int,
         val description: String?,
         val returnValuesListIds: Map<String, Int>? = null,
-        val variants: List<String>
+        val requiresOwnr:Boolean = false,
+        val variants: List<String>,
+        val rvalue:Boolean,
+        val lvalue:Boolean,
+        val commandGroup:String
 ) {
 
     val returnType: CaosExpressionValueType by lazy {
@@ -95,7 +99,7 @@ data class CaosCommand(
     }
 
     val returnValuesList: HasGetter<CaosVariant, CaosValuesList?> by lazy {
-        HasGetterImpl() get@{key ->
+        HasGetterImpl get@{ key ->
             val valuesListId = returnValuesListIds?.get(key.code)
                     ?: return@get null
             CaosLibs.valuesList[valuesListId]
@@ -140,11 +144,11 @@ data class CaosParameter(
 
     val valuesList: HasGetter<CaosVariant, CaosValuesList?> by lazy {
         if (valuesListIds.isNullOrEmpty()) {
-            HasGetterImpl() {
+            HasGetterImpl {
                 null
             }
         } else {
-            HasGetterImpl() get@{ key ->
+            HasGetterImpl get@{ key ->
                 val valuesListId = valuesListIds[key.code]
                         ?: return@get null
                 CaosLibs.valuesList[valuesListId]
