@@ -12,6 +12,7 @@ import java.util.logging.Logger
 import java.util.regex.Pattern
 
 abstract class CaosScriptCaseInsensitiveStringIndexBase<PsiT : PsiElement>
+
 /**
  * Const
  * @param indexedElementClass the psi element class for this elements in this index

@@ -35,6 +35,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
             }
         }
 
+        @Suppress("unused")
         fun registerVariant(
                 code: String,
                 fullName: String,
