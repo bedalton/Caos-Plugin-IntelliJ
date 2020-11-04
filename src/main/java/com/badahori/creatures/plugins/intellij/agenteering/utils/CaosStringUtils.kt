@@ -127,7 +127,7 @@ fun String.notEquals(otherString: String, ignoreCase: Boolean): Boolean {
 }
 
 fun String.indexOfFirstNonWhitespaceCharacter(): Int {
-    val characters = toCharArray();
+    val characters = toCharArray()
     for (i in 0 until length) {
         if (Character.isWhitespace(characters[i]))
             continue
@@ -185,4 +185,37 @@ infix fun String?.like(other:String?) : Boolean {
 
 infix fun String?.notLike(other:String?) : Boolean {
     return this == null || other == null || !this.equalsIgnoreCase(other)
+}
+
+fun String.wrap(maxLength:Int, newLinePrefixIn:String = "") : String {
+    val joinText = "\n$newLinePrefixIn"
+    return splitByLength(maxLength).joinToString(joinText)
+}
+
+fun String.splitByLength(maxLength:Int) : List<String> {
+    val chunks = mutableListOf<String>()
+    var textLeft = this
+    while (textLeft.isNotEmpty())
+    {
+        if (textLeft.length <= maxLength)                    //if remaining string is less than length, add to list and break out of loop
+        {
+            chunks.add(this)
+            break
+        }
+
+        var chunk = textLeft.substring(0, maxLength)     //Get maxLength chunk from string.
+
+        if (Character.isWhitespace(textLeft[maxLength]))    {       //if next char is a space, we can use the whole chunk and remove the space for the next line
+
+            chunks.add(chunk)
+            textLeft = textLeft.substring(chunk.length + 1)      //Remove chunk plus space from original string
+        }     else        {
+            val splitIndex = chunk.lastIndexOf(' ')    //Find last space in chunk.
+            if (splitIndex != -1)                       //If space exists in string,
+                chunk = chunk.substring(0, splitIndex) //  remove chars after space.
+            textLeft = textLeft.substring(chunk.length + (if (splitIndex == -1) 0 else 1))      //Remove chunk plus space (if found) from original string
+            chunks.add(chunk)                          //Add to list
+        }
+    }
+    return chunks
 }

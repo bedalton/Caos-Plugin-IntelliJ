@@ -1,24 +1,28 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 
+/**
+ * Inspection for validating expected parameter types with actual argument types
+ */
 class CaosScriptTypesInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Expected parameter type"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "ExpectedParameterType"
+
+    /**
+     * Gets a visitor responsible for applying annotations as needed
+     */
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
             override fun visitRvaluePrime(o: CaosScriptRvaluePrime) {
@@ -35,116 +39,111 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 annotateArgument(o, holder)
                 super.visitCommandCall(o)
             }
-
-            override fun visitRvalue(o: CaosScriptRvalue) {
-                // Ignore as checks are called on RvaluePrime
-                super.visitRvalue(o)
-            }
         }
     }
 
+    /**
+     * Annotates a command-like element's arguments
+     */
     private fun annotateArgument(element: CaosScriptCommandLike, holder: ProblemsHolder) {
-
-        val token = element.commandToken
+        // Get command definition for this element if found in universal lib
+        val commandDefinition = element.commandDefinition
                 ?: return
-
-        val variant = element.containingCaosFile?.variant
+        // Get variant for this file
+        val variant = element.variant
                 ?: return
-
-        val matches = token
-                .reference
-                .multiResolve(true)
-                .mapNotNull {
-                    it.element?.getParentOfType(CaosDefCommandDefElement::class.java)
-                }
-
-        val match = when (matches.size) {
-            0 -> return
-            1 -> matches.first()
-            2 -> {
-                if (variant != CaosVariant.CV) {
-                    LOGGER.warning("CAOS command ${token.text.toUpperCase()} has multiple matches in ${variant.code}")
-                    return
-                }
-                when (token.text.toUpperCase()) {
-                    "CHAR" -> matches.firstOrNull { it.simpleReturnType !== CaosExpressionValueType.STRING }
-                            ?: matches.first()
-                    "TRAN" -> matches.firstOrNull { it.simpleReturnType !== CaosExpressionValueType.STRING }
-                            ?: matches.first()
-                    else -> return
-                }
-            }
-            else -> throw Exception("Unexpected number of command matches found for command: ${token.text.toUpperCase()}. Expected 1 or 2, found: ${matches.size}")
-        }
-
-
+        // Get parameters for this command call
+        val parameters = commandDefinition.parameters
+        // Get arguments for this command call
         val arguments = element.getChildrenOfType(CaosScriptArgument::class.java)
-
-        val parameters = match.parameterStructs
+        // If there are less parameters than arguments
+        // Grammar does not align with lib json
+        // Needs to be checked
+        // @todo should this be an error?
         if (parameters.size < arguments.size) {
             LOGGER.severe("BNF grammar definitions mismatched. BNF parse allowed ${arguments.size} arguments when expecting: ${parameters.size}")
             return
         }
+        // Iterate over the arguments and annotate as necessary
         for (i in arguments.indices) {
             val argument = arguments[i]
-            if (argument is CaosScriptLvalue)
-                continue
-            if (argument is CaosScriptTokenRvalue)
-                continue
-            if (argument !is CaosScriptRvalueLike)
-                throw Exception("Unexpected argument type encountered")
-            if (argument.varToken != null)
-                continue
-            if (argument.namedGameVar != null)
-                continue
-            val rvalue = argument as CaosScriptRvalueLike
-            val actualType = rvalue.inferredType
-                    .let {
-                        if (it == CaosExpressionValueType.ANY || it == CaosExpressionValueType.UNKNOWN)
-                            null
-                        else
-                            it
-                    }
-                    ?: getActualType(argument) { argument.toCaosVar() }
-                    ?: throw Exception("Failed to understand expression value. Not all paths were handled with expression '${rvalue.text}'")
             val parameter = parameters[i]
-
-            // Get simple type and convert it to analogous type if needed
-            val expectedTypeSimple = parameter.simpleType
-
-            // Actual
-            if (actualType == expectedTypeSimple || fudge(variant, actualType, expectedTypeSimple)) {
-                return
-            }
-
-            if (expectedTypeSimple == CaosExpressionValueType.TOKEN) {
-                if (element.text.length == 4)
-                    return
-                else if (variant.isNotOld)
-                    return
-            }
-            val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
-            holder.registerProblem(element, message)
+            annotateArgument(variant, parameter, argument, holder)
         }
     }
 
+    /**
+     * Annotate argument for expected type vs. actual type
+     */
+    private fun annotateArgument(variant: CaosVariant, parameter: CaosParameter, argument: CaosScriptArgument, holder: ProblemsHolder) {
+        // If is LValue, simply return as grammar forces lvalues where they need to be
+        if (argument is CaosScriptLvalue)
+            return
+        // If token rvalue, return, no type checking needs to be made
+        // As token place is hardcoded in grammar
+        if (argument is CaosScriptTokenRvalue)
+            return
+        // If this argument is not an rvalue,
+        // then this command needs to be updated after grammar change
+        if (argument !is CaosScriptRvalueLike)
+            throw Exception("Unexpected argument type encountered")
+
+        // If value is a var token, return as it can be anything
+        if (argument.varToken != null)
+            return
+        // If named variable, return as it can be anything
+        if (argument.namedGameVar != null)
+            return
+
+        // Get actual type of this argument
+        val actualType = getActualType(argument) { argument.toCaosVar() }
+
+        // Get simple type and convert it to analogous type if needed
+        val expectedTypeSimple = parameter.type
+
+        // compare Actual type to expected type
+        // Fudge types when similar enough
+        if (actualType == expectedTypeSimple || fudge(variant, actualType, expectedTypeSimple)) {
+            return
+        }
+
+        // If Expected type is TOKEN
+        // Ensure that token is valid
+        if (expectedTypeSimple == CaosExpressionValueType.TOKEN) {
+            // Tokens in C1/C2 must be 4 letters long
+            if ((argument as CaosScriptArgument).text.length == 4)
+                return
+            // Tokens in CV+ can be any length
+            else if (variant.isNotOld)
+                return
+        }
+        // Create error message
+        val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
+        // Annotate element with type error
+        holder.registerProblem(argument, message)
+    }
+
+    /**
+     * Gets the actual type for a variable
+     */
     private fun getActualType(element: CaosScriptRvalueLike, caosVar: () -> CaosVar): CaosExpressionValueType {
-        val commandToken = element.commandToken
-                ?: return caosVar().simpleType
-        val returnTypeString = (commandToken
-                .reference
-                .multiResolve(true)
-                .firstOrNull()
-                ?.element as? CaosDefCompositeElement)
-                ?.getParentOfType(CaosDefCommandDefElement::class.java)
-                ?.returnTypeString
-        return returnTypeString?.let { getCaosTypeStringAsType(it) } ?: caosVar().simpleType
+        return element.inferredType
+                .let {
+                    if (it == CaosExpressionValueType.ANY || it == CaosExpressionValueType.UNKNOWN)
+                        null
+                    else
+                        it
+                }
+                // Type inference returned non-concrete type
+                // Try for command definition
+                ?: (element.rvaluePrime)?.let {
+                    it.commandDefinition?.returnType
+                }
+                // element is not a rvalue command call, get simple type
+                ?: caosVar().simpleType
     }
 
     companion object {
-        fun getCaosTypeStringAsType(typeStringIn: String): CaosExpressionValueType {
-            return CaosExpressionValueType.fromSimpleName(typeStringIn)
-        }
 
         // Similar var types
         private val BYTE_STRING_LIKE = listOf(CaosExpressionValueType.BYTE_STRING, CaosExpressionValueType.C1_STRING, CaosExpressionValueType.ANIMATION)
@@ -156,7 +155,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         private val STRING_LIKE = listOf(CaosExpressionValueType.STRING, CaosExpressionValueType.C1_STRING, CaosExpressionValueType.HEXADECIMAL)
 
         /**
-         * Determine whether types are similar despite having different types
+         * Determine whether types are similar despite having actually different types
          */
         fun fudge(variant: CaosVariant, actualType: CaosExpressionValueType, expectedType: CaosExpressionValueType): Boolean {
             if (actualType in ANY_TYPE || expectedType in ANY_TYPE)

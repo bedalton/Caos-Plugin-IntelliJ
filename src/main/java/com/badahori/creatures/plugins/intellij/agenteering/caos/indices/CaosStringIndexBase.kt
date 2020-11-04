@@ -157,7 +157,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         return out
     }
 
-    internal fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
+    private fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
         return scope ?: GlobalSearchScope.allScope(project)
     }
 

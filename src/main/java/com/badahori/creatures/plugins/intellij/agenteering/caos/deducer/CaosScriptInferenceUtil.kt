@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getAssignedType
@@ -35,15 +33,7 @@ object CaosScriptInferenceUtil {
     fun getInferredType(prime: CaosScriptRvaluePrime?): CaosExpressionValueType? {
         if (prime == null)
             return null
-        val commandString = prime.commandStringUpper.replace("[ ][ ]+".toRegex(), " ")
-        val variant = prime.variant
-                ?: return CaosExpressionValueType.UNKNOWN
-        return CaosDefCommandElementsByNameIndex.Instance[commandString, prime.project]
-                .filter {
-                    variant in it.variants && it.isRvalue
-                }
-                .map { it.simpleReturnType }
-                .firstOrNull()
+        return prime.commandDefinition?.returnType
     }
 
     fun getInferredValue(element: CaosScriptRvalue): CaosVar? {

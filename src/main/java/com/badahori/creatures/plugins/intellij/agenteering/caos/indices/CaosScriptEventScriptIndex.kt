@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.intellij.psi.stubs.StubIndexKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedVar
 
 class CaosScriptEventScriptIndex : CaosStringIndexBase<CaosScriptEventScript>(CaosScriptEventScript::class.java) {
     override fun getKey(): StubIndexKey<String, CaosScriptEventScript> = KEY

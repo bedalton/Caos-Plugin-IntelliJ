@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -40,13 +39,10 @@ class CaosScriptCommandHasOwnrInspection : LocalInspectionTool() {
     }
 
     private fun requiresOwnr(element:CaosScriptIsCommandToken) : Boolean {
-        return element
-                .reference
-                .multiResolve(false)
-                .mapNotNull {
-                    it.element?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                }
-                .any { it.requiresOwner }
+        return (element.parent as? CaosScriptCommandLike)
+                ?.commandDefinition
+                ?.requiresOwnr
+                ?: false
     }
 
     companion object {
