@@ -18,6 +18,8 @@
  * modified by Daniel Badal - 2019
  */
 
+@file:Suppress("SpellCheckingInspection")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.library
 
 import com.intellij.openapi.progress.ProgressIndicator
