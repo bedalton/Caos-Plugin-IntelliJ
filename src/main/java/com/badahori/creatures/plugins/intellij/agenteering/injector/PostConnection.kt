@@ -10,6 +10,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 
+/**
+ * Connection class for managing POST based CAOS injection
+ * Requires CAOS server executable to be running to handle caos injection post requests
+ */
 internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConnection {
 
     private val url:URL by lazy {

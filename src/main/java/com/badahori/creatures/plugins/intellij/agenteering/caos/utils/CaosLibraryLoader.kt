@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.io.IOUtils
@@ -8,7 +7,6 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.reflect.Field
-import java.util.*
 
 object CaosLibraryLoader{
 
@@ -36,7 +34,7 @@ object CaosLibraryLoader{
             val directory = fileOut.parentFile
             addLibraryPath(directory.absolutePath)
             System.loadLibrary(myFile)
-            return true;
+            return true
         } catch (e: Exception) {
             throw Exception("Failed to load required DLL: $pathTemp with error: ${e.message}")
         }
@@ -51,10 +49,10 @@ object CaosLibraryLoader{
     @Throws(java.lang.Exception::class)
     private fun addLibraryPath(pathToAdd: String) {
         val usrPathsField: Field = ClassLoader::class.java.getDeclaredField("usr_paths")
-        usrPathsField.setAccessible(true)
+        usrPathsField.isAccessible = true
 
         //get array of paths
-        val paths = getUserPaths();
+        val paths = getUserPaths()
         if (paths.contains(pathToAdd))
             return
 
@@ -66,14 +64,14 @@ object CaosLibraryLoader{
         }
 
         //add the new path
-        val newPaths: Array<String> = Arrays.copyOf(paths, paths.size + 1)
-        newPaths[newPaths.size - 1] = pathToAdd
+        val newPaths: Array<String> = paths + pathToAdd
         usrPathsField.set(null, newPaths)
     }
 
     private fun getUserPaths() : Array<String>  {
         val usrPathsField: Field = ClassLoader::class.java.getDeclaredField("usr_paths")
         usrPathsField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
         return usrPathsField.get(null) as Array<String>
     }
 }

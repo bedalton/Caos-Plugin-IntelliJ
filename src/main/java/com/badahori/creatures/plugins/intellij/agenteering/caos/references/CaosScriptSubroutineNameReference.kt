@@ -1,12 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : PsiReferenceBase<CaosScriptSubroutineName>(element, TextRange.create(0, element.textLength)) {
@@ -25,10 +27,6 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
             return element.parent?.parent is CaosScriptSubroutine
         }
         return false
-    }
-
-    private fun isValidSubrGsubPair(subroutineName: PsiElement, gsubName: PsiElement): Boolean {
-        return subroutineName.parent?.parent is CaosScriptSubroutine && gsubName.hasParentOfType(CaosScriptCGsub::class.java)
     }
 
     override fun resolve(): PsiElement? {

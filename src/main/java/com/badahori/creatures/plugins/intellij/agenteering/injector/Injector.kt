@@ -146,6 +146,7 @@ object Injector {
         }
     }
 
+    @Suppress("unused")
     @JvmStatic
     fun postWarning(project: Project, title: String, message: String) {
         invokeLater {
@@ -157,7 +158,7 @@ object Injector {
         val injectUrl = runReadAction { CaosScriptProjectSettings.getInjectURL(project) }
         if (injectUrl != null) {
             if (injectUrl.startsWith("wine:")) {
-                return WineConnection(injectUrl.substring(5), variant);
+                return WineConnection(injectUrl.substring(5), variant)
             }
             return PostConnection(injectUrl, variant)
         }

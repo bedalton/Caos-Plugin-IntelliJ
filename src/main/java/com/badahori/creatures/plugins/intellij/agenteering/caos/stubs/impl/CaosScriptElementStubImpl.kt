@@ -1,17 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl
 
-import com.intellij.psi.stubs.StubBase
-import com.intellij.psi.stubs.StubElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLiteral
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes
+import com.intellij.psi.stubs.StubBase
+import com.intellij.psi.stubs.StubElement
 
 class CaosScriptSubroutineStubImpl(
         parent:StubElement<*>?,
@@ -80,95 +78,6 @@ data class CaosScriptRndvStubImpl(
 ) : StubBase<CaosScriptCRndvImpl>(parent, CaosScriptStubTypes.RNDV), CaosScriptRndvStub
 
 
-data class CaosScriptExpectsIntStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsIntImpl>(parent, CaosScriptStubTypes.EXPECTS_INT), CaosScriptExpectsIntStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.INT
-}
-
-data class CaosScriptExpectsFloatStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsFloatImpl>(parent, CaosScriptStubTypes.EXPECTS_FLOAT), CaosScriptExpectsFloatStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.FLOAT
-}
-
-data class CaosScriptExpectsQuoteStringStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsQuoteStringImpl>(parent, CaosScriptStubTypes.EXPECTS_QUOTE_STRING), CaosScriptExpectsQuoteStringStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.STRING
-}
-
-
-data class CaosScriptExpectsC1StringStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsC1StringImpl>(parent, CaosScriptStubTypes.EXPECTS_C1_STRING), CaosScriptExpectsC1StringStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.C1_STRING
-}
-
-data class CaosScriptExpressionStubImpl(
-        val parent:StubElement<*>?,
-        override val enclosingScope: CaosScope?,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptLiteralImpl>(parent, CaosScriptStubTypes.EXPRESSION), CaosScriptExpressionStub
-
-
-data class CaosScriptExpectsTokenStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsTokenImpl>(parent, CaosScriptStubTypes.EXPECTS_TOKEN), CaosScriptExpectsTokenStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.TOKEN
-}
-
-data class CaosScriptExpectsDecimalStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsDecimalImpl>(parent, CaosScriptStubTypes.EXPECTS_DECIMAL), CaosScriptExpectsDecimalStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.DECIMAL
-}
-
-data class CaosScriptExpectsByteStringStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsByteStringImpl>(parent, CaosScriptStubTypes.EXPECTS_BYTE_STRING), CaosScriptExpectsByteStringStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.BYTE_STRING
-}
-
-data class CaosScriptExpectsAgentStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsAgentImpl>(parent, CaosScriptStubTypes.EXPECTS_AGENT), CaosScriptExpectsAgentStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.AGENT
-}
-
-data class CaosScriptExpectsValueStubImpl(
-        val parent:StubElement<*>?,
-        override val index:Int,
-        override val caosVar: CaosVar
-) : StubBase<CaosScriptExpectsValueImpl>(parent, CaosScriptStubTypes.EXPECTS_VALUE), CaosScriptExpectsValueStub {
-    override val expectedType: CaosExpressionValueType
-        get() =  CaosExpressionValueType.ANY
-}
-
 class CaosScriptNamedGameVarStubImpl(
         parent: StubElement<*>?,
         override val type: CaosScriptNamedGameVarType,
@@ -176,30 +85,6 @@ class CaosScriptNamedGameVarStubImpl(
         override val key:CaosVar
 ) : StubBase<CaosScriptNamedGameVarImpl>(parent, CaosScriptStubTypes.NAMED_GAME_VAR), CaosScriptNamedGameVarStub
 
-
-class CaosScriptConstantAssignmentStubImpl(
-        parent: StubElement<*>?,
-        override val name:String,
-        override val value:CaosNumber
-) : StubBase<CaosScriptConstantAssignmentImpl>(parent, CaosScriptStubTypes.CONSTANT_ASSIGNMENT), CaosScriptConstantAssignmentStub
-
-class CaosScriptNamedVarAssignmentStubImpl(
-        parent: StubElement<*>?,
-        override val name:String,
-        override val value:CaosVar?
-) : StubBase<CaosScriptNamedVarAssignmentImpl>(parent, CaosScriptStubTypes.NAMED_VAR_ASSIGNMENT), CaosScriptNamedVarAssignmentStub
-
-class CaosScriptNamedConstantStubImpl(
-        parent: StubElement<*>?,
-        override val name: String,
-        override val scope: CaosScope
-) : StubBase<CaosScriptNamedConstantImpl>(parent, CaosScriptStubTypes.NAMED_CONSTANT), CaosScriptNamedConstantStub
-
-class CaosScriptNamedVarStubImpl(
-        parent:StubElement<*>?,
-        override val name:String,
-        override val scope: CaosScope
-) : StubBase<CaosScriptNamedVarImpl>(parent, CaosScriptStubTypes.NAMED_VAR), CaosScriptNamedVarStub
 
 class CaosScriptAssignmentStubImpl(
         parent: StubElement<*>?,
@@ -309,12 +194,6 @@ class CaosScriptInstallScriptStubImpl(
 class CaosScriptRemovalScriptStubImpl(
         parent: StubElement<*>?
 ) : StubBase<CaosScriptRemovalScriptImpl>(parent, CaosScriptStubTypes.REMOVAL_SCRIPT), CaosScriptRemovalScriptStub
-
-
-data class CaosScriptConstantAssignmentStruct(
-        val name:String,
-        val value:CaosNumber
-)
 
 
 class CaosScriptVarTokenStubImpl(

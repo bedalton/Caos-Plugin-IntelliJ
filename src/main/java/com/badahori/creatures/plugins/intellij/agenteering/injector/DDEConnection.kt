@@ -8,6 +8,9 @@ import com.pretty_tools.dde.client.DDEClientConversation
 import com.pretty_tools.dde.client.DDEClientEventListener
 
 
+/**
+ * Class for managing a C1/C2 DDE CAOS connection
+ */
 internal class DDEConnection(private val variant: CaosVariant) : CaosConnection {
 
     override fun inject(caos: String): InjectionStatus {
@@ -27,17 +30,17 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
         }
     }
 
-    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caosIn: String): InjectionStatus {
+    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
-        val caos = if (!caosIn.trim().toLowerCase().startsWith(expectedHeader)) {
-             if (removalRegex.matches(caosIn)) {
-                 caosIn.replace(removalRegex, "")
+        val caosFormatted = if (!caos.trim().toLowerCase().startsWith(expectedHeader)) {
+             if (removalRegex.matches(caos)) {
+                 caos.replace(removalRegex, "")
              } else
-                 expectedHeader + caosIn
+                 expectedHeader + caos
         } else
-            caosIn
-        return inject(caos)
+            caos
+        return inject(caosFormatted)
     }
 
     override fun disconnect(): Boolean {
@@ -80,14 +83,14 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
                 connection = null
             }
         }
-        try {
+        return try {
             conn.connect(server, topic)
             connection = conn
-            return conn
+            conn
         } catch (e: Exception) {
             e.printStackTrace()
             LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running. Error: " + e.message)
-            return null
+            null
         }
     }
 

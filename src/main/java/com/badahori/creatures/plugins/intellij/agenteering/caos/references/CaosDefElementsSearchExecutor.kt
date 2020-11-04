@@ -46,7 +46,7 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
     }
 
     /**
-     * Actual execution method used for use in runReadAction runnables
+     * Actual execution method used for use in runReadAction run-ables
      */
     private fun executeActual(element: PsiElement, processor: Processor<in PsiReference>): Boolean {
         val project = element.project
@@ -74,6 +74,7 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
         return true
     }
 
+    @Suppress("SpellCheckingInspection")
     private fun getVarGroupIfAny(element: CaosDefCompositeElement): CaosScriptVarTokenGroup? {
         return when (element.text.toUpperCase()) {
             "VARX" -> CaosScriptVarTokenGroup.VARx

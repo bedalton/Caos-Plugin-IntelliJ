@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
@@ -36,6 +35,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
         /**
          * Gets the expression type from its simple name
          */
+        @Suppress("SpellCheckingInspection")
         fun fromSimpleName(simpleName: String): CaosExpressionValueType {
             return when (val typeToLower = simpleName.trim().toLowerCase()) {
                 "any" -> ANY

@@ -112,7 +112,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_APP_COL,
                 CaosScript_K_BBD_COL,
                 CaosScript_K_BRN_COL,
-                CaosScript_K_CD_,
+                CaosScript_K__CD_,
                 CaosScript_K_DBG_COL,
                 CaosScript_K_DDE_COL,
                 CaosScript_K_FILE,
@@ -158,7 +158,6 @@ class CaosScriptTokenSets {
                 CaosScript_K_SUBR,
                 CaosScript_K_SCRP,
                 CaosScript_K_UNTL,
-                CaosScript_K_CRETN,
                 CaosScript_K_ECON,
                 CaosScript_K_AND,
                 CaosScript_K_OR
@@ -189,7 +188,7 @@ class CaosScriptTokenSets {
 
         @JvmStatic
         val ALL_CAOS_COMMAND_LIKE_TOKENS = create(
-                CaosScript_K_CD_,
+                CaosScript_K__CD_,
                 CaosScript_K_EJCT,
                 CaosScript_K_INIT,
                 CaosScript_K_SHUT,
@@ -667,8 +666,8 @@ class CaosScriptTokenSets {
                 CaosScript_K_POSR,
                 CaosScript_K_POST,
                 CaosScript_K_WDTH,
-                CaosScript_K_P1_,
-                CaosScript_K_P2_,
+                CaosScript_K__P1_,
+                CaosScript_K__P2_,
                 CaosScript_K_CMRX,
                 CaosScript_K_CMRY,
                 CaosScript_K_INS_NUM,
@@ -681,7 +680,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_WALL,
                 CaosScript_K_YEAR,
                 CaosScript_K_OBST,
-                CaosScript_K_UP_,
+                CaosScript_K__UP_,
                 CaosScript_K_BVAR,
                 CaosScript_K_BYIT,
                 CaosScript_K_CABB,
@@ -904,7 +903,15 @@ class CaosScriptTokenSets {
                 CaosScript_K_SSFC,
                 CaosScript_K_APP_COL,
                 CaosScript_K_DEND,
-                CaosScript_K_RCPR
+                CaosScript_K_RCPR,
+                CaosScript_K_ROTA,
+                CaosScript_K_SHAD,
+                CaosScript_K_BLCK,
+                CaosScript_K_SSFC,
+                CaosScript_K_STRC,
+                CaosScript_K_SCLE,
+                CaosScript_K_OUTL,
+                CaosScript_K_FLIP
         )
 
         @JvmStatic

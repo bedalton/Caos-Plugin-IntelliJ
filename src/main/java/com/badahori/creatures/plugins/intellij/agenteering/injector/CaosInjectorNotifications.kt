@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -40,7 +40,7 @@ object CaosInjectorNotifications {
             NotificationDisplayType.NONE,
             true,
             ToolWindowId.PROJECT_VIEW
-    );
+    )
 
     /**
      * Shows {@link Notification} in ".ignore plugin" group.
@@ -52,7 +52,7 @@ object CaosInjectorNotifications {
      */
     fun show(project: Project, title: String, content: String,
                     type: NotificationType) {
-        show(project, title, content, NOTIFICATION_GROUP, type, null);
+        show(project, title, content, NOTIFICATION_GROUP, type, null)
     }
 
     /**
@@ -66,7 +66,7 @@ object CaosInjectorNotifications {
      */
     fun show(project: Project, title: String, content: String,
                     type: NotificationType, listener: NotificationListener?) {
-        show(project, title, content, NOTIFICATION_GROUP, type, listener);
+        show(project, title, content, NOTIFICATION_GROUP, type, listener)
     }
 
     /**
@@ -82,7 +82,7 @@ object CaosInjectorNotifications {
     fun show(project: Project, title: String, content: String,
                     group: NotificationGroup, type: NotificationType,
                     listener: NotificationListener?) {
-        val notification: Notification = group.createNotification(title, content, type, listener);
-        Notifications.Bus.notify(notification, project);
+        val notification: Notification = group.createNotification(title, content, type, listener)
+        Notifications.Bus.notify(notification, project)
     }
 }

@@ -33,7 +33,7 @@ class CaosScriptTargAssignmentStubType(debugName:String) : com.badahori.creature
         return CaosScriptTargAssignmentStubImpl(
                 parent = parent,
                 scope = element.scope,
-                rvalue = element.rVar
+                rvalue = element.rvalue?.toCaosVar()
         )
     }
 }

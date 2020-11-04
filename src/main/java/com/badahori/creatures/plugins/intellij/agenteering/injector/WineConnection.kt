@@ -7,6 +7,10 @@ import com.intellij.openapi.project.Project
 import java.io.File
 import java.util.*
 
+/**
+ * Class for managing WINE based CAOS injection
+ * Requires watcher launcher
+ */
 internal class WineConnection(path:String, private val variant:CaosVariant) : CaosConnection {
 
     val prefix:String? by lazy {

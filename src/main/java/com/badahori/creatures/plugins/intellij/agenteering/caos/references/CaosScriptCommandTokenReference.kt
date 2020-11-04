@@ -22,13 +22,6 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     private val name: String by lazy {
         element.name?.replace("\\s+".toRegex(), " ") ?: "{{UNDEF}}"
     }
-
-    private val VARx = "[Vv][Aa][Rr][0-9]".toRegex()
-    private val VAxx = "[Vv][Aa][0-9][0-9]".toRegex()
-    private val OBVx = "[Oo][Bb][Vv][0-9]".toRegex()
-    private val OVxx = "[Oo][Vv][0-9][0-9]".toRegex()
-    private val MVxx = "[Mm][Vv][0-9][0-9]".toRegex()
-
     private val variants: List<CaosVariant> by lazy {
         when (myElement) {
             is CaosDefCompositeElement -> myElement.variants
@@ -194,18 +187,20 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     }
 
     private val names by lazy {
-        if (myElement.parent is CaosDefCommand)
-            listOf(myElement.parent!!.text.replace("\\s+".toRegex(), " "))
-        else if (myElement.parent is CaosDefCodeBlock) {
-            val previousSibling = myElement.getPreviousNonEmptySibling(false)
-            val nextSibling = myElement.getNextNonEmptySibling(false)
-            listOfNotNull(
-                    name,
-                    previousSibling?.let { "${it.text} $name" },
-                    nextSibling?.let { "$name ${it.text}" }
-            )
-        } else {
-            listOf(name)
+        when (myElement.parent) {
+            is CaosDefCommand -> listOf(myElement.parent!!.text.replace("\\s+".toRegex(), " "))
+            is CaosDefCodeBlock -> {
+                val previousSibling = myElement.getPreviousNonEmptySibling(false)
+                val nextSibling = myElement.getNextNonEmptySibling(false)
+                listOfNotNull(
+                        name,
+                        previousSibling?.let { "${it.text} $name" },
+                        nextSibling?.let { "$name ${it.text}" }
+                )
+            }
+            else -> {
+                listOf(name)
+            }
         }
     }
 
@@ -255,6 +250,12 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
 
     companion object {
         val EXTRA_SPACE_REGEX = "\\s\\s+".toRegex()
+        private val VARx = "[Vv][Aa][Rr][0-9]".toRegex()
+        private val VAxx = "[Vv][Aa][0-9][0-9]".toRegex()
+        private val OBVx = "[Oo][Bb][Vv][0-9]".toRegex()
+        private val OVxx = "[Oo][Vv][0-9][0-9]".toRegex()
+        private val MVxx = "[Mm][Vv][0-9][0-9]".toRegex()
+
     }
 
 }

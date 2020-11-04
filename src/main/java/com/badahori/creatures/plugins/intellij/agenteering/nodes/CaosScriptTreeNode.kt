@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
@@ -8,8 +7,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.psi.util.PsiTreeUtil

@@ -13,6 +13,9 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit
 
+/**
+ * Class for managing a connection to C3 for CAOS injection
+ */
 internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
     private var ranOnce = false
