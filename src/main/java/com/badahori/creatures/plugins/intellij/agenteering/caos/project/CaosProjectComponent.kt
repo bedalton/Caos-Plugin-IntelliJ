@@ -18,7 +18,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import java.util.logging.Logger
 
 
 class CaosProjectComponent(project: Project) : ProjectComponent {
@@ -56,14 +55,7 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
         project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, CaosSdkProjectRootsChangeListener)
     }
 
-    override fun projectOpened() {
-        super.projectOpened()
-
-    }
-
     companion object {
-        private val LOGGER = Logger.getLogger("#" + CaosProjectComponent::class.java)
-
         internal fun registerSourcesOnFileOpen(project: Project, file: VirtualFile) {
             val module = file.getModule(project)
             if (module != null) {
