@@ -14,7 +14,7 @@ class CaosModuleConfigurationEditorProvider : ModuleConfigurationEditorProvider 
         if (ModuleType.get(module) !is CaosScriptModuleType)
             return ModuleConfigurationEditor.EMPTY
         return arrayOf(//ContentEntriesEditor(module.name, state),
-                CaosContentEntiesEditor(module.name, state),
+                CaosContentEntitiesEditor(module.name, state),
                 CaosModuleConfigurationEditor(state))
     }
 }
