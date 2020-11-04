@@ -37,7 +37,6 @@ class CaosProjectComponent(project: Project) : ProjectComponent {
                 if (psiFile is CaosScriptFile) {
                     registerSourcesOnFileOpen(project, file)
                 }
-
             }
         })
     }
