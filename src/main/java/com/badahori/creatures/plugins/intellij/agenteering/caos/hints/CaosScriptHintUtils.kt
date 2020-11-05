@@ -19,7 +19,7 @@ fun CaosScriptRvalue.getValuesListValue(): CaosValuesListValue? {
     }
     val variant = variant
             ?: return null
-    (parent as? CaosScriptCommandLike)?.let {
+    (parent as? CaosScriptCommandElement)?.let {
         return getCommandParameterValuesListValue(variant, it, this, text)
     }
 
@@ -43,7 +43,7 @@ private fun getEqualityExpressionValuesListValue(variant:CaosVariant, equalityEx
     return null
 }
 
-private fun getCommandParameterValuesListValue(variant: CaosVariant, containingCommand: CaosScriptCommandLike, expression: CaosScriptRvalue, key: String): CaosValuesListValue? {
+private fun getCommandParameterValuesListValue(variant: CaosVariant, containingCommand: CaosScriptCommandElement, expression: CaosScriptRvalue, key: String): CaosValuesListValue? {
     val index = expression.index
     val valuesListId = containingCommand.commandDefinition?.parameters?.getOrNull(index)?.valuesListIds?.get(variant.code)
             ?: return null
@@ -75,5 +75,5 @@ internal fun getCommand(element: CaosScriptCommandElement): CaosDefCommandDefEle
 }
 
 internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosCommand? {
-    return (commandToken.parent as? CaosScriptCommandLike)?.commandDefinition
+    return (commandToken.parent as? CaosScriptCommandElement)?.commandDefinition
 }
