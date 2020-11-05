@@ -56,6 +56,10 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
         get() {
             return this !in VARIANT_OLD
         }
+
+    override fun toString(): String {
+        return code
+    }
 }
 
 fun CaosVariant?.orDefault(): CaosVariant {
