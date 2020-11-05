@@ -75,12 +75,17 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun isNewerVariant(builder_: PsiBuilder,
-                     level: Int): Boolean {
-        return fileVariant(builder_)?.isNotOld.orFalse()
+    fun isNewVariant(
+            builder_: PsiBuilder,
+            level: Int,
+            includeSeaMonkeys:Boolean
+    ): Boolean {
+        return fileVariant(builder_)?.let {
+            it.isNotOld && (includeSeaMonkeys || it != CaosVariant.SM)
+        }.orFalse()
     }
 
-    private fun fileVariant(builder_: PsiBuilder) : CaosVariant? {
+    private fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
                 ?: return null
         (psiFile as? CaosScriptFile)?.variant?.let { variant ->
@@ -145,7 +150,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         return builder_.getUserData(BLOCKS_KEY).orElse(0) > 0
     }
 
-    private fun ignoreExpects() : Boolean {
+    private fun ignoreExpects(): Boolean {
         return false// && (CaosScriptProjectSettings.variant == C3 || CaosScriptProjectSettings.variant == DS)
     }
 
