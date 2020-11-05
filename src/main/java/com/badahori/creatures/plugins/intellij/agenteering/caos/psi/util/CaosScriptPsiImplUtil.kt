@@ -123,7 +123,13 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandStringUpper(command: CaosScriptCommandElement): String {
+    fun getCommandStringUpper(command: CaosScriptCommandElement): String? {
+        return command.commandString?.toUpperCase()
+    }
+
+
+    @JvmStatic
+    fun getCommandStringUpper(command: CaosScriptCAssignment): String? {
         return command.commandString.toUpperCase()
     }
 
@@ -151,9 +157,8 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getCommandString(element: CaosScriptLvalue): String? {
-        return element.stub?.caosVar?.commandString
+        return element.stub?.commandString
                 ?: element.commandToken?.text
-                ?: UNDEF
     }
 
     @JvmStatic
@@ -202,6 +207,7 @@ object CaosScriptPsiImplUtil {
         val variant = element.variant
                 ?: return null
         val token = element.commandString
+                ?: return null
         val commandType = element.getEnclosingCommandType()
         val command =  getCommandDefinition(variant, commandType, token)
         if (command != null)
@@ -222,6 +228,9 @@ object CaosScriptPsiImplUtil {
             element.putUserData(COMMAND_DEFINITION_KEY, command)
         return command
     }
+
+
+    fun getCommandDefinition(element:CaosScriptTokenRvalue) : CaosCommand? = null
 
     private fun getCommandDefinition(
             variant:CaosVariant,
@@ -881,6 +890,13 @@ object CaosScriptPsiImplUtil {
         return (caosVar as? CaosVar.CaosCommandCall)?.returnType ?: caosVar.simpleType
     }
 
+
+    @JvmStatic
+    fun getInferredType(element: CaosScriptTokenRvalue): CaosExpressionValueType {
+        return CaosExpressionValueType.TOKEN
+    }
+
+
     @JvmStatic
     fun getArguments(command: CaosScriptCommandElement): List<CaosScriptArgument> {
         val base = (command as? CaosScriptRvalue)?.rvaluePrime ?: command
@@ -1150,7 +1166,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isClosed(element: CaosScriptSubroutine): Boolean {
-        return element.cRetn != null
+        return element.retnKw != null
     }
 
     /*
@@ -1486,6 +1502,10 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
             return CaosCommandType.CONTROL_STATEMENT
         if (isOrHasParentOfType(CaosScriptLoopStatement::class.java))
             return CaosCommandType.CONTROL_STATEMENT
+        if (this is CaosScriptIsCommandToken || children.firstOrNull() is CaosScriptIsCommandToken) {
+            return CaosCommandType.COMMAND
+        }
+        LOGGER.info("Failed to understand command type with value: $text. ${parent?.text?.let { "With parent: $it" } ?: "Without parent"}")
         return CaosCommandType.UNDEFINED
     }
     return when (parent) {
@@ -1501,7 +1521,10 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
         is CaosScriptEscnHeader -> CaosCommandType.CONTROL_STATEMENT
         is CaosScriptRepsHeader -> CaosCommandType.CONTROL_STATEMENT
         is CaosScriptSubroutineHeader -> CaosCommandType.CONTROL_STATEMENT
-        else -> parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
+        else ->  {
+            LOGGER.info("Failed to understand command type with a command element parent ${parent.commandStringUpper};")
+            parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
+        }
     }
 }
 
@@ -1560,7 +1583,7 @@ fun String?.nullIfUndefOrBlank(): String? {
         this
 }
 
-val CaosScriptCommandLike.commandStringUpper: String get() = commandString.toUpperCase()
+val CaosScriptCommandLike.commandStringUpper: String? get() = commandString?.toUpperCase()
 
 val PsiElement.endOffsetInParent: Int
     get() {
