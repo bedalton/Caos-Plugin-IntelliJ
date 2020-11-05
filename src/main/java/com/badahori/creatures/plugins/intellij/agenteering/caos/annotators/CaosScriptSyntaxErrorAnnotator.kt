@@ -1,17 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.intellij.lang.annotation.AnnotationHolder
@@ -58,7 +59,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             //is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper) // Comments are striped out automatically
             is CaosScriptCharacter -> {
                 if (element.charChar?.textLength.orElse(0) > 1 && element.charChar?.text != "\\\\") {
-                    simpleError(element.charChar?:element, "Char value can be only one character", annotationWrapper)
+                    simpleError(element.charChar ?: element, "Char value can be only one character", annotationWrapper)
                 }
             }
             is CaosScriptErrorLvalue -> {
@@ -94,13 +95,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     /**
      * Further annotates an error element as it may possibly be an LValue used as a command
      */
-    private fun annotateErrorElement(variant:CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateErrorElement(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
         val command = element.text
         val commandUpperCase = element.text.toUpperCase()
-        val isLvalue = commandUpperCase == "CLAS" || commandUpperCase == "CLS2" || CaosDefCommandElementsByNameIndex.Instance[commandUpperCase, element.project]
-                .any {
-                    it.isVariant(variant) && it.isLvalue
-                }
+        val isLvalue = commandUpperCase == "CLAS" || commandUpperCase == "CLS2" || CaosLibs[variant][CaosCommandType.LVALUE][command] != null
         if (isLvalue) {
             val setv = "SETV".matchCase(command)
             annotationWrapper
@@ -179,6 +177,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
+    /*
     private fun annotateSetvCompoundLvalue(variant: CaosVariant, element: CaosScriptCAssignment, annotationWrapper: AnnotationHolderWrapper) {
         if (variant.isNotOld)
             return
@@ -193,9 +192,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (lvalue.argumentsLength.orElse(0) > 0)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.expects-a-value"))
-                .range(TextRange(element.endOffset-1, element.endOffset))
+                .range(TextRange(element.endOffset - 1, element.endOffset))
                 .create()
-    }
+    }*/
 
     @Suppress("SameParameterValue")
     private fun simpleError(element: PsiElement, message: String, annotationWrapper: AnnotationHolderWrapper) {
@@ -209,6 +208,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         val prevText = element.previous?.text ?: ""
         if (variant.isNotOld)
             return
+        /*
+        // **Commented out** because leading spaces in CAOS tools does not seem to be a problem
         if (prevText.contains("\n")) {
             if (false) { //(element.containingFile as? CaosScriptFile)?.variant == CaosVariant.C1) {
                 annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.c1-leading-spaces"))
@@ -221,7 +222,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                         .create()
             }
             return
-        }
+        }*/
         //val nextIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(nextText)
         val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
         val text = element.text
@@ -232,7 +233,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (text.isEmpty() && variant.isOld) {
             val next = element.next
                     ?: return
-            val toMark = TextRange(element.startOffset - 1, next.startOffset+1)
+            val toMark = TextRange(element.startOffset - 1, next.startOffset + 1)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
                     .range(toMark)
                     .withFix(CaosScriptInsertSpaceFix(next))
@@ -260,10 +261,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
         return
     }
+/*
+         //Skip comment error for now, as C2 CAOS tool strips comments anyways, so we should too?
 
     private fun annotateComment(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
-        /*
-         //Skip comment error for now, as C2 CAOS tool strips comments anyways, so we should too?
 
         if (true || variant != CaosVariant.C1)
             return
@@ -271,8 +272,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         annotationWrapper.newErrorAnnotation("Comments are not allowed in [C1] variant")
                 .range(element)
                 .create()
-         */
     }
+         */
 
     private fun annotateNewEqualityOps(variant: CaosVariant, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
         if (variant.isNotOld)
@@ -356,7 +357,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 .create()
     }
 
-    private fun annotateNewLineLike(variant:CaosVariant, element:CaosScriptSpaceLikeOrNewline, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNewLineLike(variant: CaosVariant, element: CaosScriptSpaceLikeOrNewline, annotationWrapper: AnnotationHolderWrapper) {
         if (variant.isNotOld)
             return
         if (element.parent == element.containingFile && element.containingFile.firstChild == element && variant == CaosVariant.C1) {
@@ -371,7 +372,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             }.sortedBy {
                 it.startOffset
             }
-            if(prevSpaces.isNotEmpty()) {
+            if (prevSpaces.isNotEmpty()) {
                 val range = TextRange.create(prevSpaces.first().startOffset, prevSpaces.last().endOffset)
                 val error = CaosBundle.message("caos.annotator.syntax-annotator.invalid-trailing-whitespace")
                 annotationWrapper
@@ -429,12 +430,19 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             }
             val commandToUpperCase = element.commandString.toUpperCase()
             val commandType = element.getEnclosingCommandType()
-            val commands = CaosDefCommandElementsByNameIndex
-                    .Instance[commandToUpperCase, element.project]
-            var variants = commands
-                    .flatMap { it.variants.filterNotNull() }
+            if (CaosLibs[variant][commandType][commandToUpperCase] != null)
+                return
+            val variants = CaosLibs[commandType]
+                    .filter {
+                        it.command like commandToUpperCase
+                    }
+                    .flatMap { it.variants }
+                    // Make unique
                     .toSet()
-                    .toList()
+                    .map {
+                        CaosVariant.fromVal(it)
+                    }
+
             if (variants.isEmpty()) {
                 annotationWrapper
                         .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command", commandToUpperCase))
@@ -442,6 +450,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                         .create()
                 return
             }
+
 
             if (variant !in variants) {
                 val variantString = getVariantString(variants)
@@ -452,40 +461,45 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                         .create()
                 return
             }
+
             // If command type cannot be determined, exit This means it was used as out of command expression
             if (commandType == CaosCommandType.UNDEFINED)
                 return
 
+            val commandsWithToken = CaosLibs.commands(commandToUpperCase)
+
             // Filter commands by matching type (ie. Command, RValue, LValue)
-            val commandsOfType = commands
+            val commandsOfType = commandsWithToken
                     .filter {
                         when (commandType) {
                             CaosCommandType.COMMAND -> it.isCommand
-                            CaosCommandType.RVALUE -> it.isRvalue
-                            CaosCommandType.LVALUE -> it.isLvalue
+                            CaosCommandType.RVALUE -> it.rvalue
+                            CaosCommandType.LVALUE -> it.lvalue
                             CaosCommandType.CONTROL_STATEMENT -> it.isCommand
                             CaosCommandType.UNDEFINED -> false
                         }
                     }
             // Command variant of type exists, so exit
-            if (commandsOfType.any { it.isVariant(variant) })
+            if (commandsOfType.any { variant.code in it.variants }) // Is super redundant, should probably remove
                 return
 
-            variants = commandsOfType
+            val variantsWithCommandOfType = commandsOfType
                     .flatMap { it.variants }
                     .toSet()
-                    .filterNotNull()
+                    .map {
+                        CaosVariant.fromVal(it)
+                    }
             // Command variant of type does not exist, show error
             val error = CaosBundle.message(
                     "caos.annotator.command-annotator.invalid-command-type-for-variant",
                     commandToUpperCase,
                     commandType.value.toLowerCase(),
-                    getVariantString(variants)
+                    getVariantString(variantsWithCommandOfType)
             )
             var builder = annotationWrapper
                     .newErrorAnnotation(error)
                     .range(element)
-            if (variant.isOld && commands.any { it.isLvalue && it.isVariant(variant) }) {
+            if (variant.isOld && commandsWithToken.any { it.lvalue && variant.code in it.variants }) {
                 builder = builder
                         .withFix(CaosScriptInsertBeforeFix("Insert SETV before $commandToUpperCase", "SETV".matchCase(element.commandString), element))
             }
@@ -504,3 +518,4 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
 }
+
