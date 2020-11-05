@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileCollector
 import com.intellij.openapi.application.ApplicationManager
@@ -53,8 +54,8 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
         if (element !is CaosDefCompositeElement) {
             (element as? CaosScriptIsCommandToken)?.let {
                 val variant = element.variant
-                        ?: return false
-                return checkCaosCommandReferences(variant, project, element, processor)
+                        ?: return true
+                return true//checkCaosCommandReferences(variant, project, element, processor)
             }
             return true
         }
@@ -86,36 +87,6 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
         }
     }
 
-    private fun getCaosFiles(project: Project): List<CaosScriptFile> {
-        return (FilenameIndex.getAllFilesByExt(project, "cos") + CaosVirtualFileCollector.collectFilesWithExtension("cos"))
-                .mapNotNull {
-                    it.getPsiFile(project) as? CaosScriptFile
-                } + getCobCaosScriptFiles(project)
-    }
-
-    private fun getCaosDefFiles(project: Project): List<CaosDefFile> {
-        return (FilenameIndex.getAllFilesByExt(project, "caosdef") + CaosVirtualFileCollector.collectFilesWithExtension("caosdef"))
-                .mapNotNull {
-                    it.getPsiFile(project) as? CaosDefFile
-                }
-    }
-
-    private fun getCobCaosScriptFiles(project: Project): List<CaosScriptFile> {
-        return getCobVirtualFiles(project).filter {
-            it.extension == "cos"
-        }.mapNotNull map@{
-            it.getPsiFile(project) as? CaosScriptFile
-        }
-    }
-
-    private fun getCobVirtualFiles(project: Project): List<CaosVirtualFile> {
-        // Does not need virtual file collector as COBs are physical files
-        return FilenameIndex.getAllFilesByExt(project, "cob")
-                .flatMap { file ->
-                    CobVirtualFileUtil.decompiledCobFiles(file, project)
-                }
-    }
-
     /**
      * Checks for var references throughout all
      */
@@ -145,7 +116,7 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
                         if (variant !in file.variants)
                             return@map emptyList<PsiReference>()
                         PsiTreeUtil.collectElementsOfType(file, CaosDefCommandDefElement::class.java)
-                                .filter { command -> token == command.commandName }
+                                .filter { command -> token like command.commandName }
                                 .mapNotNull { it.reference }
                     }
                     .all {
@@ -154,6 +125,9 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
         }
     }
 
+    /**
+     * Resolves references from command words to a given command word element
+     */
     private fun isReferenceTo(variants: List<CaosVariant>, project: Project, command: CaosDefCommandWord, processor: Processor<in PsiReference>): Boolean {
         return ApplicationManager.getApplication().runReadAction<Boolean> {
             (getCaosFiles(project))
@@ -186,6 +160,9 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
         }
     }
 
+    /**
+     * Resolves references to rvalues and event numbers
+     */
     private fun isReferenceTo(variants: List<CaosVariant>, project: Project, reference: PsiReference, processor: Processor<in PsiReference>): Boolean {
         return ApplicationManager.getApplication().runReadAction<Boolean> {
             getCaosFiles(project)
@@ -204,6 +181,51 @@ class CaosDefElementsSearchExecutor : QueryExecutor<PsiReference, ReferencesSear
                     }
                     .all {
                         processor.process(it)
+                    }
+        }
+    }
+
+    companion object {
+
+        /**
+         * Gets all CAOS files in both physical and virtual file systems
+         */
+        fun getCaosFiles(project: Project): List<CaosScriptFile> {
+            return (FilenameIndex.getAllFilesByExt(project, "cos") + CaosVirtualFileCollector.collectFilesWithExtension("cos"))
+                    .mapNotNull {
+                        it.getPsiFile(project) as? CaosScriptFile
+                    } + getCobCaosScriptFiles(project)
+        }
+
+        /**
+         * Gets all CAOS def files in both physical and virtual file systems
+         */
+        fun getCaosDefFiles(project: Project): List<CaosDefFile> {
+            return (FilenameIndex.getAllFilesByExt(project, "caosdef") + CaosVirtualFileCollector.collectFilesWithExtension("caosdef"))
+                    .mapNotNull {
+                        it.getPsiFile(project) as? CaosDefFile
+                    }
+        }
+
+        /**
+         * Gets all CAOS scripts inside COB virtual files
+         */
+        fun getCobCaosScriptFiles(project: Project): List<CaosScriptFile> {
+            return getCobVirtualFiles(project).filter {
+                it.extension == "cos"
+            }.mapNotNull map@{
+                it.getPsiFile(project) as? CaosScriptFile
+            }
+        }
+
+        /**
+         * Gets all virtual files inside COBS
+         */
+        fun getCobVirtualFiles(project: Project): List<CaosVirtualFile> {
+            // Does not need virtual file collector as COBs are physical files
+            return FilenameIndex.getAllFilesByExt(project, "cob")
+                    .flatMap { file ->
+                        CobVirtualFileUtil.decompiledCobFiles(file, project)
                     }
         }
     }
