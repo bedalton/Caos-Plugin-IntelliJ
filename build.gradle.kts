@@ -41,6 +41,9 @@ kotlin {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     version = "2019.2"
+    localPath = "/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Intellij CE - 191"
+    sandboxDirectory = "/Users/daniel/Projects/Intellij Sandbox"
+    setPlugins("PsiViewer:191.4212")
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
 
