@@ -51,6 +51,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
+            is CaosScriptCommandSoup -> annotationWrapper
+                    .newErrorAnnotation("Unrecognized command call")
+                    .range(element)
+                    .create()
             //is PsiComment, is CaosScriptComment -> annotateComment(variant, element, annotationWrapper) // Comments are striped out automatically
             is CaosScriptCharacter -> {
                 if (element.charChar?.textLength.orElse(0) > 1 && element.charChar?.text != "\\\\") {

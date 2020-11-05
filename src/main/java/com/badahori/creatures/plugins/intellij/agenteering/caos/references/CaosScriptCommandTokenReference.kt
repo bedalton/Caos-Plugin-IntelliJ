@@ -5,10 +5,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
@@ -118,16 +121,16 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                         .mapNotNull {
                             it.command.commandWordList.getOrNull(0)
                         }
-        val out = when (parentArgument) {
-            is CaosScriptExpectsInt -> matches.filter { it.returnTypeString.toLowerCase().startsWith("int") }
-            is CaosScriptExpectsDecimal -> matches.filter { it.returnTypeString.toLowerCase() == "decimal" || it.returnTypeString.toLowerCase().startsWith("int") || it.returnTypeString.toLowerCase() == "float" }
-            is CaosScriptExpectsFloat -> matches.filter { it.returnTypeString.toLowerCase() == "decimal" || it.returnTypeString.toLowerCase().startsWith("int") || it.returnTypeString.toLowerCase() == "float" }
-            is CaosScriptExpectsQuoteString -> matches.filter { it.returnTypeString.toLowerCase() == "string" }
-            else -> matches
-        }
-        return out.mapNotNull {
-            it.command.commandWordList.getOrNull(0)
-        }
+        val expectedType = CaosLibs[variant][type].get(formattedName)?.parameters?.getOrNull(parentArgument.index)?.type
+                ?: return matches
+                        .mapNotNull {
+                            it.command.commandWordList.getOrNull(0)
+                        }
+
+        return (matches.filter { it.returnTypeString like expectedType.simpleName }.nullIfEmpty() ?: matches)
+                .mapNotNull {
+                    it.command.commandWordList.getOrNull(0)
+                }
     }
 
     private fun getCommandFromCodeBlockCommand(): List<PsiElement> {

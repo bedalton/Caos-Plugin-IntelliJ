@@ -55,11 +55,11 @@ public class CaosProjectGeneratorPeerImpl {
 
     private void createUIComponents() {
         variantComboBox = new ComboBox<>(new CaosVariant[]{
-                CaosVariant.C1,
-                CaosVariant.C2,
-                CaosVariant.CV,
-                CaosVariant.C3,
-                CaosVariant.DS
+                CaosVariant.C1.INSTANCE,
+                CaosVariant.C2.INSTANCE,
+                CaosVariant.CV.INSTANCE,
+                CaosVariant.C3.INSTANCE,
+                CaosVariant.DS.INSTANCE
         });
         variantComboBox.setToolTipText("CAOS Variant");
         variantComboBox.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
