@@ -96,7 +96,7 @@ class CaosScriptEnterDelegate : EnterHandlerDelegate {
     }
 
     private fun onEnterInSubroutine(editor: Editor, subroutine: CaosScriptSubroutine): PsiElement? {
-        if (subroutine.cRetn != null)
+        if (subroutine.retnKw != null)
             return null
         EditorUtil.insertText(editor, "\nretn", subroutine.endOffset, false)
         return subroutine

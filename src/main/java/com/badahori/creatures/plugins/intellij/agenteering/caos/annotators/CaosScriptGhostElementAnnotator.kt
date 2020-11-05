@@ -35,7 +35,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
                 it.cEndi != null
             }
             is CaosScriptSubroutine -> annotate(element, "RETN", annotationWrapper) {
-                it.cRetn != null
+                it.retnKw != null
             }
             is CaosScriptEnumNextStatement -> annotate(element, "NEXT", annotationWrapper) {
                 it.cNext != null || it.cNscn != null
