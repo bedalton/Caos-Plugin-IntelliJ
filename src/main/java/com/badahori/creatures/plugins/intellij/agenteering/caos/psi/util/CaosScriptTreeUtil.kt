@@ -13,6 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.intellij.psi.PsiFile
 import java.util.logging.Logger
 
 
@@ -331,5 +332,12 @@ internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boole
             else
                 it.isBlank()
         }
+    }
+}
+
+
+fun <PsiT:PsiElement> List<PsiFile>.collectElementsOfType(type:Class<PsiT>) : List<PsiT> {
+    return flatMap { file ->
+        PsiTreeUtil.collectElementsOfType(file, type)
     }
 }

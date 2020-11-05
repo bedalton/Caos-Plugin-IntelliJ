@@ -6,7 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDef
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
@@ -14,6 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
@@ -39,6 +43,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         }
         if (element !is CaosDefCommandWord && element !is CaosDefCommand)
             return false
+        if (myElement is CaosScriptCompositeElement && element !is CaosDefCompositeElement)
+            return false
+
         val elementText = (element.parent as? CaosDefCommand ?: element).text.replace("\\s+".toRegex(), " ")
         val matches = names.any { name ->
             name.equalsIgnoreCase(elementText)
@@ -52,6 +59,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         return myElement.parent?.parent !is CaosDefCommandDefElement || myElement.parent is CaosDefCodeBlock
     }
 
+    /**
+     * Main entry into resolving command references
+     */
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         if (DumbService.isDumb(myElement.project))
             return emptyArray()
@@ -65,6 +75,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         return PsiElementResolveResult.createResults(elements)
     }
 
+    /**
+     * In charge of finding references within the command def files
+     */
     private fun findFromDefElement(): List<PsiElement> {
         if (myElement.parent is CaosDefCodeBlock) {
             return getCommandFromCodeBlockCommand()
@@ -73,8 +86,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 ?: return emptyList()
         val index = parentCommand.commandWordList.indexOf(myElement)
         val variants = (myElement.containingFile as? CaosDefFile)?.variants
-        return CaosDefCommandElementsByNameIndex
-                .Instance[parentCommand.commandWordList.joinToString(" ") { it.text }, myElement.project]
+        val parentCommandString = parentCommand.commandWordList.joinToString(" ") { it.text }
+        val rawMatches = findCommandDefElements(parentCommandString)
+        return rawMatches
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
                     it.variants.intersect(variants.orEmpty()).isNotEmpty()
@@ -84,13 +98,16 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 .filter { it != myElement }
     }
 
+    /**
+     * Finds references from CAOS files to CAOS def files
+     */
     private fun findFromScriptElement(): List<CaosDefCommandWord> {
         val type = myElement.getEnclosingCommandType()
         val formattedName = name.replace(EXTRA_SPACE_REGEX, " ")
         val variant = myElement.containingCaosFile?.variant
                 ?: return emptyList()
-        val matches = CaosDefCommandElementsByNameIndex
-                .Instance[formattedName, myElement.project]
+        val matchesRaw = findCommandDefElements(formattedName)
+        val matches = matchesRaw
                 // Filter for type and variant
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
@@ -121,7 +138,10 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                         .mapNotNull {
                             it.command.commandWordList.getOrNull(0)
                         }
-        val expectedType = CaosLibs[variant][type].get(formattedName)?.parameters?.getOrNull(parentArgument.index)?.type
+        val expectedType = CaosLibs[variant][type][formattedName]
+                ?.parameters
+                ?.getOrNull(parentArgument.index)
+                ?.type
                 ?: return matches
                         .mapNotNull {
                             it.command.commandWordList.getOrNull(0)
@@ -133,6 +153,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 }
     }
 
+    /**
+     * Resolves references from within DOC comment code blocks
+     */
     private fun getCommandFromCodeBlockCommand(): List<PsiElement> {
         val caseName = when {
             VARx.matches(name) -> "[Vv][Aa][Rr][Xx]"
@@ -161,8 +184,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                             valuesListElement.valuesListValueList.firstOrNull { it.key.equalsIgnoreCase(name) }
                         }
         }
-        val rawMatches = CaosDefCommandElementsByNameIndex
-                .Instance.getByPatternFlat("([^ ]{4}[ ])*$caseName([ ][^ ]{4})*", myElement.project)
+        val rawMatches = findCommandDefElementsByPattern("([^ ]{4}[ ])*$caseName([ ][^ ]{4})*")
         val multiMatches = rawMatches
                 .filter { commandDefElement ->
                     if (!commandDefElement.variantsIntersect(variants))
@@ -178,8 +200,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 }
         if (multiMatches.isNotEmpty())
             return multiMatches
-        return CaosDefCommandElementsByNameIndex
-                .Instance.getByPatternFlat(caseName, myElement.project)
+        return findCommandDefElements(caseName)
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
                     it.variants.intersect(variants).isNotEmpty()
@@ -189,6 +210,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 .filter { it != myElement }
     }
 
+    /**
+     * Gets names around this command for use in matching
+     */
     private val names by lazy {
         when (myElement.parent) {
             is CaosDefCommand -> listOf(myElement.parent!!.text.replace("\\s+".toRegex(), " "))
@@ -207,6 +231,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         }
     }
 
+    /**
+     * Checks that a list of words matches this token and possibly the tokens before and after
+     */
     private fun matchesWords(words: List<String>): Boolean {
         when (words.indexOf(name.toLowerCase())) {
             0 -> {
@@ -245,10 +272,52 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         return true
     }
 
+    /**
+     * Do not allow rename of base commands
+     */
     override fun handleElementRename(newElementName: String): PsiElement {
         //if (renameRegex.matches(newElementName))
         //  return myElement.setName(newElementName)
         return myElement
+    }
+
+    /**
+     * Finds command def elements in both index and VFS
+     */
+    private fun findCommandDefElements(commandName: String) : List<CaosDefCommandDefElement> {
+        val project = myElement.project
+        return CaosDefCommandElementsByNameIndex.Instance[commandName, project] + commandsInVirtualFiles(project, commandName)
+    }
+
+    /**
+     * Finds command def elements by pattern in both index and VFS
+     */
+    private fun findCommandDefElementsByPattern(pattern:String) : List<CaosDefCommandDefElement> {
+        val project = myElement.project
+        val regex = pattern.toRegex()
+        val foundInVirtualFiles = CaosDefElementsSearchExecutor.getCaosDefFiles(project)
+                .filter {
+                    variants.intersect(it.variants).isNotEmpty()
+                }
+                .collectElementsOfType(CaosDefCommandDefElement::class.java)
+                .filter {
+                    regex.matches(it.commandName)
+                }
+        return CaosDefCommandElementsByNameIndex.Instance.getByPatternFlat(pattern, project) + foundInVirtualFiles
+    }
+
+    /**
+     * Finds all command def elements in all VFS CAOS def files
+     */
+    private fun commandsInVirtualFiles(project:Project, commandName:String): List<CaosDefCommandDefElement> {
+        return CaosDefElementsSearchExecutor.getCaosDefFiles(project)
+                .filter {
+                    variants.intersect(it.variants).isNotEmpty()
+                }
+                .collectElementsOfType(CaosDefCommandDefElement::class.java)
+                .filter {
+                    it.commandName like commandName
+                }
     }
 
     companion object {
