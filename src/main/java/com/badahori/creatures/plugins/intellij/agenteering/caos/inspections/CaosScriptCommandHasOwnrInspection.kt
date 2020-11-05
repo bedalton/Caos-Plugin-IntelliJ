@@ -1,10 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -30,16 +27,16 @@ class CaosScriptCommandHasOwnrInspection : LocalInspectionTool() {
         if (!requiresOwnr(element))
             return
         element.getParentOfType(CaosScriptEventScript::class.java)?.let { script:CaosScriptEventScript ->
-            if (script.family != 4 && REQUIRES_CREATURE_OWNR.matches(element.text)) {
-                holder.registerProblem(element, "''{0}'' command expects Creature OWNR object.")
+            if ((script.family != 4 && script.family != 0) && REQUIRES_CREATURE_OWNR.matches(element.text)) {
+                holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-creature-ownr", element.commandString.toUpperCase()))
             }
             return
         }
-        holder.registerProblem(element, "''{0}'' command requires an OWNR object (ie. Should be used in an event script)")
+        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-ownr", element.commandString.toUpperCase()))
     }
 
     private fun requiresOwnr(element:CaosScriptIsCommandToken) : Boolean {
-        return (element.parent as? CaosScriptCommandLike)
+        return (element.parent as? CaosScriptCommandElement)
                 ?.commandDefinition
                 ?.requiresOwnr
                 ?: false
