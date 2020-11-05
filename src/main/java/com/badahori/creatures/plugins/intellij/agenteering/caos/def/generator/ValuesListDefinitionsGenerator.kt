@@ -2,17 +2,30 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.generator
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.splitByLength
 
 /**
  * Generates a CaosDef definition for a values list
  */
 internal fun generatorValuesListDefinition(valuesList: CaosValuesList) : String {
-    val builder = StringBuilder("@${valuesList.name}")
-    valuesList.superType?.let {superType ->
+    val builder = StringBuilder()
+    valuesList.description.nullIfEmpty()?.let {description ->
+        val commentBody = description
+                .splitByLength(120)
+                .flatMap { it.split("\n") }
+                .joinToString("\n * ")
+        builder.append("/*\n * ").append(commentBody).append("\n */\n")
+    }
+
+    builder.append("@${valuesList.name}")
+    valuesList.extensionType?.let { superType ->
         builder.append(":").append(superType)
     }
-    builder.append("{")
+    builder.append(" {")
     for(value in valuesList.values) {
+        value.beforeRegion?.let {regionHeader ->
+            builder.append("\n\t# ").append(regionHeader)
+        }
         builder
                 .append("\n\t").append(value.value)
                 .append(" = ")
@@ -21,5 +34,5 @@ internal fun generatorValuesListDefinition(valuesList: CaosValuesList) : String 
             builder.append(" - ").append(description)
         }
     }
-    return builder.append("};").toString()
+    return builder.append("\n}").toString()
 }
