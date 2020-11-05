@@ -66,7 +66,8 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                 ?: return
         val token = command
                 .commandString
-                .toUpperCase()
+                ?.toUpperCase()
+                ?: return
         when {
             token == "SETV" && index == 1 -> {
                 val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
