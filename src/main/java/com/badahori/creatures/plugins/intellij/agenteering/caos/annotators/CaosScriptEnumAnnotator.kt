@@ -62,7 +62,7 @@ class CaosScriptEnumAnnotator : Annotator {
         }
 
         if (parent is CaosScriptEnumNextStatement) {
-            val enum = parent.enumHeaderCommand.commandStringUpper
+            val enum = parent.enumHeaderCommand.commandStringUpper!!
             val next = "NEXT".matchCase(element.text)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(element)
