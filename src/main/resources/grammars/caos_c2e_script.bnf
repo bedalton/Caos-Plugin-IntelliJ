@@ -247,6 +247,7 @@
 		K_SCLE = "regexp:[Ss][Cc][Ll][Ee]";
 		K_SHAD = "regexp:[Ss][Hh][Aa][Dd]";
 		K_STRC = "regexp:[Ss][Tt][Rr][Cc]";
+		K_CRETN = "RETN inside SUBR"
 		K_F__K = "regexp:[Ff][*]{2}[Kk]"
 		K_XX_DEF = " "
 		K_XX_EXPR = " "
@@ -422,6 +423,7 @@ private caos_element
 	::=	comment
 	|	control_statement
 	|	command_call
+	|	command_soup
 	;
 
 
@@ -585,7 +587,7 @@ c_subr
 	;
 
 c_retn
-	::= K_RETN
+	::= K_CRETN
 	{
 		implements = [
    			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -814,7 +816,7 @@ doif_statement
 	;
 
 doif_statement_statement
-	::= c_doif space_like equality_expression (space_like_or_newline do_if_body)?
+	::= c_doif space_like equality_expression do_if_body?
 	{
 		pin=1
 		implements = [
@@ -860,15 +862,23 @@ else_statement
 private else_block
 	::= code_block
 	{
-		//recoverWhile=else_body_recover
+		recoverWhile=else_body_recover
 	}
+	;
+private else_body_recover
+	::= !(ENDI)
 	;
 
 private do_if_body
-	::= code_block
+	::= space_like_or_newline code_block
 	{
-		//recoverWhile=do_if_body_recover
+		pin=1
+		recoverWhile=do_if_body_recover
 	}
+	;
+
+private do_if_body_recover
+	::= !(ELSE|ENDI|ELIF)
 	;
 
 c_loop
@@ -910,6 +920,8 @@ cEver
 		]
 	}
 	;
+
+
 c_untl
 	::= K_UNTL
 	{
@@ -929,6 +941,8 @@ c_untl
 		]
 	}
 	;
+
+
 c_reps ::= K_REPS
 {
 	implements = [
@@ -965,6 +979,8 @@ c_repe ::= K_REPE
 	]
 }
 ;
+
+
 c_enum
 	::= K_ENUM
 	|	K_ESEE
@@ -1607,6 +1623,30 @@ private c_pict ::= c_kw_pict space_like expects_pict_dimension
 	}
 	;
 
+private c_retn
+	::= c_kw_retn
+	;
+
+c_kw_retn
+	::= K_CRETN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
 c_kw_pict
 	::= K_PICT
 	{
@@ -1855,6 +1895,7 @@ rvalue
 	|	animation_string
 	|	number
 	|	pict_dimension_literal
+	|	command_soup
 	|	incomplete
 	{
    		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
@@ -2180,6 +2221,41 @@ command_call
 		]
 	}
 	;
+
+
+command_soup
+	::= all_prefixes? (space_like !<<eol>> (all_tokens|incomplete) (space_like !<<eol>>(all_tokens|incomplete))?) (!<<eol>>space_like (rvalue|lvalue|token_rvalue|incomplete))*
+	;
+
+private all_prefixes
+	::= K_NEW_COL
+	|	K_MESG
+	|	K_STM_NUM
+	|	K_STIM
+	|	K_BBD_COL
+	|	K_SYS_COL
+	|	K_DDE_COL
+	|	K_BRN_COL
+	|	K__CD_
+	|	K_PAT_COL
+	|	K_ORDR
+	|	K_SWAY
+	|	K_URGE
+	|	K_DBG_COL
+	|	K_FILE
+	|	K_GENE
+	|	K_HIST
+	|	K_NET_COL
+	|	K_PRT_COL
+	|	K_PRAY
+	|	K_GIDS
+	|	K_APP_COL
+	;
+
+private command_recover
+	::= !(NEWLINE)
+	;
+
 // =============================== //
 // ========= BASE COMMANDS ======= //
 // =============================== //
@@ -2223,6 +2299,7 @@ private command_call_by_args
 	|	c_none
 	|	c_gsub
 	|	c_pict
+	|	c_retn
 	;
 
 private c_none
@@ -2230,116 +2307,339 @@ private c_none
 	;
 
 private c_r
-	::=	c_kw_r  space_like rvalue
+	::=	c_kw_r args_r
+	;
+
+private args_r
+	::= space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r
-	::=	c_kw_r_r  space_like rvalue space_like rvalue
+	::=	c_kw_r_r args_r_r
+	;
+
+private args_r_r
+	::= space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_l
-	::=	c_kw_l  space_like lvalue
+	::=	c_kw_l 	args_l
+	;
+
+private args_l
+	::= space_like lvalue
+	{
+		pin=1
+	}
 	;
 
 private c_l_r
-	::=	c_kw_l_r  space_like lvalue space_like rvalue
+	::=	c_kw_l_r  args_l_r
+	;
+
+private args_l_r
+	::= space_like lvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r
-	::=	c_kw_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r  args_r_r_r_r
+	;
+
+private args_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r
-	::=	c_kw_r_r_r  space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r  args_r_r_r
+	;
+
+private args_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_l_r_r
-	::=	c_kw_l_r_r  space_like lvalue space_like rvalue space_like rvalue
+	::=	c_kw_l_r_r  args_l_r_r
+	;
+
+private args_l_r_r
+	::= space_like lvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_cond
-	::=	c_kw_cond  space_like equality_expression
+	::=	c_kw_cond  args_cond
+	;
+
+private args_cond
+	::= space_like equality_expression
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_t
-	::=	c_kw_r_t  space_like rvalue space_like token_rvalue
+	::=	c_kw_r_t  args_r_t
+	;
+
+private args_r_t
+	::= space_like rvalue space_like token_rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r
+	::=space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r_r_r_r
 	;
 
+private args_r_r_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
+	;
 private c_t
-	::=	c_kw_t  space_like token_rvalue
+	::=	c_kw_t  args_t
+	;
+
+private args_t
+	::= space_like token_rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r  args_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r
+	::=space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_l_l_l_l
-	::=	c_kw_l_l_l_l  space_like lvalue space_like lvalue space_like lvalue space_like lvalue
+	::=	c_kw_l_l_l_l args_l_l_l_l
+	;
+
+private args_l_l_l_l
+	::=   space_like lvalue space_like lvalue space_like lvalue space_like lvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_l
-	::=	c_kw_r_l  space_like rvalue space_like lvalue
+	::=	c_kw_r_l args_r_l
+	;
+
+private args_r_l
+	::=  space_like rvalue space_like lvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_t_r_r_r_r_r_r_r
-	::=	c_kw_t_r_r_r_r_r_r_r  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_t_r_r_r_r_r_r_r args_t_r_r_r_r_r_r_r
+	;
+
+private args_t_r_r_r_r_r_r_r
+	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_t_r_r_r
-	::=	c_kw_t_r_r_r  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_t_r_r_r args_t_r_r_r
+	;
+
+private args_t_r_r_r
+	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_l
-	::=	c_kw_r_r_l  space_like rvalue space_like rvalue space_like lvalue
+	::=	c_kw_r_r_l args_r_r_l
+	;
+
+private args_r_r_l
+	::= space_like rvalue space_like rvalue space_like lvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_t_r_r
-	::=	c_kw_t_r_r  space_like token_rvalue space_like rvalue space_like rvalue
+	::=	c_kw_t_r_r args_t_r_r
+	;
+
+private args_t_r_r
+	::= space_like token_rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_t_r_r_r_r
-	::=	c_kw_t_r_r_r_r  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_t_r_r_r_r args_t_r_r_r_r
+	;
+
+private args_t_r_r_r_r
+	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r args_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r
+	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_t_r
-	::=	c_kw_t_r  space_like token_rvalue space_like rvalue
+	::=	c_kw_t_r args_t_r
+	;
+
+private args_t_r
+	::= space_like token_rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r
 	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r
+	::=   space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
+	;
+
 
 // ========== RValues ======== //
 rvalue_prime
@@ -2496,6 +2796,7 @@ private l_r_r_r_r
 // =============================== //
 // =========== KEYWORDS ========== //
 // =============================== //
+
 
 // ======= Command Keywords ====== //
 c_kw_none

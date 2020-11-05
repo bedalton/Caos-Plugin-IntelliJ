@@ -53,7 +53,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             // If has parent RValue, should continue with normal completion
             // Else use special EQ expression completion
             expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let { equalityExpression ->
-                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(resultSet, equalityExpression, expression)
+                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(variant, resultSet, equalityExpression, expression)
                 addCommandCompletions(resultSet, variant, CaosCommandType.RVALUE, element)
                 resultSet.stopHere()
             }

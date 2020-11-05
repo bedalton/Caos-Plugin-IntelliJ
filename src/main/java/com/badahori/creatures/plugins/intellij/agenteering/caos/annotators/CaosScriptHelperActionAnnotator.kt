@@ -116,35 +116,19 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
     }
 
     private fun annotateAssignment(variant: CaosVariant, assignment: CaosScriptCAssignment, holder: ProblemsHolder) {
-        val commandString = assignment.lvalue?.commandStringUpper.nullIfEmpty()
+        val commandDefinition = assignment.lvalue?.commandDefinition
                 ?: return
-        val project = assignment.project
+        val valuesList = commandDefinition.returnValuesList[variant]
+                ?: return
         for (addTo in assignment.arguments) {
             if (addTo is CaosScriptLvalue || (addTo as? CaosScriptRvalue)?.varToken != null)
                 continue
             val currentValue= addTo.text.toIntSafe() ?: 0
-            val valuesList = CaosDefCommandElementsByNameIndex
-                    .Instance[commandString, project]
-                    .filter {
-                        it.isVariant(variant)
-                    }
-                    .mapNotNull {
-                        it.returnTypeStruct?.type?.valuesList
-                    }
-                    .firstOrNull()
-                    ?: return
-            val valuesListWithBitFlags = CaosDefValuesListElementsByNameIndex
-                    .Instance[valuesList, project]
-                    .firstOrNull {
-                        it.isBitflags && it.isVariant(variant)
-                    }
-                    ?: return
-
             val range = if (addTo.text.isNotEmpty())
                 addTo
             else
                 addTo.next ?: addTo.previous ?: return
-            holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesListWithBitFlags.typeName, valuesListWithBitFlags.valuesListValues, currentValue))
+            holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesList.name, valuesList.values, currentValue))
         }
     }
 
