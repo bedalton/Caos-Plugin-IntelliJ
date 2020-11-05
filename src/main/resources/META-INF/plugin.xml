@@ -388,12 +388,6 @@
     <stubElementTypeHolder
         class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
     <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptConstAssignmentIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarAssignmentIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedVarUseIndex" />
-    <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex" />
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
