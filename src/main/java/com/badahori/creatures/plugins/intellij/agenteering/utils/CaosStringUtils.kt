@@ -110,11 +110,11 @@ fun String.equalsIgnoreCase(otherString: String): Boolean {
     return this.equals(otherString, true)
 }
 
-fun String.endsWithIgnoreCase(otherString:String) : Boolean {
+fun String.endsWithIgnoreCase(otherString: String): Boolean {
     return this.toLowerCase().endsWith(otherString.toLowerCase())
 }
 
-fun String.startsWithIgnoreCase(otherString:String) : Boolean {
+fun String.startsWithIgnoreCase(otherString: String): Boolean {
     return this.toLowerCase().startsWith(otherString.toLowerCase())
 }
 
@@ -137,8 +137,8 @@ fun String.indexOfFirstNonWhitespaceCharacter(): Int {
     return -1
 }
 
-fun String.matchCase(stringToMatch:String):String {
-    return when(stringToMatch.case) {
+fun String.matchCase(stringToMatch: String): String {
+    return when (stringToMatch.case) {
         Case.UPPER_CASE -> toUpperCase()
         Case.LOWER_CASE -> toLowerCase()
         Case.CAPITAL_FIRST -> upperCaseFirstLetter()
@@ -146,20 +146,20 @@ fun String.matchCase(stringToMatch:String):String {
 }
 
 val String.case: Case
-    get()  {
-    val chars = toCharArray()
-    if (chars.size < 2)
-        return Case.LOWER_CASE
-    if (chars[0] == chars[0].toLowerCase()) {
-        return Case.LOWER_CASE
+    get() {
+        val chars = toCharArray()
+        if (chars.size < 2)
+            return Case.LOWER_CASE
+        if (chars[0] == chars[0].toLowerCase()) {
+            return Case.LOWER_CASE
+        }
+        if (chars[1] == chars[1].toLowerCase()) {
+            return Case.CAPITAL_FIRST
+        }
+        return Case.UPPER_CASE
     }
-    if (chars[1] == chars[1].toLowerCase()) {
-        return Case.CAPITAL_FIRST
-    }
-    return Case.UPPER_CASE
-}
 
-fun String.escapeHTML() : String{
+fun String.escapeHTML(): String {
     return this.replace("<", "&lt;").replace(">", "&gt;")
 }
 
@@ -168,7 +168,7 @@ private val numberRegex = "[-+]?[0-9]+".toRegex()
 fun String.toIntSafe(): Int? {
     return try {
         this.toInt()
-    } catch (e:Exception) {
+    } catch (e: Exception) {
         null
     }
 }
@@ -179,24 +179,23 @@ enum class Case {
     CAPITAL_FIRST
 }
 
-infix fun String?.like(other:String?) : Boolean {
+infix fun String?.like(other: String?): Boolean {
     return this != null && other != null && this.equalsIgnoreCase(other)
 }
 
-infix fun String?.notLike(other:String?) : Boolean {
+infix fun String?.notLike(other: String?): Boolean {
     return this == null || other == null || !this.equalsIgnoreCase(other)
 }
 
-fun String.wrap(maxLength:Int, newLinePrefixIn:String = "") : String {
+fun String.wrap(maxLength: Int, newLinePrefixIn: String = ""): String {
     val joinText = "\n$newLinePrefixIn"
     return splitByLength(maxLength).joinToString(joinText)
 }
 
-fun String.splitByLength(maxLength:Int) : List<String> {
+fun String.splitByLength(maxLength: Int): List<String> {
     val chunks = mutableListOf<String>()
     var textLeft = this
-    while (textLeft.isNotEmpty())
-    {
+    while (textLeft.isNotEmpty()) {
         if (textLeft.length <= maxLength)                    //if remaining string is less than length, add to list and break out of loop
         {
             chunks.add(this)
@@ -205,16 +204,23 @@ fun String.splitByLength(maxLength:Int) : List<String> {
 
         var chunk = textLeft.substring(0, maxLength)     //Get maxLength chunk from string.
 
-        if (Character.isWhitespace(textLeft[maxLength]))    {       //if next char is a space, we can use the whole chunk and remove the space for the next line
-
+        //if next char is a space, we can use the whole chunk and remove the space for the next line
+        if (Character.isWhitespace(textLeft[maxLength])) {
             chunks.add(chunk)
-            textLeft = textLeft.substring(chunk.length + 1)      //Remove chunk plus space from original string
-        }     else        {
-            val splitIndex = chunk.lastIndexOf(' ')    //Find last space in chunk.
-            if (splitIndex != -1)                       //If space exists in string,
-                chunk = chunk.substring(0, splitIndex) //  remove chars after space.
-            textLeft = textLeft.substring(chunk.length + (if (splitIndex == -1) 0 else 1))      //Remove chunk plus space (if found) from original string
-            chunks.add(chunk)                          //Add to list
+            //Remove chunk plus space from original string
+            textLeft = textLeft.substring(chunk.length + 1)
+        } else {
+            //Find last space in chunk.
+            val splitIndex = chunk.lastIndexOf(' ')
+            //If space exists in string,
+            if (splitIndex != -1) {
+                //  remove chars after space.
+                chunk = chunk.substring(0, splitIndex)
+            }
+            //Remove chunk plus space (if found) from original string
+            textLeft = textLeft.substring(chunk.length + (if (splitIndex == -1) 0 else 1))
+            //Add to list
+            chunks.add(chunk)
         }
     }
     return chunks
