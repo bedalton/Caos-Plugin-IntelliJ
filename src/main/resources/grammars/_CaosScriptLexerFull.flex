@@ -208,7 +208,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Ff][Rr][Oo][Mm]       	{ return CaosScript_K_FROM; }
 	[Nn][Oo][Rr][Nn]       	{ return CaosScript_K_NORN; }
 	[Pp][Nn][Tt][Rr]       	{ return CaosScript_K_PNTR; }
-	[_][Ii][Tt][_]         	{ return CaosScript_K_IT_; }
+	[_][Ii][Tt][_]         	{ return CaosScript_K__IT_; }
 	[Cc][Aa][Rr][Rr]       	{ return CaosScript_K_CARR; }
 	[Ee][Dd][Ii][Tt]       	{ return CaosScript_K_EDIT; }
 	[Tt][Cc][Aa][Rr]       	{ return CaosScript_K_TCAR; }
