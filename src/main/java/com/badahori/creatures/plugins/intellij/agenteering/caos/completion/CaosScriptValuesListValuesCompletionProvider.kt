@@ -94,7 +94,7 @@ object CaosScriptValuesListValuesCompletionProvider {
 
         // If type definition contains values list annotation, add list values
         // If supertype == Files, should complete with known file names for type
-        if (valuesList.superType?.equalsIgnoreCase("File").orFalse()) {
+        if (valuesList.extensionType?.equalsIgnoreCase("File").orFalse()) {
             addFileNameCompletions(resultSet, valueOfType.project, valueOfType.containingFile?.module, variant.isOld, parameterStruct.type, valuesList.name)
             return
         }
@@ -157,7 +157,7 @@ object CaosScriptValuesListValuesCompletionProvider {
     private fun addListValues(resultSet: CompletionResultSet, list: CaosValuesList, partialString: String, addSpace: Boolean) {
         val values = list.values
         // If values list is bitflags, create bit-flags builder dialog
-        if (list.superType?.equalsIgnoreCase("BitFlags").orFalse()) {
+        if (list.extensionType?.equalsIgnoreCase("BitFlags").orFalse()) {
             val builderLabel = "${list.name} bit-flag builder"
             val lookupElement = PrioritizedLookupElement.withPriority(LookupElementBuilder
                     .create("")
