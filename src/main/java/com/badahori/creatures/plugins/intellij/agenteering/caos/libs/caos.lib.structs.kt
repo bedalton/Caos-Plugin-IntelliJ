@@ -19,7 +19,7 @@ data class CaosVariantData(
         val commands: Map<String, Int>,
         val lvalues: Map<String, Int>,
         val rvalues: Map<String, Int>,
-        val valuesListIds:List<Int> = listOf()
+        val valuesListsIds:List<Int> = listOf()
 ) {
     val isOld: Boolean by lazy {
         code in listOf("C1", "C2")
@@ -27,7 +27,7 @@ data class CaosVariantData(
     val isNew: Boolean by lazy {
         code !in listOf("C1", "C2")
     }
-    val valuesLists:List<CaosValuesList> get() = CaosLibs.getLists(valuesListIds).sortedBy {
+    val valuesLists:List<CaosValuesList> get() = CaosLibs.getValuesLists(valuesListsIds).sortedBy {
         it.name
     }
 
@@ -68,8 +68,6 @@ data class CaosVarConstraints(
  */
 @Serializable
 data class CaosLibDefinitions(
-        val rvalues: Map<String, CaosCommand>,
-        val lvalues: Map<String, CaosCommand>,
         val commands: Map<String, CaosCommand>,
         val variantMap: Map<String, CaosVariantData>,
         val valuesLists: Map<String, CaosValuesList>
@@ -85,7 +83,7 @@ data class CaosCommand(
         val command: String,
         val parameters: List<CaosParameter>,
         val returnTypeId: Int,
-        val description: String?,
+        val description: String? = null,
         val returnValuesListIds: Map<String, Int>? = null,
         val requiresOwnr:Boolean = false,
         val variants: List<String>,
@@ -94,6 +92,9 @@ data class CaosCommand(
         val commandGroup:String
 ) {
 
+    val isCommand: Boolean by lazy {
+        !(rvalue || lvalue)
+    }
     val returnType: CaosExpressionValueType by lazy {
         CaosExpressionValueType.fromIntValue(returnTypeId)
     }
@@ -167,8 +168,8 @@ data class CaosValuesList(
         val id:Int,
         val name: String,
         val values: List<CaosValuesListValue>,
-        val description: String?,
-        val superType: String?
+        val description: String? = null,
+        val extensionType: String? = null
 ) {
 
     private val negative = values.filter { it.not }
@@ -188,7 +189,7 @@ data class CaosValuesList(
     }
 
     val bitflag:Boolean by lazy {
-        superType?.equalsIgnoreCase("BitFlags").orFalse()
+        extensionType?.equalsIgnoreCase("BitFlags").orFalse()
     }
 }
 
@@ -199,7 +200,8 @@ data class CaosValuesList(
 data class CaosValuesListValue(
         val value: String,
         val name: String,
-        val description: String?
+        val description: String? = null,
+        val beforeRegion: String? = null
 ) {
     val intValue: Int? by lazy {
         if (value.startsWith(">") || value.startsWith("!"))

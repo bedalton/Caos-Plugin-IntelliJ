@@ -5,6 +5,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 
@@ -28,12 +30,15 @@ private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<S
      * Bias is required for special processing of TRAN
      */
     override operator fun get(tokenString: String, bias: CaosExpressionValueType): CaosCommand? {
-        val tokens = tokenString.toLowerCase().split("\\s+".toRegex())
+        val tokens = tokenString.nullIfUndefOrBlank()?.toLowerCase()?.split("\\s+".toRegex()).orEmpty()
+        if (tokens.isEmpty()) {
+            LOGGER.severe("Command is empty or undef at get")
+        }
         val token = token(tokens[0])
         val otherTokens = tokens.drop(1).map { token(it) }
         // Find list of sub tokens for a given token
         val commands = map[token]
-            ?: return null
+                ?: return null
 
         // Find all commands matching sub tokens
         // Does not return first match, as TRAN as rvalue can return 2 matches
@@ -57,20 +62,20 @@ private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<S
  * Transforms a list of CAOS commands into a map for use in a CAOS command map object
  */
 private fun mapCommands(
-    commands: Map<String, CaosCommand>,
-    tokenIds: Map<String, Int>
+        commands: Map<String, CaosCommand>,
+        tokenIds: Map<String, Int>
 ): Map<Int, List<Pair<CommandCheck, CaosCommand>>> {
     val commandGroups: MutableMap<Int, List<Pair<CommandCheck, CaosCommand>>> = mutableMapOf()
     for (keySet in tokenIds) {
         val parts = keySet.key
-            .toLowerCase()
-            .split(" ")
-            .filter { it.isNotBlank() }
-            .map {
-                token(it)
-            }
+                .toLowerCase()
+                .split(" ")
+                .filter { it.isNotBlank() }
+                .map {
+                    token(it)
+                }
         val command = commands["${keySet.value}"]
-            ?: throw CaosLibException("Command Token: $keySet does not match any command in set")
+                ?: throw CaosLibException("Command id: ${keySet.value} for token '${keySet.key}' does not match any command in set")
         val mappedCommand = mapCommand(parts.drop(1), command)
         if (parts.isEmpty())
             throw CaosLibException("Command ${command.command} yielded empty token list")
@@ -126,29 +131,32 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
     /**
      * Rvalue definitions getter
      */
-    val rvalue: CommandGetter = CaosCommandMap(lib.rvalues, variant.rvalues)
+    val rvalue: CommandGetter = CaosCommandMap(lib.commands, variant.rvalues)
 
     /**
      * List of all RValues in this variant
      */
     val rvalues: List<CaosCommand> by lazy {
-        lib.rvalues.values.filter {
-            it.variants.contains(variantCode)
+
+        val rvalueCommandIds = variant.rvalues.values
+        lib.commands.values.filter { command ->
+            command.id in rvalueCommandIds
         }
     }
 
     /**
      * LValue definitions getter
      */
-    val lvalue: CommandGetter = CaosCommandMap(lib.lvalues, variant.lvalues)
+    val lvalue: CommandGetter = CaosCommandMap(lib.commands, variant.lvalues)
 
 
     /**
      * List of all LValues in this variant
      */
     val lvalues: List<CaosCommand> by lazy {
-        lib.lvalues.values.filter {
-            it.variants.contains(variantCode)
+        val lvalueCommandIds = variant.lvalues.values
+        lib.commands.values.filter { command ->
+            command.id in lvalueCommandIds
         }
     }
 
@@ -161,8 +169,9 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
      * List of all commands in this variant
      */
     val commands: List<CaosCommand> by lazy {
-        lib.commands.values.filter {
-            it.variants.contains(variantCode)
+        val commandIds = variant.commands.values
+        lib.commands.values.filter { command ->
+            command.id in commandIds
         }
     }
 
@@ -170,12 +179,11 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
      * Values lists getter
      */
     val valuesLists: Collection<CaosValuesList>
-        get() = CaosLibs.getLists(variant.valuesListIds)
+        get() = CaosLibs.getValuesLists(variant.valuesListsIds)
 
-    fun valuesList(valuesListId:Int) : CaosValuesList? = CaosLibs.valuesList[valuesListId]
+    fun valuesList(valuesListId: Int): CaosValuesList? = CaosLibs.valuesList[valuesListId]
 
-    fun valuesList(valuesListName:String) : CaosValuesList?
-            = valuesLists.firstOrNull { it.name like valuesListName }
+    fun valuesList(valuesListName: String): CaosValuesList? = valuesLists.firstOrNull { it.name like valuesListName }
 
     /**
      * Getter for variable max value type
@@ -207,6 +215,7 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
             CaosCommandType.UNDEFINED -> command
         }
     }
+
     operator fun get(type: CaosCommandType, token: String, bias: CaosExpressionValueType = CaosExpressionValueType.ANY): CaosCommand? {
         return when (type) {
             CaosCommandType.RVALUE -> rvalue
@@ -225,27 +234,43 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
 object CaosLibs {
     private val libs = mutableMapOf<String, CaosLib>()
 
-    val valuesList:HasGetter<Int, CaosValuesList?> = object : HasGetter<Int, CaosValuesList?> {
-        override operator fun get(key:Int) = universalLib.valuesLists["list_$key"]
+    val valuesList: HasGetter<Int, CaosValuesList?> = object : HasGetter<Int, CaosValuesList?> {
+        override operator fun get(key: Int) = universalLib.valuesLists["list_$key"]
     }
 
-    fun getLists(ids:List<Int>):List<CaosValuesList> {
+    fun getValuesLists(ids: List<Int>): List<CaosValuesList> {
         return universalLib.valuesLists.values.filter { list ->
             list.id in ids
         }
     }
 
-    val valuesLists:HasGetter<CaosVariant, List<CaosValuesList>> by lazy {
+    val valuesLists: HasGetter<CaosVariant, List<CaosValuesList>> by lazy {
         HasGetterImpl { variant ->
             universalLib.variantMap[variant.code]?.valuesLists.orEmpty()
         }
     }
 
-    operator fun get(variant:CaosVariant) : CaosLib = get(variant.code)
+    fun commands(commandName: String): List<CaosCommand> {
+        return universalLib.commands.values.filter { command ->
+            command.command like commandName
+        }
+    }
+
+    operator fun get(commandType: CaosCommandType): List<CaosCommand> {
+        val filter: (CaosCommand) -> Boolean = when (commandType) {
+            CaosCommandType.LVALUE -> { command -> command.lvalue }
+            CaosCommandType.RVALUE -> { command -> command.rvalue }
+            CaosCommandType.COMMAND -> { command -> command.isCommand }
+            else -> { _ -> false }
+        }
+        return universalLib.commands.values.filter(filter)
+    }
+
+    operator fun get(variant: CaosVariant): CaosLib = get(variant.code)
 
     operator fun get(variantCode: String): CaosLib {
         val variant = universalLib.variantMap[variantCode]
-            ?: throw CaosLibException("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
+                ?: throw CaosLibException("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
         val lib = CaosLib(universalLib, variant)
         libs[variantCode] = lib
         return lib
