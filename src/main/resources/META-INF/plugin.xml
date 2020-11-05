@@ -181,9 +181,9 @@
     <!-- Completion -->
     <completion.contributor language="CaosScript"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
-    <editorTypedHandler
+    <!--editorTypedHandler
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptTypedHandler"
-    />
+    / -->
 
     <!-- Project -->
     <iconProvider

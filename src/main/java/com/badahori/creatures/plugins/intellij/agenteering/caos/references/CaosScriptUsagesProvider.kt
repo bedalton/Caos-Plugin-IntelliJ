@@ -31,9 +31,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
     override fun getDescriptiveName(element: PsiElement): String {
         return when {
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
-            element.isOrHasParentOfType(CaosScriptNamedVar::class.java) -> "var ${element.text}"
             element.isOrHasParentOfType(CaosScriptVarToken::class.java) -> "var ${element.text}"
-            element.isOrHasParentOfType(CaosScriptNamedConstant::class.java) -> "const ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "number ${element.text}"
