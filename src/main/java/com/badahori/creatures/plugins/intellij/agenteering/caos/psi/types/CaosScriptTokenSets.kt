@@ -654,7 +654,7 @@ class CaosScriptTokenSets {
                 CaosScript_K_AGTI,
                 CaosScript_K_SINS,
                 CaosScript_K_TCOR,
-                CaosScript_K_IT_,
+                CaosScript_K__IT_,
                 CaosScript_K_CARR,
                 CaosScript_K_FROM,
                 CaosScript_K_HGHT,
