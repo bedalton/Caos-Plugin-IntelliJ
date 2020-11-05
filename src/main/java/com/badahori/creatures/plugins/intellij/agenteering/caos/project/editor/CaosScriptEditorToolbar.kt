@@ -163,8 +163,13 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
             return@addDocsButtonClickListener
         }
 
+        runWriteAction {
+            CaosDefinitionsGenerator.ensureVariantCaosDef(selectedVariant)
+        }
+
         // Set assumed doc path
-        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
+        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/${selectedVariant.code}-Lib.caosdef"
+        LOGGER.info("Looking up CAOS DOC at '$docRelativePath'")
 
         // Get the virtual file for it at that path, starting with the CAOS VFS
         val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
@@ -172,7 +177,7 @@ internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
                 ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
         // Get CAOS Def PSI file for navigation
         val file = virtualFile?.getPsiFile(project)
-                ?: FilenameIndex.getFilesByName(project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
+                ?: FilenameIndex.getFilesByName(project, "${selectedVariant}-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
                         .firstOrNull()
         // If file CAOS def file could not be found, disable Docs button
         if (file == null) {
