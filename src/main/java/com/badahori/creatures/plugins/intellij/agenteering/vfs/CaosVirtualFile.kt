@@ -144,6 +144,8 @@ class CaosVirtualFile private constructor(
         return children.values.toTypedArray()
     }
 
+    internal fun childrenAsList() : Collection<CaosVirtualFile> = children.values
+
     /** {@inheritDoc}  */
     @Throws(IOException::class)
     override fun getOutputStream(requestor: Any?,

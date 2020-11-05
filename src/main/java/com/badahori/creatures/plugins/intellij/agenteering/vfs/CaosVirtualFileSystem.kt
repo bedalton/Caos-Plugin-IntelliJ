@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.vfs.*
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 
 /**
@@ -16,7 +17,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     private val root = CaosVirtualFile(CAOS_VFS_ROOT, null, true)
 
-    internal val rootChildren:List<CaosVirtualFile> = root.children.toList()
+    internal val rootChildren:Collection<CaosVirtualFile> = root.childrenAsList()
 
     /**
      * Listeners for file system events.
@@ -37,6 +38,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         listeners.remove(virtualFileListener)
     }
 
+    @Suppress("unused")
     fun addOnSaveListener(listener:CaosVirtualFileSaveListener) {
         saveListeners.add(listener)
     }
@@ -51,6 +53,9 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
      */
     fun addFile(file: CaosVirtualFile) {
         root.addChild(file)
+        if (!root.hasChild(file.name))
+            throw IOException("Failed to add child file: ${file.name} to root")
+        LOGGER.info("Added child ${file.name} to Caos VFS root. Children size == ${root.children.size}")
         fireFileCreated(null, file)
     }
 
@@ -232,7 +237,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
             filePathIn
         val names: MutableList<String> = pathWithoutSchema.split("/").toMutableList()
         val parentName = names.removeAt(0)
-        var currentFile: CaosVirtualFile = getOrCreateRootChildDirectory(parentName)
+        var currentFile: CaosVirtualFile = if (createSubFolders)
+            getOrCreateRootChildDirectory(parentName)
+        else
+            root[parentName] ?: return null
         while (names.isNotEmpty()) {
             val name = names.removeAt(0)
             currentFile = currentFile.findChild(name)
@@ -359,7 +367,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     companion object {
         private const val TEMP_FOLDER_NAME = ".tmp"
+        val index = AtomicInteger(0)
         val instance: CaosVirtualFileSystem by lazy {
+            if (index.getAndIncrement() > 0)
+                throw IOException("Too many CAOS virtual file systems created")
             VirtualFileManager.getInstance().getFileSystem(CAOS_VFS_PROTOCOL) as CaosVirtualFileSystem
         }
     }
