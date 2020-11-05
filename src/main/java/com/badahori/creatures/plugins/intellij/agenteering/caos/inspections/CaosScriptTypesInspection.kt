@@ -45,7 +45,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     /**
      * Annotates a command-like element's arguments
      */
-    private fun annotateArgument(element: CaosScriptCommandLike, holder: ProblemsHolder) {
+    private fun annotateArgument(element: CaosScriptCommandElement, holder: ProblemsHolder) {
         // Get command definition for this element if found in universal lib
         val commandDefinition = element.commandDefinition
                 ?: return

@@ -173,7 +173,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return true
             }
             // Only need to show genus names for command arguments
-            val parentCommand = element.parent as? CaosScriptCommandLike
+            val parentCommand = element.parent as? CaosScriptCommandElement
                     ?: return false
 
             // Get index for argument in command call
@@ -415,11 +415,12 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Provide hints for this command's return type
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            if (element !is CaosScriptCommandLike)
+            if (element !is CaosScriptCommandElement)
                 return EMPTY_INLAY_LIST
             val commandToken = element.commandToken
                     ?: return EMPTY_INLAY_LIST
             val commandString = element.commandStringUpper
+                    ?: return EMPTY_INLAY_LIST
             element.getUserData(RETURN_VALUES_TYPE_KEY)?.let {
                 if (commandString like it.first)
                     return listOf(InlayInfo("(${it.second})", commandToken.endOffset))
@@ -444,6 +445,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val commandString = element.commandStringUpper
+                    ?: return null
             return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
         }
     },
@@ -467,7 +469,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvalue)
                 return EMPTY_INLAY_LIST
             // Ensure and get parent command
-            val parent = element.parent as? CaosScriptCommandLike
+            val parent = element.parent as? CaosScriptCommandElement
                     ?: return EMPTY_INLAY_LIST
             // Get command definition from static lib
             val commandDefinition = parent.commandDefinition
@@ -489,6 +491,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val commandString = element.commandStringUpper
+                    ?: return null
             return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
         }
     };
@@ -531,7 +534,7 @@ private fun getBitFlagHintValues(typeList:CaosValuesList, bitFlagValue:Int, offs
  * Gets the values list given an element
  */
 private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
-    val parent = element.parent as? CaosScriptCommandLike
+    val parent = element.parent as? CaosScriptCommandElement
             ?: return null
     val variant = element.variant
             ?: return null
