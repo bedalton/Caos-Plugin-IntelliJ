@@ -65,10 +65,12 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
             }
             val commandElement = element as? CaosScriptCommandElement
                     ?: return null
+            val commandString = commandElement.commandString
+                ?: return null
             val referencedCommand = getCommand(commandElement)
                     ?: return null
             val parameters = getParametersAsStrings(referencedCommand.parameterStructs, false)
-            return HintInfo.MethodInfo(commandElement.commandString, parameters, CaosDefLanguage.instance)
+            return HintInfo.MethodInfo(commandString, parameters, CaosDefLanguage.instance)
         }
     }
     ;
@@ -82,7 +84,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
         private val SKIP_LAST = listOf("PUHL", "PUPT", "CLS2")
 
         private fun skipLast(element:CaosScriptCommandElement) : Boolean {
-            return if (element.commandString.toUpperCase() in setLike) {
+            return if (element.commandString?.toUpperCase() in setLike) {
                 val firstArg = element.argumentValues.firstOrNull()
                 (firstArg is CaosVar.CaosCommandCall && firstArg.text.toUpperCase() in SKIP_LAST)
             } else
