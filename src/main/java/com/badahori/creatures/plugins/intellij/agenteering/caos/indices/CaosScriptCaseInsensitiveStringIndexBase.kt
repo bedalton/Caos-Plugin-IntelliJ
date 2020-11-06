@@ -153,7 +153,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     @JvmOverloads
-    fun getAll(project: Project, globalSearchScope: GlobalSearchScope? = null): List<PsiT> {
+    open fun getAll(project: Project, globalSearchScope: GlobalSearchScope? = null): List<PsiT> {
         val out = ArrayList<PsiT>()
         for (key in getAllKeys(project)) {
             ProgressIndicatorProvider.checkCanceled()
