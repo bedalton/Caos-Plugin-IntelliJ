@@ -1,21 +1,23 @@
 @file:Suppress("UnstableApiUsage", "SpellCheckingInspection")
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.intellij.codeInsight.hints.HintInfo
-import com.intellij.codeInsight.hints.InlayInfo
-import com.intellij.codeInsight.hints.Option
-import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefParameterStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.intellij.codeInsight.hints.HintInfo
+import com.intellij.codeInsight.hints.InlayInfo
+import com.intellij.codeInsight.hints.Option
+import com.intellij.psi.PsiElement
 
 enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
@@ -42,7 +44,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
                 commandElement.getSelfOrParentOfType(CaosScriptCAssignment::class.java)?.let { assignment ->
                     val firstCommand = (assignment.arguments.firstOrNull() as? CaosScriptLvalue)
                     val arg = assignment.arguments.lastOrNull()
-                    val lastParameter = firstCommand?.let {getCommand(it) }?.parameterStructs?.lastOrNull()
+                    val lastParameter = firstCommand?.let { getCommand(it) }?.parameters?.lastOrNull()
                     if (lastParameter != null && arg != null)
                         listOf(InlayInfo(lastParameter.name, arg.startOffset))
                     else
@@ -51,7 +53,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
             } else {
                null
             } ?: emptyList()
-            val parameterStructs = referencedCommand.parameterStructs
+            val parameterStructs = referencedCommand.parameters
             val parameters = getParametersAsStrings(parameterStructs, skipLast)
             return commandElement.arguments.mapIndexedNotNull{ i, it ->
                 parameters.getOrNull(i)?.let { parameter -> InlayInfo("$parameter:", it.startOffset) }
@@ -69,7 +71,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
                 ?: return null
             val referencedCommand = getCommand(commandElement)
                     ?: return null
-            val parameters = getParametersAsStrings(referencedCommand.parameterStructs, false)
+            val parameters = getParametersAsStrings(referencedCommand.parameters, false)
             return HintInfo.MethodInfo(commandString, parameters, CaosDefLanguage.instance)
         }
     }
@@ -91,7 +93,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
                 false
         }
 
-        private fun getParametersAsStrings(parameters:List<CaosDefParameterStruct>, skipLast:Boolean) : List<String> {
+        private fun getParametersAsStrings(parameters:List<CaosParameter>, skipLast:Boolean) : List<String> {
             return if (skipLast) {
                 (0 until parameters.lastIndex).map { i -> parameters[i].name }
             } else {
