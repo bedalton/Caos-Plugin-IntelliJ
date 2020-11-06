@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-
 object CaosVirtualFileCollector {
 
 
@@ -19,7 +17,7 @@ object CaosVirtualFileCollector {
 
     fun collectFilesWithExtension(file: CaosVirtualFile, extension: String): List<CaosVirtualFile> {
         return when {
-            file.isDirectory -> file.children.flatMap { child-> collectFilesWithExtension(child, extension) }
+            file.isDirectory -> file.childrenAsList().flatMap { child-> collectFilesWithExtension(child, extension) }
             file.extension == extension -> listOf(file)
             else -> emptyList()
         }
@@ -27,7 +25,7 @@ object CaosVirtualFileCollector {
 
     fun collect(file: CaosVirtualFile): List<CaosVirtualFile> {
         return if (file.isDirectory) {
-            file.children.flatMap { child -> collect(child) } + file
+            file.childrenAsList().flatMap { child -> collect(child) } + file
         } else
             listOf(file)
     }
