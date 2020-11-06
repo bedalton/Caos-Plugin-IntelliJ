@@ -209,7 +209,7 @@ object CaosDefPsiImplUtil {
                         ?: -1,
                 name = parameterName,
                 type = type,
-                simpleType = CaosExpressionValueType.fromSimpleName(parameterName),
+                simpleType = CaosExpressionValueType.fromSimpleName(parameter.parameterType),
                 comment = null
         )
     }
@@ -221,7 +221,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getParameterType(parameter: CaosDefParameter): String {
-        return parameter.variableType.text
+        return parameter.variableType.let { it.typeLiteral?.text ?: it.bracketString?.text} ?: "???"
     }
 
     @JvmStatic
