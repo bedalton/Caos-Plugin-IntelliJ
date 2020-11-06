@@ -33,6 +33,7 @@ class CaosScriptDuplicateEventScriptInFileInspection : LocalInspectionTool() {
         val startIndex = thisEventScript.startOffset
         val containingFile = thisEventScript.containingFile
         val exists = PsiTreeUtil.collectElementsOfType(containingFile, CaosScriptEventScript::class.java)
+                .filterNot { thisEventScript.isEquivalentTo(it) }
                 .any {
                     it.startOffset < startIndex && it.family == family && it.genus == genus && it.species == species
                 }
