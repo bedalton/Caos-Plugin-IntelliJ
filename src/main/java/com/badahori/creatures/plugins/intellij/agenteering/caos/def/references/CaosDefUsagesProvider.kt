@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefLexerAdapter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefVariableLink
@@ -21,9 +22,9 @@ class CaosDefUsagesProvider : FindUsagesProvider{
     override fun getWordsScanner(): WordsScanner? {
         return DefaultWordsScanner(
                 CaosDefLexerAdapter(),
-                TokenSet.create(CaosDefTypes.CaosDef_COMMAND_WORD, CaosDefTypes.CaosDef_VARIABLE_LINK, CaosDefTypes.CaosDef_VARIABLE_NAME),
-                TokenSet.create(CaosDefTypes.CaosDef_LINE_COMMENT),
-                TokenSet.create(CaosDefTypes.CaosDef_INT_LITERAL, CaosDefTypes.CaosDef_INT)
+                TokenSet.create(CaosDef_COMMAND_WORD, CaosDef_VARIABLE_LINK, CaosDef_VARIABLE_NAME),
+                TokenSet.create(CaosDef_LINE_COMMENT, CaosDef_DOC_COMMENT, CaosDef_COMMENT_TEXT_LITERAL, CaosDef_DOC_COMMENT_OPEN, CaosDef_COMMENT_TEXT_LITERAL),
+                TokenSet.create(CaosDef_INT_LITERAL, CaosDef_INT)
         )
     }
     override fun getNodeText(element: PsiElement, useFullName: Boolean): String {
