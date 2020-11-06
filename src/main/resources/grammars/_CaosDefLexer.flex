@@ -1,22 +1,30 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer;
 
+import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
-import com.intellij.lexer.FlexLexer;
+import java.lang.Exception;
+import java.util.regex.Pattern;
+import java.util.List;
 import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScriptArrayUtils;
+import static com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptTreeUtilKt.getLOGGER;
 
 %%
 
 %{
-	private int paren_depth = 0;
+	private static final String WORD = "([a-zA-Z_0-9]{3}[a-zA-Z0-9#!$_:+]|[Ff][*]{2}[Kk])";
+	private static final String WORD_CHECK_REGEX = WORD + "([ ]"+WORD+")*\\]";
+  	private int paren_depth = 0;
 	private boolean needs_type = false;
 	private boolean canDoName = false;
 	private static final Logger LOGGER = Logger.getLogger("#_CaosDefLexer");
 	private int inLink;
+
 	public _CaosDefLexer() {
 		this((java.io.Reader)null);
 	}
@@ -24,6 +32,24 @@ import static com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer
 	private boolean yytextContainLineBreaks() {
 		return CharArrayUtil.containLineBreaks(zzBuffer, zzStartRead, zzMarkedPos);
 	}
+
+	/**
+	 * Checks whether the text following '[' is a link
+	 * @return <b>true</b> if this link is valid
+	 */
+	private boolean isValidLink() {
+		try {
+			char[] chars = new char[5];
+			for(int i=0; i<5;i++) {
+				chars[i] = yycharat(i+1); // offset by one to account for position not yet consuming '['
+			}
+			final String word = new String(chars);
+			return word.matches(WORD_CHECK_REGEX);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 %}
 
 %public
@@ -172,7 +198,13 @@ COMMENT=[*][^\n\*]*
     {VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
 	{TYPE_LINK}				 	{ return CaosDef_TYPE_LINK_LITERAL; }
   	//"["	/{WORD}					{ return CaosDef_COMMENT_TEXT_LITERAL; }
-  	"[" 						{ inLink = IN_COMMENT; yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
+  	"[" 						{
+          if (!isValidLink())
+              return CaosDef_COMMENT_TEXT_LITERAL;
+          inLink = IN_COMMENT;
+          yybegin(IN_LINK);
+          return CaosDef_OPEN_BRACKET;
+  	}
 	{TEXT}						{ return CaosDef_COMMENT_TEXT_LITERAL; }
 	{WHITE_SPACE}              	{ return WHITE_SPACE; }
 }
@@ -203,7 +235,13 @@ COMMENT=[*][^\n\*]*
 
 <IN_VALUES_LIST_TEXT> {
 	\n							{ yybegin(IN_VALUES_LIST); return WHITE_SPACE; }
-  	"["							{ inLink = IN_VALUES_LIST_TEXT; yybegin(IN_LINK); return CaosDef_OPEN_BRACKET; }
+  	"["							{
+				if (!isValidLink())
+					return CaosDef_TEXT_LITERAL;
+				inLink = IN_VALUES_LIST_TEXT;
+				yybegin(IN_LINK);
+				return CaosDef_OPEN_BRACKET;
+			}
 	{DEF_TEXT}					{ return CaosDef_TEXT_LITERAL; }
     [^]							{ yybegin(IN_VALUES_LIST); yypushback(yylength()); }
 }
@@ -232,14 +270,14 @@ COMMENT=[*][^\n\*]*
   	{VARIANT_ID}				{ return CaosDef_ID; }
     {VARIANT_NAME}				{ if (canDoName) { canDoName = false; return CaosDef_VARIANT_NAME_LITERAL; } else return CaosDef_ID;}
 	{WHITE_SPACE}              	{ return WHITE_SPACE; }
-	[^]							{ yybegin(IN_BODY); yypushback(1); }
+	[^]							{ yybegin(IN_BODY); yypushback(yylength()); }
 }
 
 <YYINITIAL> {
 	"("                        	{ yybegin(IN_VARIANT); return CaosDef_OPEN_PAREN; }
 	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
 	{WHITE_SPACE}              	{ return WHITE_SPACE; }
-	[^]							{ yybegin(IN_BODY); yypushback(1); }
+	[^]							{ yybegin(IN_BODY); yypushback(yylength()); }
 }
 
 {LINE_COMMENT}					{ return CaosDef_LINE_COMMENT; }
