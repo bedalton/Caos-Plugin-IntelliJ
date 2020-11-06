@@ -18,7 +18,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
@@ -38,28 +37,44 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         }
     }
 
+    private val check:(element:PsiElement) -> Boolean by lazy {
+        val innerCheck:(commandString:String) -> Boolean = when {
+            myElement.parent.parent is CaosDefCodeBlock -> {
+                { commandString:String ->
+                    names.any { it like commandString }
+                }
+            }
+            myElement is CaosScriptIsCommandToken -> {
+                { commandString:String ->
+                    myElement.text.commandFormatted like commandString
+                }
+            }
+            else -> {
+                { commandString:String ->
+                    myElement.text.commandFormatted like commandString
+                }
+            }
+        }
+        check@{ element:PsiElement ->
+            if (!isDeclaration(element))
+                return@check false
+            val elementText = (element.parent as? CaosDefCommand)?.text?.commandFormatted
+                    ?: return@check false
+            innerCheck(elementText)
+        }
+    }
+
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name.toUpperCase()) {
             return true
         }
-        if (element !is CaosDefCommandWord && element !is CaosDefCommand)
-            return false
+        return check(element)
+    }
 
-        val elementText = (element.parent as? CaosDefCommand ?: element).text.replace("\\s+".toRegex(), " ")
-        if (myElement is CaosDefCommandWord) {
-            val matches = names.any { name ->
-                name like elementText
-            }
-            if (!matches) {
-                return false
-            }
-        } else if (!(elementText like myElement.name)) {
-            return false
-        }
-        if (variants.intersect((element as CaosDefCompositeElement).variants).isEmpty()) {
-            return false
-        }
-        return myElement.parent?.parent !is CaosDefCommandDefElement || myElement.parent is CaosDefCodeBlock
+    private fun isDeclaration(element:PsiElement) : Boolean {
+        return element is CaosDefCommandWord
+                && element.parent is CaosDefCommand
+                && element.parent?.parent is CaosDefCommandDefElement
     }
 
     /**
@@ -217,18 +232,46 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      * Gets names around this command for use in matching
      */
     private val names by lazy {
-        when (myElement.parent) {
-            is CaosDefCommand -> listOf(myElement.parent!!.text.replace("\\s+".toRegex(), " "))
+        when (val parent = myElement.parent) {
+            is CaosDefCommand,
+            is CaosScriptIsCommandToken -> listOf(parent.text.commandFormatted)
+            // If CaosDef code block, the word could be self, or include previous or next
             is CaosDefCodeBlock -> {
+                // Get previous sibling for check in comment code block
                 val previousSibling = myElement.getPreviousNonEmptySibling(false)
+
+                // Get previous and previous-previous sibling for comment code block check
+                val prevPrevSibling = previousSibling?.getPreviousNonEmptySibling(false)?.let {
+                    it.text + " " + previousSibling.text + " " + name
+                }.commandFormatted
+
+                // Get next sibling for check in comment code block
                 val nextSibling = myElement.getNextNonEmptySibling(false)
+
+                // Get next and next next sibling for check in code block
+                val nextNextSibling = nextSibling?.getNextNonEmptySibling(false)?.let {
+                    it.text + " " + nextSibling.text + " " + name
+                }.commandFormatted
+
+                // Get self in middle for 3 part command
+                val inMiddle = nextSibling?.text?.let { next ->
+                    previousSibling?.text?.let { prev ->
+                        "$prev $name $next"
+                    }
+                }.commandFormatted
+
+                // Create a list of possibilities involving this code block
                 listOfNotNull(
                         name,
-                        previousSibling?.let { "${it.text} $name" },
-                        nextSibling?.let { "$name ${it.text}" }
+                        previousSibling?.text?.let { "$it $name" } .commandFormatted,
+                        prevPrevSibling,
+                        inMiddle,
+                        nextSibling?.let { "$it $name" }.commandFormatted,
+                        nextNextSibling
                 )
             }
             else -> {
+                LOGGER.info("Failed to understand WORD context: ${parent.elementType}; for type: ${myElement.elementType}")
                 listOf(name)
             }
         }
@@ -289,7 +332,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      */
     private fun findCommandDefElements(commandName: String): List<CaosDefCommandDefElement> {
         val project = myElement.project
-        return CaosDefCommandElementsByNameIndex.Instance[commandName, project] + commandsInVirtualFiles(project, commandName)
+        return CaosDefCommandElementsByNameIndex.Instance[commandName, project]
     }
 
     /**
@@ -297,31 +340,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      */
     private fun findCommandDefElementsByPattern(pattern: String): List<CaosDefCommandDefElement> {
         val project = myElement.project
-        val regex = pattern.toRegex()
-        val foundInVirtualFiles = CaosDefElementsSearchExecutor.getCaosDefFiles(project)
-                .filter {
-                    variants.intersect(it.variants).isNotEmpty()
-                }
-                .collectElementsOfType(CaosDefCommandDefElement::class.java)
-                .filter {
-                    regex.matches(it.commandName)
-                }
-        return CaosDefCommandElementsByNameIndex.Instance.getByPatternFlat(pattern, project) + foundInVirtualFiles
+        return CaosDefCommandElementsByNameIndex.Instance.getByPatternFlat(pattern, project)
     }
 
-    /**
-     * Finds all command def elements in all VFS CAOS def files
-     */
-    private fun commandsInVirtualFiles(project: Project, commandName: String): List<CaosDefCommandDefElement> {
-        return CaosDefElementsSearchExecutor.getCaosDefFiles(project)
-                .filter {
-                    variants.intersect(it.variants).isNotEmpty()
-                }
-                .collectElementsOfType(CaosDefCommandDefElement::class.java)
-                .filter {
-                    it.commandName like commandName
-                }
-    }
 
     companion object {
         val EXTRA_SPACE_REGEX = "\\s\\s+".toRegex()
@@ -334,3 +355,5 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     }
 
 }
+
+private val String?.commandFormatted: String? get() = this?.replace("\\s+".toRegex(), " ")
