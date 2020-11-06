@@ -17,7 +17,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     private val root = CaosVirtualFile(CAOS_VFS_ROOT, null, true)
 
-    internal val rootChildren:Collection<CaosVirtualFile> = root.childrenAsList()
+        internal val children:Collection<CaosVirtualFile> get() = root.children.toList()
 
     /**
      * Listeners for file system events.
@@ -53,9 +53,9 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
      */
     fun addFile(file: CaosVirtualFile) {
         root.addChild(file)
-        if (!root.hasChild(file.name))
-            throw IOException("Failed to add child file: ${file.name} to root")
-        LOGGER.info("Added child ${file.name} to Caos VFS root. Children size == ${root.children.size}")
+        if (!children.contains(file))
+            throw IOException("Failed to add child file: ${file.name} to root. 'rootChildren': $children. 'root.childrenAsList':${root.childrenAsList()}")
+        LOGGER.info("Added child ${file.name} to Caos VFS root. Children size == ${children.size}")
         fireFileCreated(null, file)
     }
 
