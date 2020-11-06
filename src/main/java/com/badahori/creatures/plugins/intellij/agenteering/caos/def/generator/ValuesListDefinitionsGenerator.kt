@@ -11,7 +11,7 @@ internal fun generatorValuesListDefinition(valuesList: CaosValuesList) : String 
     val builder = StringBuilder()
     valuesList.description.nullIfEmpty()?.let {description ->
         val commentBody = description
-                .splitByLength(120)
+                .splitByLength(CaosDefinitionsGenerator.MAX_COMMENT_LENGTH)
                 .flatMap { it.split("\n") }
                 .joinToString("\n * ")
         builder.append("/*\n * ").append(commentBody).append("\n */\n")

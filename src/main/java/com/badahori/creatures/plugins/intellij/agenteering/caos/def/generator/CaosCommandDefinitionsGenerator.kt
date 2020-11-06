@@ -13,8 +13,11 @@ internal fun generateCommandDefinition(variant: CaosVariant, command: CaosComman
 
     // Split comment on word by max length
     val comment = command.description
-            ?.splitByLength(120)
-            ?.flatMap { it.split("\n") }
+            ?.split("\n")
+            ?.flatMap {
+                it.trim().replace("\\t", "\t")
+                        .splitByLength(CaosDefinitionsGenerator.MAX_COMMENT_LENGTH)
+            }
             .orEmpty()
             .toMutableList()
     // Add group hashtag

@@ -14,6 +14,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
  */
 object CaosDefinitionsGenerator {
 
+    internal const val MAX_COMMENT_LENGTH = 80
+
     fun ensureVariantCaosDef(variant: CaosVariant) {
         val libsFolder: CaosVirtualFile = CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory(BUNDLE_DEFINITIONS_FOLDER)
         val fileName = "${variant.code}-Lib.caosdef"
@@ -24,7 +26,7 @@ object CaosDefinitionsGenerator {
         if (existing)
             return
         val lib = CaosLibs[variant]
-        val commands = lib.commands.joinToString("\n\n") { command ->
+        val commands = lib.allCommands.sortedBy { it.command }.joinToString("\n\n") { command ->
             generateCommandDefinition(variant, command)
         }
         val valuesLists = lib.valuesLists
