@@ -1,15 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 
 fun CaosScriptRvalue.getValuesListValue(): CaosValuesListValue? {
@@ -53,25 +55,17 @@ private fun getCommandParameterValuesListValue(variant: CaosVariant, containingC
 }
 
 
-internal fun getCommand(element: CaosScriptCommandElement): CaosDefCommandDefElement? {
-    val commandTokens = try {
-        element.commandToken?.reference?.multiResolve(true)?.mapNotNull {
-            ProgressIndicatorProvider.checkCanceled()
-            (it.element as? CaosDefCompositeElement)?.getParentOfType(CaosDefCommandDefElement::class.java)
-        }
-    } catch (e: Exception) {
-        null
-    } ?: return null
-    val numParameters = element.argumentsLength
-    if (commandTokens.isEmpty())
-        return null
-    return if (commandTokens.size == 1) {
-        commandTokens[0]
-    } else {
-        commandTokens.filter { it.parameterStructs.size == numParameters }.ifEmpty { null }?.first()
-                ?: commandTokens.filter { it.parameterStructs.size > numParameters }.ifEmpty { null }?.first()
-                ?: return null
+internal fun getCommand(element: CaosScriptCommandElement): CaosCommand? {
+    val commandToken = element.commandString
+            ?: return null
+    val variant = element.variant
+            ?: return null
+    val commandType = element.getEnclosingCommandType()
+    val command = CaosLibs[variant][commandType][commandToken]
+    if (command == null) {
+        LOGGER.warning("Failed to find command of type ${commandType.value} for command: <${commandToken}>")
     }
+    return command
 }
 
 internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosCommand? {
