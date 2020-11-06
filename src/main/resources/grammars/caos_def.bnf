@@ -121,9 +121,9 @@ private arguments_list_recover
 
 
 values_list_element
-	::= values_list_name type_note_statement? values_list_body
+	::= doc_comment? values_list_name type_note_statement? values_list_body
 	{
-		pin=1;
+		pin=2;
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefStubBasedElementImpl<?>"
 		implements = [
