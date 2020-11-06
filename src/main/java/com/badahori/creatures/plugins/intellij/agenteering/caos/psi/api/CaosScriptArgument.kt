@@ -19,7 +19,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     VARIABLE(6, "variable"),
     COMMAND(8, "command"),
     C1_STRING(9, "[string]"),
-    BYTE_STRING(10, "[byte-string]"),
+    BYTE_STRING(10, "[byte_string]"),
     AGENT(11, "agent"),
     ANY(13, "any"),
     CONDITION(15, "condition"),
