@@ -21,7 +21,6 @@ object CaosScriptInferenceUtil {
             element.isFloat -> CaosExpressionValueType.FLOAT
             element.isQuoteString -> CaosExpressionValueType.STRING
             element.isC1String -> CaosExpressionValueType.C1_STRING
-            element.isString -> CaosExpressionValueType.STRING
             element.byteString != null -> CaosExpressionValueType.BYTE_STRING
             element.isToken -> CaosExpressionValueType.TOKEN
             element.animation != null -> CaosExpressionValueType.ANIMATION
