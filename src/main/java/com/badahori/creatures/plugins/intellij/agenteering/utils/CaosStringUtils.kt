@@ -198,7 +198,7 @@ fun String.splitByLength(maxLength: Int): List<String> {
     while (textLeft.isNotEmpty()) {
         if (textLeft.length <= maxLength)                    //if remaining string is less than length, add to list and break out of loop
         {
-            chunks.add(this)
+            chunks.add(textLeft)
             break
         }
 
