@@ -1,21 +1,25 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
+import com.intellij.psi.search.SearchScope
+
 object CaosVirtualFileCollector {
 
 
     fun collect(): List<CaosVirtualFile> {
-        return CaosVirtualFileSystem.instance.rootChildren.flatMap {
+        return CaosVirtualFileSystem.instance.children.flatMap {
             collect(it)
         }
     }
 
-    fun collectFilesWithExtension(extension: String): List<CaosVirtualFile> {
-        return CaosVirtualFileSystem.instance.rootChildren.flatMap {child ->
-            collectFilesWithExtension(child, extension)
+    fun collectFilesWithExtension(extension: String, scope:SearchScope? = null): List<CaosVirtualFile> {
+        return CaosVirtualFileSystem.instance.children.flatMap {child ->
+            collectFilesWithExtension(child, extension, scope)
         }
     }
 
-    fun collectFilesWithExtension(file: CaosVirtualFile, extension: String): List<CaosVirtualFile> {
+    fun collectFilesWithExtension(file: CaosVirtualFile, extension: String, scope:SearchScope? = null): List<CaosVirtualFile> {
+        if (scope?.contains(file) == false)
+            return emptyList()
         return when {
             file.isDirectory -> file.childrenAsList().flatMap { child-> collectFilesWithExtension(child, extension) }
             file.extension == extension -> listOf(file)
