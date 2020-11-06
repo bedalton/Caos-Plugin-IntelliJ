@@ -104,6 +104,13 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
         }
     }
 
+    val allCommands: Collection<CaosCommand> by lazy {
+        val commandIds = variant.rvalues.values + variant.lvalues.values + variant.commands.values
+        lib.commands.values.filter { command ->
+            command.id in commandIds
+        }
+    }
+
     /**
      * Values lists getter
      */
