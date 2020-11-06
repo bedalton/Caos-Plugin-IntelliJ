@@ -21,10 +21,11 @@ class CaosScriptLValueStubType(debugName:String) : com.badahori.creatures.plugin
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptLValueStub {
+        val caosVar = stream.readCaosVar()
         val arguments:List<CaosVar> = stream.readList {
             readCaosVar()
         }
-        return CaosScriptLValueStubImpl(parent, stream.readCaosVar(), arguments)
+        return CaosScriptLValueStubImpl(parent, caosVar, arguments)
     }
 
     override fun createStub(element: CaosScriptLvalueImpl, parent: StubElement<*>?): CaosScriptLValueStub {
