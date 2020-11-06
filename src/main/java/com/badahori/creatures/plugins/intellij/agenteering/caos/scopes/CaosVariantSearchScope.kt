@@ -32,6 +32,10 @@ class CaosVariantSearchScope constructor(private val myVariant:CaosVariant?, pri
             return variant == myVariant
         return variant == myVariant || listOfNotNull(variant, myVariant).let { it.size < 2 || CaosVariant.UNKNOWN in it }
     }
+
+    override fun getDisplayName(): String {
+        return "CAOS Variant Search Scope"
+    }
 }
 
 /**
