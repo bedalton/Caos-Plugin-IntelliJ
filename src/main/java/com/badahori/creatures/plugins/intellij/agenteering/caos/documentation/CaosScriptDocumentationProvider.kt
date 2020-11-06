@@ -119,7 +119,8 @@ class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
 
     private fun getDescriptiveText(element: CaosScriptVarToken): String {
         return element
-                .reference.multiResolve(true)
+                .reference
+                .multiResolve(true)
                 .firstOrNull()
                 ?.element
                 ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
