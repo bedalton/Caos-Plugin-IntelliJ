@@ -627,46 +627,11 @@ object CaosScriptPsiImplUtil {
     }
 
     private fun getReturnType(token: CaosScriptIsCommandToken, numberOfArgs: Int): CaosExpressionValueType {
-        val possibleCommands = token.reference.multiResolve(true)
-                .mapNotNull {
-                    PsiTreeUtil
-                            .getParentOfType(it.element, com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
-                }
-        if (possibleCommands.isEmpty())
-            return CaosExpressionValueType.UNKNOWN
-        if (possibleCommands.size == 1) {
-            return possibleCommands[0].returnTypeStruct
-                    ?.type
-                    ?.type
-                    ?.let {
-                        CaosExpressionValueType.fromSimpleName(it)
-                    }
-                    ?: CaosExpressionValueType.UNKNOWN
-        }
-        var matches = possibleCommands.filter {
-            it.parameterStructs.size == numberOfArgs
-        }
-        if (matches.isEmpty()) {
-            matches = possibleCommands.filter {
-                it.parameterStructs.size > numberOfArgs
-            }
-        }
-        if (matches.size != 1) {
-            if (matches.any { it.returnTypeStruct?.type?.type == "integer" })
-                return CaosExpressionValueType.INT
-            if (matches.any { it.returnTypeStruct?.type?.type == "string" })
-                return CaosExpressionValueType.STRING
-            return CaosExpressionValueType.UNKNOWN
-        }
-
-        return matches[0].returnTypeStruct
-                ?.type
-                ?.type
-                ?.let {
-                    CaosExpressionValueType.fromSimpleName(it)
-                }
+        val variant = token.variant
+                ?: return CaosExpressionValueType.UNKNOWN
+        val commandType = token.getEnclosingCommandType()
+        return CaosLibs[variant][commandType][token.commandString]?.returnType
                 ?: CaosExpressionValueType.UNKNOWN
-
     }
 
     @JvmStatic
