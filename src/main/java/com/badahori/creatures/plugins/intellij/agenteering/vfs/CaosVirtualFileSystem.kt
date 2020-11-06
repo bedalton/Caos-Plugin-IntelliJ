@@ -17,14 +17,14 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     private val root = CaosVirtualFile(CAOS_VFS_ROOT, null, true)
 
-        internal val children:Collection<CaosVirtualFile> get() = root.children.toList()
+    internal val children: Collection<CaosVirtualFile> get() = root.children.toList()
 
     /**
      * Listeners for file system events.
      */
     private val listeners: MutableList<VirtualFileListener> = mutableListOf()
 
-    private val saveListeners:MutableList<CaosVirtualFileSaveListener> = mutableListOf()
+    private val saveListeners: MutableList<CaosVirtualFileSaveListener> = mutableListOf()
 
     /** {@inheritDoc}  */
     override fun addVirtualFileListener(virtualFileListener: VirtualFileListener) {
@@ -39,11 +39,11 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     }
 
     @Suppress("unused")
-    fun addOnSaveListener(listener:CaosVirtualFileSaveListener) {
+    fun addOnSaveListener(listener: CaosVirtualFileSaveListener) {
         saveListeners.add(listener)
     }
 
-    fun removeOnSaveListener(listener:CaosVirtualFileSaveListener) {
+    fun removeOnSaveListener(listener: CaosVirtualFileSaveListener) {
         saveListeners.remove(listener)
     }
 
@@ -152,7 +152,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                 file,
                 file.parent,
                 newParent)
-        listeners.forEach{  listener ->
+        listeners.forEach { listener ->
             listener.beforeFileMovement(e)
         }
     }
@@ -162,7 +162,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                 file,
                 oldParent,
                 file.parent)
-        listeners.forEach{  listener ->
+        listeners.forEach { listener ->
             listener.fileMoved(e)
         }
     }
@@ -310,7 +310,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                 originalFile,
                 createdFile
         )
-        listeners.forEach{  listener ->
+        listeners.forEach { listener ->
             listener.fileCopied(event)
         }
         super.fireFileCopied(requestor, originalFile, createdFile)
@@ -336,14 +336,14 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         saveListeners.forEach { listener ->
             listener(event)
         }
-        listeners.filterIsInstance<CaosVirtualFileListener>().forEach{ listener ->
+        listeners.filterIsInstance<CaosVirtualFileListener>().forEach { listener ->
             listener.onFileSave(event)
         }
     }
 
-    fun createTemporaryFile(contents:String, extensionIn:String): CaosVirtualFile {
+    fun createTemporaryFile(contents: String, extensionIn: String): CaosVirtualFile {
         val tempPath = "tmp"
-        val extension = if(extensionIn.startsWith("."))
+        val extension = if (extensionIn.startsWith("."))
             extensionIn
         else
             ".$extensionIn"
@@ -352,8 +352,8 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     }
 
-    fun createTemporaryFile(contents:ByteArray, extensionIn:String) : CaosVirtualFile {
-        val extension = if(extensionIn.startsWith("."))
+    fun createTemporaryFile(contents: ByteArray, extensionIn: String): CaosVirtualFile {
+        val extension = if (extensionIn.startsWith("."))
             extensionIn
         else
             ".$extensionIn"
@@ -361,7 +361,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         return getTempPath().createChildWithContent(fileName, contents)
     }
 
-    private fun getTempPath() : CaosVirtualFile {
+    private fun getTempPath(): CaosVirtualFile {
         return getOrCreateRootChildDirectory(TEMP_FOLDER_NAME)
     }
 
@@ -376,7 +376,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     }
 }
 
-class CaosVirtualFileEvent(requester:Any?, file:CaosVirtualFile, fileName:String, parent:VirtualFile?)
+class CaosVirtualFileEvent(requester: Any?, file: CaosVirtualFile, fileName: String, parent: VirtualFile?)
     : VirtualFileEvent(requester, file, fileName, parent)
 
 typealias CaosVirtualFileSaveListener = (e: CaosVirtualFileEvent) -> Unit

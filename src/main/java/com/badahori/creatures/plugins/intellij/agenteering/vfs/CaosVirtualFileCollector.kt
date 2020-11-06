@@ -5,32 +5,35 @@ import com.intellij.psi.search.SearchScope
 object CaosVirtualFileCollector {
 
 
-    fun collect(): List<CaosVirtualFile> {
+    fun collect(scope: SearchScope? = null): List<CaosVirtualFile> {
         return CaosVirtualFileSystem.instance.children.flatMap {
-            collect(it)
+            collect(it, scope)
         }
     }
 
-    fun collectFilesWithExtension(extension: String, scope:SearchScope? = null): List<CaosVirtualFile> {
-        return CaosVirtualFileSystem.instance.children.flatMap {child ->
-            collectFilesWithExtension(child, extension, scope)
-        }
+    fun collectFilesWithExtension(extension: String, scope: SearchScope? = null): List<CaosVirtualFile> {
+        return collect(scope)
+                .filter {
+                    it.extension == extension
+                }
+                .toSet()
+                .toList()
     }
 
-    fun collectFilesWithExtension(file: CaosVirtualFile, extension: String, scope:SearchScope? = null): List<CaosVirtualFile> {
-        if (scope?.contains(file) == false)
-            return emptyList()
+    fun collectFilesWithExtension(file: CaosVirtualFile, extension: String, scope: SearchScope? = null): List<CaosVirtualFile> {
         return when {
-            file.isDirectory -> file.childrenAsList().flatMap { child-> collectFilesWithExtension(child, extension) }
-            file.extension == extension -> listOf(file)
+            file.isDirectory -> file.childrenAsList().flatMap { child -> collectFilesWithExtension(child, extension, scope) }
+            file.extension == extension -> if (scope == null || scope.contains(file)) listOf(file) else emptyList()
             else -> emptyList()
         }
     }
 
-    fun collect(file: CaosVirtualFile): List<CaosVirtualFile> {
+    fun collect(file: CaosVirtualFile, scope: SearchScope? = null): List<CaosVirtualFile> {
         return if (file.isDirectory) {
-            file.childrenAsList().flatMap { child -> collect(child) } + file
-        } else
+            file.childrenAsList().flatMap { child -> collect(child, scope) }
+        } else if (scope == null || scope.contains(file))
             listOf(file)
+        else
+            emptyList()
     }
 }
