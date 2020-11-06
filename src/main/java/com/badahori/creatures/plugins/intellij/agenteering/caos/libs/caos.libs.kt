@@ -5,9 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 
 
@@ -30,31 +28,10 @@ private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<S
      * Bias is required for special processing of TRAN
      */
     override operator fun get(tokenString: String, bias: CaosExpressionValueType): CaosCommand? {
-        val tokens = tokenString.nullIfUndefOrBlank()?.toLowerCase()?.split("\\s+".toRegex()).orEmpty()
-        if (tokens.isEmpty()) {
-            LOGGER.severe("Command is empty or undef at get")
-        }
-        val token = token(tokens[0])
-        val otherTokens = tokens.drop(1).map { token(it) }
-        // Find list of sub tokens for a given token
-        val commands = map[token]
+        val token = normalize(tokenString)
                 ?: return null
-
-        // Find all commands matching sub tokens
-        // Does not return first match, as TRAN as rvalue can return 2 matches
-        val potential = commands.mapNotNull map@{
-            if (it.first(otherTokens))
-                it.second
-            else
-                null
-        }
-
-        // If multiple matches (ie. TRAN), return the one matching the BIAS
-        return when (potential.size) {
-            0 -> return null
-            1 -> potential.first()
-            else -> potential.firstOrNull { it.returnType == bias } ?: potential.first()
-        }
+        // Find list of sub tokens for a given token
+        return map[token]
     }
 }
 
@@ -64,62 +41,14 @@ private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<S
 private fun mapCommands(
         commands: Map<String, CaosCommand>,
         tokenIds: Map<String, Int>
-): Map<Int, List<Pair<CommandCheck, CaosCommand>>> {
-    val commandGroups: MutableMap<Int, List<Pair<CommandCheck, CaosCommand>>> = mutableMapOf()
-    for (keySet in tokenIds) {
-        val parts = keySet.key
-                .toLowerCase()
-                .split(" ")
-                .filter { it.isNotBlank() }
-                .map {
-                    token(it)
-                }
-        val command = commands["${keySet.value}"]
-                ?: throw CaosLibException("Command id: ${keySet.value} for token '${keySet.key}' does not match any command in set")
-        val mappedCommand = mapCommand(parts.drop(1), command)
-        if (parts.isEmpty())
-            throw CaosLibException("Command ${command.command} yielded empty token list")
-        commandGroups[parts[0]] = commandGroups[parts[0]]?.let { it + mappedCommand } ?: listOf(mappedCommand)
-    }
-    return commandGroups
-}
-
-/**
- * Maps a Command to a token checking function for use in a command map
- */
-private fun mapCommand(subCommands: List<Int>, command: CaosCommand): Pair<CommandCheck, CaosCommand> {
-    return if (subCommands.isEmpty())
-        Pair(NoSubCommandsCheck, command)
-    else
-        Pair(CommandCheck(subCommands), command)
-}
-
-/**
- * Class holding a check to validate whether a list of tokens, matches this item
- */
-private open class CommandCheck(private val subCommands: List<Int>) {
-    /**
-     * Checks a list of tokens against another.
-     * If tokens match, return number in list
-     * else return null for no matching tokens
-     */
-    open operator fun invoke(tokens: List<Int>): Boolean {
-        for (i in tokens.indices) {
-            if (tokens[i] != subCommands[i])
-                return false
+): Map<String, CaosCommand> {
+    return tokenIds.mapNotNull map@{ (commandStringIn, commandId) ->
+        val commandString = normalize(commandStringIn)
+                ?: return@map null
+        commands["$commandId"]?.let { command ->
+            commandString to command
         }
-        return true
-    }
-}
-
-/**
- * Command check for single token commands.
- */
-private object NoSubCommandsCheck : CommandCheck(emptyList()) {
-    /**
-     * Return 1 if token list is
-     */
-    override operator fun invoke(tokens: List<Int>): Boolean = tokens.isEmpty()
+    }.toMap()
 }
 
 /**
@@ -279,4 +208,11 @@ object CaosLibs {
 
 interface HasLib {
     var caosLib: CaosLib
+}
+
+private fun normalize(commandString: String?): String? {
+    return commandString
+            .nullIfUndefOrBlank()
+            ?.toUpperCase()
+            ?.replace("\\s\\s+".toRegex(), " ")
 }
