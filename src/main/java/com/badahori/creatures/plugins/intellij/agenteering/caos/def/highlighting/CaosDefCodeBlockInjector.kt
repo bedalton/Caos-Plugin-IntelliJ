@@ -27,7 +27,7 @@ class CaosDefCodeBlockInjector : LanguageInjector {
             "REPS" -> if (!text.endsWith("REPE")) "repe" else null
             else -> null
         }
-        val codePrefix = if (suffix == null) {
+        @Suppress("UNUSED_VALUE") val codePrefix = if (suffix == null) {
             val matches = CaosDefCommandElementsByNameIndex.Instance[prefix, host.project]
             when {
                 matches.any { it.isCommand } -> null
@@ -59,9 +59,9 @@ class CaosDefCodeBlockStringEscaper(block: CaosDefCodeBlock) : LiteralTextEscape
     }
 
     override fun decode(rangeInsideHost: TextRange, outChars: StringBuilder): Boolean {
-        ProperTextRange.assertProperRange(rangeInsideHost);
-        outChars.append(myHost.text, rangeInsideHost.startOffset, rangeInsideHost.endOffset);
-        return true;
+        ProperTextRange.assertProperRange(rangeInsideHost)
+        outChars.append(myHost.text, rangeInsideHost.startOffset, rangeInsideHost.endOffset)
+        return true
     }
 
 }
