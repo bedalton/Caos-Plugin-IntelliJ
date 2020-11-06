@@ -151,7 +151,10 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
     fun create() {
         if (data.range == null)
             throw Exception("Cannot create annotation without range")
-        val annotation = annotationHolder.createAnnotation(data.severity, data.range, data.message)
+        val annotation = if (data.severity == HighlightSeverity.INFORMATION && data.message.isNullOrEmpty())
+            annotationHolder.createInfoAnnotation(data.range, "")
+        else
+            annotationHolder.createAnnotation(data.severity, data.range, data.message)
         data.fixBuilderData.forEach {
             val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
