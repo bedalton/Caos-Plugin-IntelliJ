@@ -34,6 +34,7 @@ class CaosScriptAssignmentStubType(debugName:String) : com.badahori.creatures.pl
         val operation = CaosOp.fromValue(stream.readInt())
         val lvalue = stream.readCaosVarSafe()
         val rvalue = stream.readCaosVarSafe()
+        val enclosingScope = stream.readScope()
         val commandString = stream.readNameAsString() ?: UNDEF
         return CaosScriptAssignmentStubImpl (
                 parent = parent,
@@ -41,7 +42,7 @@ class CaosScriptAssignmentStubType(debugName:String) : com.badahori.creatures.pl
                 operation = operation,
                 lvalue = lvalue,
                 rvalue = rvalue,
-                enclosingScope = stream.readScope(),
+                enclosingScope = enclosingScope,
                 commandString = commandString
         )
     }
