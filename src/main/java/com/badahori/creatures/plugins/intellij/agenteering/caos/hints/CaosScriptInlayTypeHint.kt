@@ -274,9 +274,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvalue) {
                 return null
             }
-            val parent = element.parent as? CaosScriptCommandLike
+            val parentCommand = (element.parent as? CaosScriptCommandLike)?.commandStringUpper
                     ?: return null
-            return HintInfo.MethodInfo(parent.commandString, listOf(), CaosScriptLanguage)
+            return HintInfo.MethodInfo(parentCommand, listOf(), CaosScriptLanguage)
         }
     },
 
@@ -328,9 +328,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvalue) {
                 return null
             }
-            val parent = element.parent as? CaosScriptCommandLike
+            val parentCommand = (element.parent as? CaosScriptCommandLike)?.commandStringUpper
                     ?: return null
-            return HintInfo.MethodInfo(parent.commandString, listOf(), CaosScriptLanguage)
+            return HintInfo.MethodInfo(parentCommand, listOf(), CaosScriptLanguage)
         }
     },
 
