@@ -37,7 +37,10 @@ private fun getValuesListId(
     val other: CaosScriptRvalue = equalityExpressionPrime.rvalueList.let let@{ rvaluesList ->
         when {
             // If there is no opposing expression yet, bail out
-            rvaluesList.size < 2 -> null
+            rvaluesList.size < 2 -> {
+                LOGGER.severe("Equality operator expects exactly TWO expressions. Found: ${rvaluesList.size}.")
+                null
+            }
             // If there are too many expressions, bail out
             // This should not happen
             rvaluesList.size > 2 -> {
