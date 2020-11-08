@@ -37,11 +37,6 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         val element = parameters.elementToSearch
         val project = parameters.project
         val scope: SearchScope = parameters.effectiveSearchScope
-        if (scope is LocalSearchScope) {
-            LOGGER.info("$scope: Files: [${scope.virtualFiles.joinToString { it.name }}]")
-        } else {
-            LOGGER.info("Scope: $scope; ${scope.let { it::class.java.canonicalName }}")
-        }
         if (element !is CaosDefCompositeElement) {
             return
         }
@@ -55,7 +50,6 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         }
 
         if (element is CaosDefCommandWord && element.parent?.parent is CaosDefCommandDefElement) {
-            LOGGER.info("Checking references for ${element.text}")
             return isReferenceTo(variants, project, scope, element, processor)
         }
     }
@@ -98,7 +92,6 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
                 .flatMap map@{ file ->
                     if (file.variant !in variants)
                         return@map emptyList<PsiReference>()
-                    LOGGER.info("Scope: $scope has CAOS file ${file.name}")
                     PsiTreeUtil.collectElementsOfType(file, CaosScriptIsCommandToken::class.java)
                             .mapNotNull { it.reference }
                             .filter { reference ->
@@ -113,7 +106,6 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         getCaosDefFiles(project, scope).flatMap map@{ file ->
             if (file.variants.intersect(variants).isEmpty())
                 return@map emptyList<PsiReference>()
-            LOGGER.info("Scope: $scope has DEF file ${file.name}")
             PsiTreeUtil.collectElementsOfType(file, CaosDefCommandWord::class.java)
                     .filter filter@{ wordElement ->
                         ProgressIndicatorProvider.checkCanceled()
