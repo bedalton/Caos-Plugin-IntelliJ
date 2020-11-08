@@ -238,7 +238,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     && element is CaosScriptRvalue
                     // If argument contains a space, it is not a literal
                     // And all but genus values have no spaces, and genus is handled elsewhere
-                    && !element.text.contains(' ')
+                    && element.isInt
                     && element.parent is CaosScriptEqualityExpressionPrime
         }
 
@@ -290,7 +290,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     && element is CaosScriptRvalue
                     // If argument contains a space, it is not a literal
                     // And all but genus values have no spaces, and genus is handled elsewhere
-                    && !element.text.contains(' ')
+                    && element.isInt
         }
 
         /**
@@ -414,7 +414,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      * Shows family+genus+species breakdown for SETV CLAS statements
      * ie drv! (int) or targ (agent)
      */
-    C1_CLAS_VALUE("Show family+genus+species for CLAS assignment value", true) {
+    C1_CLAS_VALUE("Show family+genus+species for CLAS assignment value", true, 100) {
 
         private val setvClasRegexTest = "[Ss][Ee][Tt][Vv]\\s+[Cc][Ll][Aa][Ss].*".toRegex()
         /**
@@ -458,14 +458,14 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Determines whether to show this parameter hint of not
          */
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && (element is CaosScriptRvaluePrime || element is CaosScriptLvalue)
+            return option.isEnabled() && element is CaosScriptRvaluePrime
         }
 
         /**
          * Provide hints for this command's return type
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            if (element !is CaosScriptCommandElement)
+            if (element !is CaosScriptRvaluePrime)
                 return EMPTY_INLAY_LIST
             val commandToken = element.commandToken
                     ?: return EMPTY_INLAY_LIST
@@ -475,13 +475,14 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 if (commandString like it.first)
                     return listOf(InlayInfo("(${it.second})", commandToken.endOffset))
             }
-            val type: CaosExpressionValueType = if (element is CaosScriptLvalue) {
-                CaosExpressionValueType.VARIABLE
-            } else {
-                element.commandDefinition?.returnType
-            }
+            val type: CaosExpressionValueType = element.commandDefinition?.returnType
                     ?: return EMPTY_INLAY_LIST
             val typeName = type.simpleName
+            (element.parent?.parent as? CaosScriptCommandElement)?.let {parent ->
+                val index = (element.parent as CaosScriptRvalue).index
+                if (parent.commandDefinition?.parameters?.getOrNull(index)?.name == typeName)
+                    return EMPTY_INLAY_LIST
+            }
             element.putUserData(RETURN_VALUES_TYPE_KEY, Pair(commandString, typeName))
             return listOf(InlayInfo("($typeName)", commandToken.endOffset))
         }
@@ -500,6 +501,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
     },
 
+    /*
     /**
      * Shows parameter name for argument
      * ie stm# shou {stimulus}:10
@@ -544,7 +546,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return null
             return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
         }
-    };
+    }*/;
     override val option: Option = Option("SHOW_${this.name}", description, enabled)
 }
 
