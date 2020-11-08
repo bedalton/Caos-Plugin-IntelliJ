@@ -19,7 +19,7 @@ interface CaosScriptHintsProvider {
 
     companion object {
         fun resolve(element: PsiElement): CaosScriptHintsProvider? =
-                values.sortedByDescending { it.priority }.find { it.isApplicable(element) }
+                values.sortedByDescending { it.priority }.find { it.enabled && it.isApplicable(element) }
 
         val values: Array<CaosScriptHintsProvider> =
                 arrayOf(*CaosScriptInlayTypeHint.values(), *CaosScriptInlayParameterHintsProvider.values())
