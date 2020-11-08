@@ -270,10 +270,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                         nextNextSibling
                 )
             }
-            else -> {
-                LOGGER.info("Failed to understand WORD context: ${parent.elementType}; for type: ${myElement.elementType}")
-                listOf(name)
-            }
+            else -> listOf(name)
         }
     }
 

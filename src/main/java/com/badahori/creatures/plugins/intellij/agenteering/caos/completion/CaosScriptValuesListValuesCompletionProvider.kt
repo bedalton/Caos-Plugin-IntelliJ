@@ -30,38 +30,30 @@ object CaosScriptValuesListValuesCompletionProvider {
     fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptArgument) {
         val containingCommand = (valueOfType.parent as? CaosScriptCommandElement)
                 ?: return
-        LOGGER.info("HasContainingCommand")
         // Get variant as it is required to get the right list of values
         val variant = valueOfType.containingCaosFile?.variant
                 ?: return
 
-        LOGGER.info("GotVariant")
         // Get argument index
         val index = valueOfType.index
 
-        LOGGER.info("GettingCommandDefinition for: ${containingCommand.commandStringUpper}")
         // Get parent command entry in CaosDef
         val reference = containingCommand
                 .commandDefinition
                 ?: return
 
-        LOGGER.info("GotCommandDefinition")
         // Resolve arguments corresponding parameter definition
         val parameters = reference
                 .parameters
         // Get number of parameters
         val numParameters = parameters.size
 
-        LOGGER.info("Getting parameter struct")
         // Get arguments parameter definition
         val parameterStruct = parameters.getOrNull(index)
                 ?: return
         val case = valueOfType.text.case
-        LOGGER.info("GotParameterStruct")
         // If argument represents GENUS, allow for named genus completions
         if (valueOfType.parent is CaosScriptGenus || (index != 0 && parameterStruct.name.equalsIgnoreCase("genus"))) {
-
-            LOGGER.info("Is Genus")
             if (startsWithNumber.matches(valueOfType.text))
                 return
             val family = valueOfType.getPreviousNonEmptySibling(false)?.text?.toIntSafe()
@@ -71,7 +63,6 @@ object CaosScriptValuesListValuesCompletionProvider {
 
         // If argument is FAMILY, Allow for name based family completions
         } else if (valueOfType.parent is CaosScriptFamily || (valueOfType.parent !is CaosScriptFamily && parameterStruct.name.equalsIgnoreCase("family"))) {
-            LOGGER.info("Is Family")
             val next = parameters.getOrNull(index + 1)
                     ?: return
             if (next.name.equalsIgnoreCase("genus"))
@@ -84,37 +75,30 @@ object CaosScriptValuesListValuesCompletionProvider {
         val valuesListGetter =
                 // If is assignment, get expected completion values
                 (if (containingCommand is CaosScriptCAssignment) {
-                    LOGGER.info("Is Assignment")
                     containingCommand.lvalue
                             ?.getChildOfType(CaosScriptCommandElement::class.java)
                             ?.commandDefinition
                             ?.returnValuesList
                 // Completion is for parameter
                 } else {
-                    LOGGER.info("Is regular parameter")
                     parameterStruct.valuesList
                 })
                         ?: return
 
-        LOGGER.info("Got values list getter")
-        LOGGER.info("Getting values list for variant")
         // Retrieve values list by variant
         val valuesList = valuesListGetter[variant]
                 ?: return
 
-        LOGGER.info("Got values list for variant")
         // Check if need to add space after insertion
         val addSpace = numParameters - 1 > index
 
         // If type definition contains values list annotation, add list values
         // If supertype == Files, should complete with known file names for type
         if (valuesList.extensionType?.equalsIgnoreCase("File").orFalse()) {
-            LOGGER.info("Is File Values List")
             addFileNameCompletions(resultSet, valueOfType.project, valueOfType.containingFile?.module, variant.isOld, parameterStruct.type, valuesList.name)
             return
         }
 
-        LOGGER.info("Is regular values list: '${valuesList.name}'")
         // Finally, add basic completion for list values
         addListValues(resultSet, valuesList, case, addSpace)
     }
