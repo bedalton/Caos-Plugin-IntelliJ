@@ -350,11 +350,11 @@ private fun StubOutputStream.writeCaosRange(range:CaosIntRange) {
     writeInt(RANGE)
     writeBoolean(range.min != null)
     range.min?.let {
-        writeInt(it)
+        writeLong(it)
     }
     writeBoolean(range.max != null)
     range.max?.let {
-        writeInt(it)
+        writeLong(it)
     }
 }
 private fun StubOutputStream.writeCaosRange(range:CaosFloatRange) {
@@ -370,8 +370,8 @@ private fun StubOutputStream.writeCaosRange(range:CaosFloatRange) {
 }
 
 private fun StubInputStream.readCaosIntRange() : CaosIntRange {
-    val min = if (readBoolean()) readInt() else null
-    val max = if (readBoolean()) readInt() else null
+    val min = if (readBoolean()) readLong() else null
+    val max = if (readBoolean()) readLong() else null
     return CaosIntRange(min, max)
 }
 private fun StubInputStream.readCaosFloatRange() : CaosFloatRange {
