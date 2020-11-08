@@ -36,14 +36,12 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
     override fun processQuery(parameters: ReferencesSearch.SearchParameters, processor: Processor<in PsiReference>) {
         val element = parameters.elementToSearch
         val project = parameters.project
-        var scope: SearchScope = parameters.effectiveSearchScope
+        val scope: SearchScope = parameters.effectiveSearchScope
         if (scope is LocalSearchScope) {
             LOGGER.info("$scope: Files: [${scope.virtualFiles.joinToString { it.name }}]")
         } else {
             LOGGER.info("Scope: $scope; ${scope.let { it::class.java.canonicalName }}")
         }
-        if (scope.toString() == "EMPTY")
-            scope = GlobalSearchScope.everythingScope(project)
         if (element !is CaosDefCompositeElement) {
             return
         }
