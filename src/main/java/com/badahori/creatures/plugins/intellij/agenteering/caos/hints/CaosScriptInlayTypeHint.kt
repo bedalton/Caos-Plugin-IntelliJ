@@ -10,10 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
@@ -231,6 +228,57 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return listOf(InlayInfo("(${valuesListValue.name})", element.endOffset))
         }
     },
+    /**
+     * Gets assumed argument name for an equality expression rvalue
+     * ie. chem 4 (coldness)
+     */
+    ASSUMED_EQ_VALUE_NAME_HINT("Show assumed value name in Equality expression", true) {
+        override fun isApplicable(element: PsiElement): Boolean {
+            return option.isEnabled()
+                    && element is CaosScriptRvalue
+                    // If argument contains a space, it is not a literal
+                    // And all but genus values have no spaces, and genus is handled elsewhere
+                    && !element.text.contains(' ')
+                    && element.parent is CaosScriptEqualityExpressionPrime
+        }
+
+        /**
+         * Provide hints for assumed literal values named value
+         */
+        override fun provideHints(element: PsiElement): List<InlayInfo> {
+            if (element !is CaosScriptRvalue)
+                return EMPTY_INLAY_LIST
+            val parent = element.parent as? CaosScriptEqualityExpressionPrime
+                    ?: return EMPTY_INLAY_LIST
+            val variant = element.variant
+                    ?: return EMPTY_INLAY_LIST
+            val valuesList = parent.getValuesList(variant, element)
+                    ?: return EMPTY_INLAY_LIST
+            val value = element.text
+            if (value == "0" && valuesList.name.toUpperCase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
+                return EMPTY_INLAY_LIST
+
+            // Get corresponding value for argument value in list of values
+            val valuesListValue = valuesList[value]
+                    ?: return EMPTY_INLAY_LIST
+
+            // Format hint and return
+            return listOf(InlayInfo("(" + valuesListValue.name + ")", element.endOffset))
+        }
+
+        /**
+         * Gets hint info definition
+         * Might be used for blacklisting command hints
+         */
+        override fun getHintInfo(element: PsiElement): HintInfo? {
+            if (element !is CaosScriptRvalue) {
+                return null
+            }
+            val parent = element.parent as? CaosScriptCommandLike
+                    ?: return null
+            return HintInfo.MethodInfo(parent.commandString, listOf(), CaosScriptLanguage)
+        }
+    },
 
     /**
      * Gets assumed argument name for a given value
@@ -261,6 +309,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             // Get list for argument
             val valuesList = getValuesList(element)
                     ?: return EMPTY_INLAY_LIST
+            if (value == "0" && valuesList.name.toUpperCase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
+                return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values
             val valuesListValue = valuesList[value]
