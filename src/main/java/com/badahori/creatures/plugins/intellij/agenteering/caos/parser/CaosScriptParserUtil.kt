@@ -7,9 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
@@ -78,7 +76,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun isNewVariant(
             builder_: PsiBuilder,
             level: Int,
-            includeSeaMonkeys:Boolean
+            includeSeaMonkeys: Boolean
     ): Boolean {
         return fileVariant(builder_)?.let {
             it.isNotOld && (includeSeaMonkeys || it != CaosVariant.SM)
@@ -193,6 +191,45 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun eol(builder_: PsiBuilder, level: Int): Boolean {
         val text = builder_.tokenText
         return (text != null && text.contains("\n")) || eof(builder_, level)
+    }
+
+    @JvmStatic
+    fun isNext(
+            builder_: PsiBuilder,
+            level: Int,
+            vararg keys: List<String>
+    ) {
+
+    }
+    @JvmStatic
+    fun isNext(
+            builder_: PsiBuilder,
+            level: Int,
+            key: String
+    ) : Boolean {
+        return nextToken(builder_) like key
+    }
+
+    @JvmStatic
+    fun isNext(
+            builder_: PsiBuilder,
+            level: Int,
+            vararg keys: String
+    ) : Boolean {
+        return nextToken(builder_)?.let {nextToken ->
+            keys.any { it like nextToken }
+        } ?: false
+    }
+
+    private fun nextToken(builder_: PsiBuilder) : String? {
+        val originalText = builder_.originalText
+        var i = builder_.currentOffset
+        while (originalText.getOrNull(i)?.let { it == ' '}.orFalse())
+            i++
+        if (i+4 >= originalText.length) {
+            return null
+        }
+        return originalText.substring(i until i+4)
     }
 
     @JvmStatic
