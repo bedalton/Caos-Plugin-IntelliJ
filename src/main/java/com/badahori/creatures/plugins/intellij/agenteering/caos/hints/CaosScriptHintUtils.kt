@@ -16,16 +16,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValu
 
 fun CaosScriptRvalue.getValuesListValue(): CaosValuesListValue? {
     // Lists values can only be for expressions of string or int
-    if (!(isString || isInt)) {
+    if (!(isString || isInt || isFloat)) {
         return null
     }
     val variant = variant
             ?: return null
-    (parent as? CaosScriptCommandElement)?.let {
-        return getCommandParameterValuesListValue(variant, it, this, text)
-    }
 
-    getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let {
+    (parent as? CaosScriptCommandElement)?.let { commandElement ->
+        return getCommandParameterValuesListValue(variant, commandElement, this, text)
+    }
+    (parent as? CaosScriptEqualityExpressionPrime)?.let {
         return getEqualityExpressionValuesListValue(variant, it, this)
     }
     return null
@@ -47,9 +47,9 @@ private fun getEqualityExpressionValuesListValue(variant:CaosVariant, equalityEx
 
 private fun getCommandParameterValuesListValue(variant: CaosVariant, containingCommand: CaosScriptCommandElement, expression: CaosScriptRvalue, key: String): CaosValuesListValue? {
     val index = expression.index
-    val valuesListId = containingCommand.commandDefinition?.parameters?.getOrNull(index)?.valuesListIds?.get(variant.code)
+    val parameter = containingCommand.commandDefinition?.parameters?.getOrNull(index)
             ?: return null
-    val valuesList = CaosLibs.valuesList[valuesListId]
+    val valuesList = parameter.valuesList[variant]
             ?: return null
     return valuesList[key]
 }
