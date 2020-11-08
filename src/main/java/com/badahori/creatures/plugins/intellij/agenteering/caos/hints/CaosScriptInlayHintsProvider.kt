@@ -16,8 +16,6 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
     override fun getParameterHints(element: PsiElement): List<InlayInfo> {
         val resolved = CaosScriptHintsProvider.resolve(element)
                 ?: return mutableListOf()
-        if (!resolved.enabled)
-            return mutableListOf()
         return resolved.provideHints(element)
     }
 
