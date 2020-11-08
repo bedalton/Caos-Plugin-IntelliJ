@@ -1473,7 +1473,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
         if (this is CaosScriptIsCommandToken || children.firstOrNull() is CaosScriptIsCommandToken) {
             return CaosCommandType.COMMAND
         }
-        LOGGER.info("Failed to understand command type with value: $text. ${parent?.text?.let { "With parent: $it" } ?: "Without parent"}")
+        LOGGER.severe("Failed to understand command type with value: $text. ${parent?.text?.let { "With parent: $it" } ?: "Without parent"}")
         return CaosCommandType.UNDEFINED
     }
     return when (parent) {
@@ -1490,7 +1490,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
         is CaosScriptRepsHeader -> CaosCommandType.CONTROL_STATEMENT
         is CaosScriptSubroutineHeader -> CaosCommandType.CONTROL_STATEMENT
         else ->  {
-            LOGGER.info("Failed to understand command type with a command element parent ${parent.commandStringUpper};")
+            LOGGER.severe("Failed to understand command type with a command element parent ${parent.commandStringUpper};")
             parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
         }
     }
