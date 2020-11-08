@@ -12,11 +12,9 @@ import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 
 class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionAction, LocalQuickFix {
 
@@ -52,15 +50,19 @@ class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionActio
     private fun getScriptText() : String? {
         val element = element.element
                 ?: return null
-        if (element.arguments.size > 1)
+        val arguments = element.arguments
+        if (arguments.size != 2) {
+            LOGGER.severe("CLAS -> CLS2 expects 2 arguments for SETV")
             return null
-        val clasInt = (element.arguments.getOrNull(1) as? CaosScriptRvalue)
+        }
+        val clasInt = (arguments.getOrNull(1) as? CaosScriptRvalue)
                 ?.intValue
                 ?: return null
         val clas = CaosAgentClassUtils.parseClas(clasInt)
                 ?: return null
-        val setv = "setv".matchCase(element.commandString)
-        val clasText = "CLS2".matchCase(element.commandString)
+        val case = element.commandString.case
+        val setv = "setv".matchCase(case)
+        val clasText = "CLS2".matchCase(case)
         return "$setv $clasText ${clas.family} ${clas.genus} ${clas.species}"
     }
 
