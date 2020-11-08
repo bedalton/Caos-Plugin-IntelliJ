@@ -61,7 +61,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         // Needs to be checked
         // @todo should this be an error?
         if (parameters.size < arguments.size) {
-            LOGGER.severe("BNF grammar definitions mismatched. BNF parse allowed ${arguments.size} arguments when expecting: ${parameters.size}")
+            LOGGER.severe("BNF grammar definitions mismatched. BNF parse of ${commandDefinition.command} allowed ${arguments.size} arguments when expecting: ${parameters.size}")
             return
         }
         // Iterate over the arguments and annotate as necessary
