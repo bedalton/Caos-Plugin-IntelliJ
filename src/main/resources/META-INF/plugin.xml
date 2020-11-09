@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.7</version>
+  <version>0.01.8</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -33,6 +33,19 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.9</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix false positives on duplicate event script inspection</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Improved hint calculation speed</li>
+          <li>Rewrote parser for improved speed</li>
+          <li></li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.7</b>
         <b>#Fixes</b>
@@ -84,7 +97,6 @@
           <li>Duplicate event script numbers</li>
         </ul>
       </li>
-      </li>
       <li>
         <b>Version: 0.01.5</b><br/>
         <b>#Fixes</b>
@@ -127,24 +139,23 @@
           <li>Add clickable regions to CAOS definition file doc comment code blocks</li>
           <li>Add highlighting for same variable usage</li>
         </ul>
-    </ul>
-    </li>
-    <li>
-      <b>Version: 0.01.2</b>
-      <ul>
-        <li>fix autocomplete changing numbers to variables</li>
-      </ul>
-    </li>
-    <li>
-      <b>Version: 0.01.00</b>
-      <ul>
-        <li>initial implementation</li>
-        <li>Syntax Highlighting</li>
-        <li>Basic completion</li>
-        <li>Definition reference</li>
-        <li>Parameter hints</li>
-      </ul>
-    </li>
+      </li>
+      <li>
+        <b>Version: 0.01.2</b>
+        <ul>
+          <li>fix autocomplete changing numbers to variables</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.00</b>
+        <ul>
+          <li>initial implementation</li>
+          <li>Syntax Highlighting</li>
+          <li>Basic completion</li>
+          <li>Definition reference</li>
+          <li>Parameter hints</li>
+        </ul>
+      </li>
     </ul>
     ]]>
   </change-notes>
