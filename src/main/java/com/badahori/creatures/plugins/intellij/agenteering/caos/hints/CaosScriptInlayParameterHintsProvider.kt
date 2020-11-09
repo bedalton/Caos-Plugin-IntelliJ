@@ -6,11 +6,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.hints.HintInfo
@@ -36,22 +39,17 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
             }
             val commandElement = element as? CaosScriptCommandElement
                     ?: return mutableListOf()
-            if (commandElement is CaosScriptCAssignment)
+            if (commandElement is CaosScriptCAssignment && commandElement.commandString like "SETV" )
                 return inlayHinstForCAssignment(commandElement)
 
             // If direct parent is assignment, its parameters have been modified set c_assignment element pass
-            if (commandElement.parent is CaosScriptCAssignment)
+            if (commandElement.parent.let { it is CaosScriptCAssignment && it.commandString like "SETV" })
                 return emptyList()
 
             val referencedCommand = getCommand(commandElement)
                     ?: return mutableListOf()
             val skipLast = skipLast(commandElement)
-            val parameterStructs = referencedCommand.parameters.let {
-                if (commandElement is CaosScriptCAssignment)
-                    it.subList(0, it.lastIndex - 1)
-                else
-                    it
-            }
+            val parameterStructs = referencedCommand.parameters
             val parameters = getParametersAsStrings(parameterStructs, skipLast)
             val arguments = commandElement.arguments
             return arguments.mapIndexedNotNull { i, it ->
@@ -64,7 +62,14 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
             val lvalueElement = (arguments.firstOrNull() as? CaosScriptLvalue)
                     ?: return emptyList()
             val command = lvalueElement.commandDefinition
-                    ?: return emptyList()
+            if (command == null) {
+                val parameters = assignment.commandDefinition?.parameters?.map { it.name.nullIfEmpty()}
+                return arguments.mapIndexedNotNull {i, argument ->
+                    parameters?.getOrNull(i)?.let {parameter ->
+                        InlayInfo("$parameter:", argument.startOffset)
+                    }
+                }
+            }
             val parameters = command.parameters
             val lastArgument = arguments.lastOrNull()
 
