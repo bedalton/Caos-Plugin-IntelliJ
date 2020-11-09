@@ -459,8 +459,17 @@ code_block_primitive
 rvalue
 	::= AT_RVALUE
 	;
+
 lvalue
-	::= AT_LVALUE
+	::= AT_LVALUE lvalue_return
+	;
+
+private lvalue_return
+	::= OPEN_PAREN lvalue_return_name CLOSE_PAREN
+	;
+
+lvalue_return_name
+	::= ID
 	;
 
 ownr

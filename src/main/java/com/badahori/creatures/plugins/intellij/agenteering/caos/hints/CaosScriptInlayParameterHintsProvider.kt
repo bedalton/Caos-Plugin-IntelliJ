@@ -1,25 +1,24 @@
 @file:Suppress("UnstableApiUsage", "SpellCheckingInspection")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.psi.PsiElement
 
-enum class CaosScriptInlayParameterHintsProvider(description:String, override val enabled:Boolean, override val priority:Int = 0) : CaosScriptHintsProvider {
+enum class CaosScriptInlayParameterHintsProvider(description: String, override val enabled: Boolean, override val priority: Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
         override fun isApplicable(element: PsiElement): Boolean {
             return option.isEnabled() && element is CaosScriptCommandElement || element is CaosScriptClassifier
@@ -37,28 +36,57 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
             }
             val commandElement = element as? CaosScriptCommandElement
                     ?: return mutableListOf()
+            if (commandElement is CaosScriptCAssignment)
+                return inlayHinstForCAssignment(commandElement)
+
+            // If direct parent is assignment, its parameters have been modified set c_assignment element pass
+            if (commandElement.parent is CaosScriptCAssignment)
+                return emptyList()
+
             val referencedCommand = getCommand(commandElement)
                     ?: return mutableListOf()
             val skipLast = skipLast(commandElement)
-            val last = if (skipLast) {
-                commandElement.getSelfOrParentOfType(CaosScriptCAssignment::class.java)?.let { assignment ->
-                    val firstCommand = (assignment.arguments.firstOrNull() as? CaosScriptLvalue)
-                    val arg = assignment.arguments.lastOrNull()
-                    val lastParameter = firstCommand?.let { getCommand(it) }?.parameters?.lastOrNull()
-                    if (lastParameter != null && arg != null)
-                        listOf(InlayInfo(lastParameter.name, arg.startOffset))
-                    else
-                        null
-                }
-            } else {
-               null
-            } ?: emptyList()
-            val parameterStructs = referencedCommand.parameters
+            val parameterStructs = referencedCommand.parameters.let {
+                if (commandElement is CaosScriptCAssignment)
+                    it.subList(0, it.lastIndex - 1)
+                else
+                    it
+            }
             val parameters = getParametersAsStrings(parameterStructs, skipLast)
-            return commandElement.arguments.mapIndexedNotNull{ i, it ->
-                parameters.getOrNull(i)?.let { parameter -> InlayInfo("$parameter:", it.startOffset) }
+            val arguments = commandElement.arguments
+            return arguments.mapIndexedNotNull { i, it ->
+                parameters.getOrNull(i)?.let { parameter -> parameter.nullIfEmpty()?.let { parameterNotEmpty -> InlayInfo("$parameterNotEmpty:", it.startOffset) } }
+            }.toList()
+        }
 
-            }.toList() + last
+        private fun inlayHinstForCAssignment(assignment:CaosScriptCAssignment) : List<InlayInfo> {
+            val arguments = assignment.arguments
+            val lvalueElement = (arguments.firstOrNull() as? CaosScriptLvalue)
+                    ?: return emptyList()
+            val command = lvalueElement.commandDefinition
+                    ?: return emptyList()
+            val parameters = command.parameters
+            val lastArgument = arguments.lastOrNull()
+
+            // Build list of parameter names, appending lvalueName from command definition as needed
+            val parameterNames = if (!skipLast(lvalueElement) && command.lvalueName.nullIfEmpty() != null)
+                parameters.map { it.name.nullIfEmpty() } + command.lvalueName!!
+            else
+                parameters.map { it.name.nullIfEmpty() }
+            return (lvalueElement.arguments + lastArgument).mapIndexedNotNull { i, nullableArg ->
+                nullableArg?.let {argument ->
+                    parameterNames.getOrNull(i)?.let { parameter ->
+                        InlayInfo("$parameter:", argument.startOffset)
+                    }
+                }
+            } + assignment.commandDefinition?.parameters?.map{ it.name }?.let { parameterStrings ->
+                assignment.arguments.dropLast(1).mapIndexedNotNull { i, argument ->
+                    parameterStrings.getOrNull(i)?.let { parameter ->
+                        InlayInfo("$parameter:", argument.startOffset)
+                    }
+                }
+            }.orEmpty()
+
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
@@ -68,7 +96,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
             val commandElement = element as? CaosScriptCommandElement
                     ?: return null
             val commandString = commandElement.commandString
-                ?: return null
+                    ?: return null
             val referencedCommand = getCommand(commandElement)
                     ?: return null
             val parameters = getParametersAsStrings(referencedCommand.parameters, false)
@@ -85,7 +113,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
 
         private val SKIP_LAST = listOf("PUHL", "PUPT", "CLS2")
 
-        private fun skipLast(element:CaosScriptCommandElement) : Boolean {
+        private fun skipLast(element: CaosScriptCommandElement): Boolean {
             return if (element.commandString?.toUpperCase() in setLike) {
                 val firstArg = element.argumentValues.firstOrNull()
                 (firstArg is CaosVar.CaosCommandCall && firstArg.text.toUpperCase() in SKIP_LAST)
@@ -93,7 +121,7 @@ enum class CaosScriptInlayParameterHintsProvider(description:String, override va
                 false
         }
 
-        private fun getParametersAsStrings(parameters:List<CaosParameter>, skipLast:Boolean) : List<String> {
+        private fun getParametersAsStrings(parameters: List<CaosParameter>, skipLast: Boolean): List<String> {
             return if (skipLast) {
                 (0 until parameters.lastIndex).map { i -> parameters[i].name }
             } else {

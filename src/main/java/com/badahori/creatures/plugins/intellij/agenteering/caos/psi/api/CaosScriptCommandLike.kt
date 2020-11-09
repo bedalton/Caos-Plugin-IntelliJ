@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
  * This encompases both commands with arguments and command keyword elements
  */
 interface CaosScriptCommandLike : CaosScriptCompositeElement {
-    val commandString:String
+    val commandString:String?
     @JvmDefault
     val commandToken:CaosScriptIsCommandToken? get() = when (this) {
         is CaosScriptIsCommandToken -> this

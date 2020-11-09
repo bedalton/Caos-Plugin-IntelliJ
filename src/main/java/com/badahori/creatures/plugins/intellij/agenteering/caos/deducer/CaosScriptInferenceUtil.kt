@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getAssi
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.psi.util.PsiTreeUtil
+import kotlin.math.abs
 
 object CaosScriptInferenceUtil {
 
@@ -43,23 +44,33 @@ object CaosScriptInferenceUtil {
 
 
     fun getInferredValue(assignment: CaosScriptCAssignment): CaosVar? {
-        if (assignment.cAssignKwL != null || assignment.cKwNegv != null) {
+        if (assignment.cKwAssignAlter != null) {
+            val assignAlter = assignment.cKwAssignAlter
             val lvalue = (assignment.arguments.getOrNull(0) as? CaosScriptLvalue)
                     ?: return null
             val variable: CaosScriptIsVariable = lvalue.varToken as? CaosScriptIsVariable
                     ?: lvalue.namedGameVar
                     ?: return null
             val value = getInferredValue(variable)
-            if (assignment.cKwNegv != null) {
-                return when (value) {
-                    is CaosVar.CaosLiteral.CaosInt -> return CaosVar.CaosLiteral.CaosInt(-value.value)
-                    is CaosVar.CaosLiteral.CaosFloat -> return CaosVar.CaosLiteral.CaosFloat(-value.value)
-                    is CaosVar.CaosLiteral.CaosIntRange -> return CaosVar.CaosLiteral.CaosIntRange(value.min?.let { -it }, value.max?.let { -it })
-                    is CaosVar.CaosLiteral.CaosFloatRange -> return CaosVar.CaosLiteral.CaosFloatRange(value.min?.let { -it }, value.max?.let { -it })
-                    else -> value
-                }
+            val alter: (x: Float) -> Float = when {
+                assignAlter!!.kNegv != null -> { x -> -x }
+                assignAlter.kAbsv != null -> { x -> abs(x) }
+                assignAlter.kNotv != null -> { x -> -(x + 1) }
+                else -> { x -> x }
             }
-            return value
+            val alterInt: (x: Long) -> Long = when {
+                assignAlter!!.kNegv != null -> { x -> -x }
+                assignAlter.kAbsv != null -> { x -> abs(x) }
+                assignAlter.kNotv != null -> { x -> -(x + 1) }
+                else -> { x -> x }
+            }
+            return when (value) {
+                is CaosVar.CaosLiteral.CaosInt -> return CaosVar.CaosLiteral.CaosInt(alterInt(value.value))
+                is CaosVar.CaosLiteral.CaosFloat -> return CaosVar.CaosLiteral.CaosFloat(alter(value.value))
+                is CaosVar.CaosLiteral.CaosIntRange -> return CaosVar.CaosLiteral.CaosIntRange(value.min?.let { alterInt(it) }, value.max?.let { alterInt(it) })
+                is CaosVar.CaosLiteral.CaosFloatRange -> return CaosVar.CaosLiteral.CaosFloatRange(value.min?.let { alter(it) }, value.max?.let { alter(it) })
+                else -> value
+            }
         }
 
         if (assignment.cKwAdds != null || assignment.cKwAssignChar != null || assignment.cAssignKwNetUnik != null)

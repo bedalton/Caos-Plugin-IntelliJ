@@ -89,9 +89,9 @@ data class CaosCommand(
         val variants: List<String>,
         val rvalue:Boolean,
         val lvalue:Boolean,
+        val lvalueName:String? = null,
         val commandGroup:String
 ) {
-
     val isCommand: Boolean by lazy {
         !(rvalue || lvalue)
     }
