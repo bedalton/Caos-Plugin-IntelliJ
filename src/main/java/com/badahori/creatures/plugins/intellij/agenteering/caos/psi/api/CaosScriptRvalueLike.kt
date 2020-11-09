@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 
 interface CaosScriptRvalueLike : CaosScriptCompositeElement {
 
@@ -41,4 +43,8 @@ interface CaosScriptRvalueLike : CaosScriptCompositeElement {
     val inferredType: CaosExpressionValueType
 
     val index:Int
+
+    val commandDefinition:CaosCommand?
+
+    val parameterValuesListValue:CaosValuesListValue?
 }
