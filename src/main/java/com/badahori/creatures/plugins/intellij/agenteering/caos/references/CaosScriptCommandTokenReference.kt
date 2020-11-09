@@ -38,39 +38,52 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     }
 
     private val check:(element:PsiElement) -> Boolean by lazy {
-        val innerCheck:(commandString:String) -> Boolean = when {
-            myElement.parent.parent is CaosDefCodeBlock -> {
-                { commandString:String ->
+        val innerCheck:(commandString:String) -> Boolean
+        when (myElement.parent) {
+            // Check for code block parent, as these are unstructured,
+            // and combinations need to be checked manually
+            is CaosDefCodeBlock -> {
+                innerCheck = { commandString:String ->
                     names.any { it like commandString }
                 }
             }
-            myElement is CaosScriptIsCommandToken -> {
-                { commandString:String ->
-                    myElement.text.commandFormatted like commandString
-                }
-            }
+            // Should be only two other uses CaosDefCommandWord in CaosDefCommand parent
+            // Or CaosScriptIsCommandToken with command parent
             else -> {
-                { commandString:String ->
-                    myElement.text.commandFormatted like commandString
+                innerCheck = { commandString:String ->
+                    myElement.parent?.text?.commandFormatted like commandString
                 }
             }
         }
+        // Creates and caches a checking method to check whether
+        // this element references passed in element
         check@{ element:PsiElement ->
+            // Only declarations can be pointed to
+            // Return the passed in element is not
             if (!isDeclaration(element))
                 return@check false
-            val elementText = (element.parent as? CaosDefCommand)?.text?.commandFormatted
+            // Get and format passed in elements text
+            val elementText = (element.parent as CaosDefCommand).text.commandFormatted
                     ?: return@check false
+            // Runs check on lambda declared earlier
             innerCheck(elementText)
         }
     }
 
+    /**
+     * Checks whether this element points to the element passed in
+     */
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name.toUpperCase()) {
             return true
         }
+        // Uses cached check method
         return check(element)
     }
 
+    /**
+     * Checks whether the passed element is a Command definition element in a CAOS Def file
+     */
     private fun isDeclaration(element:PsiElement) : Boolean {
         return element is CaosDefCommandWord
                 && element.parent is CaosDefCommand
@@ -81,13 +94,21 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      * Main entry into resolving command references
      */
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
+        // Cannot resolve on dumb index, return
         if (DumbService.isDumb(myElement.project))
-            return emptyArray()
+            return PsiElementResolveResult.EMPTY_ARRAY
+        // If parent.parent is CommandDefElement
+        // this element would be pointing to itself
+        // Return without self referencing result
         if (myElement.parent?.parent is CaosDefCommandDefElement) {
             return PsiElementResolveResult.EMPTY_ARRAY
         }
+        // If element is CaosDefCompositeElement, it is a link in the file
+        // So resolve it within itself
         val elements = if (myElement is CaosDefCompositeElement)
             findFromDefElement()
+        // If element is not CaosDef element, it is a CaosScript element
+        // Resolve it with indices
         else
             findFromScriptElement()
         return PsiElementResolveResult.createResults(elements)
@@ -97,9 +118,11 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      * In charge of finding references within the command def files
      */
     private fun findFromDefElement(): List<PsiElement> {
+        // If parent is CaosDefCode
         if (myElement.parent is CaosDefCodeBlock) {
             return getCommandFromCodeBlockCommand()
         }
+        // If Parent is CaosDefCommand
         val parentCommand = myElement.parent as? CaosDefCommand
                 ?: return emptyList()
         val index = parentCommand.commandWordList.indexOf(myElement)
