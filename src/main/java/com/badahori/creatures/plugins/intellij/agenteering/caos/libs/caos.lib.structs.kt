@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import kotlinx.serialization.Serializable
@@ -92,6 +93,17 @@ data class CaosCommand(
         val lvalueName:String? = null,
         val commandGroup:String
 ) {
+    val fullCommandHeader: String by lazy {
+        val commandHeader = formatNameWithType(command, returnType)
+        parameters.nullIfEmpty()?.let {
+            val builder = StringBuilder(commandHeader)
+            for(parameter in parameters) {
+                builder.append(" ").append(formatNameWithType(parameter.name, parameter.type))
+            }
+            builder.toString()
+        } ?: commandHeader
+    }
+
     val isCommand: Boolean by lazy {
         !(rvalue || lvalue)
     }
@@ -105,6 +117,15 @@ data class CaosCommand(
                     ?: return@get null
             CaosLibs.valuesList[valuesListId]
         }
+    }
+}
+
+private fun formatNameWithType(name:String, type:CaosExpressionValueType) : String {
+    return name + type.simpleName.let { simpleName ->
+        if (simpleName[0] == '[')
+            " $simpleName"
+        else
+            " ($simpleName)"
     }
 }
 
@@ -175,6 +196,9 @@ data class CaosValuesList(
     private val negative = values.filter { it.not }
     private val greaterThan = values.filter { it.greaterThan }
 
+    /**
+     * Gets command checking both literal value as well as int comparison values
+     */
     operator fun get(key: String): CaosValuesListValue? {
         key.toIntSafe()?.let { intValue ->
             return get(intValue)
@@ -182,6 +206,9 @@ data class CaosValuesList(
         return values.firstOrNull { it.value == key }
     }
 
+    /**
+     * Gets command using both literal numeric value and value comparison
+     */
     operator fun get(key: Int): CaosValuesListValue? {
         return values.firstOrNull { it.intValue == key }
                 ?: negative.firstOrNull { it.intValue != key }
