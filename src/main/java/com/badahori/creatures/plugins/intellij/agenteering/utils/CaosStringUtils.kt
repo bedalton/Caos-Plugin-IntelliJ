@@ -283,3 +283,6 @@ fun binaryToInteger(binary: String): Long {
     }
     return result
 }
+
+val EMPTY_STRING_ARRAY = emptyArray<String>()
+val EMPTY_STRING_LIST = emptyList<String>()
