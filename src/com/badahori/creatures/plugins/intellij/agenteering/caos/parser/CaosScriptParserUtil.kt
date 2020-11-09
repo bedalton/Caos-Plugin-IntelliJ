@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
@@ -10,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
@@ -70,7 +70,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun isVariant(builder_: PsiBuilder,
                   level: Int,
                   variant: CaosVariant): Boolean {
-        val fileVariant = fileVariant(builder_)
+        val fileVariant = variant(builder_)
                 ?: return false//CaosScriptProjectSettings.variant
         return variant == fileVariant
     }
@@ -78,7 +78,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun isOldVariant(builder_: PsiBuilder,
                      level: Int): Boolean {
-        val fileVariant = fileVariant(builder_)
+        val fileVariant = variant(builder_)
                 ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isOld
     }
@@ -86,22 +86,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun isNewerVariant(builder_: PsiBuilder,
                      level: Int): Boolean {
-        return fileVariant(builder_)?.isNotOld.orFalse()
-    }
-
-    fun fileVariant(builder_: PsiBuilder) : CaosVariant? {
-        val psiFile = psiFile(builder_)
-                ?: return null
-        (psiFile as? CaosScriptFile)?.variant?.let { variant ->
-            return variant
-        }
-        val virtualFile = psiFile.virtualFile
-                ?: psiFile.originalFile.virtualFile
-                ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)
-        (virtualFile as? CaosVirtualFile)?.let { caosVirtualFile ->
-            return caosVirtualFile.variant
-        }
-        return psiFile.module?.variant
+        return variant(builder_)?.isNotOld.orFalse()
     }
 
     /**
@@ -114,14 +99,21 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun variant(builder_: PsiBuilder): CaosVariant? {
-        val file = (psiFile(builder_) as? CaosScriptFile)
-        if (file == null) {
+        val psiFile = psiFile(builder_)
+        if (psiFile == null) {
             LOGGER.severe("CaosParser is parsing non-caos-script file")
             return null
         }
-        return file.variant
-                ?: (file.originalFile as? CaosScriptFile)?.variant
-                ?: file.virtualFile?.getUserData(CaosScriptFile.VariantUserDataKey)
+        (psiFile as? CaosScriptFile)?.variant?.let { variant ->
+            return variant
+        }
+        val variant = psiFile.virtualFile?.cachedVariant
+                ?: psiFile.originalFile.virtualFile?.cachedVariant
+                ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariant
+                ?: psiFile.module?.variant
+        if (variant == CaosVariant.UNKNOWN)
+            return null
+        return variant
     }
 
     @JvmStatic

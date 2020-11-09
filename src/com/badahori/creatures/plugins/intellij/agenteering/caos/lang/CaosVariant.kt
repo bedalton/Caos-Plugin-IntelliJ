@@ -35,10 +35,4 @@ enum class CaosVariant(val code:String, val fullName:String, val index:Int, val 
     }
 }
 
-fun CaosVariant?.orDefault() : CaosVariant {
-    if (this != null)
-        return this
-    return CaosScriptProjectSettings.variant
-}
-
 val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
