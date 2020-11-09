@@ -461,7 +461,7 @@ rvalue
 	;
 
 lvalue
-	::= AT_LVALUE lvalue_return
+	::= AT_LVALUE lvalue_return?
 	;
 
 private lvalue_return
