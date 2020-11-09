@@ -1,20 +1,23 @@
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.library
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.openapi.vfs.VirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
+import com.intellij.openapi.roots.ModifiableRootModel
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import java.util.logging.Logger
 
-internal const val BUNDLE_DEFINITIONS_FOLDER = "lib"
 
 object CaosBundleSourcesRegistrationUtil {
 
@@ -24,8 +27,6 @@ object CaosBundleSourcesRegistrationUtil {
 
     fun register(module:Module?, project:Project) {
 
-        if (module == null)
-            return
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
                 register(module, project)
@@ -33,20 +34,38 @@ object CaosBundleSourcesRegistrationUtil {
             return
         }
         runWriteAction {
-            registerSourcesAsLibrary(module)
+            module?.apply { deregisterSources(this) }
+            registerSourcesAsLibrary(project)
         }
     }
 
-    private fun registerSourcesAsLibrary(module:Module) : Boolean {
-        val project = module.project
-        if (DumbService.isDumb(project)) {
-            DumbService.getInstance(project).smartInvokeLater {
-                registerSourcesAsLibrary(module)
-            }
-            return false
+    fun registerSourcesWithoutModule(module:Module? = null) : Boolean {
+        module?.let { deregisterSources(module) }
+        val definitionsFolder = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
+                ?: return false
+        val vfsDefinitionsFolder = CaosVirtualFile(BUNDLE_DEFINITIONS_FOLDER, null, true).apply {
+            CaosVirtualFileSystem.instance.addFile(this)
         }
+        for(file in definitionsFolder.children) {
+            CaosVirtualFile(file.name, file.contents, false).apply {
+                vfsDefinitionsFolder.addChild(this)
+            }
+        }
+        return CaosVirtualFileSystem.instance.exists("$BUNDLE_DEFINITIONS_FOLDER/C1-Lib.caosdef")
+    }
+
+    private fun deregisterSources(module:Module) {
         val rootModel = ModuleRootManager.getInstance(module).modifiableModel
         val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
+        val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return
+        oldLibrary.modifiableModel.removeRoot(BUNDLE_DEFINITIONS_FOLDER, OrderRootType.SOURCES)
+        rootModel.commit()
+    }
+
+
+    private fun registerSourcesAsLibrary(project:Project) : Boolean {
+        val rootModel = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
+        val modifiableModel = rootModel.modifiableModel
         val libraryPath = libraryPath()
         // Check if library exists and needs no processing
         if (modifiableModel.libraries.any { it.name == LIBRARY_NAME } && isSourceCurrent(libraryPath, modifiableModel))
@@ -61,20 +80,6 @@ object CaosBundleSourcesRegistrationUtil {
 
         modifiableModel.commit()
         return true
-    }
-
-    private fun libraryPath() : VirtualFile? {
-        val libraryPath = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
-        if (libraryPath == null) {
-            val pluginRoot = CaosFileUtil.PLUGIN_HOME_DIRECTORY
-            if (pluginRoot == null || !pluginRoot.exists()) {
-                LOGGER.severe("Failed to locate bundled caos definition files: Plugin root is invalid")
-            } else {
-                LOGGER.severe("Failed to locate bundled caos definition files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
-            }
-            return null
-        }
-        return libraryPath
     }
 
     fun addLibrary(modifiableModel: ModifiableModel) : Boolean {
