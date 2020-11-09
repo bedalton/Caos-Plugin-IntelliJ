@@ -63,7 +63,7 @@ internal fun StubInputStream.readCaosVar() : CaosVar{
         FLOAT -> CaosFloat(readFloat())
         ANIMATION_STRING -> CaosAnimationString(value = readNameAsString() ?: "", animation = readAnimation())
         TOKEN -> CaosToken(value = readNameString() ?: "XXXX")
-        RANGE -> readCaosIntRange()
+        INT_RANGE -> readCaosIntRange()
         C1_STRING -> CaosC1String(readNameAsString() ?: "")
         EAME -> EameVar(readNameAsString()?:"???")
         GAME -> GameVar(readNameAsString()?:"???")
