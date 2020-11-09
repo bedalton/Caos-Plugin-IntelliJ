@@ -60,7 +60,7 @@ class CaosScriptVarTokenReference(element: CaosScriptVarToken) : PsiPolyVariantR
                 .filter {
                     it.isVariant(variant)
                 }
-                .map { it.command } + myElement
+                .map { it.command }
         return PsiElementResolveResult.createResults(commands)
     }
 }

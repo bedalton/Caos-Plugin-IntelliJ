@@ -101,7 +101,7 @@ AND=[Aa][Nn][Dd]
 OR=[Oo][Rr]
 AND_OR={AND}|{OR}
 COMMENT=[*][^\n\*]*
-%state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME IN_CODE_BLOCK_LITERAL
+%state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME IN_CODE_BLOCK_LITERAL IN_LVALUE
 
 %%
 
@@ -122,9 +122,16 @@ COMMENT=[*][^\n\*]*
 	[^]						 	{ yybegin(IN_COMMENT); yypushback(1); }
 }
 
+<IN_LVALUE> {
+	"("							{ return CaosDef_OPEN_PAREN; }
+	")"							{ return CaosDef_CLOSE_PAREN; }
+  	.+ / [\)\n]					{ return CaosDef_ID; }
+	[^]							{ yybegin(IN_COMMENT); yypushback(yylength());}
+}
+
 <COMMENT_START> {
 	{AT_RVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_RVALUE; }
-	{AT_LVALUE}                	{ yybegin(IN_COMMENT); return CaosDef_AT_LVALUE; }
+	{AT_LVALUE}                	{ yybegin(IN_LVALUE); return CaosDef_AT_LVALUE; }
 	{AT_PARAM}                 	{ yybegin(IN_PARAM_COMMENT); return CaosDef_AT_PARAM; }
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
   	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }

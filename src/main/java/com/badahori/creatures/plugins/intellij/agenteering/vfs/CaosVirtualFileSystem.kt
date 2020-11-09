@@ -55,7 +55,6 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         root.addChild(file)
         if (!children.contains(file))
             throw IOException("Failed to add child file: ${file.name} to root. 'rootChildren': $children. 'root.childrenAsList':${root.childrenAsList()}")
-        LOGGER.info("Added child ${file.name} to Caos VFS root. Children size == ${children.size}")
         fireFileCreated(null, file)
     }
 
