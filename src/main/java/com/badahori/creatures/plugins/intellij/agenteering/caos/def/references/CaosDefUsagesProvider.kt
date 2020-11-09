@@ -22,7 +22,7 @@ class CaosDefUsagesProvider : FindUsagesProvider{
     override fun getWordsScanner(): WordsScanner? {
         return DefaultWordsScanner(
                 CaosDefLexerAdapter(),
-                TokenSet.create(CaosDef_COMMAND_WORD, CaosDef_VARIABLE_LINK, CaosDef_VARIABLE_NAME),
+                TokenSet.create(CaosDef_COMMAND_WORD, CaosDef_WORD, CaosDef_VARIABLE_LINK, CaosDef_VARIABLE_LINK_LITERAL, CaosDef_VARIABLE_NAME),
                 TokenSet.create(CaosDef_LINE_COMMENT, CaosDef_DOC_COMMENT, CaosDef_COMMENT_TEXT_LITERAL, CaosDef_DOC_COMMENT_OPEN, CaosDef_COMMENT_TEXT_LITERAL),
                 TokenSet.create(CaosDef_INT_LITERAL, CaosDef_INT)
         )
