@@ -1912,7 +1912,7 @@ rvalue
 			getReference
 			getName
 			setName
-			getParameterListValue
+			getParameterValuesListValue
 			getToken
 			getCommandDefinition
 		]
@@ -4475,7 +4475,7 @@ prefix_kw__cd_
 	;
 
 prefix_incompletes
-	::= all_prefixes space_like incomplete
+	::= all_prefixes (space_like incomplete)?
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
