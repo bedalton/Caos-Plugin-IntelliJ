@@ -201,9 +201,6 @@
     <!-- Completion -->
     <completion.contributor language="CaosScript"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
-    <!--editorTypedHandler
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptTypedHandler"
-    / -->
 
     <!-- Project -->
     <iconProvider
@@ -424,11 +421,6 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex" />
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptExpressionIndex" />
-
-    <!-- Actions -->
-    <!--enterHandlerDelegate
-        id="CaosScriptEnterDelegate"
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptEnterDelegate" / -->
 
     <!-- ======================== -->
     <!-- ======= CAOS DEF ======= -->
