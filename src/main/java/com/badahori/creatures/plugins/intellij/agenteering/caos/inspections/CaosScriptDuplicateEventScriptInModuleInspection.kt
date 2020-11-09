@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
@@ -36,13 +37,14 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
         val eventNumber = thisEventScript.eventNumber
         val key = CaosScriptEventScriptIndex.toIndexKey(family, genus, species, eventNumber)
         val containingFile = thisEventScript.containingFile
-        val moduleFilePath = thisEventScript.containingFile?.module?.moduleFilePath
+        val moduleFilePath = thisEventScript.containingFile?.module?.moduleFilePath ?: "UNDEF"
+        val variant = thisEventScript.variant
         val exists = CaosScriptEventScriptIndex.instance[key, thisEventScript.project]
                 .any {anEventScript ->
                     // Checks against containing module, as duplicate event numbers in a single file
                     // are covered in another inspection
                     anEventScript.containingFile?.let { aFile ->
-                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFilePath == moduleFilePath
+                        aFile.variant == variant && !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFilePath == moduleFilePath
                     }.orFalse()
                 }
         if (exists) {
