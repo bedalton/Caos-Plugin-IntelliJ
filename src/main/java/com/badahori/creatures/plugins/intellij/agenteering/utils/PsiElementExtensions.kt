@@ -13,3 +13,7 @@ fun <PsiT : PsiElement> PsiElement.isOrHasParentOfType(parentClass:Class<PsiT>) 
 }
 
 fun PsiElement.isNotEquivalentTo(otherElement: PsiElement): Boolean = this.isEquivalentTo(otherElement)
+
+
+val EMPTY_PSI_ARRAY = emptyArray<PsiElement>()
+val EMPTY_PSI_LIST = emptyList<PsiElement>()
