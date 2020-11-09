@@ -249,6 +249,8 @@ fun String.splitByLength(maxLength: Int): List<String> {
         }
     }
     return chunks
+}
+
 fun binaryToInteger(binary: String): Long {
     val numbers = binary.toCharArray()
     var result = 0L
