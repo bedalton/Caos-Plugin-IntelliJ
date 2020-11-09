@@ -5,9 +5,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 
@@ -109,13 +111,19 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
 
         // If Expected type is TOKEN
         // Ensure that token is valid
-        if (expectedTypeSimple == CaosExpressionValueType.TOKEN) {
+        if (expectedTypeSimple == TOKEN) {
             // Tokens in C1/C2 must be 4 letters long
             if ((argument as CaosScriptArgument).text.length == 4)
                 return
             // Tokens in CV+ can be any length
             else if (variant.isNotOld)
                 return
+        }
+
+
+        if (expectedTypeSimple == INT && actualType == AGENT) {
+            val message = CaosBundle.message("caos.annotator.command-annotator.agent-to-integer-coercion")
+            holder.registerProblem(argument, message, ProblemHighlightType.INFORMATION)
         }
         // Create error message
         val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
@@ -129,7 +137,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     private fun getActualType(element: CaosScriptRvalueLike, caosVar: () -> CaosVar): CaosExpressionValueType {
         return element.inferredType
                 .let {
-                    if (it == CaosExpressionValueType.ANY || it == CaosExpressionValueType.UNKNOWN)
+                    if (it == ANY || it == UNKNOWN)
                         null
                     else
                         it
@@ -146,13 +154,13 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     companion object {
 
         // Similar var types
-        private val BYTE_STRING_LIKE = listOf(CaosExpressionValueType.BYTE_STRING, CaosExpressionValueType.C1_STRING, CaosExpressionValueType.ANIMATION)
-        private val INT_LIKE = listOf(CaosExpressionValueType.INT, CaosExpressionValueType.DECIMAL)
-        private val FLOAT_LIKE = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL, CaosExpressionValueType.INT)
-        private val ANY_TYPE = listOf(CaosExpressionValueType.ANY, CaosExpressionValueType.VARIABLE, CaosExpressionValueType.UNKNOWN)
-        private val NUMERIC = listOf(CaosExpressionValueType.FLOAT, CaosExpressionValueType.DECIMAL, CaosExpressionValueType.INT)
-        private val AGENT_LIKE = listOf(CaosExpressionValueType.AGENT, CaosExpressionValueType.NULL)
-        private val STRING_LIKE = listOf(CaosExpressionValueType.STRING, CaosExpressionValueType.C1_STRING, CaosExpressionValueType.HEXADECIMAL)
+        private val BYTE_STRING_LIKE = listOf(BYTE_STRING, C1_STRING, ANIMATION)
+        private val INT_LIKE = listOf(INT, DECIMAL)
+        private val FLOAT_LIKE = listOf(FLOAT, DECIMAL, INT)
+        private val ANY_TYPE = listOf(ANY, VARIABLE, UNKNOWN)
+        private val NUMERIC = listOf(FLOAT, DECIMAL, INT)
+        private val AGENT_LIKE = listOf(AGENT, NULL)
+        private val STRING_LIKE = listOf(STRING, C1_STRING, HEXADECIMAL)
 
         /**
          * Determine whether types are similar despite having actually different types
