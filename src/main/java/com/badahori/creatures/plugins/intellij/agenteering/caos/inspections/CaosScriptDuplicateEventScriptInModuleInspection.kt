@@ -38,7 +38,6 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
         val key = CaosScriptEventScriptIndex.toIndexKey(family, genus, species, eventNumber)
         val containingFile = thisEventScript.containingFile
         val moduleFilePath = thisEventScript.containingFile?.module?.moduleFilePath ?: "UNDEF"
-        val variant = thisEventScript.variant
         val exists = CaosScriptEventScriptIndex.instance[key, thisEventScript.project]
                 .any {anEventScript ->
                     // Checks against containing module, as duplicate event numbers in a single file
