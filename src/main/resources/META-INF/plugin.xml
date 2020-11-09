@@ -388,6 +388,15 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidNumericExpressionInspection"
     />
 
+    <localInspection language="CaosScript"
+                     level="Weak Warning"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Agent to Int Coercion"
+                     shortName="AgentToIntCoercion"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptAgentToIntCoercionInspection"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
