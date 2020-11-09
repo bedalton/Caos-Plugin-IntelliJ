@@ -8,6 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.AGENT
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.INT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
@@ -50,7 +52,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val commandDefinition = CaosLibs[variant].command[commandString]
             if (commandDefinition == null) {
                 // Persist find list fail as command could not be found
-                element.putUserData(BIT_FLAG_IN_EQUALITY_LIST_KEY, Pair(commandString,false))
+                element.putUserData(BIT_FLAG_IN_EQUALITY_LIST_KEY, Pair(commandString, false))
                 return false
             }
 
@@ -58,7 +60,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val valuesList = commandDefinition.returnValuesList[variant]
             if (valuesList == null) {
                 // Persist find list fail for command
-                element.putUserData(BIT_FLAG_IN_EQUALITY_LIST_KEY, Pair(commandString,false))
+                element.putUserData(BIT_FLAG_IN_EQUALITY_LIST_KEY, Pair(commandString, false))
                 return false
             }
             val isBitFlag = valuesList.bitflag
@@ -110,7 +112,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Finds the command sting in the given comparison expression
          * This entails getting the opposing argument, and finding its command if any
          */
-        private fun getCommandString(element:CaosScriptRvalue) : String? {
+        private fun getCommandString(element: CaosScriptRvalue): String? {
             // Ensure parent is equality expression
             val parent = element.parent as? CaosScriptComparesEqualityElement
                     ?: return null
@@ -194,7 +196,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             // Cannot suggest genus without family
             val previousParameter = parameters.getOrNull(index - 1)
                     ?: return false
-            return previousParameter.name like  "family"
+            return previousParameter.name like "family"
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
@@ -220,7 +222,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     .firstOrNull {
                         it.name like "Genus"
                     }
-                    // If not value found, return empty inlay hints array
+            // If not value found, return empty inlay hints array
                     ?: return EMPTY_INLAY_LIST
             val valuesListValue = valuesList["$family $genus"]
                     ?: return EMPTY_INLAY_LIST
@@ -228,6 +230,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return listOf(InlayInfo("(${valuesListValue.name})", element.endOffset))
         }
     },
+
     /**
      * Gets assumed argument name for an equality expression rvalue
      * ie. chem 4 (coldness)
@@ -417,6 +420,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     C1_CLAS_VALUE("Show family+genus+species for CLAS assignment value", true, 100) {
 
         private val setvClasRegexTest = "[Ss][Ee][Tt][Vv]\\s+[Cc][Ll][Aa][Ss].*".toRegex()
+
         /**
          * Determines whether to show this parameter hint of not
          */
@@ -425,7 +429,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return false
             val parent = element.parent as? CaosScriptCAssignment
                     ?: return false
-            return  setvClasRegexTest.matches(parent.text)
+            return setvClasRegexTest.matches(parent.text)
         }
 
         /**
@@ -449,6 +453,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return HintInfo.MethodInfo(element.parent.text, listOf(), CaosScriptLanguage)
         }
     },
+
     /**
      * Shows return type for command calls
      * ie drv! (int) or targ (agent)
@@ -479,17 +484,22 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return EMPTY_INLAY_LIST
             var typeName = type.simpleName
             // element.parent.parent = RvaluePrime -> Rvalue -> CommandElement
-            (element.parent?.parent as? CaosScriptCommandElement)?.let {parent ->
+            (element.parent?.parent as? CaosScriptCommandElement)?.let { parent ->
                 val index = (element.parent as CaosScriptRvalue).index
                 val parameter = parent.commandDefinition?.parameters?.getOrNull(index)
                 if (parameter?.name == typeName)
                     return EMPTY_INLAY_LIST
-                if (type == CaosExpressionValueType.AGENT) {
-                    // Parameter is expecting Int meaning
-                    // Runtime will convert agent to Int(ID)
-                    if (parameter?.type == CaosExpressionValueType.INT)
-                        typeName = "Agent.ID"
-                }
+
+
+                // In C1/C2 agent return values are integers
+                // and can be used anywhere integers are
+                val isIntToAgentCoercion = element.variant?.isOld.orFalse()
+                        && type == AGENT
+                        && parameter?.type == INT
+                // When coercing an agent to an int
+                // change the return value hint to depict that
+                if (isIntToAgentCoercion)
+                    typeName = "Agent->ID"
             }
             element.putUserData(RETURN_VALUES_TYPE_KEY, Pair(commandString, typeName))
             return listOf(InlayInfo("($typeName)", commandToken.endOffset))
@@ -555,6 +565,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
         }
     }*/;
+
     override val option: Option = Option("SHOW_${this.name}", description, enabled)
 }
 
@@ -570,7 +581,7 @@ private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElemen
 /**
  * Generates the inlay hints for a bitflag and bitflag list
  */
-private fun getBitFlagHintValues(typeList:CaosValuesList, bitFlagValue:Int, offset:Int) : List<InlayInfo> {
+private fun getBitFlagHintValues(typeList: CaosValuesList, bitFlagValue: Int, offset: Int): List<InlayInfo> {
     // This hint is only worried about bitflags
     // Return if not bit-flags, even if list exists, but is not Bit-Flags
     if (!typeList.bitflag)
@@ -626,11 +637,11 @@ private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
 /**
  * Used to cache bit flag list validity in equality
  */
-private val BIT_FLAG_IN_EQUALITY_LIST_KEY:Key<Pair<String, Boolean>> = Key("com.badahori.creatures.BitFlagsListIsValidInEqualityExpression")
+private val BIT_FLAG_IN_EQUALITY_LIST_KEY: Key<Pair<String, Boolean>> = Key("com.badahori.creatures.BitFlagsListIsValidInEqualityExpression")
 
-private val ARGUMENT_VALUES_LIST_KEY:Key<Pair<String, Int?>> = Key("com.badahori.creatures.ArgumentValueList")
+private val ARGUMENT_VALUES_LIST_KEY: Key<Pair<String, Int?>> = Key("com.badahori.creatures.ArgumentValueList")
 
-private val RETURN_VALUES_TYPE_KEY:Key<Pair<String, String?>> = Key("com.badahori.creatures.ReturnValueType")
+private val RETURN_VALUES_TYPE_KEY: Key<Pair<String, String?>> = Key("com.badahori.creatures.ReturnValueType")
 
-private val EMPTY_INLAY_LIST:List<InlayInfo> = emptyList()
+private val EMPTY_INLAY_LIST: List<InlayInfo> = emptyList()
 

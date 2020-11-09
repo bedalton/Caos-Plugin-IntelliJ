@@ -120,10 +120,11 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 return
         }
 
-
-        if (expectedTypeSimple == INT && actualType == AGENT) {
-            val message = CaosBundle.message("caos.annotator.command-annotator.agent-to-integer-coercion")
-            holder.registerProblem(argument, message, ProblemHighlightType.INFORMATION)
+        // In old variants, agent return types are integers, and can be used as such
+        // Check if expecting integer, and actual type is agent
+        if (variant.isOld && expectedTypeSimple == INT && actualType == AGENT) {
+            // This coercion will be handled by another inspection
+            return
         }
         // Create error message
         val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
