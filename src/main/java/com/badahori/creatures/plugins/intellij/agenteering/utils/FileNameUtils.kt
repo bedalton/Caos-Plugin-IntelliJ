@@ -2,8 +2,13 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import java.io.File
 
+
 object FileNameUtils {
-    fun getBaseName(path:String) : String {
-        return File(path).nameWithoutExtension
+    fun getBaseName(fileName:String) : String {
+        return File(fileName).name
+    }
+
+    fun getExtension(fileName:String) : String {
+        return File(fileName).extension
     }
 }
