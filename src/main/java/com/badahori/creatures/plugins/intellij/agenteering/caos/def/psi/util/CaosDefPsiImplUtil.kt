@@ -469,7 +469,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getPresentation(element: CaosDefDocCommentHashtag): ItemPresentation? {
         val parentDeclaration = element.getParentOfType(CaosDefCommandDefElement::class.java)
-        val text = parentDeclaration?.fullCommand ?: UsageViewUtil.createNodeText(element)
+        val text = parentDeclaration?.fullCommandHeader ?: UsageViewUtil.createNodeText(element)
         return object : ItemPresentation {
             override fun getPresentableText(): String {
                 return text
@@ -486,7 +486,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFullCommand(command: CaosDefCommandDefElement): String {
+    fun getFullCommandHeader(command: CaosDefCommandDefElement): String {
         val tokens = mutableListOf(command.commandName, wrapParameterType(command.returnTypeString))
         for (param in command.parameterStructs) {
             tokens.add(param.name)
