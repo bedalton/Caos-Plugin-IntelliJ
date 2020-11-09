@@ -477,11 +477,19 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
             val type: CaosExpressionValueType = element.commandDefinition?.returnType
                     ?: return EMPTY_INLAY_LIST
-            val typeName = type.simpleName
+            var typeName = type.simpleName
+            // element.parent.parent = RvaluePrime -> Rvalue -> CommandElement
             (element.parent?.parent as? CaosScriptCommandElement)?.let {parent ->
                 val index = (element.parent as CaosScriptRvalue).index
-                if (parent.commandDefinition?.parameters?.getOrNull(index)?.name == typeName)
+                val parameter = parent.commandDefinition?.parameters?.getOrNull(index)
+                if (parameter?.name == typeName)
                     return EMPTY_INLAY_LIST
+                if (type == CaosExpressionValueType.AGENT) {
+                    // Parameter is expecting Int meaning
+                    // Runtime will convert agent to Int(ID)
+                    if (parameter?.type == CaosExpressionValueType.INT)
+                        typeName = "Agent.ID"
+                }
             }
             element.putUserData(RETURN_VALUES_TYPE_KEY, Pair(commandString, typeName))
             return listOf(InlayInfo("($typeName)", commandToken.endOffset))
@@ -556,7 +564,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
  */
 private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptRvalue): CaosScriptIsCommandToken? {
     val other: CaosScriptRvalue? = if (parent.first == expression) parent.second else parent.first
-    return other?.varToken?.lastAssignment ?: other?.rvaluePrime?.commandToken
+    return other?.rvaluePrime?.commandToken //?: other?.varToken?.lastAssignment
 }
 
 /**
