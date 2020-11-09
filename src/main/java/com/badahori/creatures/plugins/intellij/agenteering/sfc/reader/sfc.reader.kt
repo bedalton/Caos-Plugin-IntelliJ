@@ -97,7 +97,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
                 objects = objects.mapNotNull { it?.pointed!!.point() },
                 scenery = scenery.pointed,
                 scripts = scripts,
-                macros = macros.mapNotNull { it?.point() },
+                macros = macros.map { it.point() },
                 scrollPosition = scrollPosition,
                 favoritePlaces = favoritePlaces,
                 speechHistory = speechHistory
