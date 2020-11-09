@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileOutputStream
