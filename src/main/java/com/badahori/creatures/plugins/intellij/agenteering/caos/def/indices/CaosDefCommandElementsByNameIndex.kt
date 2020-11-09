@@ -19,32 +19,32 @@ class CaosDefCommandElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBa
     }
 
     override fun getAll(project: Project, globalSearchScope: GlobalSearchScope?): List<CaosDefCommandDefElement> {
-        return super.getAll(project, globalSearchScope) + CaosDefElementsSearchExecutor
+        return super.getAll(project, globalSearchScope)/* + CaosDefElementsSearchExecutor
                 .getCaosDefFiles(project)
-                .collectElementsOfType(CaosDefCommandDefElement::class.java)
+                .collectElementsOfType(CaosDefCommandDefElement::class.java)*/
     }
 
     override fun get(keyIn: String, project: Project): List<CaosDefCommandDefElement> {
-        return super.get(keyIn, project) + CaosDefElementsSearchExecutor
+        return super.get(keyIn, project) /*+ CaosDefElementsSearchExecutor
                 .getCaosDefFiles(project)
                 .collectElementsOfType(CaosDefCommandDefElement::class.java)
-                .filter{it.commandName like keyIn }
+                .filter{it.commandName like keyIn }*/
     }
 
     override fun get(keyIn: String, project: Project, scope: GlobalSearchScope): List<CaosDefCommandDefElement> {
-        return super.get(keyIn, project, scope) + CaosDefElementsSearchExecutor
+        return super.get(keyIn, project, scope) /*+ CaosDefElementsSearchExecutor
                 .getCaosDefFiles(project, scope)
                 .collectElementsOfType(CaosDefCommandDefElement::class.java)
-                .filter{ it.commandName like keyIn }
+                .filter{ it.commandName like keyIn }*/
     }
 
     override fun getAllKeys(project: Project?): MutableCollection<String> {
-        return (super.getAllKeys(project) + project?.let {CaosDefElementsSearchExecutor
+        return (super.getAllKeys(project)) /*+ project?.let {CaosDefElementsSearchExecutor
                 .getCaosDefFiles(project)
                 .collectElementsOfType(CaosDefCommandDefElement::class.java)
                 .map {
                     it.commandName
-                }}.orEmpty()).toMutableList()
+                }}.orEmpty()).toMutableList()*/
     }
 
     companion object {
