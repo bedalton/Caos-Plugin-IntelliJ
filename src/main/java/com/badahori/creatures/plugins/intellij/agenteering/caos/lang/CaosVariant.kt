@@ -62,7 +62,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     }
 }
 
-fun CaosVariant?.orDefault(): CaosVariant {
+fun CaosVariant?.orDefault(): CaosVariant? {
     if (this != null)
         return this
     return CaosScriptProjectSettings.variant
