@@ -78,3 +78,6 @@ fabric.properties
 .DS_Store
 *.bak
 .idea/xtextAutoBuilderState.xml
+
+/build
+.gradle
