@@ -361,7 +361,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return items
             val value = typeList[eventElement.text]
                     ?: return items
-            return items + InlayInfo("(${value.value})", eventElement.endOffset)
+            return items + InlayInfo("(${value.name})", eventElement.endOffset)
         }
 
         /**
