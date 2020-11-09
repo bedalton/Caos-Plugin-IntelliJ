@@ -21,6 +21,12 @@ dependencies {
 sourceSets.main {
     java.srcDirs("src/main/java", "gen")
 }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 kotlin {
 
     tasks.withType<KotlinCompile>().all {
@@ -40,8 +46,7 @@ kotlin {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = "2019.2"
-    localPath = "/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Intellij CE - 191"
+    version = "2019.1"
     sandboxDirectory = "/Users/daniel/Projects/Intellij Sandbox"
     setPlugins("PsiViewer:191.4212")
 }
