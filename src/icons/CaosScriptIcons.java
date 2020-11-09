@@ -28,4 +28,5 @@ public interface CaosScriptIcons {
     Icon C3 = IconLoader.getIcon("/icons/C3.png");
     Icon DS = IconLoader.getIcon("/icons/DS.png");
     Icon SM = IconLoader.getIcon("/icons/SM.png");
+    Icon IMAGE = IconLoader.getIcon("/icons/ImagesFileType.svg");
 }

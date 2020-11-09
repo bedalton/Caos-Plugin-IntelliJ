@@ -36,13 +36,13 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
         val eventNumber = thisEventScript.eventNumber
         val key = CaosScriptEventScriptIndex.toIndexKey(family, genus, species, eventNumber)
         val containingFile = thisEventScript.containingFile
-        val moduleFilePath = thisEventScript.containingFile?.module?.moduleFilePath
+        val moduleFilePath = thisEventScript.containingFile?.module?.moduleFile?.path
         val exists = CaosScriptEventScriptIndex.instance[key, thisEventScript.project]
                 .any {anEventScript ->
                     // Checks against containing module, as duplicate event numbers in a single file
                     // are covered in another inspection
                     anEventScript.containingFile?.let { aFile ->
-                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFilePath == moduleFilePath
+                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFile?.path == moduleFilePath
                     }.orFalse()
                 }
         if (exists) {

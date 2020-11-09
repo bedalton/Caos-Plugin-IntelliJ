@@ -13,7 +13,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.trimErrorSpaces
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -22,7 +24,7 @@ import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -31,6 +33,8 @@ import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.text.BlockSupport
@@ -38,7 +42,9 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
+import java.awt.event.ActionListener
 import java.awt.event.ItemEvent
+import java.awt.event.ItemListener
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JLabel
@@ -57,15 +63,14 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
         })
     }
 
-    override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
-        val caosFile = file.getPsiFile(project) as? CaosScriptFile
+    override fun createNotificationPanel(virtualFile: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
+        val caosFile = virtualFile.getPsiFile(project) as? CaosScriptFile
                 ?: return null
-        val headerComponent = createCaosScriptHeaderComponent(caosFile)
+        val headerComponent = createCaosScriptHeaderComponent(virtualFile, caosFile)
         val panel = EditorNotificationPanel(TRANSPARENT_COLOR)
         panel.add(headerComponent)
         return panel
     }
-
 
     companion object {
         private val KEY: Key<EditorNotificationPanel> = Key.create("Caos Editor Toolbar")
@@ -73,104 +78,248 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
     }
 }
 
-internal fun createCaosScriptHeaderComponent(caosFile: CaosScriptFile): JPanel {
+internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFileIn: CaosScriptFile): JPanel {
+
     val toolbar = EditorToolbar()
-    val project = caosFile.project
+    val project = caosFileIn.project
+
+    // Create a pointer to this file for use later
+    val pointer = CaosScriptPointer(virtualFile, caosFileIn)
+
+    // Initialize toolbar with color
     toolbar.panel.background = TRANSPARENT_COLOR
     toolbar.addTrimSpacesListener {
-        caosFile.trimErrorSpaces()
+        pointer.element?.trimErrorSpaces()
     }
-    if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFile.virtualFile !is CaosVirtualFile) {
-        toolbar.setVariantIsVisible(true)
-        caosFile.variant.let {
-            toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(it))
-        }
 
-        toolbar.addVariantListener variant@{
-            if (it.stateChange != ItemEvent.SELECTED)
-                return@variant
-            val selected = CaosVariant.fromVal(it.item as String)
-            if (caosFile.variant == selected || selected !in CaosConstants.VARIANTS)
-                return@variant
-            val canInject = Injector.canConnectToVariant(selected)
-            toolbar.setInjectButtonEnabled(canInject)
-            CaosScriptProjectSettings.setVariant(selected)
-            caosFile.variant = selected
-            runWriteAction {
-                try {
-                    BlockSupport.getInstance(project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
-                } catch (e: Exception) {
-                }
-            }
-            DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
-            toolbar.setDocsButtonEnabled(true)
-        }
-
+    // If variant selection is not firmly set, allow for it to be altered by user
+    if (caosFileIn.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFileIn.virtualFile !is CaosVirtualFile) {
+        initToolbarWithVariantSelect(toolbar, pointer)
     } else {
         toolbar.setVariantIsVisible(false)
     }
-    toolbar.addDocsButtonClickListener {
-        val selectedVariant = caosFile.variant
-        if (selectedVariant == null) {
-            val builder = DialogBuilder(caosFile.project)
-            builder.setErrorText("Failed to access module game variant")
-            builder.title("Variant Error")
-            builder.show()
-            return@addDocsButtonClickListener
-        }
-        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
-        val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
-                ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
-        val file = virtualFile?.getPsiFile(project)
-                ?: FilenameIndex.getFilesByName(project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
-                        .firstOrNull()
-        if (file == null) {
-            toolbar.setDocsButtonEnabled(false)
-            return@addDocsButtonClickListener
-        }
-        file.navigate(true)
-    }
+
+    // Add docs button handler for opening docs on click
+    toolbar.addDocsButtonClickListener(createDocsOpenClickHandler(toolbar, pointer))
+
+    // Determine whether or not to show the Inject button
     if (!System.getProperty("os.name").contains("Windows") && CaosScriptProjectSettings.getInjectURL(project).isNullOrBlank()) {
         toolbar.showInjectionButton(false)
     }
 
+    // Add injection handler to toolbar
     val checkedSettings = JectSettings()
-    toolbar.addInjectionHandler handler@{
+    toolbar.addInjectionHandler(createInjectHandler(pointer, checkedSettings))
+    return toolbar.panel
+}
 
-        if (caosFile.getUserData(JectSettingsKey) == null)
-            caosFile.putUserData(JectSettingsKey, checkedSettings)
-        caosFile.virtualFile?.let { virtualFile ->
-            val detector = CodeSmellDetector.getInstance(project)
-            val smells = detector.findCodeSmells(listOf(virtualFile))
-                    .filter {
-                        it.severity == HighlightSeverity.ERROR
-                    }
-            if (smells.isNotEmpty()) {
-                Injector.postError(project, "Syntax Errors", "Cannot inject caos code with known errors.")
-                return@handler
-            }
-        }
+private fun initToolbarWithVariantSelect(toolbar: EditorToolbar, pointer: CaosScriptPointer) {
+    toolbar.setVariantIsVisible(true)
+    pointer.element?.variant?.let {
+        toolbar.selectVariant(CaosConstants.VARIANTS.indexOf(it))
+    }
 
-        if (caosFile.variant?.isNotOld.orTrue()) {
-            injectC3WithDialog(caosFile)
-            return@handler
-        }
+    toolbar.addVariantListener(createVariantSelectHandler(toolbar, pointer))
+}
 
-        val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE).text
-        if (content.isBlank()) {
-            Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
+/**
+ * Create action handler to handle the opening of the CAOS doc on click
+ */
+private fun createDocsOpenClickHandler(toolbar: EditorToolbar, pointer: CaosScriptPointer) = ActionListener listener@{
+    // Get file from pointer
+    val caosFile = pointer.element
+
+    // If pointer was invalidated, return
+    if (caosFile == null) {
+        LOGGER.warning("CaosScript pointer was invalidated before show DOCS")
+        return@listener
+    }
+
+    // Get project
+    val project = caosFile.project
+
+    // Get variant from current file
+    val selectedVariant = caosFile.variant
+
+    // If variant is null, show error message and abort
+    if (selectedVariant == null) {
+        toolbar.setDocsButtonEnabled(false)
+        val builder = DialogBuilder(project)
+        builder.setErrorText("Failed to access module game variant")
+        builder.title("Variant Error")
+        builder.show()
+        return@listener
+    }
+    // Get path to documents
+    val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
+    // Load document virtual file
+    val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
+            ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
+
+    // Fetch psi file from virtual file
+    val file = virtualFile?.getPsiFile(project)
+            ?: FilenameIndex.getFilesByName(project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
+                    .firstOrNull()
+
+    // If failed to find variant docs, disable button and return
+    if (file == null) {
+        toolbar.setDocsButtonEnabled(false)
+        return@listener
+    }
+
+    // Navigate to Docs.
+    file.navigate(true)
+}
+
+/**
+ * Create handler for variant select in dropdown menu
+ */
+private fun createVariantSelectHandler(toolbar: EditorToolbar, pointer: CaosScriptPointer) = ItemListener listener@{
+    // Make sure that the action comes from SELECTION and not de-selection
+    if (it.stateChange != ItemEvent.SELECTED)
+        return@listener
+    // Get file from pointer
+    val caosFile = pointer.element
+
+    // If pointer was invalidated. Return
+    if (caosFile == null) {
+        LOGGER.warning("Caos script reference was invalidated before variant change handler")
+        return@listener
+    }
+    // Get project
+    val project = caosFile.project
+
+    // Parse selection from string value
+    val selected = CaosVariant.fromVal(it.item as String)
+
+    // If variant is invalid or already selected, return
+    if (caosFile.variant == selected || selected !in CaosConstants.VARIANTS)
+        return@listener
+
+    // If variant is valid, enable DOCs button
+    toolbar.setDocsButtonEnabled(true)
+
+    // Set inject active/disabled if game is running
+    val canInject = Injector.canConnectToVariant(selected)
+    toolbar.setInjectButtonEnabled(canInject)
+
+    // Set project level variant based on selection
+    CaosScriptProjectSettings.setVariant(selected)
+
+    // Set file variant
+    caosFile.variant = selected
+
+    // Try to re-parse file with the new variant
+    try {
+        WriteCommandAction.writeCommandAction(project)
+                .withName("Set CAOS variant ${selected.code}")
+                .withGroupId("CaosScript")
+                .shouldRecordActionForActiveDocument(false)
+                .run<Throwable> {
+                    reparseAfterSet(pointer, selected)
+                }
+    } catch (e: Exception) {
+        LOGGER.severe("Failed to re-parse and re-analyze after variant change with error: '${e.message}'")
+        e.printStackTrace()
+    }
+}
+
+private fun reparseAfterSet(pointer: CaosScriptPointer, variant: CaosVariant) {
+    // Ensure pointer is still valid
+    val theFile = pointer.element
+    // IF pointer was invalidated, return
+    if (theFile == null || !theFile.isValid) {
+        LOGGER.severe("Cannot re-parse CAOS file as it has become invalid")
+        return
+    }
+    val project = theFile.project
+    try {
+        // Re-parse script to clear/add errors
+        BlockSupport.getInstance(project).reparseRange(theFile, 0, theFile.endOffset, theFile.text)
+    } catch (e: Exception) {
+        LOGGER.severe("Failed to re-parse after variant change with error: '${e.message}'")
+        e.printStackTrace()
+        return
+    }
+
+    // Get current file variant after set
+    val currentVariant = pointer.element?.variant
+    if (currentVariant == null) {
+        CaosNotifications.showError(
+                project,
+                "Set Variant",
+                "Failed to set variant to selected variant: ${variant.code}. Variant is still 'NULL'"
+        )
+        return
+    }
+    // Check that the caos file actually did have its variant set.
+    if (currentVariant != variant) {
+        CaosNotifications.showError(project, "Set Variant", "Failed to set variant to selected variant: ${variant.code}. Variant is still '${currentVariant.code}'")
+        LOGGER.severe("Failed to set variant to selected variant: ${variant.code}")
+        return
+    }
+    // Rerun annotations
+    DaemonCodeAnalyzer.getInstance(project).restart(theFile)
+    // Show success message
+    CaosNotifications.showInfo(project, "Set Variant", "Did set variant to ${currentVariant.code}")
+}
+
+/**
+ * Creates an action handler to inject CAOS code into the Creatures game variant
+ */
+private fun createInjectHandler(pointer: CaosScriptPointer, checkedSettings: JectSettings) = ActionListener handler@{
+    // Get file if valid
+    val caosFile = pointer.element
+    // If file was invalidated, return
+    if (caosFile == null) {
+        LOGGER.warning("CAOS file pointer became invalid before injection")
+        return@handler
+    }
+
+    // Get project
+    val project = caosFile.project
+
+    // If variant of file cannot be determined, abort
+    val variant = caosFile.variant
+    if (variant == null) {
+        Injector.postError(project, "Variant error", "File variant could not be determined")
+        return@handler
+    }
+
+    // Persist JECT settings into file
+    if (caosFile.getUserData(JectSettingsKey) == null)
+        caosFile.putUserData(JectSettingsKey, checkedSettings)
+
+    // If virtual file is valid run check for validity
+    caosFile.virtualFile?.let { virtualFile ->
+        val detector = CodeSmellDetector.getInstance(project)
+        val smells = detector.findCodeSmells(listOf(virtualFile))
+                .filter {
+                    it.severity == HighlightSeverity.ERROR
+                }
+        if (smells.isNotEmpty()) {
+            Injector.postError(project, "Syntax Errors", "Cannot inject caos code with known errors.")
             return@handler
-        }
-        val variant = caosFile.variant
-        if (variant == null) {
-            Injector.postError(project, "Variant error", "File variant could not be determined")
-            return@handler
-        }
-        executeOnPooledThread {
-            Injector.inject(project, variant, content)
         }
     }
-    return toolbar.panel
+
+    // If variant is CV+ ask which parts of the file to inject
+    if (caosFile.variant?.isNotOld.orTrue()) {
+        injectC3WithDialog(caosFile)
+        return@handler
+    }
+
+    // Get contents of file and format for injection
+    val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE).text
+    if (content.isBlank()) {
+        Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
+        return@handler
+    }
+
+    // Add inject command to thread pool
+    executeOnPooledThread {
+        Injector.inject(project, variant, content)
+    }
 }
 
 private enum class JectScriptType(val type: String) {
@@ -319,4 +468,14 @@ private fun inject(project: Project, variant: CaosVariant, scripts: Collection<C
         }
         return@run true
     }
+}
+
+/**
+ * Creates a stronger pointer for use in toolbar actions
+ */
+private class CaosScriptPointer(private val virtualFile: VirtualFile, caosFileIn: CaosScriptFile) {
+    private val pointer = SmartPointerManager.createPointer(caosFileIn)
+    private val project: Project = caosFileIn.project
+    val element: CaosScriptFile?
+        get() = pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
 }

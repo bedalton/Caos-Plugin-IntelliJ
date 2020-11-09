@@ -1,10 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
+import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer

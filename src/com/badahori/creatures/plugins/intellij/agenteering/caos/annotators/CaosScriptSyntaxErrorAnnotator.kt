@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.Cao
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.UNKNOWN
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
@@ -270,7 +271,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateNewEqualityOps(variant: CaosVariant, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant.isNotOld)
+        if (variant.isNotOld || variant == UNKNOWN)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid_eq_operator"))
                 .range(element)
