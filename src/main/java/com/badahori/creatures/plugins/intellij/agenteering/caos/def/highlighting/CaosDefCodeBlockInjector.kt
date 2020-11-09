@@ -2,9 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCodeBlockImpl
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.util.ProperTextRange
 import com.intellij.openapi.util.TextRange
@@ -27,12 +28,13 @@ class CaosDefCodeBlockInjector : LanguageInjector {
             "REPS" -> if (!text.endsWith("REPE")) "repe" else null
             else -> null
         }
+        val variants = host.containingCaosDefFile.variants.map { it.code }
         @Suppress("UNUSED_VALUE") val codePrefix = if (suffix == null) {
-            val matches = CaosDefCommandElementsByNameIndex.Instance[prefix, host.project]
+            val matches = CaosLibs.commands(prefix).filter { it.variants.intersect(variants).isNotEmpty() }
             when {
                 matches.any { it.isCommand } -> null
-                matches.any { it.isRvalue } -> "setv var0 "
-                matches.any { it.isLvalue } -> {
+                matches.any { it.rvalue } -> "setv var0 "
+                matches.any { it.lvalue } -> {
                     suffix = " 0"
                     "setv "
                 }
