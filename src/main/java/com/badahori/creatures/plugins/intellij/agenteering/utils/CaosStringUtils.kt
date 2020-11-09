@@ -1,5 +1,8 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -48,6 +51,27 @@ object CaosStringUtil {
     }
 }
 
+fun String?.nullIfEmpty(): String? {
+    return if (this.isNullOrBlank())
+        null
+    else
+        this
+}
+
+fun String?.isNotNullOrEmpty() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNullOrEmpty != null)
+    }
+    return this != null && this.isNotEmpty()
+}
+
+fun String?.isNotNullOrBlank() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNullOrBlank != null)
+    }
+    return this != null && this.isNotBlank()
+}
+
 fun String.upperCaseFirstLetter(): String {
     return if (this.length < 2) {
         this.toUpperCase()
@@ -68,7 +92,6 @@ fun String.repeat(times: Int): String {
 
 internal val uppercaseSplitRegex: Regex = "(?=\\p{Lu})".toRegex()
 
-@Suppress("unused")
 fun String.splitOnUppercase(): List<String> {
     return this.split(uppercaseSplitRegex)
 }
