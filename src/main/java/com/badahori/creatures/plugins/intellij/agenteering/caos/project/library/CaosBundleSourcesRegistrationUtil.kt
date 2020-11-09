@@ -24,6 +24,8 @@ object CaosBundleSourcesRegistrationUtil {
 
     fun register(module:Module?, project:Project) {
 
+        if (module == null)
+            return
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
                 register(module, project)
@@ -31,8 +33,7 @@ object CaosBundleSourcesRegistrationUtil {
             return
         }
         runWriteAction {
-            module?.apply { deregisterSources(this) }
-            registerSourcesAsLibrary(project)
+            registerSourcesAsLibrary(module)
         }
     }
 
