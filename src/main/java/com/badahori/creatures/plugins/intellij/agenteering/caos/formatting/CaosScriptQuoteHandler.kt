@@ -32,11 +32,11 @@ class CaosScriptQuoteHandler : QuoteHandler {
         val start = iterator.start
         try {
             val doc = editor.document
-            val chars = doc.charsSequence
+            //val chars = doc.charsSequence
             val lineEnd = doc.getLineEndOffset(doc.getLineNumber(offset))
             while (!iterator.atEnd() && iterator.start < lineEnd) {
                 val tokenType = iterator.tokenType
-                if (tokenType in closingTokens && isNonClosedLiteral(iterator, chars)) {
+                if (tokenType in closingTokens) {// && isNonClosedLiteral(iterator, chars)) {
                     return true
                 }
                 iterator.advance()
