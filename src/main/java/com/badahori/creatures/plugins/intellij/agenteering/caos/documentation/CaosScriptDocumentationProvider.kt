@@ -1,22 +1,28 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.documentation
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommand
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.intellij.codeInsight.documentation.DocumentationManagerUtil
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
+        return getDescriptionInfo(element, originalElement)?.let {(fullCommand, comment) ->
+            return "<b>$fullCommand</b>${comment.nullIfEmpty()?.let {"\n$it"} ?: ""}"
+        }
+    }
+
+    private fun getDescriptionInfo(element: PsiElement?, originalElement: PsiElement?) : Pair<String, String?>? {
         return when {
             element is CaosScriptVarToken -> getDescriptiveText(element)
             originalElement is CaosScriptVarToken -> getDescriptiveText(originalElement)
@@ -26,23 +32,14 @@ class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
         }
     }
 
-    private fun getDescriptiveText(element: CaosScriptIsCommandToken): String {
-        var declarationElement = element.parent?.parent as? CaosDefCommandDefElement
-                ?: element.parent as? CaosDefCommandDefElement
-        if (declarationElement == null) {
-            declarationElement = element
-                    .reference
-                    .multiResolve(true)
-                    .firstOrNull()
-                    ?.element
-                    ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                    ?: return CaosScriptPresentationUtil.getDescriptiveText(element)
-        }
-        val fullCommand = declarationElement.fullCommand
-        declarationElement.comment?.nullIfEmpty()?.let {
-            return "<b>$fullCommand</b>\n$it"
-        }
-        return fullCommand
+    private fun getDescriptiveText(element: CaosScriptIsCommandToken): Pair<String, String?> {
+        val fullCommand = CaosScriptPresentationUtil.getDescriptiveText(element)
+        val comment = when (val parent = element.parent) {
+            is CaosScriptCommandElement -> parent.commandDefinition?.description
+            is CaosDefCommand -> (parent.parent as? CaosDefCommandDefElement)?.comment
+            else -> null
+        }.nullIfEmpty() ?: return Pair(fullCommand, null)
+        return Pair(fullCommand, comment)
     }
 
     /**
@@ -72,60 +69,18 @@ class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
      * for the given element
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        val baseElement = element
-                ?: when (originalElement) {
-                    is CaosScriptIsCommandToken -> originalElement.reference.multiResolve(true).firstOrNull()?.element
-                    is CaosScriptVarToken -> originalElement.reference.multiResolve(true).let { results ->
-                        results.firstOrNull { it.element is CaosDefCompositeElement } ?: results.firstOrNull()
-                    }?.element
-                    else -> return null
-                }
-        val command = baseElement?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return when (originalElement) {
-                    is CaosScriptIsCommandToken -> getDescriptiveText(originalElement)
-                    is CaosScriptVarToken -> getDescriptiveText(originalElement)
-                    else -> null
-                }
-        val fullCommand = command.fullCommand
-        /*command.docComment?.let {
-            return DocumentationMarkup.DEFINITION_START + fullCommand + DocumentationMarkup.DEFINITION_END + "\n" + DocumentationMarkup.CONTENT_START + formatComment(it) + DocumentationMarkup.CONTENT_END
-        }*/
-        command.comment?.let {
-            return DocumentationMarkup.DEFINITION_START + fullCommand + DocumentationMarkup.DEFINITION_END + "\n" + DocumentationMarkup.CONTENT_START + it + DocumentationMarkup.CONTENT_END
+        return getDescriptionInfo(element, originalElement)?.let {(fullCommand, commentIn) ->
+            val commentFormatted = commentIn?.let { "\n" + DocumentationMarkup.CONTENT_START + it + DocumentationMarkup.CONTENT_END } ?: ""
+            return DocumentationMarkup.DEFINITION_START + fullCommand + DocumentationMarkup.DEFINITION_END + commentFormatted
         }
-        return fullCommand
     }
 
-    private fun formatComment(comment: CaosDefDocComment?): String {
-        return comment?.let {
-            val builder = StringBuilder()
-            for (line in PsiTreeUtil.collectElementsOfType(it, CaosDefDocCommentLine::class.java)) {
-                var item: PsiElement? = line.firstChild
-                while (item != null) {
-                    builder.append(" ")
-                    val text = when (item) {
-                        is CaosDefWordLink -> StringBuilder().apply { DocumentationManagerUtil.createHyperlink(this, item, item!!.text, item!!.text, true) }.toString()
-                        is CaosDefTypeLink -> StringBuilder().apply { DocumentationManagerUtil.createHyperlink(this, item, item!!.text, item!!.text, true) }.toString()
-                        else -> item.text.replace("\n", "<br/>")
-                    }
-                    builder.append(text.trim('\n', ' ', '*'))
-                    item = item.nextSibling
-                }
-                builder.append("<br/>")
-            }
-            builder.toString()
-        } ?: ""
-    }
-
-    private fun getDescriptiveText(element: CaosScriptVarToken): String {
-        return element
-                .reference
-                .multiResolve(true)
+    private fun getDescriptiveText(element: CaosScriptVarToken): Pair<String,String?> {
+        val group = element.varGroup
+        val command = CaosLibs.commands(group.value)
                 .firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                ?.comment
-                ?: return "${element.varGroup} variable"
+                ?: return Pair("${element.varGroup} variable", null)
+        return Pair(command.fullCommandHeader, command.description)
     }
 
     override fun getDocumentationElementForLink(psiManager: PsiManager?, linkIn: String?, context: PsiElement?): PsiElement? {
