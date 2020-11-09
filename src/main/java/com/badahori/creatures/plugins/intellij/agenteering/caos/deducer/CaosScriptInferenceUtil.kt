@@ -44,8 +44,9 @@ object CaosScriptInferenceUtil {
 
 
     fun getInferredValue(assignment: CaosScriptCAssignment): CaosVar? {
-        if (assignment.cKwAssignAlter != null) {
-            val assignAlter = assignment.cKwAssignAlter
+        val assignAlter = assignment.cKwAssignAlter
+        if (assignAlter != null) {
+
             val lvalue = (assignment.arguments.getOrNull(0) as? CaosScriptLvalue)
                     ?: return null
             val variable: CaosScriptIsVariable = lvalue.varToken as? CaosScriptIsVariable
@@ -53,13 +54,13 @@ object CaosScriptInferenceUtil {
                     ?: return null
             val value = getInferredValue(variable)
             val alter: (x: Float) -> Float = when {
-                assignAlter!!.kNegv != null -> { x -> -x }
+                assignAlter.kNegv != null -> { x -> -x }
                 assignAlter.kAbsv != null -> { x -> abs(x) }
                 assignAlter.kNotv != null -> { x -> -(x + 1) }
                 else -> { x -> x }
             }
             val alterInt: (x: Long) -> Long = when {
-                assignAlter!!.kNegv != null -> { x -> -x }
+                assignAlter.kNegv != null -> { x -> -x }
                 assignAlter.kAbsv != null -> { x -> abs(x) }
                 assignAlter.kNotv != null -> { x -> -(x + 1) }
                 else -> { x -> x }
