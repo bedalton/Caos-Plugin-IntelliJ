@@ -15,7 +15,7 @@ import com.intellij.psi.impl.PsiFileEx
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
 
-class CobCompiledFile(provider: FileViewProvider)
+class SfcCompiledFile(provider: FileViewProvider)
     : PsiBinaryFileImpl(provider.manager as PsiManagerImpl, provider), PsiCompiledFile, PsiFileEx, PsiBinaryFile {
     /**
      * Gets children from the in memory json psi file
