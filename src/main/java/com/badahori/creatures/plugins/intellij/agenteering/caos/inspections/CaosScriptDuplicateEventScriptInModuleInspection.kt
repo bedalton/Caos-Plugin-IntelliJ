@@ -44,7 +44,7 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
                     // Checks against containing module, as duplicate event numbers in a single file
                     // are covered in another inspection
                     anEventScript.containingFile?.let { aFile ->
-                        aFile.variant == variant && !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFilePath == moduleFilePath
+                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFile?.path == moduleFilePath
                     }.orFalse()
                 }
         if (exists) {
