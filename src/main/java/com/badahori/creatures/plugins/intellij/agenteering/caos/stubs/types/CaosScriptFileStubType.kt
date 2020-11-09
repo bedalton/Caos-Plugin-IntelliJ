@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.orDefault
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptFileStubImpl
@@ -33,14 +32,22 @@ class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, Ca
     override fun serialize(stub: CaosScriptFileStub, stream: StubOutputStream) {
         super.serialize(stub, stream)
         stream.writeName(stub.fileName)
-        stream.writeName(stub.variant.code)
+        stream.writeName((stub.variant ?: CaosVariant.UNKNOWN).code)
     }
 
     @Throws(IOException::class)
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): CaosScriptFileStub {
         super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
-        val variant = stream.readNameAsString()?.let { CaosVariant.fromVal(it)} ?: CaosVariant.UNKNOWN
+
+        // Read variant, but set to null if variant is read back in as unknown
+        // If variant is unknown, the plugin could try to infer it.
+        val variant = stream.readNameAsString()?.let { CaosVariant.fromVal(it)}?.let {
+            if (it == CaosVariant.UNKNOWN)
+                null
+            else
+                it
+        }
         return CaosScriptFileStubImpl(null, fileName, variant)
     }
 
@@ -59,7 +66,7 @@ private class CaosScriptFileStubBuilder : DefaultStubBuilder() {
             super.createStubForFile(file)
         } else {
             val fileName = file.name
-            return CaosScriptFileStubImpl(file, fileName, file.variant.orDefault())
+            return CaosScriptFileStubImpl(file, fileName, file.variant)
         }
     }
 }

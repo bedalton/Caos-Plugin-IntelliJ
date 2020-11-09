@@ -94,7 +94,7 @@ fun findFileBySharedModuleAndRelativePath(project: Project, baseFile: VirtualFil
     val file= module.moduleFile?.findFileByRelativePath(fileRelativePath)
     if (file != null)
         return file
-    val path = module.moduleFilePath + fileRelativePath
+    val path = module.moduleFile?.path + fileRelativePath
     return LocalFileSystem.getInstance().findFileByPath(path)
 }
 

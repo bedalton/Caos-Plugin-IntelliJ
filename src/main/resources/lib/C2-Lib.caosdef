@@ -759,19 +759,15 @@ DDE: GETB RRCT (command);
 
 
 /*
- * Set SurFaCe points in a room.
- * Second parameter is the number of points to set, and controls how many arguments this command
- * takes.
- * Every floor point requires 2 arguments, the X and Y
- * Example: ${ dde: getb ssfc 0 1 2 2 }  Gives us a room with one floor point at (2,2)
- * Example: ${ dde: getb ssfc 0 2 1 1 3 2} Gives us a room with two floor points [ (1,1),(3,2) ]
+ * Prints to dde: buffer room surface points.
+ * Format: #Pts|x1|y1|...|x(n)|y(n)
+ * If room invalid. Returns 0
  * #World
  *
  * @param {roomId} (integer)
- * @param {numberOfPoints} (integer) - The number of floor points that are planned to be set
  *
  */
-DDE: GETB SSFC (command) roomId (integer) numberOfPoints (integer);
+DDE: GETB SSFC (command) roomId (integer);
 
 /*
  * Returns a list of all genuses that exist from within a certain family number.
@@ -868,12 +864,12 @@ DDE: LNEU (command) flags (integer);
  * 	-Width
  * 	-Height
  * 	-Flags
- * 	-Number of Dendrites 
- * 	-Dendrite type 0 source 
- * 	-Dendrite type 0 minimum 
- * 	-Dendrite type 0 maximum 
- * 	-Dendrite type 1 source 
- * 	-Dendrite type 1 minimum 
+ * 	-Number of Dendrites
+ * 	-Dendrite type 0 source
+ * 	-Dendrite type 0 minimum
+ * 	-Dendrite type 0 maximum
+ * 	-Dendrite type 1 source
+ * 	-Dendrite type 1 minimum
  * 	-Dendrite type 1 maximum
  * #Debug
  *
@@ -1317,7 +1313,7 @@ FROM (agent);
 FRZN (integer);
 
 /*
- * Game flow state. 
+ * Game flow state.
  * Sets or queries game flow state.
  * Category: 0 = Applet custom condition,
  * Variable: Applet slot number.
@@ -1573,7 +1569,7 @@ KNOB (command) function (integer) hotspot (integer);
 LACB (integer);
 
 /*
- * 
+ *
  * Primary LANGuage of Windows desktop. Values are (in hexidecimal) as follows:
  * Neutral = 0x00
  * Chinese = 0x04
@@ -2959,6 +2955,21 @@ SPCS (integer);
 SPOT (command) spot (integer) left (integer) top (integer) right (integer) bottom (integer);
 
 /*
+ * Set SurFaCe points in a room.
+ * Second parameter is the number of points to set, and controls how many arguments this command
+ * takes.
+ * Every floor point requires 2 arguments, the X and Y
+ * Example: ${ dde: getb ssfc 0 1 2 2 }  Gives us a room with one floor point at (2,2)
+ * Example: ${ dde: getb ssfc 0 2 1 1 3 2} Gives us a room with two floor points [ (1,1),(3,2) ]
+ * #World
+ *
+ * @param {roomId} (integer)
+ * @param {numberOfPoints} (integer) - The number of floor points that are planned to be set
+ *
+ */
+SSFC (command) roomId (integer) numberOfPoints (integer);
+
+/*
  * Pick a random object that can be seen by [OWNR] object matching the given family genus species
  * #AgentVars
  *
@@ -3048,7 +3059,7 @@ STIM TACT (command) significance (integer) input (integer) intensity (integer) f
 /*
  * Send stimulus to a specific creature.
  * Significance – amount to nudge the Source lobe neurone by, this decides the significance of
- * the object. 
+ * the object.
  * Input – which neurone in the General Sense lobe to fire (or 255 for none)
  * List 4 chemicals to emit and the amounts.
  * If less than 4 chemicals are required then the remaining values should be set to 0
@@ -3492,9 +3503,9 @@ UNLK (command);
  * NE – Not equal
  * GT – Greater than
  * LT – Less than
- * GE – Greater than or equal to 
- * LE – Less than or equal to 
- * BT – Bit-wise AND function 
+ * GE – Greater than or equal to
+ * LE – Less than or equal to
+ * BT – Bit-wise AND function
  * BF – Bit-wise NAND function
  * #Flow
  *

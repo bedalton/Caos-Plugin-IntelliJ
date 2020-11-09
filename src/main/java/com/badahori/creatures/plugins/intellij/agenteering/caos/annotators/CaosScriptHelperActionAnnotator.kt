@@ -9,13 +9,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
@@ -41,7 +40,7 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                     child = child.firstChild
                 }
                 (child as? CaosScriptCAssignment)?.let {
-                    val variant = o.containingFile.module?.variant ?: CaosVariant.UNKNOWN
+                    val variant = o.variant ?: CaosVariant.UNKNOWN
                     annotateAssignment(variant, it, holder)
                 }
                 //Annotate

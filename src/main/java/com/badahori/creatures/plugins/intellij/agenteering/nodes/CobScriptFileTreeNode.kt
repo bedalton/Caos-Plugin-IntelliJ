@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SpriteBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -17,7 +18,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import icons.CaosScriptIcons
-import org.apache.commons.io.FilenameUtils
 import java.nio.ByteBuffer
 
 
@@ -127,7 +127,7 @@ internal class CobSpriteFileTreeNode(
     }
 
     private val myChildren:List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FilenameUtils.getBaseName(block.fileName) +"_"
+        val fileNameBase = FileNameUtils.getBaseName(block.fileName) +"_"
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{index, image ->

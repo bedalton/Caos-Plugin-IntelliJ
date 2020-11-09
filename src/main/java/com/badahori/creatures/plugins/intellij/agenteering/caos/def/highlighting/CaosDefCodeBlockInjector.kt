@@ -34,7 +34,7 @@ class CaosDefCodeBlockInjector : LanguageInjector {
                 matches.any { it.isRvalue } -> "setv var0 "
                 matches.any { it.isLvalue } -> {
                     suffix = " 0"
-                    "setv"
+                    "setv "
                 }
                 else -> null
             }
