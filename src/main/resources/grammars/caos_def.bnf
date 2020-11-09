@@ -103,7 +103,7 @@ command_def_element
 			getVariants
 			isVariant
 			getParameterStruct
-			getFullCommand
+			getFullCommandHeader
 			getRequiresOwner
 		]
 	}
