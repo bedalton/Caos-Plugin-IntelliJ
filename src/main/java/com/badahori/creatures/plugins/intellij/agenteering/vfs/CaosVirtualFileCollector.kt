@@ -12,12 +12,14 @@ object CaosVirtualFileCollector {
     }
 
     fun collectFilesWithExtension(extension: String, scope: SearchScope? = null): List<CaosVirtualFile> {
-        return collect(scope)
-                .filter {
-                    it.extension == extension
-                }
-                .toSet()
-                .toList()
+        return CaosVirtualFileSystem.instance.children.flatMap {file ->
+            if (file.isDirectory) {
+                file.childrenAsList().flatMap { child -> collectFilesWithExtension(child, extension, scope) }
+            } else if (scope == null || scope.contains(file))
+                listOf(file)
+            else
+                emptyList()
+        }
     }
 
     fun collectFilesWithExtension(file: CaosVirtualFile, extension: String, scope: SearchScope? = null): List<CaosVirtualFile> {
