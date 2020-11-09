@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPrev
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.openapi.project.Project
@@ -17,6 +18,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
+import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantReferenceBase<CaosScriptRvalue>(element, TextRange.create(0, element.textLength)) {
 
@@ -29,9 +31,9 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
         }
 
         val argument = myElement.getParentOfType(CaosScriptArgument::class.java)
-                ?: return@lazy  emptyList<String>()
+                ?: return@lazy emptyList<String>()
         val parentRaw = argument.parent as? CaosScriptCommandElement
-                ?: return@lazy  emptyList<String>()
+                ?: return@lazy emptyList<String>()
         // If parent is assignment, get other side values list
         if (parentRaw is CaosScriptCAssignment) {
             possibleValuesListNamesForAssignment(parentRaw)
@@ -41,21 +43,22 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
 
     }
 
-    private fun possibleValuesListNamesForAssignment(assignment:CaosScriptCAssignment) : List<String> {
+    private fun possibleValuesListNamesForAssignment(assignment: CaosScriptCAssignment): List<String> {
         val commandToken = assignment.lvalue?.commandToken
                 ?: return emptyList()
         return commandToken
                 .reference
                 .multiResolve(true)
-                .mapNotNull { it.element
-                        ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
-                        ?.returnTypeStruct
-                        ?.type
-                        ?.valuesList
+                .mapNotNull {
+                    it.element
+                            ?.getSelfOrParentOfType(CaosDefCommandDefElement::class.java)
+                            ?.returnTypeStruct
+                            ?.type
+                            ?.valuesList
                 }
     }
 
-    private fun possibleValuesListNamesForParameter(argument:CaosScriptArgument, parentRaw:CaosScriptCommandElement) : List<String> {
+    private fun possibleValuesListNamesForParameter(argument: CaosScriptArgument, parentRaw: CaosScriptCommandElement): List<String> {
         // Expression is in parameter
         val commandToken = parentRaw.commandToken
                 ?: return emptyList()
@@ -80,7 +83,7 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
         }
     }
 
-    private fun possibleValuesListNamesForEquality() : List<String> {
+    private fun possibleValuesListNamesForEquality(): List<String> {
         val expression = myElement
         val equalityExpression = expression.parent as? CaosScriptEqualityExpressionPrime
                 ?: return emptyList()
@@ -107,7 +110,7 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
                 ?: return ResolveResult.EMPTY_ARRAY
         val keyAsInt = text.toIntSafe()
         val keys = possibleValuesListNames.flatMap map@{ valuesListName ->
-            CaosDefValuesListElementsByNameIndex.Instance[valuesListName, project]
+            getValuesListDefinitions(project, valuesListName)
                     .filter {
                         it.isVariant(variant)
                     }
@@ -117,7 +120,8 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
                                 valuesListValueStruct.key.toIntSafe()?.let { key -> keyAsInt and key > 0 } ?: false
                             }
                         } else if (valuesListName == "Genus") {
-                            val family = myElement.getPreviousNonEmptySibling(false)?.text?.toIntSafe() ?: return@matchKeys emptyList<CaosDefValuesListValue>()
+                            val family = myElement.getPreviousNonEmptySibling(false)?.text?.toIntSafe()
+                                    ?: return@matchKeys emptyList<CaosDefValuesListValue>()
                             valuesListElement.valuesListValueList.filter { it.key == "$family $keyAsInt" }
                         } else {
                             valuesListElement.valuesListValueList.filter { it.key == text }
@@ -126,5 +130,15 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
         }.ifEmpty { null }
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
         return PsiElementResolveResult.createResults(keys)
+    }
+
+    private fun getValuesListDefinitions(project: Project, listName: String): List<CaosDefValuesListElement> {
+        return CaosDefElementsSearchExecutor.getCaosDefFiles(project)
+                .flatMap { file ->
+                    PsiTreeUtil.collectElementsOfType(file, CaosDefValuesListElement::class.java)
+                            .filter { valuesList ->
+                                valuesList.typeName like listName
+                            }
+                } + CaosDefValuesListElementsByNameIndex.Instance[listName, project]
     }
 }
