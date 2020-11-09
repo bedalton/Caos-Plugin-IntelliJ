@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFileType
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
