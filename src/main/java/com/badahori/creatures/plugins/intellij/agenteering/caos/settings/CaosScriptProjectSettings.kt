@@ -9,9 +9,14 @@ object CaosScriptProjectSettings {
 
     // ==== VARIANT ===== //
     private const val VARIANT_KEY = "BASE_VARIANT"
-    private val DEFAULT_VARIANT = CaosVariant.DS
+    private val DEFAULT_VARIANT = CaosVariant.UNKNOWN
     private val VARIANT_SETTING = CaosPluginSettingsUtil.StringSetting(VARIANT_KEY, DEFAULT_VARIANT.code)
-    val variant:CaosVariant get() = VARIANT_SETTING.value?.let { CaosVariant.fromVal(it) } ?: DEFAULT_VARIANT
+    val variant:CaosVariant? get() = VARIANT_SETTING.value?.let { CaosVariant.fromVal(it) } ?: DEFAULT_VARIANT.let {
+        if (it == CaosVariant.UNKNOWN)
+            null
+        else
+            it
+    }
 
     fun setVariant(variant:CaosVariant) {
         VARIANT_SETTING.value = variant.code

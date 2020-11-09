@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
@@ -13,8 +14,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import icons.CaosScriptIcons
-import icons.ImagesIcons
-import org.apache.commons.io.FilenameUtils
 
 
 internal class SpriteFileTreeNode(
@@ -24,7 +23,7 @@ internal class SpriteFileTreeNode(
     override fun getVirtualFile(): VirtualFile = value
 
     private val spritesVirtualFileContainer: CaosVirtualFile by lazy {
-        val modulePath = ModuleUtil.findModuleForFile(spriteVirtualFile, project)?.moduleFilePath
+        val modulePath = ModuleUtil.findModuleForFile(spriteVirtualFile, project)?.moduleFile?.path
         val originalPath = value.path.let { path ->
             if (modulePath != null && path.startsWith(modulePath))
                 path.substring(modulePath.length)
@@ -39,7 +38,7 @@ internal class SpriteFileTreeNode(
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FilenameUtils.getBaseName(value.name) + "."
+        val fileNameBase = FileNameUtils.getBaseName(value.name) + "."
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
@@ -94,7 +93,7 @@ internal class SpriteImageTreeNode(
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = fileName
         presentationData.locationString = null
-        presentationData.setIcon(ImagesIcons.ImagesFileType)
+        presentationData.setIcon(CaosScriptIcons.IMAGE)
     }
 
     override fun getAlphaSortKey(): String {

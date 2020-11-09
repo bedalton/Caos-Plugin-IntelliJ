@@ -22,7 +22,7 @@ object CaosBundleSourcesRegistrationUtil {
     private const val LIBRARY_NAME = "CaosDef-Std-Lib"
     private const val VERSION_TEXT_FILE_NAME = "version.txt"
 
-    fun register(module:Module, project:Project) {
+    fun register(module:Module?, project:Project) {
 
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
@@ -31,7 +31,8 @@ object CaosBundleSourcesRegistrationUtil {
             return
         }
         runWriteAction {
-            registerSourcesAsLibrary(module)
+            module?.apply { deregisterSources(this) }
+            registerSourcesAsLibrary(project)
         }
     }
 
@@ -46,18 +47,18 @@ object CaosBundleSourcesRegistrationUtil {
         val rootModel = ModuleRootManager.getInstance(module).modifiableModel
         val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
         val libraryPath = libraryPath()
-        if (libraryPath == null) {
-            rootModel.dispose()
+        // Check if library exists and needs no processing
+        if (modifiableModel.libraries.any { it.name == LIBRARY_NAME } && isSourceCurrent(libraryPath, modifiableModel))
+            return true
+
+        // Check if library is added properly
+        if (!addLibrary(modifiableModel)) {
             modifiableModel.dispose()
+            LOGGER.severe("Failed to add library to modifiable model")
             return false
         }
 
-        // Check if same version
-        if (isSourceCurrent(libraryPath, modifiableModel)) {
-            return true
-        }
-
-        rootModel.commit()
+        modifiableModel.commit()
         return true
     }
 

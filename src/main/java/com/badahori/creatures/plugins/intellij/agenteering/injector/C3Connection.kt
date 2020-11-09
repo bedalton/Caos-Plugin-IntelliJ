@@ -6,9 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOUtils
+import org.apache.commons.compress.utils.IOUtils
 import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit
@@ -50,7 +50,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         }
 
         // Escape string
-        val escaped = escape(argsIn.last() as String)
+        val escaped = escape(argsIn.last())
         if (escaped.isEmpty()) {
             return InjectionStatus.Ok("")
         }
@@ -152,7 +152,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
             } else
                 return fileOut
         }
-        val out: OutputStream = FileUtils.openOutputStream(fileOut)
+        val out: OutputStream = FileOutputStream(fileOut)
         IOUtils.copy(inputStream, out)
         inputStream.close()
         out.close()

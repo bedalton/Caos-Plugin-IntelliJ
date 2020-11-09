@@ -29,7 +29,7 @@ private const val INT = 9
 private const val FLOAT = 10
 private const val ANIMATION_STRING = 11
 private const val TOKEN = 12
-private const val RANGE = 13
+private const val INT_RANGE = 13
 private const val C1_STRING = 14
 private const val MAME = 15
 private const val GAME = 16
@@ -347,7 +347,7 @@ internal fun StubInputStream.readAnimation() : CaosAnimation? {
 }
 
 private fun StubOutputStream.writeCaosRange(range:CaosIntRange) {
-    writeInt(RANGE)
+    writeInt(INT_RANGE)
     writeBoolean(range.min != null)
     range.min?.let {
         writeLong(it)

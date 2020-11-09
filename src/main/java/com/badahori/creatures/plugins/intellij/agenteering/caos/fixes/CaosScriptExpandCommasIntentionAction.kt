@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
-
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
@@ -21,6 +20,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
@@ -81,7 +81,6 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
      */
     private fun runnable(project: Project, fileIn: PsiFile?) : Boolean {
         val file = fileIn as? CaosScriptFile ?: return false
-        val variant = file.variant
 
         // Check that there are more than two commands.
         // If not, no need to try to separate them by newlines
@@ -107,7 +106,6 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
         // Get the document again, and this time commit it
         document = file.document ?: PsiDocumentManager.getInstance(project).getCachedDocument(file)
         document?.let {
-            file.variant = variant
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
         // Return success only if there are enough newlines to cover the elements, ignoring enum blocks

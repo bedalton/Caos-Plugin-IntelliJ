@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariants
@@ -8,10 +10,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.now
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.externalSystem.service.execution.NotSupportedException
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiManager
 import java.io.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -19,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Virtual File for Caos Scripts Plugin
  */
-class CaosVirtualFile private constructor(
+open class CaosVirtualFile private constructor(
         private var fileName:String,
         private var stringContents: String? = null,
         private var byteArrayContents:ByteArray? = null,
@@ -211,6 +216,22 @@ class CaosVirtualFile private constructor(
     /** {@inheritDoc}  */
     override fun getModificationCount(): Long {
         return children.values.map { it.modificationCount }.sum()
+    }
+
+    fun createChildCaosScript(project: Project, caosVariant: CaosVariant, fileName:String, code:String) : CaosScriptFile {
+        if (!isDirectory) {
+            throw IOException("Cannot add child caos script to non-directory virtual file")
+        }
+        val file = CaosVirtualFile("$fileName.cos", code, false).apply {
+            this@CaosVirtualFile.addChild(this)
+            this.variant = caosVariant
+            isWritable = true
+        }
+        val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
+                ?: PsiFileFactory.getInstance(project)
+                        .createFileFromText("$fileName.cos", CaosScriptLanguage, code) as CaosScriptFile
+        psiFile.variant = caosVariant
+        return psiFile
     }
 
 

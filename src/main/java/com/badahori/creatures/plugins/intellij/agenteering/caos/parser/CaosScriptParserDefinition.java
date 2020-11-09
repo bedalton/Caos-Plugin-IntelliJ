@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser;
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProvider;
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobCompiledFile;
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptLexerAdapter;
@@ -71,9 +69,7 @@ public class CaosScriptParserDefinition implements ParserDefinition {
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
         if (fileViewProvider.getFileType() == CobFileType.INSTANCE) {
-            assert fileViewProvider instanceof CobEditorProvider : "File view provider should be COB file view provider";
             getLOGGER().info("ParserDef: Create File: " + fileViewProvider.getVirtualFile().getName() + "; FileType: " + fileViewProvider.getFileType());
-            return new CobCompiledFile(fileViewProvider);
         }
         assert (!fileViewProvider.getVirtualFile().getName().endsWith("cob")) : "CaosScriptParserDefinition called, but COB file type was not properly set";
         return new CaosScriptFile(fileViewProvider);

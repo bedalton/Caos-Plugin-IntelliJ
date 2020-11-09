@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.io.IOUtils
 import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.reflect.Field
@@ -19,14 +20,14 @@ object CaosLibraryLoader{
             pathIn
         else
             "$pathIn.dll"
-        val myFile: String = FilenameUtils.getBaseName(pathIn)
+        val myFile: String = FileNameUtils.getBaseName(pathIn)
         try {
             // have to use a stream
             val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
                     ?: throw Exception("Failed to get resource as stream")
             // always write to different location
             val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
-            val out: OutputStream = FileUtils.openOutputStream(fileOut)
+            val out: OutputStream = FileOutputStream(fileOut)
             IOUtils.copy(inputStream, out)
             inputStream.close()
             out.close()
