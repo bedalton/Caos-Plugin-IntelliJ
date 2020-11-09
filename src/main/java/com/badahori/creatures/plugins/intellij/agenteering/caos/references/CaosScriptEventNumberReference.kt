@@ -51,13 +51,13 @@ class CaosScriptEventNumberReference(element: CaosScriptEventNumberElement) : Ps
     }
 
     private fun getValuesListDefinitions(project: Project): List<CaosDefValuesListElement> {
-        return CaosDefElementsSearchExecutor.getCaosDefFiles(project)
+        return /*CaosDefElementsSearchExecutor.getCaosDefFiles(project)
                 .flatMap { file ->
                     PsiTreeUtil.collectElementsOfType(file, CaosDefValuesListElement::class.java)
                             .filter { valuesList ->
                                 valuesList.typeName like "EventNumbers"
                             }
-                } + CaosDefValuesListElementsByNameIndex.Instance["EventNumbers", project]
+                } + */ CaosDefValuesListElementsByNameIndex.Instance["EventNumbers", project]
     }
 
     companion object {
