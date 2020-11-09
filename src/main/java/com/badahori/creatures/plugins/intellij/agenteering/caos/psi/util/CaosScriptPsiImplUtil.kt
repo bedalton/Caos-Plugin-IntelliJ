@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
@@ -12,15 +13,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
@@ -1217,58 +1216,35 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getParameterListValue(element: CaosScriptRvalueLike): CaosDefValuesListValueStruct? {
-        val containingCommand = element.getParentOfType(CaosScriptCommandElement::class.java)
+    fun getParameterValuesListValue(element: CaosScriptRvalueLike): CaosValuesListValue? {
+        val containingCommand = element.parent as? CaosScriptCommandElement
                 ?: return null
-
 
         // Values for lists can only be inferred by literal values
         if (element !is CaosScriptRvalue || !(element.isNumeric || element.isString))
             return null
 
-        // Values for lists can only be inferred by literal values
-        if (element.toCaosVar() !is CaosVar.CaosLiteral)
+        val commandDefinition = containingCommand.commandDefinition
+                ?: return null
+        val index = element.index
+
+        // Get parameter if any is available
+        val parameter = commandDefinition.parameters.getOrNull(index)
+        if (parameter == null) {
+            LOGGER.severe("Command for Rvalue was resolved to incorrect command versions, or BNF does not match command definition for ${commandDefinition.command}")
             return null
-
-        // Get the referenced parent command
-        val reference = containingCommand
-                .commandToken
-                ?.reference
-                ?.multiResolve(true)
-                ?.firstOrNull()
-                ?.element
-                ?.getSelfOrParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement::class.java)
-                ?: return null
-
-        // Find the type def list name
-        val valuesList = reference
-                .docComment
-                ?.parameterStructs
-                ?.getOrNull(element.index)
-                ?.type
-                ?.valuesList
-                ?: return null
-
-        // Get variant
-        val variant = element.containingCaosFile?.variant
-                ?: return null
-        // Find list in index
-        val list = CaosDefValuesListElementsByNameIndex
-                .Instance[valuesList, element.project]
-                .firstOrNull { it.containingCaosDefFile.isVariant(variant, true) }
-                ?: return null
-        // Get actual value for literal in list
-        return list.valuesListValues.firstOrNull {
-            when (it.equality) {
-                ValuesListEq.EQUAL -> it.key == element.text
-                ValuesListEq.NOT_EQUAL -> it.key != element.text
-                ValuesListEq.GREATER_THAN -> try {
-                    element.text.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt()
-                } catch (e: Exception) {
-                    false
-                }
-            }
         }
+
+        // Get variant for values list filter
+        val variant = element.variant
+                ?: return null
+
+        // Get values list for variant
+        val valuesList = parameter.valuesList[variant]
+                ?: return null
+
+        // Get value if any based on element text
+        return valuesList.get(element.text)
     }
 
     @JvmStatic
