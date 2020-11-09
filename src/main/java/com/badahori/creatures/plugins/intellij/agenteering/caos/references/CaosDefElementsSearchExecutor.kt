@@ -36,14 +36,12 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
     override fun processQuery(parameters: ReferencesSearch.SearchParameters, processor: Processor<in PsiReference>) {
         val element = parameters.elementToSearch
         val project = parameters.project
-        var scope: SearchScope = parameters.effectiveSearchScope
+        val scope: SearchScope = parameters.effectiveSearchScope
         if (scope is LocalSearchScope) {
             LOGGER.info("$scope: Files: [${scope.virtualFiles.joinToString { it.name }}]")
         } else {
             LOGGER.info("Scope: $scope; ${scope.let { it::class.java.canonicalName }}")
         }
-        if (scope.toString() == "EMPTY")
-            scope = GlobalSearchScope.everythingScope(project)
         if (element !is CaosDefCompositeElement) {
             return
         }
@@ -95,7 +93,6 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
      * Resolves references from command words to a given command word element
      */
     private fun isReferenceTo(variants: List<CaosVariant>, project: Project, scope: SearchScope?, command: CaosDefCommandWord, processor: Processor<in PsiReference>) {
-
         getCaosFiles(project, scope)
                 .flatMap map@{ file ->
                     if (file.variant !in variants)
@@ -168,7 +165,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         fun getCaosFiles(project: Project, scope: SearchScope? = null): List<CaosScriptFile> {
             return getVirtualFilesWithExtension(project, "cos", scope).mapNotNull map@{
                 it.getPsiFile(project) as? CaosScriptFile
-            } + getCobCaosScriptFiles(project, scope as? GlobalSearchScope)
+            } + getCobCaosScriptFiles(project, scope)
         }
 
         /**
@@ -183,7 +180,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         /**
          * Gets all CAOS scripts inside COB virtual files
          */
-        fun getCobCaosScriptFiles(project: Project, scope: GlobalSearchScope? = null): List<CaosScriptFile> {
+        fun getCobCaosScriptFiles(project: Project, scope: SearchScope? = null): List<CaosScriptFile> {
             return getCobVirtualFiles(project, scope).filter {
                 it.extension == "cos"
             }.mapNotNull map@{
@@ -194,18 +191,15 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         /**
          * Gets all virtual files inside COBS
          */
-        fun getCobVirtualFiles(project: Project, scope: GlobalSearchScope? = null): List<CaosVirtualFile> {
-            // Does not need virtual file collector as COBs are physical files
-            if (scope != null) {
-                return FilenameIndex.getAllFilesByExt(project, "cob", scope)
-                        .flatMap { file ->
-                            CobVirtualFileUtil.decompiledCobFiles(file, project)
-                        }
-            }
+        fun getCobVirtualFiles(project: Project, scope: SearchScope? = null): List<CaosVirtualFile> {
             return FilenameIndex.getAllFilesByExt(project, "cob")
                     .flatMap { file ->
                         CobVirtualFileUtil.decompiledCobFiles(file, project)
                     }
+                    .filter {file ->
+                        scope == null || scope.contains(file)
+                    }
+
         }
 
         private fun getVirtualFilesWithExtension(project: Project, extension: String, scope: SearchScope? = null): List<VirtualFile> {
@@ -215,8 +209,10 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
                     FilenameIndex.getAllFilesByExt(project, extension, scope) +
                             CaosVirtualFileCollector.collectFilesWithExtension(extension, scope)
                 }
-                else -> FilenameIndex.getAllFilesByExt(project, extension) +
-                        CaosVirtualFileCollector.collectFilesWithExtension(extension, scope)
+                else -> FilenameIndex.getAllFilesByExt(project, extension)
+                        .filter { file ->
+                            scope == null || scope.contains(file)
+                        } + CaosVirtualFileCollector.collectFilesWithExtension(extension, scope)
             }
         }
     }
