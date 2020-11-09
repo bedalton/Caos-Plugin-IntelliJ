@@ -25,6 +25,7 @@ import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
@@ -83,13 +84,13 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
     }
 }
 
-internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFileIn: CaosScriptFile): JPanel {
+internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile: CaosScriptFile): JPanel {
 
     val toolbar = EditorToolbar()
-    val project = caosFileIn.project
+    val project = caosFile.project
 
     // Create a pointer to this file for use later
-    val pointer = CaosScriptPointer(virtualFile, caosFileIn)
+    val pointer = CaosScriptPointer(virtualFile, caosFile)
 
     // Initialize toolbar with color
     toolbar.panel.background = TRANSPARENT_COLOR
@@ -151,9 +152,10 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFileI
             // Enable docs button now that a variant has been set
             toolbar.setDocsButtonEnabled(true)
         }
+    }
 
     // If variant selection is not firmly set, allow for it to be altered by user
-    if (caosFileIn.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFileIn.virtualFile !is CaosVirtualFile) {
+    if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFile.virtualFile !is CaosVirtualFile) {
         initToolbarWithVariantSelect(toolbar, pointer)
     } else {
         // If variant is set in module hide variant select
@@ -180,11 +182,11 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFileI
         LOGGER.info("Looking up CAOS DOC at '$docRelativePath'")
 
         // Get the virtual file for it at that path, starting with the CAOS VFS
-        val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
+        val docVirtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
                 // File not found in CAOS virtual file system, try to find it in default system
                 ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
         // Get CAOS Def PSI file for navigation
-        val file = virtualFile?.getPsiFile(project)
+        val file = docVirtualFile?.getPsiFile(project)
                 ?: FilenameIndex.getFilesByName(project, "${selectedVariant}-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
                         .firstOrNull()
         // If file CAOS def file could not be found, disable Docs button
