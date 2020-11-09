@@ -3,9 +3,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import kotlin.contracts.contract
 
 
-fun <T> Collection<T>.filterNotNull() : List<T> {
-    return this.mapNotNull { it }
+fun <T> Iterable<T?>.filterNotNull() : List<T> {
+    val list:MutableList<T> = mutableListOf()
+    for (item in this)
+        if (item != null)
+            list.add(item)
+    return list;
 }
+
 fun <R, T:Collection<R>> T?.nullIfEmpty(): T? {
     if (this == null || isEmpty())
         return null
@@ -50,8 +55,8 @@ fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean {
     return this != null && this.isNotEmpty()
 }
 
-fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)
+inline fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)
         = filter{ t -> elements.none{ selector(it) == selector(t) } }
 
 
-public fun <T : Any> mutableListOfNotNull(vararg elements: T?): MutableList<T> = elements.filterNotNull().toMutableList()
+fun <T : Any> mutableListOfNotNull(vararg elements: T?): MutableList<T> = elements.filterNotNull().toMutableList()
