@@ -37,7 +37,7 @@ class CaosVariantSearchScope constructor(private val myVariant:CaosVariant?, pri
 /**
  * Simple class to combine to search scopes by Union
  */
-private data class UnionSearchScope(private val searchScope1:SearchScope, private val searchScope2:SearchScope) : SearchScope() {
+private class UnionSearchScope(private val searchScope1:SearchScope, private val searchScope2:SearchScope) : SearchScope() {
     override fun intersectWith(otherScope: SearchScope): SearchScope {
         return IntersectSearchScope(this, otherScope)
     }
@@ -55,7 +55,7 @@ private data class UnionSearchScope(private val searchScope1:SearchScope, privat
 /**
  * Simple class to combine to search scopes by intersection
  */
-internal data class IntersectSearchScope(private val searchScope1:SearchScope, private val searchScope2:SearchScope) : SearchScope() {
+internal class IntersectSearchScope(private val searchScope1:SearchScope, private val searchScope2:SearchScope) : SearchScope() {
     override fun intersectWith(otherScope: SearchScope): SearchScope {
         return IntersectSearchScope(this, otherScope)
     }

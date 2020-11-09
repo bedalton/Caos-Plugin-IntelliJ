@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.7</version>
+  <version>0.01.8</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -34,6 +34,13 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 0.01.8</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Invalid out of range script warning on C2 scripts</li>
+          <li>Inability to paste COBs into project</li>
+          <li>COBs not receiving sources outside of CAOS module.</li>
+        </ul>
         <b>Version: 0.01.7</b>
         <b>#Fixes</b>
         <ul>
@@ -156,7 +163,6 @@
        on how to target different products -->
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
-  <depends>com.intellij.modules.java</depends>
 
   <extensions defaultExtensionNs="com.intellij">
 
@@ -178,6 +184,8 @@
     <moduleType id="CAOS_MODULE"
                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                 classpathProvider="true" />
+
+    <additionalLibraryRootsProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosScriptAdditionalLibraryRootsProvider" />
 
     <!-- Completion -->
     <completion.contributor language="CaosScript"
@@ -363,6 +371,15 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSsfcPointsCheck"
     />
 
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Invalid numeric expression in variant"
+                     shortName="InvalidNumericExpression"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidNumericExpressionInspection"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
@@ -492,10 +509,19 @@
               extensions="c16" />
 
 
+
+    <!-- SFC File Handling -->
+    <!--fileType name="SFCFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
+              fieldName="INSTANCE"
+              language="PlainText"
+              extensions="sfc" />
+    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.SfcTreeStructureProvider" / -->
+
     <!-- =========================== -->
     <!-- ======== COB Files ======== -->
     <!-- =========================== -->
-    <filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" />
+    <!--filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" /-->
 
     <fileType name="COBFile"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType"
@@ -504,18 +530,18 @@
               extensions="cob"
     />
 
-    <fileType.fileViewProviderFactory
+    <!--fileType.fileViewProviderFactory
         filetype="COBFile"
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
-    />
+    /-->
 
     <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
 
+    <!-- Virtual File System -->
     <virtualFileSystem
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
         key="caosvfs"
     />
-
   </extensions>
 
   <actions>

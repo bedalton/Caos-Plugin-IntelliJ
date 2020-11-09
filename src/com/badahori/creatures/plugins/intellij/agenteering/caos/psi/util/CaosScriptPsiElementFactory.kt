@@ -79,6 +79,11 @@ object CaosScriptPsiElementFactory {
         return createRValue(project, "$number").expression!!
     }
 
+
+    fun createNumber(project: Project, number: Long) : CaosScriptExpression {
+        return createRValue(project, "$number").expression!!
+    }
+
     fun createFloat(project: Project, number: Int) : CaosScriptExpression {
         return createRValue(project, "$number").expression!!
     }
