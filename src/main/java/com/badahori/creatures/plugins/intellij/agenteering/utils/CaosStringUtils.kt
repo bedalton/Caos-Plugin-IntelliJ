@@ -145,6 +145,14 @@ fun String.matchCase(stringToMatch: String): String {
     }
 }
 
+fun String.matchCase(case:Case): String {
+    return when (case) {
+        Case.UPPER_CASE -> toUpperCase()
+        Case.LOWER_CASE -> toLowerCase()
+        Case.CAPITAL_FIRST -> upperCaseFirstLetter()
+    }
+}
+
 val String.case: Case
     get() {
         val chars = toCharArray()
@@ -181,6 +189,22 @@ enum class Case {
 
 infix fun String?.like(other: String?): Boolean {
     return this != null && other != null && this.equalsIgnoreCase(other)
+}
+
+infix fun String?.likeAny(others: Collection<String>): Boolean {
+    return others.any { this like it }
+}
+
+infix fun String?.likeAny(others: Array<String>): Boolean {
+    return others.any { this like it }
+}
+
+infix fun String?.likeNone(others: Collection<String>): Boolean {
+    return others.none { this like it }
+}
+
+infix fun String?.likeNone(others: Array<String>): Boolean {
+    return others.none { this like it }
 }
 
 infix fun String?.notLike(other: String?): Boolean {

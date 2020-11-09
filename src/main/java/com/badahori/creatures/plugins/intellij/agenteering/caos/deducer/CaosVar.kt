@@ -37,14 +37,14 @@ sealed class CaosVar(open val text:String, val simpleType: CaosExpressionValueTy
         data class CaosAnimationString(val value:String, val animation:CaosAnimation?) : CaosLiteral(value, CaosExpressionValueType.ANIMATION)
         data class CaosToken(val value:String) : CaosLiteral(value, CaosExpressionValueType.TOKEN)
         data class CaosAgent(val family:Int, val genus:Int, val species:Int) : CaosLiteral("Agent: $family $genus $species", CaosExpressionValueType.AGENT)
-        data class CaosIntRange(private val minIn:Int?, private val maxIn:Int?) : CaosLiteral("[$minIn...$maxIn]", CaosExpressionValueType.INT) {
-            val min:Int? by lazy {
+        data class CaosIntRange(private val minIn:Long?, private val maxIn:Long?) : CaosLiteral("[$minIn...$maxIn]", CaosExpressionValueType.INT) {
+            val min:Long? by lazy {
                 if (minIn == null || maxIn == null)
                     min
                 else
                     min(minIn, maxIn)
             }
-            val max:Int? by lazy {
+            val max:Long? by lazy {
                 if (minIn == null || maxIn == null)
                     max
                 else

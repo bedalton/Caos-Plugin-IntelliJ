@@ -53,7 +53,8 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
     private fun annotateSetvClassic(variant: CaosVariant, element: CaosScriptCAssignment, lvalue: CaosScriptLvalue, problemsHolder: ProblemsHolder) {
-        val lvalueCommand = lvalue.commandString.toUpperCase()
+        val lvalueCommand = lvalue.commandString?.toUpperCase()
+                ?: return
         if (variant == CaosVariant.C2 && lvalueCommand == "CLAS") {
             problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.command-annotator.setv-clas-replaced-in-c2"), CaosScriptC1ClasToCls2Fix(element))
         } else if (variant == CaosVariant.C1 && lvalueCommand == "CLS2") {

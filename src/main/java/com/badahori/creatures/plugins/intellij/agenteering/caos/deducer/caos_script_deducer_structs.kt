@@ -13,7 +13,9 @@ enum class CaosOp(val value:Int) {
     NEGV(7),
     MODV(8),
     UNDEF(-1),
-    SETS(9);
+    SETS(9),
+    NOTV(10),
+    ABSV(11);
 
     companion object {
         fun fromValue(value:Int) : CaosOp = values().first { it.value == value }

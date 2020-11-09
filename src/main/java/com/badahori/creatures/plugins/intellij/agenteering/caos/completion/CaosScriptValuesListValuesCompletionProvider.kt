@@ -7,10 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -31,11 +28,12 @@ object CaosScriptValuesListValuesCompletionProvider {
      * Adds completions for a known value list, based on argument position and parent command
      */
     fun addParameterTypeDefValueCompletions(resultSet: CompletionResultSet, valueOfType: CaosScriptArgument) {
-        val containingCommand = valueOfType.getSelfOrParentOfType(CaosScriptCommandElement::class.java)
+        val containingCommand = (valueOfType.parent as? CaosScriptCommandElement)
                 ?: return
         // Get variant as it is required to get the right list of values
         val variant = valueOfType.containingCaosFile?.variant
                 ?: return
+
         // Get argument index
         val index = valueOfType.index
 
@@ -53,14 +51,14 @@ object CaosScriptValuesListValuesCompletionProvider {
         // Get arguments parameter definition
         val parameterStruct = parameters.getOrNull(index)
                 ?: return
-
+        val case = valueOfType.text.case
         // If argument represents GENUS, allow for named genus completions
         if (valueOfType.parent is CaosScriptGenus || (index != 0 && parameterStruct.name.equalsIgnoreCase("genus"))) {
             if (startsWithNumber.matches(valueOfType.text))
                 return
             val family = valueOfType.getPreviousNonEmptySibling(false)?.text?.toIntSafe()
                     ?: return
-            addGenusCompletions(resultSet, variant, family, numParameters > index + 1)
+            addGenusCompletions(resultSet, variant, case, family, numParameters > index + 1)
             return
 
         // If argument is FAMILY, Allow for name based family completions
@@ -68,7 +66,7 @@ object CaosScriptValuesListValuesCompletionProvider {
             val next = parameters.getOrNull(index + 1)
                     ?: return
             if (next.name.equalsIgnoreCase("genus"))
-                addGenusCompletions(resultSet, variant, null, numParameters > index + 1)
+                addGenusCompletions(resultSet, variant, case,null, numParameters > index + 1)
             return
         }
 
@@ -86,9 +84,11 @@ object CaosScriptValuesListValuesCompletionProvider {
                     parameterStruct.valuesList
                 })
                         ?: return
+
         // Retrieve values list by variant
         val valuesList = valuesListGetter[variant]
                 ?: return
+
         // Check if need to add space after insertion
         val addSpace = numParameters - 1 > index
 
@@ -98,14 +98,15 @@ object CaosScriptValuesListValuesCompletionProvider {
             addFileNameCompletions(resultSet, valueOfType.project, valueOfType.containingFile?.module, variant.isOld, parameterStruct.type, valuesList.name)
             return
         }
+
         // Finally, add basic completion for list values
-        addListValues(resultSet, valuesList, valueOfType.text, addSpace)
+        addListValues(resultSet, valuesList, case, addSpace)
     }
 
     /**
      * Fill in completions for GENUS int value
      */
-    private fun addGenusCompletions(resultSet: CompletionResultSet, variant: CaosVariant, family: Int?, addSpace: Boolean) {
+    private fun addGenusCompletions(resultSet: CompletionResultSet, variant: CaosVariant, case:Case, family: Int?, addSpace: Boolean) {
 
         // Locate genus list for variant
         val genusValuesList = CaosLibs.valuesLists[variant].firstOrNull { it.name.equalsIgnoreCase("Genus") }
@@ -131,8 +132,8 @@ object CaosScriptValuesListValuesCompletionProvider {
                 value.value
             var lookupElement = LookupElementBuilder
                     .create(key)
-                    .withLookupString(value.value)
-                    .withPresentableText(value.value + ": " + value.value)
+                    .withLookupString(value.name.matchCase(case))
+                    .withPresentableText(value.value + ": " + value.name)
                     .withTailText(value.description)
             if (addSpace) {
                 lookupElement = lookupElement
@@ -145,16 +146,16 @@ object CaosScriptValuesListValuesCompletionProvider {
     /**
      * Add completion for expressions, based on opposing values
      */
-    fun addEqualityExpressionCompletions(variant:CaosVariant, resultSet: CompletionResultSet, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue) {
+    fun addEqualityExpressionCompletions(variant:CaosVariant, resultSet: CompletionResultSet, case:Case, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue) {
         val valuesList = equalityExpression.getValuesList(variant, expression)
                 ?: return
-        addListValues(resultSet, valuesList, expression.text, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
+        addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
 
     /**
      * Actually add list values from previously determined lists
      */
-    private fun addListValues(resultSet: CompletionResultSet, list: CaosValuesList, partialString: String, addSpace: Boolean) {
+    private fun addListValues(resultSet: CompletionResultSet, list: CaosValuesList, case:Case, addSpace: Boolean) {
         val values = list.values
         // If values list is bitflags, create bit-flags builder dialog
         if (list.extensionType?.equalsIgnoreCase("BitFlags").orFalse()) {
@@ -171,11 +172,11 @@ object CaosScriptValuesListValuesCompletionProvider {
         for (value in values) {
             var lookupElement = LookupElementBuilder
                     .create(value.value)
-                    .withLookupString(value.value.matchCase(partialString))
+                    .withLookupString(value.name.matchCase(case))
                     .withPresentableText(value.value + ": " + value.name)
                     .withTailText(value.description)
             // If value is disabled, strike it through
-            if (value.value.contains("(Disabled)")) {
+            if (value.name.contains("(Disabled)")) {
                 lookupElement = lookupElement.withStrikeoutness(true)
             }
             // Add space insert handler if needed

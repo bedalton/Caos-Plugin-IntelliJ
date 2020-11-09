@@ -31,6 +31,27 @@ fun <R, T:Collection<R>> T?.nullIfEmpty(filterNullsFirst:Boolean): T? {
     return if (isEmpty) null else this
 }
 
+fun <K,V> Map<K,V>?.isNullOrEmpty() : Boolean {
+    contract {
+        returns(true) implies (this@isNullOrEmpty != null)
+    }
+    return this == null || this.isEmpty()
+}
+
+fun <K,V> Map<K,V>?.isNotNullOrEmpty() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNullOrEmpty != null)
+    }
+    return this != null && this.isNotEmpty()
+}
+
+fun <T> Collection<T>?.isNullOrEmpty() : Boolean {
+    contract {
+        returns(true) implies (this@isNullOrEmpty != null)
+    }
+    return this == null || this.isEmpty()
+}
+
 fun String?.isNotNullOrEmpty() : Boolean {
     contract {
         returns(true) implies (this@isNotNullOrEmpty != null)
