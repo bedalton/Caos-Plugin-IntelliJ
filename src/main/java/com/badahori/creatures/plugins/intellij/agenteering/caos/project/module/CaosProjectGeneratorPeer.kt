@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
