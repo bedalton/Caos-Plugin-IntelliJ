@@ -8,11 +8,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : PsiReferenceBase<CaosScriptEventNumberElement>(element, TextRange(0, element.textLength)) {
+class CaosScriptEventNumberReference(element: CaosScriptEventNumberElement) : PsiReferenceBase<CaosScriptEventNumberElement>(element, TextRange(0, element.textLength)) {
 
     private val text by lazy { element.text.trim() }
 
@@ -39,12 +42,22 @@ class CaosScriptEventNumberReference(element:CaosScriptEventNumberElement) : Psi
         val text = element.text
         val variant = element.containingCaosFile?.variant
                 ?: return null
-        return CaosDefValuesListElementsByNameIndex.Instance["EventNumbers", project]
+        return getValuesListDefinitions(project)
                 .filter { it.isVariant(variant) }
                 .mapNotNull { valuesList ->
                     valuesList.valuesListValueList.firstOrNull { it.key == text }
                 }
                 .firstOrNull()
+    }
+
+    private fun getValuesListDefinitions(project: Project): List<CaosDefValuesListElement> {
+        return CaosDefElementsSearchExecutor.getCaosDefFiles(project)
+                .flatMap { file ->
+                    PsiTreeUtil.collectElementsOfType(file, CaosDefValuesListElement::class.java)
+                            .filter { valuesList ->
+                                valuesList.typeName like "EventNumbers"
+                            }
+                } + CaosDefValuesListElementsByNameIndex.Instance["EventNumbers", project]
     }
 
     companion object {
