@@ -32,12 +32,12 @@ class CaosScriptDuplicateEventScriptInFileInspection : LocalInspectionTool() {
         val eventNumber = thisEventScript.eventNumber
         val startIndex = thisEventScript.startOffset
         val containingFile = thisEventScript.containingFile
-        val exists = PsiTreeUtil.collectElementsOfType(containingFile, CaosScriptEventScript::class.java)
+        val otherExists = PsiTreeUtil.collectElementsOfType(containingFile, CaosScriptEventScript::class.java)
                 .filterNot { thisEventScript.isEquivalentTo(it) }
                 .any {
-                    it.startOffset < startIndex && it.family == family && it.genus == genus && it.species == species
+                    it.startOffset < startIndex && it.family == family && it.genus == genus && it.species == species && it.eventNumber == eventNumber
                 }
-        if (exists) {
+        if (otherExists) {
             val endOffset = thisEventScript.eventNumberElement?.endOffsetInParent
                     ?: thisEventScript.textLength - 1
             val textRangeInParent = TextRange(thisEventScript.cScrp.endOffsetInParent + 1, endOffset)
