@@ -1,32 +1,32 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getAssignedType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.psi.util.PsiTreeUtil
-import kotlin.math.abs
 
 object CaosScriptInferenceUtil {
 
     fun getInferredType(element: CaosScriptRvalue): CaosExpressionValueType {
         if (element.incomplete != null)
-            return CaosExpressionValueType.UNKNOWN
+            return UNKNOWN
         element.varToken?.let { return getInferredType(it) }
         element.namedGameVar?.let { return getInferredType(it) }
         return when {
-            element.isInt -> CaosExpressionValueType.INT
-            element.isNumeric -> CaosExpressionValueType.DECIMAL
-            element.isFloat -> CaosExpressionValueType.FLOAT
-            element.isQuoteString -> CaosExpressionValueType.STRING
-            element.isC1String -> CaosExpressionValueType.C1_STRING
-            element.byteString != null -> CaosExpressionValueType.BYTE_STRING
-            element.isToken -> CaosExpressionValueType.TOKEN
-            element.animation != null -> CaosExpressionValueType.ANIMATION
-            element.pictDimensionLiteral != null -> CaosExpressionValueType.PICT_DIMENSION
-            else -> getInferredType(element.rvaluePrime) ?: CaosExpressionValueType.ANY
+            element.isInt -> INT
+            element.isFloat -> FLOAT
+            element.isNumeric -> DECIMAL
+            element.isQuoteString -> STRING
+            element.isC1String -> C1_STRING
+            element.byteString != null -> BYTE_STRING
+            element.isToken -> TOKEN
+            element.animationString != null -> ANIMATION
+            element.pictDimensionLiteral != null -> PICT_DIMENSION
+            else -> getInferredType(element.rvaluePrime) ?: ANY
         }
     }
 
@@ -36,14 +36,14 @@ object CaosScriptInferenceUtil {
         return prime.commandDefinition?.returnType
     }
 
-    fun getInferredValue(element: CaosScriptRvalue): CaosVar? {
+    fun getInferredValue(element: CaosScriptRvalue): CaosExpressionValueType? {
         val variable = element.variable
-                ?: return element.toCaosVar()
+                ?: return element.inferredType
         return getInferredValue(variable)
     }
 
 
-    fun getInferredValue(assignment: CaosScriptCAssignment): CaosVar? {
+    fun getInferredValue(assignment: CaosScriptCAssignment): CaosExpressionValueType? {
         val assignAlter = assignment.cKwAssignAlter
         if (assignAlter != null) {
 
@@ -52,40 +52,21 @@ object CaosScriptInferenceUtil {
             val variable: CaosScriptIsVariable = lvalue.varToken as? CaosScriptIsVariable
                     ?: lvalue.namedGameVar
                     ?: return null
-            val value = getInferredValue(variable)
-            val alter: (x: Float) -> Float = when {
-                assignAlter.kNegv != null -> { x -> -x }
-                assignAlter.kAbsv != null -> { x -> abs(x) }
-                assignAlter.kNotv != null -> { x -> -(x + 1) }
-                else -> { x -> x }
-            }
-            val alterInt: (x: Long) -> Long = when {
-                assignAlter.kNegv != null -> { x -> -x }
-                assignAlter.kAbsv != null -> { x -> abs(x) }
-                assignAlter.kNotv != null -> { x -> -(x + 1) }
-                else -> { x -> x }
-            }
-            return when (value) {
-                is CaosVar.CaosLiteral.CaosInt -> return CaosVar.CaosLiteral.CaosInt(alterInt(value.value))
-                is CaosVar.CaosLiteral.CaosFloat -> return CaosVar.CaosLiteral.CaosFloat(alter(value.value))
-                is CaosVar.CaosLiteral.CaosIntRange -> return CaosVar.CaosLiteral.CaosIntRange(value.min?.let { alterInt(it) }, value.max?.let { alterInt(it) })
-                is CaosVar.CaosLiteral.CaosFloatRange -> return CaosVar.CaosLiteral.CaosFloatRange(value.min?.let { alter(it) }, value.max?.let { alter(it) })
-                else -> value
-            }
+            return getInferredValue(variable)
         }
 
         if (assignment.cKwAdds != null || assignment.cKwAssignChar != null || assignment.cAssignKwNetUnik != null)
-            return CaosVar.CaosLiteralStringVal
+            return STRING
         if (assignment.cKwAssignGene != null)
-            return CaosVar.CaosLiteralIntVal
+            return INT
         val rvalue = (assignment.arguments.getOrNull(1) as? CaosScriptRvalue)
                 ?: return null
         return getInferredValue(rvalue)
     }
 
-    fun getInferredValue(element: CaosScriptIsVariable?): CaosVar? {
+    fun getInferredValue(element: CaosScriptIsVariable?): CaosExpressionValueType? {
         if (element == null)
-            return null
+            return UNKNOWN
         val startOffset = element.startOffset
         val scope = CaosScriptPsiImplUtil.getScope(element)
         return (element
@@ -116,7 +97,7 @@ object CaosScriptInferenceUtil {
                     }
                 }
                 .firstOrNull()
-                ?: CaosExpressionValueType.ANY
+                ?: ANY
     }
 
     internal fun isSimilar(element: CaosScriptIsVariable, otherElement: CaosScriptLvalue): Boolean {
@@ -140,10 +121,10 @@ object CaosScriptInferenceUtil {
     }
 
     private val skipTypes = listOf(
-            CaosExpressionValueType.ANY,
-            CaosExpressionValueType.UNKNOWN,
-            CaosExpressionValueType.NULL,
-            CaosExpressionValueType.VARIABLE
+            ANY,
+            UNKNOWN,
+            NULL,
+            VARIABLE
     )
 }
 

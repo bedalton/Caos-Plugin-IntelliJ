@@ -1,9 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.CaosFloat
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar.CaosLiteral.CaosInt
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.isNumeric
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toFloatSafe
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
@@ -118,7 +116,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             val value = expression?.getValuesListValue()?.name
                     ?: argument.text
                     ?: continue
-            val amount = chemParameters[pos + 1].toCaosVar()
+            val amount = chemParameters[pos + 1].text
             formatChemAmount(variant, stringBuilder, value, amount, format)
         }
         return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
@@ -128,14 +126,10 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     /**
      * Responsible for formatting a chemical with its amount
      */
-    private fun formatChemAmount(variant: CaosVariant, stringBuilder: StringBuilder, value:String, amountVar:CaosVar, format:ValuesFormat = ValuesFormat.NORMAL) {
+    private fun formatChemAmount(variant: CaosVariant, stringBuilder: StringBuilder, value: String, amountVar: String, format: ValuesFormat = ValuesFormat.NORMAL) {
 
         // Get amount as float
-        val amount = when (amountVar) {
-            is CaosInt -> amountVar.value * 1.0f
-            is CaosFloat -> amountVar.value
-            else -> 0.0f
-        }
+        val amount = amountVar.toFloatSafe() ?: 0.0f
 
         // Check how this chemical should be folded
         if (format == ValuesFormat.STIM) {
@@ -162,7 +156,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             if (amount > 0)
                 stringBuilder.append("+")
             stringBuilder.append(amountString)
-        // Chemical amounts should proceed chemical name
+            // Chemical amounts should proceed chemical name
         } else {
             // ie. +3 Hunger Decrease
             if (amount > 0)
@@ -221,7 +215,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     }
 
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
-        return shouldFold.matches(commandCall.commandString) && commandCall.arguments.filter { it.toCaosVar().isNumeric }.size > 1
+        return shouldFold.matches(commandCall.commandString) && commandCall.arguments.filter { it.inferredType.isNumberType }.size > 1
     }
 
     companion object {
@@ -238,6 +232,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             NORMAL,
             STIM,
             REVERSED;
+
             companion object {
                 fun getFormat(variant: CaosVariant, commandString: String): ValuesFormat {
                     return when {

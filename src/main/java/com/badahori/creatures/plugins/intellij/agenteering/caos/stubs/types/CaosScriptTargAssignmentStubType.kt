@@ -17,13 +17,13 @@ class CaosScriptTargAssignmentStubType(debugName:String) : com.badahori.creature
         stream.writeScope(stub.scope)
         stream.writeBoolean(stub.rvalue != null)
         if (stub.rvalue != null)
-            stream.writeCaosVar(stub.rvalue!!)
+            stream.writeExpressionValueType(stub.rvalue!!)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptTargAssignmentStub {
         val scope = stream.readScope()
         val caos = if (stream.readBoolean())
-            stream.readCaosVar()
+            stream.readExpressionValueType()
         else
             null
         return CaosScriptTargAssignmentStubImpl(parent, scope, caos)
@@ -33,7 +33,7 @@ class CaosScriptTargAssignmentStubType(debugName:String) : com.badahori.creature
         return CaosScriptTargAssignmentStubImpl(
                 parent = parent,
                 scope = element.scope,
-                rvalue = element.rvalue?.toCaosVar()
+                rvalue = element.rvalue?.inferredType
         )
     }
 }

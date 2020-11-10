@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
     val index: Int
-    fun toCaosVar(): CaosVar
+    val inferredType: CaosExpressionValueType
 }
 
 /**
@@ -55,7 +54,6 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
                 "variable" -> VARIABLE
                 "null" -> NULL
                 else -> {
-                    LOGGER.severe("Cannot find command def simple type of: $typeToLower")
                     UNKNOWN
                 }
             }
