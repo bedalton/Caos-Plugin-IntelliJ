@@ -1277,3 +1277,20 @@ fun getDepth(element: PsiElement): Int {
     }
     return depth
 }
+
+val PsiElement.isFolded:Boolean get() {
+    val editor = editor
+            ?: return false
+    val startOffset = startOffset
+    return editor.foldingModel.allFoldRegions.any {
+        !it.isExpanded && startOffset in it.startOffset .. it.endOffset
+    }
+}
+val PsiElement.isNotFolded:Boolean get() {
+    val editor = editor
+            ?: return false
+    val startOffset = startOffset
+    return editor.foldingModel.allFoldRegions.none {
+        !it.isExpanded && startOffset in it.startOffset .. it.endOffset
+    }
+}
