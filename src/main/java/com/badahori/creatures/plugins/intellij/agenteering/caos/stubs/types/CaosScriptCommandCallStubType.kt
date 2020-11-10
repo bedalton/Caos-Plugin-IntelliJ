@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -18,14 +19,14 @@ class CaosScriptCommandCallStubType(debugName: String) : com.badahori.creatures.
     override fun serialize(stub: CaosScriptCommandCallStub, stream: StubOutputStream) {
         stream.writeName(stub.command)
         stream.writeList(stub.argumentValues) {
-            writeCaosVar(it)
+            writeExpressionValueType(it)
         }
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosScriptCommandCallStub {
         val command = stream.readNameAsString() ?: UNDEF
         val arguments = stream.readList {
-            readCaosVar()
+            CaosExpressionValueType.fromIntValue(readInt())
         }
         return CaosScriptCommandCallStubImpl(
                 parent = parent,

@@ -2,14 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
@@ -121,7 +117,8 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
         private fun skipLast(element: CaosScriptCommandElement): Boolean {
             return if (element.commandString?.toUpperCase() in setLike) {
                 val firstArg = element.argumentValues.firstOrNull()
-                (firstArg is CaosVar.CaosCommandCall && firstArg.text.toUpperCase() in SKIP_LAST)
+                val commandString = (firstArg as? CaosScriptRvalue)?.commandString ?: (firstArg as? CaosScriptLvalue)?.commandString
+                return commandString in SKIP_LAST
             } else
                 false
         }

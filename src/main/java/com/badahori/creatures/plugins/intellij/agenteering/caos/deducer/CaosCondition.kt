@@ -2,9 +2,16 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+
+sealed class CaosConditionValue {
+    data class Literal(val value:String)
+    data class Command(val commandName:String, val returnType:CaosExpressionValueType)
+}
+
 data class CaosBlockCondition(
-        val value1:CaosVar,
-        val value2:CaosVar,
+        val value1:CaosConditionValue,
+        val value2:CaosConditionValue,
         val eqOp:CaosScriptEqualityOp
 )
 

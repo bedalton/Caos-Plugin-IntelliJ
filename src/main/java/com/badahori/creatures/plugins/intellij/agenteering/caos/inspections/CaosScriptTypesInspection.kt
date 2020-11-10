@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
@@ -9,7 +8,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 
@@ -98,7 +96,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             return
 
         // Get actual type of this argument
-        val actualType = getActualType(argument) { argument.toCaosVar() }
+        val actualType = getActualType(argument) { argument.inferredType }
 
         // Get simple type and convert it to analogous type if needed
         val expectedTypeSimple = parameter.type
@@ -135,7 +133,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     /**
      * Gets the actual type for a variable
      */
-    private fun getActualType(element: CaosScriptRvalueLike, caosVar: () -> CaosVar): CaosExpressionValueType {
+    private fun getActualType(element: CaosScriptRvalueLike, caosVar: () -> CaosExpressionValueType): CaosExpressionValueType {
         return element.inferredType
                 .let {
                     if (it == ANY || it == UNKNOWN)
@@ -149,7 +147,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                     it.commandDefinition?.returnType
                 }
                 // element is not a rvalue command call, get simple type
-                ?: caosVar().simpleType
+                ?: caosVar()
     }
 
     companion object {

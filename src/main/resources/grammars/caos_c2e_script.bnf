@@ -1893,7 +1893,7 @@ rvalue
 			getArguments
 			getArgumentValues
      		getInferredType
-     		toCaosVar
+     		getActualType
 			isString
 			isQuoteString
 			isC1String
@@ -1905,7 +1905,6 @@ rvalue
 			getFloatValue
 			getIntValue
 			getStringValue
-			toCaosVar
 			getByteStringArray
 			getCreatureAnimation
 			getAnimation
@@ -2036,8 +2035,8 @@ subroutine_name
 			setName
 			getReference
 			getIndex
-			toCaosVar
 			getExpectedType
+			getInferredType
 		]
 	};
 token_rvalue
@@ -2051,6 +2050,7 @@ token_rvalue
 		]
 		methods = [
 			getIndex
+			getInferredType
 		]
 	}
 	;
@@ -2093,7 +2093,6 @@ named_game_var
 			getCommandString
 			getCommandStringUpper
 			isVariant
-			toCaosVar
 			getKey
 			getVarType
 			getName
@@ -2607,7 +2606,6 @@ rvalue_prime
 			getArgumentValues
 			isVariant
 			getCommandToken
-			toCaosVar
 			getInferredType
 			getCommandDefinition
 		]
@@ -2691,7 +2689,6 @@ lvalue
 			isVariant
 			getIndex
 			getCommandToken
-			toCaosVar
 			getExpectedType
 			getInferredType
 			getCommandDefinition

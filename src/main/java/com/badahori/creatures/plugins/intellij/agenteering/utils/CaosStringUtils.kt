@@ -204,6 +204,13 @@ fun String.toIntSafe(): Int? {
         null
     }
 }
+fun String.toFloatSafe(): Float? {
+    return try {
+        this.toFloat()
+    } catch (e: Exception) {
+        null
+    }
+}
 
 enum class Case {
     UPPER_CASE,

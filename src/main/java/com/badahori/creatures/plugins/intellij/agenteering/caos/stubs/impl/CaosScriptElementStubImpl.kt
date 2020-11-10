@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScope
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
@@ -19,7 +19,7 @@ class CaosScriptSubroutineStubImpl(
 class CaosScriptCommandCallStubImpl(
         parent:StubElement<*>?,
         override val command:String,
-        override val argumentValues: List<CaosVar>
+        override val argumentValues: List<CaosExpressionValueType>
 ) : StubBase<CaosScriptCommandCallImpl>(parent, CaosScriptStubTypes.COMMAND_CALL), CaosScriptCommandCallStub {
     override val commandUpper: String by lazy {
         command.toUpperCase()
@@ -31,44 +31,29 @@ class CaosScriptCommandCallStubImpl(
 
 data class CaosScriptLValueStubImpl(
         val parent: StubElement<*>?,
-        override val caosVar: CaosVar,
-        override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub {
-    override val commandString: String? by lazy {
-        (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()
-    }
-}
+        override val commandString: String?,
+        override val type: CaosExpressionValueType,
+        override val argumentValues: List<CaosExpressionValueType>
+) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub
 
 data class CaosScriptRValueStubImpl(
         val parent: StubElement<*>?,
-        override val caosVar: CaosVar,
-        override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub {
-
-    override val commandString: String? by lazy {
-        (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()
-    }
-}
+        override val commandString: String?,
+        override val type: CaosExpressionValueType,
+        override val argumentValues: List<CaosExpressionValueType>
+) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
 data class CaosScriptTokenRValueStubImpl(
         val parent: StubElement<*>?,
-        override val caosVar: CaosVar,
-        override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptTokenRvalueImpl>(parent, CaosScriptStubTypes.TOKEN_RVALUE),  CaosScriptTokenRValueStub {
-
-    override val commandString: String? get() = null
-}
+        override val tokenText: String?
+) : StubBase<CaosScriptTokenRvalueImpl>(parent, CaosScriptStubTypes.TOKEN_RVALUE),  CaosScriptTokenRValueStub
 
 data class CaosScriptRValuePrimeStubImpl(
         val parent: StubElement<*>?,
-        override val caosVar: CaosVar,
-        override val argumentValues: List<CaosVar>
-) : StubBase<CaosScriptRvaluePrimeImpl>(parent, CaosScriptStubTypes.RVALUE_PRIME),  CaosScriptRValuePrimeStub {
-
-    override val commandString: String? by lazy {
-        (caosVar as? CaosVar.CaosCommandCall)?.text?.toUpperCase()
-    }
-}
+        override val commandString: String?,
+        override val caosVar: CaosExpressionValueType,
+        override val argumentValues: List<CaosExpressionValueType>
+) : StubBase<CaosScriptRvaluePrimeImpl>(parent, CaosScriptStubTypes.RVALUE_PRIME),  CaosScriptRValuePrimeStub
 
 
 data class CaosScriptRndvStubImpl(
@@ -81,8 +66,7 @@ data class CaosScriptRndvStubImpl(
 class CaosScriptNamedGameVarStubImpl(
         parent: StubElement<*>?,
         override val type: CaosScriptNamedGameVarType,
-        override val name: String,
-        override val key:CaosVar
+        override val key: String
 ) : StubBase<CaosScriptNamedGameVarImpl>(parent, CaosScriptStubTypes.NAMED_GAME_VAR), CaosScriptNamedGameVarStub
 
 
@@ -90,8 +74,8 @@ class CaosScriptAssignmentStubImpl(
         parent: StubElement<*>?,
         override val fileName:String,
         override val operation:CaosOp,
-        override val rvalue:CaosVar?,
-        override val lvalue:CaosVar?,
+        override val rvalue:CaosExpressionValueType?,
+        override val lvalue:CaosExpressionValueType?,
         override val enclosingScope:CaosScope,
         override val commandString: String
 ) : StubBase<CaosScriptCAssignmentImpl>(parent, CaosScriptStubTypes.VAR_ASSIGNMENT), CaosScriptAssignmentStub
@@ -205,5 +189,5 @@ class CaosScriptVarTokenStubImpl(
 class CaosScriptTargAssignmentStubImpl(
         parent:StubElement<*>?,
         override val scope: CaosScope,
-        override val rvalue: CaosVar?
+        override val rvalue: CaosExpressionValueType?
 ) : StubBase<CaosScriptCTargImpl>(parent, CaosScriptStubTypes.TARG_ASSIGNMENT), CaosScriptTargAssignmentStub

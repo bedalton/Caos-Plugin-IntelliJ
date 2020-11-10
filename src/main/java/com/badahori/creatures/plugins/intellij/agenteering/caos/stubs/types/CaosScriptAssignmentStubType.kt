@@ -52,8 +52,8 @@ class CaosScriptAssignmentStubType(debugName:String) : com.badahori.creatures.pl
                 parent = parent,
                 fileName = element.containingFile.name,
                 operation = element.op,
-                lvalue = element.lvalue?.toCaosVar(),
-                rvalue = element.rvalue?.toCaosVar(),
+                lvalue = element.lvalue?.inferredType,
+                rvalue = element.rvalue?.inferredType,
                 enclosingScope = CaosScriptPsiImplUtil.getScope(element),
                 commandString = element.commandString
         )
