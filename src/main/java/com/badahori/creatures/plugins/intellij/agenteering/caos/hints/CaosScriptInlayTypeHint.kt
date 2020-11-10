@@ -13,10 +13,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.codeInsight.folding.CodeFoldingManager
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
@@ -300,7 +298,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             if (element !is CaosScriptRvalue)
-                return emptyList()
+                return EMPTY_INLAY_LIST
+            if (element.isFolded)
+                return EMPTY_INLAY_LIST
             val value = element.text
             if (value.contains(' '))
                 return EMPTY_INLAY_LIST
@@ -589,7 +589,7 @@ private fun getBitFlagHintValues(typeList: CaosValuesList, bitFlagValue: Int, of
     // This hint is only worried about bitflags
     // Return if not bit-flags, even if list exists, but is not Bit-Flags
     if (!typeList.bitflag)
-        return emptyList()
+        return EMPTY_INLAY_LIST
 
     // Loop through bitflags values list, and collect matches to rvalue int value
     val values = mutableListOf<String>()
