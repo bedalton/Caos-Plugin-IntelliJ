@@ -13,8 +13,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.codeInsight.folding.CodeFoldingManager
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
@@ -32,7 +34,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ATTRIBUTE_BITFLAGS_IN_EQUALITY_EXPRESSIONS("Show bit flag for equality expressions", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
+            return (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
         }
 
         private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
@@ -126,7 +128,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
+            return (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
         }
 
         private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
@@ -159,8 +161,6 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     // ie. scrp 2 8 (vendor) ...
     ASSUMED_GENUS_NAME_HINT("Show genus simple name", true, 102) {
         override fun isApplicable(element: PsiElement): Boolean {
-            if (!option.isEnabled())
-                return false
             if (element !is CaosScriptRvalue || !element.isInt)
                 return false
 
@@ -232,10 +232,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      * Gets assumed argument name for an equality expression rvalue
      * ie. chem 4 (coldness)
      */
-    ASSUMED_EQ_VALUE_NAME_HINT("Show assumed value name in Equality expression", true) {
+    ASSUMED_EQ_VALUE_NAME_HINT("Show assumed value name in Equality expression", true, 102) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled()
-                    && element is CaosScriptRvalue
+            return element is CaosScriptRvalue
                     // If argument contains a space, it is not a literal
                     // And all but genus values have no spaces, and genus is handled elsewhere
                     && element.isInt
@@ -286,8 +285,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled()
-                    && element is CaosScriptRvalue
+            return element is CaosScriptRvalue
                     // If argument contains a space, it is not a literal
                     // And all but genus values have no spaces, and genus is handled elsewhere
                     && element.isInt
@@ -298,8 +296,6 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             if (element !is CaosScriptRvalue)
-                return EMPTY_INLAY_LIST
-            if (element.isFolded)
                 return EMPTY_INLAY_LIST
             val value = element.text
             if (value.contains(' '))
@@ -342,7 +338,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && element is CaosScriptEventNumberElement
+            return element is CaosScriptEventNumberElement
         }
 
         /**
@@ -389,7 +385,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Determine whether this element should show a DDE: PICT inlay hint
          */
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && element is CaosScriptPictDimensionLiteral
+            return element is CaosScriptPictDimensionLiteral
         }
 
         /**
@@ -424,7 +420,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Determines whether to show this parameter hint of not
          */
         override fun isApplicable(element: PsiElement): Boolean {
-            if (!option.isEnabled() || element !is CaosScriptRvalue)
+            if (element !is CaosScriptRvalue)
                 return false
             val parent = element.parent as? CaosScriptCAssignment
                     ?: return false
@@ -462,7 +458,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Determines whether to show this parameter hint of not
          */
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && element is CaosScriptRvaluePrime
+            return element is CaosScriptRvaluePrime
         }
 
         /**
@@ -479,13 +475,13 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 if (commandString like it.first)
                     return listOf(InlayInfo("(${it.second})", commandToken.endOffset))
             }
-            val type: CaosExpressionValueType = element.inferredType?.let {
+            val type: CaosExpressionValueType = element.inferredType.let {
                 if (it == UNKNOWN || it == ANY)
                     null
                 else
                     it
             } ?: element.commandDefinition?.returnType
-                    ?: return EMPTY_INLAY_LIST
+            ?: return EMPTY_INLAY_LIST
             var typeName = type.simpleName
             // element.parent.parent = RvaluePrime -> Rvalue -> CommandElement
             (element.parent?.parent as? CaosScriptCommandElement)?.let { parent ->
@@ -521,54 +517,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     ?: return null
             return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
         }
-    },
-
-    /*
-    /**
-     * Shows parameter name for argument
-     * ie stm# shou {stimulus}:10
-     */
-    ARGUMENT_PARAMETER_NAME("Show parameter name for argument", true) {
-        /**
-         * Determines whether to show this parameter hint of not
-         */
-        override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && element is CaosScriptRvalue && element.parent is CaosScriptCommandLike
-        }
-
-        /**
-         * Provide hints for this command's return type
-         */
-        override fun provideHints(element: PsiElement): List<InlayInfo> {
-            if (element !is CaosScriptRvalue)
-                return EMPTY_INLAY_LIST
-            // Ensure and get parent command
-            val parent = element.parent as? CaosScriptCommandElement
-                    ?: return EMPTY_INLAY_LIST
-            // Get command definition from static lib
-            val commandDefinition = parent.commandDefinition
-                    ?: return EMPTY_INLAY_LIST
-            // Get argument index in command call
-            val index = element.index
-            val parameter = commandDefinition.parameters.getOrNull(index)
-                    ?: return EMPTY_INLAY_LIST
-            val parameterName = parameter.name
-            return listOf(InlayInfo("$parameterName:", element.startOffset))
-        }
-
-        /**
-         * Generate hint info
-         * Possibly for blacklisting
-         */
-        override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptCommandLike) {
-                return null
-            }
-            val commandString = element.commandStringUpper
-                    ?: return null
-            return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
-        }
-    }*/;
+    };
 
     override val option: Option = Option("SHOW_${this.name}", description, enabled)
 }

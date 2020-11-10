@@ -20,7 +20,7 @@ import com.intellij.psi.PsiElement
 enum class CaosScriptInlayParameterHintsProvider(description: String, override val enabled: Boolean, override val priority: Int = 0) : CaosScriptHintsProvider {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return option.isEnabled() && element is CaosScriptCommandElement || element is CaosScriptClassifier
+            return element is CaosScriptCommandElement || element is CaosScriptClassifier
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
