@@ -1,13 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.ValuesListEq
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.isVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListValueStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
@@ -19,18 +13,18 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import kotlin.math.floor
 
 const val UNDEF = "{UNDEF}"
-
-private val EXTRACT_NUMBER_REGEX = "[^0-9.+-]".toRegex()
 
 @Suppress("UNUSED_PARAMETER", "SpellCheckingInspection")
 object CaosScriptPsiImplUtil {
@@ -96,7 +90,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCommandToken(namedGameVar: CaosScriptNamedGameVar) : CaosScriptIsCommandToken {
+    fun getCommandToken(namedGameVar: CaosScriptNamedGameVar): CaosScriptIsCommandToken {
         return namedGameVar.namedGameVarKw
     }
 
@@ -135,9 +129,6 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandString(element: CaosScriptRvalue): String? {
         element.stub?.commandString.nullIfUndefOrBlank()?.let {
-            return it
-        }
-        element.stub?.caosVar?.commandString.nullIfUndefOrBlank()?.let {
             return it
         }
         element.incomplete?.text.nullIfEmpty()?.let {
@@ -199,7 +190,7 @@ object CaosScriptPsiImplUtil {
     private val COMMAND_DEFINITION_KEY = Key<CaosCommand>("com.badahori.creatures.plugins.intellij.agenteering.caos.COMMAND_DEFINITION")
 
     @JvmStatic
-    fun getCommandDefinition(element:CaosScriptCommandElement) : CaosCommand? {
+    fun getCommandDefinition(element: CaosScriptCommandElement): CaosCommand? {
         element.getUserData(COMMAND_DEFINITION_KEY)?.let {
             return it
         }
@@ -208,14 +199,14 @@ object CaosScriptPsiImplUtil {
         val token = element.commandString
                 ?: return null
         val commandType = element.getEnclosingCommandType()
-        val command =  getCommandDefinition(variant, commandType, token)
+        val command = getCommandDefinition(variant, commandType, token)
         if (command != null)
             element.putUserData(COMMAND_DEFINITION_KEY, command)
         return command
     }
 
     @JvmStatic
-    fun getCommandDefinition(element:CaosScriptIsCommandToken) : CaosCommand? {
+    fun getCommandDefinition(element: CaosScriptIsCommandToken): CaosCommand? {
         element.getUserData(COMMAND_DEFINITION_KEY)?.let {
             return it
         }
@@ -229,13 +220,13 @@ object CaosScriptPsiImplUtil {
     }
 
 
-    fun getCommandDefinition(element:CaosScriptTokenRvalue) : CaosCommand? = null
+    fun getCommandDefinition(element: CaosScriptTokenRvalue): CaosCommand? = null
 
     private fun getCommandDefinition(
-            variant:CaosVariant,
-            commandType:CaosCommandType,
-            tokenIn:String
-    ) : CaosCommand? {
+            variant: CaosVariant,
+            commandType: CaosCommandType,
+            tokenIn: String
+    ): CaosCommand? {
         val lib = CaosLibs[variant]
         val token = tokenIn.replace(spacesRegex, " ")
         return lib[commandType][token]
@@ -348,18 +339,8 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getKey(element: CaosScriptNamedGameVar): CaosVar {
-        return element.stub?.key ?: element.rvalue?.toCaosVar() ?: CaosVar.CaosVarNone
-    }
-
-    @JvmStatic
     fun getName(element: CaosScriptNamedGameVar): String? {
-        val value = element.key
-        return if (value is CaosVar.CaosLiteral.CaosString) {
-            value.value
-        } else {
-            value.text
-        }
+        return element.stub?.key ?: element.rvalue?.text
     }
 
     @JvmStatic
@@ -439,44 +420,14 @@ object CaosScriptPsiImplUtil {
         return CaosScriptSubroutineNameReference(name)
     }
 
-
     @JvmStatic
-    fun getRVar(assignment: CaosScriptCTarg): CaosVar? {
-        return assignment.rvalue?.toCaosVar()
-    }
-
-    @JvmStatic
-    fun getRVar(assignment: CaosScriptCAssignment): CaosVar? {
-        assignment.stub?.rvalue?.let {
-            return it
-        }
-        assignment.rvalue?.let {
-            toCaosVar(it)
-        }
-        return null
-    }
-
-    @JvmStatic
-    fun getLVar(assignment: CaosScriptCAssignment): CaosVar? {
-        assignment.stub?.lvalue?.let {
-            return it
-        }
-        return assignment.lvalue?.let {
-            return toCaosVar(it)
-        }
-    }
-
-    @JvmStatic
-    fun toCaosVar(rvalue: CaosScriptRvalueLike): CaosVar {
+    fun getInferredType(rvalue: CaosScriptRvalueLike): CaosExpressionValueType {
         if (rvalue !is CaosScriptRvalue) {
             // If not true rvalue, then can only be token_rvalue.
             // Simply return text as token
-            return CaosVar.CaosLiteral.CaosToken(rvalue.text)
+            return CaosExpressionValueType.TOKEN
         }
-        (rvalue as? CaosScriptRvalue)?.stub?.caosVar?.let {
-            return it
-        }
-        (rvalue as? CaosScriptTokenRvalue)?.stub?.caosVar?.let {
+        (rvalue as? CaosScriptRvalue)?.stub?.type?.let {
             return it
         }
         if (!DumbService.isDumb(rvalue.project)) {
@@ -489,140 +440,68 @@ object CaosScriptPsiImplUtil {
             }
         }
         (rvalue.varToken)?.let {
-            return toCaosVar(it)
-        }
-
-        rvalue.commandToken?.let {
-            if (!DumbService.isDumb(it.project)) {
-                return CaosVar.CaosCommandCall(it.text, getReturnType(it, rvalue.arguments.size))
-            }
-            return CaosVar.CaosCommandCall(it.text)
+            return CaosExpressionValueType.VARIABLE
         }
 
         rvalue.namedGameVar?.let {
-            return it.toCaosVar() ?: CaosVar.CaosLiteralVal
+            return CaosExpressionValueType.VARIABLE
         }
 
-        rvalue.rvaluePrime?.let { rvaluePrime ->
-            return toCaosVar(rvaluePrime)
+        rvalue.commandDefinition?.let {
+            return it.returnType
         }
 
         rvalue.number?.let { number ->
             number.float?.let {
-                return CaosVar.CaosLiteral.CaosFloat(it.text.toFloat())
+                return CaosExpressionValueType.FLOAT
             }
             number.int?.let {
-                return try {
-                    CaosVar.CaosLiteral.CaosInt(it.text.toLong())
-                } catch (e: Exception) {
-                    CaosVar.CaosLiteral.CaosInt(Long.MAX_VALUE)
-                }
+                return CaosExpressionValueType.INT
             }
         }
 
         rvalue.c1String?.let {
-            return CaosVar.CaosLiteral.CaosC1String(it.stringValue)
+            return CaosExpressionValueType.C1_STRING
         }
         rvalue.quoteStringLiteral?.let {
-            return CaosVar.CaosLiteral.CaosString(it.stringValue)
+            return CaosExpressionValueType.STRING
         }
 
         rvalue.token?.text?.let {
-            return CaosVar.CaosLiteral.CaosToken(it)
+            return CaosExpressionValueType.TOKEN
         }
 
         rvalue.animationString?.let {
-            return CaosVar.CaosLiteral.CaosAnimationString(it.text, getAnimation(rvalue))
+            return CaosExpressionValueType.ANIMATION
         }
 
         rvalue.byteString?.text?.let {
-            return CaosVar.CaosLiteral.CaosByteString(getStringValue(rvalue) ?: "", rvalue.byteStringArray
-                    ?: emptyList())
+            return CaosExpressionValueType.BYTE_STRING
         }
         rvalue.namedGameVar?.let {
-            return it.toCaosVar() ?: CaosVar.CaosLiteralVal
+            return CaosExpressionValueType.VARIABLE
         }
 
-        return CaosVar.CaosVarNone
+        return CaosExpressionValueType.UNKNOWN
     }
 
     @JvmStatic
-    fun toCaosVar(rvaluePrime: CaosScriptRvaluePrime): CaosVar {
+    fun getInferredType(subroutineName:CaosScriptSubroutineName) : CaosExpressionValueType {
+        return CaosExpressionValueType.TOKEN
+    }
+
+    @JvmStatic
+    fun getReturnType(rvaluePrime: CaosScriptRvaluePrime): CaosExpressionValueType {
         rvaluePrime.stub?.caosVar?.let { return it }
         return rvaluePrime.commandToken?.let {
             val commandString = it.commandString
             if (commandString.toLowerCase() == "null")
-                return CaosVar.CaosVarNull
-            if (!DumbService.isDumb(rvaluePrime.project)) {
-                return CaosVar.CaosCommandCall(commandString, getReturnType(it, rvaluePrime.getChildrenOfType(CaosScriptArgument::class.java).size))
+                return CaosExpressionValueType.NULL
+            rvaluePrime.variant?.let { variant ->
+                CaosLibs[variant][CaosCommandType.RVALUE][commandString]
+                        ?.returnType
             }
-            return CaosVar.CaosCommandCall(commandString)
-        } ?: CaosVar.CaosLiteralVal
-    }
-
-    @JvmStatic
-    fun toCaosVar(varToken: CaosScriptVarToken): CaosVar {
-        val text = varToken.text
-        val number = Integer.parseInt(text.replace(EXTRACT_NUMBER_REGEX, ""))
-        return when {
-            varToken.varX != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, true)
-            varToken.obvX != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, true)
-            varToken.vaXx != null -> CaosVar.CaosNumberedVar.CaosVaXXVar(text, number, false)
-            varToken.ovXx != null -> CaosVar.CaosNumberedVar.CaosOvXXVar(text, number, false)
-            varToken.mvXx != null -> CaosVar.CaosNumberedVar.CaosMvXXVar(text, number)
-            else -> {
-                val validTypes = when (varToken.containingCaosFile?.variant) {
-                    CaosVariant.C1 -> "[varX,obvX]"
-                    CaosVariant.C2 -> "[varX,vaXX,obvX,ovXX]"
-                    else -> "[vaXX,ovXX,mvXX]"
-                }
-                throw Exception("Unexpected caos variable encountered. Expected types are: $validTypes. Found '$text'")
-            }
-        }
-    }
-
-    @JvmStatic
-    fun toCaosVar(lvalue: CaosScriptLvalue): CaosVar {
-        lvalue.stub?.caosVar?.let {
-            return it
-        }
-        (lvalue.varToken)?.let {
-            return toCaosVar(it)
-        }
-
-        (lvalue.namedGameVar)?.let { parent ->
-            val varName = when (parent.commandStringUpper) {
-                "NAME" -> CaosVar.CaosNamedGameVar.NameVar(parent.rvalue?.text ?: UNDEF)
-                "MAME" -> CaosVar.CaosNamedGameVar.MameVar(parent.rvalue?.text ?: UNDEF)
-                "GAME" -> CaosVar.CaosNamedGameVar.GameVar(parent.rvalue?.text ?: UNDEF)
-                "EAME" -> CaosVar.CaosNamedGameVar.EameVar(parent.rvalue?.text ?: UNDEF)
-                else -> null
-            }
-            varName?.let {
-                return it
-            }
-        }
-        (lvalue.lKwRR)?.let {
-            if (it.kGame != null) {
-                val arguments = lvalue.arguments
-                if (arguments.size == 2) {
-                    return try {
-                        val first = arguments[0].text.toInt()
-                        val second = arguments[1].text.toInt()
-                        CaosVar.CaosNamedGameVar.C2GameVar(first, second)
-                    } catch (e: Exception) {
-                        CaosVar.CaosNamedGameVar.C2GameVar(-1, -1)
-                    }
-                }
-            }
-        }
-        lvalue.commandToken?.let {
-            if (!DumbService.isDumb(it.project)) {
-                return CaosVar.CaosCommandCall(it.text, getReturnType(it, lvalue.arguments.size))
-            }
-            return CaosVar.CaosCommandCall(it.text)
-        }
-        return CaosVar.CaosLiteralVal
+        } ?: CaosExpressionValueType.UNKNOWN
     }
 
     private fun getReturnType(token: CaosScriptIsCommandToken, numberOfArgs: Int): CaosExpressionValueType {
@@ -653,112 +532,7 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getAnimation(expression: CaosScriptRvalue): CaosAnimation? {
-        val variant = expression.containingCaosFile?.variant
-                ?: return null
-        if (variant.isNotOld) {
-            val poseList = expression.byteStringArray
-                    ?: return null
-            if (poseList.lastOrNull() == 255) {
-                return CaosAnimation.Animation(poseList.subList(0, poseList.lastIndex), true, 0)
-            } else if (poseList.getOrNull(poseList.lastIndex - 1) == 255) {
-                return CaosAnimation.Animation(poseList.subList(0, poseList.lastIndex - 1), true, poseList.last())
-            }
-        }
-        val stringValue = expression.stringValue
-                ?: return null
-        if (!"[0-9]+R?".toRegex().matches(stringValue)) {
-            return null
-        }
-        val charsRaw = expression.text.toCharArray().toList()
-        val poses: List<Int>
-        val repeats = charsRaw.last().toUpperCase() == 'R'
-        val repeatsFrom = if (repeats) 0 else null
-        poses = if (repeats) {
-            charsRaw.subList(0, charsRaw.lastIndex).map { it.toInt() }
-        } else {
-            charsRaw.map { it.toInt() }
-        }
-        return CaosAnimation.Animation(poses, repeats, repeatsFrom)
-    }
-
-    private fun getCVPlusAnimation(stringValue: String): CaosAnimation? {
-        if ("[^0-9 ]".toRegex().matches(stringValue)) {
-            return null
-        }
-        val posesRaw = stringValue.split(" ").map { it.toInt() }
-        var repeats = false
-        var repeatsFrom: Int? = null
-        when (posesRaw.size) {
-            0 -> return CaosAnimation.Animation(emptyList(), false, null)
-            1 -> if (posesRaw[0] == 255) {
-                return CaosAnimation.ErrorAnimation("Repeated animation has no body")
-            }
-            2 -> {
-                if (posesRaw[0] == 255) {
-                    repeats = true
-                    repeatsFrom = posesRaw[1]
-                } else if (posesRaw[1] == 255) {
-                    return CaosAnimation.ErrorAnimation("Repeated animation has no body")
-                }
-            }
-            else -> {
-                if (posesRaw.last() == 255) {
-                    repeats = true
-                    repeatsFrom = 0
-                } else if (posesRaw[posesRaw.lastIndex - 1] == 255) {
-                    repeats = true
-                    repeatsFrom = posesRaw.last()
-                }
-            }
-        }
-
-        val poses: List<Int> = if (repeats) {
-            if (repeatsFrom != null) {
-                posesRaw.subList(0, posesRaw.lastIndex - 1)
-            } else {
-                posesRaw.subList(0, posesRaw.lastIndex)
-            }
-        } else {
-            posesRaw
-        }
-        if (repeats && repeatsFrom == null)
-            repeatsFrom = 0
-        return CaosAnimation.Animation(poses, repeats, repeatsFrom)
-    }
-
-    @JvmStatic
-    fun getCreatureAnimation(expression: CaosScriptRvalue): CaosAnimation? {
-        val variant = expression.containingCaosFile?.variant
-                ?: return null
-        val stringValue = expression.stringValue
-                ?: return null
-        if (stringValue.isEmpty())
-            return CaosAnimation.Animation(emptyList(), false, null)
-        if (variant.isNotOld) {
-            return getCVPlusAnimation(stringValue)
-        }
-        val charsRawTemp = stringValue.toCharArray().toList()
-        val repeats = charsRawTemp.last().toUpperCase() == 'R'
-        val repeatsFrom = if (repeats) 0 else null
-        val charsRaw = if (repeats) {
-            charsRawTemp.subList(0, charsRawTemp.lastIndex)
-        } else {
-            charsRawTemp
-        }
-        val numPoses = floor(charsRaw.size / 3.0f).toInt()
-        if (charsRaw.size % 3 != 0) {
-            return CaosAnimation.ErrorAnimation("Creature animation must be a multiple of 3")
-        }
-        val poses = (0 until numPoses).map {
-            val base = it * 3
-            "${charsRaw[base]}${charsRaw[base + 1]}${charsRaw[base + 2]}".toInt()
-        }
-        return CaosAnimation.Animation(poses, repeats, repeatsFrom)
-    }
-
-    @JvmStatic
-    fun getToken(element:CaosScriptRvalue) : CaosScriptToken? {
+    fun getToken(element: CaosScriptRvalue): CaosScriptToken? {
         return null
     }
 
@@ -850,8 +624,11 @@ object CaosScriptPsiImplUtil {
         element.varToken?.let {
             return CaosScriptInferenceUtil.getInferredType(it)
         }
-        val caosVar = toCaosVar(element)
-        return (caosVar as? CaosVar.CaosCommandCall)?.returnType ?: caosVar.simpleType
+        element.namedGameVar?.let {
+            return CaosExpressionValueType.VARIABLE
+        }
+        return element.commandDefinition?.returnType
+                ?: CaosExpressionValueType.UNKNOWN
     }
 
 
@@ -892,30 +669,25 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getArgumentValues(command: CaosScriptCommandCall): List<CaosVar> {
-        return command.stub?.argumentValues ?: command.arguments.map { it.toCaosVar() }
+    fun getArgumentValues(command: CaosScriptCommandCall): List<CaosExpressionValueType> {
+        return command.stub?.argumentValues ?: command.arguments.map { it.inferredType }
     }
 
     @JvmStatic
-    fun getArgumentValues(rvalue: CaosScriptRvalue): List<CaosVar> {
-        return rvalue.stub?.argumentValues ?: rvalue.arguments.map { it.toCaosVar() }
+    fun getArgumentValues(rvalue: CaosScriptRvalue): List<CaosExpressionValueType> {
+        return rvalue.stub?.argumentValues ?: rvalue.arguments.map { it.inferredType }
     }
 
     @JvmStatic
-    fun getArgumentValues(lvalue: CaosScriptLvalue): List<CaosVar> {
-        return lvalue.stub?.argumentValues ?: lvalue.arguments.map { it.toCaosVar() }
+    fun getArgumentValues(lvalue: CaosScriptLvalue): List<CaosExpressionValueType> {
+        return lvalue.stub?.argumentValues ?: lvalue.arguments.map { it.inferredType }
     }
 
     @JvmStatic
-    fun getArgumentValues(element: CaosScriptCommandElement): List<CaosVar> {
+    fun getArgumentValues(element: CaosScriptCommandElement): List<CaosExpressionValueType> {
         return element.arguments.map {
-            it.toCaosVar()
+            it.inferredType
         }
-    }
-
-    @JvmStatic
-    fun toCaosVar(element: CaosScriptSubroutineName): CaosVar {
-        return CaosVar.CaosLiteral.CaosToken(element.text)
     }
 
     @JvmStatic
@@ -1054,16 +826,8 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun toCaosVar(element: CaosScriptNamedGameVar): CaosVar? {
-        val name = element.name
-                ?: return null
-        return when (element.varType) {
-            CaosScriptNamedGameVarType.EAME -> CaosVar.CaosNamedGameVar.EameVar(name)
-            CaosScriptNamedGameVarType.MAME -> CaosVar.CaosNamedGameVar.MameVar(name)
-            CaosScriptNamedGameVarType.GAME -> CaosVar.CaosNamedGameVar.GameVar(name)
-            CaosScriptNamedGameVarType.NAME -> CaosVar.CaosNamedGameVar.NameVar(name)
-            CaosScriptNamedGameVarType.UNDEF -> null
-        }
+    fun getKey(element: CaosScriptNamedGameVar) : String? {
+        return element.rvalue?.stringValue
     }
 
     @JvmStatic
@@ -1465,7 +1229,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
         is CaosScriptEscnHeader -> CaosCommandType.CONTROL_STATEMENT
         is CaosScriptRepsHeader -> CaosCommandType.CONTROL_STATEMENT
         is CaosScriptSubroutineHeader -> CaosCommandType.CONTROL_STATEMENT
-        else ->  {
+        else -> {
             LOGGER.severe("Failed to understand command type with a command element parent ${parent.commandStringUpper};")
             parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
         }

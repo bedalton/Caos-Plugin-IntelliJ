@@ -8,8 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.AGENT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.INT
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
@@ -480,7 +479,12 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 if (commandString like it.first)
                     return listOf(InlayInfo("(${it.second})", commandToken.endOffset))
             }
-            val type: CaosExpressionValueType = element.commandDefinition?.returnType
+            val type: CaosExpressionValueType = element.inferredType?.let {
+                if (it == UNKNOWN || it == ANY)
+                    null
+                else
+                    it
+            } ?: element.commandDefinition?.returnType
                     ?: return EMPTY_INLAY_LIST
             var typeName = type.simpleName
             // element.parent.parent = RvaluePrime -> Rvalue -> CommandElement

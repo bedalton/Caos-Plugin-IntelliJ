@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
@@ -24,11 +23,10 @@ abstract class CaosScriptTokenRvalueMixin : CaosScriptStubBasedElementImpl<CaosS
 
     override val commandStringUpper: String? get() = null
 
-    override fun toCaosVar(): CaosVar = CaosVar.CaosLiteral.CaosToken(text)
 
     override val arguments: List<CaosScriptArgument> by lazy { emptyList<CaosScriptArgument>() }
 
-    override val argumentValues: List<CaosVar> by lazy { emptyList<CaosVar>() }
+    override val argumentValues: List<CaosExpressionValueType> by lazy { emptyList<CaosExpressionValueType>() }
 
     override val inferredType: CaosExpressionValueType get() = CaosExpressionValueType.TOKEN
 

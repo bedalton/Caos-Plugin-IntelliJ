@@ -17,8 +17,7 @@ class CaosScriptNamedGameVarStubType(debugName:String) : com.badahori.creatures.
 
     override fun serialize(stub: CaosScriptNamedGameVarStub, stream: StubOutputStream) {
         stream.writeInt(stub.type.value)
-        stream.writeName(stub.name)
-        stream.writeCaosVar(stub.key)
+        stream.writeName(stub.key)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptNamedGameVarStub {
@@ -27,8 +26,7 @@ class CaosScriptNamedGameVarStubType(debugName:String) : com.badahori.creatures.
         return CaosScriptNamedGameVarStubImpl(
                 parent = parent,
                 type = type,
-                name = name,
-                key = stream.readCaosVar()
+                key = name
         )
     }
 
@@ -36,8 +34,7 @@ class CaosScriptNamedGameVarStubType(debugName:String) : com.badahori.creatures.
         return CaosScriptNamedGameVarStubImpl(
                 parent = parent,
                 type = element.varType,
-                name = element.name ?: UNDEF,
-                key = element.key
+                key = element.name ?: UNDEF
         )
     }
 
