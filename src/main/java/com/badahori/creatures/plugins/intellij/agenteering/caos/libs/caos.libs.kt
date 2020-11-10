@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 
@@ -205,6 +206,9 @@ object CaosLibs {
     operator fun get(variant: CaosVariant): CaosLib = get(variant.code)
 
     operator fun get(variantCode: String): CaosLib {
+        libs[variantCode]?.let {
+            return it
+        }
         val variant = universalLib.variantMap[variantCode]
                 ?: throw CaosLibException("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
         val lib = CaosLib(universalLib, variant)
@@ -222,4 +226,32 @@ private fun normalize(commandString: String?): String? {
             .nullIfUndefOrBlank()
             ?.toUpperCase()
             ?.replace("\\s\\s+".toRegex(), " ")
+}
+
+enum class EqOp(val commonName: String, vararg values: String) {
+    EQUAL("Equals", "EQ", "="),
+    NOT_EQUAL("Not Equal", "NE", "!=", "<>"),
+    GREATER_THAN("Greater Than", "GT", ">"),
+    LESS_THAN("Less Than", "LT", "<"),
+    GREATER_THAN_EQUAL("Greater Than / Equal", "GE", ">="),
+    LESS_THAN_EQUAL("Less Than / Equal", "LE", "<="),
+    BITWISE_AND("Bitwise And", "BT"),
+    BITWISE_NAND("Bitwise Nand", "BF"),
+    INVALID("INVALID", "??");
+
+    companion object {
+        fun fromValue(value: String): EqOp {
+            return when (value.toUpperCase()) {
+                "EQ", "=" -> EQUAL
+                "NE", "!=", "<>" -> NOT_EQUAL
+                "GT", ">" -> GREATER_THAN
+                "GE", ">=" -> GREATER_THAN_EQUAL
+                "LT", "<" -> LESS_THAN
+                "LE", "<=" -> LESS_THAN_EQUAL
+                "BT" -> BITWISE_AND
+                "BF" -> BITWISE_NAND
+                else -> INVALID
+            }
+        }
+    }
 }
