@@ -13,10 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.Case
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
@@ -502,14 +499,6 @@ object CaosScriptPsiImplUtil {
                         ?.returnType
             }
         } ?: CaosExpressionValueType.UNKNOWN
-    }
-
-    private fun getReturnType(token: CaosScriptIsCommandToken, numberOfArgs: Int): CaosExpressionValueType {
-        val variant = token.variant
-                ?: return CaosExpressionValueType.UNKNOWN
-        val commandType = token.getEnclosingCommandType()
-        return CaosLibs[variant][commandType][token.commandString]?.returnType
-                ?: CaosExpressionValueType.UNKNOWN
     }
 
     @JvmStatic
@@ -1008,7 +997,7 @@ object CaosScriptPsiImplUtil {
                 ?: return null
 
         // Get value if any based on element text
-        return valuesList.get(element.text)
+        return valuesList[element.text]
     }
 
     @JvmStatic
@@ -1190,50 +1179,26 @@ enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
 }
 
 fun PsiElement.getEnclosingCommandType(): CaosCommandType {
+    // Next Element to check
+    var element:PsiElement? = this
 
-    // If expression or Equality, it can only be Rvalue
-    // Getting base element will skip this possibility, so check first
-    if (isOrHasParentOfType(CaosScriptRvalue::class.java) || this.hasParentOfType(CaosScriptEqualityExpression::class.java))
-        return CaosCommandType.RVALUE
-    val parent: PsiElement? = getSelfOrParentOfType(CaosScriptBaseCommandElement::class.java)
-    if (parent == null || (parent !is CaosScriptCommandElement || parent is CaosScriptNamedGameVar)) {
-        if (isOrHasParentOfType(CaosScriptIncomplete::class.java)) {
-            return CaosCommandType.COMMAND
-        }
-        if (isOrHasParentOfType(CaosScriptDoifStatement::class.java))
-            return CaosCommandType.CONTROL_STATEMENT
-        if (isOrHasParentOfType(CaosScriptEnumHeaderCommand::class.java))
-            return CaosCommandType.CONTROL_STATEMENT
-        if (isOrHasParentOfType(CaosScriptEnumSceneryStatement::class.java))
-            return CaosCommandType.CONTROL_STATEMENT
-        if (isOrHasParentOfType(CaosScriptRepsHeader::class.java))
-            return CaosCommandType.CONTROL_STATEMENT
-        if (isOrHasParentOfType(CaosScriptLoopStatement::class.java))
-            return CaosCommandType.CONTROL_STATEMENT
-        if (this is CaosScriptIsCommandToken || children.firstOrNull() is CaosScriptIsCommandToken) {
-            return CaosCommandType.COMMAND
-        }
-        LOGGER.severe("Failed to understand command type with value: $text. ${parent?.text?.let { "With parent: $it" } ?: "Without parent"}")
-        return CaosCommandType.UNDEFINED
-    }
-    return when (parent) {
-        is CaosScriptLvalue -> CaosCommandType.LVALUE
-        is CaosScriptRvalueLike -> CaosCommandType.RVALUE
-        is CaosScriptCommandCall -> CaosCommandType.COMMAND
-        is CaosScriptRvaluePrime -> CaosCommandType.RVALUE
-        is CaosScriptEnumNextStatement -> CaosCommandType.CONTROL_STATEMENT
-        is CaosScriptCAssignment -> CaosCommandType.COMMAND
-        is CaosScriptCGsub -> CaosCommandType.COMMAND
-        is CaosScriptCRndv -> CaosCommandType.COMMAND
-        is CaosScriptCTarg -> CaosCommandType.COMMAND
-        is CaosScriptEscnHeader -> CaosCommandType.CONTROL_STATEMENT
-        is CaosScriptRepsHeader -> CaosCommandType.CONTROL_STATEMENT
-        is CaosScriptSubroutineHeader -> CaosCommandType.CONTROL_STATEMENT
-        else -> {
-            LOGGER.severe("Failed to understand command type with a command element parent ${parent.commandStringUpper};")
-            parent.parent?.getEnclosingCommandType() ?: CaosCommandType.UNDEFINED
+    // Loop through element and parents to
+    // find first instance of a command type element
+    while (element != null) {
+        return when (element) {
+            is CaosScriptCommandCall -> CaosCommandType.COMMAND
+            is CaosScriptRvaluePrime -> CaosCommandType.RVALUE
+            is CaosScriptRvalue -> CaosCommandType.RVALUE
+            is CaosScriptLvalue -> CaosCommandType.LVALUE
+            is CaosScriptEqualityExpression -> CaosCommandType.RVALUE
+            is CaosScriptHasCodeBlock -> CaosCommandType.CONTROL_STATEMENT
+            else -> {
+                element = element.parent
+                continue
+            }
         }
     }
+    return CaosCommandType.UNDEFINED
 }
 
 enum class CaosCommandType(val value: String) {
