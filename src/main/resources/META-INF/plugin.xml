@@ -389,7 +389,7 @@
     />
 
     <localInspection language="CaosScript"
-                     level="Weak Warning"
+                     level="WEAK WARNING"
                      groupName="Caos Script"
                      enabledByDefault="true"
                      displayName="Agent to Int Coercion"
@@ -403,6 +403,8 @@
     <documentationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider" />
 
+    <lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder" />
     <lang.foldingBuilder language="CaosScript"
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
     <lang.foldingBuilder language="CaosScript"
