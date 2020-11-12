@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.def.generator
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand

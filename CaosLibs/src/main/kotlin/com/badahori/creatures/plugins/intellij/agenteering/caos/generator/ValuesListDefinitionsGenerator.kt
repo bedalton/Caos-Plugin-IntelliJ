@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.def.generator
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
