@@ -1,7 +1,7 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 
-enum class CaosCommandType(val value: String) {
+internal enum class CaosCommandType(val value: String) {
     COMMAND("Command"),
     RVALUE("RValue"),
     LVALUE("LValue"),
