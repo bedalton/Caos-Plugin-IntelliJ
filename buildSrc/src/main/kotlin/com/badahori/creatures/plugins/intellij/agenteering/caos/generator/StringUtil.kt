@@ -1,12 +1,12 @@
-package com.badahori.creatures.plugins.intellij.agenteering.utils
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 
-fun String.wrap(maxLength: Int, newLinePrefixIn: String = ""): String {
+internal fun String.wrap(maxLength: Int, newLinePrefixIn: String = ""): String {
     val joinText = "\n$newLinePrefixIn"
     return splitByLength(maxLength).joinToString(joinText)
 }
 
-fun String.splitByLength(maxLength: Int): List<String> {
+internal fun String.splitByLength(maxLength: Int): List<String> {
     val chunks = mutableListOf<String>()
     var textLeft = this
     while (textLeft.isNotEmpty()) {
@@ -41,13 +41,13 @@ fun String.splitByLength(maxLength: Int): List<String> {
 }
 
 
-infix fun String?.like(otherString:String?) : Boolean {
+internal infix fun String?.like(otherString:String?) : Boolean {
     if (this == null || otherString == null)
         return false
     return this.equals(otherString, true)
 }
 
-infix fun String?.notLike(otherString:String?) : Boolean {
+internal infix fun String?.notLike(otherString:String?) : Boolean {
     if (this == null || otherString == null)
         return true
     return !this.equals(otherString, true)
