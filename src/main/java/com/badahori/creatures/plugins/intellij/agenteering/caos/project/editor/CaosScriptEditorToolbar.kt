@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.generator.CaosDefinitionsGenerator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -100,11 +99,6 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
         pointer.element?.trimErrorSpaces()
     }
 
-    // If variant is set, ensure that CAOS def has been generated
-    caosFile.variant?.let {variant ->
-        CaosDefinitionsGenerator.ensureVariantCaosDef(variant)
-    }
-
     // If variant is unknown, allow for variant selection
     if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFile.virtualFile !is CaosVirtualFile) {
         // Make variant selector visible
@@ -129,8 +123,6 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
             }
             if (caosFile.variant == selected)
                 return@variant
-            // Ensure CAOSDef for variant has been created
-            CaosDefinitionsGenerator.ensureVariantCaosDef(selected)
             // If can inject, enable injection button
             val canInject = Injector.canConnectToVariant(selected)
             toolbar.setInjectButtonEnabled(canInject)
@@ -163,40 +155,7 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
     }
 
     // Set docs button click handler
-    toolbar.addDocsButtonClickListener {
-        val selectedVariant = caosFile.variant
-        if (selectedVariant == null) {
-            val builder = DialogBuilder(caosFile.project)
-            builder.setErrorText("Failed to access module game variant")
-            builder.title("Variant Error")
-            builder.show()
-            return@addDocsButtonClickListener
-        }
-
-        runWriteAction {
-            CaosDefinitionsGenerator.ensureVariantCaosDef(selectedVariant)
-        }
-
-        // Set assumed doc path
-        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/${selectedVariant.code}-Lib.caosdef"
-        LOGGER.info("Looking up CAOS DOC at '$docRelativePath'")
-
-        // Get the virtual file for it at that path, starting with the CAOS VFS
-        val docVirtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
-                // File not found in CAOS virtual file system, try to find it in default system
-                ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
-        // Get CAOS Def PSI file for navigation
-        val file = docVirtualFile?.getPsiFile(project)
-                ?: FilenameIndex.getFilesByName(project, "${selectedVariant}-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
-                        .firstOrNull()
-        // If file CAOS def file could not be found, disable Docs button
-        if (file == null) {
-            toolbar.setDocsButtonEnabled(false)
-            return@addDocsButtonClickListener
-        }
-        // Navigate to the docs psi file
-        file.navigate(true)
-    }
+    toolbar.addDocsButtonClickListener(createDocsOpenClickHandler(toolbar, pointer))
 
     // If the OS is not windows, and no POST url is set, hide injection button
     // show inject button
@@ -222,7 +181,7 @@ private fun initToolbarWithVariantSelect(toolbar: EditorToolbar, pointer: CaosSc
 /**
  * Create action handler to handle the opening of the CAOS doc on click
  */
-private fun createDocsOpenClickHandler(toolbar: EditorToolbar, pointer: CaosScriptPointer) = ActionListener listener@{
+private fun createDocsOpenClickHandler(toolbar: EditorToolbar, pointer: CaosScriptPointer): ActionListener = ActionListener listener@{
     // Get file from pointer
     val caosFile = pointer.element
 
