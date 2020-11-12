@@ -1,13 +1,10 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.def.generator
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 
 /**
  * Object class for generating CaosDef files for caos variants
@@ -16,8 +13,7 @@ object CaosDefinitionsGenerator {
 
     internal const val MAX_COMMENT_LENGTH = 80
 
-    fun ensureVariantCaosDef(variant: CaosVariant) {
-        val libsFolder: CaosVirtualFile = CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory(BUNDLE_DEFINITIONS_FOLDER)
+    fun ensureVariantCaosDef(variant:CaosVariant, libsFolder:CaosVirtualFile) {
         val fileName = "${variant.code}-Lib.caosdef"
         val existing = libsFolder[fileName]
                 ?.contents
@@ -25,6 +21,9 @@ object CaosDefinitionsGenerator {
                 .orFalse()
         if (existing)
             return
+    }
+
+    fun getVariantCaosDef(variant: CaosVariant): String {
         val lib = CaosLibs[variant]
         val commands = lib.allCommands.sortedBy { it.command }.joinToString("\n\n") { command ->
             generateCommandDefinition(variant, command)
@@ -34,7 +33,7 @@ object CaosDefinitionsGenerator {
                 .joinToString("\n\n") { valuesList ->
                     generatorValuesListDefinition(valuesList)
                 }
-        val fileText = """
+        return """
 @variant(${variant.code} = ${variant.fullName})
 
 // =============================== //
@@ -48,8 +47,6 @@ $commands
 $valuesLists
 
         """.trimIndent()
-        val file = libsFolder.createChildWithContent(fileName, fileText, true)
-        LOGGER.info("Created lib at: ${file.path}")
     }
 
 }
