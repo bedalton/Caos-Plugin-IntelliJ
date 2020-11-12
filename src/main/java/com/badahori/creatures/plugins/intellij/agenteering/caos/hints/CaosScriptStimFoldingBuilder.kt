@@ -1,23 +1,25 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toFloatSafe
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toFloatSafe
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -25,7 +27,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
+class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
     /**
      * Gets command call placeholder text for folding if it should be folded
@@ -63,7 +65,35 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     /**
      * Folds a CV+ chemical call
      */
-    private fun foldC3ChemCall(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand) = foldChemCallGeneric(commandCall, commandDefinition)
+    private fun foldC3ChemCall(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand): String? {
+        return when (commandDefinition.command) {
+            "EMIT" -> formatEmit(commandCall, commandDefinition)
+            else -> foldChemCallGeneric(commandCall, commandDefinition)
+        }
+    }
+
+    private fun formatEmit(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand): String? {
+        val variant = commandCall.variant
+                ?: return null
+        val arguments = commandCall.arguments
+        if (arguments.size < 2)
+            return null;
+        val caNumber = (arguments[0] as? CaosScriptRvalue)?.intValue
+                ?: return null
+        val ca = commandDefinition
+                .parameters
+                .getOrNull(0)
+                ?.valuesList
+                ?.get(variant)
+                ?.get(caNumber)
+                ?.name.nullIfEmpty()
+                ?: return null
+
+        val amount = (arguments[1] as? CaosScriptRvalue)?.intValue
+                ?: return "Emit CA: $ca"
+        val amountString = if (amount < 0) "$amount" else "+$amount"
+        return "Emit $amountString CA: $ca"
+    }
 
     /**
      * Generic method for building a chemical folded string
@@ -120,7 +150,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             formatChemAmount(variant, stringBuilder, value, amount, format)
         }
         return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
-                ?: "+ <<NOTHING>>"
+        //?: "+ <<NOTHING>>"
     }
 
     /**
@@ -130,6 +160,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
 
         // Get amount as float
         val amount = amountVar.toFloatSafe() ?: 0.0f
+        val amountIsNumber = amountVar.toFloatSafe() != null
 
         // Check how this chemical should be folded
         if (format == ValuesFormat.STIM) {
@@ -153,15 +184,19 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
 
             // example thirst +0.9
             stringBuilder.append(value).append(" ")
-            if (amount > 0)
+            if (amount > 0 && !amountIsNumber)
                 stringBuilder.append("+")
-            stringBuilder.append(amountString)
+            if (amountIsNumber)
+                stringBuilder.append(amountString)
             // Chemical amounts should proceed chemical name
         } else {
             // ie. +3 Hunger Decrease
-            if (amount > 0)
+            if (amount > 0 || !amountIsNumber)
                 stringBuilder.append("+")
-            stringBuilder.append(amountString).append(" ").append(value)
+            if (amountIsNumber)
+                stringBuilder.append(amountString).append(" ").append(value)
+            else
+                stringBuilder.append(value)
         }
     }
 
@@ -215,7 +250,21 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     }
 
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
-        return shouldFold.matches(commandCall.commandString) && commandCall.arguments.filter { it.inferredType.isNumberType }.size > 1
+        if (!shouldFold.matches(commandCall.commandString))
+            return false
+        if (commandCall.arguments.none { it.inferredType.isNumberType })
+            return false
+        val commandString = commandCall.commandStringUpper
+                ?: return false
+        val commandStringFirstWord = commandString.substring(0, 4)
+        val commandCallText = commandCall.text.toLowerCase()
+        return when (commandStringFirstWord) {
+            "EMIT" -> EMIT_REGEX.matches(commandCallText)
+            "CHEM", "DRIV" -> CHEM_REGEX.matches(commandCallText)
+            "STIM" -> STIM_C1E_REGEX.matches(commandCallText) || STIM_C2E_REGEX.matches(commandCallText)
+            "SWAY" -> SWAY_REGEX.matches(commandCallText)
+            else -> false
+        }
     }
 
     companion object {
@@ -226,6 +275,12 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         private const val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
         private const val CHEMICAL = "[Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?"
         private const val CA = "[Cc][Aa][^0-9]*"
+        private const val NUMBER_REGEX = "[+-]?(\\.\\d+)?\\d+"
+        private val EMIT_REGEX = "emit\\s+$NUMBER_REGEX.+".toRegex()
+        private val CHEM_REGEX = "(chem|driv)\\s+$NUMBER_REGEX\\s+[^ ]+$".toRegex()
+        private val STIM_C1E_REGEX = "stim (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))(\\s+[^ ]+){4}((\\s+$NUMBER_REGEX)(\\s+[^ ]+))+$".toRegex()
+        private val STIM_C2E_REGEX = "stim (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))\\s+$NUMBER_REGEX\\s+[^ ]+$".toRegex()
+        private val SWAY_REGEX = "sway (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))(\\s+$NUMBER_REGEX\\s+[^ ]+)+$".toRegex()
         private val firstFoldParameterRegex = "($STIMULUS|$DRIVE|$CHEMICAL|$CA)[0-9]*".toRegex()
 
         private enum class ValuesFormat {
