@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDefGeneratorTask
 
 plugins {
     id("org.jetbrains.intellij") version "0.6.1"
@@ -50,6 +51,17 @@ intellij {
     sandboxDirectory = "/Users/daniel/Projects/Intellij Sandbox"
     setPlugins("PsiViewer:191.4212")
 }
+
+tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
+    this.targetFolder = File(buildDir, "resource/main/lib")
+    this.createFolder = true
+    this.generateCaosDef()
+}
+
+tasks.getByName("buildPlugin") {
+    dependsOn("generateCaosDef")
+}
+
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
 
 }
