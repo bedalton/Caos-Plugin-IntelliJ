@@ -1,13 +1,13 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import kotlinx.serialization.Serializable
+import kotlin.collections.isNullOrEmpty
 
 /**
  * Holds information on the variant in a Lib file
@@ -69,6 +69,7 @@ data class CaosVarConstraints(
  */
 @Serializable
 data class CaosLibDefinitions(
+        val modDate:Long,
         val commands: Map<String, CaosCommand>,
         val variantMap: Map<String, CaosVariantData>,
         val valuesLists: Map<String, CaosValuesList>
@@ -91,7 +92,8 @@ data class CaosCommand(
         val rvalue:Boolean,
         val lvalue:Boolean,
         val lvalueName:String? = null,
-        val commandGroup:String
+        val commandGroup:String,
+        val doifFormat:String? = null
 ) {
     val fullCommandHeader: String by lazy {
         val commandHeader = formatNameWithType(command, returnType)
@@ -200,7 +202,7 @@ data class CaosValuesList(
      * Gets command checking both literal value as well as int comparison values
      */
     operator fun get(key: String): CaosValuesListValue? {
-        key.toIntSafe()?.let { intValue ->
+        key.toIntOrNull()?.let { intValue ->
             return get(intValue)
         }
         return values.firstOrNull { it.value == key }
@@ -215,8 +217,18 @@ data class CaosValuesList(
                 ?: greaterThan.firstOrNull { it.intValue!! < key }
     }
 
+    fun getWithBitFlags(bitFlag:Int) : List<CaosValuesListValue>? {
+        if (extensionType notLike "BitFlags")
+            return null
+        return values.filter filter@{value ->
+            val intValue = value.intValue
+                    ?: return@filter false
+            bitFlag and intValue > 0
+        }
+    }
+
     val bitflag:Boolean by lazy {
-        extensionType?.equalsIgnoreCase("BitFlags").orFalse()
+        extensionType?.equals("BitFlags", true) ?: false
     }
 }
 
@@ -232,9 +244,9 @@ data class CaosValuesListValue(
 ) {
     val intValue: Int? by lazy {
         if (value.startsWith(">") || value.startsWith("!"))
-            value.substring(1).toIntSafe()
+            value.substring(1).toIntOrNull()
         else
-            value.toIntSafe()
+            value.toIntOrNull()
     }
 
     val not by lazy {
