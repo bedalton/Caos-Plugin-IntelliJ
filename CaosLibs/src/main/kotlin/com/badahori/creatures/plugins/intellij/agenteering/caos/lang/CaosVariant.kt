@@ -1,0 +1,1 @@
+/Users/daniel/Projects/Games/OpenC2e/CaosPlugin/src/main/java/com/badahori/creatures/plugins/intellij/agenteering/caos/lang/CaosVariant.kt
