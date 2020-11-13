@@ -59,7 +59,7 @@ def	::= header? (!<<eof>> def_element)*
 	;
 
 header
-	::= AT_VARIANT '(' variant (',' variant)* ')' version_tag?
+	::=  version_tag? AT_VARIANT '(' variant (',' variant)* ')'
 	{
 		methods = [
 			isVariant
