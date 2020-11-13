@@ -128,7 +128,7 @@ open class CaosVirtualFile private constructor(
 
     /** {@inheritDoc}  */
     @Suppress("RecursivePropertyAccessor")
-    override fun getPath(): String = parent?.path?.let { "$it/$name" } ?: name
+    override fun getPath(): String = (parent?.path?.let { "$it/" } ?: "/") + name
 
     /** {@inheritDoc}  */
     override fun isValid(): Boolean = true
