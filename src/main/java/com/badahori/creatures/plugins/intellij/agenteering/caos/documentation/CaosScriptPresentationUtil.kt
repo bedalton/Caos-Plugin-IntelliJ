@@ -50,10 +50,7 @@ object CaosScriptPresentationUtil {
                     getCommandHeaderFromCodeBlock(element as CaosDefCommandWord)
                 }
                 // Return generic description of command on no matches
-                ?: {
-                    LOGGER.info("Failed to understand Command token ${element.elementType}('${element.text}) for getDescriptiveText with parent ${element.parent?.elementType}(${element.parent?.text})")
-                    "command [${element.text}]"
-                }()
+                ?: "command [${element.text}]"
     }
 
     private fun getCommandHeaderFromCodeBlock(element:CaosDefCommandWord) : String? {
