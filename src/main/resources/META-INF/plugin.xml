@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.8</version>
+  <version>0.01.9</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -246,6 +246,10 @@
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptGhostElementAnnotator" />
 
+
+    <annotator language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
+
     <!-- Inspections -->
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTypesInspection"
@@ -325,14 +329,6 @@
                      displayName="Command used without OWNR object"
                      shortName="NoOwnrObject"
     />
-
-    <localInspection language="CaosScript"
-                     level="INFORMATION"
-                     groupName="Caos Script"
-                     enabledByDefault="true"
-                     displayName="Collapse Expand Lines"
-                     shortName="CollapseExpandLines"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
 
     <localInspection language="CaosScript"
                      level="ERROR"
