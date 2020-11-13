@@ -46,7 +46,6 @@ object CaosScriptInferenceUtil {
     fun getInferredValue(assignment: CaosScriptCAssignment): CaosExpressionValueType? {
         val assignAlter = assignment.cKwAssignAlter
         if (assignAlter != null) {
-
             val lvalue = (assignment.arguments.getOrNull(0) as? CaosScriptLvalue)
                     ?: return null
             val variable: CaosScriptIsVariable = lvalue.varToken as? CaosScriptIsVariable
@@ -67,14 +66,7 @@ object CaosScriptInferenceUtil {
     fun getInferredValue(element: CaosScriptIsVariable?): CaosExpressionValueType? {
         if (element == null)
             return UNKNOWN
-        val startOffset = element.startOffset
-        val scope = CaosScriptPsiImplUtil.getScope(element)
-        return (element
-                .getParentOfType(CaosScriptEventScript::class.java)?.let {
-                    PsiTreeUtil.collectElementsOfType(it, CaosScriptCAssignment::class.java)
-                } ?: PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptCAssignment::class.java))
-                .filter { it.endOffset < startOffset && it.scope.sharesScope(scope) }
-                .sortedByDescending { it.endOffset }
+        return element.getAssignments()
                 .mapNotNull map@{ assignment ->
                     if (assignment.lvalue?.let { isSimilar(element, it) }.orFalse())
                         return@map null
@@ -143,7 +135,7 @@ fun CaosScriptIsVariable?.getAssignments(): List<CaosScriptCAssignment> {
     val assignments = this
             .getParentOfType(CaosScriptEventScript::class.java)?.let {
                 PsiTreeUtil.collectElementsOfType(it, CaosScriptCAssignment::class.java)
-            } ?: PsiTreeUtil.collectElementsOfType(containingFile, CaosScriptCAssignment::class.java)
+            } ?: emptyList()
     return assignments
             .filter { it.endOffset < startOffset && it.scope.sharesScope(scope) }
             .sortedByDescending { it.endOffset }
