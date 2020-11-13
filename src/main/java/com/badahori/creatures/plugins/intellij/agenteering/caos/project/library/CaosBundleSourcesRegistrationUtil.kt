@@ -34,11 +34,12 @@ object CaosBundleSourcesRegistrationUtil {
             return
         }
         runWriteAction {
-            module?.apply { deregisterSources(this) }
+            //module?.apply { deregisterSources(this) }
             registerSourcesAsLibrary(project)
         }
     }
 
+    /*
     fun registerSourcesWithoutModule(module:Module? = null) : Boolean {
         module?.let { deregisterSources(module) }
         val definitionsFolder = CaosFileUtil.getPluginResourceFile(BUNDLE_DEFINITIONS_FOLDER)
@@ -62,7 +63,7 @@ object CaosBundleSourcesRegistrationUtil {
         rootModel.commit()
     }
 
-
+*/
     private fun registerSourcesAsLibrary(project:Project) : Boolean {
         val rootModel = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
         val modifiableModel = rootModel.modifiableModel
@@ -82,7 +83,7 @@ object CaosBundleSourcesRegistrationUtil {
         return true
     }
 
-    fun addLibrary(modifiableModel: ModifiableModel) : Boolean {
+    private fun addLibrary(modifiableModel: ModifiableModel) : Boolean {
         val libraryPath = libraryPath()
                 ?: return false
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
@@ -92,11 +93,6 @@ object CaosBundleSourcesRegistrationUtil {
         libModel.commit()
         modifiableModel.commit()
         return true
-    }
-
-
-    fun addLibrary(modifiableModel: ModifiableRootModel) : Boolean {
-        return addLibrary(modifiableModel.moduleLibraryTable.modifiableModel)
     }
 
     private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {
@@ -116,13 +112,10 @@ object CaosBundleSourcesRegistrationUtil {
         return oldLibrary
     }
 
-
     private fun currentLibraryVersion(model:ModifiableModel) : String? {
         return model.getLibraryByName(LIBRARY_NAME)
                 ?.getFiles(OrderRootType.SOURCES)
                 .orEmpty().firstOrNull { it.name == VERSION_TEXT_FILE_NAME }
                 ?.contents
     }
-
-
 }
