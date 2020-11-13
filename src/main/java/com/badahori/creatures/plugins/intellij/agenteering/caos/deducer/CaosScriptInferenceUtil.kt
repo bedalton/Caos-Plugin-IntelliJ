@@ -2,10 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getAssignedType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -68,8 +65,9 @@ object CaosScriptInferenceUtil {
             return UNKNOWN
         return element.getAssignments()
                 .mapNotNull map@{ assignment ->
-                    if (assignment.lvalue?.let { isSimilar(element, it) }.orFalse())
+                    if (assignment.lvalue?.let { !isSimilar(element, it) }.orFalse())
                         return@map null
+                    LOGGER.info("GetInferredValue: ${assignment.text} has var ${assignment.lvalue} at line#${assignment.lineNumber} is similar to ${element.text} in parent ${element.parent?.text} at line ${element.lineNumber}")
                     getInferredValue(assignment)
                 }
                 .firstOrNull()
@@ -79,8 +77,9 @@ object CaosScriptInferenceUtil {
     fun getInferredType(element: CaosScriptIsVariable): CaosExpressionValueType {
         return element.getAssignments()
                 .mapNotNull map@{ assignment ->
-                    if (assignment.lvalue?.let { isSimilar(element, it) }.orFalse())
+                    if (assignment.lvalue?.let { !isSimilar(element, it) }.orFalse())
                         return@map null
+                    LOGGER.info("GetInferred Type: ${assignment.text} has var ${assignment.lvalue} at line#${assignment.lineNumber} is similar to ${element.text} in parent ${element.parent?.text} at line ${element.lineNumber}")
                     assignment.getAssignedType()?.let { type ->
                         if (type in skipTypes)
                             null
@@ -92,7 +91,7 @@ object CaosScriptInferenceUtil {
                 ?: ANY
     }
 
-    internal fun isSimilar(element: CaosScriptIsVariable, otherElement: CaosScriptLvalue): Boolean {
+    private fun isSimilar(element: CaosScriptIsVariable, otherElement: CaosScriptLvalue): Boolean {
         if (element.getParentOfType(CaosScriptScriptElement::class.java)?.isEquivalentTo(otherElement.getParentOfType(CaosScriptScriptElement::class.java)).orFalse())
             return false
         if (element is CaosScriptVarToken) {
@@ -133,10 +132,12 @@ fun CaosScriptIsVariable?.getAssignments(): List<CaosScriptCAssignment> {
     val startOffset = startOffset
     val scope = CaosScriptPsiImplUtil.getScope(this)
     val assignments = this
-            .getParentOfType(CaosScriptEventScript::class.java)?.let {
-                PsiTreeUtil.collectElementsOfType(it, CaosScriptCAssignment::class.java)
+            .getParentOfType(CaosScriptEventScript::class.java)?.let { parentEventScript ->
+                PsiTreeUtil.collectElementsOfType(parentEventScript, CaosScriptCAssignment::class.java)
             } ?: emptyList()
     return assignments
-            .filter { it.endOffset < startOffset && it.scope.sharesScope(scope) }
+            .filter {
+                it.endOffset < startOffset && it.scope.sharesScope(scope)
+            }
             .sortedByDescending { it.endOffset }
 }
