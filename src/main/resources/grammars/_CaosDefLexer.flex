@@ -283,6 +283,7 @@ COMMENT=[*][^\n\*]*
 <YYINITIAL> {
 	"("                        	{ yybegin(IN_VARIANT); return CaosDef_OPEN_PAREN; }
 	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
+  	{REGION}					{ return CaosDef_REGION_HEADING_LITERAL; }
 	{WHITE_SPACE}              	{ return WHITE_SPACE; }
 	[^]							{ yybegin(IN_BODY); yypushback(yylength()); }
 }
