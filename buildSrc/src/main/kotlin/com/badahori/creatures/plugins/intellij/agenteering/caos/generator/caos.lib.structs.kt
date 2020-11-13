@@ -64,6 +64,7 @@ internal data class CaosVarConstraints(
  */
 @Serializable
 internal data class CaosLibDefinitions(
+        val modDate:Long,
         val commands: Map<String, CaosCommand>,
         val variantMap: Map<String, CaosVariantData>,
         val valuesLists: Map<String, CaosValuesList>
