@@ -62,9 +62,6 @@ internal fun getCommand(element: CaosScriptCommandElement): CaosCommand? {
             ?: return null
     val commandType = element.getEnclosingCommandType()
     val command = CaosLibs[variant][commandType][commandToken]
-    if (command == null) {
-        LOGGER.warning("Failed to find command of type ${commandType.value} for command: <${commandToken}>")
-    }
     return command
 }
 
