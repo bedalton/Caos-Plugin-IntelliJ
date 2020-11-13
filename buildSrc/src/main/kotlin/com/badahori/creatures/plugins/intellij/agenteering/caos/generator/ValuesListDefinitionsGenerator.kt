@@ -1,9 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.splitByLength
-
 /**
  * Generates a CaosDef definition for a values list
  */

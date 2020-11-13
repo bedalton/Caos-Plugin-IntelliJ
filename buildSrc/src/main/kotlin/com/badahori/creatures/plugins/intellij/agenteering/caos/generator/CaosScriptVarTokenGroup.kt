@@ -1,6 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
-enum class CaosScriptVarTokenGroup(val value:String) {
+internal enum class CaosScriptVarTokenGroup(val value:String) {
     UNKNOWN("???"),
     VARx("VARx"),
     OBVx("OBVx"),

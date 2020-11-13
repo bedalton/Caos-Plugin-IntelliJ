@@ -1,19 +1,12 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
+@file:Suppress("UNUSED_PARAMETER")
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosLibException
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 
 /**
  * Interface marking a class as having an get operator
  */
-interface CommandGetter {
+internal interface CommandGetter {
     operator fun get(tokenString: String, bias: CaosExpressionValueType = CaosExpressionValueType.ANY): CaosCommand?
 }
 
@@ -56,7 +49,7 @@ private fun mapCommands(
  * A queryable CAOS lib object
  */
 @Suppress("unused")
-class CaosLib internal constructor(private val lib: CaosLibDefinitions, val variant: CaosVariantData) {
+internal class CaosLib internal constructor(private val lib: CaosLibDefinitions, val variant: CaosVariantData) {
 
     /**
      * Rvalue definitions getter
@@ -168,7 +161,7 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
 /**
  * Holder object to fetch and store the variant Libs
  */
-object CaosLibs {
+internal object CaosLibs {
     private val libs = mutableMapOf<String, CaosLib>()
 
     val valuesList: HasGetter<Int, CaosValuesList?> = object : HasGetter<Int, CaosValuesList?> {
@@ -210,14 +203,14 @@ object CaosLibs {
             return it
         }
         val variant = universalLib.variantMap[variantCode]
-                ?: throw CaosLibException("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
+                ?: throw Exception("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
         val lib = CaosLib(universalLib, variant)
         libs[variantCode] = lib
         return lib
     }
 }
 
-interface HasLib {
+internal interface HasLib {
     var caosLib: CaosLib
 }
 
@@ -228,7 +221,7 @@ private fun normalize(commandString: String?): String? {
             ?.replace("\\s\\s+".toRegex(), " ")
 }
 
-enum class EqOp(val commonName: String, vararg val values: String) {
+internal enum class EqOp(val commonName: String, vararg values: String) {
     EQUAL("Equals", "EQ", "="),
     NOT_EQUAL("Not Equal", "NE", "!=", "<>"),
     GREATER_THAN("Greater Than", "GT", ">"),
