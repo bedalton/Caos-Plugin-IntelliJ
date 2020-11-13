@@ -127,7 +127,11 @@ object EditorUtil {
 
     fun editor(element:PsiElement) : Editor?  {
         val document = document(element) ?: return null
-        return EditorFactory.getInstance().getEditors(document, element.project).firstOrNull()
+        return EditorFactory.getInstance()
+                .getEditors(document, element.project)
+                .firstOrNull {editor ->
+                    editor.psiFile == element.containingFile
+                }
     }
 
     fun tabSize(psiElement: PsiElement) : Int? {
