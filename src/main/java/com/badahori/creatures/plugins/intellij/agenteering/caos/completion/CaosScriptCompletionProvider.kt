@@ -52,12 +52,14 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val case = text.case
 
         // Add equality expression completions for known types
-        (element.getSelfOrParentOfType(CaosScriptRvalue::class.java))?.let { expression ->
+        val argument = element.getSelfOrParentOfType(CaosScriptArgument::class.java)
+        (argument as? CaosScriptRvalue)?.let { expression ->
             // If has parent RValue, should continue with normal completion
+            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, argument)
             // Else use special EQ expression completion
-            expression.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let { equalityExpression ->
-                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(variant, resultSet, case, equalityExpression, expression)
-                addCommandCompletions(resultSet, variant, RVALUE, element)
+            (expression.parent as? CaosScriptEqualityExpressionPrime)?.let { equalityExpression ->
+                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(variant, resultSet, case, equalityExpression, argument)
+                addCommandCompletions(resultSet, variant, RVALUE, argument)
                 resultSet.stopHere()
                 return
             }
@@ -115,11 +117,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         // Get command type, ie RVALUE, LVALUE, COMMAND
         val commandType = parent.getEnclosingCommandType()
-        // If has parent of value, add values list completion if needed
-        // ie. Chemicals by name, or file names
-        (element.getSelfOrParentOfType(CaosScriptArgument::class.java))?.let {
-            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, it)
-        }
 
         // If token is expected, return
         // Token completions will have been added with CaosScriptValuesListValuesCompletionProvider#addParameterTypeDefValueCompletions,
@@ -144,7 +141,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             RVALUE -> caosLib.rvalues
             LVALUE -> caosLib.lvalues
             else -> return
-        }.filter { it.command likeAny SKIP_VAR_NAMES }.map {
+        }.filter { it.command likeNone SKIP_VAR_NAMES }.map {
             ProgressIndicatorProvider.checkCanceled()
             createCommandTokenLookupElement(allowUppercase, element, case, it.command, commandType, it.parameters, it.returnType)
         }
