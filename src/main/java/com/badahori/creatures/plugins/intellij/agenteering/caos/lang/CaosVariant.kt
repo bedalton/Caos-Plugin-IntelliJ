@@ -35,6 +35,15 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
             }
         }
 
+        val baseVariants = listOf(
+                C1,
+                C2,
+                CV,
+                C3,
+                DS,
+                DS
+        )
+
         @Suppress("unused")
         fun registerVariant(
                 code: String,
