@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
@@ -26,6 +27,17 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (file == null)
             return false
+
+        // Comma is not a valid collapse char in C2e
+        if (collapseChar == CollapseChar.COMMA) {
+            // Ensure a variant is set for this file
+            // so that we can validate this option
+            val variant = (file as? CaosScriptFile)?.variant
+                    ?: return false
+            // Return if variant is new variant
+            if (variant.isNotOld)
+                return false
+        }
         val hasNewlines = file.text.orEmpty().contains("\n")
         val isMultiline = file.text.length > 5 && file.lastChild.lineNumber != 0
         return hasNewlines || isMultiline
