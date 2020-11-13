@@ -35,9 +35,14 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
         private val returnsAgent: MutableMap<CaosVariant, Set<String>> = mutableMapOf()
 
         private fun doesNotReturnAgent(variant: CaosVariant, commandString: String): Boolean {
-            returnsAgent[variant]?.let { commands ->
+            val doesNotReturnAgent = returnsAgent[variant]?.let { commands ->
                 commandString likeNone commands
             }
+            // Value can be nullable if not cached,
+            // so have explicit check to true to ensure it is not null and true
+            if (doesNotReturnAgent == true)
+                return true
+
             val commands = CaosLibs[variant].allCommands.filter { it.returnType == CaosExpressionValueType.AGENT }
                     .map { it.command }
                     .toSet()
