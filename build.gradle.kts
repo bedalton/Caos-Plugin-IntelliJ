@@ -52,7 +52,6 @@ intellij {
     sameSinceUntilBuild = true
     sandboxDirectory = "/Users/daniel/Projects/Intellij Sandbox"
     setPlugins("PsiViewer:191.4212")
-
 }
 
 tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
@@ -63,6 +62,10 @@ tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
 
 tasks.getByName("buildPlugin") {
     dependsOn("generateCaosDef")
+}
+
+tasks.withType<org.jetbrains.intellij.tasks.RunIdeTask>().all {
+    maxHeapSize = "1g"
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
