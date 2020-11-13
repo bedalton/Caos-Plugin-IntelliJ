@@ -228,7 +228,7 @@ private fun normalize(commandString: String?): String? {
             ?.replace("\\s\\s+".toRegex(), " ")
 }
 
-enum class EqOp(val commonName: String, vararg values: String) {
+enum class EqOp(val commonName: String, vararg val values: String) {
     EQUAL("Equals", "EQ", "="),
     NOT_EQUAL("Not Equal", "NE", "!=", "<>"),
     GREATER_THAN("Greater Than", "GT", ">"),
