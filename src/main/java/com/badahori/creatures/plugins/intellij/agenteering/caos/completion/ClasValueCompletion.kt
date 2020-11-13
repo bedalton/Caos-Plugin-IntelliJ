@@ -10,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -19,6 +20,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import javax.swing.*
@@ -35,9 +37,22 @@ internal object GenerateClasIntegerInsertHandler : InsertHandler<LookupElement> 
     }
 }
 
-class GenerateClasIntegerAction(element:CaosScriptRvalue) : LocalQuickFix {
+class GenerateClasIntegerAction(element:CaosScriptRvalue) : LocalQuickFix, IntentionAction {
+
     private val pointer = SmartPointerManager.createPointer(element)
+
+    override fun startInWriteAction(): Boolean = true
+
+    override fun getText(): String = name
+
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean = true
+
+    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+        ClasForm(project, pointer).showAndGet()
+    }
+
     override fun getName(): String = "Generate CLAS value"
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         invokeLater {
