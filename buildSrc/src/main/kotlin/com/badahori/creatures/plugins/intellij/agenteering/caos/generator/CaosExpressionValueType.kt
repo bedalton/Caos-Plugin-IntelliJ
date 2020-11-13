@@ -1,10 +1,10 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
+package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 
 /**
  * Represents the base types for a CaosScript expression
  */
-enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
+internal enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
     INT(1, "integer"),
     FLOAT(2, "float"),
     TOKEN(3, "token"),
@@ -88,32 +88,32 @@ private val listOfNumberTypes = listOf(
         CaosExpressionValueType.DECIMAL
 )
 
-val CaosExpressionValueType.isNumberType: Boolean
+internal val CaosExpressionValueType.isNumberType: Boolean
     get()
     = this in listOfNumberTypes
 
-val listOfStringTypes = listOf(
+internal val listOfStringTypes = listOf(
         CaosExpressionValueType.STRING,
         CaosExpressionValueType.C1_STRING,
         CaosExpressionValueType.HEXADECIMAL
 )
 
-val listOfAgentTypes = listOf(
+internal val listOfAgentTypes = listOf(
         CaosExpressionValueType.AGENT,
         CaosExpressionValueType.NULL
 )
-val CaosExpressionValueType.isAgentType: Boolean
+internal val CaosExpressionValueType.isAgentType: Boolean
     get()
     = this in listOfAgentTypes
 
-val CaosExpressionValueType.isStringType: Boolean
+internal val CaosExpressionValueType.isStringType: Boolean
     get()
     = this in listOfStringTypes
 
-val listOfAnyTypes = listOf(
+internal val listOfAnyTypes = listOf(
         CaosExpressionValueType.ANY,
         CaosExpressionValueType.UNKNOWN
 )
-val CaosExpressionValueType.isAnyType: Boolean
+internal val CaosExpressionValueType.isAnyType: Boolean
     get()
     = this in listOfAnyTypes

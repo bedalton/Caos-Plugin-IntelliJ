@@ -87,9 +87,27 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
                 ?: return null
-        (psiFile as? CaosScriptFile)?.variant?.let { variant ->
-            return variant
+        // Get CAOS file, and if it has variant, return it
+        (psiFile as? CaosScriptFile ?: psiFile.originalFile as? CaosScriptFile)
+                ?.variant
+                ?.let { variant ->
+                    return variant
+                }
+
+        (psiFile.virtualFile)?.let {virtualFile ->
+            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let {variant ->
+                (psiFile as? CaosScriptFile)?.variant = variant
+                return variant
+            }
         }
+        (psiFile.originalFile.virtualFile)?.let {virtualFile ->
+            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let {variant ->
+                (psiFile as? CaosScriptFile)?.variant = variant
+                return variant
+            }
+        }
+
+        // PsiFile had not variant, find virtual file, and try to extract it
         val virtualFile = psiFile.virtualFile
                 ?: psiFile.originalFile.virtualFile
                 ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)
@@ -209,12 +227,13 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     ) {
 
     }
+
     @JvmStatic
     fun isNext(
             builder_: PsiBuilder,
             level: Int,
             key: String
-    ) : Boolean {
+    ): Boolean {
         return nextToken(builder_) like key
     }
 
@@ -223,21 +242,21 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             builder_: PsiBuilder,
             level: Int,
             vararg keys: String
-    ) : Boolean {
-        return nextToken(builder_)?.let {nextToken ->
+    ): Boolean {
+        return nextToken(builder_)?.let { nextToken ->
             keys.any { it like nextToken }
         } ?: false
     }
 
-    private fun nextToken(builder_: PsiBuilder) : String? {
+    private fun nextToken(builder_: PsiBuilder): String? {
         val originalText = builder_.originalText
         var i = builder_.currentOffset
-        while (originalText.getOrNull(i)?.let { it == ' '}.orFalse())
+        while (originalText.getOrNull(i)?.let { it == ' ' }.orFalse())
             i++
-        if (i+4 >= originalText.length) {
+        if (i + 4 >= originalText.length) {
             return null
         }
-        return originalText.substring(i until i+4)
+        return originalText.substring(i until i + 4)
     }
 
     @JvmStatic

@@ -1313,8 +1313,6 @@ c_assignment
 			getCommandToken
 			getCommandString
 			getCommandStringUpper
-			getRVar
-			getLVar
 			getArguments
 			getArgumentValues
 			getCommandDefinition
@@ -1906,8 +1904,6 @@ rvalue
 			getIntValue
 			getStringValue
 			getByteStringArray
-			getCreatureAnimation
-			getAnimation
 			getReference
 			getName
 			setName

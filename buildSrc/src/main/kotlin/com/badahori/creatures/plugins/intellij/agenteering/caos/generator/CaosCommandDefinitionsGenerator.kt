@@ -1,11 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.splitByLength
-
 /**
  * Generates a CaosDef command definition
  */
