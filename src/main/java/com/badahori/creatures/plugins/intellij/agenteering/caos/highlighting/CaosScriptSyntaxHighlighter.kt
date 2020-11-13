@@ -64,6 +64,8 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         @JvmStatic
+        val ERROR_COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_ERROR_COMMAND_TOKEN", DefaultLanguageHighlighterColors.IDENTIFIER)
+        @JvmStatic
         val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", COMMAND_TOKEN)
         @JvmStatic
         val LVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_LVALUE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
