@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeNone
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -34,13 +35,13 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
 
         private val returnsAgent: MutableMap<CaosVariant, Set<String>> = mutableMapOf()
 
-        private fun doesNotReturnAgent(variant: CaosVariant, commandString: String): Boolean {
-            val doesNotReturnAgent = returnsAgent[variant]?.let { commands ->
-                commandString likeNone commands
+        private fun commandReturnsAgent(variant: CaosVariant, commandString: String): Boolean {
+            val commandReturnsAgent = returnsAgent[variant]?.let { commands ->
+                commandString likeAny commands
             }
             // Value can be nullable if not cached,
             // so have explicit check to true to ensure it is not null and true
-            if (doesNotReturnAgent == true)
+            if (commandReturnsAgent == true)
                 return true
 
             val commands = CaosLibs[variant].allCommands.filter { it.returnType == CaosExpressionValueType.AGENT }
@@ -50,16 +51,21 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
                         returnsAgent[variant] = commands
                         commands
                     }
-            return commandString likeNone commands
+            return commandString likeAny commands
         }
 
         private fun annotateArgument(childCommand: CaosScriptCommandElement, problemsHolder: ProblemsHolder) {
             val token = childCommand.commandString
                     ?: return
+
+            // Assert has variant, as this is needed for command and parameter check
             val variant = childCommand.variant
                     ?: return
-            if (!doesNotReturnAgent(variant, token))
+
+            // Check that this command does indeed return an agent
+            if (!commandReturnsAgent(variant, token))
                 return
+
             // Get command or parent as argument rvaluePrime is not an argument, but lvalue is
             val argument = (childCommand as? CaosScriptArgument ?: childCommand.parent as? CaosScriptArgument)
                     ?: return
