@@ -103,7 +103,7 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
     }
 
     @Contract(pure = true)
-    fun withFixes(fixes: List<IntentionAction>): AnnotationBuilder {
+    fun withFixes(vararg fixes: IntentionAction): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(fixes = data.fixes + fixes))
     }
 
