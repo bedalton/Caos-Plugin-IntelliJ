@@ -18,7 +18,9 @@ internal object CaosDefinitionsGenerator {
                     generatorValuesListDefinition(valuesList)
                 }
         return """
+#${universalLib.modDate}
 @variant(${variant.code} = ${variant.fullName})
+
 
 // =============================== //
 // ========== Commands =========== //
@@ -29,6 +31,7 @@ $commands
 // ======== Values Lists ========= //
 // =============================== //
 $valuesLists
+
 
         """.trimIndent()
     }
