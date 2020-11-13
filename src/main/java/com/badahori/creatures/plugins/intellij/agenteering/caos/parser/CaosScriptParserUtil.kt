@@ -5,8 +5,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -44,6 +46,13 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             CaosScriptTypes.CaosScript_CHAR_CHAR,
             CaosScriptTypes.CaosScript_CHARACTER
     )
+
+    private val commandStrings by lazy {
+        CaosLibs[CaosCommandType.COMMAND].map {
+            it.command
+        }
+    }
+
     private val blockEnds = listOf<IElementType>(
             CaosScriptTypes.CaosScript_K_ENDM, CaosScriptTypes.CaosScript_K_NEXT, CaosScriptTypes.CaosScript_K_ELSE, CaosScriptTypes.CaosScript_K_ENDI, CaosScriptTypes.CaosScript_K_ELIF, CaosScriptTypes.CaosScript_K_REPE, CaosScriptTypes.CaosScript_K_NSCN, CaosScriptTypes.CaosScript_K_UNTL, CaosScriptTypes.CaosScript_K_EVER, CaosScriptTypes.CaosScript_K_RETN, CaosScriptTypes.CaosScript_K_SUBR
     )
@@ -94,14 +103,14 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                     return variant
                 }
 
-        (psiFile.virtualFile)?.let {virtualFile ->
-            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let {variant ->
+        (psiFile.virtualFile)?.let { virtualFile ->
+            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let { variant ->
                 (psiFile as? CaosScriptFile)?.variant = variant
                 return variant
             }
         }
-        (psiFile.originalFile.virtualFile)?.let {virtualFile ->
-            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let {variant ->
+        (psiFile.originalFile.virtualFile)?.let { virtualFile ->
+            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let { variant ->
                 (psiFile as? CaosScriptFile)?.variant = variant
                 return variant
             }
@@ -220,12 +229,21 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun isNext(
-            builder_: PsiBuilder,
-            level: Int,
-            vararg keys: List<String>
-    ) {
-
+    fun commandNext(builder_: PsiBuilder, level: Int): Boolean {
+        val nextToken = nextToken(builder_)?.toUpperCase()
+                ?: return false
+        if (nextToken in commandStrings)
+            return true
+        val startsWith = commandStrings.filter { it.startsWith(nextToken) }
+        if (startsWith.isEmpty())
+            return false
+        val nextNextToken = nextToken(builder_, 5)
+                ?.toUpperCase()
+                ?.let { nextNextToken ->
+                    "$nextToken $nextNextToken"
+                }
+                ?: return false
+        return nextNextToken in commandStrings
     }
 
     @JvmStatic
@@ -248,9 +266,9 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         } ?: false
     }
 
-    private fun nextToken(builder_: PsiBuilder): String? {
+    private fun nextToken(builder_: PsiBuilder, offset: Int = 0): String? {
         val originalText = builder_.originalText
-        var i = builder_.currentOffset
+        var i = builder_.currentOffset + offset
         while (originalText.getOrNull(i)?.let { it == ' ' }.orFalse())
             i++
         if (i + 4 >= originalText.length) {
