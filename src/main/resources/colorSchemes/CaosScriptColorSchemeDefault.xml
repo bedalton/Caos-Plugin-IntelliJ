@@ -18,6 +18,12 @@
       <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
+
+  <option name="CaosScript_ERROR_COMMAND_TOKEN">
+    <value>
+      <option name="FOREGROUND" value="1976d2"/>
+    </value>
+  </option>
   <option name="CaosScript_LVALUE">
     <value>
       <option name="FOREGROUND" value="e65100"/>
