@@ -55,6 +55,9 @@ scrp 2 3 6 9
     endi
     <command>tick</command> mv00
 endm
+
+* Invalid command token
+<invalid>inv: alid</invalid>
         """
     }
 
@@ -93,7 +96,8 @@ endm
                 AttributesDescriptor("Numbers", CaosScriptSyntaxHighlighter.NUMBER),
                 AttributesDescriptor("Equals Keywords", CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD),
                 AttributesDescriptor("Equals Symbols", CaosScriptSyntaxHighlighter.SYMBOL),
-                AttributesDescriptor("Subroutine Name", CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
+                AttributesDescriptor("Subroutine Name", CaosScriptSyntaxHighlighter.SUBROUTINE_NAME),
+                AttributesDescriptor("Unrecognized Command ", CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN)
         )
 
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
@@ -107,7 +111,8 @@ endm
                 "eqOp" to CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD,
                 "subroutine" to CaosScriptSyntaxHighlighter.SUBROUTINE_NAME,
                 "prefix" to CaosScriptSyntaxHighlighter.PREFIX_TOKEN,
-                "suffix" to CaosScriptSyntaxHighlighter.SUFFIX_TOKEN
+                "suffix" to CaosScriptSyntaxHighlighter.SUFFIX_TOKEN,
+                "invalid" to CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN
 
         )
     }
