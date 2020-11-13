@@ -363,9 +363,9 @@ macro
 	;
 
 removal_script
-	::= c_rscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
+	::= comment_block? c_rscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
 	{
-
+		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRemovalScriptStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
@@ -428,11 +428,14 @@ private caos_element
 	|	command_soup
 	;
 
+comment_block
+	::= comment (comment)*
+	;
 
 event_script
-	::= c_scrp space_like classifier space_like event_number_element (<<enterMode "eventScript">>space_like_or_newline event_script_body)? <<exitMode "eventScript">>  (space_like_or_newline script_terminator)?
+	::= comment_block? c_scrp space_like classifier space_like event_number_element (<<enterMode "eventScript">>space_like_or_newline event_script_body)? <<exitMode "eventScript">>  (space_like_or_newline script_terminator)?
 	{
-		pin=1
+		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptEventScriptStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
@@ -476,9 +479,9 @@ private event_script_body
 
 
 install_script
-	::= c_iscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
+	::= comment_block? c_iscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
 	{
-		pin=1
+		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptInstallScriptStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
@@ -3852,7 +3855,7 @@ r_kw_none
 	|	K_ROTA
 	|	K_RSRC
 	|	K_RTIM
-	|	K_RTYP
+	|	K_RTYP <<isOldVariant>>
 	|	K_SCOR<<isVariant 'C1.INSTANCE'>>
 	|	K_SDMP
 	|	K_SEAN
@@ -4001,7 +4004,7 @@ r_kw_r
 	|	K_REAQ
 	|	K_RLOC
 	|	K_ROOM <<isNewVariant 'true'>>
-	|	K_RTYP
+	|	K_RTYP <<isNewVariant 'true'>>
 	|	K_SCOR<<isVariant 'C2.INSTANCE'>>
 	|	K_SEEN
 	|	K_SIN_
@@ -4131,7 +4134,7 @@ r_kw_r_r
 	|	K_RELY <<isNewVariant 'true'>>
 	|	K_RMN_NUM
 	|	K_RMSC
-	|	K_ROOM <<isOldVariant>> // Though commands in C1 vs C2 are completely different
+	|	K_ROOM <<isOldVariant>> // Though different commands in C1 vs C2, they have the same number of arguments
 	|	K_RTIF
 	|	K_SEEE
 	|	K_TMVB
