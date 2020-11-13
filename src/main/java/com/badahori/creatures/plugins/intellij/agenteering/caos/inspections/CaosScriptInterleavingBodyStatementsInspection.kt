@@ -1,9 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
@@ -40,25 +38,27 @@ class CaosScriptInterleavingBodyStatements : LocalInspectionTool() {
     /**
      * Annotates a Macro script if necessary if it is found between event scripts
      */
-    private fun annotate(script: CaosScriptScriptElement, problemsHolder: ProblemsHolder) {
-        val file = script.containingCaosFile
+    private fun annotate(thisScript: CaosScriptScriptElement, problemsHolder: ProblemsHolder) {
+        val file = thisScript.containingCaosFile
                 ?: return
         if (file.variant?.isOld.orFalse())
             return
-        val thisScriptStart = script.startOffset
+        val thisScriptStart = thisScript.startOffset
         val isNotInterleavedBodyScript =
                 PsiTreeUtil.collectElementsOfType(file, CaosScriptScriptElement::class.java)
-                        .filter { script -> script !is CaosScriptMacro }
+                        .filter { aScript -> aScript !is CaosScriptMacro }
                         .none { macro ->
                             macro.startOffset < thisScriptStart
                         }
         if (isNotInterleavedBodyScript) {
             return
         }
-        val isCommentOnly = script.text.split("\n").all { line -> line.startsWith("*") }
-        if (isCommentOnly)
-            return
-        problemsHolder.registerProblem(script, CaosBundle.message("caos.inspections.interleaving-body-scripts.message"), CombineBodyScriptsToTopOfFile)
+        PsiTreeUtil.collectElementsOfType(thisScript, CaosScriptCodeBlockLine::class.java)
+                .filter { codeBlockLine -> codeBlockLine.firstChild !is CaosScriptComment }
+                .forEach { line ->
+                    problemsHolder.registerProblem(line, CaosBundle.message("caos.inspections.interleaving-body-scripts.message"), CombineBodyScriptsToTopOfFile)
+                }
+
     }
 }
 
@@ -83,6 +83,8 @@ private object CombineBodyScriptsToTopOfFile : LocalQuickFix {
                 }
         val didMove = runUndoTransparentWriteAction action@{
             var previous = firstNonMacro.parent as? CaosScriptScriptBodyElement
+                    ?: return@action false
+            val firstMacro = macros.firstOrNull()
                     ?: return@action false
             for (macro in macros) {
                 previous = macro.element?.getParentOfType(CaosScriptScriptBodyElement::class.java)?.let { parent ->
