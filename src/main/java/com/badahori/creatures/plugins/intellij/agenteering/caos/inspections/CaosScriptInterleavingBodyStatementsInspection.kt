@@ -37,6 +37,9 @@ class CaosScriptInterleavingBodyStatements : LocalInspectionTool() {
         }
     }
 
+    /**
+     * Annotates a Macro script if necessary if it is found between event scripts
+     */
     private fun annotate(script: CaosScriptScriptElement, problemsHolder: ProblemsHolder) {
         val file = script.containingCaosFile
                 ?: return
@@ -45,13 +48,16 @@ class CaosScriptInterleavingBodyStatements : LocalInspectionTool() {
         val thisScriptStart = script.startOffset
         val isNotInterleavedBodyScript =
                 PsiTreeUtil.collectElementsOfType(file, CaosScriptScriptElement::class.java)
-                        .filter { it !is CaosScriptMacro }
-                        .none {
-                            it.startOffset < thisScriptStart
+                        .filter { script -> script !is CaosScriptMacro }
+                        .none { macro ->
+                            macro.startOffset < thisScriptStart
                         }
         if (isNotInterleavedBodyScript) {
             return
         }
+        val isCommentOnly = script.text.split("\n").all { line -> line.startsWith("*") }
+        if (isCommentOnly)
+            return
         problemsHolder.registerProblem(script, CaosBundle.message("caos.inspections.interleaving-body-scripts.message"), CombineBodyScriptsToTopOfFile)
     }
 }
