@@ -11,51 +11,36 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
-import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementVisitor
 
 /**
  * Adds helper actions to command elements
  */
-class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
+class CaosScriptHelperActionAnnotator : Annotator {
 
-    override fun getGroupDisplayName(): String = "CaosScript"
-    override fun getShortName(): String = "CollapseExpandLines"
-    override fun getDisplayName(): String = "Collapse Expand Lines"
-
-    override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
-        return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
-            override fun visitCommandCall(o: CaosScriptCommandCall) {
-
-                var child: PsiElement? = o.firstChild
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        when(element) {
+            is CaosScriptCommandCall -> {
+                var child: PsiElement? = element.firstChild
                 if (child != null && child !is CaosScriptCommandLike) {
                     child = child.firstChild
                 }
                 (child as? CaosScriptCAssignment)?.let {
-                    val variant = o.variant ?: CaosVariant.UNKNOWN
+                    val variant = element.variant ?: CaosVariant.UNKNOWN
                     annotateAssignment(variant, it, holder)
                 }
                 //Annotate
-                addExpandCollapseLinesActions(o, holder)
+                addExpandCollapseLinesActions(element, holder)
             }
-
-            override fun visitRvalue(o: CaosScriptRvalue) {
-                super.visitRvalue(o)
-                annotateExpectsValue(o, holder)
-            }
-
-            override fun visitSpaceLikeOrNewline(o: CaosScriptSpaceLikeOrNewline) {
-                expandCollapseOnSpaceOrNewline(o, holder)
-            }
+            is CaosScriptRvalue -> annotateExpectsValue(element, holder)
+            is CaosScriptSpaceLikeOrNewline -> expandCollapseOnSpaceOrNewline(element, holder)
         }
     }
 
-
-    private fun annotateExpectsValue(argument:CaosScriptRvalue, holder: ProblemsHolder) {
+    private fun annotateExpectsValue(argument:CaosScriptRvalue, holder: AnnotationHolder) {
         val index = argument.index
         val command = argument.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return
@@ -68,50 +53,75 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                 val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
                         ?: return
                 when (previousToken) {
-                    "CLAS" -> holder.registerProblem(argument, "", ProblemHighlightType.INFORMATION, GenerateClasIntegerAction(argument))
+                    "CLAS" -> AnnotationHolderWrapper(holder)
+                            .newInfoAnnotation("")
+                            .range(argument)
+                            .withFix(GenerateClasIntegerAction(argument))
+                            .create()
                 }
             }
         }
     }
 
-    private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, holder: ProblemsHolder) {
+    private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, holder: AnnotationHolder) {
         val next = element.next
 
+        val wrapper = AnnotationHolderWrapper(holder)
         // If there are only commas next, simply allow for expansion
         if (next != null && COMMAS_ONLY_REGEX.matches(next.text)) {
-            holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, CaosScriptExpandCommasIntentionAction)
+            wrapper
+                    .newInfoAnnotation(null)
+                    .range(element)
+                    .withFix(CaosScriptExpandCommasIntentionAction)
+                    .create()
             // if next is a newline element, allow collapse with commas or spaces
         } else if (next is CaosScriptSpaceLikeOrNewline && next.textContains('\n')) {
-            holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA), CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
+            wrapper
+                    .newInfoAnnotation(null)
+                    .range(element)
+                    .withFixes(
+                            CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA),
+                            CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE)
+                    )
+                    .create()
         } else {
             // Next does not include commas or newlines
             // Always allow expand lines
-            val fixes = mutableListOf<LocalQuickFix>(CaosScriptExpandCommasIntentionAction)
+            val fixes:MutableList<IntentionAction> = mutableListOf(CaosScriptExpandCommasIntentionAction)
             // If there are newlines in file, also allow collapsing of lines
             if (element.containingFile.text.contains("\n")) {
                 fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
                 fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
             }
-            holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, *fixes.toTypedArray())
+            wrapper
+                    .newInfoAnnotation(null)
+                    .range(element)
+                    .withFixes(*fixes.toTypedArray())
+                    .create()
         }
     }
 
     /**
      *
      */
-    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptSpaceLikeOrNewline, holder: ProblemsHolder) {
-        val fixes = mutableListOf<LocalQuickFix>()
-        if (element.text == "," || element.text == " ") {
+    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptSpaceLikeOrNewline, holder: AnnotationHolder) {
+        val fixes = mutableListOf<IntentionAction>()
+        val isAtEnd = element.next == null
+        if (element.text == "," || element.text == " " || isAtEnd) {
             fixes.add(CaosScriptExpandCommasIntentionAction)
         }
-        if (element.text.contains("\n")) {
+        if (element.text.contains("\n") || isAtEnd) {
             fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
             fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
         }
-        holder.registerProblem(element, "", ProblemHighlightType.INFORMATION, *fixes.toTypedArray())
+        AnnotationHolderWrapper(holder)
+                .newInfoAnnotation(null)
+                .range(element)
+                .withFixes(*fixes.toTypedArray())
+                .create()
     }
 
-    private fun annotateAssignment(variant: CaosVariant, assignment: CaosScriptCAssignment, holder: ProblemsHolder) {
+    private fun annotateAssignment(variant: CaosVariant, assignment: CaosScriptCAssignment, holder: AnnotationHolder) {
         val commandDefinition = assignment.lvalue?.commandDefinition
                 ?: return
         val valuesList = commandDefinition.returnValuesList[variant]
@@ -124,7 +134,17 @@ class CaosScriptHelperActionAnnotator : LocalInspectionTool() {
                 addTo
             else
                 addTo.next ?: addTo.previous ?: return
-            holder.registerProblem(range, "", ProblemHighlightType.INFORMATION, GenerateBitFlagIntegerIntentionAction(addTo, valuesList.name, valuesList.values, currentValue))
+            val bitFlagsGenerator = GenerateBitFlagIntegerIntentionAction(
+                    addTo,
+                    valuesList.name,
+                    valuesList.values,
+                    currentValue
+            )
+            AnnotationHolderWrapper(holder)
+                    .newInfoAnnotation(null)
+                    .range(range)
+                    .withFix(bitFlagsGenerator)
+                    .create()
         }
     }
 
