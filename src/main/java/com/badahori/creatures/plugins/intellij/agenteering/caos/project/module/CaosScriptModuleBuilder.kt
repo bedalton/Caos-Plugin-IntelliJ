@@ -32,7 +32,8 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
                 CaosVariant.C2,
                 CaosVariant.CV,
                 CaosVariant.C3,
-                CaosVariant.DS
+                CaosVariant.DS,
+                CaosVariant.SM
         ))
         variantComboBox.toolTipText = "CAOS Variant"
         variantComboBox.setRenderer { _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
