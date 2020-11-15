@@ -6,13 +6,10 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.AnnotationHolderWrapper
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 
 class CaosScriptHighlighterAnnotator : Annotator {
@@ -32,7 +29,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
             element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element is CaosScriptSubroutineName || element.parent is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
-            element.elementType == CaosScriptTypes.CaosScript_WORD -> if (element.hasParentOfType(CaosScriptCommandSoup::class.java))
+            element.elementType == CaosScriptTypes.CaosScript_WORD -> if (element.hasParentOfType(CaosScriptErrorCommand::class.java))
                 colorize(element, wrapper, CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN)
             else if (element.parent is CaosScriptCGsub)
                 colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
