@@ -1,12 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFileFactory
-import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.impl.BlockSupportImpl
+import com.intellij.psi.util.PsiTreeUtil
 
 object CaosScriptPsiElementFactory {
 
@@ -71,7 +77,7 @@ object CaosScriptPsiElementFactory {
     fun newLine(project: Project): PsiElement {
         val file = createFileFromText(project, "inst\nendm")
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first().apply{
-            assert (text == "\n") { "Newline factory method returned non-newline space. Text: '$text'" }
+            assert(text == "\n") { "Newline factory method returned non-newline space. Text: '$text'" }
         }
     }
 
@@ -79,7 +85,7 @@ object CaosScriptPsiElementFactory {
         val lines = (0 until numNewLines).joinToString("") { "\n" }
         val file = createFileFromText(project, "inst${lines}endm")
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first().apply{
-            assert (text == lines) { "Newline factory method returned non-newline space. Actual: '$text'" }
+            assert(text == lines) { "Newline factory method returned non-newline space. Actual: '$text'" }
         }
     }
 
@@ -91,8 +97,18 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, "slim slim", CaosScriptSpaceLikeOrNewline::class.java)!!
     }
 
-    fun <PsiT:PsiElement> createAndGet(project:Project, script:String, type:Class<PsiT>) : PsiT? {
-        return PsiTreeUtil.collectElementsOfType(createFileFromText(project, script), type).first()
+    fun <PsiT : PsiElement> createAndGet(project: Project, script: String, type: Class<PsiT>) : PsiT? {
+        val file = createFileFromText(project, script)
+        val pointer = SmartPointerManager.createPointer(file)
+        (file as? CaosScriptFile)?.apply {
+            file.variant = CaosVariant.C1 // Used to ensure a string is created not bytestring on '['
+        }
+        runWriteAction {
+            val range = file.textRange
+            val recalledFile = pointer.element!!
+            BlockSupportImpl.getInstance(project).reparseRange(recalledFile, range.startOffset, range.endOffset, recalledFile.text)
+        }
+        return PsiTreeUtil.collectElementsOfType(pointer.element, type).first()
     }
 
     fun createCodeBlock(project: Project, text: String) : CaosScriptCodeBlock {

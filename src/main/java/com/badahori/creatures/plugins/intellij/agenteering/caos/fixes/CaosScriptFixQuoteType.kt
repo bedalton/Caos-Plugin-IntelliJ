@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
+    package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.intellij.codeInspection.IntentionAndQuickFixAction
 import com.intellij.codeInspection.ProblemDescriptor
@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
@@ -38,6 +39,6 @@ class CaosScriptFixQuoteType(element:PsiElement, private val quoteStart:Char, pr
                 quoteStart,
                 quoteEnd
         )
-        expression.replace(newElement)
+        expression.getSelfOrParentOfType(CaosScriptRvalue::class.java)?.replace(newElement)
     }
 }
