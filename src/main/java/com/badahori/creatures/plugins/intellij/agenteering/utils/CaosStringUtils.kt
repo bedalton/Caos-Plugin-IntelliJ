@@ -293,3 +293,6 @@ fun binaryToInteger(binary: String): Long {
 
 val EMPTY_STRING_ARRAY = emptyArray<String>()
 val EMPTY_STRING_LIST = emptyList<String>()
+
+
+val SPACES_REGEX = "\\s+".toRegex()
