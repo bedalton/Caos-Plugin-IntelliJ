@@ -84,8 +84,6 @@ private object CombineBodyScriptsToTopOfFile : LocalQuickFix {
         val didMove = runUndoTransparentWriteAction action@{
             var previous = firstNonMacro.parent as? CaosScriptScriptBodyElement
                     ?: return@action false
-            val firstMacro = macros.firstOrNull()
-                    ?: return@action false
             for (macro in macros) {
                 previous = macro.element?.getParentOfType(CaosScriptScriptBodyElement::class.java)?.let { parent ->
                     val parentCopy = parent.copy()
