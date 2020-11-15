@@ -425,7 +425,7 @@ private caos_element
 	::=	comment
 	|	control_statement
 	|	command_call
-	|	command_soup
+	|	error_command
 	;
 
 comment_block
@@ -1874,7 +1874,7 @@ rvalue
 	|	number
 	|	pict_dimension_literal
 	//|	command_soup
-	|	prefix_incompletes
+	|	rvalue_prefix_incompletes
 	|	incomplete
 	|	error_rvalue
 	{
@@ -2039,7 +2039,6 @@ subroutine_name
 			setName
 			getReference
 			getIndex
-			getExpectedType
 			getInferredType
 		]
 	};
@@ -2201,21 +2200,17 @@ command_call
 			getCommandToken
 			getArguments
 			getArgumentValues
-			getCommandTokens
-			getCommandTokens
-			getCommandElement
-			getCommandString
 			getCommandDefinition
 		]
 	}
 	;
 
 
-command_soup
-	::= command_soup_command (!(<<eol>>|<<commandNext>>)(space_like (rvalue|lvalue|token_rvalue|incomplete)))*
+error_command
+	::= error_command_command (!(<<eol>>|<<commandNext>>)(space_like (rvalue|lvalue|token_rvalue|incomplete)))*
 	;
 
-private command_soup_command
+private error_command_command
 	::= WORD
 	|	ERROR_WORD
 	|	K_ABBA
@@ -2666,7 +2661,7 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_retn
-	|	prefix_incompletes
+	|	command_prefix_incompletes
 	;
 
 private c_none
@@ -3074,8 +3069,6 @@ lvalue
 			getArgumentValues
 			isVariant
 			getIndex
-			getCommandToken
-			getExpectedType
 			getInferredType
 			getCommandDefinition
 		]
@@ -4856,8 +4849,8 @@ prefix_kw__cd_
 	}
 	;
 
-prefix_incompletes
-	::= all_prefixes (space_like incomplete)?
+command_prefix_incompletes
+	::= all_command_prefixes (space_like incomplete)?
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4875,6 +4868,61 @@ prefix_incompletes
 			setName
 		]
 	}
+	;
+
+private all_command_prefixes
+	::=	K__CD_
+	|	K_APP_COL
+	|	K_BBD_COL
+	|	K_BRN_COL
+	|	K_DBG_COL
+	|	K_DDE_COL
+	|	K_FILE
+	|	K_GENE
+	|	K_GIDS
+	|	K_HIST
+	|	K_MESG
+	|	K_NET_COL
+	|	K_NEW_COL
+	|	K_ORDR
+	|	K_PAT_COL
+	|	K_PRAY
+	|	K_PRT_COL
+	|	K_STIM
+	|	K_STM_NUM
+	|	K_SWAY
+	|	K_SYS_COL
+	|	K_URGE
+	;
+
+
+rvalue_prefix_incompletes
+	::= all_rvalue_prefixes (space_like incomplete)?
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private all_rvalue_prefixes
+	::= K__CD_
+	|	K_HIST
+	|	K_NET_COL
+	|	K_PRT_COL
+	|	K_PRAY
 	;
 
 prefix_kw_brn_col
