@@ -7,8 +7,10 @@ import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.AnnotationHolderWrapper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
@@ -19,8 +21,6 @@ class CaosScriptHighlighterAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val wrapper = AnnotationHolderWrapper(annotationHolder)
         when {
-            element is CaosScriptToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
-            element is CaosScriptTokenRvalue -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
             element is CaosScriptIsRvalueKeywordToken || element.parent is CaosScriptIsRvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.RVALUE_TOKEN)
             element is CaosScriptIsCommandKeywordToken || (element.parent is CaosScriptIsCommandKeywordToken && element.parent.firstChild != element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             element is CaosScriptIsLvalueKeywordToken || element.parent is CaosScriptIsLvalueKeywordToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
@@ -29,9 +29,15 @@ class CaosScriptHighlighterAnnotator : Annotator {
             element is CaosScriptByteString && !isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.BYTE_STRING)
             element is CaosScriptIsPrefixToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.PREFIX_TOKEN)
             element is CaosScriptIsSuffixToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUFFIX_TOKEN)
-            //element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
+            element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element is CaosScriptSubroutineName || element.parent is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
+            element.elementType == CaosScriptTypes.CaosScript_WORD -> if (element.hasParentOfType(CaosScriptCommandSoup::class.java))
+                colorize(element, wrapper, CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN)
+            else if (element.parent is CaosScriptCGsub)
+                colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
+            else
+                colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
         }
     }
 
