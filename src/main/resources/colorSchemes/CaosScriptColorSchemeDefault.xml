@@ -22,6 +22,7 @@
   <option name="CaosScript_ERROR_COMMAND_TOKEN">
     <value>
       <option name="FOREGROUND" value="1976d2"/>
+      <option name="FONT_TYPE" value="0"/>
     </value>
   </option>
   <option name="CaosScript_LVALUE">
