@@ -258,3 +258,41 @@ data class CaosValuesListValue(
     }
 
 }
+
+
+/**
+ * Holder for command types
+ * ie LValue/RValue/Command
+ */
+enum class CaosCommandType(val value: String) {
+    COMMAND("Command"),
+    RVALUE("RValue"),
+    LVALUE("LValue"),
+    CONTROL_STATEMENT("Control Statement"),
+    UNDEFINED("???");
+}
+
+
+/**
+ * Named game var type enum
+ */
+@Suppress("SpellCheckingInspection")
+enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
+    UNDEF(-1, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF),
+    NAME(1, "NAME"),
+    EAME(2, "EAME"),
+    GAME(3, "GAME"),
+    MAME(4, "MAME");
+
+    companion object {
+        fun fromValue(value: Int): CaosScriptNamedGameVarType {
+            return when (value) {
+                NAME.value -> NAME
+                EAME.value -> EAME
+                GAME.value -> GAME
+                MAME.value -> MAME
+                else -> UNDEF
+            }
+        }
+    }
+}

@@ -4,7 +4,7 @@ import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptNamedGameVarImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptNamedGameVarStubImpl

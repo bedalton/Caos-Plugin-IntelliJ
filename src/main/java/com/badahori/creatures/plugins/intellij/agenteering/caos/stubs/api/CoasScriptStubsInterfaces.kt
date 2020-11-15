@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptNamedGameVarType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
 
