@@ -64,7 +64,7 @@ internal fun generateCommandDefinition(variant: CaosVariant, command: CaosComman
     }
 
     // Format and add return type if necessary
-    if (command.returnType == CaosExpressionValueType.COMMAND) {
+    if (command.returnType != CaosExpressionValueType.COMMAND) {
         val returnType = command.returnType.simpleName
         // return staring with '[' should most likely never happen
         // They are [animation], [byte_string] and [string] no methods return these
