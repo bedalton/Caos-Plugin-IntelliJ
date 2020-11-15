@@ -53,6 +53,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
             is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
             is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
+            is CaosScriptErrorRvalue -> annotationWrapper
+                    .newErrorAnnotation("Unrecognized rvalue")
+                    .range(element)
+                    .create()
             is CaosScriptCommandSoup -> annotationWrapper
                     .newErrorAnnotation("Unrecognized command call")
                     .range(element)

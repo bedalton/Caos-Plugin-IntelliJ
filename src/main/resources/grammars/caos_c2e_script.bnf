@@ -1876,6 +1876,7 @@ rvalue
 	//|	command_soup
 	|	prefix_incompletes
 	|	incomplete
+	|	error_rvalue
 	{
    		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -1915,6 +1916,10 @@ rvalue
 			getCommandDefinition
 		]
 	}
+	;
+
+error_rvalue
+	::= WORD
 	;
 
 var_token
@@ -3710,7 +3715,6 @@ c_kw_r_r_r_r_r_r_r_r_r_r
 
 c_kw_t
 	::=	K_GOTO
-	|	K_GSUB
 	|	K_PLDS
 	|	K_SNDC <<isOldVariant>>
 	|	K_SNDE <<isOldVariant>>
