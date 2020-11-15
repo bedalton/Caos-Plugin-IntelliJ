@@ -36,7 +36,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
          */
         @Suppress("SpellCheckingInspection")
         fun fromSimpleName(simpleName: String): CaosExpressionValueType {
-            return when (val typeToLower = simpleName.trim().toLowerCase()) {
+            return when (simpleName.trim().toLowerCase()) {
                 "any" -> ANY
                 "agent" -> AGENT
                 "[anim]" -> ANIMATION
@@ -53,9 +53,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
                 "token" -> TOKEN
                 "variable" -> VARIABLE
                 "null" -> NULL
-                else -> {
-                    UNKNOWN
-                }
+                else -> throw Exception("Failed to find expression type from simpleName: '$simpleName'")
             }
         }
 
