@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
@@ -13,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.SPACES_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -27,7 +29,7 @@ import com.intellij.psi.ResolveResult
 class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
 
     private val name: String by lazy {
-        element.name?.replace("\\s+".toRegex(), " ") ?: "{{UNDEF}}"
+        element.name?.replace(SPACES_REGEX, " ") ?: "{{UNDEF}}"
     }
     private val variants: List<CaosVariant> by lazy {
         when (myElement) {
@@ -376,4 +378,4 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
 
 }
 
-private val String?.commandFormatted: String? get() = this?.replace("\\s+".toRegex(), " ")
+private val String?.commandFormatted: String? get() = this?.replace(SPACES_REGEX, " ")
