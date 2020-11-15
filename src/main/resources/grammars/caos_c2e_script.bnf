@@ -1895,7 +1895,6 @@ rvalue
 			getArguments
 			getArgumentValues
      		getInferredType
-     		getActualType
 			isString
 			isQuoteString
 			isC1String
