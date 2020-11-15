@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like

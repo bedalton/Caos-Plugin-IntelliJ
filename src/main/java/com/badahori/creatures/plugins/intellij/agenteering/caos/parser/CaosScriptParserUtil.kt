@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
