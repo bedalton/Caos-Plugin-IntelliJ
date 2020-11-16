@@ -1,11 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -13,10 +14,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.LocalSearchScope
+import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 
 
@@ -375,6 +379,7 @@ object CaosScriptPsiImplUtil {
      * Token RValues do not represent commands, but rather files and subroutines
      * @return null, as no command is actually being referenced
      */
+    @JvmStatic
     fun getCommandDefinition(element: CaosScriptTokenRvalue): CaosCommand? = null
 
     /**
@@ -473,6 +478,9 @@ object CaosScriptPsiImplUtil {
         return element.text
     }
 
+    /**
+     * Sets name for use in PsiNamedElement
+     */
     @JvmStatic
     fun setName(element: CaosScriptIsCommandToken, newName: String): PsiElement {
         CaosScriptPsiElementFactory.createCommandTokenElement(element.project, newName)?.let {
@@ -501,14 +509,6 @@ object CaosScriptPsiImplUtil {
      * Gets name for use in PsiNamedElement
      */
     @JvmStatic
-    fun getName(element: CaosScriptNamedGameVar): String? {
-        return element.stub?.key ?: element.rvalue?.text
-    }
-
-    /**
-     * Gets name for use in PsiNamedElement
-     */
-    @JvmStatic
     fun getName(element: CaosScriptSubroutine): String {
         return element.stub?.name ?: element.subroutineHeader.subroutineName?.name
         ?: element.subroutineHeader.subroutineName?.text ?: ""
@@ -525,9 +525,19 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets variable name in GAME/NAME/EAME/MAME
+     */
+    @JvmStatic
+    fun getName(element: CaosScriptNamedGameVar): String? {
+        return element.stub?.key ?: element.rvalue?.stringValue ?: element.rvalue?.text
+    }
+
+
+    /**
      * Gets name value for quote string
      */
-    fun getName(element: CaosScriptQuoteStringLiteral, newName: String): String {
+    @JvmStatic
+    fun getName(element: CaosScriptQuoteStringLiteral): String {
         return element.stringValue
     }
 
@@ -541,7 +551,7 @@ object CaosScriptPsiImplUtil {
         val newNameElement = CaosScriptPsiElementFactory
                 .createStringRValue(element.project, newName, '"')
         // Actually replace string value
-        return element.getParentOfType(CaosScriptRvalue::class.java)
+        return (element.parent as? CaosScriptRvalue)
                 ?.replace(newNameElement)
                 ?: element
     }
@@ -609,10 +619,39 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun setName(name: CaosScriptSubroutineName, newName: String): PsiElement {
-        val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, newName)
-                ?: name
+        val variant = name.variant
+                ?: return name
+        val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, variant, newName)
+                ?: return name
         return name.replace(newElement)
     }
+
+    @JvmStatic
+    fun setName(element:CaosScriptSubroutine, newName: String) : PsiElement {
+        val pointer = SmartPointerManager.createPointer(element)
+        val subroutineName = element.subroutineHeader.subroutineName
+                ?: return element
+        subroutineName.name = newName
+        return pointer.element ?: element
+    }
+
+    /**
+     * PsiNamedIdentifierOwner.getNameIdentifier()
+     */
+    @JvmStatic
+    fun getNameIdentifier(element: CaosScriptSubroutine): PsiElement? {
+        return element.subroutineHeader.subroutineName
+    }
+
+
+    /**
+     * PsiNamedIdentifierOwner.getNameIdentifier()
+     */
+    @JvmStatic
+    fun getNameIdentifier(element: CaosScriptNamedGameVar): PsiElement? {
+        return element.rvalue?.quoteStringLiteral
+    }
+
 
     // ============================== //
     // ======== Get Reference ======= //
@@ -658,6 +697,27 @@ object CaosScriptPsiImplUtil {
         return CaosScriptSubroutineNameReference(name)
     }
 
+
+    @JvmStatic
+    fun getUseScope(element:CaosScriptSubroutine) : SearchScope {
+        val scope = element.getParentOfType(CaosScriptScriptElement::class.java)
+                ?: return GlobalSearchScope.fileScope(element.containingFile)
+        return LocalSearchScope(scope)
+    }
+
+
+    @JvmStatic
+    fun getUseScope(element:CaosScriptSubroutineName) : SearchScope {
+        val scope = element.getParentOfType(CaosScriptScriptElement::class.java)
+                ?: return GlobalSearchScope.fileScope(element.containingFile)
+        return LocalSearchScope(scope)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosScriptQuoteStringLiteral) : CaosScriptQuoteStringLiteralReference {
+        return CaosScriptQuoteStringLiteralReference(element)
+    }
+
     // ============================== //
     // ===== Get Inferred Type ====== //
     // ============================== //
@@ -693,7 +753,7 @@ object CaosScriptPsiImplUtil {
             val variable: CaosScriptIsVariable? = rvalue.varToken as? CaosScriptIsVariable
                     ?: rvalue.namedGameVar
             if (variable != null) {
-                CaosScriptInferenceUtil.getInferredValue(variable)?.let {
+                CaosScriptInferenceUtil.getInferredType(variable)?.let {
                     return it
                 }
             }
@@ -1342,6 +1402,16 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets the key or text component for a named game variable
+     */
+    @JvmStatic
+    fun getKeyType(element: CaosScriptNamedGameVar): CaosExpressionValueType {
+        return element.stub?.keyType ?: element.rvalue?.let {rvalue ->
+            CaosScriptInferenceUtil.getInferredType(rvalue, false)
+        } ?: CaosExpressionValueType.UNKNOWN
+    }
+
+    /**
      * Returns whether this rvalue is a number type
      */
     @JvmStatic
@@ -1686,6 +1756,7 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
             is CaosScriptHasCodeBlock -> CaosCommandType.CONTROL_STATEMENT
             is CaosScriptErrorCommand -> CaosCommandType.COMMAND
             is CaosScriptErrorRvalue -> CaosCommandType.RVALUE
+            is CaosDefCodeBlock -> CaosCommandType.UNDEFINED
             else -> {
                 element = element.parent
                 continue
