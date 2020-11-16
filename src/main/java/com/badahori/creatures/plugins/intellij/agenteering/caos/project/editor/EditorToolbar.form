@@ -21,6 +21,7 @@
             <item value="CV"/>
             <item value="C3"/>
             <item value="DS"/>
+            <item value="SM"/>
           </model>
           <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/caos-bundle" key="caos.toolbar.varaint-tool-tip"/>
         </properties>

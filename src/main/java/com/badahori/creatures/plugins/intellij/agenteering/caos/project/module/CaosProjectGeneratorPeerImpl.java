@@ -59,7 +59,8 @@ public class CaosProjectGeneratorPeerImpl {
                 CaosVariant.C2.INSTANCE,
                 CaosVariant.CV.INSTANCE,
                 CaosVariant.C3.INSTANCE,
-                CaosVariant.DS.INSTANCE
+                CaosVariant.DS.INSTANCE,
+                CaosVariant.SM.INSTANCE
         });
         variantComboBox.setToolTipText("CAOS Variant");
         variantComboBox.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
