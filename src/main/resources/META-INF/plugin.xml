@@ -203,6 +203,13 @@
     <completion.contributor language="CaosScript"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
 
+    <!-- Renaming -->
+    <renamePsiElementProcessor
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameElementProcessor" />
+
+    <vetoRenameCondition
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptVetoRenameCondition" />
+
     <!-- Project -->
     <iconProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
