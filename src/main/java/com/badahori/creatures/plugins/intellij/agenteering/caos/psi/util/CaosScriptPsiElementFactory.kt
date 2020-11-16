@@ -16,23 +16,26 @@ import com.intellij.psi.util.PsiTreeUtil
 
 object CaosScriptPsiElementFactory {
 
-    private val SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!]{4}".toRegex()
-
+    private val C1E_SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!*]{4}".toRegex()
+    private val C2E_SUBROUTINE_NAME_REGEX = "[a-zA-Z][a-zA-Z0-9_:\$#!*]+".toRegex()
     fun createFileFromText(project: Project, text: String, fileName: String = "dummy.cos"): CaosScriptFile {
         return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile)
     }
 
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
-        if (!SUBROUTINE_NAME_REGEX.matches(newNameString))
+        if (!C1E_SUBROUTINE_NAME_REGEX.matches(newNameString))
             return null
         val factoryElement = createAndGet(project, "____X____DEF__ $newNameString", CaosScriptWordFactoryElement::class.java)
         return factoryElement?.aWord
     }
 
-    fun createSubroutineNameElement(project: Project, newNameString: String): CaosScriptSubroutineName? {
-        if (newNameString.isEmpty() || !newNameString.matches(SUBROUTINE_NAME_REGEX))
+    fun createSubroutineNameElement(project: Project, variant:CaosVariant, newNameString: String): CaosScriptSubroutineName? {
+        val subroutineNameRegex = if (variant.isOld) C1E_SUBROUTINE_NAME_REGEX else C2E_SUBROUTINE_NAME_REGEX
+        if (newNameString.isEmpty() || !newNameString.matches(subroutineNameRegex)) {
+            LOGGER.info("New subroutine name: $newNameString is invalid.")
             return null
-        val commandCall = getCommandCall(project, "gsub $newNameString")
+        }
+        val commandCall = getCommandCall(project, "gsub $newNameString", variant)
         commandCall?.cGsub?.subroutineName?.let {
             return it
         }
@@ -65,8 +68,8 @@ object CaosScriptPsiElementFactory {
         return createRValue(project, "$number")
     }
 
-    private fun getCommandCall(project: Project, script: String) : CaosScriptCommandCall? {
-        return createAndGet(project, script, CaosScriptCommandCall::class.java)
+    private fun getCommandCall(project: Project, script: String, variant:CaosVariant) : CaosScriptCommandCall? {
+        return createAndGet(project, script, CaosScriptCommandCall::class.java, variant)
     }
 
     private fun createRValue(project: Project, expr: String) : CaosScriptRvalue {
@@ -97,11 +100,11 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, "slim slim", CaosScriptSpaceLikeOrNewline::class.java)!!
     }
 
-    fun <PsiT : PsiElement> createAndGet(project: Project, script: String, type: Class<PsiT>) : PsiT? {
+    fun <PsiT : PsiElement> createAndGet(project: Project, script: String, type: Class<PsiT>, variant: CaosVariant = CaosVariant.C1) : PsiT? {
         val file = createFileFromText(project, script)
         val pointer = SmartPointerManager.createPointer(file)
         (file as? CaosScriptFile)?.apply {
-            file.variant = CaosVariant.C1 // Used to ensure a string is created not bytestring on '['
+            file.variant = variant // Used to ensure a string is created not bytestring on '['
         }
         runWriteAction {
             val range = file.textRange
