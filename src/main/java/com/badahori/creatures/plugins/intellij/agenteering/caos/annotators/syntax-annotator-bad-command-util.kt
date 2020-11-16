@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
@@ -153,7 +153,7 @@ private fun annotationInvalidCommandTypeInVariant(
 /**
  * Adds SETV/SETA/SETS prefixing fixes as needed
  */
-private fun addSetvLikeFixes(variant:CaosVariant, element:PsiElement, commandToken: String, builderIn:AnnotationBuilder) : AnnotationBuilder {
+private fun addSetvLikeFixes(variant: CaosVariant, element:PsiElement, commandToken: String, builderIn:AnnotationBuilder) : AnnotationBuilder {
     var builder = builderIn
     val commandToUpperCase = commandToken.toUpperCase()
     val nextRvalue = nextRvalues(element)

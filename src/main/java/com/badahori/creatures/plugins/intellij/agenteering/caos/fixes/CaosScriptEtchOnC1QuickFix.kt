@@ -3,7 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.equalTo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile

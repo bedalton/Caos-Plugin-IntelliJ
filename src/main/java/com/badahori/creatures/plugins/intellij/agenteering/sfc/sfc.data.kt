@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sfc
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.google.gson.Gson
 import kotlin.math.max

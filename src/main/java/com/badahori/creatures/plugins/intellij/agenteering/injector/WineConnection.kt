@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.google.gson.Gson
@@ -12,7 +12,7 @@ import java.util.*
  * Class for managing WINE based CAOS injection
  * Requires watcher launcher
  */
-internal class WineConnection(path:String, private val variant:CaosVariant) : CaosConnection {
+internal class WineConnection(path:String, private val variant: CaosVariant) : CaosConnection {
 
     val prefix: String? by lazy {
         var file: File? = File(basePath)

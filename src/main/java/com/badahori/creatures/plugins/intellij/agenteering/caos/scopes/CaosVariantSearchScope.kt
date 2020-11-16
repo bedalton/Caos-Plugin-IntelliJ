@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.scopes
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
@@ -14,7 +14,7 @@ import com.intellij.psi.search.SearchScope
 /**
  * Search Scope to filter files by variant
  */
-class CaosVariantSearchScope constructor(private val myVariant:CaosVariant?, private val project:Project, private val strict:Boolean = true) : SearchScope() {
+class CaosVariantSearchScope constructor(private val myVariant: CaosVariant?, private val project:Project, private val strict:Boolean = true) : SearchScope() {
 
     override fun intersectWith(otherScope: SearchScope): SearchScope {
         return IntersectSearchScope(this, otherScope)

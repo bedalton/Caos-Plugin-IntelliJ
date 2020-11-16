@@ -13,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.Cao
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefCommandDefinitionStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefCommandDefinitionStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefReturnTypeStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readSimpleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty

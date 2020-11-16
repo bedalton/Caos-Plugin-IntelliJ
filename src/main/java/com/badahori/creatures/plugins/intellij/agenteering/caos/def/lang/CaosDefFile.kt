@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariants
 
 class CaosDefFile(viewProvider: FileViewProvider)

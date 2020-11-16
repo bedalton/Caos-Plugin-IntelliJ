@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBiochemistry
 
 internal fun SfcReader.readBiochemistry() : SfcBiochemistry {

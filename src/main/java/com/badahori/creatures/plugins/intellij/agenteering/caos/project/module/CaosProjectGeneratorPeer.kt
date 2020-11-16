@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosProjectGeneratorInfo
 import com.intellij.ide.util.projectWizard.SettingsStep
 import com.intellij.openapi.ui.ValidationInfo
