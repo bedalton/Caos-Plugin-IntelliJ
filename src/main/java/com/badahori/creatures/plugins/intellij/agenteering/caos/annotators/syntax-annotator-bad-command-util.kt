@@ -57,7 +57,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
 
     // Command exists in variant, but is not the right type
     // ie. Used as command but is rvalue
-    if (commandsInVariant.isEmpty()) {
+    if (commandsInVariant.isNotEmpty()) {
         return annotationInvalidCommandTypeInVariant(
                 variant = variant,
                 element = element,
