@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFile
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader

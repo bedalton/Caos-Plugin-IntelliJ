@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
@@ -11,17 +11,17 @@ object CaosScriptProjectSettings {
     private const val VARIANT_KEY = "BASE_VARIANT"
     private val DEFAULT_VARIANT = CaosVariant.UNKNOWN
     private val VARIANT_SETTING = CaosPluginSettingsUtil.StringSetting(VARIANT_KEY, DEFAULT_VARIANT.code)
-    val variant:CaosVariant? get() = VARIANT_SETTING.value?.let { CaosVariant.fromVal(it) } ?: DEFAULT_VARIANT.let {
+    val variant: CaosVariant? get() = VARIANT_SETTING.value?.let { CaosVariant.fromVal(it) } ?: DEFAULT_VARIANT.let {
         if (it == CaosVariant.UNKNOWN)
             null
         else
             it
     }
 
-    fun setVariant(variant:CaosVariant) {
+    fun setVariant(variant: CaosVariant) {
         VARIANT_SETTING.value = variant.code
     }
-    fun isVariant(variant:CaosVariant): Boolean = variant == this.variant
+    fun isVariant(variant: CaosVariant): Boolean = variant == this.variant
 
     // ==== INDENT ===== //
     private const val INDENT_KEY = "INDENT"

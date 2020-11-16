@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
+package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import icons.CaosScriptIcons

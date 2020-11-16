@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder.Companion.IS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder.Companion.IS_NOT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.EqOp
@@ -209,7 +209,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         /**
          * Formats the primary value to a Drive or chemical name based on its first parameter
          */
-        private fun formatThisValue(variant:CaosVariant, rvaluePrime:CaosScriptRvaluePrime?) : String? {
+        private fun formatThisValue(variant: CaosVariant, rvaluePrime:CaosScriptRvaluePrime?) : String? {
             if (rvaluePrime == null)
                 return null
             val commandString = rvaluePrime.commandStringUpper
@@ -259,7 +259,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
 private typealias Formatter = (formatInfo:FormatInfo) -> String
 
 // Helper function to quickly get the values list for this rvalue
-private fun getValuesList(variant:CaosVariant, expression:CaosScriptRvalue) :CaosValuesList?
+private fun getValuesList(variant: CaosVariant, expression:CaosScriptRvalue) :CaosValuesList?
         = expression.commandDefinition?.returnValuesList?.get(variant)
 
 // Ensures replacement of possibly two eq value expressions

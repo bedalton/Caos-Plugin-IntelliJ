@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.VariantsFilePropertyPusher
@@ -54,7 +54,7 @@ open class CaosVirtualFile private constructor(
     //override fun getId():Int = myId
 
     /** Allows Quick access to CAOS Variant */
-    override var variant:CaosVariant? = null
+    override var variant: CaosVariant? = null
     private var _variants:List<CaosVariant>? = null
     override var variants:List<CaosVariant> get() = _variants
             ?: VariantsFilePropertyPusher.readFromStorageCatching(this).nullIfEmpty()

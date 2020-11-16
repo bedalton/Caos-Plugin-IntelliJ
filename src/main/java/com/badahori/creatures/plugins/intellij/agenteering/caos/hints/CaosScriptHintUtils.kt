@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
@@ -31,7 +31,7 @@ fun CaosScriptRvalue.getValuesListValue(): CaosValuesListValue? {
     return null
 }
 
-private fun getEqualityExpressionValuesListValue(variant:CaosVariant, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue): CaosValuesListValue? {
+private fun getEqualityExpressionValuesListValue(variant: CaosVariant, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue): CaosValuesListValue? {
     val valuesListId = equalityExpression.getValuesListId(variant, expression)
             ?: return null
     val valuesList = CaosLibs.valuesList[valuesListId]

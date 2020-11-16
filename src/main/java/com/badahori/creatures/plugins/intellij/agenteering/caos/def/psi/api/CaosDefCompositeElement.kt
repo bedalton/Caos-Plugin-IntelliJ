@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api
 
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 
 interface CaosDefCompositeElement : PsiElement {
     fun <PsiT:PsiElement> getChildOfType(childType:Class<PsiT>):PsiT?
@@ -16,6 +16,6 @@ fun CaosDefCompositeElement.variantsIntersect(otherVariants:List<CaosVariant>) :
     return variants.intersect(otherVariants).isNotEmpty()
 }
 
-fun CaosDefCompositeElement.isVariant(variant:CaosVariant) : Boolean {
+fun CaosDefCompositeElement.isVariant(variant: CaosVariant) : Boolean {
     return variant in variants
 }
