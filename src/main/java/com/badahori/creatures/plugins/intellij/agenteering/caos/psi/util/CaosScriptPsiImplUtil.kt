@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
@@ -43,7 +44,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandToken(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
         return rvalue.rvaluePrime?.commandToken
-                // TODO an incomplete command token still be returned
+        // TODO an incomplete command token still be returned
                 ?: rvalue.rvaluePrefixIncompletes
     }
 
@@ -309,7 +310,7 @@ object CaosScriptPsiImplUtil {
     /**
      * Caching key for command definitions getter
      */
-    private val COMMAND_DEFINITION_KEY = Key<Pair<CaosVariant,CaosCommand?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.COMMAND_DEFINITION")
+    private val COMMAND_DEFINITION_KEY = Key<Pair<CaosVariant, CaosCommand?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.COMMAND_DEFINITION")
 
     /**
      * Gets the command definitions object from a CAOS command element
@@ -341,14 +342,14 @@ object CaosScriptPsiImplUtil {
      * Is generic to handle both command elements themselves, and their tokens directly
      */
     @JvmStatic
-    fun getCommandDefinition(element: PsiElement, tokenText:String): CaosCommand? {
+    fun getCommandDefinition(element: PsiElement, tokenText: String): CaosCommand? {
         // Ensure that a variant has been set for this element,
         // if not, there is no way to ensure a proper return
         val variant = element.variant
                 ?: return null
 
         // Check if definition has been cached
-        element.getUserData(COMMAND_DEFINITION_KEY)?.let {(variantForCommand, command) ->
+        element.getUserData(COMMAND_DEFINITION_KEY)?.let { (variantForCommand, command) ->
             // Ensure that cached value is actually for this variant
             // Necessary in case a variant has changed since cache
             if (variantForCommand == variant)
@@ -363,7 +364,7 @@ object CaosScriptPsiImplUtil {
         val command = getCommandDefinition(variant, commandType, tokenText)
 
         // Cache value, even if none was found
-        element.putUserData(COMMAND_DEFINITION_KEY, Pair(variant,command))
+        element.putUserData(COMMAND_DEFINITION_KEY, Pair(variant, command))
 
         // Return found definition
         return command
@@ -526,7 +527,7 @@ object CaosScriptPsiImplUtil {
     /**
      * Gets name value for quote string
      */
-    fun getName(element:CaosScriptQuoteStringLiteral, newName:String) : String {
+    fun getName(element: CaosScriptQuoteStringLiteral, newName: String): String {
         return element.stringValue
     }
 
@@ -535,7 +536,7 @@ object CaosScriptPsiImplUtil {
      * Useful for GAME/NAME/MAME/EAME string values
      */
     @JvmStatic
-    fun setName(element:CaosScriptQuoteStringLiteral, newName:String) : PsiElement {
+    fun setName(element: CaosScriptQuoteStringLiteral, newName: String): PsiElement {
         // Create a new string element
         val newNameElement = CaosScriptPsiElementFactory
                 .createStringRValue(element.project, newName, '"')
@@ -757,7 +758,7 @@ object CaosScriptPsiImplUtil {
      * @return TOKEN
      */
     @JvmStatic
-    fun getInferredType(subroutineName:CaosScriptSubroutineName) : CaosExpressionValueType {
+    fun getInferredType(subroutineName: CaosScriptSubroutineName): CaosExpressionValueType {
         return CaosExpressionValueType.TOKEN
     }
 
@@ -867,6 +868,7 @@ object CaosScriptPsiImplUtil {
     fun isClosed(element: CaosScriptEnumNextStatement): Boolean {
         return element.cNext != null || element.cNscn != null
     }
+
     /**
      * Checks that ESCN statement has a closing NSCN (or possibly erroneous NEXT)
      */
@@ -898,6 +900,7 @@ object CaosScriptPsiImplUtil {
     fun isClosed(element: CaosScriptLoopStatement): Boolean {
         return element.loopTerminator != null
     }
+
     /**
      * Checks that an macro script has a terminating ENDM
      */
@@ -1334,7 +1337,7 @@ object CaosScriptPsiImplUtil {
      * Gets the key or text component for a named game variable
      */
     @JvmStatic
-    fun getKey(element: CaosScriptNamedGameVar) : String? {
+    fun getKey(element: CaosScriptNamedGameVar): String? {
         return element.rvalue?.stringValue
     }
 
@@ -1522,6 +1525,7 @@ object CaosScriptPsiImplUtil {
             return it[0].toInt()
         }
     }
+
     /**
      * Gets the requested height of the DDE: PICT command call
      */
@@ -1533,6 +1537,7 @@ object CaosScriptPsiImplUtil {
             return it[2].toInt()
         }
     }
+
     /**
      * Gets the requested width/height of the DDE: PICT command call as a pair of ints
      */
@@ -1601,6 +1606,7 @@ object CaosScriptPsiImplUtil {
         }
         return "Family: ${family.text}"
     }
+
     /**
      * Gets descriptive text for a genus parameter
      */
@@ -1666,7 +1672,7 @@ object CaosScriptPsiImplUtil {
  */
 fun PsiElement.getEnclosingCommandType(): CaosCommandType {
     // Next Element to check
-    var element:PsiElement? = this
+    var element: PsiElement? = this
 
     // Loop through element and parents to
     // find first instance of a command type element
@@ -1722,7 +1728,6 @@ fun String?.nullIfUndefOrBlank(): String? {
 val CaosScriptCommandLike.commandStringUpper: String? get() = commandString?.toUpperCase()
 
 
-
 /**
  * Gets number of nested code blocks an element is in
  */
@@ -1734,28 +1739,4 @@ fun getDepth(element: PsiElement): Int {
         parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
     }
     return depth
-}
-
-/**
- * Checks that an element is inside a folded region
- */
-val PsiElement.isFolded:Boolean get() {
-    val editor = editor
-            ?: return false
-    val startOffset = startOffset
-    return editor.foldingModel.allFoldRegions.any {
-        !it.isExpanded && startOffset in it.startOffset .. it.endOffset
-    }
-}
-
-/**
- * Checks that an element is not inside a folded region
- */
-val PsiElement.isNotFolded:Boolean get() {
-    val editor = editor
-            ?: return false
-    val startOffset = startOffset
-    return editor.foldingModel.allFoldRegions.none {
-        !it.isExpanded && startOffset in it.startOffset .. it.endOffset
-    }
 }

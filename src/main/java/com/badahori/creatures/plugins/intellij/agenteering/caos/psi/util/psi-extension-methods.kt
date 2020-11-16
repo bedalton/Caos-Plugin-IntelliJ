@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
@@ -67,3 +69,46 @@ val PsiElement.startOffset get() = textRange.startOffset
  * Shorthand to get an elements end offset in a file
  */
 val PsiElement.endOffset get() = textRange.endOffset
+
+
+/**
+ * Checks that an element is inside a folded region
+ */
+val PsiElement.isFolded: Boolean
+    get() {
+        val editor = editor
+                ?: return false
+        val startOffset = startOffset
+        return try {
+            (editor.foldingModel)
+                    .let {
+                        (it as? FoldingModelEx)?.fetchTopLevel() ?: it.allFoldRegions
+                    }
+                    .any {
+                        !it.isExpanded && startOffset in it.startOffset..it.endOffset
+                    }
+        } catch(e:Exception) {
+            return false
+        }
+    }
+
+/**
+ * Checks that an element is not inside a folded region
+ */
+val PsiElement.isNotFolded: Boolean
+    get() {
+        val editor = editor
+                ?: return false
+        val startOffset = startOffset
+        return try {
+            (editor.foldingModel)
+                    .let {
+                        (it as? FoldingModelEx)?.fetchTopLevel() ?: it.allFoldRegions
+                    }
+                    .none {
+                        !it.isExpanded && startOffset in it.startOffset..it.endOffset
+                    }
+        } catch(e:Exception) {
+            return false
+        }
+    }
