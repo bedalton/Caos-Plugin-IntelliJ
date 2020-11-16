@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListValueKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -62,7 +62,7 @@ class CaosDefValuesListValueKeyReference(element:CaosDefValuesListValueKey)
     /**
      * Check if values list for parameter matches
      */
-    private fun isRvalueReference(variant:CaosVariant, valuesListName:String, rvalue:CaosScriptRvalue) : Boolean {
+    private fun isRvalueReference(variant: CaosVariant, valuesListName:String, rvalue:CaosScriptRvalue) : Boolean {
         val command = rvalue.getParentOfType(CaosScriptCommandElement::class.java)
                 ?: return false
         val commandDefinition= command.commandDefinition

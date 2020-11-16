@@ -5,7 +5,7 @@ import com.intellij.psi.stubs.StubElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 
 

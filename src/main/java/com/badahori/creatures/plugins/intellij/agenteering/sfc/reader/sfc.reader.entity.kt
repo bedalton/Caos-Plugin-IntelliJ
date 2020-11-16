@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 
 
 internal fun SfcReader.readEntity(): PointerSfcEntity {

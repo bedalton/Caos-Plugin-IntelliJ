@@ -5,7 +5,7 @@
 	parserUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserUtil"
 	implements="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 	parserImports= [
-		"static com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.*"
+		"static com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*"
 	]
 	extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCompositeElementImpl"
 	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes"

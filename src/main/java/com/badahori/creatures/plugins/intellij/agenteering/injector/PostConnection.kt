@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.openapi.project.Project
 import java.io.BufferedReader
@@ -14,7 +14,7 @@ import java.net.URL
  * Connection class for managing POST based CAOS injection
  * Requires CAOS server executable to be running to handle caos injection post requests
  */
-internal class PostConnection(urlString:String, variant:CaosVariant) : CaosConnection {
+internal class PostConnection(urlString:String, variant: CaosVariant) : CaosConnection {
 
     private val url:URL by lazy {
         val pathComponent = variant.code.toLowerCase()

@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant.C2
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SFC_DECOMPILED_DATA_KEY

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
@@ -146,7 +146,7 @@ object CaosScriptValuesListValuesCompletionProvider {
     /**
      * Add completion for expressions, based on opposing values
      */
-    fun addEqualityExpressionCompletions(variant:CaosVariant, resultSet: CompletionResultSet, case:Case, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue) {
+    fun addEqualityExpressionCompletions(variant: CaosVariant, resultSet: CompletionResultSet, case:Case, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue) {
         val valuesList = equalityExpression.getValuesList(variant, expression)
                 ?: return
         addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)

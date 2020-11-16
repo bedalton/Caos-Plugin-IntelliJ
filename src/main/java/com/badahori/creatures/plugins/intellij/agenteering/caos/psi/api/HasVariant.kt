@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
@@ -19,7 +19,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 
 interface HasVariant {
-    var variant:CaosVariant?
+    var variant: CaosVariant?
 }
 
 interface HasVariants {

@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFile
 import java.awt.image.BufferedImage
 import java.util.*
@@ -14,15 +14,15 @@ sealed class CobFileData {
         private val fileBlocks by lazy { blocks.filterIsInstance<CobBlock.FileBlock>() }
         val spriteFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SpriteBlock>()
         val soundFileBlocks = fileBlocks.filterIsInstance<CobBlock.FileBlock.SoundBlock>()
-        override val variant:CaosVariant get() = CaosVariant.C2
+        override val variant: CaosVariant get() = CaosVariant.C2
     }
     data class C1CobData(val cobBlock: AgentBlock) : CobFileData() {
-        override val variant:CaosVariant get() = CaosVariant.C1
+        override val variant: CaosVariant get() = CaosVariant.C1
     }
     data class InvalidCobData(val message:String) : CobFileData() {
-        override val variant:CaosVariant get() = CaosVariant.UNKNOWN
+        override val variant: CaosVariant get() = CaosVariant.UNKNOWN
     }
-    abstract val variant:CaosVariant
+    abstract val variant: CaosVariant
 }
 
 sealed class CobBlock {

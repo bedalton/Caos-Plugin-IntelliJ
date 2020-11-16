@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 /**
  * Finds the value list id to use for the opposing expression in an equality comparison
  */
-fun CaosScriptEqualityExpressionPrime.getValuesListId(variant:CaosVariant, expression: CaosScriptRvalue): Int? {
+fun CaosScriptEqualityExpressionPrime.getValuesListId(variant: CaosVariant, expression: CaosScriptRvalue): Int? {
     return getValuesListId(variant, this, expression)
 }
 
@@ -17,7 +17,7 @@ fun CaosScriptEqualityExpressionPrime.getValuesListId(variant:CaosVariant, expre
  * Find the value list definition for the opposing expression
  */
 fun CaosScriptEqualityExpressionPrime.getValuesList(
-        variant:CaosVariant,
+        variant: CaosVariant,
         expression: CaosScriptRvalue
 ) : CaosValuesList? {
     val valuesListId = getValuesListId(variant, this, expression)

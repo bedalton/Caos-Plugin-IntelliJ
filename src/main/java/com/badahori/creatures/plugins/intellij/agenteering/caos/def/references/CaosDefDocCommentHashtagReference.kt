@@ -8,7 +8,7 @@ import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefDocCommentHashtag
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 
 class CaosDefDocCommentHashtagReference(hashtag: CaosDefDocCommentHashtag)
     : PsiPolyVariantReferenceBase<CaosDefDocCommentHashtag>(hashtag, TextRange.create(1, hashtag.name.length)) {

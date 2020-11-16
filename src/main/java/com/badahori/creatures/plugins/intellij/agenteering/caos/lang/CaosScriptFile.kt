@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
@@ -143,7 +144,7 @@ var PsiFile.runInspections: Boolean
         putUserData(RUN_INSPECTIONS_KEY, value)
     }
 
-val VirtualFile.cachedVariant:CaosVariant?
+val VirtualFile.cachedVariant: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
             ?: VariantFilePropertyPusher.readFromStorage(this)
             ?: this.getUserData(CaosScriptFile.VariantUserDataKey)

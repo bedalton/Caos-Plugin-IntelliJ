@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -64,7 +64,7 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
         return getConnection() != null
     }
 
-    override fun showAttribution(project: Project, variant:CaosVariant) {
+    override fun showAttribution(project: Project, variant: CaosVariant) {
         CaosInjectorNotifications.show(project, "Attribution", "${variant.code} caos injector is based off of information found @ http://sheeslostknowledge.blogspot.com/2014/02/connecting-to-creatures-dde-interface.html by LoneShee", NotificationType.INFORMATION)
     }
 
