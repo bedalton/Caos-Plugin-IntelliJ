@@ -7,4 +7,5 @@ interface CaosScriptIndexService {
     fun indexSubroutine(subroutineStub: CaosScriptSubroutineStub, indexSink: IndexSink)
     fun indexVarAssignment(stub: CaosScriptAssignmentStub, indexSink: IndexSink)
     fun indexEventScript(stub: CaosScriptEventScriptStub, indexSink: IndexSink)
+    fun indexNamedGameVar(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink)
 }

@@ -16,7 +16,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|expects_value|expects_int|expects_float|expects_quote_string|expects_c1_string|expects_decimal|expects_agent|expects_byte_string|expects_token|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -542,11 +542,15 @@ subroutine
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.intellij.psi.PsiNameIdentifierOwner"
 		]
 		methods = [
 			getBlockType
 			getName
 			isClosed
+			setName
+			getUseScope
+			getNameIdentifier
 		]
 	}
 	;
@@ -1898,6 +1902,7 @@ rvalue
 			isString
 			isQuoteString
 			isC1String
+			isByteString
 			isInt
 			isFloat
 			isToken
@@ -2010,10 +2015,14 @@ quote_string_literal
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+			"com.intellij.psi.PsiNamedElement"
 		]
 		methods = [
 			getStringValue
 			isClosed
+			getName
+			setName
+			getReference
 		]
 	}
 	;
@@ -2039,6 +2048,7 @@ subroutine_name
 			getReference
 			getIndex
 			getInferredType
+			getUseScope
 		]
 	};
 token_rvalue
@@ -2085,10 +2095,10 @@ named_game_var
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
-			"com.intellij.psi.PsiNamedElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.intellij.psi.PsiNameIdentifierOwner"
 		]
 		methods = [
 			commandToken="/named_game_var_kw"
@@ -2099,6 +2109,8 @@ named_game_var
 			getVarType
 			getName
 			setName
+			getNameIdentifier
+			getKeyType
 			getArguments
 			getArgumentValues
 			getInferredType
