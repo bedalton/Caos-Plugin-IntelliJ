@@ -24,13 +24,13 @@ class CaosScriptNamedGameVarStubType(debugName:String) : CaosScriptStubElementTy
     override fun serialize(stub: CaosScriptNamedGameVarStub, stream: StubOutputStream) {
         stream.writeInt(stub.type.value)
         stream.writeName(stub.key)
-        stream.writeExpressionValueType(stub.keyType)
+        stream.writeCaosVarSafe(stub.keyType)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptNamedGameVarStub {
         val type = CaosScriptNamedGameVarType.fromValue(stream.readInt())
         val name = stream.readNameAsString() ?: UNDEF
-        val keyType = stream.readExpressionValueType()
+        val keyType = stream.readCaosVarSafe()
         return CaosScriptNamedGameVarStubImpl(
                 parent = parent,
                 type = type,
