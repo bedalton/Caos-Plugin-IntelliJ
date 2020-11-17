@@ -1445,6 +1445,8 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getIntValue(expression: CaosScriptRvalue): Int? {
         return expression.number?.int?.text?.toInt()
+                ?: expression.number?.binaryLiteral?.text?.let { binaryToInteger(it) }?.toInt()
+                //?: expression.number?.character?.charChar?.text?.get(0)?.toInt()
     }
 
     /**
