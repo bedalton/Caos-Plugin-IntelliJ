@@ -23,7 +23,8 @@ internal fun generatorValuesListDefinition(valuesList: CaosValuesList) : String 
             builder.append("\n\t# ").append(regionHeader)
         }
         builder
-                .append("\n\t").append(value.value)
+                .append("\n\t")
+                .append(value.value)
                 .append(" = ")
                 .append(value.name)
         value.description?.nullIfEmpty()?.let {description ->
