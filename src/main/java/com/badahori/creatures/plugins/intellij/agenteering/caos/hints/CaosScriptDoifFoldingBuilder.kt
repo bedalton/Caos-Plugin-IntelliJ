@@ -2,16 +2,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder.Companion.IS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder.Companion.IS_NOT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.EqOp
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.EqOp.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.AGENT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvaluePrime
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -51,6 +45,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
      * Gets the folded text for this command call
      */
     private fun getDoifFold(expression: CaosScriptEqualityExpressionPrime): String? {
+        ProgressIndicatorProvider.checkCanceled()
         val variant = expression.variant
                 ?: return null
 
@@ -65,10 +60,10 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         var text = formatComparison(variant, eqOp, firstExpression, secondExpression, false)
                 ?: formatComparison(variant, eqOp, secondExpression, firstExpression, true)
 
-        if (text like expression.text)
-            text = null
+        text = if (text like expression.text)
+            null
         else
-            text = text?.let { homogenizeFormattedText(it) }
+            text?.let { homogenizeFormattedText(it) }
         expression.putUserData(CACHE_KEY, Pair(expression.text, text))
         return text
     }
@@ -84,6 +79,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             return emptyArray()
         return children
                 .filter {
+                    ProgressIndicatorProvider.checkCanceled()
                     shouldFold(it)
                 }
                 .mapNotNull {
@@ -185,6 +181,12 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     boolOnLessThan = boolOnLessThan,
                     thisValue =  formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
                     thisValuesArgs = thisValue.arguments.map { it.text },
+                    thisValuesListValues = if (command.doifFormat?.contains("{0:") == true)
+                        thisValue.arguments.mapIndexed { i, arg ->
+                            arg.valuesListValue(variant, command.parameters.getOrNull(i))
+                        }
+                    else
+                        thisValue.arguments.map { null },
                     thisValueType = thisValue.inferredType,
                     otherValue = formatPrimary(otherValueText ?: otherValue.text),
                     otherValueInt = otherValue.text.toIntSafe(),
@@ -240,6 +242,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 "%HIST_CAGE" -> HIST_CAGE
                 "%IS_SIMPLE" -> SIMPLE_FORMATTER
                 "%TIME" -> TIME
+                "%KEYD" -> KEYD
                 else -> {
                     LOGGER.severe("Failed to understand %pattern: $format")
                     DEFAULT_FORMATTER
@@ -275,6 +278,7 @@ data class FormatInfo(
         val thisValue:String,
         val thisValueType:CaosExpressionValueType,
         val thisValuesArgs:List<String>,
+        val thisValuesListValues:List<String?>,
         val otherValue:String,
         val otherValueInt:Int?,
         val reversed:Boolean
@@ -401,6 +405,16 @@ private val TIME:Formatter = formatter@{ formatInfo:FormatInfo ->
 }
 
 /**
+ * Formats a KEYD eq operation
+ */
+private val KEYD = formatter@{ formatInfo:FormatInfo ->
+    val key = formatInfo.thisValuesListValues.getOrNull(0)?.let { "'$it' Key" } ?: ("Key #"+(formatInfo.thisValuesArgs.getOrNull(0) ?: "??"))
+    val equals = formatEqOp(formatInfo.eqOp, true, boolOnLessThan = false, otherValueInt = formatInfo.otherValueInt)
+    val other = formatInfo.otherValue
+    "$key $equals $other"
+}
+
+/**
  * Gets a proper "is", "is not" or raw eq value
  */
 private fun formatEqOp(eqOp:EqOp, isBool: Boolean, boolOnLessThan:Boolean, otherValueInt:Int?) : String {
@@ -462,3 +476,6 @@ private val homogenizeFormattedText:FormatString get() = formatUpperCaseFirst
  */
 private val formatPrimary:FormatString = allLowerCase
 
+private fun CaosScriptArgument.valuesListValue(variant: CaosVariant, parameterInfo:CaosParameter?) : String {
+    return parameterInfo?.valuesList?.get(variant)?.get(text)?.name ?: text
+}
