@@ -506,15 +506,6 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Gets name for use in PsiNamedElement
-     */
-    @JvmStatic
-    fun getName(element: CaosScriptSubroutine): String {
-        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name
-        ?: element.subroutineHeader.subroutineName?.text ?: ""
-    }
-
-    /**
      * Set variable name in GAME/NAME/EAME/MAME
      */
     @JvmStatic
@@ -528,8 +519,8 @@ object CaosScriptPsiImplUtil {
      * Gets variable name in GAME/NAME/EAME/MAME
      */
     @JvmStatic
-    fun getName(element: CaosScriptNamedGameVar): String? {
-        return element.stub?.key ?: element.rvalue?.stringValue ?: element.rvalue?.text
+    fun getName(element: CaosScriptNamedGameVar): String {
+        return element.stub?.key ?: element.rvalue?.stringValue ?: element.rvalue?.text ?: ""
     }
 
 
@@ -624,6 +615,15 @@ object CaosScriptPsiImplUtil {
         val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, variant, newName)
                 ?: return name
         return name.replace(newElement)
+    }
+
+    /**
+     * Gets name for use in PsiNamedElement
+     */
+    @JvmStatic
+    fun getName(element: CaosScriptSubroutine): String {
+        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name
+        ?: element.subroutineHeader.subroutineName?.text ?: ""
     }
 
     @JvmStatic
@@ -827,7 +827,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getInferredType(varToken: CaosScriptIsVariable): CaosExpressionValueType {
-        return CaosScriptInferenceUtil.getInferredType(varToken)
+        return CaosScriptInferenceUtil.getInferredType(varToken) ?: CaosExpressionValueType.VARIABLE
     }
 
     /**
@@ -844,7 +844,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getInferredType(element: CaosScriptLvalue): CaosExpressionValueType {
         element.varToken?.let {
-            return CaosScriptInferenceUtil.getInferredType(it)
+            return CaosScriptInferenceUtil.getInferredType(it) ?: CaosExpressionValueType.VARIABLE
         }
         element.namedGameVar?.let {
             return CaosExpressionValueType.VARIABLE
