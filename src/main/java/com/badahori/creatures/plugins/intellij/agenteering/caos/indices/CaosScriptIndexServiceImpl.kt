@@ -20,7 +20,6 @@ class CaosScriptIndexServiceImpl : CaosScriptIndexService {
 
     override fun indexNamedGameVar(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink) {
         val key = CaosScriptNamedGameVarIndex.getKey(stub.type, stub.key)
-        LOGGER.info("NamedGameVarKey: $key")
         indexSink.occurrence(CaosScriptNamedGameVarIndex.KEY, key)
     }
 

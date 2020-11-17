@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
@@ -38,20 +39,14 @@ class CaosScriptQuoteStringLiteralReference(element:CaosScriptQuoteStringLiteral
     override fun isReferenceTo(element: PsiElement): Boolean {
         // Initial check to see that this element is resolvable
         if (!canResolve) {
-            LOGGER.info("Cannot get reference to QuoteString without proper named game parent. Type: ${type.token}; Key: '$key'")
             return false
         }
-        LOGGER.info("Resolving quoted string named game var. Type: ${type.token}; Key: '$key'")
         // Ensure that variables share the same variant,
         // otherwise the variables cannot be the same
         if (element.variant != myElement.variant)
             return false
         // Ensure other is or has named game var parent element
-        val namedGameVarParent = element.parent?.parent as? CaosScriptNamedGameVar
-        if (namedGameVarParent == null) {
-            LOGGER.info("OtherQuote string is not named game var")
-            return false
-        }
+        val namedGameVarParent = element.parent?.parent as? CaosScriptNamedGameVar ?: return false
         // Check that type and key are the same
         return namedGameVarParent.varType == type && namedGameVarParent.key == key
     }
@@ -60,30 +55,26 @@ class CaosScriptQuoteStringLiteralReference(element:CaosScriptQuoteStringLiteral
      * Resolves to itself to prevent weird ctrl+click behavior
      */
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
-        LOGGER.info("Trying to resolve Quote String")
         if (!canResolve) {
-            LOGGER.info("Cannot resolve quote string for named game var. Type: ${type.token}; Key: '$key'")
             return ResolveResult.EMPTY_ARRAY
         }
-        LOGGER.info("Resolving quote string for named game var. Type: ${type.token}; Key: '$key'")
         val variant = myElement.variant
                 ?: return ResolveResult.EMPTY_ARRAY
-        LOGGER.info("Resolving quote string for variant: ${variant.code}")
         val references = CaosScriptNamedGameVarIndex.instance[type, key, myElement.project]
                 .filter {anElement ->
-                    LOGGER.info("Checking named var for proper variant")
                     anElement.variant == variant
                 }
                 .mapNotNull {
-                    LOGGER.info("Mapping named game var to quote string")
                     it.rvalue?.quoteStringLiteral
                 }
+                .nullIfEmpty()
+                ?.let {
+                    it + myElement
+                }
+                ?: return PsiElementResolveResult.createResults(myElement)
         if (references.isEmpty()) {
-            val allKeys = CaosScriptNamedGameVarIndex.instance.getAllKeys(myElement.project).joinToString(", ")
-            LOGGER.info("Failed to find named var in NamedGameVarKeys: [$allKeys]")
             return ResolveResult.EMPTY_ARRAY
         }
-        LOGGER.info("Returning ${references.size} references to var ${type.token} \"$key\"")
         return PsiElementResolveResult.createResults(references)
     }
 

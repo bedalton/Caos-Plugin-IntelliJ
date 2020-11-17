@@ -32,7 +32,6 @@ object CaosScriptPsiElementFactory {
     fun createSubroutineNameElement(project: Project, variant:CaosVariant, newNameString: String): CaosScriptSubroutineName? {
         val subroutineNameRegex = if (variant.isOld) C1E_SUBROUTINE_NAME_REGEX else C2E_SUBROUTINE_NAME_REGEX
         if (newNameString.isEmpty() || !newNameString.matches(subroutineNameRegex)) {
-            LOGGER.info("New subroutine name: $newNameString is invalid.")
             return null
         }
         val commandCall = getCommandCall(project, "gsub $newNameString", variant)

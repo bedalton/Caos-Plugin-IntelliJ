@@ -73,12 +73,11 @@ object CaosScriptInferenceUtil {
     fun getInferredType(element: CaosScriptIsVariable?): CaosExpressionValueType? {
         if (element == null)
             return null
-        // Get all assigments for this variable
+        // Get all assignments for this variable
         return element.getAssignments()
                 .mapNotNull map@{ assignment ->
                     if (assignment.lvalue?.let { !isSimilar(element, it) }.orFalse())
                         return@map null
-                    LOGGER.info("GetInferredValue: ${assignment.text} has var ${assignment.lvalue} at line#${assignment.lineNumber} is similar to ${element.text} in parent ${element.parent?.text} at line ${element.lineNumber}")
                     getInferredType(assignment)?.let { type ->
                         if (type in skipTypes)
                             null
