@@ -4,6 +4,7 @@ import com.intellij.psi.tree.IElementType;
 
 import com.intellij.lexer.FlexLexer;
 import java.util.List;
+import java.util.ArrayList;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*;
@@ -20,6 +21,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	private int braceDepth;
 	private static final List<Character> BYTE_STRING_CHARS = CaosScriptArrayUtils.toList("0123456789 R".toCharArray());
 	protected int blockDepth = 0;
+	private List<Integer> blockDepths = new ArrayList();
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -35,6 +37,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 		} catch (Exception e) {
 			return true;
 		}
+	}
+
+	private int currentBlockDepth() {
+	    return blockDepths.size() > 0 ? blockDepths.get(0) : 0;
 	}
 
 %}
@@ -266,9 +272,15 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Bb][Bb][Ll][Ee]       	{ return CaosScript_K_BBLE; }
 	[Ss][Tt][Oo][Pp]       	{ return CaosScript_K_STOP; }
 	[Ee][Nn][Dd][Mm]       	{ return CaosScript_K_ENDM; }
-	[Ss][Uu][Bb][Rr]       	{ yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_SUBR; }
+	[Ss][Uu][Bb][Rr]       	{ yybegin(IN_SUBROUTINE_NAME); if (blockDepths.size() > 0) blockDepths.add(0, blockDepth); else blockDepths.add(blockDepth); return CaosScript_K_SUBR; }
 	[Gg][Ss][Uu][Bb]       	{ yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_GSUB; }
-	[Rr][Ee][Tt][Nn]       	{ return blockDepth > 0 ? CaosScript_K_CRETN : CaosScript_K_RETN; }
+	[Rr][Ee][Tt][Nn]       	{
+          if (blockDepth > currentBlockDepth())
+              return CaosScript_K_CRETN;
+          if (blockDepths.size() > 0)
+          	blockDepths.remove(0);
+          return CaosScript_K_RETN;
+      }
 	[Rr][Ee][Pp][Ss]       	{ blockDepth++; return CaosScript_K_REPS; }
 	[Rr][Ee][Pp][Ee]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_REPE; }
 	[Ll][Oo][Oo][Pp]       	{ blockDepth++; return CaosScript_K_LOOP; }
