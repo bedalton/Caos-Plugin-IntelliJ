@@ -16,6 +16,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -30,7 +31,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
      * Gets command call placeholder text for folding if it should be folded
      */
     override fun getPlaceholderText(node: ASTNode): String? {
-        (node.psi as? CaosScriptEqualityExpressionPrime)?.let {expression ->
+        (node.psi as? CaosScriptEqualityExpressionPrime)?.let { expression ->
             expression.getUserData(CACHE_KEY)?.let {
                 if (it.first == expression.text)
                     return it.second
@@ -96,7 +97,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         return FoldingDescriptor(expression.node, expression.textRange, group)
     }
 
-    override fun isCollapsedByDefault(node: ASTNode): Boolean  = true
+    override fun isCollapsedByDefault(node: ASTNode): Boolean = true
 
     /**
      * Determines whether or not to actually fold this command
@@ -116,7 +117,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         // Get right side argument
         val second = expression.second
-                // If second argument is null, there is nothing to compare
+        // If second argument is null, there is nothing to compare
                 ?: return false
 
         // Check if any of the values has a value list
@@ -124,6 +125,10 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 || AGENT in listOf(first.inferredType, second.inferredType)
                 || getValuesList(variant, first) != null
                 || getValuesList(variant, second) != null
+                || isKeyCode(variant, first)
+                || isKeyCode(variant, second)
+                || first.text like "null"
+                || second.text like "null"
     }
 
     companion object {
@@ -135,17 +140,22 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
          * @param thisValue the base value to build the other value from
          * @param otherValue the value to convert from int to another value
          */
-        fun formatComparison(variant: CaosVariant, eqOp:EqOp, thisValue:CaosScriptRvalue, otherValue:CaosScriptRvalue, reversed:Boolean) : String? {
+        fun formatComparison(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue, reversed: Boolean): String? {
 
+            // TODO: Implement other _P1_ and _P2_ know values
+            if (thisValue.text like "_P1_") {
+                // If is _P1_ get replacement value if is key
+                return keyDown(variant, eqOp, thisValue, otherValue)
+            }
             // Get command definition
             val command = thisValue.commandDefinition
                     // If there is no command definition,
-                    // there is no way to get the named value of the other argument
+                    // then there is no way to get values lists for argument
                     ?: return null
 
             // If this is not an int value, there is no way to convert it to a list value
             val otherValueInt = otherValue.intValue
-            val hasDriveOrChemical = command.command.let { it like "CHEM" || it like "DRV!" || it like "DRIV"}
+            val hasDriveOrChemical = command.command.let { it like "CHEM" || it like "DRV!" || it like "DRIV" }
             if (otherValueInt == null && !hasDriveOrChemical && otherValue.commandDefinition?.returnType != AGENT)
                 return null
 
@@ -167,7 +177,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     ?.nullIfEmpty()
                     // Join bitflags to single string for use in doif format
                     ?.joinToString(", ") { it.name }
-                    // Get the other value as a values list value
+            // Get the other value as a values list value
                     ?: otherValueInt?.let { returnValuesList?.get(it) }?.name
 
             // Formats the primary value as a drive or chemical name as needed
@@ -176,17 +186,13 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             // Package parameters for use in formatting
             // Package was build to prevent having to pass so many parameters to each unique formatting function
             val formatInfo = FormatInfo(
+                    command = command,
+                    variant = variant,
                     eqOp = eqOp,
                     isBool = isBool,
                     boolOnLessThan = boolOnLessThan,
-                    thisValue =  formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
+                    thisValue = formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
                     thisValuesArgs = thisValue.arguments.map { it.text },
-                    thisValuesListValues = if (command.doifFormat?.contains("{0:") == true)
-                        thisValue.arguments.mapIndexed { i, arg ->
-                            arg.valuesListValue(variant, command.parameters.getOrNull(i))
-                        }
-                    else
-                        thisValue.arguments.map { null },
                     thisValueType = thisValue.inferredType,
                     otherValue = formatPrimary(otherValueText ?: otherValue.text),
                     otherValueInt = otherValue.text.toIntSafe(),
@@ -211,7 +217,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         /**
          * Formats the primary value to a Drive or chemical name based on its first parameter
          */
-        private fun formatThisValue(variant: CaosVariant, rvaluePrime:CaosScriptRvaluePrime?) : String? {
+        private fun formatThisValue(variant: CaosVariant, rvaluePrime: CaosScriptRvaluePrime?): String? {
             if (rvaluePrime == null)
                 return null
             val commandString = rvaluePrime.commandStringUpper
@@ -230,12 +236,12 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             }
         }
 
-        private fun resolvePattern(format:String) : Formatter {
+        private fun resolvePattern(format: String): Formatter {
             if (format == "%%")
                 return DEFAULT_FORMATTER
             if (!format.startsWith("%"))
                 return createCompoundFormatter(format)
-            return when(format.toUpperCase()) {
+            return when (format.toUpperCase()) {
                 // Though %ATTRIBUTES is simple, it is registered here for consistency between the two versions of the command
                 "%ATTRIBUTES" -> createCompoundFormatter("Has Attributes: {1}::Attributes Not {1}::%%")
                 "%CAGE" -> CAGE
@@ -249,9 +255,10 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 }
             }
         }
+
         internal const val IS = "is"
         internal const val IS_NOT = "is not"
-        private val CACHE_KEY = Key<Pair<String,String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.DOIF_FOLDING_STRING")
+        private val CACHE_KEY = Key<Pair<String, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.DOIF_FOLDING_STRING")
     }
 
 }
@@ -259,11 +266,20 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
 /**
  * Simple lambda to take formatting parameters and format them as needed
  */
-private typealias Formatter = (formatInfo:FormatInfo) -> String
+private typealias Formatter = (formatInfo: FormatInfo) -> String
 
 // Helper function to quickly get the values list for this rvalue
-private fun getValuesList(variant: CaosVariant, expression:CaosScriptRvalue) :CaosValuesList?
-        = expression.commandDefinition?.returnValuesList?.get(variant)
+private fun getValuesList(variant: CaosVariant, expression: CaosScriptRvalue): CaosValuesList? {
+    return expression.commandDefinition?.returnValuesList?.get(variant)
+}
+
+private fun isKeyCode(variant: CaosVariant, expression: CaosScriptRvalue): Boolean {
+    val eventNumber = if (DumbService.isDumb(expression.project))
+        expression.getParentOfType(CaosScriptEventScript::class.java)?.eventNumberElement?.text?.toIntOrNull()
+    else
+        expression.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber
+    return variant.isNotOld && expression.text like "_P1_" && eventNumber?.let { it == 73 || it == 74 }.orFalse()
+}
 
 // Ensures replacement of possibly two eq value expressions
 private val EQ_IS_REGEX = "\\{(is|eq)}".toRegex()
@@ -272,16 +288,17 @@ private val EQ_IS_REGEX = "\\{(is|eq)}".toRegex()
  * Holds information that might be necessary to format a doif comparison expression
  */
 data class FormatInfo(
-        val eqOp:EqOp,
-        val isBool:Boolean,
+        val command: CaosCommand,
+        val variant: CaosVariant,
+        val eqOp: EqOp,
+        val isBool: Boolean,
         val boolOnLessThan: Boolean,
-        val thisValue:String,
-        val thisValueType:CaosExpressionValueType,
-        val thisValuesArgs:List<String>,
-        val thisValuesListValues:List<String?>,
-        val otherValue:String,
-        val otherValueInt:Int?,
-        val reversed:Boolean
+        val thisValue: String,
+        val thisValueType: CaosExpressionValueType,
+        val thisValuesArgs: List<String>,
+        val otherValue: String,
+        val otherValueInt: Int?,
+        val reversed: Boolean
 )
 
 
@@ -289,7 +306,7 @@ data class FormatInfo(
  * Formats a value with a simple "is" or "is not" prefix.
  * ie "is Frozen" "is not Inactive"
  */
-private val SIMPLE_FORMATTER:Formatter = { formatInfo:FormatInfo ->
+private val SIMPLE_FORMATTER: Formatter = { formatInfo: FormatInfo ->
     val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
     if (eqOpText == IS || eqOpText == IS_NOT) {
         "$eqOpText ${formatInfo.otherValue}"
@@ -301,7 +318,7 @@ private val SIMPLE_FORMATTER:Formatter = { formatInfo:FormatInfo ->
 /**
  * Default format is  "{0} {is} {1}"
  */
-private val DEFAULT_FORMATTER:Formatter = formatter@{ formatInfo:FormatInfo ->
+private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
     val thisValue = formatInfo.thisValue
     val otherValueInt = formatInfo.otherValueInt
     if (otherValueInt == 0 && formatInfo.thisValueType == AGENT) {
@@ -312,7 +329,7 @@ private val DEFAULT_FORMATTER:Formatter = formatter@{ formatInfo:FormatInfo ->
                 otherValueInt = otherValueInt
         )
         if (eqOpText == IS || eqOpText == IS_NOT)
-            return@formatter "$thisValue $eqOpText ${ formatPrimary("NULL") }"
+            return@formatter "$thisValue $eqOpText ${formatPrimary("NULL")}"
     }
     // Get Eq op text, converting "=" -> "is", "!=" -> "is not" and if bool and 0  ">" -> "is not"
     val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
@@ -328,11 +345,11 @@ private val DEFAULT_FORMATTER:Formatter = formatter@{ formatInfo:FormatInfo ->
 /**
  * Formats a string using both left and right side values along with arguments and chemicals/drives
  */
-private fun createCompoundFormatter(formatIn:String):Formatter = func@{ formatInfo:FormatInfo ->
+private fun createCompoundFormatter(formatIn: String): Formatter = func@{ formatInfo: FormatInfo ->
     // Get "is" or "is not" text
     val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
     // Test for "is" or "is not" and return appropriate sub format
-    var out = formatIn.split("::").let {patterns ->
+    var out = formatIn.split("::").let { patterns ->
         when {
             eqOpText == IS -> patterns.first()
             eqOpText != IS_NOT -> patterns.last()
@@ -363,7 +380,7 @@ private fun createCompoundFormatter(formatIn:String):Formatter = func@{ formatIn
  * Format CAGE command to a more readable format
  * Take CAGE > 0 to Is Older Than an Infant
  */
-private val CAGE:Formatter = { formatInfo:FormatInfo ->
+private val CAGE: Formatter = { formatInfo: FormatInfo ->
     val otherValue = formatInfo.otherValue
     when (formatInfo.eqOp) {
         EQUAL -> "Is a $otherValue"
@@ -379,7 +396,7 @@ private val CAGE:Formatter = { formatInfo:FormatInfo ->
 /**
  * Formats a HIST CAGE eq operation
  */
-private val HIST_CAGE = formatter@{ formatInfo:FormatInfo ->
+private val HIST_CAGE = formatter@{ formatInfo: FormatInfo ->
     val moniker = formatInfo.thisValuesArgs.firstOrNull()?.nullIfEmpty()
             ?: return@formatter DEFAULT_FORMATTER(formatInfo)
     val root = CAGE(formatInfo)
@@ -391,7 +408,7 @@ private val HIST_CAGE = formatter@{ formatInfo:FormatInfo ->
 /**
  * Formats a time based eq statement
  */
-private val TIME:Formatter = formatter@{ formatInfo:FormatInfo ->
+private val TIME: Formatter = formatter@{ formatInfo: FormatInfo ->
     val otherValue = formatInfo.otherValue
     when (formatInfo.eqOp) {
         EQUAL -> "Is $otherValue"
@@ -404,11 +421,34 @@ private val TIME:Formatter = formatter@{ formatInfo:FormatInfo ->
     }
 }
 
+private fun keyDown(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue): String? {
+    // If _P1_ in event script 73 or 74 in CV+ is Keycode
+    LOGGER.info("Checking if eq statement is KeyDown. ThisValue: ${thisValue.text}; OtherValue: ${otherValue.text}; EventScriptNumber: ${thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber}")
+    if (!isKeyCode(variant, thisValue))
+        return null
+    LOGGER.info("Statement is KeyDown")
+    val eqOpString = formatEqOp(eqOp, isBool = true, boolOnLessThan = false, otherValueInt = otherValue.intValue)
+    val key = CaosLibs[variant].valuesList("KeyCodes")
+            ?.get(otherValue.text)
+            ?.name
+            ?.let { "'$it' Key " }
+            ?: otherValue.number?.character?.text?.let { "$it Key" }
+            ?: "Key ${otherValue.text}"
+    return "$key $eqOpString pressed"
+}
+
 /**
  * Formats a KEYD eq operation
  */
-private val KEYD = formatter@{ formatInfo:FormatInfo ->
-    val key = formatInfo.thisValuesListValues.getOrNull(0)?.let { "'$it' Key" } ?: ("Key #"+(formatInfo.thisValuesArgs.getOrNull(0) ?: "??"))
+private val KEYD = formatter@{ formatInfo: FormatInfo ->
+    val keycodeAsString = formatInfo.command
+            .parameters
+            .getOrNull(0)
+            ?.valuesList
+            ?.get(formatInfo.variant)
+            ?.get(formatInfo.thisValuesArgs.getOrNull(0) ?: "")
+            ?.name
+    val key = keycodeAsString?.let { "'$it' Key" } ?: ("Key #" + (formatInfo.thisValuesArgs.getOrNull(0) ?: "??"))
     val equals = formatEqOp(formatInfo.eqOp, true, boolOnLessThan = false, otherValueInt = formatInfo.otherValueInt)
     val other = formatInfo.otherValue
     "$key $equals $other"
@@ -417,8 +457,8 @@ private val KEYD = formatter@{ formatInfo:FormatInfo ->
 /**
  * Gets a proper "is", "is not" or raw eq value
  */
-private fun formatEqOp(eqOp:EqOp, isBool: Boolean, boolOnLessThan:Boolean, otherValueInt:Int?) : String {
-    return when(eqOp) {
+private fun formatEqOp(eqOp: EqOp, isBool: Boolean, boolOnLessThan: Boolean, otherValueInt: Int?): String {
+    return when (eqOp) {
         EQUAL -> if (isBool) IS else null
         NOT_EQUAL -> if (isBool) IS_NOT else null
         GREATER_THAN -> if (isBool && otherValueInt == 0) IS else null
@@ -427,19 +467,19 @@ private fun formatEqOp(eqOp:EqOp, isBool: Boolean, boolOnLessThan:Boolean, other
     } ?: eqOp.values.getOrNull(1) ?: eqOp.values.first()
 }
 
-private typealias FormatString = (text:String) -> String
+private typealias FormatString = (text: String) -> String
 
 /**
  * Formats text so only first letter of string is upper cased
  */
-private val formatUpperCaseFirst:FormatString = { text:String ->
+private val formatUpperCaseFirst: FormatString = { text: String ->
     text.toLowerCase().upperCaseFirstLetter()
 }
 
 /**
  * Formats text so all text is lower cased
  */
-private val allLowerCase:FormatString = { text:String ->
+private val allLowerCase: FormatString = { text: String ->
     text.toLowerCase()
 }
 
@@ -447,7 +487,7 @@ private val allLowerCase:FormatString = { text:String ->
  * Formats text so all text is UPPER case
  */
 @Suppress("unused")
-private val allUpperCase:FormatString = { text:String ->
+private val allUpperCase: FormatString = { text: String ->
     text.toUpperCase()
 }
 
@@ -455,7 +495,7 @@ private val allUpperCase:FormatString = { text:String ->
  * Formats text so each new word is upper cased
  */
 @Suppress("unused")
-private val upperCaseFirstOnAllWords:FormatString = { text:String ->
+private val upperCaseFirstOnAllWords: FormatString = { text: String ->
     text.split(" ").joinToString(" ") {
         if (it like "an" || it like "a" || it like "or")
             it
@@ -469,13 +509,13 @@ private val upperCaseFirstOnAllWords:FormatString = { text:String ->
  * @TODO should the words all be upper-cased or only first letter
  * ie Is Not Dead <> Is not dead <> is not dead <> is not Dead
  */
-private val homogenizeFormattedText:FormatString get() = formatUpperCaseFirst
+private val homogenizeFormattedText: FormatString get() = formatUpperCaseFirst
 
 /**
  * Formatter for comparison's left and right replacement values
  */
-private val formatPrimary:FormatString = allLowerCase
+private val formatPrimary: FormatString = allLowerCase
 
-private fun CaosScriptArgument.valuesListValue(variant: CaosVariant, parameterInfo:CaosParameter?) : String {
+private fun CaosScriptArgument.valuesListValue(variant: CaosVariant, parameterInfo: CaosParameter?): String {
     return parameterInfo?.valuesList?.get(variant)?.get(text)?.name ?: text
 }
