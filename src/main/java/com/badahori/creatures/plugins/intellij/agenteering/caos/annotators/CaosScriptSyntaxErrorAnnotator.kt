@@ -70,16 +70,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 }
             }
             is CaosScriptErrorLvalue -> {
-                val variableType = if (element.number != null) {
-                    "number"
-                } else if (element.quoteStringLiteral != null || element.c1String != null) {
-                    "string"
-                } else if (element.animationString != null) {
-                    "animation"
-                } else if (element.byteString != null) {
-                    "byte-string"
-                } else {
-                    "literal"
+                val variableType = when {
+                    element.number != null -> "number"
+                    element.quoteStringLiteral != null -> (element.parent?.parent as? CaosScriptNamedGameVar)?.varType?.token ?: "string"
+                    element.c1String != null -> "string"
+                    element.animationString != null -> "animation"
+                    element.byteString != null -> "byte-string"
+                    else -> "literal"
                 }
                 simpleError(element, "Variable expected. Found $variableType", annotationWrapper)
             }
