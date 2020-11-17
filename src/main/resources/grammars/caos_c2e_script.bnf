@@ -2000,6 +2000,7 @@ var_token
 			getInferredType
 			getLastAssignment
 			isEquivalentTo
+			getUseScope
 			getName
 			setName
 		]
