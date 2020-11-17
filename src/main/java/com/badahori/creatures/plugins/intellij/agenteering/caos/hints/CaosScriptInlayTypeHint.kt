@@ -475,7 +475,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 if (commandString like it.first)
                     return listOf(InlayInfo("(${it.second})", commandToken.endOffset))
             }
-            val type: CaosExpressionValueType = element.inferredType.let {
+            val type: CaosExpressionValueType = if (DumbService.isDumb(element.project))
+                return EMPTY_INLAY_LIST
+            else
+                element.inferredType.let {
                 if (it == UNKNOWN || it == ANY)
                     null
                 else
