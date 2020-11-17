@@ -42,7 +42,7 @@ class CobNodeProjectViewProvider : TreeStructureProvider, DumbAware {
 private fun VirtualFile.toNode(project:Project) : AbstractTreeNode<*>? {
     return when (extension?.toLowerCase()) {
         "cob" -> CobFileTreeNode(project, this)
-        in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
+        //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
         else -> null
     }
 }
