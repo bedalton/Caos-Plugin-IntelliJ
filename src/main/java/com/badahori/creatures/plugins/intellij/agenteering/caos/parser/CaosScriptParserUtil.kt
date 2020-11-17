@@ -1,14 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isStringType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -32,10 +34,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val lock = Object()
     const val NUMBER = 0
     const val STRING = 1
-    const val TOKEN = 4
     const val OTHER = -1
-    const val ANIM = 5
-    const val ANY = 3
     const val WHITE_SPACE_OPTIONAL = "whiteSpaceOptional"
     val needsNoWhitespace = TokenSet.create(
             CaosScriptTypes.CaosScript_BYTE_STRING,
@@ -88,9 +87,9 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             level: Int,
             includeSeaMonkeys: Boolean
     ): Boolean {
-        return fileVariant(builder_)?.let {
-            it.isNotOld && (includeSeaMonkeys || it != CaosVariant.SM)
-        }.orFalse()
+        return fileVariant(builder_)?.let {variant ->
+            variant.isNotOld && (includeSeaMonkeys || variant != CaosVariant.SM)
+        } ?: false
     }
 
     private fun fileVariant(builder_: PsiBuilder): CaosVariant? {
@@ -223,6 +222,148 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
+    fun pushParameter(
+            builder_: PsiBuilder,
+            level: Int,
+            vararg parameters: Int
+    ): Boolean {
+        if (parameters.isEmpty())
+            return true
+        if (!pushPop(builder_))
+            return true
+        val expectations = builder_.getUserData(EXPECTATIONS_KEY)
+                ?: mutableListOf()
+        if (expectations.isEmpty())
+            expectations.addAll(parameters.toList())
+        else
+            expectations.addAll(0, parameters.toList())
+        builder_.putUserData(EXPECTATIONS_KEY, expectations)
+        return true
+    }
+
+    @JvmStatic
+    fun popParameter(
+            builder_: PsiBuilder,
+            level: Int
+    ): Boolean {
+        if (!pushPop(builder_))
+            return true
+        val expectations = builder_.getUserData(EXPECTATIONS_KEY)
+                // Nullify on empty to simplify return without popping
+                ?.nullIfEmpty()
+                ?: return true
+        expectations.removeAt(0)
+        builder_.putUserData(EXPECTATIONS_KEY, expectations)
+        return true
+    }
+
+    @JvmStatic
+    fun needsString(
+            builder_: PsiBuilder,
+            level: Int
+    ): Boolean {
+        if (!pushPop(builder_)) {
+            return true
+        }
+        return builder_.getUserData(EXPECTATIONS_KEY)?.firstOrNull()?.let {expectedType ->
+            expectedType == STRING || expectedType == OTHER
+        } ?: true
+    }
+
+    @JvmStatic
+    fun needsInt(
+            builder_: PsiBuilder,
+            level: Int
+    ): Boolean {
+        if (!pushPop(builder_)) {
+            return true
+        }
+        return builder_.getUserData(EXPECTATIONS_KEY)?.firstOrNull()?.let {expectedType ->
+            expectedType == NUMBER || expectedType == OTHER
+        } ?: true
+    }
+
+    private fun expectedTypeString(expectedType:Int?) : String  {
+        return when(expectedType) {
+            NUMBER -> "NUMBER"
+            STRING -> "STRING"
+            OTHER -> "OTHER"
+            else -> "NULL"
+        }
+
+    }
+
+    @JvmStatic
+    fun tagParameters(
+            builder_: PsiBuilder,
+            level: Int,
+            commandType:CaosCommandType
+    ) : Boolean {
+        // If push is not needed, (ie. not in variant CV), bail out
+        if (!pushPop(builder_))
+            return true
+        // Try to get command text from previous token
+        val text = builder_.latestDoneMarker?.let {
+            val originalText = builder_.originalText
+            originalText.substring(it.startOffset, it.endOffset).nullIfEmpty()
+        }
+        if (text == null) {
+            // get the token before this one
+            val prevPrevToken = prevToken(builder_, 1)
+            val prevToken = prevToken(builder_)
+            if (prevToken == null) {
+                // No command could be inferred, so clear stack of expectations
+                builder_.putUserData(EXPECTATIONS_KEY, mutableListOf())
+                return true
+            }
+            if (prevPrevToken != null) {
+                // Try to find a command match with this, plus prev prev
+                CaosLibs[CaosVariant.CV][commandType]["$prevPrevToken $prevToken"]?.let {command ->
+                    val parameters = command.parameters.map {parameter ->
+                        when {
+                            parameter.type.isNumberType -> NUMBER
+                            parameter.type.isStringType -> STRING
+                            else -> OTHER
+                        }
+                    }
+                    val expectations = builder_.getUserData(EXPECTATIONS_KEY)
+                            ?.nullIfEmpty()
+                            ?.apply {
+                                addAll(0, parameters)
+                            }
+                            ?: parameters.toMutableList()
+                    builder_.putUserData(EXPECTATIONS_KEY, expectations)
+                    return true
+                }
+            }
+            // If previous two tokens do not match a command together
+            // Try your luck with just one
+            CaosLibs[CaosVariant.CV][commandType][prevToken]?.let { command ->
+                val parameters = command.parameters.map { parameter ->
+                    when {
+                        parameter.type.isNumberType -> NUMBER
+                        parameter.type.isStringType -> STRING
+                        else -> OTHER
+                    }
+                }
+                val expectations = builder_.getUserData(EXPECTATIONS_KEY)
+                        ?.nullIfEmpty()
+                        ?.apply {
+                            addAll(0, parameters)
+                        }
+                        ?: parameters.toMutableList()
+                builder_.putUserData(EXPECTATIONS_KEY, expectations)
+            }
+        }
+        return true
+    }
+
+    @JvmStatic
+    private fun pushPop(builder_: PsiBuilder): Boolean {
+        return variant(builder_) == CaosVariant.CV
+    }
+
+    @JvmStatic
     fun eol(builder_: PsiBuilder, level: Int): Boolean {
         val text = builder_.tokenText
         return (text != null && text.contains("\n")) || eof(builder_, level)
@@ -275,6 +416,19 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             return null
         }
         return originalText.substring(i until i + 4)
+    }
+
+    private fun prevToken(builder_: PsiBuilder, tokensOffset: Int = 0): String? {
+        val originalText = builder_.originalText
+        var i = builder_.currentOffset
+        for (tokenIndex in 0..tokensOffset) {
+            while (originalText.getOrNull(i)?.let { it == ' ' }.orFalse())
+                i--
+            if (i - 4 >= 0) {
+                return null
+            }
+        }
+        return originalText.substring(i - 4 until i)
     }
 
     @JvmStatic
