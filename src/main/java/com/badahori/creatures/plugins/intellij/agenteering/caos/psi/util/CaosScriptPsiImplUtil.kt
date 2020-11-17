@@ -366,8 +366,19 @@ object CaosScriptPsiImplUtil {
         // Get the enclosing command type such as RValue, LValue or Command
         val commandType = element.getEnclosingCommandType()
 
+        val needsFilter = commandType == CaosCommandType.RVALUE
+                && variant == CaosVariant.CV
+                && (tokenText like "CHAR" || tokenText like "TRAN")
+
+        val numArguments = if (needsFilter)
+            element.getSelfOrParentOfType(CaosScriptCommandElement::class.java)
+                    ?.arguments
+                    ?.size
+        else
+            null
+
         // Fetch command definition from CAOS lib
-        val command = getCommandDefinition(variant, commandType, tokenText)
+        val command = getCommandDefinition(variant, commandType, tokenText, numArguments)
 
         // Cache value, even if none was found
         element.putUserData(COMMAND_DEFINITION_KEY, Pair(variant, command))
@@ -390,11 +401,34 @@ object CaosScriptPsiImplUtil {
     private fun getCommandDefinition(
             variant: CaosVariant,
             commandType: CaosCommandType,
-            tokenIn: String
+            tokenIn: String,
+            numArguments:Int? = null
     ): CaosCommand? {
         val lib = CaosLibs[variant]
         val token = tokenIn.replace(SPACES_REGEX, " ")
-        return lib[commandType][token]
+
+
+        // Get filter for command type
+        val isCommandType:(command:CaosCommand) -> Boolean = when (commandType) {
+            CaosCommandType.RVALUE -> {command -> command.rvalue }
+            CaosCommandType.LVALUE -> { command -> command.lvalue }
+            CaosCommandType.COMMAND -> { command -> command.isCommand }
+            CaosCommandType.CONTROL_STATEMENT -> { command -> command.isCommand }
+            CaosCommandType.UNDEFINED -> {_ -> false}
+        }
+        // Choose filter function based on whether number of args need to be validated
+        // Args only need to be validated when in variant CV and token is CHAR or TRAN
+        val filter:(command:CaosCommand) -> Boolean = if (numArguments != null) {
+            {command ->
+                isCommandType(command) && command.command like token && command.parameters.size >= numArguments
+            }
+        } else {
+            {command ->
+                isCommandType(command) && command.command like token
+            }
+        }
+
+        return lib.commands.filter(isCommandType).firstOrNull(filter)
     }
 
     // ============================== //

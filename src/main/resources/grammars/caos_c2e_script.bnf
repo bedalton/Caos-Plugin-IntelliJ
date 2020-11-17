@@ -6,6 +6,7 @@
 	implements="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 	parserImports= [
 		"static com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*"
+		"static com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*"
 	]
 	extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCompositeElementImpl"
 	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes"
@@ -28,7 +29,7 @@
 	name("expects.*") = "value";
 	name("l_.*") = "variable";
 	name("lvalue") = "variable";
-	name("rvalue") = "value";
+	name("rvalue.*") = "value";
 	name("expression") = "value"
 	name("K_.*") = "command"
 	name("eq_op.*") = "EQ|NE|etc.."
@@ -623,9 +624,9 @@ private subroutine_body
 	;
 
 classifier
-	::= family space_like genus space_like species
+	::= <<pushParameter 'NUMBER' 'NUMBER' 'NUMBER'>> family space_like genus space_like species
 	{
-		pin = 1
+		pin = 2
 	}
 	;
 
@@ -702,7 +703,7 @@ repeat_statement
 	}
 	;
 reps_header
-	::= c_reps space_like rvalue
+	::= c_reps space_like <<pushParameter 'NUMBER'>> rvalue
 	{
 		pin=1
 		implements = [
@@ -746,7 +747,7 @@ enum_next_statement
 
 enum_header_command
 	::= c_enum space_like classifier
-	|	c_econ space_like rvalue
+	|	c_econ space_like <<pushParameter 'OTHER'>> rvalue
 	{
 		pin(".*")=1
 		implements = [
@@ -875,20 +876,12 @@ private else_block
 	}
 	;
 
-private else_body_recover
-	::= !(ENDI)
-	;
-
 private do_if_body
 	::= code_block
 	{
 		pin=1
 		//recoverWhile=do_if_body_recover
 	}
-	;
-
-private do_if_body_recover
-	::= !(ELSE|ENDI|ELIF)
 	;
 
 c_loop
@@ -1166,7 +1159,7 @@ c_else ::= K_ELSE
 	;
 
 c_rndv
-	::= c_kw_random space_like lvalue space_like rvalue space_like rvalue
+	::= c_kw_random <<pushParameter 'OTHER' 'NUMBER' 'NUMBER'>> space_like lvalue space_like rvalue space_like rvalue
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRndvStub"
@@ -1212,7 +1205,7 @@ c_kw_random
 	;
 
 c_targ
-	::= c_kw_targ space_like rvalue
+	::= c_kw_targ space_like <<pushParameter 'OTHER'>> rvalue
 	{
 		pin = 1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTargAssignmentStub"
@@ -1255,7 +1248,7 @@ c_kw_targ
 	;
 
 c_rtar
-	::= c_kw_rtar space_like rvalue space_like rvalue space_like rvalue
+	::= c_kw_rtar <<pushParameter 'NUMBER' 'NUMBER' 'NUMBER'>> space_like classifier
 	{
 		pin = 1
 		//stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRtarAssignmentStub"
@@ -1401,19 +1394,19 @@ c_kw_assign_string ::= K_SETS
 		]
 	}
 
-private c_all_assign_int ::= c_kw_assign_number space_like lvalue space_like rvalue
+private c_all_assign_int ::= c_kw_assign_number <<pushParameter 'OTHER' 'NUMBER'>> space_like lvalue space_like rvalue
 	{
 		pin=1
 	}
 	;
 
-private c_setv ::= c_kw_setv space_like lvalue space_like rvalue
+private c_setv ::= c_kw_setv <<pushParameter 'OTHER' 'NUMBER'>> space_like lvalue space_like rvalue
 	{
-		pin = 2
+		pin = 3
 	}
 	;
 
-private c_assign_net_unik ::= c_assign_kw_net_unik space_like rvalue space_like lvalue
+private c_assign_net_unik ::= c_assign_kw_net_unik <<pushParameter 'STRING' 'OTHER'>> space_like rvalue space_like lvalue
 	{
 		pin=1
 	}
@@ -1440,7 +1433,7 @@ c_assign_kw_net_unik
 	;
 
 
-private c_assign_gene ::= c_kw_assign_gene space_like rvalue space_like rvalue space_like lvalue
+private c_assign_gene ::= c_kw_assign_gene <<pushParameter 'NUMBER' 'NUMBER' 'OTHER'>> space_like rvalue space_like rvalue space_like lvalue
 	{
 		pin=1
 	}
@@ -1466,7 +1459,7 @@ c_kw_assign_gene
 	}
 	;
 
-private c_assign_char ::= c_kw_assign_char space_like lvalue space_like rvalue space_like rvalue
+private c_assign_char ::= c_kw_assign_char <<pushParameter 'OTHER' 'NUMBER' 'NUMBER'>> space_like lvalue space_like rvalue space_like rvalue
 	{
 		pin=1
 	}
@@ -1492,7 +1485,7 @@ c_kw_assign_char
 	}
 	;
 c_ssfc
-	::= c_kw_ssfc space_like rvalue space_like rvalue (space_like rvalue)*
+	::= c_kw_ssfc <<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue space_like rvalue (<<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue)*
 	{
 		pin = 1
 		implements = [
@@ -1573,7 +1566,7 @@ c_kw_assign_number
 	}
 	;
 
-private c_adds ::= c_kw_adds space_like lvalue space_like rvalue
+private c_adds ::= c_kw_adds <<pushParameter 'OTHER' 'STRING'>>  space_like lvalue space_like rvalue
 	{
 		pin=1
 	}
@@ -1599,7 +1592,7 @@ c_kw_adds
 	}
 	;
 
-private c_pict ::= c_kw_pict space_like expects_pict_dimension
+private c_pict ::= c_kw_pict <<pushParameter 'OTHER'>>  space_like expects_pict_dimension
 	{
 		pin=1
 	}
@@ -1654,7 +1647,7 @@ expects_pict_dimension
 	;
 
 c_gsub
-	::=  c_kw_gsub space_like subroutine_name
+	::=  c_kw_gsub <<pushParameter 'OTHER'>> space_like subroutine_name
 	{
 		pin = 1
 		implements = [
@@ -1678,6 +1671,66 @@ c_kw_gsub
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_char
+	::= r_kw_char r_char_prime
+	;
+
+private r_char_prime
+	::= (<<needsInt>>|!<<needsString>>) <<pushParameter 'STRING' 'NUMBER'>> space_like rvalue space_like rvalue
+	|	<<needsString>>
+	;
+
+r_kw_char
+	::= K_CHAR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_tran
+	::= r_kw_tran r_tran_prime
+	;
+
+private r_tran_prime
+	::= (<<needsInt>>|!<<needsString>>) <<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue space_like rvalue
+	|	<<needsString>> <<pushParameter 'NUMBER'>> space_like rvalue
+	;
+
+r_kw_tran
+	::= K_TRAN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
 		]
 		methods = [
@@ -1814,9 +1867,9 @@ equality_expression
    ;
 
 equality_expression_prime
-	::= rvalue space_like eq_op_with_expression
+	::= <<pushParameter 'OTHER'>> rvalue space_like eq_op_with_expression
 	{
-		pin = 1
+		pin = 2
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
 		]
@@ -1828,7 +1881,7 @@ equality_expression_prime
 	;
 
 private eq_op_with_expression
-	::= eq_op space_like rvalue
+	::= eq_op space_like <<pushParameter 'OTHER'>> rvalue
 	{
 		pin=1
 	}
@@ -1869,18 +1922,18 @@ eq_op_new
 	;
 
 rvalue
-	::= rvalue_prime
-	|	var_token
-	|	named_game_var
-	|	string_literal
-	|	byte_string
-	|	animation_string
-	|	number
-	|	pict_dimension_literal
+	::= rvalue_prime <<popParameter>>
+	|	var_token <<popParameter>>
+	|	named_game_var <<popParameter>>
+	|	string_literal <<popParameter>>
+	|	byte_string <<popParameter>>
+	|	animation_string <<popParameter>>
+	|	number <<popParameter>>
+	|	pict_dimension_literal <<popParameter>>
 	//|	command_soup
-	|	rvalue_prefix_incompletes
-	|	incomplete
-	|	error_rvalue
+	|	rvalue_prefix_incompletes <<popParameter>>
+	|	incomplete <<popParameter>>
+	|	error_rvalue <<popParameter>>
 	{
    		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -2090,7 +2143,7 @@ script_terminator
 
 
 named_game_var
-	::= named_game_var_kw space_like rvalue
+	::= named_game_var_kw <<pushParameter 'OTHER'>> space_like rvalue
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
@@ -2629,9 +2682,6 @@ private error_command_command
     |	K__UP_
     ;
 
-private command_recover
-	::= !(NEWLINE)
-	;
 
 // =============================== //
 // ========= BASE COMMANDS ======= //
@@ -2681,7 +2731,7 @@ private c_none
 	;
 
 private c_r
-	::=	c_kw_r args_r
+	::=	c_kw_r <<tagParameters 'COMMAND'>> args_r
 	;
 
 private args_r
@@ -2693,7 +2743,7 @@ private args_r
 	;
 
 private c_r_r
-	::=	c_kw_r_r args_r_r
+	::=	c_kw_r_r <<tagParameters 'COMMAND'>> args_r_r
 	;
 
 private args_r_r
@@ -2706,7 +2756,7 @@ private args_r_r
 
 
 private c_l
-	::=	c_kw_l 	args_l
+	::=	c_kw_l <<tagParameters 'COMMAND'>>	args_l
 	;
 
 private args_l
@@ -2717,7 +2767,7 @@ private args_l
 	;
 
 private c_r_r_r_r
-	::=	c_kw_r_r_r_r  args_r_r_r_r
+	::=	c_kw_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r
 	;
 
 private args_r_r_r_r
@@ -2729,7 +2779,7 @@ private args_r_r_r_r
 	;
 
 private c_r_r_r
-	::=	c_kw_r_r_r  args_r_r_r
+	::=	c_kw_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r
 	;
 
 private args_r_r_r
@@ -2753,7 +2803,7 @@ private args_cond
 	;
 
 private c_r_t
-	::=	c_kw_r_t  args_r_t
+	::=	c_kw_r_t <<tagParameters 'COMMAND'>> args_r_t
 	;
 
 private args_r_t
@@ -2765,7 +2815,7 @@ private args_r_t
 	;
 
 private c_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r
@@ -2777,7 +2827,7 @@ private args_r_r_r_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r_r_r
@@ -2788,7 +2838,7 @@ private args_r_r_r_r_r_r_r_r_r_r
 	}
 	;
 private c_t
-	::=	c_kw_t  args_t
+	::=	c_kw_t <<tagParameters 'COMMAND'>> args_t
 	;
 
 private args_t
@@ -2800,7 +2850,7 @@ private args_t
 	;
 
 private c_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r  args_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r
@@ -2812,7 +2862,7 @@ private args_r_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r_r
@@ -2824,7 +2874,7 @@ private args_r_r_r_r_r_r_r_r_r
 	;
 
 private c_l_l_l_l
-	::=	c_kw_l_l_l_l args_l_l_l_l
+	::=	c_kw_l_l_l_l <<tagParameters 'COMMAND'>> args_l_l_l_l
 	;
 
 private args_l_l_l_l
@@ -2836,7 +2886,7 @@ private args_l_l_l_l
 	;
 
 private c_t_r_r_r_r_r_r_r
-	::=	c_kw_t_r_r_r_r_r_r_r args_t_r_r_r_r_r_r_r
+	::=	c_kw_t_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_t_r_r_r_r_r_r_r
 	;
 
 private args_t_r_r_r_r_r_r_r
@@ -2848,7 +2898,7 @@ private args_t_r_r_r_r_r_r_r
 	;
 
 private c_t_r_r_r
-	::=	c_kw_t_r_r_r args_t_r_r_r
+	::=	c_kw_t_r_r_r <<tagParameters 'COMMAND'>> args_t_r_r_r
 	;
 
 private args_t_r_r_r
@@ -2860,7 +2910,7 @@ private args_t_r_r_r
 	;
 
 private c_t_r_r
-	::=	c_kw_t_r_r args_t_r_r
+	::=	c_kw_t_r_r <<tagParameters 'COMMAND'>> args_t_r_r
 	;
 
 private args_t_r_r
@@ -2872,7 +2922,7 @@ private args_t_r_r
 	;
 
 private c_t_r_r_r_r
-	::=	c_kw_t_r_r_r_r args_t_r_r_r_r
+	::=	c_kw_t_r_r_r_r <<tagParameters 'COMMAND'>> args_t_r_r_r_r
 	;
 
 private args_t_r_r_r_r
@@ -2884,7 +2934,7 @@ private args_t_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r args_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r
@@ -2896,7 +2946,7 @@ private args_r_r_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r_r_r_r_r_r
@@ -2908,7 +2958,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
@@ -2920,7 +2970,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r  args_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r
@@ -2932,7 +2982,7 @@ private args_r_r_r_r_r_r_r_r
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
@@ -2944,7 +2994,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private c_t_r
-	::=	c_kw_t_r args_t_r
+	::=	c_kw_t_r <<tagParameters 'COMMAND'>> args_t_r
 	;
 
 private args_t_r
@@ -2956,7 +3006,7 @@ private args_t_r
 	;
 
 private c_r_r_r_r_r_r_r_r_r_r_r_r
-	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r args_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r
 	;
 
 private args_r_r_r_r_r_r_r_r_r_r_r_r
@@ -2970,18 +3020,20 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r
 
 // ========== RValues ======== //
 rvalue_prime
-	::=	r_none
-	|	r_r
-	|	r_r_r_r_r_r
+	::=	r_r_r_r_r_r_r_r_l
 	|	r_r_r_r_r_r_r_r
-	|	r_r_r
-	|	r_r_r_r_r_r_r_r_l
-	|	r_r_r_r
+	|	r_r_r_r_r_r
+	|	r_r_r_r_r_l
 	|	r_r_r_r_r
 	|	r_r_r_r_l
+	|	r_r_r_r
 	|	r_r_r_l
-	|	r_r_r_r_r_l
+	|	r_r_r
+	|	r_r
 	|	r_t
+	|	r_tran
+	|	r_char
+	|	r_none
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub"
@@ -3010,59 +3062,59 @@ private r_none
 	;
 
 private r_r
-	::=	r_kw_r  space_like rvalue
+	::=	r_kw_r <<tagParameters 'RVALUE'>> space_like rvalue
 	;
 
 private r_r_r_r_r_r
-	::=	r_kw_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	r_kw_r_r_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	;
 
 private r_r_r_r_r_r_r_r
-	::=	r_kw_r_r_r_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	r_kw_r_r_r_r_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	;
 
 private r_r_r
-	::=	r_kw_r_r  space_like rvalue space_like rvalue
+	::=	r_kw_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue
 	;
 
 private r_r_r_r_r_r_r_r_l
-	::=	r_kw_r_r_r_r_r_r_r_l  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like lvalue
+	::=	r_kw_r_r_r_r_r_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like lvalue
 	;
 
 private r_r_r_r
-	::=	r_kw_r_r_r  space_like rvalue space_like rvalue space_like rvalue
+	::=	r_kw_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue
 	;
 
 private r_r_r_r_r
-	::=	r_kw_r_r_r_r  space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	::=	r_kw_r_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	;
 
 private r_r_r_r_l
-	::=	r_kw_r_r_r_l  space_like rvalue space_like rvalue space_like rvalue space_like lvalue
+	::=	r_kw_r_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like lvalue
 	;
 
 private r_r_r_l
-	::=	r_kw_r_r_l  space_like rvalue space_like rvalue space_like lvalue
+	::=	r_kw_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like lvalue
 	;
 
 private r_r_r_r_r_l
-	::=	r_kw_r_r_r_r_l  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like lvalue
+	::=	r_kw_r_r_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like lvalue
 	;
 
 private r_t
-	::=	r_kw_t  space_like token_rvalue
+	::=	r_kw_t <<tagParameters 'RVALUE'>> space_like token_rvalue
 	;
 
 // ========== LValues ======== //
 lvalue
-	::=	named_game_var
+	::=	named_game_var <<popParameter>>
 	|	l_none
 	|	l_r_r
 	|	l_r_r_r
 	|	l_r
-	|	var_token
-	|	incomplete
-	|	error_lvalue
+	|	var_token <<popParameter>>
+	|	incomplete <<popParameter>>
+	|	error_lvalue <<popParameter>>
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptLValueStub"
@@ -3100,15 +3152,15 @@ private l_none
 	;
 
 private l_r_r
-	::=	l_kw_r_r  space_like rvalue space_like rvalue
+	::=	l_kw_r_r <<tagParameters 'LVALUE'>> space_like rvalue space_like rvalue
 	;
 
 private l_r_r_r
-	::=	l_kw_r_r_r  space_like rvalue space_like rvalue space_like rvalue
+	::=	l_kw_r_r_r <<tagParameters 'LVALUE'>> space_like rvalue space_like rvalue space_like rvalue
 	;
 
 private l_r
-	::=	l_kw_r  space_like rvalue
+	::=	l_kw_r <<tagParameters 'LVALUE'>> space_like rvalue
 	;
 
 // =============================== //
@@ -3469,7 +3521,7 @@ c_kw_r_r
 	|	prefix_kw_sys_col space_like K_CMRP
 	|	prefix_kw_sys_col space_like K_GRND
 	|	K_TELE
-	|	K_TRAN <<isNewVariant 'true'>>
+	|	K_TRAN
 	|	K_VELO
 	|	K_VOLM
 	{
@@ -4485,7 +4537,6 @@ r_kw_r_r_r_r_r_r_r
 r_kw_r_r
 	::=	K_ANGL
 	|	K_AVAR
-	|	K_CHAR <<isNewVariant 'true'>>
 	|	K_DOOR
 	|	K_GAME<<isVariant 'C2.INSTANCE'>>
 	|	K_GMAP
@@ -4532,7 +4583,6 @@ r_kw_r_r
 	|	K_TMVF
 	|	K_TMVT
 	|	K_TOUC
-	|	K_TRAN <<isNewVariant 'true'>>
 	|	K_TWIN
 	|	K_WEAR
 	|	K_WOLF
