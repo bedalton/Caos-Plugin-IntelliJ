@@ -34,6 +34,8 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
         val type2 = node2.elementType
         val types = listOf(type, type1, type2)
 
+        if (type1 == CaosScriptTypes.CaosScript_COMMENT_START)
+            return Spacing.createSpacing(0, Int.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
         if (commaTypes.intersect(types).isNotEmpty())
             return noneSpace
         if (myNode.next?.isDirectlyPrecededByNewline().orFalse())
