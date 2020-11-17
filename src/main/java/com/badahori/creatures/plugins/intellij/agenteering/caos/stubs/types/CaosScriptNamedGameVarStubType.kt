@@ -53,7 +53,6 @@ class CaosScriptNamedGameVarStubType(debugName:String) : CaosScriptStubElementTy
     }
 
     override fun indexStub(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink) {
-        LOGGER.info("IndexingStub: ${stub.type.token}:${stub.key}")
         ServiceManager.getService(CaosScriptIndexService::class.java).indexNamedGameVar(stub, indexSink)
     }
 }
