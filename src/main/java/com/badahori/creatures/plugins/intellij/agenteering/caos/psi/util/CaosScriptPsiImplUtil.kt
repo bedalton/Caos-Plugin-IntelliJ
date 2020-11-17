@@ -750,6 +750,15 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getUseScope(element:CaosScriptVarToken) : SearchScope {
+        if (element.varGroup == CaosScriptVarTokenGroup.VARx || element.varGroup == CaosScriptVarTokenGroup.VAxx)
+            element.getParentOfType(CaosScriptScriptElement::class.java)?.let {script ->
+                return LocalSearchScope(script)
+            }
+        return element.parent?.useScope ?: LocalSearchScope(element.containingFile)
+    }
+
+    @JvmStatic
     fun getReference(element:CaosScriptQuoteStringLiteral) : CaosScriptQuoteStringLiteralReference {
         return CaosScriptQuoteStringLiteralReference(element)
     }
@@ -1148,7 +1157,10 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getArgumentValues(rvalue: CaosScriptRvalue): List<CaosExpressionValueType> {
-        return rvalue.stub?.argumentValues ?: rvalue.arguments.map { it.inferredType }
+        return rvalue.stub?.argumentValues ?: if (DumbService.isDumb(rvalue.project))
+            rvalue.arguments.map { CaosScriptInferenceUtil.getInferredType(rvalue, false) }
+        else
+            rvalue.arguments.map { it.inferredType }
     }
 
     /**
@@ -1441,10 +1453,12 @@ object CaosScriptPsiImplUtil {
      * Gets the key or text component for a named game variable
      */
     @JvmStatic
-    fun getKeyType(element: CaosScriptNamedGameVar): CaosExpressionValueType {
+    fun getKeyType(element: CaosScriptNamedGameVar): CaosExpressionValueType? {
+        if (DumbService.isDumb(element.project))
+            return null
         return element.stub?.keyType ?: element.rvalue?.let {rvalue ->
             CaosScriptInferenceUtil.getInferredType(rvalue, false)
-        } ?: CaosExpressionValueType.UNKNOWN
+        }
     }
 
     /**
