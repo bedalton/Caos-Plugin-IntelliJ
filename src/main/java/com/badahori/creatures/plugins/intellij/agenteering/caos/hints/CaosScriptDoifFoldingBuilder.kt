@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil.getInferredType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder.Companion.IS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder.Companion.IS_NOT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
@@ -122,7 +123,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         // Check if any of the values has a value list
         return listOf(first.commandStringUpper, second.commandStringUpper).intersect(listOf("CHEM", "DRIV", "DRV!")).isNotEmpty()
-                || AGENT in listOf(first.inferredType, second.inferredType)
+                || AGENT in listOf(getInferredType(first, false), getInferredType(second, false))
                 || getValuesList(variant, first) != null
                 || getValuesList(variant, second) != null
                 || isKeyCode(variant, first)
@@ -423,10 +424,8 @@ private val TIME: Formatter = formatter@{ formatInfo: FormatInfo ->
 
 private fun keyDown(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue): String? {
     // If _P1_ in event script 73 or 74 in CV+ is Keycode
-    LOGGER.info("Checking if eq statement is KeyDown. ThisValue: ${thisValue.text}; OtherValue: ${otherValue.text}; EventScriptNumber: ${thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber}")
     if (!isKeyCode(variant, thisValue))
         return null
-    LOGGER.info("Statement is KeyDown")
     val eqOpString = formatEqOp(eqOp, isBool = true, boolOnLessThan = false, otherValueInt = otherValue.intValue)
     val key = CaosLibs[variant].valuesList("KeyCodes")
             ?.get(otherValue.text)
@@ -515,7 +514,3 @@ private val homogenizeFormattedText: FormatString get() = formatUpperCaseFirst
  * Formatter for comparison's left and right replacement values
  */
 private val formatPrimary: FormatString = allLowerCase
-
-private fun CaosScriptArgument.valuesListValue(variant: CaosVariant, parameterInfo: CaosParameter?): String {
-    return parameterInfo?.valuesList?.get(variant)?.get(text)?.name ?: text
-}
