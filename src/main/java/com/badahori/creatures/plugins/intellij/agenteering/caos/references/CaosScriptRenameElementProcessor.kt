@@ -1,9 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedGameVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
@@ -15,6 +12,8 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
         return element is CaosScriptSubroutine
                 || element is CaosScriptSubroutineName
                 || element is CaosScriptNamedGameVar
+                || element is CaosScriptQuoteStringLiteral
+                || element is CaosScriptStringText
     }
 
     override fun isInplaceRenameSupported(): Boolean {
@@ -39,6 +38,8 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
         if (element is CaosScriptSubroutine) {
             return element.subroutineHeader.subroutineName
         }
+        if (element is CaosScriptQuoteStringLiteral)
+            return element
         return super.substituteElementToRename(element, editor)
     }
 }
