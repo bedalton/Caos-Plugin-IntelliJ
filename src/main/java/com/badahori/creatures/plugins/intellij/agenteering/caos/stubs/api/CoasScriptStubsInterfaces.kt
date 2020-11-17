@@ -116,7 +116,7 @@ interface CaosScriptEventScriptStub : StubElement<CaosScriptEventScriptImpl> {
 interface CaosScriptNamedGameVarStub : StubElement<CaosScriptNamedGameVarImpl> {
     val type: CaosScriptNamedGameVarType
     val key:String
-    val keyType:CaosExpressionValueType
+    val keyType:CaosExpressionValueType?
 }
 
 interface CaosScriptRepsStub : StubElement<CaosScriptRepeatStatementImpl>, CaosScriptBlockStub {
