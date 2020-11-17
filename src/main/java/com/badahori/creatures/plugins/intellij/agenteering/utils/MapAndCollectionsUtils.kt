@@ -60,3 +60,10 @@ inline fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> 
 
 
 fun <T : Any> mutableListOfNotNull(vararg elements: T?): MutableList<T> = elements.filterNotNull().toMutableList()
+
+val <T:Any> Iterator<T>.values:List<T> get() {
+    val out = mutableListOf<T>()
+    while(hasNext())
+        out.add(next())
+    return out
+}
