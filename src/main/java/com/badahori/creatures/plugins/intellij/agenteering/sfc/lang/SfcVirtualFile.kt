@@ -31,5 +31,5 @@ class SfcVirtualFile : CaosVirtualFile, ModificationTracker, HasVariant {
 
     override var variant: CaosVariant?
         get() = sfcData?.variant
-        set(value) { throw NotSupportedException("You cannot set Creatures variant on SFC virtual files.") }
+        set(@Suppress("UNUSED_PARAMETER") value) { throw NotSupportedException("You cannot set Creatures variant on SFC virtual files.") }
 }
