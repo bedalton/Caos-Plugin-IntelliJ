@@ -933,14 +933,16 @@ class CaosScriptTokenSets {
                     CaosScript_OBV_X,
                     CaosScript_OV_XX,
                     CaosScript_MV_XX,
-                    CaosScript_VAR_TOKEN,
                     CaosDef_HASH_TAG,
                     CaosScript_INT,
                     CaosScript_WORD,
                     CaosScript_SUBROUTINE_NAME,
                     CaosDef_VALUES_LIST_VALUE_KEY_LITERAL,
                     CaosScript_STRING_TEXT,
-                    CaosScript_QUOTE_STRING_LITERAL
+                    CaosScript_QUOTE_STRING_LITERAL,
+                    CaosScript_ERROR_WORD,
+                    CaosScript_INCOMPLETE,
+                    CaosScript_WORD
             )
             val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
                     .types + otherTokens)
