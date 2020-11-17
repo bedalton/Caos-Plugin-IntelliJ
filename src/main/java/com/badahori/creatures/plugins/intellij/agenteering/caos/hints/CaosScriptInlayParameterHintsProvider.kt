@@ -36,7 +36,7 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
             val commandElement = element as? CaosScriptCommandElement
                     ?: return mutableListOf()
             if (commandElement is CaosScriptCAssignment && commandElement.commandString like "SETV" )
-                return inlayHinstForCAssignment(commandElement)
+                return inlayHintsForCAssignment(commandElement)
 
             // If direct parent is assignment, its parameters have been modified set c_assignment element pass
             if (commandElement.parent.let { it is CaosScriptCAssignment && it.commandString like "SETV" })
@@ -53,13 +53,13 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
             }.toList()
         }
 
-        private fun inlayHinstForCAssignment(assignment:CaosScriptCAssignment) : List<InlayInfo> {
+        private fun inlayHintsForCAssignment(assignment:CaosScriptCAssignment) : List<InlayInfo> {
             val arguments = assignment.arguments
             val lvalueElement = (arguments.firstOrNull() as? CaosScriptLvalue)
                     ?: return emptyList()
             val command = lvalueElement.commandDefinition
             if (command == null) {
-                val parameters = assignment.commandDefinition?.parameters?.map { it.name.nullIfEmpty()}
+                val parameters = assignment.commandDefinition?.parameters?.map { it.name.nullIfEmpty() }
                 return arguments.mapIndexedNotNull {i, argument ->
                     parameters?.getOrNull(i)?.let {parameter ->
                         InlayInfo("$parameter:", argument.startOffset)
