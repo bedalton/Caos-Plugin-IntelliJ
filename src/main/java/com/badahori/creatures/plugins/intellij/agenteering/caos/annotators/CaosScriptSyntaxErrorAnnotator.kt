@@ -21,6 +21,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.SPACES_REGEX
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -29,11 +30,9 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import kotlin.math.abs
 import kotlin.math.floor
 
-class CaosScriptSyntaxErrorAnnotator : Annotator {
+class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        if (DumbService.isDumb(element.project))
-            return
         if (element.isOrHasParentOfType(CaosDefCompositeElement::class.java))
             return
         if (!element.isPhysical)
@@ -282,9 +281,15 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     }
 
     private fun annotateVarToken(variant: CaosVariant, element: CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant == CaosVariant.C1) {
+        if (variant.isOld) {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
-                val type = CaosScriptInferenceUtil.getInferredType(element)
+                // TODO: Is this check really necessary, in older variants
+                // a string cannot be assigned to a string anyways,
+                // so a variable is guaranteed to have an int (either literal or agent id)
+                val type = if (DumbService.isDumb(element.project))
+                    CaosExpressionValueType.VARIABLE
+                else
+                    CaosScriptInferenceUtil.getInferredType(element)
                 if (type == CaosExpressionValueType.C1_STRING || type == CaosExpressionValueType.BYTE_STRING || type == STRING) {
                     annotationWrapper.newErrorAnnotation(message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
                             .range(element)
