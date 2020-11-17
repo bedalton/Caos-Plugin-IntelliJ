@@ -56,10 +56,10 @@ class CaosScriptQuoteStringLiteralReference(element:CaosScriptQuoteStringLiteral
      */
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
         if (!canResolve) {
-            return ResolveResult.EMPTY_ARRAY
+            return PsiElementResolveResult.createResults(myElement)
         }
         val variant = myElement.variant
-                ?: return ResolveResult.EMPTY_ARRAY
+                ?: return PsiElementResolveResult.createResults(myElement)
         val references = CaosScriptNamedGameVarIndex.instance[type, key, myElement.project]
                 .filter {anElement ->
                     anElement.variant == variant
