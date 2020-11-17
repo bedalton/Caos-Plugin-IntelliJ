@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -76,6 +77,7 @@ object CaosScriptInferenceUtil {
         // Get all assignments for this variable
         return element.getAssignments()
                 .mapNotNull map@{ assignment ->
+                    ProgressIndicatorProvider.checkCanceled()
                     if (assignment.lvalue?.let { !isSimilar(element, it) }.orFalse())
                         return@map null
                     getInferredType(assignment)?.let { type ->

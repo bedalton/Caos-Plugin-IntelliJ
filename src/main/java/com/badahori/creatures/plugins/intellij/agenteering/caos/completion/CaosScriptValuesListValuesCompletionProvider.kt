@@ -13,6 +13,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -126,6 +127,7 @@ object CaosScriptValuesListValuesCompletionProvider {
 
         // Loop through all filtered values for completion items
         for (value in values) {
+            ProgressIndicatorProvider.checkCanceled()
             val key = if (hasFamily) {
                 value.value.split(" ").lastOrNull() ?: continue
             } else
@@ -170,6 +172,7 @@ object CaosScriptValuesListValuesCompletionProvider {
 
         // Actually add lookup element completion values
         for (value in values) {
+            ProgressIndicatorProvider.checkCanceled()
             var lookupElement = LookupElementBuilder
                     .create(value.value)
                     .withLookupString(value.name.matchCase(case))

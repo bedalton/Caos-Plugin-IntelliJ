@@ -99,6 +99,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
      * Generic method for building a chemical folded string
      */
     private fun foldChemCallGeneric(commandCall: CaosScriptCommandCall, commandDefinition: CaosCommand): String? {
+        ProgressIndicatorProvider.checkCanceled()
         // Pull arguments from call
         val arguments = commandCall.arguments
 

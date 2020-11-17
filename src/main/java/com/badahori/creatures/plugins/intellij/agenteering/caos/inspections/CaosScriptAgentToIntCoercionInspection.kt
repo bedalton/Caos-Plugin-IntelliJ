@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeNone
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElementVisitor
 
 class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
@@ -21,11 +22,13 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
         return object : CaosScriptVisitor() {
             override fun visitRvaluePrime(o: CaosScriptRvaluePrime) {
                 annotateArgument(o, holder)
+                ProgressIndicatorProvider.checkCanceled()
                 super.visitRvaluePrime(o)
             }
 
             override fun visitLvalue(o: CaosScriptLvalue) {
                 annotateArgument(o, holder)
+                ProgressIndicatorProvider.checkCanceled()
                 super.visitLvalue(o)
             }
         }

@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
@@ -62,9 +63,11 @@ class CaosScriptQuoteStringLiteralReference(element:CaosScriptQuoteStringLiteral
                 ?: return PsiElementResolveResult.createResults(myElement)
         val references = CaosScriptNamedGameVarIndex.instance[type, key, myElement.project]
                 .filter {anElement ->
+                    ProgressIndicatorProvider.checkCanceled()
                     anElement.variant == variant
                 }
                 .mapNotNull {
+                    ProgressIndicatorProvider.checkCanceled()
                     it.rvalue?.quoteStringLiteral
                 }
                 .nullIfEmpty()

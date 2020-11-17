@@ -6,6 +6,7 @@ import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider
 import com.intellij.codeInsight.hints.Option
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
 
@@ -14,6 +15,7 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
             CaosScriptHintsProvider.values.map { it.option }
 
     override fun getParameterHints(element: PsiElement): List<InlayInfo> {
+        ProgressIndicatorProvider.checkCanceled()
         val resolved = CaosScriptHintsProvider.resolve(element)
                 ?: return mutableListOf()
         return resolved.provideHints(element)
