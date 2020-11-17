@@ -11,6 +11,7 @@ import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -41,6 +42,7 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
      */
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
         return PsiTreeUtil.findChildrenOfType(root, CaosScriptHasCodeBlock::class.java).mapNotNull blocks@{ parent ->
+            ProgressIndicatorProvider.checkCanceled()
             val group = FoldingGroup.newGroup("CaosScript_BLOCK_FOLDING")
             val codeBlock = parent.codeBlock ?: return@blocks null // If block is empty, there is nothing to fold
             val rangeStart = getBlockStart(codeBlock)
@@ -57,6 +59,7 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
     private fun getBlockStart(codeBlock: CaosScriptCodeBlock): Int {
         var previous = codeBlock.previous
         while (previous != null) {
+            ProgressIndicatorProvider.checkCanceled()
             val temp = previous.previous ?: break
             if (temp.elementType in CaosScriptTokenSets.WHITESPACES || temp is CaosScriptWhiteSpaceLike)
                 previous = temp
@@ -76,6 +79,7 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
     private fun getBlockEnd(codeBlock: CaosScriptCodeBlock): Int {
         var next = codeBlock.next
         while (next != null) {
+            ProgressIndicatorProvider.checkCanceled()
             val temp = next.next ?: break
             if (temp.elementType in CaosScriptTokenSets.WHITESPACES || temp is CaosScriptWhiteSpaceLike)
                 next = temp
