@@ -72,6 +72,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
     private fun checkVarReferences(variants: List<CaosVariant>, project: Project, scope: SearchScope?, varGroup: CaosScriptVarTokenGroup, processor: Processor<in PsiReference>) {
         getCaosFiles(project, scope)
                 .flatMap map@{ file ->
+                    ProgressIndicatorProvider.checkCanceled()
                     if (file.variant !in variants)
                         return@map emptyList<PsiReference>()
                     PsiTreeUtil.collectElementsOfType(file, CaosScriptVarToken::class.java)
@@ -89,6 +90,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
     private fun isReferenceTo(variants: List<CaosVariant>, project: Project, scope: SearchScope?, command: CaosDefCommandWord, processor: Processor<in PsiReference>) {
         getCaosFiles(project, scope)
                 .flatMap map@{ file ->
+                    ProgressIndicatorProvider.checkCanceled()
                     if (file.variant !in variants)
                         return@map emptyList<PsiReference>()
                     PsiTreeUtil.collectElementsOfType(file, CaosScriptIsCommandToken::class.java)
@@ -130,6 +132,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
                 .flatMap map@{ file ->
                     if (file.variant !in variants)
                         return@map emptyList<PsiReference>()
+                    ProgressIndicatorProvider.checkCanceled()
                     PsiTreeUtil.collectElementsOfType(file, CaosScriptRvalue::class.java)
                             .filter { expression -> reference.isReferenceTo(expression) }
                             .mapNotNull {
@@ -137,6 +140,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
                                 it.reference
                             }
 
+                    ProgressIndicatorProvider.checkCanceled()
                     PsiTreeUtil.collectElementsOfType(file, CaosScriptEventNumberElement::class.java)
                             .filter { expression ->
                                 ProgressIndicatorProvider.checkCanceled()
@@ -186,6 +190,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         fun getCobVirtualFiles(project: Project, scope: SearchScope? = null): List<CaosVirtualFile> {
             return FilenameIndex.getAllFilesByExt(project, "cob")
                     .flatMap { file ->
+                        ProgressIndicatorProvider.checkCanceled()
                         CobVirtualFileUtil.decompiledCobFiles(file, project)
                     }
                     .filter {file ->

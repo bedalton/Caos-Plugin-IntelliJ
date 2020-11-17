@@ -14,6 +14,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElementVisitor
@@ -85,6 +86,7 @@ private object CombineBodyScriptsToTopOfFile : LocalQuickFix {
             var previous = firstNonMacro.parent as? CaosScriptScriptBodyElement
                     ?: return@action false
             for (macro in macros) {
+                ProgressIndicatorProvider.checkCanceled()
                 previous = macro.element?.getParentOfType(CaosScriptScriptBodyElement::class.java)?.let { parent ->
                     val parentCopy = parent.copy()
                     parent.delete()
