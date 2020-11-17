@@ -323,7 +323,7 @@ object CaosScriptPsiImplUtil {
      * Uses userdata caches to save requests
      */
     @JvmStatic
-    fun getCommandDefinition(element: CaosScriptCommandElement): CaosCommand? {
+    fun getCommandDefinition(element: CaosScriptCommandLike): CaosCommand? {
         // Ensure token exists
         val token = element.commandString
                 ?: return null
@@ -344,11 +344,19 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets a command definition for an rvalue prime command call
+     */
+    @JvmStatic
+    fun getCommandDefinition(element: CaosScriptRvaluePrime): CaosCommand? {
+        // Return command definition if any
+        return element.commandString.nullIfEmpty()?.let { commandToken -> getCommandDefinition(element, commandToken) }
+    }
+
+    /**
      * Gets a command definitions object from an element, and a command token
      * Is generic to handle both command elements themselves, and their tokens directly
      */
-    @JvmStatic
-    fun getCommandDefinition(element: PsiElement, tokenText: String): CaosCommand? {
+    private fun getCommandDefinition(element: PsiElement, tokenText: String): CaosCommand? {
         // Ensure that a variant has been set for this element,
         // if not, there is no way to ensure a proper return
         val variant = element.variant
@@ -366,6 +374,10 @@ object CaosScriptPsiImplUtil {
         // Get the enclosing command type such as RValue, LValue or Command
         val commandType = element.getEnclosingCommandType()
 
+        if (commandType == CaosCommandType.UNDEFINED) {
+            LOGGER.severe("Called get command definitions on an object not in command scope. Element: ${element.elementType}(${element.text})")
+            return null
+        }
         val needsFilter = commandType == CaosCommandType.RVALUE
                 && variant == CaosVariant.CV
                 && (tokenText like "CHAR" || tokenText like "TRAN")
@@ -407,7 +419,6 @@ object CaosScriptPsiImplUtil {
         val lib = CaosLibs[variant]
         val token = tokenIn.replace(SPACES_REGEX, " ")
 
-
         // Get filter for command type
         val isCommandType:(command:CaosCommand) -> Boolean = when (commandType) {
             CaosCommandType.RVALUE -> {command -> command.rvalue }
@@ -420,7 +431,7 @@ object CaosScriptPsiImplUtil {
         // Args only need to be validated when in variant CV and token is CHAR or TRAN
         val filter:(command:CaosCommand) -> Boolean = if (numArguments != null) {
             {command ->
-                isCommandType(command) && command.command like token && command.parameters.size >= numArguments
+                isCommandType(command) && command.command like token && command.parameters.size == numArguments
             }
         } else {
             {command ->
@@ -1149,7 +1160,9 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getArgumentValues(command: CaosScriptCommandCall): List<CaosExpressionValueType> {
-        return command.stub?.argumentValues ?: command.arguments.map { it.inferredType }
+        return command.stub?.argumentValues
+                ?: getArgumentValues(command.arguments).nullIfEmpty()
+                ?: getArgumentValues((command.firstChild as? CaosScriptCommandElement)?.arguments ?: emptyList())
     }
 
     /**
@@ -1157,10 +1170,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getArgumentValues(rvalue: CaosScriptRvalue): List<CaosExpressionValueType> {
-        return rvalue.stub?.argumentValues ?: if (DumbService.isDumb(rvalue.project))
-            rvalue.arguments.map { CaosScriptInferenceUtil.getInferredType(rvalue, false) }
-        else
-            rvalue.arguments.map { it.inferredType }
+        return rvalue.stub?.argumentValues ?: getArgumentValues(rvalue.arguments)
     }
 
     /**
@@ -1168,7 +1178,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getArgumentValues(lvalue: CaosScriptLvalue): List<CaosExpressionValueType> {
-        return lvalue.stub?.argumentValues ?: lvalue.arguments.map { it.inferredType }
+        return lvalue.stub?.argumentValues ?: getArgumentValues(lvalue.arguments)
     }
 
     /**
@@ -1176,8 +1186,24 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getArgumentValues(element: CaosScriptCommandElement): List<CaosExpressionValueType> {
-        return element.arguments.map {
-            it.inferredType
+        return getArgumentValues(element.arguments)
+    }
+
+    /**
+     * Generic getter for command argument types
+     */
+    private fun getArgumentValues(arguments:List<CaosScriptArgument>) : List<CaosExpressionValueType> {
+        if (arguments.isEmpty())
+            return emptyList()
+        val resolveVars = !DumbService.isDumb(arguments.first().project)
+        return arguments.map { argument ->
+            when (argument) {
+                is CaosScriptRvalue ->  CaosScriptInferenceUtil.getInferredType(argument, resolveVars)
+                is CaosScriptTokenRvalue -> CaosExpressionValueType.TOKEN
+                is CaosScriptLvalue -> (argument.commandDefinition?.returnType) ?: CaosExpressionValueType.VARIABLE
+                is CaosScriptSubroutineName -> CaosExpressionValueType.TOKEN
+                else -> CaosExpressionValueType.UNKNOWN
+            }
         }
     }
 
@@ -1735,7 +1761,33 @@ object CaosScriptPsiImplUtil {
             override fun getIcon(unused: Boolean): Icon? {
                 return CaosScriptIcons.LVALUE
             }
+        }
+    }
+    /**
+     * Gets presentation for the command token
+     */
+    @JvmStatic
+    fun getPresentation(element: CaosScriptQuoteStringLiteral): ItemPresentation {
+        return object : ItemPresentation {
+            override fun getPresentableText(): String? {
+                return (element.parent?.parent as? CaosScriptNamedGameVar)?.let {namedVar ->
+                    return if (namedVar.keyType == CaosExpressionValueType.STRING)
+                        "${namedVar.varType.token} \"${namedVar.key}\""
+                    else
+                        "\"${namedVar.key}\""
+                } ?: element.text
+            }
 
+            override fun getLocationString(): String? {
+                return (element.containingFile ?: element.originalElement?.containingFile)?.name
+            }
+
+            override fun getIcon(unused: Boolean): Icon? {
+                if (element.parent?.parent is CaosScriptNamedGameVar) {
+                    return CaosScriptIcons.LVALUE
+                }
+                return null
+            }
         }
     }
 
