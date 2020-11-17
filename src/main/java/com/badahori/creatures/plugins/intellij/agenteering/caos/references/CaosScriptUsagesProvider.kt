@@ -35,10 +35,16 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
             element.elementType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
             element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "number ${element.text}"
+            element.elementType == CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL -> when {
+                element.parent?.parent is CaosScriptNamedGameVar -> (element.parent?.parent as CaosScriptNamedGameVar).let {variable ->
+                    "variable ${variable.varType.token} \"${variable.key}\""
+                }
+                    else -> "\"${element.text.substring(1 until element.textLength)}\""
+            }
             else -> {
                 element.getSelfOrParentOfType(CaosScriptIsCommandToken::class.java)?.let {
                     CaosScriptPresentationUtil.getDescriptiveText(it)
-                } ?: "element"
+                } ?: element.text
             }
         }
     }
