@@ -22,6 +22,8 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
+import icons.CaosScriptIcons
+import javax.swing.Icon
 
 
 const val UNDEF = "{UNDEF}"
@@ -1661,6 +1663,30 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getPresentation(element: CaosScriptIsCommandToken): ItemPresentation {
         return CaosScriptPresentationUtil.getPresentation(element)
+    }
+
+    /**
+     * Gets presentation for the command token
+     */
+    @JvmStatic
+    fun getPresentation(element: CaosScriptNamedGameVar): ItemPresentation {
+        return object : ItemPresentation {
+            override fun getPresentableText(): String? {
+                return if (element.keyType == CaosExpressionValueType.STRING)
+                    "${element.varType.token} \"${element.key}\""
+                else
+                    "\"${element.key}\""
+            }
+
+            override fun getLocationString(): String? {
+                return (element.containingFile ?: element.originalElement?.containingFile)?.name
+            }
+
+            override fun getIcon(unused: Boolean): Icon? {
+                return CaosScriptIcons.LVALUE
+            }
+
+        }
     }
 
     /**
