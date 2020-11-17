@@ -685,7 +685,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getNameIdentifier(element: CaosScriptNamedGameVar): PsiElement? {
-        return element.rvalue?.quoteStringLiteral
+        return element.rvalue?.quoteStringLiteral ?: element.rvalue
     }
 
 
