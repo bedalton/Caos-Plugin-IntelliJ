@@ -940,8 +940,6 @@ class CaosScriptTokenSets {
                     CaosScript_SUBROUTINE_NAME,
                     CaosDef_VALUES_LIST_VALUE_KEY_LITERAL,
                     CaosScript_STRING_TEXT,
-                    CaosScript_STRING_CHAR,
-                    CaosScript_STRING_ESCAPE_CHAR,
                     CaosScript_QUOTE_STRING_LITERAL
             )
             val tokens = (ALL_CAOS_COMMAND_LIKE_TOKENS
