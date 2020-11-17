@@ -55,7 +55,10 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
             element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "Command"
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "Subroutine Label"
             else -> when (element.elementType) {
-                in CaosScriptTokenSets.STRING_LIKE -> "String"
+                in CaosScriptTokenSets.STRING_LIKE -> (element.parent?.parent as? CaosScriptNamedGameVar)
+                        ?.varType
+                        ?.token
+                        ?: "String"
                 in CaosScriptTokenSets.KEYWORDS -> "Flow Control"
                 in CaosScriptTokenSets.ALL_COMMANDS -> "Command"
                 CaosScriptTypes.CaosScript_INT -> "Integer"
@@ -66,6 +69,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
                 CaosScriptTypes.CaosScript_OV_XX -> "TARG variable"
                 CaosScriptTypes.CaosScript_OBV_X -> "TARG variable"
                 CaosScriptTypes.CaosScript_MV_XX -> "OWNR variable"
+                CaosScriptTypes.CaosScript_NAMED_GAME_VAR -> "variable"
                 CaosScriptTypes.CaosScript_SUBROUTINE_NAME -> "SUBR"
                 else -> "element"
             }
