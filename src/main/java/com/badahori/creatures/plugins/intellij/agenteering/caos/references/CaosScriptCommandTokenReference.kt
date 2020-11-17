@@ -26,11 +26,16 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
-class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.text.length)) {
+class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPolyVariantReferenceBase<CaosScriptIsCommandToken>(element, TextRange(0, element.textLength)) {
 
     private val name: String by lazy {
-        element.name?.replace(SPACES_REGEX, " ") ?: "{{UNDEF}}"
+        element.name?.commandFormatted?.nullIfEmpty() ?: "{{UNDEF}}"
     }
+
+    private val commandType:CaosCommandType by lazy {
+        element.getEnclosingCommandType()
+    }
+
     private val variants: List<CaosVariant> by lazy {
         when (myElement) {
             is CaosDefCompositeElement -> myElement.variants
@@ -53,10 +58,37 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
             // Or CaosScriptIsCommandToken with command parent
             else -> {
                 innerCheck = { commandString:String ->
-                    myElement.parent?.text?.commandFormatted like commandString
+                    name like commandString
                 }
             }
         }
+
+        // Check lambda to ensure that command types match between this token, and the command def element
+        val checkCommandType:(commandElement:CaosDefCommandDefElement) -> Boolean = when(commandType) {
+            CaosCommandType.COMMAND -> { commandElement:CaosDefCommandDefElement ->
+                commandElement.isCommand
+            }
+            CaosCommandType.LVALUE -> { commandElement:CaosDefCommandDefElement ->
+                commandElement.isLvalue
+            }
+            CaosCommandType.RVALUE -> { commandElement:CaosDefCommandDefElement ->
+                commandElement.isRvalue
+            }
+            CaosCommandType.CONTROL_STATEMENT -> { commandElement:CaosDefCommandDefElement ->
+                commandElement.isCommand
+            }
+
+            // Handle special case of when command is not resolved to single CommandType
+            CaosCommandType.UNDEFINED -> if (myElement is CaosDefCompositeElement)
+                // If this check is reached, and myElement is CaosDef composite element
+                // Then it should only exist in a CaosDefCodeBlock, which does not hold enclosing command information
+                {_ -> true}
+            else
+                // Else if not CAOSDef composite element,
+                // Then this element's type could not be determined, and should not resolve
+                { _ -> false }
+        }
+
         // Creates and caches a checking method to check whether
         // this element references passed in element
         check@{ element:PsiElement ->
@@ -64,11 +96,25 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
             // Return the passed in element is not
             if (!isDeclaration(element))
                 return@check false
+
+            // Get CaosDefCommand
+            val commandDef = (element.parent as CaosDefCommand)
+
             // Get and format passed in elements text
             val elementText = (element.parent as CaosDefCommand).text.commandFormatted
                     ?: return@check false
-            // Runs check on lambda declared earlier
-            innerCheck(elementText)
+
+            // Runs check for names match
+            if (!innerCheck(elementText))
+                return@check false
+
+            // Get parent CaosDefCommandDefElement for checking command type
+            val commandElement = commandDef.parent as? CaosDefCommandDefElement
+                    ?: return@check false
+
+            // Check that referencing element and this element have matching command types
+            // ie. LValue,Rvalue or Command
+            checkCommandType(commandElement)
         }
     }
 
@@ -79,6 +125,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name.toUpperCase()) {
             return true
         }
+        // If is command def element, it is not reference to anything else
+        if (myElement.parent?.parent is CaosDefCommandDefElement)
+            return element.isEquivalentTo(myElement)
         // Uses cached check method
         return check(element)
     }
