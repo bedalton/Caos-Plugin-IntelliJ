@@ -43,7 +43,7 @@ class CaosScriptNamedGameVarStubType(debugName:String) : CaosScriptStubElementTy
         return CaosScriptNamedGameVarStubImpl(
                 parent = parent,
                 type = element.varType,
-                key = element.name ?: UNDEF,
+                key = element.name,
                 keyType = element.keyType
         )
     }
