@@ -7,4 +7,4 @@ import com.intellij.psi.PsiTarget
 interface CaosScriptIsVariable : CaosScriptCompositeElement, PsiNamedElement, PsiTarget
 
 fun CaosScriptIsVariable.getInferredType() : CaosExpressionValueType
-        = CaosScriptInferenceUtil.getInferredType(this)
+        = CaosScriptInferenceUtil.getInferredType(this) ?: CaosExpressionValueType.VARIABLE
