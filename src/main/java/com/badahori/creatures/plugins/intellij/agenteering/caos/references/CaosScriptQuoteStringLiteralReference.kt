@@ -5,11 +5,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptN
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedGameVar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptQuoteStringLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
@@ -20,6 +19,13 @@ import com.intellij.psi.ResolveResult
  * Checks that a string literal is reference to other named game vars
  */
 class CaosScriptQuoteStringLiteralReference(element:CaosScriptQuoteStringLiteral) : PsiPolyVariantReferenceBase<CaosScriptQuoteStringLiteral>(element, TextRange(1, 1 + element.stringValue.length)) {
+
+    private val selfOnlyResult by lazy {
+        if (myElement.isValid)
+            PsiElementResolveResult.createResults(myElement)
+        else
+            ResolveResult.EMPTY_ARRAY
+    }
 
     private val type:CaosScriptNamedGameVarType by lazy {
         (element.parent?.parent as? CaosScriptNamedGameVar)?.varType ?: CaosScriptNamedGameVarType.UNDEF
@@ -57,27 +63,32 @@ class CaosScriptQuoteStringLiteralReference(element:CaosScriptQuoteStringLiteral
      */
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
         if (!canResolve) {
-            return PsiElementResolveResult.createResults(myElement)
+            return selfOnlyResult
         }
+
+        if (DumbService.isDumb(myElement.project))
+            return selfOnlyResult
         val variant = myElement.variant
-                ?: return PsiElementResolveResult.createResults(myElement)
+                ?: return selfOnlyResult
         val references = CaosScriptNamedGameVarIndex.instance[type, key, myElement.project]
                 .filter {anElement ->
                     ProgressIndicatorProvider.checkCanceled()
-                    anElement.variant == variant
+                    anElement.variant == variant && anElement.isValid
                 }
-                .mapNotNull {
+                .mapNotNull {namedGameVar ->
                     ProgressIndicatorProvider.checkCanceled()
-                    it.rvalue?.quoteStringLiteral
+                    namedGameVar.rvalue?.quoteStringLiteral?.let { stringLiteral ->
+                        if (stringLiteral.isValid)
+                            stringLiteral
+                        else
+                            null
+                    }
                 }
                 .nullIfEmpty()
                 ?.let {
                     it + myElement
                 }
-                ?: return PsiElementResolveResult.createResults(myElement)
-        if (references.isEmpty()) {
-            return ResolveResult.EMPTY_ARRAY
-        }
+                ?: return selfOnlyResult
         return PsiElementResolveResult.createResults(references)
     }
 
