@@ -10,11 +10,13 @@ import com.intellij.psi.PsiElement
 class CaosScriptVetoRenameCondition : Condition<PsiElement> {
     override fun value(element: PsiElement?): Boolean {
         if (element == null)
-            return false
+            return true
         if (element is CaosScriptSubroutineName || element is CaosScriptSubroutine)
-            return true
+            return false
         if (element is CaosScriptQuoteStringLiteral)
-            return true
-        return false
+            return false
+        if (element is CaosScriptNamedGameVar)
+            return false
+        return true
     }
 }
