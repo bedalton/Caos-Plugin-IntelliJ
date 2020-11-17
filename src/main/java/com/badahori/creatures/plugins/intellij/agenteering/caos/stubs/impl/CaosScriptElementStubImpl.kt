@@ -67,7 +67,7 @@ class CaosScriptNamedGameVarStubImpl(
         parent: StubElement<*>?,
         override val type: CaosScriptNamedGameVarType,
         override val key: String,
-        override val keyType: CaosExpressionValueType
+        override val keyType: CaosExpressionValueType?
 ) : StubBase<CaosScriptNamedGameVarImpl>(parent, CaosScriptStubTypes.NAMED_GAME_VAR), CaosScriptNamedGameVarStub
 
 
