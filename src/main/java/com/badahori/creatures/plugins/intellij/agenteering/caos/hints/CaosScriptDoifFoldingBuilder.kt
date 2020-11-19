@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.AGENT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.textUppercase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
@@ -121,17 +122,29 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         // If second argument is null, there is nothing to compare
                 ?: return false
 
+        val firstCommand = first.text.toUpperCase();
+        val secondCommand = second.text.toUpperCase()
+        val isP1P2 = firstCommand in P1P2 || secondCommand in P1P2
+        // Get containing script number to find a possible _P1_ or _P2_ named value
+        val containingScriptNumber = (if (isP1P2 && variant.isNotOld)
+            first.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber
+        else null) ?: -1
         // Check if any of the values has a value list
-        return listOf(first.commandStringUpper, second.commandStringUpper).intersect(listOf("CHEM", "DRIV", "DRV!")).isNotEmpty()
+        return listOf(firstCommand, secondCommand).intersect(listOf("CHEM", "DRIV", "DRV!")).isNotEmpty()
                 || AGENT in listOf(getInferredType(first, false), getInferredType(second, false))
                 || getValuesList(variant, first) != null
                 || getValuesList(variant, second) != null
-                || isKeyCode(variant, first)
-                || isKeyCode(variant, second)
-                || "KEYD" in listOfNotNull(first.commandStringUpper, second.commandStringUpper)
                 || first.text like "null"
                 || second.text like "null"
+                || (isP1P2 && hasParamName(variant, containingScriptNumber, first))
+                || (isP1P2 && hasParamName(variant, containingScriptNumber, second))
+                || "KEYD" in listOfNotNull(first.commandStringUpper, second.commandStringUpper)
     }
+
+    private fun hasParamName(variant:CaosVariant, containingScriptNumber:Int, first:CaosScriptRvalue) : Boolean {
+        return getParamName(variant, containingScriptNumber, first) != null
+    }
+
 
     companion object {
 
@@ -144,10 +157,11 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
          */
         fun formatComparison(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue, reversed: Boolean): String? {
 
-            // TODO: Implement other _P1_ and _P2_ know values
-            if (thisValue.text like "_P1_") {
-                // If is _P1_ get replacement value if is key
-                return keyDown(variant, eqOp, thisValue, otherValue)
+            if (thisValue.textUppercase in P1P2) {
+                // If is _P1_ or _P2_ get replacement value if any
+                // This may return a less than stellar result
+                // if P1 is compared to another command
+                return onP1P2(variant, eqOp, thisValue, otherValue)
             }
             // Get command definition
             val command = thisValue.commandDefinition
@@ -239,7 +253,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
 
         private fun resolvePattern(format: String): Formatter {
-            if (format == "%%")
+            if (format.trim() == "%%")
                 return DEFAULT_FORMATTER
             if (!format.startsWith("%"))
                 return createCompoundFormatter(format)
@@ -265,6 +279,8 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
 }
 
+internal val P1P2 = listOf("_P1_", "_P2_")
+
 /**
  * Simple lambda to take formatting parameters and format them as needed
  */
@@ -275,13 +291,6 @@ private fun getValuesList(variant: CaosVariant, expression: CaosScriptRvalue): C
     return expression.commandDefinition?.returnValuesList?.get(variant)
 }
 
-private fun isKeyCode(variant: CaosVariant, expression: CaosScriptRvalue): Boolean {
-    val eventNumber = if (DumbService.isDumb(expression.project))
-        expression.getParentOfType(CaosScriptEventScript::class.java)?.eventNumberElement?.text?.toIntOrNull()
-    else
-        expression.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber
-    return variant.isNotOld && expression.text like "_P1_" && eventNumber?.let { it == 73 || it == 74 }.orFalse()
-}
 
 // Ensures replacement of possibly two eq value expressions
 private val EQ_IS_REGEX = "\\{(is|eq)}".toRegex()
@@ -357,8 +366,11 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
             eqOpText != IS_NOT -> patterns.last()
             patterns.size > 2 -> patterns[1]
             else -> patterns.first()
-        }
+        }.trim()
     }
+
+    if (out == "%%")
+        return@func DEFAULT_FORMATTER(formatInfo)
 
     // Replace eq/is in format
     out = out.replace(EQ_IS_REGEX, eqOpText)
@@ -423,18 +435,43 @@ private val TIME: Formatter = formatter@{ formatInfo: FormatInfo ->
     }
 }
 
-private fun keyDown(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue): String? {
-    // If _P1_ in event script 73 or 74 in CV+ is Keycode
-    if (!isKeyCode(variant, thisValue))
-        return null
+/**
+ * Gets the DOIF fold when _P1_ or _P2_
+ */
+private fun onP1P2(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue): String? {
+    // Gets event number safely,
+    // as an infinite loop is created if calling before index is build
+    val eventScriptNumber = (if (DumbService.isDumb(thisValue.project))
+        thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumberElement?.text?.toIntOrNull()
+    else
+        thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber)
+            ?: return null
+
+    LOGGER.info("Getting ${thisValue.textUppercase} in Event Script: $eventScriptNumber")
+
+    // Get the parameter name value as parts.
+    // Parameters can be in format paramName@valuesListName
+    // ie keyCode@KeyCodes
+    val paramNameParts = getParamName(variant, eventScriptNumber, thisValue)?.split("@")
+            ?: return null
+    // Get param name without trailing values list name
+    val paramName = paramNameParts[0]
+
+    // Get the other value as literal text value, or values list value if available
+    val otherValueName = paramNameParts.getOrNull(1)?.let otherValue@{ valuesListName ->
+        val key = otherValue.intValue
+                // Other value is not int. Bail out as there will be no value found
+                ?: return@otherValue null
+        // Get the associated values list
+        val valuesList = CaosLibs[variant].valuesList(valuesListName)
+                ?: return@otherValue null
+        // Get the associated value
+        valuesList[key]?.name
+    } ?: otherValue.text
+    // Get formatted eq op value
     val eqOpString = formatEqOp(eqOp, isBool = true, boolOnLessThan = false, otherValueInt = otherValue.intValue)
-    val key = CaosLibs[variant].valuesList("KeyCodes")
-            ?.get(otherValue.text)
-            ?.name
-            ?.let { "'$it' Key " }
-            ?: otherValue.number?.character?.text?.let { "$it Key" }
-            ?: "Key ${otherValue.text}"
-    return "$key $eqOpString pressed"
+    // Get formatted string
+    return "$paramName $eqOpString $otherValueName"
 }
 
 /**
@@ -509,9 +546,28 @@ private val upperCaseFirstOnAllWords: FormatString = { text: String ->
  * @TODO should the words all be upper-cased or only first letter
  * ie Is Not Dead <> Is not dead <> is not dead <> is not Dead
  */
-private val homogenizeFormattedText: FormatString get() = formatUpperCaseFirst
+private val homogenizeFormattedText: FormatString get() = { string:String -> string }
 
 /**
  * Formatter for comparison's left and right replacement values
  */
 private val formatPrimary: FormatString = allLowerCase
+
+/**
+ * Gets a _P1_ or _P2_ name given an event script number
+ */
+private fun getParamName(variant:CaosVariant, containingScriptNumber: Int, thisValue:CaosScriptRvalue) : String? {
+
+    // No named parameters exist or are known for C1 or C2
+    if (variant.isOld)
+        return null
+
+    // Get list for _P1_ or _P2_ token
+    val list = when (thisValue.text.toUpperCase()) {
+        "_P1_" -> CaosLibs[variant].valuesList("_P1_")
+        "_P2_" -> CaosLibs[variant].valuesList("_P2_")
+        else -> null
+    } ?: return null
+    // Get name for containing script number
+    return list[containingScriptNumber]?.name
+}
