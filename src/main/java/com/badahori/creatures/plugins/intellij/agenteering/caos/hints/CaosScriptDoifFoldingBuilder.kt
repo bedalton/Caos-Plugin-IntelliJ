@@ -128,6 +128,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 || getValuesList(variant, second) != null
                 || isKeyCode(variant, first)
                 || isKeyCode(variant, second)
+                || "KEYD" in listOfNotNull(first.commandStringUpper, second.commandStringUpper)
                 || first.text like "null"
                 || second.text like "null"
     }
