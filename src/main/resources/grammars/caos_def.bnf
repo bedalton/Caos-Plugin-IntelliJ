@@ -306,7 +306,7 @@ values_list_value_key
 	;
 
 values_list_value_name
-	::= VALUES_LIST_VALUE_NAME_LITERAL
+	::= VALUES_LIST_VALUE_NAME_LITERAL values_list_name?
 	;
 
 values_list_value_description
@@ -429,9 +429,11 @@ comment_line_item_misc
 word_link
 	::= '[' command ']'
 	;
+
 type_link
 	::= TYPE_LINK_LITERAL
 	;
+
 code_block
 	::= CODE_BLOCK_OPEN_BRACE (command_word|code_block_primitive)* CLOSE_BRACE
 	{
