@@ -13,6 +13,7 @@
       <li>Creatures Village (Mostly)</li>
       <li>Creatures 3</li>
       <li>Docking Station</li>
+      <li>Sea Monkeys</li>
     </ul>
     <b>Implemented</b>
     <ul>
@@ -39,12 +40,21 @@
         <ul>
           <li>Fix false positives on duplicate event script inspection</li>
           <li>Fix subroutine rename</li>
+          <li>Accidental re-indent of comments when running reformat</li>
         </ul>
         <b>#Improvements</b>
         <ul>
           <li>Improved hint calculation speed</li>
           <li>Rewrote parser for improved speed</li>
           <li>Added DOIF numeric to named value replacement</li>
+        </ul>
+        <b>#Release Notes</b>
+        <ul>
+          <li>Removed expandable sprite project node as it was affecting editor performance</li>
+        </ul>
+        <b>#Remaining Problems</b>
+        <ul>
+          <li>Renaming named variables (ie NAME,GAME,MAME,EAME) creates sever lag and possible lockups in editor.</li>
         </ul>
       </li>
       <li>
