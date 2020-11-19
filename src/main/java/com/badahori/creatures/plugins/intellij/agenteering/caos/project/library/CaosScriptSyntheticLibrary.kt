@@ -19,7 +19,7 @@ internal object CaosSyntheticLibrary: SyntheticLibrary(), ItemPresentation {
 
     val sources: VirtualFile? get() = libraryPath()
 
-    override fun equals(other: Any?): Boolean = other == this
+    override fun equals(other: Any?): Boolean = other === this
 
     override fun hashCode(): Int = sources.hashCode()
 
