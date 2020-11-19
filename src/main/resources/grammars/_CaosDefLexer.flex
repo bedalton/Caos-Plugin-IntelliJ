@@ -33,6 +33,10 @@ import static com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.
 		return CharArrayUtil.containLineBreaks(zzBuffer, zzStartRead, zzMarkedPos);
 	}
 
+	private boolean atIsNext() {
+	    return yycharat(yylength()) == '@';
+	}
+
 	/**
 	 * Checks whether the text following '[' is a link
 	 * @return <b>true</b> if this link is valid
@@ -78,7 +82,7 @@ AT_OWNR=[@][Oo][Ww][Nn][Rr]
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
 AT_FILE=[@][Ff][Ii][Ll][Ee][.][a-zA-Z_][a-zA-Z_0-9/]*
 VALUES_LIST_VALUE_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+([ ]+ [a-zA-Z0-9_#-]+)*
-VALUES_LIST_VALUE_NAME=([^-\n]|-[^ ])+
+VALUES_LIST_VALUE_NAME=([^-\n@]|-[^ ])+
 DEF_TEXT=[^\n\[]+
 TO=([.]{2,3}|[Tt][Oo])
 UNTIL=[uU][nN][tT][iI][lL]
@@ -235,7 +239,8 @@ COMMENT=[*][^\n\*]*
 }
 
 <IN_VALUES_LIST_VALUE> {
-	{VALUES_LIST_VALUE_NAME}	{ yybegin(AFTER_VALUES_LIST_NAME); return CaosDef_VALUES_LIST_VALUE_NAME_LITERAL; }
+	{VALUES_LIST_VALUE_NAME}	{ if (!atIsNext()) yybegin(AFTER_VALUES_LIST_NAME); return CaosDef_VALUES_LIST_VALUE_NAME_LITERAL; }
+  	{AT_ID}						{ yybegin(AFTER_VALUES_LIST_NAME); return CaosDef_AT_ID; }
 	{WHITE_SPACE}              	{ return WHITE_SPACE; }
     [^]							{ yybegin(IN_VALUES_LIST); yypushback(yylength()); }
 }
