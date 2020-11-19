@@ -438,8 +438,7 @@ object CaosScriptPsiImplUtil {
                 isCommandType(command) && command.command like token
             }
         }
-
-        return lib.commands.filter(isCommandType).firstOrNull(filter)
+        return lib.allCommands.firstOrNull(filter)
     }
 
     // ============================== //

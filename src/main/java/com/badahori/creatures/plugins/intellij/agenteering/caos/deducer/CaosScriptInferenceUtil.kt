@@ -38,22 +38,19 @@ object CaosScriptInferenceUtil {
             element.isNumeric -> DECIMAL
             element.isQuoteString -> STRING
             element.isC1String -> C1_STRING
-            element.rvaluePrime != null -> getInferredType(element.rvaluePrime)
             element.isToken -> TOKEN
             element.byteString != null -> BYTE_STRING
             element.animationString != null -> ANIMATION
             element.pictDimensionLiteral != null -> PICT_DIMENSION
             else -> null
-        } ?: ANY
+        } ?: getInferredType(element.rvaluePrime) ?: UNKNOWN
     }
 
     /**
      * Infer type for rvalue command calls
      */
     fun getInferredType(prime: CaosScriptRvaluePrime?): CaosExpressionValueType? {
-        if (prime == null)
-            return null
-        return prime.commandDefinition?.returnType
+        return prime?.commandDefinition?.returnType
     }
 
     /**
