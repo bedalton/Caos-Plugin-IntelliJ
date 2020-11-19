@@ -89,7 +89,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 ?.name.nullIfEmpty()
                 ?: return null
 
-        val amount = (arguments[1] as? CaosScriptRvalue)?.intValue
+        val amount = (arguments[1] as? CaosScriptRvalue)?.floatValue
                 ?: return "Emit CA: $ca"
         val amountString = if (amount < 0) "$amount" else "+$amount"
         return "Emit $amountString CA: $ca"
@@ -270,7 +270,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
     companion object {
         private val STIM = "[Ss][Tt][Ii][Mm]([ ][^ ]{4})*".toRegex()
-        private val shouldFoldAll = "([Dd][Rr][Ii][Vv]|[Cc][Hh][Ee][Mm])".toRegex()
+        private val shouldFoldAll = "([Dd][Rr][Ii][Vv]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])".toRegex()
         private val shouldFold = "([Ss][Tt][Ii][Mm]|[Dd][Rr][Ii][Vv]|[Ss][Ww][Aa][Yy]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])([ ][^ ]{4})*".toRegex()
         private const val STIMULUS = "[Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?"
         private const val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
