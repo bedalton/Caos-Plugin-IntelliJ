@@ -5,14 +5,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDef
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileCollector
 import com.intellij.openapi.application.QueryExecutorBase
@@ -37,14 +34,22 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
         val element = parameters.elementToSearch
         val project = parameters.project
         val scope: SearchScope = parameters.effectiveSearchScope
+
+        // Try and find references to other var tokens
+        if (element is CaosScriptVarToken) {
+            val variants = listOfNotNull(element.variant).nullIfEmpty()
+                    ?: return
+            return checkVarReferences(variants, project, scope, element, processor)
+        }
+
+        // If is not CAOS def, then it cannot really be resolved to.
         if (element !is CaosDefCompositeElement) {
             return
         }
+        // Get variants for this CAOS def item
         val variants = element.variants
-        getVarGroupIfAny(element)?.let { varGroup ->
-            return checkVarReferences(variants, project, scope, varGroup, processor)
-        }
 
+        // Find references if is values list value key
         (element as? CaosDefValuesListValueKey)?.let {
             return isReferenceTo(variants, project, scope, it.reference, processor)
         }
@@ -69,14 +74,37 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
     /**
      * Checks for var references throughout all
      */
-    private fun checkVarReferences(variants: List<CaosVariant>, project: Project, scope: SearchScope?, varGroup: CaosScriptVarTokenGroup, processor: Processor<in PsiReference>) {
+    private fun checkVarReferences(variants: List<CaosVariant>, project: Project, scope: SearchScope?, element:CaosScriptVarToken, processor: Processor<in PsiReference>) {
+        val varGroup = element.varGroup
+        val index = element.varIndex
+        if (varGroup == CaosScriptVarTokenGroup.VAxx || varGroup == CaosScriptVarTokenGroup.VARx) {
+            if (scope?.contains(element.containingFile.virtualFile).orTrue()) {
+                val containingScript = element.getParentOfType(CaosScriptScriptElement::class.java)
+                        ?: return
+                PsiTreeUtil.collectElementsOfType(containingScript, CaosScriptVarToken::class.java)
+                        .filter {
+                            index == it.varIndex && varGroup == it.varGroup
+                        }
+                        .map {
+                            it.reference
+                        }.all {
+                            processor.process(it)
+                        }
+            } else {
+                val files = (scope as? LocalSearchScope)?.virtualFiles?.toList() ?: (scope as? GlobalSearchScope.FilesScope)?.iterator()?.values
+                LOGGER.info("Checking for references to ${element.text}, but file is not in scope of ${files?.let { f -> " files "+f.map { it.name }} ?: scope?.displayName + ":"+scope.canonicalName }")
+            }
+            return
+        }
         getCaosFiles(project, scope)
                 .flatMap map@{ file ->
                     ProgressIndicatorProvider.checkCanceled()
                     if (file.variant !in variants)
                         return@map emptyList<PsiReference>()
                     PsiTreeUtil.collectElementsOfType(file, CaosScriptVarToken::class.java)
-                            .filter { it.varGroup == varGroup }
+                            .filter {
+                                index == it.varIndex && varGroup == it.varGroup
+                            }
                             .mapNotNull { it.reference }
                 }
                 .all {
