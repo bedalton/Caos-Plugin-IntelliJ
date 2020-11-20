@@ -21,12 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:Suppress("unused", "SpellCheckingInspection")
+
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.notification.*
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowId
+import javax.swing.Icon
 
 /**
  * Wrapper function for showing {@link Notification}.
@@ -35,7 +40,7 @@ import com.intellij.openapi.wm.ToolWindowId
  * @since 1.7
  */
 open class CaosNotificationsBase(groupName:String) {
-    private val NOTIFICATION_GROUP: NotificationGroup = NotificationGroup(
+    private val notificationGroup: NotificationGroup = NotificationGroup(
             groupName,
             NotificationDisplayType.NONE,
             true,
@@ -52,7 +57,7 @@ open class CaosNotificationsBase(groupName:String) {
      */
     fun show(project: Project, title: String, content: String,
                     type: NotificationType) {
-        show(project, title, content, NOTIFICATION_GROUP, type, null)
+        show(project, title, content, notificationGroup, type, null)
     }
 
     /**
@@ -61,10 +66,9 @@ open class CaosNotificationsBase(groupName:String) {
      * @param project   current project
      * @param title     notification title
      * @param content   notification text
-     * @param type      notification type
      */
     fun showWarning(project: Project, title: String, content: String) {
-        show(project, title, content, NOTIFICATION_GROUP, NotificationType.WARNING, null);
+        show(project, title, content, notificationGroup, NotificationType.WARNING, null)
     }
 
     /**
@@ -73,10 +77,9 @@ open class CaosNotificationsBase(groupName:String) {
      * @param project   current project
      * @param title     notification title
      * @param content   notification text
-     * @param type      notification type
      */
     fun showError(project: Project, title: String, content: String) {
-        show(project, title, content, NOTIFICATION_GROUP, NotificationType.ERROR, null);
+        show(project, title, content, notificationGroup, NotificationType.ERROR, null)
     }
 
     /**
@@ -85,10 +88,9 @@ open class CaosNotificationsBase(groupName:String) {
      * @param project   current project
      * @param title     notification title
      * @param content   notification text
-     * @param type      notification type
      */
     fun showInfo(project: Project, title: String, content: String) {
-        show(project, title, content, NOTIFICATION_GROUP, NotificationType.INFORMATION, null);
+        show(project, title, content, notificationGroup, NotificationType.INFORMATION, null)
     }
 
     /**
@@ -102,7 +104,7 @@ open class CaosNotificationsBase(groupName:String) {
      */
     fun show(project: Project, title: String, content: String,
                     type: NotificationType, listener: NotificationListener?) {
-        show(project, title, content, NOTIFICATION_GROUP, type, listener)
+        show(project, title, content, notificationGroup, type, listener)
     }
 
     /**
@@ -120,6 +122,158 @@ open class CaosNotificationsBase(groupName:String) {
                     listener: NotificationListener?) {
         val notification: Notification = group.createNotification(title, content, type, listener)
         Notifications.Bus.notify(notification, project)
+    }
+
+    fun create(type:NotificationType, project:Project, title:String? = null, content:String) : CaosNotification {
+        return CaosNotification(
+                notificationGroup = notificationGroup,
+                type = type,
+                title = title,
+                content = content
+        ) { notification ->
+            Notifications.Bus.notify(notification, project)
+        }
+    }
+
+    fun createErrorNotification(project: Project, title:String? = null, content:String) : CaosNotification {
+        return create(NotificationType.ERROR, project, title, content)
+    }
+
+
+    fun createWarningNotification(project: Project, title:String? = null, content:String) : CaosNotification {
+        return create(NotificationType.ERROR, project, title, content)
+    }
+
+    fun createInfoNotification(project: Project, title:String? = null, content:String) : CaosNotification {
+        return create(NotificationType.INFORMATION, project, title, content)
+    }
+
+}
+
+data class CaosNotification internal constructor(
+        private val notificationGroup:NotificationGroup,
+        val type:NotificationType,
+        val title:String? = null,
+        val content:String? = null,
+        val actions:List<AnAction> = emptyList(),
+        val icon:Icon? = null,
+        val subtitle: String? = null,
+        val dropDownText:String? = null,
+        val contextHelpAction:AnAction? = null,
+        val important: Boolean? = null,
+        val expired:Boolean? = null,
+        val listener:NotificationListener? = null,
+        // In charge of actually showing the notification
+        private val _show:(notification:Notification) -> Unit
+) {
+
+    fun setGroup(group: NotificationGroup) : CaosNotification {
+        return copy(
+                notificationGroup = group
+        )
+    }
+
+    fun addAction(action:AnAction) : CaosNotification {
+        return this.copy(
+                actions = actions + action
+        )
+    }
+
+    fun addActions(vararg actions:AnAction) : CaosNotification {
+        return this.copy(
+                actions = this.actions + actions
+        )
+    }
+
+    fun setIcon(icon:Icon) : CaosNotification {
+        return copy(
+            icon = icon
+        )
+    }
+
+    fun setSubtitle(subtitle:String?) : CaosNotification {
+        return copy(
+            subtitle = subtitle
+        )
+    }
+
+    fun setDropDownText(text:String?) : CaosNotification {
+        return copy(
+                dropDownText = text
+        )
+    }
+
+    fun setContextHelpAction(value:AnAction) : CaosNotification {
+        return copy(
+            contextHelpAction = value
+        )
+    }
+
+    fun expired(expired: Boolean) : CaosNotification {
+        return copy(
+                expired = expired
+        )
+    }
+
+    fun setImportant(important:Boolean) : CaosNotification {
+        return copy(
+            important = important
+        )
+    }
+
+    fun setListener(listener: NotificationListener) : CaosNotification {
+        return copy(
+                listener = listener
+        )
+    }
+
+    fun setTitle(title:String) : CaosNotification {
+        return copy(
+                title = title
+        )
+    }
+
+
+    fun setContent(content:String) : CaosNotification {
+        return copy(
+                content = content
+        )
+    }
+
+    fun show() : Notification {
+        var notification = notificationGroup.createNotification(type)
+        title?.nullIfEmpty()?.let {title ->
+            notification = notification.setTitle(title)
+        }
+        content?.nullIfEmpty()?.let { content ->
+            notification = notification.setContent(content)
+        }
+        for(action in actions) {
+            notification = notification.addAction(action)
+        }
+        icon?.let {icon ->
+            notification = notification.setIcon(icon)
+        }
+        subtitle?.let {subtitle ->
+            notification = notification.setSubtitle(subtitle)
+        }
+        dropDownText?.let { dropDownText ->
+            notification = notification.setDropDownText(dropDownText)
+        }
+        contextHelpAction?.let {action ->
+            notification = notification.setContextHelpAction(action)
+        }
+        important?.let {important ->
+            notification = notification.setImportant(important)
+        }
+        if (expired == true) {
+            notification.expire()
+        }
+        listener?.let {listener ->
+            notification = notification.setListener(listener)
+        }
+        _show(notification)
+        return notification
     }
 }
 
