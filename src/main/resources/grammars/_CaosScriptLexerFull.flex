@@ -4,6 +4,7 @@ import com.intellij.psi.tree.IElementType;
 
 import com.intellij.lexer.FlexLexer;
 import java.util.List;
+import java.lang.Exception;
 import java.util.ArrayList;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
@@ -17,11 +18,18 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 		this((java.io.Reader)null);
 		this.plusPlus = plusPlus;
 	}
+	//private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("CaosScriptLexer");
 	private boolean plusPlus;
 	private int braceDepth;
 	private static final List<Character> BYTE_STRING_CHARS = CaosScriptArrayUtils.toList("0123456789 R".toCharArray());
 	protected int blockDepth = 0;
 	private List<Integer> blockDepths = new ArrayList();
+	private int loopDepth = 0;
+	private int enumDepth = 0;
+	private int escnDepth = 0;
+	private int repsDepth = 0;
+	private int doifDepth = 0;
+	private int subrDepth = 0;
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -37,6 +45,27 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 		} catch (Exception e) {
 			return true;
 		}
+	}
+
+	private boolean nextIsValid() {
+	    if (enumDepth > 0)
+	        return true;
+	    int i = -1;
+	    char previousChar = yycharat(i);
+	    while(previousChar == ' ' || previousChar == '\t' || previousChar == '\n') {
+	        try {
+	        	previousChar = yycharat(--i);
+	        } catch(Exception e) {
+	            return false;
+	        }
+	    }
+	    try {
+	        char[] chars = new char[] { yycharat(i-3), yycharat(i-2), yycharat(i-1), yycharat(i) };
+	        String token = new String(chars).toUpperCase();
+	        return token.equals("HIST") || token.equals("PRAY");
+	    } catch (Exception e) {
+	        return false;
+	    }
 	}
 
 	private int currentBlockDepth() {
@@ -63,7 +92,7 @@ FLOAT=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
 ID=[_a-zA-Z][_a-zA-Z0-9]*
-SPACE=[ ]
+SPACE=[ \t]
 EQ=[Ee][Qq]
 NE=[Nn][Ee]
 LT=[Ll][Tt]
@@ -272,33 +301,37 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Bb][Bb][Ll][Ee]       	{ return CaosScript_K_BBLE; }
 	[Ss][Tt][Oo][Pp]       	{ return CaosScript_K_STOP; }
 	[Ee][Nn][Dd][Mm]       	{ return CaosScript_K_ENDM; }
-	[Ss][Uu][Bb][Rr]       	{ yybegin(IN_SUBROUTINE_NAME); if (blockDepths.size() > 0) blockDepths.add(0, blockDepth); else blockDepths.add(blockDepth); return CaosScript_K_SUBR; }
+	[Ss][Uu][Bb][Rr]       	{ subrDepth++; yybegin(IN_SUBROUTINE_NAME); if (blockDepths.size() > 0) blockDepths.add(0, blockDepth); else blockDepths.add(blockDepth); return CaosScript_K_SUBR; }
 	[Gg][Ss][Uu][Bb]       	{ yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_GSUB; }
 	[Rr][Ee][Tt][Nn]       	{
+          if (blockDepths.size() < 1) {
+              return CaosScript_K_BAD_LOOP_TERMINATOR;
+		  }
           if (blockDepth > currentBlockDepth())
               return CaosScript_K_CRETN;
           if (blockDepths.size() > 0)
           	blockDepths.remove(0);
+          subrDepth--;
           return CaosScript_K_RETN;
       }
-	[Rr][Ee][Pp][Ss]       	{ blockDepth++; return CaosScript_K_REPS; }
-	[Rr][Ee][Pp][Ee]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_REPE; }
-	[Ll][Oo][Oo][Pp]       	{ blockDepth++; return CaosScript_K_LOOP; }
-	[Uu][Nn][Tt][Ll]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_UNTL; }
-	[Ee][Nn][Uu][Mm]       	{ blockDepth++; return CaosScript_K_ENUM; }
-	[Ee][Ss][Ee][Ee]       	{ blockDepth++; return CaosScript_K_ESEE; }
-	[Ee][Tt][Cc][Hh]       	{ blockDepth++; return CaosScript_K_ETCH; }
-	[Nn][Ee][Xx][Tt]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_NEXT; }
-	[Ee][Ss][Cc][Nn]       	{ blockDepth++; return CaosScript_K_ESCN; }
-	[Nn][Ss][Cc][Nn]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_NSCN; }
+	[Rr][Ee][Pp][Ss]       	{ repsDepth++; blockDepth++; return CaosScript_K_REPS; }
+	[Rr][Ee][Pp][Ee]       	{ if (repsDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else repsDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_REPE; }
+	[Ll][Oo][Oo][Pp]       	{ loopDepth++; blockDepth++; return CaosScript_K_LOOP; }
+	[Uu][Nn][Tt][Ll]       	{ if (loopDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else loopDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_UNTL; }
+	[Ee][Nn][Uu][Mm]       	{ enumDepth++; blockDepth++; return CaosScript_K_ENUM; }
+	[Ee][Ss][Ee][Ee]       	{ enumDepth++; blockDepth++; return CaosScript_K_ESEE; }
+	[Ee][Tt][Cc][Hh]       	{ enumDepth++; blockDepth++; return CaosScript_K_ETCH; }
+	[Nn][Ee][Xx][Tt]       	{ if (enumDepth < 1) { if (nextIsValid()) return CaosScript_K_NEXT; else return CaosScript_K_BAD_LOOP_TERMINATOR; } else enumDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_NEXT; }
+	[Ee][Ss][Cc][Nn]       	{ escnDepth++; blockDepth++; return CaosScript_K_ESCN; }
+	[Nn][Ss][Cc][Nn]       	{ if (escnDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else escnDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_NSCN; }
 	[Rr][Tt][Aa][Rr]       	{ return CaosScript_K_RTAR; }
 	[Ss][Tt][Aa][Rr]       	{ return CaosScript_K_STAR; }
 	[Ii][Nn][Ss][Tt]       	{ return CaosScript_K_INST; }
 	[Ss][Ll][Oo][Ww]       	{ return CaosScript_K_SLOW; }
-	[Ee][Vv][Ee][Rr]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_EVER; }
-	[Dd][Oo][Ii][Ff]       	{ blockDepth++; return CaosScript_K_DOIF; }
-	[Ee][Ll][Ss][Ee]       	{ return CaosScript_K_ELSE; }
-	[Ee][Nn][Dd][Ii]       	{ if (blockDepth > 0) blockDepth--; return CaosScript_K_ENDI; }
+	[Ee][Vv][Ee][Rr]       	{ if (loopDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else loopDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_EVER; }
+	[Dd][Oo][Ii][Ff]       	{ doifDepth++; blockDepth++; return CaosScript_K_DOIF; }
+	[Ee][Ll][Ss][Ee]       	{ if (doifDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; return CaosScript_K_ELSE; }
+	[Ee][Nn][Dd][Ii]       	{ if (doifDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else doifDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_ENDI; }
 	[Ww][Aa][Ii][Tt]       	{ return CaosScript_K_WAIT; }
 	[Aa][Nn][Ii][Mm]       	{ return CaosScript_K_ANIM; }
 	[Oo][Vv][Ee][Rr]       	{ return CaosScript_K_OVER; }
@@ -621,7 +654,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Oo][Uu][Tt][Ss]       	{ return CaosScript_K_OUTS; }
 	[Oo][Uu][Tt][Vv]       	{ return CaosScript_K_OUTV; }
 	[Oo][Uu][Tt][Xx]       	{ return CaosScript_K_OUTX; }
-	[Ee][Ll][Ii][Ff]       	{ return CaosScript_K_ELIF; }
+	[Ee][Ll][Ii][Ff]       	{ if (doifDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; return CaosScript_K_ELIF; }
 	[Gg][Oo][Tt][Oo]       	{ return CaosScript_K_GOTO; }
 	[Gg][Tt][Oo][Ss]       	{ return CaosScript_K_GTOS; }
 	[Mm][Tt][Oo][Aa]       	{ return CaosScript_K_MTOA; }
@@ -676,7 +709,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Tt][Mm][Vv][Ff]       	{ return CaosScript_K_TMVF; }
 	[Tt][Mm][Vv][Tt]       	{ return CaosScript_K_TMVT; }
 	[Vv][Ee][Ll][Oo]       	{ return CaosScript_K_VELO; }
-	[Ee][Cc][Oo][Nn]       	{ return CaosScript_K_ECON; }
+	[Ee][Cc][Oo][Nn]       	{ enumDepth++; return CaosScript_K_ECON; }
 	[Cc][Aa][Oo][Ss]       	{ return CaosScript_K_CAOS; }
 	[Ss][Oo][Rr][Cc]       	{ return CaosScript_K_SORC; }
 	[Ss][Oo][Rr][Qq]       	{ return CaosScript_K_SORQ; }
@@ -742,7 +775,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	[Cc][Aa][Bb][Tt]       	{ return CaosScript_K_CABT; }
 	[Cc][Aa][Bb][Vv]       	{ return CaosScript_K_CABV; }
 	[Cc][Aa][Bb][Ww]       	{ return CaosScript_K_CABW; }
-	[Ee][Pp][Aa][Ss]       	{ return CaosScript_K_EPAS; }
+	[Ee][Pp][Aa][Ss]       	{ enumDepth++; return CaosScript_K_EPAS; }
 	[Rr][Pp][Aa][Ss]       	{ return CaosScript_K_RPAS; }
 	[Dd][Ee][Ll][Ww]       	{ return CaosScript_K_DELW; }
 	[Ll][Oo][Aa][Dd]       	{ return CaosScript_K_LOAD; }
@@ -939,7 +972,6 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 }
 
 <YYINITIAL> 	{
-	[^]					 	{yybegin(START_OF_LINE); yypushback(yylength());}
+	[^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
 }
-
 [^] { return BAD_CHARACTER; }
