@@ -1,8 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 
@@ -19,7 +20,7 @@ fun CaosScriptEqualityExpressionPrime.getValuesListId(variant: CaosVariant, expr
 fun CaosScriptEqualityExpressionPrime.getValuesList(
         variant: CaosVariant,
         expression: CaosScriptRvalue
-) : CaosValuesList? {
+): CaosValuesList? {
     val valuesListId = getValuesListId(variant, this, expression)
             ?: return null
     return CaosLibs.valuesList[valuesListId]
@@ -32,7 +33,7 @@ private fun getValuesListId(
         variant: CaosVariant,
         equalityExpressionPrime: CaosScriptEqualityExpressionPrime,
         expression: CaosScriptRvalue
-) : Int? {
+): Int? {
     // Find the opposing expression in this equality expression
     val other: CaosScriptRvalue = equalityExpressionPrime.rvalueList.let let@{ rvaluesList ->
         when {
@@ -53,14 +54,21 @@ private fun getValuesListId(
             else -> rvaluesList[0]
         }
     } ?: return null
-    val listIds: Map<String, Int> = other
+    val commandDefinition: CaosCommand = other
             // Only rvalue primes have command types as they are command calls
             .rvaluePrime
             // Get Command definition from rvalue prime command call
             ?.commandDefinition
+            ?: other.getEnclosingCommandType().let { commandType ->
+                val commandString = other.commandStringUpper
+                        ?: return null
+                CaosLibs[variant][commandType][commandString]
+            }
+            ?: return null
+    val listIds = commandDefinition
             // Command definitions hold return value list types as a map value per variant
-            ?.returnValuesListIds
-            // Not return values map found, return empty handed
+            .returnValuesListIds
+            // No return values map found, return empty handed
             ?: return null
     // Return the valuesListId for the given variant
     return listIds[variant.code]
