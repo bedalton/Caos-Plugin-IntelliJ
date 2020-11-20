@@ -373,12 +373,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     }
 
     private fun annotateErrorCommand(variant: CaosVariant, errorCommand: CaosScriptErrorCommand, annotationWrapper: AnnotationHolderWrapper) {
-        val tokens = errorCommand
+        val rawTokens = errorCommand
                 .text
                 .toUpperCase()
                 .split(WHITESPACE, 3)
         // Get error as possible error annotation
-        val errorAnnotation = tokens
+        val errorAnnotation = rawTokens
                 .let { tokens ->
                     if (tokens.size > 3)
                         listOf("${tokens[0]} ${tokens[1]} ${tokens[2]}", "${tokens[0]} ${tokens[1]}", tokens[0])
@@ -395,7 +395,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         // If one matches, that means the command is in the definitions file
         // but not in the BNF parser grammar.
         // TODO should we throw error, or simply return without annotating.
-        if (errorAnnotation.size < tokens.size) {
+        if (errorAnnotation.size < rawTokens.size) {
             throw Exception("Command found in definitions for element: ${errorCommand.text}, but BNF grammar does not reflect this.")
         }
         errorAnnotation.last().create()
