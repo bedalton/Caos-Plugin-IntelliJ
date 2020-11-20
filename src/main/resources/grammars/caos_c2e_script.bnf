@@ -1,0 +1,5929 @@
+//noinspection SpellCheckingInspectionForFile
+//noinspection SpellCheckingInspectionForFile
+{
+	parserClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParser"
+	parserUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserUtil"
+	implements="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+	parserImports= [
+		"static com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*"
+		"static com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*"
+	]
+	extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCompositeElementImpl"
+	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes"
+	elementTypePrefix="CaosScript_"
+	elementTypeClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementType"
+	tokenTypeClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTokenType"
+	psiClassPrefix="CaosScript"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
+	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
+	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
+	generateTokenAccessors=true
+	generateTokens=true
+	name("space.*") = "space or comma"
+	name("c_.*") = "command"
+	name("cc_.*") = "command"
+	name("r_.*") = "value";
+	name("rvalue.*") = "value";
+	name("expects.*") = "value";
+	name("l_.*") = "variable";
+	name("lvalue") = "variable";
+	name("rvalue.*") = "value";
+	name("expression") = "value"
+	name("K_.*") = "command"
+	name("eq_op.*") = "EQ|NE|etc.."
+	name("word_factory_element") = ""
+	name("expression_factory") = ""
+	name("K_XX_DEF") = ""
+	name("K_XX_EXPR") = ""
+	name("incomplete") = "command"
+	name("command_call") = "command"
+	name("error_lvalue") = "variable"
+	tokens = [
+		NEWLINE = "regexp:\n";
+		K_ENDM = "regexp:[eE][nN][dD][mM]"
+		K_SUBR = "regexp:[sS][uU][bB][rR]"
+		K_REPS = "regexp:[rR][eE][pP][sS]"
+		K_REPE = "regexp:[rR][eE][pP][eE]"
+		K_LOOP = "regexp:[lL][oO][oO][pP]"
+		K_UNTL = "regexp:[uU][nN][tT][lL]"
+		K_EVER = "regexp:[eE][vV][eE][rR]"
+		K_ENUM = "regexp:[eE][nN][uU][mM]"
+		K_NEXT = "regexp:[nN][eE][xX][tT]"
+		K_DOIF = "regexp:[dD][oO][iI][fF]"
+		K_ELSE = "regexp:[eE][lL][sS][eE]"
+		K_ENDI = "regexp:[eE][nN][dD][iI]"
+		K_DOIF = "regexp:[dD][oO][iI][fF]"
+		K_SCRP = "regexp:[sS][cC][rR][pP]"
+		K_ESCN = "regexp:[eE][sS][cC][nN]"
+		K_NSCN = "regexp:[nN][sS][cC][nN]"
+		K_ETCH = "regexp:[eE][tT][cC][hH]"
+		K_ESEE = "regexp:[eE][sS][eE][eE]"
+		VA_XX = "regexp:[Vv][Aa][0-9][0-9]"
+		OB_XX = "regexp:[Oo][Vv][0-9][0-9]"
+		MV_XX = "regexp:[Mm][Vv][0-9][0-9]"
+		VAR_X = "regexp:[Vv][Aa][Rr][0-9]"
+		OBV_X = "regexp:[Oo][Bb][Vv][0-9]"
+		K_STIM = "regexp:[sS][tT][iI][mM]"
+		K_WRIT = "regexp:[wW][rR][iI][tT]"
+		K_SHOU = "regexp:[sS][hH][oO][uU]"
+		K_SIGN = "regexp:[sS][iI][gG][nN]"
+		K_TACT = "regexp:[tT][aA][cC][tT]"
+		K_NEW_COL = "regexp:[nN][eE][wW][:]"
+		K_BKBD = "regexp:[bB][kK][bB][dD]"
+		K_ROOM = "regexp:[rR][oO][oO][mM]"
+		K_SIMP = "regexp:[sS][iI][mM][pP]"
+		K_PART = "regexp:[pP][aA][rR][tT]"
+		K_SPOT = "regexp:[sS][pP][oO][tT]"
+		K_CBTN = "regexp:[cC][bB][tT][nN]"
+		K_COMP = "regexp:[cC][oO][mM][pP]"
+		K_SCEN = "regexp:[sS][cC][eE][nN]"
+		K_CABN = "regexp:[cC][aA][bB][nN]"
+		K_SCRX = "regexp:[sS][cC][rR][xX]"
+		SYS_COL = "regexp:[sS][yY][sS][:]"
+		K_EDIT = "regexp:[eE][dD][iI][tT]"
+		K_TOOL = "regexp:[tT][oO][oO][lL]"
+		K_WPOS = "regexp:[wW][pP][oO][sS]"
+		K_GENE = "regexp:[gG][eE][nN][eE]"
+		K_LIFT = "regexp:[lL][iI][fF][tT]"
+		K_VHCL = "regexp:[vV][hH][cC][lL]"
+		K_RNDV = "regexp:[rR][nN][dD][vV]"
+		BBD_COL = "regexp:[bB][bB][dD][:]"
+		K_WORD = "regexp:[wW][oO][rR][dD]"
+		DDE_COL = "regexp:[dD][dD][eE][:]"
+		K_CELL = "regexp:[cC][eE][lL][lL]"
+		K_FIRE = "regexp:[fF][iI][rR][eE]"
+		K_LTCY = "regexp:[lL][tT][cC][yY]"
+		K_CREA = "regexp:[cC][rR][eE][aA]"
+		K_RTAR = "regexp:[rR][tT][aA][rR]"
+		K_TRIG = "regexp:[tT][rR][iI][gG]"
+		K_ADDV = "regexp:[aA][dD][dD][vV]"
+		K_ANDV = "regexp:[aA][nN][dD][vV]"
+		K_DIVV = "regexp:[dD][iI][vV][vV]"
+		K_MODV = "regexp:[mM][oO][dD][vV]"
+		K_MULV = "regexp:[mM][uU][lL][vV]"
+		K_ORRV = "regexp:[oO][rR][rR][vV]"
+		K_SETV = "regexp:[sS][eE][tT][vV]"
+		K_SUBV = "regexp:[sS][uU][bB][vV]"
+		K_BHVR = "regexp:[bB][hH][vV][rR]"
+		K_CHEM = "regexp:[cC][hH][eE][mM]"
+		K_PUTB = "regexp:[pP][uU][tT][bB]"
+		K_KNOB = "regexp:[kK][nN][oO][bB]"
+		K_MCRT = "regexp:[mM][cC][rR][tT]"
+		K_MESG = "regexp:[mM][eE][sS][gG]"
+		K_MVTO = "regexp:[mM][vV][tT][oO]"
+		K_SPAS = "regexp:[sS][pP][aA][sS]"
+		K_STM_NUM = "regexp:[sS][tT][mM][#]"
+		K_CMRA = "regexp:[cC][mM][rR][aA]"
+		K_GRND = "regexp:[gG][rR][nN][dD]"
+		K_TELE = "regexp:[tT][eE][lL][eE]"
+		K_SNDQ = "regexp:[sS][nN][dD][qQ]"
+		K_ABRT = "regexp:[aA][bB][rR][tT]"
+		K_APPR = "regexp:[aA][pP][pP][rR]"
+		K_CMND = "regexp:[cC][mM][nN][dD]"
+		K_DIED = "regexp:[dD][iI][eE][dD]"
+		K_HATC = "regexp:[hH][aA][tT][cC]"
+		K_LIVE = "regexp:[lL][iI][vV][eE]"
+		K_LOBE = "regexp:[lL][oO][bB][eE]"
+		K_NEGG = "regexp:[nN][eE][gG][gG]"
+		K_PANC = "regexp:[pP][aA][nN][cC]"
+		K_PICT = "regexp:[pP][iI][cC][tT]"
+		K_SCRP = "regexp:[sS][cC][rR][pP]"
+		K_DONE = "regexp:[dD][oO][nN][eE]"
+		K_DPAS = "regexp:[dD][pP][aA][sS]"
+		K_DROP = "regexp:[dD][rR][oO][pP]"
+		K_GPAS = "regexp:[gG][pP][aA][sS]"
+		K_INST = "regexp:[iI][nN][sS][tT]"
+		K_KILL = "regexp:[kK][iI][lL][lL]"
+		K_LOCK = "regexp:[lL][oO][cC][kK]"
+		K_LOOP = "regexp:[lL][oO][oO][pP]"
+		K_MATE = "regexp:[mM][aA][tT][eE]"
+		K_MVBY = "regexp:[mM][vV][bB][yY]"
+		K_OVER = "regexp:[oO][vV][eE][rR]"
+		K_POIN = "regexp:[pP][oO][iI][nN]"
+		K_QUIT = "regexp:[qQ][uU][iI][tT]"
+		K_SAYN = "regexp:[sS][aA][yY][nN]"
+		K_SETS = "regexp:[sS][eE][Tt][Ss]"
+		K_SETA = "regexp:[sS][eE][Tt][Ss]"
+		K_SLIM = "regexp:[sS][lL][iI][mM]"
+		K_SLOW = "regexp:[sS][lL][oO][wW]"
+		K_SNEZ = "regexp:[sS][nN][eE][zZ]"
+		K_STOP = "regexp:[sS][tT][oO][pP]"
+		K_STPC = "regexp:[sS][tT][pP][cC]"
+		K_CAMT = "regexp:[cC][aA][mM][tT]"
+		K_WTOP = "regexp:[wW][tT][oO][pP]"
+		K_TOUC = "regexp:[tT][oO][uU][cC]"
+		K_UNLK = "regexp:[uU][nN][lL][kK]"
+		K_WALK = "regexp:[wW][aA][lL][kK]"
+		K_NEGV = "regexp:[nN][eE][gG][vV]"
+		K_GSUB = "regexp:[gG][sS][uU][bB]"
+		K_PLDS = "regexp:[pP][lL][dD][sS]"
+		K_SNDC = "regexp:[sS][nN][dD][cC]"
+		K_SNDE = "regexp:[sS][nN][dD][eE]"
+		K_SNDF = "regexp:[sS][nN][dD][fF]"
+		K_SNDL = "regexp:[sS][nN][dD][lL]"
+		K_AIM_COL = "regexp:[aA][iI][mM][:]"
+		K_ANIM = "regexp:[aA][nN][iI][mM]"
+		K_ASLP = "regexp:[aA][sS][lL][pP]"
+		K_BASE = "regexp:[bB][aA][sS][eE]"
+		K_EMIT = "regexp:[eE][mM][iI][tT]"
+		K_SHOW = "regexp:[sS][hH][oO][wW]"
+		K_BDVG = "regexp:[bB][dD][vV][gG]"
+		K_DBGM = "regexp:[dD][bB][gG][mM]"
+		K_DBUG = "regexp:[dD][bB][uU][gG]"
+		K_GETB = "regexp:[gG][eE][tT][bB]"
+		K_PUTS = "regexp:[pP][uU][tT][sS]"
+		K_PUTV = "regexp:[pP][uU][tT][vV]"
+		K_DREA = "regexp:[dD][rR][eE][aA]"
+		K_EVNT = "regexp:[eE][vV][nN][tT]"
+		K_IMPT = "regexp:[iI][mM][pP][tT]"
+		K_POSE = "regexp:[pP][oO][sS][eE]"
+		K_PRLD = "regexp:[pP][rR][lL][dD]"
+		K_RMEV = "regexp:[rR][mM][eE][vV]"
+		K_SAY_DOL = "regexp:[sS][aA][yY][$]"
+		K_SNDV = "regexp:[sS][nN][dD][vV]"
+		K_TARG = "regexp:[tT][aA][rR][gG]"
+		K_TICK = "regexp:[tT][iI][cC][kK]"
+		K_VRSN = "regexp:[vV][rR][sS][nN]"
+		K_WAIT = "regexp:[wW][aA][iI][tT]"
+		K_WRLD = "regexp:[wW][rR][lL][dD]"
+		K_TOTL = "regexp:[tT][oO][tT][lL]"
+		K__IT_ = "regexp:[_][iI][tT][_]"
+		K_ACTV = "regexp:[aA][cC][tT][vV]"
+		K_ATTN = "regexp:[aA][tT][tT][nN]"
+		K_ATTR = "regexp:[aA][tT][tT][rR]"
+		K_BABY = "regexp:[bB][aA][bB][yY]"
+		K_BUMP = "regexp:[bB][uU][mM][pP]"
+		K_CAGE = "regexp:[cC][aA][gG][eE]"
+		K_CAMN = "regexp:[cC][aA][mM][nN]"
+		K_CARR = "regexp:[cC][aA][rR][rR]"
+		K_CLAS = "regexp:[cC][lL][aA][sS]"
+		K_DEAD = "regexp:[dD][eE][aA][dD]"
+		K_DRV_EXC = "regexp:[dD][rR][vV][!]"
+		K_EXEC = "regexp:[eE][xX][eE][cC]"
+		K_FMLY = "regexp:[fF][mM][lL][yY]"
+		K_FROM = "regexp:[fF][rR][oO][mM]"
+		K_GND_NUM = "regexp:[gG][nN][dD][#]"
+		K_GNDW = "regexp:[gG][nN][dD][wW]"
+		K_GNUS = "regexp:[gG][nN][uU][sS]"
+		K_HGHT = "regexp:[hH][gG][hH][tT]"
+		K_HOUR = "regexp:[hH][oO][uU][rR]"
+		K_LIMB = "regexp:[lL][iI][mM][bB]"
+		K_LIML = "regexp:[lL][iI][mM][lL]"
+		K_LIMR = "regexp:[lL][iI][mM][rR]"
+		K_LIMT = "regexp:[lL][iI][mM][tT]"
+		K_MINS = "regexp:[mM][iI][nN][sS]"
+		K_MOVS = "regexp:[mM][oO][vV][sS]"
+		K_NEID = "regexp:[nN][eE][iI][dD]"
+		K_NORN = "regexp:[nN][oO][rR][nN]"
+		K_OBJP = "regexp:[oO][bB][jJ][pP]"
+		K_OWNR = "regexp:[oO][wW][nN][rR]"
+		K_PNTR = "regexp:[pP][nN][tT][rR]"
+		K_POSB = "regexp:[pP][oO][sS][bB]"
+		K_POSL = "regexp:[pP][oO][sS][lL]"
+		K_POSR = "regexp:[pP][oO][sS][rR]"
+		K_POST = "regexp:[pP][oO][sS][tT]"
+		K_RMS_NUM = "regexp:[rR][mM][sS][#]"
+		K_SCOR = "regexp:[sS][cC][oO][rR]"
+		K_SNDS = "regexp:[sS][nN][dD][sS]"
+		K_SPCS = "regexp:[sS][pP][cC][sS]"
+		K_TCAR = "regexp:[tT][cC][aA][rR]"
+		K_TEMP = "regexp:[tT][eE][mM][pP]"
+		K_WDTH = "regexp:[wW][dD][tT][hH]"
+		K_WIND = "regexp:[wW][iI][nN][dD]"
+		K_WINH = "regexp:[wW][iI][nN][hH]"
+		K_WINW = "regexp:[wW][iI][nN][wW]"
+		K_XVEC = "regexp:[xX][vV][eE][cC]"
+		K_YVEC = "regexp:[yY][vV][eE][cC]"
+		K_DRIV = "regexp:[dD][rR][iI][vV]"
+		K_TOKN = "regexp:[tT][oO][kK][nN]"
+		K_XIST = "regexp:[Xx][Ii][Ss][Tt]"
+		K_SSFC = "regexp:[Ss][Ss][Ff][Ss]";
+		K_DEND = "regexp:[Dd][Ee][Nn][Dd]"
+		K_RCPR = "regexp:[Rr][Cc][Pp][Rr]"
+		K_APP_COL = "regexp:[Aa][Pp][Pp][:]"
+		K_BLCK = "regexp:[Bb][Ll][Cc][Kk]";
+		K_FLIP = "regexp:[Ff][Ll][Ii][Pp]";
+		K_OUTL = "regexp:[Oo][Uu][Tt][Ll]";
+		K_ROTA = "regexp:[Rr][Oo][Tt][Aa]";
+		K_SCLE = "regexp:[Ss][Cc][Ll][Ee]";
+		K_SHAD = "regexp:[Ss][Hh][Aa][Dd]";
+		K_STRC = "regexp:[Ss][Tt][Rr][Cc]";
+		K_CRETN = "RETN inside SUBR"
+		K_F__K = "regexp:[Ff][*]{2}[Kk]"
+		K_XX_DEF = " "
+		K_XX_EXPR = " "
+		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
+		CONST_EQ = "regexp:=";
+		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
+		N_VAR = "regexp:[$][a-zA-Z_0-9]+"
+		COMMENT_LITERAL = "regexp:\*[^\n]*"
+		FLOAT = "regexp:[0-9]+\.[0-9]+"
+		INT = "regexp:[0-9]+"
+		TEXT_LITERAL = 'regexp:\[[^]]*]';
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
+		COLON = ':';
+		PLUS = "+";
+		SPACE_ = "regexp:[ ]";
+		space = "regexp:\n[\t ]+";
+		OPEN_BRACKET = '[';
+		CLOSE_BRACKET = ']';
+		COMMA = ',';
+		ANIM_R = "R"
+		PICT_DIMENSION = "#|#";
+		BINARY = "binary int"
+		STRING_ESCAPE_CHAR = "escaped char"
+		STRING_CHAR = "string char";
+		DOUBLE_QUOTE = "\""
+		SINGLE_QUOTE = "'"
+		CHAR_CHAR = "'char'"
+		ERROR_WORD = "command"
+
+	]
+}
+
+private def	::= space_like_or_newline* (word_factory_element|expression_factory|file_body)?
+	;
+
+word_factory_element ::= K_XX_DEF space_like a_word;
+
+a_word
+	::= all_tokens
+	|	WORD
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+expression_factory
+	::= K_XX_EXPR space_like rvalue
+	;
+
+private file_body
+	::= ((<<isOldVariant>> |	<<isNewVariant 'true'>>) file_body_with_variant)
+	|	raw_token_stream
+	;
+
+raw_token_stream
+	::= (!(<<isOldVariant>> |	<<isNewVariant 'true'>>)) token_stream_tokens+
+	;
+
+private token_stream_tokens
+	::= all_tokens
+	|	rvalue
+	|	eq_op
+	|	token
+	|	space_like_or_newline
+	;
+
+private file_body_with_variant
+	::=script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
+	;
+
+script_body_element
+	::= event_script
+	|	macro
+	|	removal_script
+	|	install_script
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+macro
+	::= (macro_code_block (space_like_or_newline script_terminator)?|script_terminator)
+	{
+
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptMacroStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+removal_script
+	::= comment_block? c_rscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
+	{
+		pin=2
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRemovalScriptStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+c_rscr
+	::= K_RSCR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private macro_code_block
+	::= code_block
+	{
+		//recoverWhile = macro_code_block_recover
+	}
+	;
+
+code_block
+	::= code_block_line (space_like_or_newline code_block_line)*
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+code_block_line
+	::= caos_element
+	;
+
+private caos_element
+	::=	comment
+	|	control_statement
+	|	command_call
+	|	error_command
+	;
+
+comment_block
+	::= comment (comment)*
+	;
+
+event_script
+	::= comment_block? c_scrp space_like classifier space_like event_number_element (<<enterMode "eventScript">>space_like_or_newline event_script_body)? <<exitMode "eventScript">>  (space_like_or_newline script_terminator)?
+	{
+		pin=2
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptEventScriptStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+		]
+		methods = [
+			getBlockType
+			getEventNumber
+			isClosed
+			getFamily
+			getGenus
+			getSpecies
+		]
+	}
+	;
+
+c_scrp ::= K_SCRP
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+		getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+private event_script_body
+	::= code_block
+	;
+
+
+install_script
+	::= comment_block? c_iscr (space_like_or_newline event_script_body)? (space_like_or_newline script_terminator)?
+	{
+		pin=2
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptInstallScriptStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+c_iscr ::= K_ISCR
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+		getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+c_endm ::= K_ENDM
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+subroutine
+	::= subroutine_header (space_like_or_newline subroutine_body)? (space_like_or_newline retn_kw)?
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.intellij.psi.PsiNameIdentifierOwner"
+		]
+		methods = [
+			getBlockType
+			getName
+			isClosed
+			setName
+			getUseScope
+			getNameIdentifier
+		]
+	}
+	;
+
+subroutine_header
+	::= c_subr space_like subroutine_name
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_subr"
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+c_subr
+	::= K_SUBR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+retn_kw
+	::= K_RETN
+	{
+		implements = [
+   			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+   			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+			getReference
+		]
+	}
+	;
+
+private subroutine_body
+	::= code_block
+	{
+		//recoverWhile=subroutine_body_recover
+	}
+	;
+
+classifier
+	::= <<pushParameter 'NUMBER' 'NUMBER' 'NUMBER'>> family space_like genus space_like species
+	{
+		pin = 2
+	}
+	;
+
+private control_statement
+   ::=  subroutine
+   |	loop_statement
+   |	repeat_statement
+   |	enum_next_statement
+   |	enum_scenery_statement
+   |	doif_statement
+   ;
+
+loop_statement
+   ::= c_loop (space_like_or_newline loop_body)? (space_like_or_newline loop_terminator)?
+   {
+		pin=1
+		implements = [
+			 "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			 "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			 "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			isEver
+			isUntil
+			getBlockType
+			getCommandString
+			isClosed
+		]
+	}
+	;
+
+loop_terminator
+	::= cEver
+	|	untl_terminator
+	{
+		pin=1
+	}
+	;
+
+
+
+private untl_terminator
+	::= c_untl space_like equality_expression
+	{
+		pin=1
+	}
+	;
+
+
+
+private loop_body
+	::= code_block
+	{
+		//recoverWhile=loop_body_recover
+	}
+	;
+
+repeat_statement
+	::= reps_header (space_like_or_newline repeat_body)? (space_like_or_newline c_repe)?
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+		]
+
+		methods = [
+			getBlockType
+			isClosed
+		]
+
+	}
+	;
+reps_header
+	::= c_reps space_like <<pushParameter 'NUMBER'>> rvalue
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_reps"
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+private repeat_body
+   ::= code_block
+   {
+      //recoverWhile=repeat_body_recover
+   }
+   ;
+
+enum_next_statement
+	::= enum_header_command (space_like_or_newline enum_body)? (space_like_or_newline (c_next|c_nscn))? {
+		pin=1;
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+		]
+		methods = [
+			codeBlock="code_block"
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+enum_header_command
+	::= c_enum space_like classifier
+	|	c_econ space_like <<pushParameter 'OTHER'>> rvalue
+	{
+		pin(".*")=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			getCommandToken
+			getCommandDefinition
+		]
+	}
+	;
+
+enum_scenery_statement
+   ::= escn_header (space_like_or_newline escn_body)? (space_like_or_newline (c_nscn|c_next))? {
+		pin=1;
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+   }
+   ;
+
+escn_header
+	::= c_escn space_like classifier
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_escn"
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+private enum_body
+   ::= code_block
+   {
+      //recoverWhile=enum_body_recover
+   }
+   ;
+
+private escn_body
+   ::= code_block
+   {
+      //recoverWhile=escn_body_recover
+   }
+   ;
+
+doif_statement
+	::= doif_statement_statement (space_like_or_newline else_if_statement)* (space_like_or_newline else_statement)? (space_like_or_newline c_endi)?
+	{
+		pin=1
+		implements = [
+			 "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+doif_statement_statement
+	::= c_doif space_like equality_expression (space_like_or_newline do_if_body)?
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+
+else_if_statement
+	::= c_elif space_like equality_expression (space_like_or_newline do_if_body)?
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+else_statement
+	::= c_else (space_like_or_newline else_block)?
+	{
+		pin=1;
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
+		]
+		methods = [
+			getBlockType
+			isClosed
+		]
+	}
+	;
+
+
+private else_block
+	::= code_block
+	{
+		//recoverWhile=else_body_recover
+	}
+	;
+
+private do_if_body
+	::= code_block
+	{
+		pin=1
+		//recoverWhile=do_if_body_recover
+	}
+	;
+
+c_loop
+	::= K_LOOP
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+cEver
+	::= K_EVER
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+c_untl
+	::= K_UNTL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+c_reps ::= K_REPS
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+	getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+c_repe ::= K_REPE
+{
+	implements = [
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+	]
+	methods = [
+		getReference
+		getCommandString
+			getCommandStringUpper
+		getPresentation
+		isVariant
+		getName
+		setName
+	]
+}
+;
+
+
+c_enum
+	::= K_ENUM
+	|	K_ESEE
+	|	K_ETCH
+	|	K_EPAS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_next ::= K_NEXT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+
+		]
+	}
+	;
+c_escn ::= K_ESCN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_nscn ::= K_NSCN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_econ ::= K_ECON
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_doif ::= K_DOIF
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_endi ::= K_ENDI
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_elif ::= K_ELIF
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_else ::= K_ELSE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_rndv
+	::= c_kw_random <<pushParameter 'OTHER' 'NUMBER' 'NUMBER'>> space_like lvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRndvStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
+		]
+		methods = [
+			commandToken="c_kw_random"
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			minElement="/rvalue[0]"
+			maxElement="/rvalue[1]"
+			getRndvIntRange
+			isRndvValuesInOrder
+			getCommandDefinition
+		]
+	}
+
+c_kw_random
+	::= K_RNDV
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_targ
+	::= c_kw_targ space_like <<pushParameter 'OTHER'>> rvalue
+	{
+		pin = 1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTargAssignmentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+c_kw_targ
+	::=	K_TARG
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_rtar
+	::= c_kw_rtar <<pushParameter 'NUMBER' 'NUMBER' 'NUMBER'>> space_like classifier
+	{
+		pin = 1
+		//stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRtarAssignmentStub"
+		//extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+c_kw_rtar
+	::= K_RTAR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+c_assignment
+	::= c_all_assign_int
+	|	c_assign_agent
+	|	c_assign_string
+	|	c_setv
+	|	c_assign_alter
+	|	c_assign_net_unik
+	|	c_assign_gene
+	|	c_assign_char
+	|	c_adds
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptAssignmentStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsAssignment"
+		]
+		methods = [
+			getOp
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+private c_assign_alter
+	::= c_kw_assign_alter space_like lvalue
+	;
+
+c_kw_assign_alter
+	::= K_ABSV
+	|	K_NOTV
+	|	K_NEGV
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private c_assign_agent ::= c_kw_assign_agent space_like lvalue space_like rvalue
+	{
+		pin = 1
+	}
+	;
+
+c_kw_assign_agent ::= K_SETA
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+private c_assign_string ::= c_kw_assign_string space_like lvalue space_like rvalue
+	{
+		pin = 1
+	}
+	;
+
+c_kw_assign_string ::= K_SETS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+private c_all_assign_int ::= c_kw_assign_number <<pushParameter 'OTHER' 'NUMBER'>> space_like lvalue space_like rvalue
+	{
+		pin=1
+	}
+	;
+
+private c_setv ::= c_kw_setv <<pushParameter 'OTHER' 'NUMBER'>> space_like lvalue space_like rvalue
+	{
+		pin = 3
+	}
+	;
+
+private c_assign_net_unik ::= c_assign_kw_net_unik <<pushParameter 'STRING' 'OTHER'>> space_like rvalue space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+c_assign_kw_net_unik
+	::= prefix_kw_net_col space_like K_UNIK
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+private c_assign_gene ::= c_kw_assign_gene <<pushParameter 'NUMBER' 'NUMBER' 'OTHER'>> space_like rvalue space_like rvalue space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+c_kw_assign_gene
+	::= prefix_kw_new_col space_like K_GENE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private c_assign_char ::= c_kw_assign_char <<pushParameter 'OTHER' 'NUMBER' 'NUMBER'>> space_like lvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+	}
+	;
+
+c_kw_assign_char
+	::= K_CHAR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+c_ssfc
+	::= c_kw_ssfc <<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue space_like rvalue (<<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue)*
+	{
+		pin = 1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getScope
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+c_kw_ssfc ::= K_SSFC
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+c_kw_setv ::= K_SETV
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+
+c_kw_assign_number
+	::= K_ADDV
+	|	K_ANDV
+	|	K_DIVV
+	|	K_MODV
+	|	K_MULV
+	|	K_ORRV
+	|	K_SUBV
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private c_adds ::= c_kw_adds <<pushParameter 'OTHER' 'STRING'>>  space_like lvalue space_like rvalue
+	{
+		pin=1
+	}
+	;
+
+c_kw_adds
+	::= K_ADDS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private c_pict ::= c_kw_pict <<pushParameter 'OTHER'>>  space_like expects_pict_dimension
+	{
+		pin=1
+	}
+	;
+
+c_retn
+	::= c_kw_retn
+	;
+
+c_kw_retn
+	::= K_CRETN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_pict
+	::= prefix_kw_dde_col space_like K_PICT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+expects_pict_dimension
+	::= rvalue
+	;
+
+c_gsub
+	::=  c_kw_gsub <<pushParameter 'OTHER'>> space_like subroutine_name
+	{
+		pin = 1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			commandToken="/c_kw_gsub"
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+c_kw_gsub
+	::= K_GSUB
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_char
+	::= r_kw_char r_char_prime
+	;
+
+private r_char_prime
+	::= (<<needsInt>>|!<<needsString>>) <<pushParameter 'STRING' 'NUMBER'>> space_like rvalue space_like rvalue
+	|	<<needsString>>
+	;
+
+r_kw_char
+	::= K_CHAR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_tran
+	::= r_kw_tran r_tran_prime
+	;
+
+private r_tran_prime
+	::= (<<needsInt>>|!<<needsString>>) <<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue space_like rvalue
+	|	<<needsString>> <<pushParameter 'NUMBER'>> space_like rvalue
+	;
+
+r_kw_tran
+	::= K_TRAN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+animation_string
+   ::= OPEN_BRACKET animation_string_body? CLOSE_BRACKET
+   {
+   		pin = 2
+   }
+   ;
+
+private animation_string_body
+	::= INT ANIM_R?
+	{
+		pin = 2
+	}
+	;
+
+byte_string
+	::= OPEN_BRACKET byte_string_body? CLOSE_BRACKET
+	{
+		pin(".*") = 2
+	}
+	;
+
+private byte_string_body
+	::=  byte_string_pose_list byte_string_r?
+	{
+		pin(".*")=2
+	}
+	;
+
+private byte_string_pose_list
+	::= (<<isOldVariant>>)byte_string_pose_element
+	|	(!<<isOldVariant>>)space_like? (byte_string_pose_element space_like?)+
+	;
+
+byte_string_pose_element
+	::= INT
+	;
+
+byte_string_r
+	::= <<isOldVariant>> space_like? ANIM_R
+	;
+
+
+symbol_comma
+	::= COMMA
+	;
+
+space_like_or_newline
+	::= (new_line_like|space_like)+
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
+	;
+
+new_line_like
+	::= symbol_comma
+	|	new_line+
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+		]
+	}
+	;
+
+new_line
+	::= NEWLINE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+			"com.intellij.psi.PsiWhiteSpace"
+		]
+	}
+	;
+
+space_like
+	::= space+
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+			"com.intellij.psi.PsiWhiteSpace"
+		]
+	}
+	;
+
+private space
+	::= SPACE_
+	;
+
+trailing_space
+	::= space_like_or_newline+
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike"
+			"com.intellij.psi.PsiWhiteSpace"
+		]
+	}
+	;
+
+pict_dimension_literal
+	::= PICT_DIMENSION
+	{
+		methods = [
+			getWidth
+			getHeight
+			getDimensions
+		]
+	}
+	;
+
+equality_expression
+   ::= equality_expression_prime (space_like equality_expression_plus)*
+   {
+   		pin=1
+		methods = [
+			first="/equality_expression_prime/rvalue[0]"
+			second="/equality_expression_prime/rvalue[1]"
+		]
+   }
+   ;
+
+equality_expression_prime
+	::= <<pushParameter 'OTHER'>> rvalue space_like eq_op_with_expression
+	{
+		pin = 2
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
+		]
+		methods = [
+			first="/rvalue[0]"
+			second="/rvalue[1]"
+		]
+	}
+	;
+
+private eq_op_with_expression
+	::= eq_op space_like <<pushParameter 'OTHER'>> rvalue
+	{
+		pin=1
+	}
+	;
+
+equality_expression_plus
+	::=  equality_join space_like equality_expression_prime
+	{
+		pin(".*")=1
+		methods = [
+			first="/equality_expression_prime/rvalue[0]"
+			second="/equality_expression_prime/rvalue[1]"
+			eqOp="/equality_expression_prime/eq_op"
+		]
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComparesEqualityElement"
+		]
+	}
+	;
+
+equality_join
+	::= K_AND
+	|	K_OR
+	;
+
+
+eq_op
+	::= eq_op_old
+	|	eq_op_new
+	;
+
+eq_op_old
+	::= EQ_OP_OLD_
+	;
+
+eq_op_new
+	::= EQ_OP_NEW_
+	;
+
+rvalue
+	::= rvalue_prime <<popParameter>>
+	|	var_token <<popParameter>>
+	|	named_game_var <<popParameter>>
+	|	string_literal <<popParameter>>
+	|	byte_string <<popParameter>>
+	|	animation_string <<popParameter>>
+	|	number <<popParameter>>
+	|	pict_dimension_literal <<popParameter>>
+	//|	command_soup
+	|	rvalue_prefix_incompletes <<popParameter>>
+	|	incomplete <<popParameter>>
+	|	error_rvalue <<popParameter>>
+	{
+   		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.intellij.psi.PsiNamedElement"
+		]
+		methods = [
+			getCommandToken
+     		getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+     		getInferredType
+			isString
+			isQuoteString
+			isC1String
+			isByteString
+			isInt
+			isFloat
+			isToken
+			isNumeric
+			getIndex
+			getFloatValue
+			getIntValue
+			getStringValue
+			getByteStringArray
+			getReference
+			getName
+			setName
+			getParameterValuesListValue
+			getToken
+			getCommandDefinition
+		]
+	}
+	;
+
+error_rvalue
+	::= WORD
+	;
+
+var_token
+	::= VA_XX
+	|	OV_XX
+	|	OBV_X
+	|	VAR_X
+	|	MV_XX
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptVarTokenStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase"
+		]
+		methods = [
+			getVarGroup
+			getVarIndex
+			getReference
+			getInferredType
+			getLastAssignment
+			isEquivalentTo
+			getUseScope
+			getName
+			setName
+		]
+	}
+	;
+
+number
+	::= INT
+	|	FLOAT
+	|	binary_literal
+	|	character
+	{
+
+	}
+	;
+
+binary_literal
+	::= BINARY
+	;
+
+character
+	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			getStringValue
+			isClosed
+		]
+		methods = [
+			openQuote="/SINGLE_QUOTE[0]"
+			closeQuote="/SINGLE_QUOTE[1]"
+		]
+	}
+	;
+
+private string_literal
+	::= quote_string_literal
+	|	  (<<isOldVariant>>) c1_string
+	;
+
+c1_string
+	::= OPEN_BRACKET (TEXT_LITERAL|space_like_or_newline)? CLOSE_BRACKET
+	{
+		pin(".*")=3
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+		]
+		methods = [
+			isClosed
+			getStringValue
+			openQuote="/OPEN_BRACKET"
+			closeQuote="/CLOSE_BRACKET"
+		]
+	}
+	;
+
+quote_string_literal
+	::= DOUBLE_QUOTE string_text? DOUBLE_QUOTE
+	{
+		pin=1;
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+			"com.intellij.psi.PsiNamedElement"
+		]
+		methods = [
+			getStringValue
+			isClosed
+			getName
+			setName
+			getReference
+			getPresentation
+		]
+	}
+	;
+
+string_text
+	::= (STRING_CHAR|STRING_ESCAPE_CHAR)+
+	;
+
+subroutine_name
+	::= all_tokens
+	|	ID
+	|	WORD
+	|	incomplete
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+		]
+		methods = [
+			getName
+			setName
+			getReference
+			getIndex
+			getInferredType
+			getUseScope
+		]
+	};
+token_rvalue
+	::= token
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueMixin"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+		]
+		methods = [
+			getIndex
+			getInferredType
+		]
+	}
+	;
+
+token
+	::= all_tokens
+	|	WORD
+	|	ERROR_WORD
+	|	number
+	|	incomplete
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			isVariant
+		]
+	}
+	;
+
+script_terminator
+	::= c_endm
+	;
+
+
+named_game_var
+	::= named_game_var_kw <<pushParameter 'OTHER'>> space_like rvalue
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.intellij.psi.PsiNameIdentifierOwner"
+		]
+		methods = [
+			commandToken="/named_game_var_kw"
+			getCommandString
+			getCommandStringUpper
+			isVariant
+			getKey
+			getVarType
+			getName
+			setName
+			getNameIdentifier
+			getKeyType
+			getArguments
+			getArgumentValues
+			getInferredType
+			getCommandDefinition
+		]
+	}
+	;
+
+named_game_var_kw
+	::= K_MAME
+	|	K_NAME
+	|	K_GAME <<isNewVariant 'true'>>
+	|	K_EAME
+	{
+		pin(".*")=2
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+comment
+	::= COMMENT_START comment_body?
+	;
+
+comment_body
+	::= COMMENT_TEXT+
+	;
+
+family
+	::= rvalue
+	{
+		methods = [
+			getDescriptiveText
+		]
+	};
+genus
+	::= rvalue
+	{
+		methods = [
+			getDescriptiveText
+		]
+	}
+species
+	::= rvalue
+	{
+		methods = [
+			getDescriptiveText
+		]
+	};
+
+event_number_element
+	::= INT
+	{
+		implements = [
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+		methods = [
+			getReference
+			getName
+			setName
+			getDescriptiveText
+		]
+	}
+	;
+
+incomplete ::= ID |	ERROR_WORD;
+
+command_call
+	::= command_call_by_args // I think private values all have equal priority
+	|	incomplete
+	{
+		pin=2
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCommandCallStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
+		]
+		methods = [
+			getCommandString
+			getCommandStringUpper
+			getCommandToken
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+
+error_command
+	::= error_command_command (!(<<eol>>|<<commandNext>>)(space_like (rvalue|lvalue|token_rvalue|incomplete)))*
+	;
+
+private error_command_command
+	::= WORD
+	|	ERROR_WORD
+	|	K_ABBA
+    |	K_ABRT
+    |	K_ACOS
+    |	K_ACTV
+    |	K_ADDM
+    |	K_ADDR
+    |	K_AGNT
+    |	K_AGTI
+    |	K_AGTS
+    |	K_ALLR
+    |	K_ANGL
+    |	K_ASIN
+    |	K_ASRT
+    |	K_ATAN
+    |	K_ATTN
+    |	K_AVAR
+    |	K_BABY
+    |	K_BACK
+    |	K_BIOC
+    |	K_BKBD
+    |	K_BKDS
+    |	K_BRED
+    |	K_BUMP
+    |	K_BUTT
+    |	K_BVAR
+    |	K_BYIT
+    |	K_CABB
+    |	K_CABL
+    |	K_CABR
+    |	K_CABT
+    |	K_CAGE
+    |	K_CAMT
+    |	K_CAOS
+    |	K_CARR
+    |	K_CATA
+    |	K_CATI
+    |	K_CATX
+    |	K_CBTN
+    |	K_CBUB
+    |	K_CELL
+    |	K_CLAS
+    |	K_CLON
+    |	K_CLS2
+    |	K_CMND
+    |	K_CMRX
+    |	K_CMRY
+    |	K_CNAM
+    |	K_CODE
+    |	K_CODF
+    |	K_CODG
+    |	K_CODP
+    |	K_CODS
+    |	K_COMP
+    |	K_CONV
+    |	K_COS_
+    |	K_COUN
+    |	K_CPRO
+    |	K_CRAG
+    |	K_CREA
+    |	K_CROS
+    |	K_CTIM
+    |	K_DATA
+    |	K_DATE
+    |	K_DAYT
+    |	K_DBG_NUM
+    |	K_DBGA
+    |	K_DECN
+    |	K_DEND
+    |	K_DEPS
+    |	K_DFTX
+    |	K_DFTY
+    |	K_DIED
+    |	K_DISQ
+    |	K_DMPB
+    |	K_DMPD
+    |	K_DMPL
+    |	K_DMPN
+    |	K_DMPT
+    |	K_DOWN
+    |	K_DRV_EXC
+    |	K_DULL
+    |	K_EAME
+    |	K_EAMN
+    |	K_EGGL
+    |	K_EJCT
+    |	K_EMID
+    |	K_EMTR
+    |	K_ERID
+    |	K_ERRA
+    |	K_ETIK
+    |	K_EXPO
+    |	K_FALL
+    |	K_FIND
+    |	K_FINR
+    |	K_FIXD
+    |	K_FLOR
+    |	K_FLSH
+    |	K_FLTX
+    |	K_FLTY
+    |	K_FMLY
+    |	K_FORE
+    |	K_FOTO
+    |	K_FRMA
+    |	K_FROM
+    |	K_FRQH
+    |	K_FRQL
+    |	K_FRQM
+    |	K_FRZN
+    |	K_FTOI
+    |	K_FVWM
+    |	K_GAME
+    |	K_GAMN
+    |	K_GARB
+    |	K_GEND
+    |	K_GETB
+    |	K_GLOB
+    |	K_GMAP
+    |	K_GNAM
+    |	K_GND_NUM
+    |	K_GNDW
+    |	K_GNUS
+    |	K_GRAP
+    |	K_GRAV
+    |	K_GRID
+    |	K_GRND
+    |	K_GRPH
+    |	K_GTOS
+    |	K_HATC
+    |	K_HATL
+    |	K_HEAD
+    |	K_HEAP
+    |	K_HEAR
+    |	K_HEDX
+    |	K_HEDY
+    |	K_HELD
+    |	K_HGHT
+    |	K_HHLD
+    |	K_HIRP
+    |	K_HOST
+    |	K_HOTP
+    |	K_HOTS
+    |	K_HOUR
+    |	K_HSRC
+    |	K_HTML
+    |	K_ICLO
+    |	K_IITT
+    |	K_IMPO
+    |	K_INEW
+    |	K_INIT
+    |	K_INJT
+    |	K_INNF
+    |	K_INNI
+    |	K_INNL
+    |	K_INOK
+    |	K_INS_NUM
+    |	K_INTR
+    |	K_IOPE
+    |	K_ISAR
+    |	K_ITOF
+    |	K_ITOT
+    |	K_IZAP
+    |	K_JDEL
+    |	K_JOIN
+    |	K_KEYD
+    |	K_KRAK
+    |	K_LACB
+    |	K_LANG
+    |	K_LCUS
+    |	K_LEFT
+    |	K_LIFT
+    |	K_LIMB
+    |	K_LIML
+    |	K_LIMR
+    |	K_LIMT
+    |	K_LITE
+    |	K_LIVE
+    |	K_LNEU
+    |	K_LNG+
+    |	K_LOBE
+    |	K_LOFT
+    |	K_LORP
+    |	K_LOWA
+    |	K_LSRC
+    |	K_LVOB
+    |	K_MAKE
+    |	K_MAME
+    |	K_MAPH
+    |	K_MAPW
+    |	K_MINS
+    |	K_MLOC
+    |	K_MODU
+    |	K_MON1
+    |	K_MON2
+    |	K_MONK
+    |	K_MONT
+    |	K_MOPX
+    |	K_MOPY
+    |	K_MOVE
+    |	K_MOVS
+    |	K_MOVX
+    |	K_MOVY
+    |	K_MOWS
+    |	K_MSEC
+    |	K_MTHX
+    |	K_MTHY
+    |	K_MTOA
+    |	K_MTOC
+    |	K_MUSC
+    |	K_MUTE
+    |	K_NACT
+    |	K_NAME
+    |	K_NCLS
+    |	K_NEGG
+    |	K_NEID
+    |	K_NETU
+    |	K_NEWV
+    |	K_NPGS
+    |	K_NULL
+    |	K_NWLD
+    |	K_OBDT
+    |	K_OBJP
+    |	K_OBST
+    |	K_OBSV
+    |	K_OCLO
+    |	K_OFLU
+    |	K_ONEW
+    |	K_ONTR
+    |	K_ONTV
+    |	K_OOPE
+    |	K_OOWW
+    |	K_ORGF
+    |	K_ORGI
+    |	K_ORGN
+    |	K_OTOT
+    |	K_OVVD
+    |	K_OWNR
+    |	K_OZAP
+    |	K_PACE
+    |	K_PANC
+    |	K_PASS
+    |	K_PAWS
+    |	K_PCLS
+    |	K_PIC2
+    |	K_PICT
+    |	K_PLAY
+    |	K_PNTR
+    |	K_PNXT
+    |	K_POLL
+    |	K_POSB
+    |	K_POSL
+    |	K_POSR
+    |	K_POST
+    |	K_POSX
+    |	K_POSY
+    |	K_PRES
+    |	K_PREV
+    |	K_PROF
+    |	K_PSRC
+    |	K_PUTB
+    |	K_PUTS
+    |	K_PUTV
+    |	K_RACE
+    |	K_RADN
+    |	K_RAND
+    |	K_RAWE
+    |	K_RCPR
+    |	K_RCTN
+    |	K_READ
+    |	K_REAN
+    |	K_REAQ
+    |	K_REFR
+    |	K_RELX
+    |	K_RELY
+    |	K_REST
+    |	K_RGHT
+    |	K_RLOC
+    |	K_RMN_NUM
+    |	K_RMND
+    |	K_RMNO
+    |	K_RMNR
+    |	K_RMS_NUM
+    |	K_RNDR
+    |	K_ROOT
+    |	K_RPTY
+    |	K_RRCT
+    |	K_RSRC
+    |	K_RTIF
+    |	K_RTIM
+    |	K_RUSO
+    |	K_SCEN
+    |	K_SCOL
+    |	K_SCOR
+    |	K_SEAN
+    |	K_SEAV
+    |	K_SEEE
+    |	K_SEEN
+    |	K_SEND
+    |	K_SETD
+    |	K_SETL
+    |	K_SETN
+    |	K_SETT
+    |	K_SHOU
+    |	K_SHUT
+    |	K_SIGN
+    |	K_SIMP
+    |	K_SINS
+    |	K_SIN_
+    |	K_SIZE
+    |	K_SNAX
+    |	K_SNDS
+    |	K_SORC
+    |	K_SORQ
+    |	K_SPCS
+    |	K_SQRT
+    |	K_STAT
+    |	K_STOF
+    |	K_STOI
+    |	K_STRL
+    |	K_SUBS
+    |	K_TACK
+    |	K_TACT
+    |	K_TAGE
+    |	K_TAN_
+    |	K_TCAR
+    |	K_TCOR
+    |	K_TEMP
+    |	K_TEST
+    |	K_TEXT
+    |	K_THRT
+    |	K_TIME
+    |	K_TMOD
+    |	K_TMVB
+    |	K_TMVF
+    |	K_TMVT
+    |	K_TOCK
+    |	K_TOKN
+    |	K_TORX
+    |	K_TORY
+    |	K_TOTL
+    |	K_TWIN
+    |	K_TYPE
+    |	K_UFOS
+    |	K_UFTX
+    |	K_UFTY
+    |	K_ULIN
+    |	K_UNID
+    |	K_UNIK
+    |	K_UPPA
+    |	K_USER
+    |	K_UTXT
+    |	K_VARI
+    |	K_VCB1
+    |	K_VECX
+    |	K_VECY
+    |	K_VELX
+    |	K_VELY
+    |	K_VHCL
+    |	K_VISI
+    |	K_VMJR
+    |	K_VMNR
+    |	K_VTOS
+    |	K_WALL
+    |	K_WDTH
+    |	K_WHAT
+    |	K_WHOD
+    |	K_WHOF
+    |	K_WHON
+    |	K_WHOZ
+    |	K_WILD
+    |	K_WIND
+    |	K_WINH
+    |	K_WINW
+    |	K_WIPE
+    |	K_WLDH
+    |	K_WLDW
+    |	K_WNAM
+    |	K_WNDB
+    |	K_WNDH
+    |	K_WNDL
+    |	K_WNDR
+    |	K_WNDT
+    |	K_WNDW
+    |	K_WNDX
+    |	K_WNDY
+    |	K_WNTI
+    |	K_WOLF
+    |	K_WORD
+    |	K_WPOS
+    |	K_WRIT
+    |	K_WRT_PLUS
+    |	K_WTIK
+    |	K_WTOP
+    |	K_WUID
+    |	K_WVET
+    |	K_XIST
+    |	K_XVEC
+    |	K_YEAR
+    |	K_YVEC
+    |	K__IT_
+    |	K__P1_
+    |	K__P2_
+    |	K__UP_
+    ;
+
+
+// =============================== //
+// ========= BASE COMMANDS ======= //
+// =============================== //
+
+
+// ========= Command ======== //
+private command_call_by_args
+	::=	c_targ
+	|	c_rtar
+	|	c_ssfc
+	|	c_r
+	|	c_r_r
+	|	c_l
+	|	c_r_r_r_r
+	|	c_r_r_r
+	|	c_cond
+	|	c_r_t
+	|	c_r_r_r_r_r_r_r
+	|	c_r_r_r_r_r_r_r_r_r_r
+	|	c_t
+	|	c_r_r_r_r_r
+	|	c_r_r_r_r_r_r_r_r_r
+	|	c_l_l_l_l
+	|	c_t_r_r_r_r_r_r_r
+	|	c_t_r_r_r
+	|	c_t_r_r
+	|	c_t_r_r_r_r
+	|	c_r_r_r_r_r_r
+	|	c_r_r_r_r_r_r_r_r_r_r_r_r_r
+	|	c_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	|	c_r_r_r_r_r_r_r_r
+	|	c_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	|	c_t_r
+	|	c_r_r_r_r_r_r_r_r_r_r_r_r
+	|	c_assignment
+	|	c_rndv
+	|	c_none
+	|	c_gsub
+	|	c_pict
+	|	c_retn
+	|	command_prefix_incompletes
+	;
+
+private c_none
+	::=	c_kw_none
+	;
+
+private c_r
+	::=	c_kw_r <<tagParameters 'COMMAND'>> args_r
+	;
+
+private args_r
+	::= space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r
+	::=	c_kw_r_r <<tagParameters 'COMMAND'>> args_r_r
+	;
+
+private args_r_r
+	::= space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+
+private c_l
+	::=	c_kw_l <<tagParameters 'COMMAND'>>	args_l
+	;
+
+private args_l
+	::= space_like lvalue
+	{
+		pin=1
+	}
+	;
+
+private c_r_r_r_r
+	::=	c_kw_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r
+	;
+
+private args_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r
+	::=	c_kw_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r
+	;
+
+private args_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_cond
+	::=	c_kw_cond  args_cond
+	;
+
+private args_cond
+	::= space_like equality_expression
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_t
+	::=	c_kw_r_t <<tagParameters 'COMMAND'>> args_r_t
+	;
+
+private args_r_t
+	::= space_like rvalue space_like token_rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r
+	::=space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+private c_t
+	::=	c_kw_t <<tagParameters 'COMMAND'>> args_t
+	;
+
+private args_t
+	::= space_like token_rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_l_l_l_l
+	::=	c_kw_l_l_l_l <<tagParameters 'COMMAND'>> args_l_l_l_l
+	;
+
+private args_l_l_l_l
+	::=   space_like lvalue space_like lvalue space_like lvalue space_like lvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_t_r_r_r_r_r_r_r
+	::=	c_kw_t_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_t_r_r_r_r_r_r_r
+	;
+
+private args_t_r_r_r_r_r_r_r
+	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_t_r_r_r
+	::=	c_kw_t_r_r_r <<tagParameters 'COMMAND'>> args_t_r_r_r
+	;
+
+private args_t_r_r_r
+	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_t_r_r
+	::=	c_kw_t_r_r <<tagParameters 'COMMAND'>> args_t_r_r
+	;
+
+private args_t_r_r
+	::= space_like token_rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_t_r_r_r_r
+	::=	c_kw_t_r_r_r_r <<tagParameters 'COMMAND'>> args_t_r_r_r_r
+	;
+
+private args_t_r_r_r_r
+	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r
+	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r
+	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_t_r
+	::=	c_kw_t_r <<tagParameters 'COMMAND'>> args_t_r
+	;
+
+private args_t_r
+	::= space_like token_rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+private c_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	c_kw_r_r_r_r_r_r_r_r_r_r_r_r <<tagParameters 'COMMAND'>> args_r_r_r_r_r_r_r_r_r_r_r_r
+	;
+
+private args_r_r_r_r_r_r_r_r_r_r_r_r
+	::=   space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	{
+		pin=1
+		//recoverWhile=command_recover
+	}
+	;
+
+
+// ========== RValues ======== //
+rvalue_prime
+	::=	r_r_r_r_r_r_r_r_l
+	|	r_r_r_r_r_r_r_r
+	|	r_r_r_r_r_r
+	|	r_r_r_r_r_l
+	|	r_r_r_r_r
+	|	r_r_r_r_l
+	|	r_r_r_r
+	|	r_r_r_l
+	|	r_r_r
+	|	r_r
+	|	r_t
+	|	r_tran
+	|	r_char
+	|	r_none
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			isVariant
+			getCommandToken
+			getInferredType
+			getCommandDefinition
+		]
+	}
+	;
+
+private r_none
+	::=	r_kw_none
+	;
+
+private r_r
+	::=	r_kw_r <<tagParameters 'RVALUE'>> space_like rvalue
+	;
+
+private r_r_r_r_r_r
+	::=	r_kw_r_r_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	;
+
+private r_r_r_r_r_r_r_r
+	::=	r_kw_r_r_r_r_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	;
+
+private r_r_r
+	::=	r_kw_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue
+	;
+
+private r_r_r_r_r_r_r_r_l
+	::=	r_kw_r_r_r_r_r_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like lvalue
+	;
+
+private r_r_r_r
+	::=	r_kw_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue
+	;
+
+private r_r_r_r_r
+	::=	r_kw_r_r_r_r <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue
+	;
+
+private r_r_r_r_l
+	::=	r_kw_r_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like lvalue
+	;
+
+private r_r_r_l
+	::=	r_kw_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like lvalue
+	;
+
+private r_r_r_r_r_l
+	::=	r_kw_r_r_r_r_l <<tagParameters 'RVALUE'>> space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like lvalue
+	;
+
+private r_t
+	::=	r_kw_t <<tagParameters 'RVALUE'>> space_like token_rvalue
+	;
+
+// ========== LValues ======== //
+lvalue
+	::=	named_game_var <<popParameter>>
+	|	l_none
+	|	l_r_r
+	|	l_r_r_r
+	|	l_r
+	|	var_token <<popParameter>>
+	|	incomplete <<popParameter>>
+	|	error_lvalue <<popParameter>>
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptLValueStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
+		]
+		methods = [
+			getCommandToken
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			isVariant
+			getIndex
+			getInferredType
+			getCommandDefinition
+		]
+	}
+	;
+
+error_lvalue
+	::= string_literal
+	|	byte_string
+	|	animation_string
+	|	number
+	|	pict_dimension_literal
+	;
+
+private l_none
+	::=	l_kw_none
+	;
+
+private l_r_r
+	::=	l_kw_r_r <<tagParameters 'LVALUE'>> space_like rvalue space_like rvalue
+	;
+
+private l_r_r_r
+	::=	l_kw_r_r_r <<tagParameters 'LVALUE'>> space_like rvalue space_like rvalue space_like rvalue
+	;
+
+private l_r
+	::=	l_kw_r <<tagParameters 'LVALUE'>> space_like rvalue
+	;
+
+// =============================== //
+// =========== KEYWORDS ========== //
+// =============================== //
+
+
+// ======= Command Keywords ====== //
+c_kw_none
+	::=	prefix_kw__cd_ space_like K_EJCT
+	|	prefix_kw__cd_ space_like K_INIT
+	|	prefix_kw__cd_ space_like K_SHUT
+	|	prefix_kw__cd_ space_like K_STOP
+	|	K_APPR
+	|	K_ASEA
+	|	K_BANG
+	|	K_BORN
+	|	prefix_kw_brn_col space_like K_DMPB
+	|	K_CALC
+	|	K_CAMN
+	|	K_CBRG
+	|	prefix_kw_dbg_col space_like K_CPRO
+	|	prefix_kw_dbg_col space_like K_FLSH
+	|	prefix_kw_dbg_col space_like K_PAWS
+	|	prefix_kw_dbg_col space_like K_PLAY
+	|	prefix_kw_dbg_col space_like K_POLL
+	|	prefix_kw_dbg_col space_like K_PROF
+	|	prefix_kw_dbg_col space_like K_TOCK
+	|	prefix_kw_dde_col space_like K_DIED
+	|	prefix_kw_dde_col space_like K_GENE
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_BIOC|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_CNAM|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_CTIM|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_DATA|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_MONK|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_NEWV|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_ORGN|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_OVVD|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_RRCT|incomplete))
+	|	prefix_kw_dde_col space_like (K_GIDS space_like (K_ROOT|incomplete))
+	|	prefix_kw_dde_col space_like K_HATC
+	|	prefix_kw_dde_col space_like K_LIVE
+	|	prefix_kw_dde_col space_like K_LOBE
+	|	prefix_kw_dde_col space_like K_NACT
+	|	prefix_kw_dde_col space_like K_NEGG
+	|	prefix_kw_dde_col space_like K_PANC
+	|	K_DEAD
+	|	K_DONE
+	|	K_DPAS <<isOldVariant>>
+	|	K_DROP
+	|	K_EDIT
+	|	K_F__K
+	|	K_FADE
+	|	K_FCUS
+	|	prefix_kw_file space_like K_ICLO
+	|	prefix_kw_file space_like K_OCLO
+	|	prefix_kw_file space_like K_OFLU
+	|	K_FRSH
+	|	prefix_kw_gids space_like K_ROOT
+	|	K_GPAS <<isOldVariant>>
+	|	K_HELP
+	|	K_INST
+	|	K_LOCK
+	|	K_MAPK
+	|	K_MATE
+	|	K_MEMX
+	|	prefix_kw_net_col space_like K_HEAD
+	|	prefix_kw_net_col space_like K_WHOD
+	|	prefix_kw_net_col space_like K_WHOZ
+	|	K_NOHH
+	|	K_NUDE
+	|	K_OVER
+	|	K_POIN
+	|	prefix_kw_pray space_like K_REFR
+	|	K_QUIT
+	|	K_RCLR<<isVariant 'C2.INSTANCE'>>
+	|	K_REAF
+	|	K_RGAM
+	|	K_RSET
+	|	K_SAVE
+	|	K_SAYN
+	|	K_SLIM
+	|	K_SLOW
+	|	K_SNEZ
+	|	K_STOP
+	|	K_STPC
+	|	K_STPT
+	|	K_STRE
+	|	prefix_kw_sys_col space_like K_ABRT
+	|	prefix_kw_sys_col space_like K_CAMT
+	|	prefix_kw_sys_col space_like K_DMAP
+	|	prefix_kw_sys_col space_like K_QUIT
+	|	prefix_kw_sys_col space_like K_WTOP
+	|	K_TECO
+	|	K_TOUC
+	|	K_UCLN
+	|	K_UNLK
+	|	K_VOCB
+	|	K_WALK
+	|	K_WDOW
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r
+	::=	prefix_kw__cd_ space_like K_PAWS
+	|	K_ACCG
+	|	K_ADMP
+	|	K_AERO
+	|	K_AGES
+	|	K_AIM_COL
+	|	K_ANIM
+	|	K_ANMS
+	|	prefix_kw_app_col space_like K_QUIT
+	|	K_APRO
+	|	K_ASLP
+	|	K_ATTR
+	|	K_AVEL
+	|	K_BASE
+	|	prefix_kw_bbd_col space_like K_EDIT
+	|	prefix_kw_bbd_col space_like K_EMIT
+	|	prefix_kw_bbd_col space_like K_SHOW
+	|	K_BHVR <<isNewVariant 'true'>>
+	|	prefix_kw_brn_col space_like K_DMPL
+	|	prefix_kw_brn_col space_like K_DMPT
+	|	K_BUZZ
+	|	K_CABP
+	|	K_CABV
+	|	K_CABW
+	|	K_CATO
+	|	K_CLAC
+	|	K_CMRT
+	|	prefix_kw_dbg_col space_like K_HTML
+	|	prefix_kw_dbg_col space_like K_OUTS
+	|	prefix_kw_dbg_col space_like K_OUTV
+	|	prefix_kw_dbg_col space_like K_TACK
+	|	prefix_kw_dbg_col space_like K_WTIK
+	|	K_DBGM
+	|	K_DBGV
+	|	K_DBUG
+	|	K_DCOR
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_ALLR|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_EMTR|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_RCPR|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_RCTN|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_RPTY|incomplete))
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_SSFC|incomplete))
+	|	prefix_kw_dde_col space_like (K_GIDS space_like (K_FMLY|incomplete))
+	|	prefix_kw_dde_col space_like K_LNEU
+	|	prefix_kw_dde_col space_like K_PUTS
+	|	prefix_kw_dde_col space_like K_PUTV
+	|	prefix_kw_dde_col space_like K_WORD
+	|	K_DELE
+	|	K_DELG
+	|	K_DELM
+	|	K_DELN<<isVariant 'C3.INSTANCE' 'DS.INSTANCE' 'SM.INSTANCE'>>
+	|	K_DELR
+	|	K_DELW
+	|	K_DIRN
+	|	K_DMAP
+	|	K_DOCA
+	|	K_DOIN
+	|	K_DPS2
+	|	K_DREA
+	|	K_DSEE
+	|	K_ELAS
+	|	K_EVNT
+	|	K_FACE
+	|	K_FDMP
+	|	K_FLIP
+	|	K_FORF
+	|	K_FRAT
+	|	K_FREL
+	|	K_FRIC
+	|	K_FVEL
+	|	K_GAIT
+	|	prefix_kw_gids space_like K_FMLY
+	|	K_HAIR
+	|	K_HAND
+	|	prefix_kw_hist space_like K_WIPE
+	|	K_IMGE
+	|	K_IMPT
+	|	K_IMSK
+	|	K_KILL
+	|	K_LIKE
+	|	K_LOAD
+	|	K_MANN
+	|	prefix_kw_mesg space_like K_SHOU
+	|	prefix_kw_mesg space_like K_SIGN
+	|	prefix_kw_mesg space_like K_TACT
+	|	K_MIDI
+	|	K_MIND
+	|	K_MIRA
+	|	K_MOTR
+	|	K_MOUS
+	|	prefix_kw_net_col space_like K_HEAR
+	|	prefix_kw_net_col space_like K_LINE
+	|	prefix_kw_net_col space_like K_WHOF
+	|	prefix_kw_net_col space_like K_WHON
+	|	K_NORN
+	|	prefix_kw_ordr space_like K_SHOU
+	|	prefix_kw_ordr space_like K_SIGN
+	|	prefix_kw_ordr space_like K_TACT
+	|	K_OUTS
+	|	K_OUTV
+	|	K_OUTX
+	|	K_PAGE
+	|	K_PART
+	|	prefix_kw_pat_col space_like K_CHAR
+	|	prefix_kw_pat_col space_like K_KILL
+	|	K_PAUS
+	|	K_PERM
+	|	K_PLNE
+	|	K_POSE
+	|	prefix_kw_pray space_like K_GARB
+	|	K_PRLD
+	|	K_PRNT
+	|	prefix_kw_prt_col space_like K_BANG
+	|	prefix_kw_prt_col space_like K_IZAP
+	|	prefix_kw_prt_col space_like K_OZAP
+	|	K_PSWD
+	|	K_PTXT
+	|	K_PURE
+	|	K_RMEV
+	|	K_RNGE
+	|	K_ROTA
+	|	K_SAY_NUM
+	|	K_SAY_DOL
+	|	K_SCRL
+	|	K_SDMP
+	|	K_SEZZ
+	|	K_SHOW
+	|	K_SNDC <<isNewVariant 'true'>>
+	|	K_SNDE <<isNewVariant 'true'>>
+	|	K_SNDL <<isNewVariant 'true'>>
+	|	K_SNDV
+	|	K_SPIN
+	|	K_STEP
+	|	prefix_kw_stm_num space_like K_SHOU
+	|	prefix_kw_stm_num space_like K_SIGN
+	|	prefix_kw_stm_num space_like K_TACT
+	|	K_SVEL
+	|	prefix_kw_sys_col space_like K_CMND
+	|	prefix_kw_sys_col space_like K_WRLD
+	|	K_TICK
+	|	K_TNTW
+	|	K_UNCS
+	|	K_VARC
+	|	K_VOIS
+	|	K_VRSN
+	|	K_WAIT
+	|	K_WEBB
+	|	K_WPAU
+	|	K_WRLD
+	|	K_ZOMB
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r
+	::=	prefix_kw__cd_ space_like K_PLAY
+	|	K_ADDB
+	|	K_ALPH
+	|	prefix_kw_bbd_col space_like K_VCB1
+	|	K_BBT2
+	|	K_BBTX
+	|	K_BHVR <<isOldVariant>>
+	|	K_BLCK
+	|	K_BMPS
+	|	K_BODY
+	|	K_BRMI
+	|	prefix_kw_brn_col space_like K_DMPD
+	|	prefix_kw_brn_col space_like K_DMPN
+	|	K_CALG
+	|	K_CBRX
+	|	K_CHEM
+	|	prefix_kw_dde_col space_like (K_GIDS space_like (K_GNUS|incomplete))
+	|	K_DELN<<isVariant 'C2.INSTANCE'>>
+	|	K_DRIV
+	|	K_EMIT
+	|	K_EXEC
+	|	K_EXPR
+	|	prefix_kw_file space_like K_EXEC
+	|	prefix_kw_file space_like K_GLOB
+	|	prefix_kw_file space_like K_IOPE
+	|	prefix_kw_file space_like K_JDEL
+	|	K_FLTO
+	|	K_GALL
+	|	prefix_kw_gene space_like K_KILL
+	|	prefix_kw_gids space_like K_GNUS
+	|	K_GRPV
+	|	prefix_kw_hist space_like K_NAME
+	|	K_INJR
+	|	K_JECT
+	|	K_KNOB
+	|	K_MAPD
+	|	K_MCLR
+	|	K_MCRT
+	|	prefix_kw_mesg space_like K_WRIT
+	|	K_MIRR
+	|	K_MVBY
+	|	K_MVFT
+	|	K_MVSF
+	|	K_MVTO
+	|	prefix_kw_net_col space_like K_PASS
+	|	prefix_kw_new_col space_like K_CREA
+	|	prefix_kw_ordr space_like K_WRIT
+	|	K_PLMD
+	|	K_PLMU
+	|	prefix_kw_prt_col space_like K_SEND
+	|	K_RAIN
+	|	K_RCLR <<isNewVariant 'true'>>
+	|	K_ROTN
+	|	K_RPAS
+	|	K_RTYP
+	|	K_SCAM
+	|	K_SCLE
+	|	K_SNDQ <<isNewVariant 'true'>>
+	|	K_SOUL
+	|	K_SPAS
+	|	K_SSFC
+	|	prefix_kw_stim space_like K_SHOU <<isNewVariant 'true'>>
+	|	prefix_kw_stim space_like K_SIGN <<isNewVariant 'true'>>
+	|	prefix_kw_stim space_like K_TACT <<isNewVariant 'true'>>
+	|	prefix_kw_stm_num space_like K_WRIT
+	|	K_STRK
+	|	prefix_kw_sys_col space_like K_CMRA
+	|	prefix_kw_sys_col space_like K_CMRP
+	|	prefix_kw_sys_col space_like K_GRND
+	|	K_TELE
+	|	K_TRAN
+	|	K_VELO
+	|	K_VOLM
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_l
+	::=	K_NAMN
+	|	prefix_kw_net_col space_like K_RUSO
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r
+	::=	K_ADIN
+	|	K_BBFD
+	|	K_BBLE
+	|	prefix_kw_brn_col space_like K_SETD
+	|	prefix_kw_brn_col space_like K_SETN
+	|	K_CABN
+	|	K_CACL
+	|	K_CORE
+	|	prefix_kw_dde_col space_like K_LCUS
+	|	prefix_kw_dde_col space_like K_SCRP
+	|	K_DYED
+	|	prefix_kw_gene space_like K_CLON
+	|	prefix_kw_gene space_like K_MOVE
+	|	K_GPAS <<isNewVariant 'true'>>
+	|	prefix_kw_hist space_like K_EVNT
+	|	K_META
+	|	prefix_kw_new_col space_like K_BBTX
+	|	K_OUTL
+	|	prefix_kw_prt_col space_like K_JOIN
+	|	K_SCRX
+	|	K_SHAD
+	|	prefix_kw_sys_col space_like K_EDIT
+	|	prefix_kw_sys_col space_like K_WPOS
+	|	K_TNTO
+	|	K_TOOL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r
+	::=	K_ALTR
+	|	prefix_kw_bbd_col space_like K_VOCB
+	|	prefix_kw_bbd_col space_like K_WORD
+	|	K_BKGD
+	|	K_BOOT
+	|	prefix_kw_brn_col space_like K_SETL
+	|	prefix_kw_brn_col space_like K_SETT
+	|	K_CALL
+	|	K_CLIK
+	|	K_CMRA
+	|	K_CMRP
+	|	prefix_kw_dde_col space_like K_CELL
+	|	prefix_kw_dde_col space_like K_DEND
+	|	prefix_kw_dde_col space_like (K_GETB space_like (K_LVOB|incomplete))
+	|	prefix_kw_dde_col space_like (K_GIDS space_like (K_SPCS|incomplete))
+	|	prefix_kw_dde_col space_like K_PIC2
+	|	K_DOOR
+	|	K_DPAS <<isNewVariant 'true'>>
+	|	prefix_kw_file space_like K_OOPE
+	|	K_FIRE
+	|	prefix_kw_gene space_like K_LOAD
+	|	prefix_kw_gids space_like K_SPCS
+	|	prefix_kw_hist space_like K_FOTO
+	|	prefix_kw_hist space_like K_UTXT
+	|	K_KMSG
+	|	K_LINK
+	|	K_LTCY
+	|	K_MMSC
+	|	prefix_kw_pat_col space_like K_MOVE
+	|	K_PROP
+	|	prefix_kw_prt_col space_like K_KRAK
+	|	K_PUHL <<isNewVariant 'true'>>
+	|	K_PUPT <<isNewVariant 'true'>>
+	|	K_RMSC
+	|	K_SPNL
+	|	K_STAR
+	|	prefix_kw_stim space_like K_WRIT <<isNewVariant 'true'>>
+	|	K_STRC
+	|	K_SWAP
+	|	K_TNTC
+	|	K_TRIG
+	|	K_TTAR
+	|	prefix_kw_urge space_like K_SHOU
+	|	prefix_kw_urge space_like K_SIGN
+	|	prefix_kw_urge space_like K_TACT
+	|	K_VOIC
+	|	K_WEAR
+	|	K_ZOOM
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_cond
+	::=	prefix_kw_dbg_col space_like K_ASRT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_t
+	::=	prefix_kw_dde_col space_like K_PUTB
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r
+	::=	K_FRMT
+	|	prefix_kw_new_col space_like K_COMP <<isNewVariant 'true'>>
+	|	prefix_kw_new_col space_like K_SIMP <<isNewVariant 'true'>>
+	|	prefix_kw_new_col space_like K_VHCL <<isNewVariant 'true'>>
+	|	prefix_kw_pat_col space_like K_DULL <<isVariant 'SM.INSTANCE'>>
+	|	prefix_kw_pat_col space_like K_FIXD <<isNewVariant 'false'>><<isVariant 'C3.INSTANCE' 'CV.INSTANCE' 'DS.INSTANCE'>>
+	|	prefix_kw_pat_col space_like K_GRPH
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r_r_r
+	::=	prefix_kw_gene space_like K_CROS
+	|	prefix_kw_pat_col space_like K_BUTT
+	|	prefix_kw_pat_col space_like K_CMRA
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t
+	::=	K_GOTO
+	|	K_PLDS
+	|	K_SNDC <<isOldVariant>>
+	|	K_SNDE <<isOldVariant>>
+	|	K_SNDF <<isOldVariant>>
+	|	K_SNDL <<isOldVariant>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r
+	::=	K_GRPL
+	|	K_LOCI
+	|	prefix_kw_mesg space_like K_WRT_PLUS
+	|	prefix_kw_net_col space_like K_WRIT
+	|	prefix_kw_new_col space_like K_CREA
+	|	prefix_kw_new_col space_like K_PART
+	|	K_NEWC
+	|	prefix_kw_prt_col space_like K_ONEW
+	|	K_RATE
+	|	K_SPOT
+	|	K_TINO
+	|	K_TINT
+	|	K_TRCK
+	|	prefix_kw_urge space_like K_WRIT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r_r
+	::=	K_LINE
+	|	prefix_kw_new_col space_like K_CRAG
+	|	prefix_kw_sway space_like K_WRIT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_l_l_l_l
+	::=	prefix_kw_net_col space_like K_STAT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_r_r_r_r_r_r_r
+	::=	prefix_kw_new_col space_like K_BKBD
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_r_r_r
+	::=	prefix_kw_new_col space_like K_CBTN
+	|	prefix_kw_new_col space_like K_CBUB
+	|	prefix_kw_new_col space_like K_COMP <<isOldVariant>>
+	|	prefix_kw_new_col space_like K_SCEN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+
+c_kw_t_r_r
+	::=	prefix_kw_new_col space_like K_LIFT
+	|	prefix_kw_new_col space_like K_VHCL <<isOldVariant>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_r_r_r_r
+	::=	prefix_kw_new_col space_like K_RAIN
+	|	prefix_kw_new_col space_like K_SIMP <<isOldVariant>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r
+	::=	prefix_kw_pat_col space_like K_DULL <<isNewVariant 'false'>><<isVariant 'C3.INSTANCE' 'CV.INSTANCE' 'DS.INSTANCE'>>
+	|	prefix_kw_prt_col space_like K_INEW
+	|	K_ROOM<<isVariant 'C1.INSTANCE'>>
+	|	K_SNAP
+	|	K_WTNT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	prefix_kw_pat_col space_like K_FIXD <<isVariant 'SM.INSTANCE'>>
+	|	prefix_kw_stim space_like K_WRIT <<isOldVariant>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	prefix_kw_pat_col space_like K_TEXT <<isVariant 'SM.INSTANCE'>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r
+	::=	prefix_kw_pat_col space_like K_TEXT <<isNewVariant 'false'>><<isVariant 'C3.INSTANCE' 'CV.INSTANCE' 'DS.INSTANCE'>>
+	|	prefix_kw_sway space_like K_SHOU
+	|	prefix_kw_sway space_like K_SIGN
+	|	prefix_kw_sway space_like K_TACT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	K_ROOM<<isVariant 'C2.INSTANCE'>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_t_r
+	::=	K_SNDQ <<isOldVariant>>
+	|	prefix_kw_sys_col space_like K_CONV
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_kw_r_r_r_r_r_r_r_r_r_r_r_r
+	::=	prefix_kw_stim space_like K_FROM
+	|	prefix_kw_stim space_like K_SHOU <<isOldVariant>>
+	|	prefix_kw_stim space_like K_SIGN <<isOldVariant>>
+	|	prefix_kw_stim space_like K_TACT <<isOldVariant>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+// ======== Rvalue Keywords ====== //
+r_kw_none
+	::=	prefix_kw__cd_ space_like K_FRQH
+	|	prefix_kw__cd_ space_like K_FRQL
+	|	prefix_kw__cd_ space_like K_FRQM
+	|	K__IT_
+	|	K__P1_
+	|	K__P2_
+	|	K__UP_
+	|	K_ABBA
+	|	K_ACCG
+	|	K_ACTV
+	|	K_ADMP
+	|	K_AERO
+	|	K_ASLP
+	|	K_ATTN
+	|	K_ATTR
+	|	K_AVEL
+	|	K_BABY
+	|	K_BASE
+	|	K_BHVR <<isNewVariant 'true'>>
+	|	K_BUMP
+	|	K_BUZZ
+	|	K_BVAR
+	|	K_BYIT
+	|	K_CABB
+	|	K_CABL
+	|	K_CABP
+	|	K_CABR
+	|	K_CABT
+	|	K_CABV
+	|	K_CAGE
+	|	K_CAMN
+	|	K_CARR
+	|	K_CATA
+	|	K_CLAC
+	|	K_CLAS
+	|	K_CMRX
+	|	K_CMRY
+	|	K_CODE
+	|	K_CODF
+	|	K_CODG
+	|	K_CODP
+	|	K_CODS
+	|	K_DATE
+	|	K_DAYT
+	|	K_DEAD
+	|	K_DECN
+	|	K_DFTX
+	|	K_DFTY
+	|	K_DIRN
+	|	K_DOWN
+	|	K_DREA
+	|	K_DRV_EXC
+	|	K_EDIT
+	|	K_EGGL
+	|	K_ELAS
+	|	K_EMID
+	|	K_ETIK
+	|	K_EXEC
+	|	K_EXPR
+	|	K_FACE
+	|	K_FALL
+	|	K_FDMP
+	|	K_FLIP
+	|	K_FLOR
+	|	K_FLTX
+	|	K_FLTY
+	|	K_FMLY
+	|	K_FRIC
+	|	K_FROM
+	|	K_FRZN
+	|	K_FVEL
+	|	K_GALL
+	|	K_GEND
+	|	K_GNAM
+	|	K_GND_NUM
+	|	K_GNDW
+	|	K_GNUS
+	|	K_GRAV
+	|	K_HAND
+	|	K_HATL
+	|	K_HELD
+	|	K_HGHT
+	|	K_HHLD
+	|	K_HOTP
+	|	K_HOTS
+	|	K_HOUR
+	|	K_HSRC
+	|	K_IITT
+	|	K_IMSK
+	|	K_INNF
+	|	K_INNI
+	|	K_INNL
+	|	K_INOK
+	|	K_INS_NUM
+	|	K_INTR
+	|	K_LACB
+	|	K_LANG
+	|	K_LEFT
+	|	K_LIMB <<isOldVariant>>
+	|	K_LIML
+	|	K_LIMR
+	|	K_LIMT
+	|	K_LITE
+	|	K_LNG_PLUS
+	|	K_LSRC
+	|	K_MAPH
+	|	K_MAPW
+	|	K_META
+	|	K_MIND
+	|	K_MINS
+	|	K_MIRA
+	|	K_MODU
+	|	K_MONK
+	|	K_MONT
+	|	K_MOPX
+	|	K_MOPY
+	|	K_MOTR
+	|	K_MOVS
+	|	K_MOVX
+	|	K_MOVY
+	|	K_MOWS
+	|	K_MSEC
+	|	K_MTHX
+	|	K_MTHY
+	|	K_NEID
+	|	prefix_kw_net_col space_like K_ERRA
+	|	prefix_kw_net_col space_like K_HOST
+	|	prefix_kw_net_col space_like K_LINE
+	|	prefix_kw_net_col space_like K_PASS
+	|	prefix_kw_net_col space_like K_RAWE
+	|	prefix_kw_net_col space_like K_USER
+	|	prefix_kw_net_col space_like K_WHAT
+	|	K_NORN
+	|	K_NPGS
+	|	K_NULL
+	|	K_NWLD
+	|	K_OBJP
+	|	K_ONTR
+	|	K_ORGN
+	|	K_OWNR
+	|	K_PACE
+	|	K_PAGE
+	|	K_PAUS
+	|	K_PAWS
+	|	K_PERM
+	|	K_PLNE
+	|	K_PNTR
+	|	K_POSB
+	|	K_POSE
+	|	K_POSL
+	|	K_POSR
+	|	K_POST
+	|	K_POSX
+	|	K_POSY
+	|	K_PRES
+	|	prefix_kw_prt_col space_like K_ITOT
+	|	prefix_kw_prt_col space_like K_OTOT
+	|	K_PSRC
+	|	K_PTXT
+	|	K_PURE
+	|	K_RACE
+	|	K_RADN
+	|	K_RELX<<isVariant 'C2.INSTANCE'>>
+	|	K_RELY<<isVariant 'C2.INSTANCE'>>
+	|	K_REST
+	|	K_RGHT
+	|	K_RMNO
+	|	K_RMS_NUM
+	|	K_RNDR
+	|	K_RNGE
+	|	K_ROTA
+	|	K_RSRC
+	|	K_RTIM
+	|	K_RTYP <<isOldVariant>>
+	|	K_SCOR<<isVariant 'C1.INSTANCE'>>
+	|	K_SDMP
+	|	K_SEAN
+	|	K_SEAV
+	|	K_SHOW
+	|	K_SIZE
+	|	K_SNDS
+	|	K_SPCS
+	|	K_SPIN
+	|	K_SVEL
+	|	K_TACK
+	|	K_TAGE
+	|	K_TARG
+	|	K_TCAR
+	|	K_TEMP
+	|	K_THRT
+	|	K_TICK
+	|	K_TIME
+	|	K_TMOD
+	|	K_TRCK
+	|	K_UFOS
+	|	K_UFTX
+	|	K_UFTY
+	|	K_UNCS
+	|	K_UNID
+	|	K_VARC
+	|	K_VELX
+	|	K_VELY
+	|	K_VMJR
+	|	K_VMNR
+	|	K_VOIS
+	|	K_VRSN
+	|	K_WALL
+	|	K_WDOW
+	|	K_WDTH
+	|	K_WIND
+	|	K_WINH
+	|	K_WINW
+	|	K_WLDH
+	|	K_WLDW
+	|	K_WNAM
+	|	K_WNDB
+	|	K_WNDH
+	|	K_WNDL
+	|	K_WNDR
+	|	K_WNDT
+	|	K_WNDW
+	|	K_WNDX
+	|	K_WNDY
+	|	K_WPAU
+	|	K_WTIK
+	|	K_WUID
+	|	K_XVEC
+	|	K_YEAR
+	|	K_YVEC
+	|	K_ZOMB
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r
+	::=	K_ACOS
+	|	K_AGNT
+	|	K_ASIN
+	|	K_ATAN
+	|	K_BKDS
+	|	K_BKGD
+	|	K_BODY
+	|	K_BRED
+	|	K_CALG
+	|	K_CATX
+	|	K_CHEM
+	|	K_CLIK
+	|	K_COS_
+	|	K_CREA
+	|	K_DBG_NUM
+	|	K_DBGA
+	|	K_DISQ
+	|	K_DRIV
+	|	K_EAMN
+	|	K_ERID
+	|	K_FTOI
+	|	K_FVWM
+	|	K_GAMN
+	|	K_GRND
+	|	K_GTOS
+	|	K_HEAP
+	|	K_HEDX
+	|	K_HEDY
+	|	prefix_kw_hist space_like K_COUN
+	|	prefix_kw_hist space_like K_CROS
+	|	prefix_kw_hist space_like K_DATE
+	|	prefix_kw_hist space_like K_GEND
+	|	prefix_kw_hist space_like K_GNUS
+	|	prefix_kw_hist space_like K_MUTE
+	|	prefix_kw_hist space_like K_NAME
+	|	prefix_kw_hist space_like K_NEXT
+	|	prefix_kw_hist space_like K_PREV
+	|	prefix_kw_hist space_like K_SEAN
+	|	prefix_kw_hist space_like K_TIME
+	|	prefix_kw_hist space_like K_VARI
+	|	prefix_kw_hist space_like K_WVET
+	|	prefix_kw_hist space_like K_YEAR
+	|	K_ISAR
+	|	K_ITOF
+	|	K_KEYD
+	|	K_LOFT
+	|	K_LOWA
+	|	K_MLOC
+	|	K_MTOA
+	|	K_MTOC
+	|	K_MUSC
+	|	prefix_kw_net_col space_like K_FROM
+	|	prefix_kw_net_col space_like K_ULIN
+	|	K_OBDT
+	|	K_OBST
+	|	K_OBSV
+	|	K_OOWW
+	|	K_PART
+	|	K_PNXT
+	|	prefix_kw_pray space_like K_COUN
+	|	prefix_kw_pray space_like K_EXPO
+	|	prefix_kw_pray space_like K_KILL
+	|	prefix_kw_pray space_like K_SIZE
+	|	prefix_kw_pray space_like K_TEST
+	|	prefix_kw_prt_col space_like K_FRMA
+	|	prefix_kw_prt_col space_like K_FROM
+	|	K_PSWD
+	|	K_RAIN
+	|	K_REAN
+	|	K_REAQ
+	|	K_RLOC
+	|	K_ROOM <<isNewVariant 'true'>>
+	|	K_RTYP <<isNewVariant 'true'>>
+	|	K_SCOR<<isVariant 'C2.INSTANCE'>>
+	|	K_SEEN
+	|	K_SIN_
+	|	K_SNAX
+	|	K_SOUL
+	|	K_SQRT
+	|	K_STOF
+	|	K_STOI
+	|	K_STRL
+	|	K_TAN_
+	|	K_TINT
+	|	K_TORX
+	|	K_TORY
+	|	K_TYPE
+	|	K_UPPA
+	|	K_VECX
+	|	K_VECY
+	|	K_VISI
+	|	K_VOLM
+	|	K_VTOS
+	|	K_WNTI
+	|	K_WRLD
+	|	K_XIST
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r_r_r
+	::=	K_ADDM
+	|	K_LIMB<<isVariant 'C3.INSTANCE' 'DS.INSTANCE' 'SM.INSTANCE'>>
+	|	K_WILD
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r_r_r_r_r
+	::=	K_ADDR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r
+	::=	K_ANGL
+	|	K_AVAR
+	|	K_DOOR
+	|	K_GAME<<isVariant 'C2.INSTANCE'>>
+	|	K_GMAP
+	|	K_GRAP
+	|	K_GRID
+	|	prefix_kw_hist space_like K_CAGE
+	|	prefix_kw_hist space_like K_FOTO
+	|	prefix_kw_hist space_like K_MON1
+	|	prefix_kw_hist space_like K_MON2
+	|	prefix_kw_hist space_like K_NETU
+	|	prefix_kw_hist space_like K_RTIM
+	|	prefix_kw_hist space_like K_TAGE
+	|	prefix_kw_hist space_like K_TYPE
+	|	prefix_kw_hist space_like K_UTXT
+	|	prefix_kw_hist space_like K_WNAM
+	|	prefix_kw_hist space_like K_WTIK
+	|	prefix_kw_hist space_like K_WUID
+	|	K_LINK
+	|	K_MMSC
+	|	K_MUTE
+	|	prefix_kw_net_col space_like K_EXPO
+	|	K_ONTV
+	|	K_ORGF
+	|	K_ORGI
+	|	prefix_kw_pray space_like K_BACK
+	|	prefix_kw_pray space_like K_DEPS
+	|	prefix_kw_pray space_like K_FORE
+	|	prefix_kw_pray space_like K_NEXT
+	|	prefix_kw_pray space_like K_PREV
+	|	K_PROP
+	|	K_PUHL <<isNewVariant 'true'>>
+	|	K_PUPT <<isNewVariant 'true'>>
+	|	K_RAND
+	|	K_RATE
+	|	K_READ
+	|	K_RELX <<isNewVariant 'true'>>
+	|	K_RELY <<isNewVariant 'true'>>
+	|	K_RMN_NUM
+	|	K_RMSC
+	|	K_ROOM <<isOldVariant>> // Though different commands in C1 vs C2, they have the same number of arguments
+	|	K_RTIF
+	|	K_SEEE
+	|	K_TMVB
+	|	K_TMVF
+	|	K_TMVT
+	|	K_TOUC
+	|	K_TWIN
+	|	K_WEAR
+	|	K_WOLF
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r_r_r_r_r_l
+	::=	K_CAOS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r
+	::=	K_CATI
+	|	K_HIRP
+	|	K_DOOR
+    |	K_RMND
+	|	prefix_kw_hist space_like K_FIND
+	|	prefix_kw_hist space_like K_FINR
+	|	K_LORP
+	|	prefix_kw_pray space_like K_AGTI
+	|	prefix_kw_pray space_like K_AGTS
+	|	prefix_kw_pray space_like K_FILE
+	|	prefix_kw_pray space_like K_IMPO
+	|	prefix_kw_prt_col space_like K_NAME
+	|	K_SINS
+	|	K_SUBS
+	|	K_TOTL
+	|	K_RMNR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r_r
+	::=	K_LOCI
+	|	K_NCLS
+	|	K_PCLS
+	|	K_SCOL
+	|	K_SORC
+	|	K_SORQ
+	|	K_TCOR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r_l
+	::=	prefix_kw_net_col space_like K_MAKE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_l
+	::=	prefix_kw_pray space_like K_INJT
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_r_r_r_r_l
+	::=	prefix_kw_pray space_like K_MAKE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+r_kw_t
+	::=	K_TOKN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+// ======== Lvalue Keywords ====== //
+l_kw_none
+	::=	K__P1_
+	|	K__P2_
+	|	K_ACCG
+	|	K_ACTV
+	|	K_AERO
+	|	K_ATTR
+	|	K_BABY
+	|	K_CLAS
+	|	K_FROM
+	|	K_FRZN
+	|	K_GRAV
+	|	K_HSRC
+	|	K_INTR
+	|	K_LACB
+	|	K_LITE
+	|	K_LSRC
+	|	K_MOVS
+	|	K_NORN
+	|	K_OBJP
+	|	K_ONTR
+	|	K_PAUS
+	|	K_PRES
+	|	K_PSRC
+	|	K_RADN
+	|	K_REST
+	|	K_RNGE
+	|	K_RSRC
+	|	K_RTYP
+	|	K_SIZE
+	|	K_TEMP
+	|	K_THRT
+	|	K_VELX
+	|	K_VELY
+	|	K_WINH
+	|	K_WINW
+	|	K_XVEC
+	|	K_YVEC
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_r_r
+	::=	K_AVAR
+	|	K_CLS2
+	|	K_GAME<<isVariant 'C2.INSTANCE'>>
+	|	K_PUHL<<isVariant 'C2.INSTANCE'>>
+	|	K_PUPT<<isVariant 'C2.INSTANCE'>>
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_r_r_r
+	::=	K_DOOR
+	|	K_RMND
+	|	K_RMNR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+l_kw_r
+	::=	K_MUSC
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+// =========== Prefixes ========== //
+prefix_kw__cd_
+	::=	K__CD_
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+command_prefix_incompletes
+	::= all_command_prefixes (space_like incomplete)?
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private all_command_prefixes
+	::=	K__CD_
+	|	K_APP_COL
+	|	K_BBD_COL
+	|	K_BRN_COL
+	|	K_DBG_COL
+	|	K_DDE_COL
+	|	K_FILE
+	|	K_GENE
+	|	K_GIDS
+	|	K_HIST
+	|	K_MESG
+	|	K_NET_COL
+	|	K_NEW_COL
+	|	K_ORDR
+	|	K_PAT_COL
+	|	K_PRAY
+	|	K_PRT_COL
+	|	K_STIM
+	|	K_STM_NUM
+	|	K_SWAY
+	|	K_SYS_COL
+	|	K_URGE
+	;
+
+
+rvalue_prefix_incompletes
+	::= all_rvalue_prefixes (space_like incomplete)?
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsLvalueKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+private all_rvalue_prefixes
+	::= K__CD_
+	|	K_HIST
+	|	K_NET_COL
+	|	K_PRT_COL
+	|	K_PRAY
+	;
+
+prefix_kw_brn_col
+	::=	K_BRN_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_dbg_col
+	::=	K_DBG_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_dde_col
+	::=	K_DDE_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_file
+	::=	K_FILE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_gids
+	::=	K_GIDS
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_net_col
+	::=	K_NET_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_pray
+	::=	K_PRAY
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_sys_col
+	::=	K_SYS_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_app_col
+	::=	K_APP_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_bbd_col
+	::=	K_BBD_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_hist
+	::=	K_HIST
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_mesg
+	::=	K_MESG
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_ordr
+	::=	K_ORDR
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_pat_col
+	::=	K_PAT_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_prt_col
+	::=	K_PRT_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_stm_num
+	::=	K_STM_NUM
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_gene
+	::=	K_GENE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_new_col
+	::=	K_NEW_COL
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_stim
+	::=	K_STIM
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_urge
+	::=	K_URGE
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+prefix_kw_sway
+	::=	K_SWAY
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+		]
+	}
+	;
+
+
+all_tokens
+	::=	K_NEW_COL
+	|	K_SCEN
+	|	K_SIMP
+	|	K_CBTN
+	|	K_COMP
+	|	K_PART
+	|	K_VHCL
+	|	K_LIFT
+	|	K_BKBD
+	|	K_TOKN
+	|	K_CREA
+	|	K_GENE
+	|	K_CBUB
+	|	K_BBTX
+	|	K_TARG
+	|	K_FROM
+	|	K_NORN
+	|	K_PNTR
+	|	K__IT_
+	|	K_CARR
+	|	K_EDIT
+	|	K_TCAR
+	|	K_OBJP
+	|	K_PUPT
+	|	K_PUHL
+	|	K_ACCG
+	|	K_AERO
+	|	K_REST
+	|	K_SIZE
+	|	K_RNGE
+	|	K_ATTR
+	|	K_BHVR
+	|	K_WDTH
+	|	K_HGHT
+	|	K__P1_
+	|	K__P2_
+	|	K_CLS2
+	|	K_UNID
+	|	K_GRAV
+	|	K_WALL
+	|	K_KILL
+	|	K_RELX
+	|	K_RELY
+	|	K_TICK
+	|	K_FRZN
+	|	K_POSX
+	|	K_POSY
+	|	K_POSL
+	|	K_POSR
+	|	K_POSB
+	|	K_POST
+	|	K_LIML
+	|	K_LIMR
+	|	K_LIMT
+	|	K_LIMB
+	|	K_FMLY
+	|	K_GNUS
+	|	K_SPCS
+	|	K_MOVS
+	|	K_ACTV
+	|	K_NEID
+	|	K_TOTL
+	|	K_TOUC
+	|	K_SLIM
+	|	K_ADDV
+	|	K_SUBV
+	|	K_MULV
+	|	K_DIVV
+	|	K_MODV
+	|	K_NEGV
+	|	K_ANDV
+	|	K_RNDV
+	|	K_SETV
+	|	K_BBLE
+	|	K_STOP
+	|	K_ENDM
+	|	K_SUBR
+	|	K_GSUB
+	|	K_RETN
+	|	K_REPS
+	|	K_REPE
+	|	K_LOOP
+	|	K_UNTL
+	|	K_ENUM
+	|	K_ESEE
+	|	K_ETCH
+	|	K_NEXT
+	|	K_ESCN
+	|	K_NSCN
+	|	K_RTAR
+	|	K_STAR
+	|	K_INST
+	|	K_SLOW
+	|	K_EVER
+	|	K_DOIF
+	|	K_ELSE
+	|	K_ENDI
+	|	K_WAIT
+	|	K_ANIM
+	|	K_OVER
+	|	K_POSE
+	|	K_PRLD
+	|	K_BASE
+	|	K_VELX
+	|	K_VELY
+	|	K_MVTO
+	|	K_MCRT
+	|	K_MVBY
+	|	K_MESG
+	|	K_SHOU
+	|	K_SIGN
+	|	K_TACT
+	|	K_WRT_PLUS
+	|	K_STM_NUM
+	|	K_WRIT
+	|	K_STIM
+	|	K_TEMP
+	|	K_LITE
+	|	K_RADN
+	|	K_ONTR
+	|	K_INTR
+	|	K_PRES
+	|	K_WNDX
+	|	K_WNDY
+	|	K_HSRC
+	|	K_PSRC
+	|	K_LSRC
+	|	K_RSRC
+	|	K_RMNO
+	|	K_RTYP
+	|	K_RMN_NUM
+	|	K_RMND
+	|	K_RMNR
+	|	K_ROOM
+	|	K_DELR
+	|	K_DELN
+	|	K_DOOR
+	|	K_WLDW
+	|	K_WLDH
+	|	K_TECO
+	|	K_OBST
+	|	K_OBDT
+	|	K_OBSV
+	|	K_FLOR
+	|	K_RMS_NUM
+	|	K_GRND
+	|	K_ISAR
+	|	K_SEAN
+	|	K_SEAV
+	|	K_ASEA
+	|	K_TMOD
+	|	K_YEAR
+	|	K_EGGL
+	|	K_HATL
+	|	K_SPOT
+	|	K_KNOB
+	|	K_KMSG
+	|	K_CABN
+	|	K_DPS2
+	|	K_DPAS
+	|	K_GPAS
+	|	K_SPAS
+	|	K_LACB
+	|	K_XVEC
+	|	K_YVEC
+	|	K_BUMP
+	|	K_TELE
+	|	K_BBD_COL
+	|	K_VOCB
+	|	K_VCB1
+	|	K_WORD
+	|	K_SHOW
+	|	K_EMIT
+	|	K_BBT2
+	|	K_BBFD
+	|	K_CBRG
+	|	K_CBRX
+	|	K_RAIN
+	|	K_SYS_COL
+	|	K_CMRP
+	|	K_CMRA
+	|	K_CMRX
+	|	K_CMRY
+	|	K_THRT
+	|	K_RMSC
+	|	K_RCLR
+	|	K_MUSC
+	|	K_SNDE
+	|	K_SNDQ
+	|	K_SNDC
+	|	K_SNDL
+	|	K_PLDS
+	|	K_STPC
+	|	K_FADE
+	|	K_DRIV
+	|	K_DRV_EXC
+	|	K_CHEM
+	|	K_BABY
+	|	K_ASLP
+	|	K_INS_NUM
+	|	K_DIRN
+	|	K_MONK
+	|	K_ORGN
+	|	K_INJR
+	|	K_FIRE
+	|	K_TRIG
+	|	K_APPR
+	|	K_WALK
+	|	K_POIN
+	|	K_AIM_COL
+	|	K_SAY_NUM
+	|	K_SAY_DOL
+	|	K_SAYN
+	|	K_IMPT
+	|	K_DONE
+	|	K_LTCY
+	|	K_DREA
+	|	K_DROP
+	|	K_MATE
+	|	K_SNEZ
+	|	K_CAMN
+	|	K_CAGE
+	|	K_DDE_COL
+	|	K_GIDS
+	|	K_ROOT
+	|	K_GETB
+	|	K_ALLR
+	|	K_RPTY
+	|	K_RRCT
+	|	K_NEWV
+	|	K_LVOB
+	|	K_BIOC
+	|	K_EMTR
+	|	K_RCTN
+	|	K_PIC2
+	|	K_PUTV
+	|	K_NACT
+	|	K_LNEU
+	|	K_LCUS
+	|	K_PUTS
+	|	K_DATA
+	|	K_CNAM
+	|	K_CTIM
+	|	K_OVVD
+	|	K_NEGG
+	|	K_PANC
+	|	K_LOBE
+	|	K_CELL
+	|	K_DIED
+	|	K_LIVE
+	|	K_HATC
+	|	K_DBUG
+	|	K_DBGV
+	|	K_DBGM
+	|	K_SCRX
+	|	K_PAUS
+	|	K_LOCK
+	|	K_UNLK
+	|	K_EVNT
+	|	K_RMEV
+	|	K_HOUR
+	|	K_MINS
+	|	K_DMAP
+	|	K_WTOP
+	|	K_QUIT
+	|	K_ABRT
+	|	K_WRLD
+	|	K_CONV
+	|	K_VRSN
+	|	K_ISCR
+	|	K_RSCR
+	|	K_LANG
+	|	K_OWNR
+	|	K_ATTN
+	|	K_EXEC
+	|	K_SNDS
+	|	K_WINW
+	|	K_WINH
+	|	K_CLAS
+	|	K_SCOR
+	|	K_DEAD
+	|	K_WIND
+	|	K_GND_NUM
+	|	K_GNDW
+	|	K_SCRP
+	|	K_PUTB
+	|	K_PICT
+	|	K_CMND
+	|	K_WPOS
+	|	K_CAMT
+	|	K_ORRV
+	|	K_TOOL
+	|	K_SNDF
+	|	K_SNDV
+	|	K_ALPH
+	|	K_ANMS
+	|	K_BMPS
+	|	K_CATI
+	|	K_CATX
+	|	K_CLAC
+	|	K_CLIK
+	|	K_DISQ
+	|	K_FLTX
+	|	K_FLTY
+	|	K_FRAT
+	|	K_GAIT
+	|	K_GALL
+	|	K_HAND
+	|	K_HEDX
+	|	K_HEDY
+	|	K_HELD
+	|	K_IITT
+	|	K_IMGE
+	|	K_IMSK
+	|	K_MIRA
+	|	K_MOWS
+	|	K_MTHX
+	|	K_MTHY
+	|	K_NCLS
+	|	K_NOHH
+	|	K_NULL
+	|	K_ONTV
+	|	K_PCLS
+	|	K_PLNE
+	|	K_SCLE
+	|	K_SEEE
+	|	K_TINT
+	|	K_TRAN
+	|	K_TTAR
+	|	K_TWIN
+	|	K_VISI
+	|	K_WILD
+	|	K_BKGD
+	|	K_BRMI
+	|	K_CMRT
+	|	K_FRSH
+	|	K_LINE
+	|	K_LOFT
+	|	K_META
+	|	K_MIRR
+	|	K_PRNT
+	|	K_SCAM
+	|	K_SCRL
+	|	K_SNAP
+	|	K_SNAX
+	|	K_TNTO
+	|	K_TRCK
+	|	K_WDOW
+	|	K_WNDB
+	|	K_WNDH
+	|	K_WNDL
+	|	K_WNDR
+	|	K_WNDT
+	|	K_WNDW
+	|	K_ZOOM
+	|	K_CHAR
+	|	K_FCUS
+	|	K_FRMT
+	|	K_GRPL
+	|	K_GRPV
+	|	K_NPGS
+	|	K_PAGE
+	|	K_PTXT
+	|	K_AGES
+	|	K_BODY
+	|	K_BORN
+	|	K_BRED
+	|	K_BVAR
+	|	K_BYIT
+	|	K_DECN
+	|	K_DFTX
+	|	K_DFTY
+	|	K_DYED
+	|	K_EXPR
+	|	K_FACE
+	|	K_FORF
+	|	K_HAIR
+	|	K_HHLD
+	|	K_LIKE
+	|	K_LOCI
+	|	K_MVFT
+	|	K_NEWC
+	|	K_NUDE
+	|	K_ORGF
+	|	K_ORGI
+	|	K_RSET
+	|	K_SPNL
+	|	K_STRE
+	|	K_SWAP
+	|	K_TAGE
+	|	K_TNTC
+	|	K_UFTX
+	|	K_UFTY
+	|	K_UNCS
+	|	K_WEAR
+	|	K_ZOMB
+	|	K_AGNT
+	|	K_APRO
+	|	K_CODE
+	|	K_CODF
+	|	K_CODG
+	|	K_CODP
+	|	K_CODS
+	|	K_DBG_NUM
+	|	K_DBGA
+	|	K_HEAP
+	|	K_HELP
+	|	K_MANN
+	|	K_MEMX
+	|	K_PAWS
+	|	K_TACK
+	|	K_FVWM
+	|	K_INNF
+	|	K_INNI
+	|	K_INNL
+	|	K_INOK
+	|	K_OUTS
+	|	K_OUTV
+	|	K_OUTX
+	|	K_ELIF
+	|	K_GOTO
+	|	K_GTOS
+	|	K_MTOA
+	|	K_MTOC
+	|	K_OOWW
+	|	K_HOTS
+	|	K_KEYD
+	|	K_MOPX
+	|	K_MOPY
+	|	K_MOUS
+	|	K_MOVX
+	|	K_MOVY
+	|	K_PURE
+	|	K_ADDB
+	|	K_ADDM
+	|	K_ADDR
+	|	K_ALTR
+	|	K_BKDS
+	|	K_CACL
+	|	K_DELM
+	|	K_DOCA
+	|	K_DOWN
+	|	K_EMID
+	|	K_ERID
+	|	K_GMAP
+	|	K_GRAP
+	|	K_GRID
+	|	K_HIRP
+	|	K_LEFT
+	|	K_LINK
+	|	K_LORP
+	|	K_MAPD
+	|	K_MAPH
+	|	K_MAPK
+	|	K_MAPW
+	|	K_MLOC
+	|	K_PERM
+	|	K_PROP
+	|	K_RATE
+	|	K_RGHT
+	|	K_RLOC
+	|	K_TORX
+	|	K_TORY
+	|	K__UP_
+	|	K_ELAS
+	|	K_FALL
+	|	K_FLTO
+	|	K_FREL
+	|	K_FRIC
+	|	K_MVSF
+	|	K_TMVB
+	|	K_TMVF
+	|	K_TMVT
+	|	K_VELO
+	|	K_ECON
+	|	K_CAOS
+	|	K_SORC
+	|	K_SORQ
+	|	K_STPT
+	|	K_MCLR
+	|	K_MIDI
+	|	K_MMSC
+	|	K_MUTE
+	|	K_SEZZ
+	|	K_STRK
+	|	K_VOIC
+	|	K_VOIS
+	|	K_VOLM
+	|	K_DATE
+	|	K_DAYT
+	|	K_ETIK
+	|	K_MONT
+	|	K_MSEC
+	|	K_PACE
+	|	K_RACE
+	|	K_RTIF
+	|	K_RTIM
+	|	K_SCOL
+	|	K_TIME
+	|	K_WOLF
+	|	K_WPAU
+	|	K_WTIK
+	|	K_ABSV
+	|	K_ACOS
+	|	K_ADDS
+	|	K_ASIN
+	|	K_ATAN
+	|	K_AVAR
+	|	K_COS_
+	|	K_DELG
+	|	K_FTOI
+	|	K_GAME
+	|	K_GAMN
+	|	K_GNAM
+	|	K_ITOF
+	|	K_RAND
+	|	K_READ
+	|	K_REAF
+	|	K_REAN
+	|	K_REAQ
+	|	K_SETA
+	|	K_SETS
+	|	K_SIN_
+	|	K_SQRT
+	|	K_STOF
+	|	K_STOI
+	|	K_STRL
+	|	K_SUBS
+	|	K_TAN_
+	|	K_TYPE
+	|	K_VMJR
+	|	K_VMNR
+	|	K_VTOS
+	|	K_CABB
+	|	K_CABL
+	|	K_CABP
+	|	K_CABR
+	|	K_CABT
+	|	K_CABV
+	|	K_CABW
+	|	K_EPAS
+	|	K_RPAS
+	|	K_DELW
+	|	K_LOAD
+	|	K_NWLD
+	|	K_PSWD
+	|	K_RGAM
+	|	K_SAVE
+	|	K_TNTW
+	|	K_WNAM
+	|	K_WNTI
+	|	K_WTNT
+	|	K_WUID
+	|	K_ABBA
+	|	K_CALL
+	|	K_CATA
+	|	K_CATO
+	|	K_CORE
+	|	K_DCOR
+	|	K_DSEE
+	|	K_TCOR
+	|	K_TINO
+	|	K_UCLN
+	|	K_ADIN
+	|	K_BRN_COL
+	|	K_DMPB
+	|	K_DMPD
+	|	K_DMPL
+	|	K_DMPN
+	|	K_DMPT
+	|	K_SETD
+	|	K_SETL
+	|	K_SETN
+	|	K_SETT
+	|	K_DOIN
+	|	K__CD_
+	|	K_EJCT
+	|	K_FRQH
+	|	K_FRQL
+	|	K_FRQM
+	|	K_INIT
+	|	K_PLAY
+	|	K_SHUT
+	|	K_PAT_COL
+	|	K_BUTT
+	|	K_DULL
+	|	K_FIXD
+	|	K_GRPH
+	|	K_MOVE
+	|	K_TEXT
+	|	K_PNXT
+	|	K_BOOT
+	|	K_CALG
+	|	K_MIND
+	|	K_MOTR
+	|	K_CRAG
+	|	K_ORDR
+	|	K_PLMD
+	|	K_PLMU
+	|	K_SEEN
+	|	K_SOUL
+	|	K_STEP
+	|	K_SWAY
+	|	K_URGE
+	|	K_BANG
+	|	K_DBG_COL
+	|	K_ASRT
+	|	K_CPRO
+	|	K_FLSH
+	|	K_HTML
+	|	K_POLL
+	|	K_PROF
+	|	K_TOCK
+	|	K_FILE
+	|	K_GLOB
+	|	K_ICLO
+	|	K_IOPE
+	|	K_JDEL
+	|	K_OCLO
+	|	K_OFLU
+	|	K_OOPE
+	|	K_WEBB
+	|	K_CLON
+	|	K_CROS
+	|	K_HIST
+	|	K_COUN
+	|	K_FIND
+	|	K_FINR
+	|	K_FOTO
+	|	K_GEND
+	|	K_NAME
+	|	K_NETU
+	|	K_PREV
+	|	K_UTXT
+	|	K_VARI
+	|	K_WIPE
+	|	K_WVET
+	|	K_HOTP
+	|	K_CALC
+	|	K_ADMP
+	|	K_ANGL
+	|	K_AVEL
+	|	K_FDMP
+	|	K_FVEL
+	|	K_ROTN
+	|	K_SDMP
+	|	K_SPIN
+	|	K_SVEL
+	|	K_VARC
+	|	K_VECX
+	|	K_VECY
+	|	K_NET_COL
+	|	K_ERRA
+	|	K_EXPO
+	|	K_HEAD
+	|	K_HEAR
+	|	K_HOST
+	|	K_PASS
+	|	K_RAWE
+	|	K_RUSO
+	|	K_STAT
+	|	K_ULIN
+	|	K_UNIK
+	|	K_USER
+	|	K_WHAT
+	|	K_WHOD
+	|	K_WHOF
+	|	K_WHON
+	|	K_WHOZ
+	|	K_PRT_COL
+	|	K_FRMA
+	|	K_INEW
+	|	K_ITOT
+	|	K_IZAP
+	|	K_JOIN
+	|	K_KRAK
+	|	K_ONEW
+	|	K_OTOT
+	|	K_OZAP
+	|	K_SEND
+	|	K_MAKE
+	|	K_PRAY
+	|	K_AGTI
+	|	K_AGTS
+	|	K_BACK
+	|	K_DEPS
+	|	K_FORE
+	|	K_GARB
+	|	K_IMPO
+	|	K_INJT
+	|	K_REFR
+	|	K_TEST
+	|	K_JECT
+	|	K_BUZZ
+	|	K_DELE
+	|	K_EAME
+	|	K_EAMN
+	|	K_LOWA
+	|	K_MAME
+	|	K_MODU
+	|	K_NAMN
+	|	K_NOTV
+	|	K_SINS
+	|	K_UFOS
+	|	K_UPPA
+	|	K_MON1
+	|	K_MON2
+	|	K_RNDR
+	|	K_LNG_PLUS
+	|	K_XIST
+	|	K_F__K
+	|	K_RCPR
+	|	K_DEND
+	|	K_APP_COL
+	|	K_SSFC
+	|	K_BLCK
+	|	K_FLIP
+	|	K_OUTL
+	|	K_ROTA
+	|	K_SHAD
+	|	K_STRC
+	|	VARX
+	|	VAXX
+	|	OBVX
+	|	OVXX
+	|	MVXX
+	;
