@@ -38,7 +38,6 @@ private fun SfcReader.readNewMfc() : Ptr<*>? {
         "CBiochemistry" -> SfcType.BIOCHEMISTRY
         else -> throw SfcReadException("Failed to understand MFC class name: '$className'")
     }
-    LOGGER.info("Reading next $className")
     // Push null object in place as reference to this type
     // Checked for later when creating instances of type
     storage.add(null)
