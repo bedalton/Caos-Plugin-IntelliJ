@@ -165,12 +165,16 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         // Check how this chemical should be folded
         if (format == ValuesFormat.STIM) {
-            stringBuilder.append(value).append(" * ").append(amount)
-            return
+            stringBuilder.append(value)
         }
         // If amount is roughly zero (with error tolerance) return without appending any data
-        if (abs(amount) < 0.0003)
+        if (abs(amount) < 0.0005)
             return
+
+        if (format == ValuesFormat.STIM) {
+            stringBuilder.append(" * ").append(amount)
+            return;
+        }
 
         // Format amount based on variant
         // C1/C2 use integers
