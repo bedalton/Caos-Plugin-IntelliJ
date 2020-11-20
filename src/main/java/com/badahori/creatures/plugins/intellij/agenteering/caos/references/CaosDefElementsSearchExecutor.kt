@@ -90,9 +90,6 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
                         }.all {
                             processor.process(it)
                         }
-            } else {
-                val files = (scope as? LocalSearchScope)?.virtualFiles?.toList() ?: (scope as? GlobalSearchScope.FilesScope)?.iterator()?.values
-                LOGGER.info("Checking for references to ${element.text}, but file is not in scope of ${files?.let { f -> " files "+f.map { it.name }} ?: scope?.displayName + ":"+scope.canonicalName }")
             }
             return
         }
