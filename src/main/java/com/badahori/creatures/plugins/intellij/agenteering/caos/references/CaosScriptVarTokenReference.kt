@@ -35,10 +35,8 @@ class CaosScriptVarTokenReference(element: CaosScriptVarToken) : PsiPolyVariantR
                     return@check false
                 }
                 if (element is CaosDefCommandWord || element is CaosDefCommand) {
-                    LOGGER.info("Is '$name' reference to '${element.text}' in ${myElement.containingFile.name}")
                     element.text.toUpperCase().let { it == "VARX" || it == "VAXX" }
                 } else if (element is CaosScriptVarToken) {
-                    LOGGER.info("Is '$name' reference to '${element.text}' in ${myElement.containingFile.name}")
                     varIndex == element.varIndex && element.varGroup.let { it == VARx || it == VAxx }
                 } else {
                     false
@@ -48,9 +46,8 @@ class CaosScriptVarTokenReference(element: CaosScriptVarToken) : PsiPolyVariantR
                 if (!variantCheck(element))
                     return@check false
                 if (element is CaosDefCommandWord || element is CaosDefCommand) {
-                    LOGGER.info("Is '$name' reference to '${element.text}' in ${myElement.containingFile.name}")
                     element.text.toUpperCase().let { it == "OBVX" || it == "OVXX" }
-                } else if (element is CaosScriptVarToken) {LOGGER.info("Is '$name' reference to '${element.text}' in ${myElement.containingFile.name}")
+                } else if (element is CaosScriptVarToken) {
                     varIndex == element.varIndex && element.varGroup.let { it == OBVx || it == OVxx }
                 } else {
                     false
@@ -61,10 +58,8 @@ class CaosScriptVarTokenReference(element: CaosScriptVarToken) : PsiPolyVariantR
                 if (!variantCheck(element))
                     return@check false
                 if (element is CaosDefCommandWord || element is CaosDefCommand) {
-                    LOGGER.info("Is '$name' reference to '${element.text}' in ${myElement.containingFile.name}")
                     element.text.toUpperCase() == "MVXX"
                 } else if (element is CaosScriptVarToken) {
-                    LOGGER.info("Is '$name' reference to '${element.text}' in ${myElement.containingFile.name}")
                     varIndex == element.varIndex && element.varGroup == MVxx
                 } else {
                     false
