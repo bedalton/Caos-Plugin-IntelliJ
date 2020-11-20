@@ -250,6 +250,7 @@
 		K_SCLE = "regexp:[Ss][Cc][Ll][Ee]";
 		K_SHAD = "regexp:[Ss][Hh][Aa][Dd]";
 		K_STRC = "regexp:[Ss][Tt][Rr][Cc]";
+		K_BAD_LOOP_TERMINATOR = "terminator"
 		K_CRETN = "RETN inside SUBR"
 		K_F__K = "regexp:[Ff][*]{2}[Kk]"
 		K_XX_DEF = " "
@@ -1182,6 +1183,7 @@ c_rndv
 			getCommandDefinition
 		]
 	}
+	;
 
 c_kw_random
 	::= K_RNDV
@@ -1726,6 +1728,46 @@ private r_tran_prime
 
 r_kw_tran
 	::= K_TRAN
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+		]
+		methods = [
+			getReference
+			getCommandString
+			getCommandStringUpper
+			getPresentation
+			isVariant
+			getName
+			setName
+		]
+	}
+	;
+
+c_invalid_loop_terminator
+	::= c_kw_invalid_loop_terminator
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+		]
+		methods = [
+			commandToken="c_kw_invalid_loop_terminator"
+			getCommandString
+			getCommandStringUpper
+			getArguments
+			getArgumentValues
+			getCommandDefinition
+		]
+	}
+	;
+
+c_kw_invalid_loop_terminator
+	::= K_BAD_LOOP_TERMINATOR
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -2724,6 +2766,7 @@ private command_call_by_args
 	|	c_gsub
 	|	c_pict
 	|	c_retn
+	|	c_invalid_loop_terminator
 	|	command_prefix_incompletes
 	;
 
@@ -3497,7 +3540,7 @@ c_kw_r_r
 	|	K_MVSF
 	|	K_MVTO
 	|	prefix_kw_net_col space_like K_PASS
-	|	prefix_kw_new_col space_like K_CREA
+	|	prefix_kw_new_col space_like K_CREA <<isOldVariant>>
 	|	prefix_kw_ordr space_like K_WRIT
 	|	K_PLMD
 	|	K_PLMU
@@ -3802,7 +3845,7 @@ c_kw_r_r_r_r_r
 	|	K_LOCI
 	|	prefix_kw_mesg space_like K_WRT_PLUS
 	|	prefix_kw_net_col space_like K_WRIT
-	|	prefix_kw_new_col space_like K_CREA
+	|	prefix_kw_new_col space_like K_CREA  <<isNewVariant 'true'>>
 	|	prefix_kw_new_col space_like K_PART
 	|	K_NEWC
 	|	prefix_kw_prt_col space_like K_ONEW

@@ -185,10 +185,10 @@ val String.case: Case
         if (chars[0] == chars[0].toLowerCase()) {
             return Case.LOWER_CASE
         }
-        if (chars[1] == chars[1].toLowerCase()) {
-            return Case.CAPITAL_FIRST
+        if (chars.size > 1 && chars[1] == chars[1].toUpperCase()) {
+            return Case.UPPER_CASE
         }
-        return Case.UPPER_CASE
+        return Case.CAPITAL_FIRST
     }
 
 fun String.escapeHTML(): String {
@@ -295,4 +295,6 @@ val EMPTY_STRING_ARRAY = emptyArray<String>()
 val EMPTY_STRING_LIST = emptyList<String>()
 
 
-val SPACES_REGEX = "\\s+".toRegex()
+val WHITESPACE = "\\s+".toRegex()
+val MULTI_WHITESPACE_REGEX = "\\s\\s+".toRegex()
+val MULTI_SPACE_REGEX = "[ ][ ]+".toRegex()

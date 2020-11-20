@@ -6,6 +6,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
 
 object CaosScriptProjectSettings {
+    // Allows persisting ignore setting.
+    // Disabled for now, as there would be no way to enable the check again in the future
+    /*private const val INJECTION_CHECK_DISABLED_DEFAULT = false
+    private const val INJECTION_CHECK_DISABLED_KEY = "INJECTION_CHECK_DISABLED"
+    private val INJECTION_CHECK_DISABLED_SETTING = CaosPluginSettingsUtil.BooleanSetting(INJECTION_CHECK_DISABLED_KEY, false)
+    var injectionCheckDisabled: Boolean
+        get() = INJECTION_CHECK_DISABLED_SETTING.value ?: INJECTION_CHECK_DISABLED_DEFAULT
+        set(value) { INJECTION_CHECK_DISABLED_SETTING.value = value }*/
+
+    var injectionCheckDisabled: Boolean = false
 
     // ==== VARIANT ===== //
     private const val VARIANT_KEY = "BASE_VARIANT"

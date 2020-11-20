@@ -15,6 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.trimErrorSpaces
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -23,14 +24,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.openapi.ui.playback.commands.ActionCommand
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
@@ -42,6 +48,7 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
+import com.intellij.util.concurrency.Command
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
 import java.awt.event.ActionListener
 import java.awt.event.ItemEvent
@@ -54,7 +61,7 @@ import javax.swing.JPanel
 
 /**
  * A editor notification provider
- * This is hijacked here to provide a persistent toolbar
+ * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
 class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
 
@@ -317,7 +324,7 @@ private fun reparseAfterSet(pointer: CaosScriptPointer, variant: CaosVariant) {
     // Rerun annotations
     DaemonCodeAnalyzer.getInstance(project).restart(theFile)
     // Show success message
-    CaosNotifications.showInfo(project, "Set Variant", "Did set variant to ${currentVariant.code}")
+    CaosNotifications.showInfo(project, "Set Variant", "Variant set to ${currentVariant.code}")
 }
 
 /**
@@ -348,34 +355,57 @@ private fun createInjectHandler(pointer: CaosScriptPointer, checkedSettings: Jec
 
     // If virtual file is valid run check for validity
     caosFile.virtualFile?.let { virtualFile ->
+        if (CaosScriptProjectSettings.injectionCheckDisabled)
+            return@let
         val detector = CodeSmellDetector.getInstance(project)
         val smells = detector.findCodeSmells(listOf(virtualFile))
                 .filter {
                     it.severity == HighlightSeverity.ERROR
                 }
         if (smells.isNotEmpty()) {
-            Injector.postError(project, "Syntax Errors", "Cannot inject caos code with known errors.")
+            CaosInjectorNotifications
+                    .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
+                    .addAction(object: AnAction("Ignore for session and inject") {
+                        override fun actionPerformed(e: AnActionEvent) {
+                            CaosScriptProjectSettings.injectionCheckDisabled = true
+                            injectActual(project, variant, caosFile)
+                        }
+                    })
+                    .addAction(object: AnAction("Inject Anyways") {
+                        override fun actionPerformed(e: AnActionEvent) {
+                            injectActual(project, variant, caosFile)
+                        }
+                    })
+                    .show()
             return@handler
         }
     }
+    injectActual(project, variant, caosFile)
+}
 
+private fun injectActual(project: Project, variant:CaosVariant, caosFile:CaosScriptFile) {
     // If variant is CV+ ask which parts of the file to inject
     if (caosFile.variant?.isNotOld.orTrue()) {
         injectC3WithDialog(caosFile)
-        return@handler
+        return
     }
 
     // Get contents of file and format for injection
-    val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE).text
-    if (content.isBlank()) {
-        Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
-        return@handler
-    }
+    WriteCommandAction.writeCommandAction(project)
+            .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
+            .shouldRecordActionForActiveDocument(false)
+            .run<Throwable> run@{
+                val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE).text
+                if (content.isBlank()) {
+                    Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
+                    return@run
+                }
+                // Add inject command to thread pool
+                executeOnPooledThread {
+                    Injector.inject(project, variant, content)
+                }
+            }
 
-    // Add inject command to thread pool
-    executeOnPooledThread {
-        Injector.inject(project, variant, content)
-    }
 }
 
 private enum class JectScriptType(val type: String) {
