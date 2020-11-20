@@ -2,15 +2,13 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import org.apache.commons.compress.utils.IOUtils
 import java.io.File
-import java.io.FileOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 import java.util.concurrent.TimeUnit
 
 /**
@@ -112,7 +110,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
     }
 
     /**
-     * Disconnect does nothing as there is no persistant connection
+     * Disconnect does nothing as there is no persistent connection
      */
     override fun disconnect(): Boolean {
         return true
@@ -152,17 +150,15 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
             } else
                 return fileOut
         }
-        val out: OutputStream = FileOutputStream(fileOut)
-        IOUtils.copy(inputStream, out)
-        inputStream.close()
-        out.close()
+        inputStream.use {stream ->
+            CaosFileUtil.copyStreamToFile(stream, fileOut, true)
+        }
         return fileOut
     }
 
     companion object {
 
-        private val ESCAPED_PLACEHOLDER = "/;__ESCAPED__/;"
-        private val ESCAPED_QUOTE_PLACEHOLDER = "/;__ESCAPED_QUOTE__/;"
+        private const val ESCAPED_QUOTE_PLACEHOLDER = "/;__ESCAPED_QUOTE__/;"
         private val NEED_ESCAPE = listOf(
                 "^",
                 ">",
@@ -170,6 +166,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "&",
                 "|"
         )
+        @Suppress("SpellCheckingInspection")
         private val errorPrefix = listOf(
 
                 "Invalid command",
@@ -239,7 +236,6 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "Error processing script for scriptorium in CAOS script-command string",
                 "Error installing script into scriptorium for CAOS script-command string",
                 "Failed to set link permiability",
-                "Failed to get link permiability",
                 "Mutation parameters must be in the range of 0 to 255",
                 "Failed to get room CA Rates",
                 "Failed to get room IDs",
