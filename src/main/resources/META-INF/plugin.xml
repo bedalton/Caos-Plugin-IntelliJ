@@ -35,7 +35,7 @@
   <change-notes><![CDATA[
     <ul>
       <li>
-        <b>Version: 0.01.9</b>
+        <b>Version: 0.01.9</b><br/>
         <b>#Fixes</b>
         <ul>
           <li>Fix false positives on duplicate event script inspection</li>
@@ -52,9 +52,10 @@
         <ul>
           <li>Removed expandable sprite project node as it was affecting editor performance</li>
         </ul>
-        <b>#Remaining Problems</b>
+        <b>#Known Problems</b>
         <ul>
           <li>Renaming named variables (ie NAME,GAME,MAME,EAME) creates sever lag and possible lockups in editor.</li>
+          <li>Numbered variables do not highlight when lvalue variable is selected</li>
         </ul>
       </li>
       <li>

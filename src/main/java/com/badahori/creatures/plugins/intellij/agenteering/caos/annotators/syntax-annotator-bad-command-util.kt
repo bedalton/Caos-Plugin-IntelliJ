@@ -8,6 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCKwInvalidLoopTerminator
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.utils.case
@@ -24,7 +26,6 @@ import com.intellij.psi.PsiElement
  *  - Variant
  */
 internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement, commandToken: String, annotationWrapper: AnnotationHolderWrapper): AnnotationBuilder? {
-
     // Get command as upper case
     val commandToUpperCase = commandToken.toUpperCase()
 
@@ -298,4 +299,23 @@ private fun getVariantString(variantsIn: List<CaosVariant>): String {
         2 == variants.intersect(listOf(CaosVariant.C3, CaosVariant.DS)).size -> "C3+"
         else -> variants.joinToString(",") { it.code }
     }
+}
+
+internal fun annotateInvalidLoopTerminator(element:CaosScriptCKwInvalidLoopTerminator, wrapper: AnnotationHolderWrapper) {
+    val commandStringUpper = element.commandStringUpper
+    val expectedLoop = when (commandStringUpper) {
+        "ELSE", "ELIF" -> "DOIF statement"
+        "EVER", "UNTIL" -> "LOOP statement"
+        "RETN" -> "Subroutine"
+        "REPE" -> "REPS loop"
+        "NEXT" -> "ENUM, ESEE, ETCH, EPAS or ECON loop"
+        "NSCN" -> "ESCN loop"
+        else -> "Control Statement"
+    }
+    val error = message("caos.annotator.command-annotator.invalid-loop-terminator", commandStringUpper, expectedLoop)
+    wrapper.newErrorAnnotation(error)
+            .range(element)
+            .create()
+
+
 }

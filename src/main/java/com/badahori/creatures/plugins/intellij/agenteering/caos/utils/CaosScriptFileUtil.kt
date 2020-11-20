@@ -16,7 +16,7 @@ fun CaosScriptFile.copyAsOneLine() {
             else
                 line
         }
-        trimmedText = trimmedText.replace(SPACES_REGEX, " ")
+        trimmedText = trimmedText.replace(WHITESPACE, " ")
         trimmedText = trimmedText.replace("\\s*,\\s*".toRegex(), ",").trim()
         copyToClipboard(trimmedText)
     }

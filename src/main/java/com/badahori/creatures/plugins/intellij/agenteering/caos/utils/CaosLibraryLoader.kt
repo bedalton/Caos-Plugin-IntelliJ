@@ -1,11 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
-import org.apache.commons.io.IOUtils
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.lang.reflect.Field
 
 object CaosLibraryLoader{
@@ -22,15 +19,13 @@ object CaosLibraryLoader{
         val myFile: String = FileNameUtils.getBaseName(pathIn)
         try {
             // have to use a stream
-            val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
+            val dllInputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
                     ?: throw Exception("Failed to get resource as stream")
             // always write to different location
             val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
-            val out: OutputStream = FileOutputStream(fileOut)
-            IOUtils.copy(inputStream, out)
-            inputStream.close()
-            out.close()
-
+            dllInputStream.use { inputStream ->
+                CaosFileUtil.copyStreamToFile(inputStream, fileOut, true)
+            }
             val directory = fileOut.parentFile
             addLibraryPath(directory.absolutePath)
             System.loadLibrary(myFile)

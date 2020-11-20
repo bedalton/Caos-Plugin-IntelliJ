@@ -17,7 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.SPACES_REGEX
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -209,10 +209,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         // Spacing does not matter in CV+, so return
         if (variant.isNotOld)
             return
-
         // Get this elements text
         val text = element.text
-
         // Get text before and after this space
         val nextText = element.next?.text ?: ""
         val prevText = element.previous?.text ?: ""
@@ -375,13 +373,16 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     }
 
     private fun annotateErrorCommand(variant: CaosVariant, errorCommand: CaosScriptErrorCommand, annotationWrapper: AnnotationHolderWrapper) {
-        // Get error as possible error annotation
-        val errorAnnotation = errorCommand
+        val rawTokens = errorCommand
                 .text
                 .toUpperCase()
-                .split(SPACES_REGEX, 3)
+                .split(WHITESPACE, 3)
+        // Get error as possible error annotation
+        val errorAnnotation = rawTokens
                 .let { tokens ->
-                    if (tokens.size > 1)
+                    if (tokens.size > 3)
+                        listOf("${tokens[0]} ${tokens[1]} ${tokens[2]}", "${tokens[0]} ${tokens[1]}", tokens[0])
+                    if (tokens.size > 2)
                         listOf("${tokens[0]} ${tokens[1]}", tokens[0])
                     else
                         listOf(tokens[0])
@@ -394,7 +395,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         // If one matches, that means the command is in the definitions file
         // but not in the BNF parser grammar.
         // TODO should we throw error, or simply return without annotating.
-        if (errorAnnotation.size != 2) {
+        if (errorAnnotation.size < rawTokens.size) {
             throw Exception("Command found in definitions for element: ${errorCommand.text}, but BNF grammar does not reflect this.")
         }
         errorAnnotation.last().create()
@@ -423,6 +424,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             }
             val commandText = element.commandString.toUpperCase()
 
+            if (element is CaosScriptCKwInvalidLoopTerminator) {
+                annotateInvalidLoopTerminator(element, annotationWrapper)
+            }
             // Get error annotation, run create if needed
             getErrorCommandAnnotation(variant, element, commandText, annotationWrapper)?.create()
         }

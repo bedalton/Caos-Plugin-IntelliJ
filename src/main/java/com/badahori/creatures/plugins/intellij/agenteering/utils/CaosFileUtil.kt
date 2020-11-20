@@ -2,11 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.PluginId
@@ -21,6 +19,11 @@ import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 
 val VirtualFile.contents: String
@@ -46,6 +49,9 @@ val PLUGIN: IdeaPluginDescriptor? get() {
     val pluginId = PluginId.getId(PLUGIN_ID)
     return PluginManagerCore.getPlugins().firstOrNull { it.pluginId == pluginId }
 }
+
+
+
 
 object CaosFileUtil {
 
@@ -78,6 +84,42 @@ object CaosFileUtil {
 
     fun getPluginResourceFile(relativePath: String): VirtualFile? {
         return PLUGIN_RESOURCES_DIRECTORY?.findFileByRelativePath(relativePath)
+    }
+
+    /**
+     * Copy a file from source to destination.
+     *
+     * @param source
+     * the source
+     * @param destination
+     * the destination
+     * @return True if succeeded , False if not
+     */
+    fun copyStreamToFile(source: InputStream, destination: String, throws:Boolean = false): Boolean {
+        var success = true
+        try {
+            Files.copy(source, Paths.get(destination), StandardCopyOption.REPLACE_EXISTING)
+        } catch (ex: IOException) {
+            LOGGER.severe("Failed to copy resource to $destination with error: ${ex.message}")
+            if (throws)
+                throw ex
+            ex.printStackTrace()
+            success = false
+        }
+        return success
+    }
+
+    /**
+     * Copy a file from source to destination.
+     *
+     * @param source
+     * the source
+     * @param destination
+     * the destination
+     * @return True if succeeded , False if not
+     */
+    fun copyStreamToFile(source: InputStream, destination: File, throws:Boolean = false): Boolean {
+        return copyStreamToFile(source, destination.path, throws)
     }
 
 }
