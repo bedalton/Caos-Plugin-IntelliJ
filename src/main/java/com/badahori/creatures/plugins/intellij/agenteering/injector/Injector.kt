@@ -1,11 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.escapeHTML
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -50,7 +48,8 @@ object Injector {
         onResponse(project, response)
         return response is InjectionStatus.Ok
     }
-    fun injectEventScript(project: Project, variant: CaosVariant, family: Int, genus:Int, species: Int, eventNumber: Int, caosIn: String): Boolean {
+
+    fun injectEventScript(project: Project, variant: CaosVariant, family: Int, genus: Int, species: Int, eventNumber: Int, caosIn: String): Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
             invokeLater {
@@ -82,9 +81,6 @@ object Injector {
     private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String): InjectionStatus? {
         val connection = connection(variant, project)
                 ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
-        if (!creditsCalled.containsKey(variant)) {
-            creditsCalled[variant] = false
-        }
         if (creditsCalled[variant].orFalse()) {
             creditsCalled[variant] = true
             connection.showAttribution(project, variant)
@@ -96,12 +92,9 @@ object Injector {
         return connection.inject(caos)
     }
 
-    private fun injectPrivate(project: Project, variant: CaosVariant, family: Int, genus:Int, species: Int, eventNumber: Int, caosIn: String): InjectionStatus? {
+    private fun injectPrivate(project: Project, variant: CaosVariant, family: Int, genus: Int, species: Int, eventNumber: Int, caosIn: String): InjectionStatus? {
         val connection = connection(variant, project)
                 ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
-        if (!creditsCalled.containsKey(variant)) {
-            creditsCalled[variant] = false
-        }
         if (creditsCalled[variant].orFalse()) {
             creditsCalled[variant] = true
             connection.showAttribution(project, variant)
@@ -125,7 +118,7 @@ object Injector {
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
         val prefix = "&gt;"
         val message = response.response.trim().nullIfEmpty()?.let {
-            "<pre>\n$prefix" + it.split("\n").joinToString("\n$prefix").escapeHTML()+"</pre>"
+            "<pre>\n$prefix" + it.split("\n").joinToString("\n$prefix").escapeHTML() + "</pre>"
         } ?: ""
         invokeLater {
             CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
@@ -169,10 +162,38 @@ object Injector {
         }
     }
 
-    private fun sanitize(caos: String): String {
+    private fun sanitize(caos: String, collapseMultipleSpaces: Boolean = false): String {
+        val replacePattern = ";;;;;;;;";
+        val c1StringPattern = "([[^]]+])"
+        val inC1StringRegex = ".*${c1StringPattern}.*".toRegex()
+        val matches = inC1StringRegex.matchEntire(caos)?.groups
+        if (matches != null) {
+            c1StringPattern.toRegex().replace(caos, replacePattern)
+        }
+        val mapper: (string: String) -> String = if (collapseMultipleSpaces) {
+            { string ->
+                string.replace(commaWithSpacesRegex, ",").replace(MULTI_WHITESPACE_REGEX, " ").trim()
+            }
+        } else {
+            { string ->
+                string.replace(commaWithSpacesRegex, ",").trim()
+            }
+        }
         var out = caos
-        out = out.replace("[ ]+".toRegex(), " ")
-        out = out.replace("[ ]*,[ ]*".toRegex(), ",").trim()
+                .split("\n")
+                .filterNot {
+                    it.isBlank()
+                }.joinToString("\n", transform = mapper)
+        if (matches != null) {
+            out = out.split(replacePattern)
+                    .mapIndexed { i, string ->
+                        if (i != 0) {
+                            matches[i]!!.value + string
+                        } else
+                            string
+                    }
+                    .joinToString("")
+        }
         return out
     }
 
@@ -198,9 +219,11 @@ object Injector {
 
 }
 
+private val commaWithSpacesRegex = "[, ]*,[, ]*".toRegex()
+
 internal interface CaosConnection {
     fun inject(caos: String): InjectionStatus
-    fun injectEventScript(family:Int, genus:Int, species:Int, eventNumber:Int, caos:String): InjectionStatus
+    fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus
     fun disconnect(): Boolean
     fun isConnected(): Boolean
     fun connect(silent: Boolean = false): Boolean
