@@ -14,7 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.SPACES_REGEX
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -427,4 +427,4 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
 
 }
 
-private val String?.commandFormatted: String? get() = this?.replace(SPACES_REGEX, " ")
+private val String?.commandFormatted: String? get() = this?.replace(WHITESPACE, " ")

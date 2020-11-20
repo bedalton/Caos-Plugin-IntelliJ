@@ -418,7 +418,7 @@ object CaosScriptPsiImplUtil {
             numArguments:Int? = null
     ): CaosCommand? {
         val lib = CaosLibs[variant]
-        val token = tokenIn.replace(SPACES_REGEX, " ")
+        val token = tokenIn.replace(WHITESPACE, " ")
 
         // Get filter for command type
         val isCommandType:(command:CaosCommand) -> Boolean = when (commandType) {
