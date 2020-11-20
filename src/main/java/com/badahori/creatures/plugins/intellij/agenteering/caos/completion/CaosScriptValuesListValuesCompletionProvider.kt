@@ -177,8 +177,8 @@ object CaosScriptValuesListValuesCompletionProvider {
             var lookupElement = LookupElementBuilder
                     .create(value.value)
                     .withLookupString(name)
-                    .withPresentableText(value.value + ": " + name)
-                    .withTailText(value.description)
+                    .withPresentableText(name + " - " + value.value)
+                    .withTailText(" (${value.description})")
             // If value is disabled, strike it through
             if (value.name.contains("(Disabled)")) {
                 lookupElement = lookupElement.withStrikeoutness(true)

@@ -15,7 +15,7 @@ internal fun generatorValuesListDefinition(valuesList: CaosValuesList) : String 
 
     builder.append("@${valuesList.name}")
     valuesList.extensionType?.let { superType ->
-        builder.append(":").append(superType)
+        builder.append(":").append(superType.split(":").first())
     }
     builder.append(" {")
     for(value in valuesList.values) {
