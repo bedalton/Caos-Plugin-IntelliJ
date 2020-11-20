@@ -14,10 +14,12 @@ This plugin aims to provide simple CAOS and agent editing for a variety of Creat
 - Definition reference
 - Parameter hints
 - Known value completion from list. (ie. Drives or Chemicals by name)
-- SPR viewer
+- SPR, C16 and S16 viewering
+
+#Extras
+
 
 ## Todo:
 - COB compiler/decompiler
 - Pray File editing
 - SPR, C16 and S16 compilers
-- C16 and S16 viewers
