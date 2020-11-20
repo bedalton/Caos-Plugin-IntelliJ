@@ -151,6 +151,7 @@ object CaosScriptValuesListValuesCompletionProvider {
     fun addEqualityExpressionCompletions(variant: CaosVariant, resultSet: CompletionResultSet, case:Case, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue) {
         val valuesList = equalityExpression.getValuesList(variant, expression)
                 ?: return
+        LOGGER.info("ValuesListForCompletions is ${valuesList.name}")
         addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
 
@@ -172,11 +173,11 @@ object CaosScriptValuesListValuesCompletionProvider {
 
         // Actually add lookup element completion values
         for (value in values) {
-            ProgressIndicatorProvider.checkCanceled()
+            val name = value.name.matchCase(case)
             var lookupElement = LookupElementBuilder
                     .create(value.value)
-                    .withLookupString(value.name.matchCase(case))
-                    .withPresentableText(value.value + ": " + value.name)
+                    .withLookupString(name)
+                    .withPresentableText(value.value + ": " + name)
                     .withTailText(value.description)
             // If value is disabled, strike it through
             if (value.name.contains("(Disabled)")) {

@@ -366,9 +366,10 @@ object CaosScriptPsiImplUtil {
         element.getUserData(COMMAND_DEFINITION_KEY)?.let { (variantForCommand, command) ->
             // Ensure that cached value is actually for this variant
             // Necessary in case a variant has changed since cache
-            if (variantForCommand == variant)
-            // return cached value
+            if (variantForCommand == variant) {
+                // return cached value
                 return command
+            }
         }
 
         // Get the enclosing command type such as RValue, LValue or Command
@@ -425,7 +426,7 @@ object CaosScriptPsiImplUtil {
             CaosCommandType.LVALUE -> { command -> command.lvalue }
             CaosCommandType.COMMAND -> { command -> command.isCommand }
             CaosCommandType.CONTROL_STATEMENT -> { command -> command.isCommand }
-            CaosCommandType.UNDEFINED -> {_ -> false}
+            CaosCommandType.UNDEFINED -> {_ -> LOGGER.info("Command type is undefined"); false}
         }
         // Choose filter function based on whether number of args need to be validated
         // Args only need to be validated when in variant CV and token is CHAR or TRAN
@@ -1899,15 +1900,13 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
 val PsiElement.case: Case
     get() {
         val chars = this.text.toCharArray()
-        if (chars.size < 2)
-            return Case.LOWER_CASE
         if (chars[0] == chars[0].toLowerCase()) {
             return Case.LOWER_CASE
         }
-        if (chars[1] == chars[1].toLowerCase()) {
-            return Case.CAPITAL_FIRST
+        if (chars.size > 1 && chars[1] == chars[1].toUpperCase()) {
+            return Case.UPPER_CASE
         }
-        return Case.UPPER_CASE
+        return Case.CAPITAL_FIRST
     }
 
 /**
