@@ -397,8 +397,8 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
 private val CAGE: Formatter = { formatInfo: FormatInfo ->
     val otherValue = formatInfo.otherValue
     when (formatInfo.eqOp) {
-        EQUAL -> "Is a $otherValue"
-        NOT_EQUAL -> "Is not a $otherValue"
+        EQUAL -> "Is $otherValue"
+        NOT_EQUAL -> "Is not $otherValue"
         GREATER_THAN -> "Is older than a $otherValue"
         LESS_THAN -> "Is younger than a $otherValue"
         GREATER_THAN_EQUAL -> "Is $otherValue or Older"
@@ -446,8 +446,6 @@ private fun onP1P2(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue
     else
         thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber)
             ?: return null
-
-    LOGGER.info("Getting ${thisValue.textUppercase} in Event Script: $eventScriptNumber")
 
     // Get the parameter name value as parts.
     // Parameters can be in format paramName@valuesListName
@@ -541,17 +539,20 @@ private val upperCaseFirstOnAllWords: FormatString = { text: String ->
     }
 }
 
+private val noChange:FormatString = { string:String -> string }
+
 /**
  * Formats text to unify case of words.
  * @TODO should the words all be upper-cased or only first letter
  * ie Is Not Dead <> Is not dead <> is not dead <> is not Dead
  */
-private val homogenizeFormattedText: FormatString get() = { string:String -> string }
+private val homogenizeFormattedText: FormatString get() = noChange
+
 
 /**
  * Formatter for comparison's left and right replacement values
  */
-private val formatPrimary: FormatString = allLowerCase
+private val formatPrimary: FormatString = noChange
 
 /**
  * Gets a _P1_ or _P2_ name given an event script number
