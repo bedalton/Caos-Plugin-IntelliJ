@@ -41,6 +41,7 @@
           <li>Fix false positives on duplicate event script inspection</li>
           <li>Fix subroutine rename</li>
           <li>Accidental re-indent of comments when running reformat</li>
+          <li>Sprite box too big on retina displays</li>
         </ul>
         <b>#Improvements</b>
         <ul>
