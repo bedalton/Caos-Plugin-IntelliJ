@@ -574,14 +574,24 @@ private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
             return cachedValuesListData.second?.let { valuesListId -> CaosLibs.valuesList[valuesListId] }
         }
     }
-    // Load up command definition
-    val definition = parent.commandDefinition
-            ?: return null
-    // Get corresponding parameter information for argument
-    val parameter = definition.parameters.getOrNull(index)
-            ?: return null
-    // Get parameters value list if any
-    val valuesList = parameter.valuesList[variant]
+
+    // Get values list for expression
+    // If is SETV expression get values list for lvalue
+    val valuesList =  if (parent is CaosScriptCAssignment) {
+        parent.lvalue
+                ?.commandDefinition
+                ?.returnValuesList
+                ?.get(variant)
+    } else {
+        // Load up command definition
+        val definition = parent.commandDefinition
+                ?: return null
+        // Get corresponding parameter information for argument
+        val parameter = definition.parameters.getOrNull(index)
+                ?: return null
+        // Get parameters value list if any
+        parameter.valuesList[variant]
+    }
     // Cache values list id for easier retrieval without parameters check
     // Stores null id if no list is found
     // Stored to prevent an additional query if cached and it is already known there is no list

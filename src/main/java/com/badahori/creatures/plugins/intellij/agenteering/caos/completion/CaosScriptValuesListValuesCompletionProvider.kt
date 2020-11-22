@@ -38,6 +38,21 @@ object CaosScriptValuesListValuesCompletionProvider {
         // Get argument index
         val index = valueOfType.index
 
+        val case = valueOfType.text.case
+
+        if (containingCommand is CaosScriptCAssignment) {
+            containingCommand.lvalue
+                    ?.commandDefinition
+                    ?.returnValuesList
+                    ?.get(variant)
+                    ?.let { valuesList ->
+                        LOGGER.info("Added values list for LValue ${containingCommand.lvalue?.commandStringUpper} in ${containingCommand.commandStringUpper}")
+                        // Finally, add basic completion for list values
+                        addListValues(resultSet, valuesList, case, false)
+                        return
+                    }
+            LOGGER.info("Failed to find completions for lvalue: ${containingCommand.lvalue?.text} in ${containingCommand.commandStringUpper}")
+        }
         // Get parent command entry in CaosDef
         val reference = containingCommand
                 .commandDefinition
@@ -52,7 +67,6 @@ object CaosScriptValuesListValuesCompletionProvider {
         // Get arguments parameter definition
         val parameterStruct = parameters.getOrNull(index)
                 ?: return
-        val case = valueOfType.text.case
         // If argument represents GENUS, allow for named genus completions
         if (valueOfType.parent is CaosScriptGenus || (index != 0 && parameterStruct.name.equalsIgnoreCase("genus"))) {
             if (startsWithNumber.matches(valueOfType.text))
@@ -77,7 +91,6 @@ object CaosScriptValuesListValuesCompletionProvider {
                 // If is assignment, get expected completion values
                 (if (containingCommand is CaosScriptCAssignment) {
                     containingCommand.lvalue
-                            ?.getChildOfType(CaosScriptCommandElement::class.java)
                             ?.commandDefinition
                             ?.returnValuesList
                 // Completion is for parameter
