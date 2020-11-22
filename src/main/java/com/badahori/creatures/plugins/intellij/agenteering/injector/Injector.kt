@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.notification.NotificationType
@@ -163,7 +162,7 @@ object Injector {
     }
 
     private fun sanitize(caos: String, collapseMultipleSpaces: Boolean = false): String {
-        val replacePattern = ";;;;;;;;";
+        val replacePattern = ";;;;;;;;"
         val c1StringPattern = "([[^]]+])"
         val inC1StringRegex = ".*${c1StringPattern}.*".toRegex()
         val matches = inC1StringRegex.matchEntire(caos)?.groups
@@ -204,6 +203,7 @@ object Injector {
             CaosVariant.CV -> true
             CaosVariant.C3 -> true
             CaosVariant.DS -> true
+            CaosVariant.SM -> true
             else -> false
         }
     }
@@ -214,7 +214,8 @@ object Injector {
             CaosVariant.C2 to false,
             CaosVariant.CV to false,
             CaosVariant.C3 to false,
-            CaosVariant.DS to false
+            CaosVariant.DS to false,
+            CaosVariant.SM to false
     )
 
 }
