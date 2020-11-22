@@ -108,7 +108,7 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
     }
 
     private fun decode(pixels: List<Int>) : BufferedImage? {
-        val bufferedImage = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val alphaRaster = bufferedImage.alphaRaster
         val black = Color(0, 0, 0).rgb
         val solid = intArrayOf(255, 255, 255, 255)
