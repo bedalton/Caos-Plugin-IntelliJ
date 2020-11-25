@@ -79,7 +79,7 @@ internal class PostConnection(urlString:String, variant: CaosVariant) : CaosConn
     }
 
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus {
-        return InjectionStatus.BadConnection("Server does not implement inject event script")
+        return inject(caos);
     }
 
     override fun disconnect(): Boolean = true
