@@ -46,12 +46,10 @@ object CaosScriptValuesListValuesCompletionProvider {
                     ?.returnValuesList
                     ?.get(variant)
                     ?.let { valuesList ->
-                        LOGGER.info("Added values list for LValue ${containingCommand.lvalue?.commandStringUpper} in ${containingCommand.commandStringUpper}")
                         // Finally, add basic completion for list values
                         addListValues(resultSet, valuesList, case, false)
                         return
                     }
-            LOGGER.info("Failed to find completions for lvalue: ${containingCommand.lvalue?.text} in ${containingCommand.commandStringUpper}")
         }
         // Get parent command entry in CaosDef
         val reference = containingCommand
@@ -164,7 +162,6 @@ object CaosScriptValuesListValuesCompletionProvider {
     fun addEqualityExpressionCompletions(variant: CaosVariant, resultSet: CompletionResultSet, case:Case, equalityExpression: CaosScriptEqualityExpressionPrime, expression: CaosScriptRvalue) {
         val valuesList = equalityExpression.getValuesList(variant, expression)
                 ?: return
-        LOGGER.info("ValuesListForCompletions is ${valuesList.name}")
         addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
 

@@ -426,7 +426,7 @@ object CaosScriptPsiImplUtil {
             CaosCommandType.LVALUE -> { command -> command.lvalue }
             CaosCommandType.COMMAND -> { command -> command.isCommand }
             CaosCommandType.CONTROL_STATEMENT -> { command -> command.isCommand }
-            CaosCommandType.UNDEFINED -> {_ -> LOGGER.info("Command type is undefined"); false}
+            CaosCommandType.UNDEFINED -> {_ -> LOGGER.severe("Command type is undefined"); false}
         }
         // Choose filter function based on whether number of args need to be validated
         // Args only need to be validated when in variant CV and token is CHAR or TRAN

@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import kotlinx.serialization.Serializable
 import kotlin.collections.isNullOrEmpty
+import kotlin.math.abs
 
 /**
  * Holds information on the variant in a Lib file
@@ -87,7 +88,7 @@ data class CaosCommand(
         val returnTypeId: Int,
         val description: String? = null,
         val returnValuesListIds: Map<String, Int>? = null,
-        val requiresOwnr:Boolean = false,
+        val requiresOwnr:Int = 0,
         val variants: List<String>,
         val rvalue:Boolean,
         val lvalue:Boolean,
@@ -119,6 +120,27 @@ data class CaosCommand(
                     ?: return@get null
             CaosLibs.valuesList[valuesListId]
         }
+    }
+
+
+    fun requiresOwnr(variant:CaosVariant) : Boolean {
+        if (variant.isOld)
+            return requiresOwnr != 0
+        else
+            return abs(requiresOwnr) == 2
+    }
+
+    fun requiresOwnrIsError(variant:CaosVariant) : Boolean {
+        return if (variant.isOld)
+            requiresOwnr > 0
+        else
+            requiresOwnr == 2
+    }
+    fun requiresOwnrIsWarning(variant:CaosVariant) : Boolean {
+        return if (variant.isOld)
+            requiresOwnr < 0
+        else
+            requiresOwnr == -2
     }
 }
 

@@ -390,14 +390,14 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 .mapNotNull { commandToken ->
                     getErrorCommandAnnotation(variant, errorCommand, commandToken, annotationWrapper)
                 }
-
+/*
         // Check for length less than 2, meaning one matched.
         // If one matches, that means the command is in the definitions file
         // but not in the BNF parser grammar.
         // TODO should we throw error, or simply return without annotating.
         if (errorAnnotation.size < rawTokens.size) {
             throw Exception("Command found in definitions for element: ${errorCommand.text}, but BNF grammar does not reflect this.")
-        }
+        }*/
         errorAnnotation.last().create()
     }
 

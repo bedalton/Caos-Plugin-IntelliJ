@@ -34,10 +34,14 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
 
     // If command type cannot be determined, exit This means it was used as out of command expression
     if (commandType == CaosCommandType.UNDEFINED)
-        return null
+        return annotationWrapper
+                .newErrorAnnotation(message("caos.annotator.command-annotator.invalid-command", commandToUpperCase))
+                .range(element)
 
-    if (CaosLibs[variant][commandType][commandToUpperCase] != null)
+    if (CaosLibs[variant][commandType][commandToUpperCase] != null) {
         return null
+    }
+
     val commands = CaosLibs.commands(commandToUpperCase)
 
     // If matches do not exist in libs object it is completely invalid

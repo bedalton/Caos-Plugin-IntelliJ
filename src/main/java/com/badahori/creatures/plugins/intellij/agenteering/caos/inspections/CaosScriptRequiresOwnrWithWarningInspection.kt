@@ -1,19 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptCommandHasOwnrInspection : LocalInspectionTool() {
-    override fun getDisplayName(): String = "Command used without OWNR object"
+class CaosScriptRequiresOwnrWithWarningInspection : LocalInspectionTool() {
+    override fun getDisplayName(): String = "Non-error generating use of OWNR object command without OWNR object"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
-    override fun getShortName(): String = "NoOwnrObject"
+    override fun getShortName(): String = "NoOwnrObjectWarning"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
             override fun visitIsCommandToken(o: CaosScriptIsCommandToken) {
@@ -36,24 +36,15 @@ class CaosScriptCommandHasOwnrInspection : LocalInspectionTool() {
     }
 
     private fun requiresOwnr(element:CaosScriptIsCommandToken) : Boolean {
+        val variant = element.variant
+                ?: return false
         return (element.parent as? CaosScriptCommandElement)
                 ?.commandDefinition
-                ?.requiresOwnr
+                ?.requiresOwnrIsWarning(variant)
                 ?: false
     }
 
     companion object {
-        val REQUIRES_CREATURE_OWNR = "[Gg][Ee][Nn][Dd]|[_][Ii][Tt][_]".toRegex()
+        val REQUIRES_CREATURE_OWNR = "[Gg][Ee][Nn][Dd]|[_][Ii][Tt][_]|[Aa][Tt][Tt][Nn]".toRegex()
     }
-}
-
-private class AlterIgnoredUndocumentedCommand(val command:String, val ignore:Boolean) : LocalQuickFix {
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
-
-    override fun getName(): String = if (ignore) "Add $command to ignored list" else "Remove $command from ignored list"
-
-    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-        CaosScriptProjectSettings.ignoreUndocumentedCommand(command, ignore)
-    }
-
 }

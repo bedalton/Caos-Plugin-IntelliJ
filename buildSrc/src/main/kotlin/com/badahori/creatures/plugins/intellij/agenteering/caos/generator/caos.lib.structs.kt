@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 import kotlinx.serialization.Serializable
+import kotlin.math.abs
 
 /**
  * Holds information on the variant in a Lib file
@@ -82,7 +83,7 @@ internal data class CaosCommand(
         val returnTypeId: Int,
         val description: String? = null,
         val returnValuesListIds: Map<String, Int>? = null,
-        val requiresOwnr:Boolean = false,
+        val requiresOwnr:Int = 0,
         val variants: List<String>,
         val rvalue:Boolean,
         val lvalue:Boolean,
@@ -113,6 +114,13 @@ internal data class CaosCommand(
                     ?: return@get null
             CaosLibs.valuesList[valuesListId]
         }
+    }
+
+    fun requiresOwnr(variant:CaosVariant) : Boolean {
+        if (variant.isOld)
+            return requiresOwnr != 0
+        else
+            return abs(requiresOwnr) == 2
     }
 }
 
