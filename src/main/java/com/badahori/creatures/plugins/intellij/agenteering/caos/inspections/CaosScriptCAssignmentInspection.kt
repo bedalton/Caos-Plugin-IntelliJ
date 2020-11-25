@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getAssignedType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -89,9 +90,9 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         if (actualType == expectedType)
             return
         val replacement = when {
-            actualType.isNumberType -> "SETV"
-            actualType.isStringType -> "SETS"
-            actualType.isAgentType -> "SETA"
+            actualType.isNumberType -> "SETV".matchCase(element.text)
+            actualType.isStringType -> "SETS".matchCase(element.text)
+            actualType.isAgentType -> "SETA".matchCase(element.text)
             else -> null
         }
         val typeName = when {

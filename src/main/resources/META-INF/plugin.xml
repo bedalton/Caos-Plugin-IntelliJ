@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version>0.01.9</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.91</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,18 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 0.01.92</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix SETV/SETS/SETA replacement case</li>
+          <li>Fix false positives on requires OWNR inspection</li>
+          <li>Report silent C2 CAOS injection failures</li>
+        </ul>
+        <b>Version: 0.01.91</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Failure to generate an error on r/lvalues used as commands</li>
+        </ul>
         <b>Version: 0.01.9</b><br/>
         <b>#Fixes</b>
         <ul>
@@ -342,12 +354,21 @@
     />
 
     <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCommandHasOwnrInspection"
-                     level="WARNING"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrInspection"
+                     level="ERROR"
                      groupName="Caos Script"
                      enabledByDefault="true"
                      displayName="Command used without OWNR object"
                      shortName="NoOwnrObject"
+    />
+
+    <localInspection language="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrWithWarningInspection"
+                     level="WEAK WARNING"
+                     groupName="Caos Script"
+                     enabledByDefault="true"
+                     displayName="Non-error generating use of OWNR object command without OWNR object"
+                     shortName="NoOwnrObjectWarning"
     />
 
     <localInspection language="CaosScript"

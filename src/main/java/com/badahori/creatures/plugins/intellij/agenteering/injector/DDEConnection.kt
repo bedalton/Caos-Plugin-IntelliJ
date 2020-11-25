@@ -23,6 +23,9 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
         }
         return try {
             val response = conn.request("Macro")
+            if (response == "0000") {
+                InjectionStatus.Bad("Silent exception raised during injected script execution")
+            }
             InjectionStatus.Ok(response)
         } catch(e:Exception) {
             LOGGER.severe("Request failed after poke with dde error: ${e.message}")

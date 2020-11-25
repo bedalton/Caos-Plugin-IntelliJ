@@ -7,6 +7,7 @@ internal fun generateCommandDefinition(variant: CaosVariant, command: CaosComman
 
     // Split comment on word by max length
     val comment = command.description
+            ?.replace("\\n", "\t")
             ?.split("\n")
             ?.flatMap {
                 it.trim().replace("\\t", "\t")
@@ -21,7 +22,7 @@ internal fun generateCommandDefinition(variant: CaosVariant, command: CaosComman
     comment.add("")
 
     // If requires owner, add tag for it
-    if (command.requiresOwnr) {
+    if (command.requiresOwnr(variant)) {
         comment.add("@Ownr")
     }
 
