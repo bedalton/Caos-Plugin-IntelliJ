@@ -682,6 +682,86 @@ object CaosScriptPsiImplUtil {
         return pointer.element ?: element
     }
 
+    @JvmStatic
+    fun getName(element:CaosScriptCpNamedVar) : String {
+        return element.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(element:CaosScriptCpNamedVar, newNameIn:String) : PsiElement {
+        val newName = if (newNameIn.startsWith("$"))
+            newNameIn
+        else
+            "\$$newNameIn"
+        val newRvalue = CaosScriptPsiElementFactory
+                .createRvalueFromText(element.project, newName)
+                ?: return element
+        val newElement = PsiTreeUtil
+                .collectElementsOfType(newRvalue, CaosScriptCpNamedVar::class.java)
+                .firstOrNull()
+                ?: return element
+        return element.replace(newElement)
+    }
+
+    @JvmStatic
+    fun getName(element:CaosScriptCpConst) : String {
+        return element.text.substring(1)
+    }
+
+    @JvmStatic
+    fun setName(element:CaosScriptCpConst, newNameIn:String) : PsiElement {
+        val newName = if (newNameIn.startsWith("$"))
+            newNameIn
+        else
+            "\$$newNameIn"
+        val newRvalue = CaosScriptPsiElementFactory
+                .createRvalueFromText(element.project, newName)
+                ?: return element
+        val newElement = PsiTreeUtil
+                .collectElementsOfType(newRvalue, CaosScriptCpNamedVar::class.java)
+                .firstOrNull()
+                ?: return element
+        return element.replace(newElement)
+    }
+
+    @JvmStatic
+    fun getName(element:CaosScriptCpConstDeclaration) : String {
+        return element.cpConst.name
+    }
+
+
+    @JvmStatic
+    fun setName(element:CaosScriptCpConstDeclaration, newName:String) : PsiElement {
+        return element.setName(newName)
+    }
+
+    @JvmStatic
+    fun getName(element:CaosScriptCpNamedVarDeclaration) : String {
+        return element.cpNamedVar.name
+    }
+
+
+    @JvmStatic
+    fun setName(element:CaosScriptCpNamedVarDeclaration, newName:String) : PsiElement {
+        return element.setName(newName)
+    }
+
+    /**
+     * PsiNamedIdentifierOwner.getNameIdentifier()
+     */
+    @JvmStatic
+    fun getNameIdentifier(element: CaosScriptCpNamedVarDeclaration): PsiElement? {
+        return element.cpNamedVar
+    }
+
+    /**
+     * PsiNamedIdentifierOwner.getNameIdentifier()
+     */
+    @JvmStatic
+    fun getNameIdentifier(element: CaosScriptCpConstDeclaration): PsiElement? {
+        return element.cpConst
+    }
+
     /**
      * PsiNamedIdentifierOwner.getNameIdentifier()
      */
@@ -772,6 +852,16 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getReference(element:CaosScriptQuoteStringLiteral) : CaosScriptQuoteStringLiteralReference {
         return CaosScriptQuoteStringLiteralReference(element)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosScriptCpNamedVar) : CaosScriptCpNamedVarReference {
+        return CaosScriptCpNamedVarReference(element)
+    }
+
+    @JvmStatic
+    fun getReference(element:CaosScriptCpConst) : CaosScriptCpConstReference {
+        return CaosScriptCpConstReference(element)
     }
 
     // ============================== //
@@ -1728,6 +1818,11 @@ object CaosScriptPsiImplUtil {
             return element.varGroup.value.equalsIgnoreCase(another.text)
         }
         return another is CaosScriptVarToken && another.text.equalsIgnoreCase(element.text)
+    }
+
+    @JvmStatic
+    fun getValue(element:CaosScript) : String {
+
     }
 
     // ============================== //

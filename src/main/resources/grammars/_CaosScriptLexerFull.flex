@@ -104,8 +104,9 @@ BF=[Bb][Ff]
 EQ_C1={EQ}|{NE}|{GT}|{LT}|{LE}|{GE}|{BT}|{BF}
 EQ_NEW="="|"<>"|">"|">="|"<"|"<="
 CONST_EQ = [=]
-N_CONST = [#][a-zA-Z_0-9]+
-N_VAR = [$][a-zA-Z_0-9]+
+CP_CONST = [#][a-zA-Z0-9_][a-zA-Z0-9_]*
+CP_VAR = [$][a-zA-Z0-9_][a-zA-Z0-9_]*
+TEXT_ESCAPE=[\\][(][^)]*[)]
 ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
 QUOTE_STRING_CHAR=[^\"\\\n]
 QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
@@ -116,6 +117,10 @@ INCOMPLETE_WORD={WORD_CHAR}{1,3}
 CHAR_ESCAPE_CHAR=("\\\\"|"\\\'"|"\\"[^\'])
 CHAR_CHAR=[^\'\\]
 CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
+AGENT_TYPE=[Aa][Gg][Ee][Nn][Tt]
+STRING_TYPE=[Ss][Tt][Rr][Ii][Nn][Gg]
+FLOAT_TYPE=[Ff][Ll][Oo][Aa][Tt]
+INT_TYPE=[Ii][Nn][Tt]([Ee][Gg][Ee][Rr])?
 
 %state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME
 %%
@@ -142,7 +147,21 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 }
 
 <IN_COMMENT> {
+    ":"						{ return CaosScript_COLON; }
+    "="						{ return CaosScript_EQUALS; }
+    "-"						{ return CaosScript_DASH; }
+	{CP_CONST}				{ return CaosScript_CP_CONST_; }
+	{CP_VAR}				{ return CaosScript_CP_VAR_; }
+	{AGENT_TYPE}			{ return CaosScript_CP_TYPE_AGENT; }
+	{STRING_TYPE}			{ return CaosScript_CP_TYPE_STRING; }
+	{FLOAT_TYPE}			{ return CaosScript_CP_TYPE_FLOAT; }
+	{INT_TYPE}				{ return CaosScript_CP_TYPE_INT; }
 	{COMMENT_TEXT}			{ return CaosScript_COMMENT_TEXT; }
+    {VARx}					{ return CaosScript_VAR_X; }
+    {VAxx}					{ return CaosScript_VA_XX; }
+    {OBVx}					{ return CaosScript_OBV_X; }
+    {OVxx}					{ return CaosScript_OV_XX; }
+    {MVxx}					{ return CaosScript_MV_XX; }
     " "						{ return WHITE_SPACE; }
     \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
@@ -214,8 +233,9 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
     "'"						{ yybegin(IN_CHAR); return CaosScript_SINGLE_QUOTE; }
 	{EQ_C1}				 	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}			 	{ return CaosScript_EQ_OP_NEW_; }
-	{N_CONST}				{ return CaosScript_N_CONST; }
-	{N_VAR}				 	{ return CaosScript_N_VAR; }
+	{CP_CONST}				{ return CaosScript_CP_CONST_; }
+	{CP_VAR}			 	{ return CaosScript_CP_VAR_; }
+    {TEXT_ESCAPE}			{ return CaosScript_PLAIN_TEXT_;}
 	{NEWLINE}              	{ yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }

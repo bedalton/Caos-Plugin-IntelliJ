@@ -250,6 +250,8 @@
 		K_SCLE = "regexp:[Ss][Cc][Ll][Ee]";
 		K_SHAD = "regexp:[Ss][Hh][Aa][Dd]";
 		K_STRC = "regexp:[Ss][Tt][Rr][Cc]";
+		CP_VAR_ = "regexp:[$][a-zA-Z_][a-zA-Z_0-9]"
+		CP_CONST_ = "regexp:[#][a-zA-Z_][a-zA-Z_0-9]"
 		K_BAD_LOOP_TERMINATOR = "terminator"
 		K_CRETN = "RETN inside SUBR"
 		K_F__K = "regexp:[Ff][*]{2}[Kk]"
@@ -265,6 +267,8 @@
 		TEXT_LITERAL = 'regexp:\[[^]]*]';
 		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9!#]*";
 		COLON = ':';
+		EQUALS = '=';
+		DASH = '-';
 		PLUS = "+";
 		SPACE_ = "regexp:[ ]";
 		space = "regexp:\n[\t ]+";
@@ -1787,48 +1791,6 @@ c_kw_invalid_loop_terminator
 	}
 	;
 
-animation_string
-   ::= OPEN_BRACKET animation_string_body? CLOSE_BRACKET
-   {
-   		pin = 2
-   }
-   ;
-
-private animation_string_body
-	::= INT ANIM_R?
-	{
-		pin = 2
-	}
-	;
-
-byte_string
-	::= OPEN_BRACKET byte_string_body? CLOSE_BRACKET
-	{
-		pin(".*") = 2
-	}
-	;
-
-private byte_string_body
-	::=  byte_string_pose_list byte_string_r?
-	{
-		pin(".*")=2
-	}
-	;
-
-private byte_string_pose_list
-	::= (<<isOldVariant>>)byte_string_pose_element
-	|	(!<<isOldVariant>>)space_like? (byte_string_pose_element space_like?)+
-	;
-
-byte_string_pose_element
-	::= INT
-	;
-
-byte_string_r
-	::= <<isOldVariant>> space_like? ANIM_R
-	;
-
-
 symbol_comma
 	::= COMMA
 	;
@@ -1886,16 +1848,6 @@ trailing_space
 	}
 	;
 
-pict_dimension_literal
-	::= PICT_DIMENSION
-	{
-		methods = [
-			getWidth
-			getHeight
-			getDimensions
-		]
-	}
-	;
 
 equality_expression
    ::= equality_expression_prime (space_like equality_expression_plus)*
@@ -1972,6 +1924,9 @@ rvalue
 	|	animation_string <<popParameter>>
 	|	number <<popParameter>>
 	|	pict_dimension_literal <<popParameter>>
+	|	cp_const  <<popParameter>>
+	|	cp_named_var  <<popParameter>>
+	|	cp_plain_text  <<popParameter>>
 	//|	command_soup
 	|	rvalue_prefix_incompletes <<popParameter>>
 	|	incomplete <<popParameter>>
@@ -2045,6 +2000,98 @@ var_token
 			getUseScope
 			getName
 			setName
+		]
+	}
+	;
+
+cp_named_var
+	::= CP_VAR_
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.intellij.psi.PsiNamedElement"
+		]
+		methods = [
+			isVariant
+			getName
+			setName
+			getInferredType
+		]
+	}
+	;
+
+
+cp_const
+	::= CP_CONST_
+	{
+		pin=1
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsVariable"
+			"com.intellij.psi.PsiNamedElement"
+		]
+		methods = [
+			isVariant
+			getName
+			setName
+			getInferredType
+			getReference
+		]
+	}
+	;
+
+cp_plain_text
+	::= PLAIN_TEXT_
+	;
+
+animation_string
+   ::= OPEN_BRACKET animation_string_body? CLOSE_BRACKET
+   {
+   		pin = 2
+   }
+   ;
+
+private animation_string_body
+	::= INT ANIM_R?
+	{
+		pin = 2
+	}
+	;
+
+byte_string
+	::= OPEN_BRACKET byte_string_body? CLOSE_BRACKET
+	{
+		pin(".*") = 2
+	}
+	;
+
+private byte_string_body
+	::=  byte_string_pose_list byte_string_r?
+	{
+		pin(".*")=2
+	}
+	;
+
+private byte_string_pose_list
+	::= (<<isOldVariant>>)byte_string_pose_element
+	|	(!<<isOldVariant>>)space_like? (byte_string_pose_element space_like?)+
+	;
+
+byte_string_pose_element
+	::= INT
+	;
+
+byte_string_r
+	::= <<isOldVariant>> space_like? ANIM_R
+	;
+
+pict_dimension_literal
+	::= PICT_DIMENSION
+	{
+		methods = [
+			getWidth
+			getHeight
+			getDimensions
 		]
 	}
 	;
@@ -2242,11 +2289,80 @@ named_game_var_kw
 	;
 
 comment
-	::= COMMENT_START comment_body?
+	::=	COMMENT_START comment_body?
 	;
 
 comment_body
+	::= cp_const_declaration
+	|	cp_named_var_declaration
+	|	comment_text_body
+	;
+
+cp_const_declaration
+	::= cp_const space_like ":" cp_var_type ("=" comment_text_body )? ( '-' comment_text_body)?
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNameIdentifierOwner"
+		]
+		methods = [
+			getName
+			setName
+			getNameIdentifier
+			getValue
+			getVarType
+			getDescription
+		]
+	}
+	;
+
+cp_named_var_declaration
+	::= cp_named_var space_like ":" cp_var_type ("=" var_token )? ( '-' comment_text_body)?
+	{
+		pin=1
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.intellij.psi.PsiNameIdentifierOwner"
+		]
+		methods = [
+			getName
+			setName
+			getNameIdentifier
+			getValue
+			getVarType
+			getDescription
+		]
+	}
+	;
+
+comment_text_body
 	::= COMMENT_TEXT+
+	;
+
+cp_var_type
+	::= cp_var_type_agent
+	|	cp_var_type_string
+	|	cp_var_type_int
+	|	cp_var_type_float
+	;
+
+cp_var_type_agent
+	::= CP_TYPE_FLOAT
+	;
+
+cp_var_type_float
+	::= CP_TYPE_FLOAT
+	;
+
+cp_var_type_int
+	::= CP_TYPE_INT
+	;
+
+cp_var_type_string
+	::= CP_TYPE_STRING
 	;
 
 family
@@ -3152,10 +3268,13 @@ private r_t
 // ========== LValues ======== //
 lvalue
 	::=	named_game_var <<popParameter>>
-	|	l_none
-	|	l_r_r
-	|	l_r_r_r
-	|	l_r
+	|	cp_named_var <<popParameter>>
+	|	cp_const <<popParameter>>
+	|	cp_plain_text <<popParameter>>
+	|	l_none <<popParameter>>
+	|	l_r_r <<popParameter>>
+	|	l_r_r_r <<popParameter>>
+	|	l_r <<popParameter>>
 	|	var_token <<popParameter>>
 	|	incomplete <<popParameter>>
 	|	error_lvalue <<popParameter>>
@@ -5964,9 +6083,9 @@ all_tokens
 	|	K_ROTA
 	|	K_SHAD
 	|	K_STRC
-	|	VARX
-	|	VAXX
-	|	OBVX
-	|	OVXX
-	|	MVXX
+	|	VAR_X
+	|	VA_XX
+	|	OBV_X
+	|	OV_XX
+	|	MV_XX
 	;

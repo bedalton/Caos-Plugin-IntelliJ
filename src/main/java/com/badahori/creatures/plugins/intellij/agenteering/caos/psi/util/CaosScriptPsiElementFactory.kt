@@ -117,4 +117,8 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, text, CaosScriptCodeBlock::class.java)!!
     }
 
+    fun createRvalueFromText(project: Project, newName: String): CaosScriptRvalue {
+        return createRValue(project, newName)
+    }
+
 }
