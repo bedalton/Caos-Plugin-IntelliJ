@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
 
@@ -43,30 +45,65 @@ object CaosScriptProjectSettings {
         INDENT_SETTING.value = indent
     }
 
-    // === UndocumentedCommand === //
-    private const val IGNORE_UNDOCUMENTED_COMMAND_KEY = "IGNORE_UNDOCUMENTED_COMMAND"
-    private val IGNORE_UNDOCUMENTED_COMMAND_SETTING = CaosPluginSettingsUtil.StringSetting(IGNORE_UNDOCUMENTED_COMMAND_KEY, "")
-    private val ignoredUndocumentedCommands by lazy {
-        IGNORE_UNDOCUMENTED_COMMAND_SETTING.value?.split(";")?.toMutableList() ?: mutableListOf()
-    }
-    fun isIgnoredUndocumentedCommand(command:String) : Boolean {
-        return command.toUpperCase() in ignoredUndocumentedCommands
-    }
+    // === CAOS Injection URLS === //
+    fun getInjectURL(project:Project) : String? {//Map<String,String>?  {
+        val invalidNameCharsRegex = "[<>]".toRegex()
+        val contents = FilenameIndex.getAllFilesByExt(project, "caosurl")
+                .firstOrNull()
+                ?.contents
+                .nullIfEmpty()
+                ?: return null
+        return contents
+                .split("\n")
+                .mapNotNull { line ->
+                    line.trim().nullIfEmpty()?.let { nonNullLine ->
+                        if (nonNullLine.startsWith("#"))
+                            null
+                        else
+                            nonNullLine
+                    }
+                }
+                .firstOrNull()
+    /*
+                .mapIndexedNotNull { i, text ->
+                    text.split("=")
+                            .map { it.trim() }
+                            .let mapper@{ parts ->
+                                if (parts.isEmpty()) {
+                                    return@mapper null
+                                }
+                                when {
+                                    parts.size > 2 -> {
+                                        CaosInjectorNotifications.createWarningNotification(
+                                                project = project,
+                                                title = "CAOS URL format error",
+                                                content = "The CAOS URL line with contents: $text is invalid. Format should be the 'name=url'\nWhere url begins with 'http' and name is an arbitrary reference key"
+                                        )
+                                        parts
+                                                .firstOrNull { part -> part.startsWith("http") }
+                                                ?.let { url ->
+                                                    parts.first() to url
+                                                }
+                                    }
+                                    parts.size == 2 -> {
+                                        if (parts[0].contains(invalidNameCharsRegex)) {
+                                            CaosInjectorNotifications.createWarningNotification(
+                                                    project = project,
+                                                    title = "CAOS URL format error",
+                                                    content = "CAOS URL name key '${parts[0]}' is invalid. Name keys cannot contain '<' or '>' characters.\nThey have been automatically stripped out"
+                                            )
+                                            parts[0].replace(invalidNameCharsRegex, "") to parts[1]
+                                        }
+                                        parts[0] to parts[1]
+                                    }
+                                    else -> {
+                                        "Injector $i - '${parts[0]}'" to parts[0]
+                                    }
+                                }
+                            }
 
-    fun getInjectURL(project:Project) = FilenameIndex.getAllFilesByExt(project, "caosurl").firstOrNull()?.contents
+                }
+                .toMap()*/
 
-    fun ignoreUndocumentedCommand(commandIn:String, ignore:Boolean = true) {
-        val command = commandIn.toUpperCase()
-        if (ignore) {
-            if (command in ignoredUndocumentedCommands)
-                return
-            ignoredUndocumentedCommands.add(command)
-        } else {
-            if (command !in ignoredUndocumentedCommands)
-                return
-            ignoredUndocumentedCommands.remove(command)
-        }
-
-        IGNORE_UNDOCUMENTED_COMMAND_SETTING.value = ignoredUndocumentedCommands.joinToString(";")
     }
 }

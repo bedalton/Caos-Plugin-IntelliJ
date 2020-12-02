@@ -67,7 +67,7 @@ internal class PostConnection(urlString:String, variant: CaosVariant) : CaosConn
             val message = try {
                 it.get("response").asString
             } catch (e:Exception) {
-                return InjectionStatus.Bad("Failed to parse server response")
+                ""
             }
             when (val status = it.get("status").asString) {
                 "!ERR" -> InjectionStatus.Bad(message)
