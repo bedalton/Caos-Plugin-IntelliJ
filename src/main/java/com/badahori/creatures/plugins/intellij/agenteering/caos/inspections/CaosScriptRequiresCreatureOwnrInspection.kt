@@ -26,7 +26,9 @@ class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool() {
     }
 
     private fun annotateCommand(element: CaosScriptIsCommandToken, holder: ProblemsHolder) {
-        if (!REQUIRES_CREATURE_OWNR.matches(element.text))
+        val requiresCreatureOwnr = (element.parent as? CaosScriptCommandElement)?.commandDefinition?.requiresCreatureOwnr
+            ?: return
+        if (!requiresCreatureOwnr)
             return
         element.getParentOfType(CaosScriptEventScript::class.java)?.let { script: CaosScriptEventScript ->
             if (hasCreatureOwner(script)) {
@@ -44,20 +46,7 @@ class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool() {
         val eventNumbers = CaosLibs[variant].valuesList("EventNumbers")
             ?: return true
         val eventValue = eventNumbers[eventScript.eventNumber]
-            ?: return true
+            ?: return false
         return eventValue.name.toLowerCase().contains("extra")
-    }
-
-    private fun requiresOwnr(element:CaosScriptIsCommandToken) : Boolean {
-        val variant = element.variant
-                ?: return false
-        return (element.parent as? CaosScriptCommandElement)
-                ?.commandDefinition
-                ?.requiresOwnrIsError(variant)
-                ?: false
-    }
-
-    companion object {
-        val REQUIRES_CREATURE_OWNR = "[Gg][Ee][Nn][Dd]|[_][Ii][Tt][_]|[Aa][Tt][Tt][Nn]".toRegex()
     }
 }

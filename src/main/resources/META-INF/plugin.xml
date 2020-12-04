@@ -39,7 +39,8 @@
         <b>#Fixes</b>
         <ul>
           <li>Fixed exception thrown on CAOS file open</li>
-          <li>Fixed: Creatures crash on inject CAOS with comments</li>
+          <li>Fixed Creatures crash on inject CAOS with comments</li>
+          <li>Fixed false positives on OWNR commands check</li>
         </ul>
       </li>
       <li>

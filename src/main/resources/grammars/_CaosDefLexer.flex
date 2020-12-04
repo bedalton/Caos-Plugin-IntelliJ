@@ -78,7 +78,8 @@ AT_RVALUE=[@][rR][vV][aA][lL][uU][eE]
 AT_LVALUE=[@][lL][vV][aA][lL][uU][eE]
 AT_PARAM=[@][pP][aA][rR][aA][mM]
 AT_RETURN=[@][rR][eE][tT][uU][rR][nN][sS]?
-AT_OWNR=[@][Oo][Ww][Nn][Rr]
+AT_OWNR=[@][Rr][Ee][Qq][Uu][Ii][Rr][Ee][Ss][Oo][Ww][Nn][Rr]
+AT_CREATURE_OWNR=[@][Rr][Ee][Qq][Uu][Ii][Rr][Ee][Ss][Oo][Ww][Nn][Rr][Cc][Rr][Ee][Aa][Tt][Uu][Rr][Ee]
 AT_ID=[@][a-zA-Z_][a-zA-Z_0-9]*
 AT_FILE=[@][Ff][Ii][Ll][Ee][.][a-zA-Z_][a-zA-Z_0-9/]*
 VALUES_LIST_VALUE_KEY=([!>][ ]?)?[a-zA-Z0-9_#-]+([ ]+ [a-zA-Z0-9_#-]+)*
@@ -140,6 +141,7 @@ COMMENT=[*][^\n\*]*
 	{AT_RETURN}               	{ needs_type = true; yybegin(IN_COMMENT_AFTER_VAR); return CaosDef_AT_RETURN; }
   	{AT_VARIANTS}				{ return CaosDef_AT_VARIANT; }
   	{AT_OWNR}					{ return CaosDef_AT_OWNR; }
+  	{AT_CREATURE_OWNR}			{ return CaosDef_AT_CREATURE_OWNR; }
 	{VARIABLE_LINK}				{ return CaosDef_VARIABLE_LINK_LITERAL; }
     {HASH_TAG}					{ return CaosDef_HASH_TAG; }
 	{WHITE_SPACE}         		{ return WHITE_SPACE; }
