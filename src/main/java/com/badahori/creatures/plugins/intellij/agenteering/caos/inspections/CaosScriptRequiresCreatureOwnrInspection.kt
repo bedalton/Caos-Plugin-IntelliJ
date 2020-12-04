@@ -12,10 +12,10 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptRequiresOwnrInspection : LocalInspectionTool() {
-    override fun getDisplayName(): String = "Command used without OWNR object"
+class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool() {
+    override fun getDisplayName(): String = "Requires creature ownr object"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
-    override fun getShortName(): String = "NoOwnrObject"
+    override fun getShortName(): String = "RequiresCreatureOwnr"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
             override fun visitIsCommandToken(o: CaosScriptIsCommandToken) {
@@ -26,9 +26,14 @@ class CaosScriptRequiresOwnrInspection : LocalInspectionTool() {
     }
 
     private fun annotateCommand(element: CaosScriptIsCommandToken, holder: ProblemsHolder) {
-        if (!requiresOwnr(element) || REQUIRES_CREATURE_OWNR.matches(element.text))
+        if (!REQUIRES_CREATURE_OWNR.matches(element.text))
             return
-        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-ownr", element.commandString.toUpperCase()))
+        element.getParentOfType(CaosScriptEventScript::class.java)?.let { script: CaosScriptEventScript ->
+            if (hasCreatureOwner(script)) {
+                return
+            }
+        }
+        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-creature-ownr", element.commandString.toUpperCase()))
     }
 
     private fun hasCreatureOwner(eventScript:CaosScriptEventScript) : Boolean {
