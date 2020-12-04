@@ -12,16 +12,21 @@ import kotlin.math.min
  * SFC data entity representing a parsed SFC world file
  */
 data class SfcFile(
-        val mapData: SfcMapData,
-        val variant: CaosVariant,
-        val objects: List<SfcObject>,
-        val scenery: List<SfcScenery>,
-        val scripts: List<SfcScript>,
-        val macros: List<SfcMacro>,
-        val scrollPosition: Vector2,
-        val favoritePlaces: List<SfcFavoritePlace>,
-        val speechHistory: List<String>
+    val mapData: SfcMapData,
+    private val variantString: String,
+    val objects: List<SfcObject>,
+    val scenery: List<SfcScenery>,
+    val scripts: List<SfcScript>,
+    val macros: List<SfcMacro>,
+    val scrollPosition: Vector2,
+    val favoritePlaces: List<SfcFavoritePlace>,
+    val speechHistory: List<String>
 ) {
+
+    val variant by lazy {
+        CaosVariant.fromVal(variantString)
+    }
+
     @delegate:Transient
     val allScripts: Set<String> by lazy {
         (macros.map { it.script } + (scripts + objects.flatMap { it.scripts }).map { script -> "scrp ${script.classifier.let { c -> "${c.family} ${c.genus} ${c.species}" }} ${script.eventNumber} ${script.script}" }).toSet()
@@ -34,8 +39,8 @@ data class SfcFile(
 }
 
 data class SfcFileDataHolder(
-        val data:SfcFile? = null,
-        val error:String? = null
+    val data: SfcFile? = null,
+    val error: String? = null
 )
 
 
@@ -95,26 +100,26 @@ interface SfcSimpleObject : SfcObject {
  * An SFC data class for agent objects in C1/C2
  */
 open class SfcObjectImpl(
-        override val classifier: AgentClass,
-        override val unId: Int? = null,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int? = null,
-        override val threat: Int? = null,
-        override val range: Int? = null,
-        override val accelerationG: Int? = null,
-        override val velocity: Vector2? = null,
-        override val restitution: Int? = null,
-        override val aero: Int? = null,
-        override val gravityData: Int? = null,
-        override val frozen: Boolean? = null,
-        override val scripts: List<SfcScript>
+    override val classifier: AgentClass,
+    override val unId: Int? = null,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int? = null,
+    override val threat: Int? = null,
+    override val range: Int? = null,
+    override val accelerationG: Int? = null,
+    override val velocity: Vector2? = null,
+    override val restitution: Int? = null,
+    override val aero: Int? = null,
+    override val gravityData: Int? = null,
+    override val frozen: Boolean? = null,
+    override val scripts: List<SfcScript>
 ) : SfcObject {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -127,60 +132,60 @@ open class SfcObjectImpl(
  * An SFC data class for Compound objects in C1/C2
  */
 data class SfcCompoundObjectImpl(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
-        override val hotspots: List<SfcHotspot>
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val parts: List<SfcEntity?>,
+    override val hotspots: List<SfcHotspot>
 ) : SfcCompoundObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(
-            baseObject: SfcObject,
-            parts: List<SfcEntity?>,
-            hotspots: List<SfcHotspot>
+        baseObject: SfcObject,
+        parts: List<SfcEntity?>,
+        hotspots: List<SfcHotspot>
     ) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            parts = parts,
-            hotspots = hotspots
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        parts = parts,
+        hotspots = hotspots
     )
 
     override fun toString(): String {
@@ -194,73 +199,73 @@ data class SfcCompoundObjectImpl(
  * An SFC data class for Blackboards in C1/C2
  */
 data class SfcBlackboard(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
-        override val hotspots: List<SfcHotspot>,
-        val textPosition: Vector2,
-        val backgroundColor: Int,
-        val chalkColor: Int,
-        val aliasColor: Int,
-        val strings: Map<Int, String>
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val parts: List<SfcEntity?>,
+    override val hotspots: List<SfcHotspot>,
+    val textPosition: Vector2,
+    val backgroundColor: Int,
+    val chalkColor: Int,
+    val aliasColor: Int,
+    val strings: Map<Int, String>
 ) : SfcCompoundObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(
-            baseObject: SfcCompoundObject,
-            textPosition: Vector2,
-            backgroundColor: Int,
-            chalkColor: Int,
-            aliasColor: Int,
-            strings: Map<Int, String>
+        baseObject: SfcCompoundObject,
+        textPosition: Vector2,
+        backgroundColor: Int,
+        chalkColor: Int,
+        aliasColor: Int,
+        strings: Map<Int, String>
     ) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            parts = baseObject.parts,
-            hotspots = baseObject.hotspots,
-            textPosition = textPosition,
-            backgroundColor = backgroundColor,
-            chalkColor = chalkColor,
-            aliasColor = aliasColor,
-            strings = strings
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        parts = baseObject.parts,
+        hotspots = baseObject.hotspots,
+        textPosition = textPosition,
+        backgroundColor = backgroundColor,
+        chalkColor = chalkColor,
+        aliasColor = aliasColor,
+        strings = strings
     )
 
     override fun toString(): String {
@@ -274,67 +279,67 @@ data class SfcBlackboard(
  * An SFC data class for Vehicles in C1/C2
  */
 data class SfcVehicleImpl(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
-        override val hotspots: List<SfcHotspot>,
-        override val cabinBounds: Bounds,
-        override val movementVector: Vector2,
-        override val bump: Int
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val parts: List<SfcEntity?>,
+    override val hotspots: List<SfcHotspot>,
+    override val cabinBounds: Bounds,
+    override val movementVector: Vector2,
+    override val bump: Int
 ) : SfcVehicle {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(
-            baseObject: SfcCompoundObject,
-            cabinBounds: Bounds,
-            movementVector: Vector2,
-            bump: Int
+        baseObject: SfcCompoundObject,
+        cabinBounds: Bounds,
+        movementVector: Vector2,
+        bump: Int
     ) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            parts = baseObject.parts,
-            hotspots = baseObject.hotspots,
-            cabinBounds = cabinBounds,
-            movementVector = movementVector,
-            bump = bump
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        parts = baseObject.parts,
+        hotspots = baseObject.hotspots,
+        cabinBounds = cabinBounds,
+        movementVector = movementVector,
+        bump = bump
     )
 
     override fun toString(): String {
@@ -349,75 +354,75 @@ data class SfcVehicleImpl(
  * An SFC data class for Lift objects in C1/C2
  */
 data class SfcLift(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val parts: List<SfcEntity?>,
-        override val hotspots: List<SfcHotspot>,
-        override val cabinBounds: Bounds,
-        override val movementVector: Vector2,
-        override val bump: Int,
-        val numberOfButtons: Int,
-        val currentButton: Int,
-        val callButtonYs: List<Int>,
-        val alignWithCabin: Boolean
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val parts: List<SfcEntity?>,
+    override val hotspots: List<SfcHotspot>,
+    override val cabinBounds: Bounds,
+    override val movementVector: Vector2,
+    override val bump: Int,
+    val numberOfButtons: Int,
+    val currentButton: Int,
+    val callButtonYs: List<Int>,
+    val alignWithCabin: Boolean
 ) : SfcVehicle {
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(
-            baseObject: SfcVehicle,
-            numberOfButtons: Int,
-            currentButton: Int,
-            callButtonYs: List<Int>,
-            alignWithCabin: Boolean
+        baseObject: SfcVehicle,
+        numberOfButtons: Int,
+        currentButton: Int,
+        callButtonYs: List<Int>,
+        alignWithCabin: Boolean
     ) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            parts = baseObject.parts,
-            hotspots = baseObject.hotspots,
-            cabinBounds = baseObject.cabinBounds,
-            movementVector = baseObject.movementVector,
-            bump = baseObject.bump,
-            numberOfButtons = numberOfButtons,
-            currentButton = currentButton,
-            callButtonYs = callButtonYs,
-            alignWithCabin = alignWithCabin
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        parts = baseObject.parts,
+        hotspots = baseObject.hotspots,
+        cabinBounds = baseObject.cabinBounds,
+        movementVector = baseObject.movementVector,
+        bump = baseObject.bump,
+        numberOfButtons = numberOfButtons,
+        currentButton = currentButton,
+        callButtonYs = callButtonYs,
+        alignWithCabin = alignWithCabin
     )
 
     override fun toString(): String {
@@ -431,54 +436,54 @@ data class SfcLift(
  * An SFC data class for simple agent objects
  */
 data class SfcSimpleObjectImpl(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val entity: SfcEntity
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val entity: SfcEntity
 ) : SfcSimpleObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(baseObject: SfcObject, entity: SfcEntity) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            entity = entity
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        entity = entity
     )
 
     override fun toString(): String {
@@ -493,54 +498,54 @@ data class SfcSimpleObjectImpl(
  * An SFC data class for the pointer agent in C1/C2
  */
 data class SfcPointerTool(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val entity: SfcEntity
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val entity: SfcEntity
 ) : SfcSimpleObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(baseObject: SfcSimpleObjectImpl) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            entity = baseObject.entity
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        entity = baseObject.entity
     )
 
     override fun toString(): String {
@@ -552,7 +557,7 @@ data class SfcPointerTool(
 } // End SfcPointer
 
 data class SfcBiochemistry(
-        val chemicals:List<Int>
+    val chemicals: List<Int>
 ) : SfcData {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -564,62 +569,62 @@ data class SfcBiochemistry(
  * An Sfc data class for call buttons in C1/C2
  */
 data class SfcCallButton(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val entity: SfcEntity,
-        val ourLift: SfcLift,
-        val liftId: Int
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val entity: SfcEntity,
+    val ourLift: SfcLift,
+    val liftId: Int
 ) : SfcSimpleObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(
-            baseObject: SfcSimpleObjectImpl,
-            ourLift: SfcLift,
-            liftId: Int
+        baseObject: SfcSimpleObjectImpl,
+        ourLift: SfcLift,
+        liftId: Int
     ) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            entity = baseObject.entity,
-            ourLift = ourLift,
-            liftId = liftId
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        entity = baseObject.entity,
+        ourLift = ourLift,
+        liftId = liftId
     )
 
     override fun toString(): String {
@@ -634,54 +639,54 @@ data class SfcCallButton(
  * An SFC data class for scenery objects in C1/C2
  */
 data class SfcScenery(
-        override val classifier: AgentClass,
-        override val unId: Int?,
-        override val attr: Int,
-        override val bounds: Bounds,
-        override val actv: Int,
-        override val currentSound: String?,
-        override val sprite: SfcGallery,
-        override val tickReset: Int,
-        override val tickState: Int,
-        override val variables: List<Int>,
-        override val size: Int?,
-        override val threat: Int?,
-        override val range: Int?,
-        override val accelerationG: Int?,
-        override val velocity: Vector2?,
-        override val restitution: Int?,
-        override val aero: Int?,
-        override val gravityData: Int?,
-        override val frozen: Boolean?,
-        override val scripts: List<SfcScript>,
-        override val entity: SfcEntity
+    override val classifier: AgentClass,
+    override val unId: Int?,
+    override val attr: Int,
+    override val bounds: Bounds,
+    override val actv: Int,
+    override val currentSound: String?,
+    override val sprite: SfcGallery,
+    override val tickReset: Int,
+    override val tickState: Int,
+    override val variables: List<Int>,
+    override val size: Int?,
+    override val threat: Int?,
+    override val range: Int?,
+    override val accelerationG: Int?,
+    override val velocity: Vector2?,
+    override val restitution: Int?,
+    override val aero: Int?,
+    override val gravityData: Int?,
+    override val frozen: Boolean?,
+    override val scripts: List<SfcScript>,
+    override val entity: SfcEntity
 ) : SfcSimpleObject {
 
     /**
      * Helper constructor to initialize with a parent base read in
      */
     constructor(baseObject: SfcSimpleObjectImpl) : this(
-            classifier = baseObject.classifier,
-            unId = baseObject.unId,
-            attr = baseObject.attr,
-            bounds = baseObject.bounds,
-            actv = baseObject.actv,
-            currentSound = baseObject.currentSound,
-            sprite = baseObject.sprite,
-            tickReset = baseObject.tickReset,
-            tickState = baseObject.tickState,
-            variables = baseObject.variables,
-            size = baseObject.size,
-            threat = baseObject.threat,
-            range = baseObject.range,
-            accelerationG = baseObject.accelerationG,
-            velocity = baseObject.velocity,
-            restitution = baseObject.restitution,
-            aero = baseObject.aero,
-            gravityData = baseObject.gravityData,
-            frozen = baseObject.frozen,
-            scripts = baseObject.scripts,
-            entity = baseObject.entity
+        classifier = baseObject.classifier,
+        unId = baseObject.unId,
+        attr = baseObject.attr,
+        bounds = baseObject.bounds,
+        actv = baseObject.actv,
+        currentSound = baseObject.currentSound,
+        sprite = baseObject.sprite,
+        tickReset = baseObject.tickReset,
+        tickState = baseObject.tickState,
+        variables = baseObject.variables,
+        size = baseObject.size,
+        threat = baseObject.threat,
+        range = baseObject.range,
+        accelerationG = baseObject.accelerationG,
+        velocity = baseObject.velocity,
+        restitution = baseObject.restitution,
+        aero = baseObject.aero,
+        gravityData = baseObject.gravityData,
+        frozen = baseObject.frozen,
+        scripts = baseObject.scripts,
+        entity = baseObject.entity
     )
 
     override fun toString(): String {
@@ -695,9 +700,9 @@ data class SfcScenery(
  * An SFC data object for Scripts in C1/C2
  */
 data class SfcScript(
-        val classifier: AgentClass,
-        val eventNumber: Int,
-        val script: String
+    val classifier: AgentClass,
+    val eventNumber: Int,
+    val script: String
 ) : SfcData {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -710,13 +715,13 @@ data class SfcScript(
  * An SFC data object for scripts in C1/C2
  */
 data class SfcMacro(
-        @Transient
-        val ownr: SfcObject,
-        @Transient
-        val from: SfcObject,
-        @Transient
-        val targ: SfcObject?,
-        val script: String
+    @Transient
+    val ownr: SfcObject,
+    @Transient
+    val from: SfcObject,
+    @Transient
+    val targ: SfcObject?,
+    val script: String
 ) : SfcData {
     val ownrClass = ownr.classifier
     val fromClass = from.classifier
@@ -733,9 +738,9 @@ data class SfcMacro(
  * Note: does not hold actual sprites, just agent information about them
  */
 data class SfcGallery(
-        val numberOfFrames: Int,
-        val firstImage: Int,
-        val fileName: String
+    val numberOfFrames: Int,
+    val firstImage: Int,
+    val fileName: String
 ) : SfcData {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -749,8 +754,8 @@ data class SfcGallery(
  * SFC Door info object
  */
 data class SfcDoor(
-        val openness: Int,
-        val otherRoom: Int
+    val openness: Int,
+    val otherRoom: Int
 ) : SfcData {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -769,9 +774,9 @@ interface SfcRoom : SfcData {
  * an SFC data class for rooms in C1/C2
  */
 data class SfcRoomImpl(
-        override val id: Int,
-        override val bounds: Bounds,
-        override val roomType: Int
+    override val id: Int,
+    override val bounds: Bounds,
+    override val roomType: Int
 ) : SfcRoom {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -784,25 +789,25 @@ data class SfcRoomImpl(
  * An C2 specific SFC room data object
  */
 data class SfcC2Room(
-        override val id: Int,
-        override val bounds: Bounds,
-        override val roomType: Int,
-        val doors: Map<Int, List<SfcDoor>>,
-        val floorValue: Int,
-        val inorganicNutrients: Int,
-        val organicNutrients: Int,
-        val temperature: Int,
-        val pressure: Int,
-        val lightLevel: Int,
-        val radiation: Int,
-        val heatSource: Int,
-        val pressureSource: Int,
-        val lightSource: Int,
-        val radiationSource: Int,
-        val windVector: Vector2,
-        val floorPoints: List<Vector2>,
-        val music: String,
-        val dropStatus: Int
+    override val id: Int,
+    override val bounds: Bounds,
+    override val roomType: Int,
+    val doors: Map<Int, List<SfcDoor>>,
+    val floorValue: Int,
+    val inorganicNutrients: Int,
+    val organicNutrients: Int,
+    val temperature: Int,
+    val pressure: Int,
+    val lightLevel: Int,
+    val radiation: Int,
+    val heatSource: Int,
+    val pressureSource: Int,
+    val lightSource: Int,
+    val radiationSource: Int,
+    val windVector: Vector2,
+    val floorPoints: List<Vector2>,
+    val music: String,
+    val dropStatus: Int
 ) : SfcRoom {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -815,9 +820,9 @@ data class SfcC2Room(
  * SFC map data object
  */
 data class SfcMapData(
-        val gallery: SfcGallery,
-        val rooms: List<SfcRoom>,
-        val groundLevels: List<Int>? = null // Should be 261 points
+    val gallery: SfcGallery,
+    val rooms: List<SfcRoom>,
+    val groundLevels: List<Int>? = null // Should be 261 points
 ) : SfcData {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -830,19 +835,19 @@ data class SfcMapData(
  * An SFC data class for an entity/agent part
  */
 data class SfcEntity(
-        val gallery: SfcGallery,
-        val currentFrame: Int,
-        val imageOffset: Int,
-        val zOrder: Int,
-        val position: Vector2,
-        val animationFrame: Int?,
-        val animationString: String?,
-        val relativePosition: Vector2? = null,
-        val partZOrder: Int? = null,
-        val behaviorClicks: List<Int>? = null,
-        val behaviorTouch: Int? = null,
-        val pickupHandles: List<Vector2>? = null,
-        val pickupPoints: List<Vector2>? = null
+    val gallery: SfcGallery,
+    val currentFrame: Int,
+    val imageOffset: Int,
+    val zOrder: Int,
+    val position: Vector2,
+    val animationFrame: Int?,
+    val animationString: String?,
+    val relativePosition: Vector2? = null,
+    val partZOrder: Int? = null,
+    val behaviorClicks: List<Int>? = null,
+    val behaviorTouch: Int? = null,
+    val pickupHandles: List<Vector2>? = null,
+    val pickupPoints: List<Vector2>? = null
 ) : SfcData {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -856,10 +861,10 @@ data class SfcEntity(
  * A data class to hold information about the edges of an object or room
  */
 data class Bounds(
-        val left: Int,
-        val top: Int,
-        val right: Int,
-        val bottom: Int
+    val left: Int,
+    val top: Int,
+    val right: Int,
+    val bottom: Int
 ) {
 
     @delegate:Transient
@@ -889,8 +894,8 @@ val Bounds.javaOrigin: Vector2 get() = Vector2(left, min(bottom, top))
  * Rect data class
  */
 data class Rect(
-        val origin: Vector2,
-        val size: Size
+    val origin: Vector2,
+    val size: Size
 ) {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -901,8 +906,8 @@ data class Rect(
  * Size data class
  */
 data class Size(
-        val width: Int,
-        val height: Int
+    val width: Int,
+    val height: Int
 ) {
     override fun toString(): String {
         return Gson().toJson(this)
@@ -929,10 +934,10 @@ data class Vector2(val x: Int, val y: Int) {
  * Hotspot data class
  */
 data class SfcHotspot(
-        val bounds: Bounds,
-        val function: Int,
-        val message: Int? = null,
-        val mask: Int? = null
+    val bounds: Bounds,
+    val function: Int,
+    val message: Int? = null,
+    val mask: Int? = null
 ) {
     override fun toString(): String {
         return Gson().toJson(this)

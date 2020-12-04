@@ -92,7 +92,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
 
         // Output actual SFC file.
         return SfcFile(
-                variant = variant,
+                variantString = variant.code,
                 mapData = mapData.point(),
                 objects = objects.mapNotNull { it?.pointed!!.point() },
                 scenery = scenery.pointed,

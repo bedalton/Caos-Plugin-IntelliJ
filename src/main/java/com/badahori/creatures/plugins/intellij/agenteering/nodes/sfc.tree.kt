@@ -36,7 +36,7 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
             SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
             LOGGER.severe(error)
             e.printStackTrace()
-            CaosNotifications.showError(project, "SFC Error", "Failed to parse SFC file '${myVirtualFile.name}'. Non-Eden.sfc files are un-parsable.")
+            CaosNotifications.showError(project, "SFC Error", "Failed to parse SFC file '${myVirtualFile.name}. *Note: Non-vanilla Eden.sfc files are un-parsable.")
             null
         }
     }
