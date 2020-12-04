@@ -78,8 +78,6 @@ object CaosBundleSourcesRegistrationUtil {
             LOGGER.severe("Failed to add library to modifiable model")
             return false
         }
-
-        modifiableModel.commit()
         return true
     }
 
