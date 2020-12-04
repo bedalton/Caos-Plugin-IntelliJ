@@ -84,7 +84,7 @@ object Injector {
             creditsCalled[variant] = true
             connection.showAttribution(project, variant)
         }
-        val caos = sanitize(caosIn)
+        val caos = caosIn //sanitize(caosIn)
         if (!connection.isConnected() && !connection.connect(false)) {
             return null
         }
@@ -98,7 +98,7 @@ object Injector {
             creditsCalled[variant] = true
             connection.showAttribution(project, variant)
         }
-        val caos = sanitize(caosIn)
+        val caos = caosIn //sanitize(caosIn)
         if (!connection.isConnected() && !connection.connect(false)) {
             return null
         }
@@ -161,9 +161,10 @@ object Injector {
         }
     }
 
-    private fun sanitize(caos: String, collapseMultipleSpaces: Boolean = false): String {
+    private fun sanitize(caosIn: String, collapseMultipleSpaces: Boolean = false): String {
+        val caos = "\\s*\\*[^\n]\n".toRegex().replace(caosIn, "")
         val replacePattern = ";;;;;;;;"
-        val c1StringPattern = "([[^]]+])"
+        val c1StringPattern = "(\\[[^]]+])"
         val inC1StringRegex = ".*${c1StringPattern}.*".toRegex()
         val matches = inC1StringRegex.matchEntire(caos)?.groups
         if (matches != null) {

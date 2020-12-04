@@ -2,12 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -69,7 +71,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         private val whitespaceOrComma = "(\\s|,)+".toRegex()
         private val trailingText = "[ \n,\t]+".toRegex()
 
-        fun collapseLinesInCopy(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement {
+        fun collapseLinesInCopy(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement? {
             val project = elementIn.project
             val document = PsiDocumentManager.getInstance(project).getCachedDocument(elementIn.containingFile) ?: elementIn.document
             if (document != null) {
@@ -79,19 +81,24 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             return collapseLines(element, collapseChar)
         }
 
-        fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement {
+        fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement? {
             val project = element.project
             val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
+            var didDeleteComments = true
             for (comment in comments) {
                 if (comment.isValid) {
-                    var replacement = CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(project)
-                    replacement = comment.replace(replacement)
-                    replacement.delete()
+                    didDeleteComments = comment.getParentOfType(CaosScriptCodeBlockLine::class.java)?.apply {
+                        delete()
+                    } != null && didDeleteComments
                 }
+            }
+            if (!didDeleteComments) {
+                CaosInjectorNotifications.createErrorNotification(project, "CAOS Formatting Error", "Failed to remove comments from document for injection")
+                return null
             }
             element.document?.let {
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                CodeStyleManager.getInstance(project).reformat(element, true)
+                CodeStyleManager.getInstance(project).reformat(element, false)
             }
             val newLines = PsiTreeUtil.collectElementsOfType(element, CaosScriptSpaceLikeOrNewline::class.java)
             for (newLine in newLines) {
