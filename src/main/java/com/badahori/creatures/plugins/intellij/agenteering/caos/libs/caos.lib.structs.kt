@@ -94,7 +94,8 @@ data class CaosCommand(
         val lvalue:Boolean,
         val lvalueName:String? = null,
         val commandGroup:String,
-        val doifFormat:String? = null
+        val doifFormat:String? = null,
+        val requiresCreatureOwnr:Boolean = false
 ) {
     val fullCommandHeader: String by lazy {
         val commandHeader = formatNameWithType(command, returnType)

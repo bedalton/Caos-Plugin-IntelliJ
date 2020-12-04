@@ -84,6 +84,7 @@ internal data class CaosCommand(
         val description: String? = null,
         val returnValuesListIds: Map<String, Int>? = null,
         val requiresOwnr:Int = 0,
+        val requiresCreatureOwnr:Boolean = false,
         val variants: List<String>,
         val rvalue:Boolean,
         val lvalue:Boolean,
