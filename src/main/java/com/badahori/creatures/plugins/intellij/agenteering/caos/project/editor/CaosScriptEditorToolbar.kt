@@ -3,8 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike
@@ -27,7 +27,6 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
@@ -36,7 +35,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.ui.DialogBuilder
-import com.intellij.openapi.ui.playback.commands.ActionCommand
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
@@ -48,7 +46,6 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import com.intellij.util.concurrency.Command
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
 import java.awt.event.ActionListener
 import java.awt.event.ItemEvent
@@ -395,7 +392,8 @@ private fun injectActual(project: Project, variant:CaosVariant, caosFile:CaosScr
             .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
             .shouldRecordActionForActiveDocument(false)
             .run<Throwable> run@{
-                val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE).text
+                val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE)?.text
+                    ?: return@run
                 if (content.isBlank()) {
                     Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
                     return@run
@@ -542,7 +540,7 @@ private fun showC3InjectPanel(project: Project, variant: CaosVariant, file: Caos
 private fun inject(project: Project, variant: CaosVariant, scripts: Collection<CaosScriptScriptElement>): Boolean {
     return runReadAction run@{
         for (script in scripts) {
-            val content = script.codeBlock?.let { CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(it, CollapseChar.SPACE).text }
+            val content = script.codeBlock?.let { CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(it, CollapseChar.SPACE)?.text }
                     ?: continue
             val result = if (script is CaosScriptEventScript) {
                 Injector.injectEventScript(project, variant, script.family, script.genus, script.species, script.eventNumber, content)
