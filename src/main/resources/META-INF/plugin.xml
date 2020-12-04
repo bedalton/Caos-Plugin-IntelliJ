@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.91</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.93</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -34,6 +34,14 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.93</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fixed exception thrown on CAOS file open</li>
+          <li>Fixed: Creatures crash on inject CAOS with comments</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.92</b><br/>
         <b>#Fixes</b>
@@ -286,7 +294,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTypesInspection"
                      level="WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Expected parameter type"
                      shortName="ExpectedParameterType"
@@ -295,7 +303,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCAssignmentInspection"
                      level="ERROR"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Assigned value is of expected type"
                      shortName="ExpectedAssigmentType"
@@ -304,7 +312,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSubroutineInspection"
                      level="ERROR"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Subroutine Is Defined Check"
                      shortName="SubroutineIsDefined"
@@ -312,7 +320,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomVarOutOfOrderInspection"
                      level="WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="RNDV values out of order"
                      shortName="RNDVOutOfOrder"
@@ -321,7 +329,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInterleavingBodyStatements"
                      level="WEAK WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Interleaving body script elements"
                      shortName="InterleavingBodyScripts"
@@ -330,7 +338,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptIgnoredScriptsAfterRemovalScriptInspection"
                      level="WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Scripts after removal scripts are ignored"
                      shortName="ScriptsAfterRemovalScripts"
@@ -339,7 +347,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
                      level="WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Multiple removal scripts"
                      shortName="MultipleRemovalScripts"
@@ -347,7 +355,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomValueIsTheSameInspection"
                      level="WEAK WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Rndv value is always the same"
                      shortName="RndvIsTheSame"
@@ -356,7 +364,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrInspection"
                      level="ERROR"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Command used without OWNR object"
                      shortName="NoOwnrObject"
@@ -365,7 +373,7 @@
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrWithWarningInspection"
                      level="WEAK WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Non-error generating use of OWNR object command without OWNR object"
                      shortName="NoOwnrObjectWarning"
@@ -373,7 +381,7 @@
 
     <localInspection language="CaosScript"
                      level="ERROR"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Scripts defined after event script in C1/C2"
                      shortName="ScriptAfterEventScriptC1"
@@ -382,7 +390,7 @@
 
     <localInspection language="CaosScript"
                      level="WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid script header value"
                      shortName="InvalidScriptHeaderValue"
@@ -391,7 +399,7 @@
 
     <localInspection language="CaosScript"
                      level="WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Duplicate event script in file"
                      shortName="DuplicateEventScriptInFile"
@@ -400,7 +408,7 @@
 
     <localInspection language="CaosScript"
                      level="WEAK WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Duplicate event script in module"
                      shortName="DuplicateEventScriptInModule"
@@ -409,7 +417,7 @@
 
     <localInspection language="CaosScript"
                      level="ERROR"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="SSFC number of arguments"
                      shortName="SSFCArgumentsCheck"
@@ -418,7 +426,7 @@
 
     <localInspection language="CaosScript"
                      level="ERROR"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid numeric expression in variant"
                      shortName="InvalidNumericExpression"
@@ -427,11 +435,20 @@
 
     <localInspection language="CaosScript"
                      level="WEAK WARNING"
-                     groupName="Caos Script"
+                     groupName="CaosScript"
                      enabledByDefault="true"
                      displayName="Agent to Int Coercion"
                      shortName="AgentToIntCoercion"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptAgentToIntCoercionInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="WEAK WARNING"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Requires creature ownr object"
+                     shortName="RequiresCreatureOwnr"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresCreatureOwnrInspection"
     />
 
     <!-- Documentation & Hints -->
