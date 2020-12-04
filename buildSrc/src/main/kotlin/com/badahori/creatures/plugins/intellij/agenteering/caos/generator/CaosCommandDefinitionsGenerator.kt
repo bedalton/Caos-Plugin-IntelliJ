@@ -23,7 +23,9 @@ internal fun generateCommandDefinition(variant: CaosVariant, command: CaosComman
 
     // If requires owner, add tag for it
     if (command.requiresOwnr(variant)) {
-        comment.add("@Ownr")
+        comment.add("@RequiresOwnr")
+    } else if (command.requiresCreatureOwnr) {
+        comment.add("@RequiresOwnrCreature")
     }
 
     // Add rvalue tag command is rvalue
@@ -43,7 +45,7 @@ internal fun generateCommandDefinition(variant: CaosVariant, command: CaosComman
         // Add tail to type and wrap if type does not start with '[' (ie. [animation], [byte_string], [string])
         // Types starting with '[' should never have a tail, so ignore it
         if (!type.startsWith("[")) {
-            // If has value list, append @valuelist
+            // If has value list, append @valuesListName
             val tail = parameter.valuesList[variant]?.name?.let {
                 "@$it"
 
