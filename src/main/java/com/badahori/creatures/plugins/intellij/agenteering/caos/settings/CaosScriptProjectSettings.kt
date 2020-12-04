@@ -47,7 +47,7 @@ object CaosScriptProjectSettings {
 
     // === CAOS Injection URLS === //
     fun getInjectURL(project:Project) : String? {//Map<String,String>?  {
-        val invalidNameCharsRegex = "[<>]".toRegex()
+        //val invalidNameCharsRegex = "[<>]".toRegex() // Used when doing multiple injection urls
         val contents = FilenameIndex.getAllFilesByExt(project, "caosurl")
                 .firstOrNull()
                 ?.contents
