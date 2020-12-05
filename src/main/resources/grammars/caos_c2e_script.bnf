@@ -4343,7 +4343,6 @@ r_kw_none
 	|	K_RSRC
 	|	K_RTIM
 	|	K_RTYP <<isOldVariant>>
-	|	K_SCOR<<isVariant 'C1.INSTANCE'>>
 	|	K_SDMP
 	|	K_SEAN
 	|	K_SEAV
@@ -4492,7 +4491,7 @@ r_kw_r
 	|	K_RLOC
 	|	K_ROOM <<isNewVariant 'true'>>
 	|	K_RTYP <<isNewVariant 'true'>>
-	|	K_SCOR<<isVariant 'C2.INSTANCE'>>
+	|	K_SCOR<<isOldVariant>>
 	|	K_SEEN
 	|	K_SIN_
 	|	K_SNAX

@@ -15,20 +15,26 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
         if (!caosSettings.indentBlocks) {
             return Indent.getNoneIndent()
         }
-        val firstChild: ASTNode? = node
+        val element = node.psi
+            ?: return Indent.getNoneIndent()
 
         // Handle indent if cursor is at block end (ie. NEXT, ENDI)
-        if (firstChild?.elementType in CaosScriptTokenSets.BLOCK_START_AND_ENDS) {
-            val cursor = firstChild?.psi?.editor?.caretModel?.offset
-                    ?: -1
+        if (node.elementType in CaosScriptTokenSets.BLOCK_START_AND_ENDS) {
+            val cursor = element.editor?.caretModel?.offset
+                ?: -1
             // Cursor is actually at token, not just some newline before end
-            if (abs(firstChild!!.startOffset - cursor) <= 2) {
+            if (abs(node.startOffset - cursor) <= 2) {
                 return Indent.getNoneIndent()
             }
-        }
-        val parent = node.psi
-        if (parent is CaosScriptCodeBlock) {
-            val parentBlock = parent.parent
+        } else if (node.elementType == CaosScriptTypes.CaosScript_COMMENT) {
+            val previousText = node.previous?.text
+                ?: return Indent.getAbsoluteNoneIndent()
+            when {
+                previousText.endsWith("\n") -> return Indent.getAbsoluteNoneIndent()
+                else -> Indent.getNoneIndent()
+            }
+        } else if (element is CaosScriptCodeBlock) {
+            val parentBlock = element.parent
             if (parentBlock is CaosScriptScriptElement) {
                 val indent = when (parentBlock) {
                     is CaosScriptEventScript -> parentBlock.scriptTerminator != null
@@ -42,26 +48,6 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
                     Indent.getNoneIndent()
             }
             return Indent.getNormalIndent()
-        }
-        if (node.elementType == CaosScriptTypes.CaosScript_COMMENT) {
-            val previousText = node.previous?.text
-                    ?: return Indent.getAbsoluteNoneIndent()
-            when {
-                previousText.endsWith("\n") -> return Indent.getAbsoluteNoneIndent()
-                previousText.endsWith("\t") || previousText.endsWith(" ") -> {
-                    val lastLine = previousText.split("\n").last()
-                    val precedingSpace = if (lastLine.contains("\t")) {
-                        val psi = node.psi
-                                ?: return Indent.getAbsoluteNoneIndent()
-                        val tabSize = EditorUtil.tabSize(psi) ?: 4
-                        lastLine.replace("\t", "".padStart(tabSize, ' ')).length
-                    } else {
-                        lastLine.length
-                    }
-                    return Indent.getSpaceIndent(precedingSpace, false)
-                }
-                else -> Indent.getNormalIndent()
-            }
         }
 
         return Indent.getNoneIndent()

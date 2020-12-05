@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -7,14 +8,24 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 
+/**
+ * Class responsible for Injecting CAOS into the various Creatures games.
+ */
 object Injector {
 
+    /**
+     * Gets the actual version of a C1e game.
+     * Perhaps too heavy handed, but trying to assert that the correct game is connected
+     * Sends a DDE version check request before each user CAOS injection
+     */
     private fun getActualVersion(project: Project, variant: CaosVariant): CaosVariant {
         if (variant.isNotOld) {
             return variant
         }
-        val code = "dde: putv vrsn"
-        val response = injectPrivate(project, variant, code)
+        val rawCode = "dde: putv vrsn"
+        val response = injectPrivate(project, variant, rawCode) { connection, formattedCode ->
+            connection.inject(formattedCode)
+        }
         if (response !is InjectionStatus.Ok)
             return variant
         return try {
@@ -28,7 +39,35 @@ object Injector {
         }
     }
 
-    fun inject(project: Project, variant: CaosVariant, caosIn: String): Boolean {
+    /**
+     * Checks version info before injection
+     */
+    fun inject(project: Project, variant: CaosVariant, rawCaosIn: String): Boolean {
+        if (!isValidVariant(project, variant))
+            return false
+        //
+        val response = injectPrivate(project, variant, rawCaosIn) { connection, formattedCaos ->
+            connection.inject(formattedCaos)
+        }
+        onResponse(project, response)
+        return response is InjectionStatus.Ok
+    }
+
+    /**
+     * Injects an event script into the Creatures scriptorium
+     */
+    fun injectEventScript(project: Project, variant: CaosVariant, family: Int, genus: Int, species: Int, eventNumber: Int, rawCaosIn: String): Boolean {
+        val response = injectPrivate(project, variant, rawCaosIn) { connection, formattedCaos ->
+            connection.injectEventScript(family, genus, species, eventNumber, formattedCaos)
+        }
+        onResponse(project, response)
+        return response is InjectionStatus.Ok
+    }
+
+    /**
+     * Ensures that variant is supported, and if C1e, that the correct game is running
+     */
+    private fun isValidVariant(project:Project, variant:CaosVariant) : Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
             invokeLater {
@@ -43,31 +82,37 @@ object Injector {
                 return false
             }
         }
-        val response = injectPrivate(project, variant, caosIn)
-        onResponse(project, response)
-        return response is InjectionStatus.Ok
+        return true
     }
 
-    fun injectEventScript(project: Project, variant: CaosVariant, family: Int, genus: Int, species: Int, eventNumber: Int, caosIn: String): Boolean {
-        if (!canConnectToVariant(variant)) {
-            val error = "Injection to ${variant.fullName} is not yet implemented"
-            invokeLater {
-                CaosInjectorNotifications.show(project, "ConnectionException", error, NotificationType.ERROR)
-            }
-            return false
+
+    /**
+     * Responsible for actually injecting the CAOS code.
+     */
+    private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String, run:(connection: CaosConnection, formattedCode: String) -> InjectionStatus?): InjectionStatus? {
+        val connection = connection(variant, project)
+                ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
+        if (creditsCalled[variant].orFalse()) {
+            creditsCalled[variant] = true
+            connection.showAttribution(project, variant)
         }
-        if (variant.isOld) {
-            val actualVersion = getActualVersion(project, variant)
-            if (actualVersion != variant) {
-                postError(project, "Connection Error", "Grammar set to variant [${variant}], but ide is connected to ${actualVersion.fullName}")
-                return false
-            }
+
+        // Old variant Creatures games crash on extra spaces and any comments
+        // So strip them here.
+        val caos = if (variant.isOld)
+            CaosScriptsQuickCollapseToLine.collapse(variant, caosIn)
+        // Comments and additional spaces are allowed in C2e CAOS
+        else
+            caosIn
+        if (!connection.isConnected() && !connection.connect(false)) {
+            return null
         }
-        val response = injectPrivate(project, variant, family, genus, species, eventNumber, caosIn)
-        onResponse(project, response)
-        return response is InjectionStatus.Ok
+        return run(connection, caos)
     }
 
+    /**
+     * Processes CAOS injection response, and notifies the user
+     */
     private fun onResponse(project: Project, response: InjectionStatus?) {
         when (response) {
             is InjectionStatus.Ok -> postOk(project, response)
@@ -77,42 +122,9 @@ object Injector {
         }
     }
 
-    private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String): InjectionStatus? {
-        val connection = connection(variant, project)
-                ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
-        if (creditsCalled[variant].orFalse()) {
-            creditsCalled[variant] = true
-            connection.showAttribution(project, variant)
-        }
-        val caos = caosIn //sanitize(caosIn)
-        if (!connection.isConnected() && !connection.connect(false)) {
-            return null
-        }
-        return connection.inject(caos)
-    }
-
-    private fun injectPrivate(project: Project, variant: CaosVariant, family: Int, genus: Int, species: Int, eventNumber: Int, caosIn: String): InjectionStatus? {
-        val connection = connection(variant, project)
-                ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
-        if (creditsCalled[variant].orFalse()) {
-            creditsCalled[variant] = true
-            connection.showAttribution(project, variant)
-        }
-        val caos = caosIn //sanitize(caosIn)
-        if (!connection.isConnected() && !connection.connect(false)) {
-            return null
-        }
-        return connection.injectEventScript(family, genus, species, eventNumber, caos)
-    }
-
-    private fun connection(variant: CaosVariant, project: Project): CaosConnection? {
-        val conn = getConnection(variant, project)
-        if (conn == null || !conn.connect()) {
-            return null
-        }
-        return conn
-    }
-
+    /**
+     * Responsible for displaying an OK status response to the user
+     */
     @JvmStatic
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
         val prefix = "&gt;"
@@ -124,6 +136,9 @@ object Injector {
         }
     }
 
+    /**
+     * Logs an INFO based message to the user such as empty CAOS string
+     */
     @JvmStatic
     internal fun postInfo(project: Project, title: String, message: String) {
         invokeLater {
@@ -131,6 +146,9 @@ object Injector {
         }
     }
 
+    /**
+     * Posts an ERROR message to the user.
+     */
     @JvmStatic
     internal fun postError(project: Project, title: String, message: String) {
         invokeLater {
@@ -138,6 +156,9 @@ object Injector {
         }
     }
 
+    /**
+     * Logs warning message to users CAOS notification panel
+     */
     @Suppress("unused")
     @JvmStatic
     fun postWarning(project: Project, title: String, message: String) {
@@ -146,7 +167,23 @@ object Injector {
         }
     }
 
-    private fun getConnection(variant: CaosVariant, project: Project): CaosConnection? {
+
+    /**
+     * Creates the actual connection to the game
+     * If connection fails or is unsupported, returns null
+     */
+    private fun connection(variant: CaosVariant, project: Project): CaosConnection? {
+        val conn = getConnectionObject(variant, project)
+        if (!conn.connect()) {
+            return null
+        }
+        return conn
+    }
+
+    /**
+     * Gets the raw connection object without testing connection or actually connecting
+     */
+    private fun getConnectionObject(variant: CaosVariant, project: Project): CaosConnection {
         val injectUrl = runReadAction { CaosScriptProjectSettings.getInjectURL(project) }
         if (injectUrl != null) {
             if (injectUrl.startsWith("wine:")) {
@@ -161,42 +198,9 @@ object Injector {
         }
     }
 
-    private fun sanitize(caosIn: String, collapseMultipleSpaces: Boolean = false): String {
-        val caos = "\\s*\\*[^\n]\n".toRegex().replace(caosIn, "")
-        val replacePattern = ";;;;;;;;"
-        val c1StringPattern = "(\\[[^]]+])"
-        val inC1StringRegex = ".*${c1StringPattern}.*".toRegex()
-        val matches = inC1StringRegex.matchEntire(caos)?.groups
-        if (matches != null) {
-            c1StringPattern.toRegex().replace(caos, replacePattern)
-        }
-        val mapper: (string: String) -> String = if (collapseMultipleSpaces) {
-            { string ->
-                string.replace(commaWithSpacesRegex, ",").replace(MULTI_WHITESPACE_REGEX, " ").trim()
-            }
-        } else {
-            { string ->
-                string.replace(commaWithSpacesRegex, ",").trim()
-            }
-        }
-        var out = caos
-                .split("\n")
-                .filterNot {
-                    it.isBlank()
-                }.joinToString("\n", transform = mapper)
-        if (matches != null) {
-            out = out.split(replacePattern)
-                    .mapIndexed { i, string ->
-                        if (i != 0) {
-                            matches[i]!!.value + string
-                        } else
-                            string
-                    }
-                    .joinToString("")
-        }
-        return out
-    }
-
+    /**
+     * Checks if it is possible to connect to variant
+     */
     fun canConnectToVariant(variant: CaosVariant): Boolean {
         return when (variant) {
             CaosVariant.C1 -> true
@@ -210,6 +214,10 @@ object Injector {
     }
 
 
+    /**
+     * Holds whether the credits for the Connection were called yet this run of the IDE
+     * All code to inject CAOS was written by other people. I need to credit them
+     */
     private val creditsCalled = mutableMapOf(
             CaosVariant.C1 to false,
             CaosVariant.C2 to false,
@@ -221,8 +229,10 @@ object Injector {
 
 }
 
-private val commaWithSpacesRegex = "[, ]*,[, ]*".toRegex()
-
+/**
+ * Defines a CAOS connection
+ * Plugin supports multiple game connections such as DDE (C1e), MemoryMapped(C2e), HTTP(Any)
+ */
 internal interface CaosConnection {
     fun inject(caos: String): InjectionStatus
     fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus
@@ -232,6 +242,9 @@ internal interface CaosConnection {
     fun showAttribution(project: Project, variant: CaosVariant)
 }
 
+/**
+ * The status for an injection request
+ */
 internal sealed class InjectionStatus {
     data class Ok(val response: String) : InjectionStatus()
     data class Bad(val error: String) : InjectionStatus()
