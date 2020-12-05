@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -392,7 +390,7 @@ private fun injectActual(project: Project, variant:CaosVariant, caosFile:CaosScr
             .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
             .shouldRecordActionForActiveDocument(false)
             .run<Throwable> run@{
-                val content = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(caosFile, CollapseChar.SPACE)?.text
+                val content = caosFile.text
                     ?: return@run
                 if (content.isBlank()) {
                     Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
@@ -540,7 +538,7 @@ private fun showC3InjectPanel(project: Project, variant: CaosVariant, file: Caos
 private fun inject(project: Project, variant: CaosVariant, scripts: Collection<CaosScriptScriptElement>): Boolean {
     return runReadAction run@{
         for (script in scripts) {
-            val content = script.codeBlock?.let { CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(it, CollapseChar.SPACE)?.text }
+            val content = script.codeBlock?.text
                     ?: continue
             val result = if (script is CaosScriptEventScript) {
                 Injector.injectEventScript(project, variant, script.family, script.genus, script.species, script.eventNumber, content)

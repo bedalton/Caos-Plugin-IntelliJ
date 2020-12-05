@@ -16,6 +16,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ProjectRootManager
@@ -141,7 +142,7 @@ object EditorUtil {
 
     fun tabSize(editor:Editor) : Int? {
         var tabSize: Int? = null
-        val commonCodeStyleSettings = CommonCodeStyleSettings(CaosDefLanguage.instance)
+        val commonCodeStyleSettings = CommonCodeStyleSettings(CaosScriptLanguage)
         val indentOptions = commonCodeStyleSettings.indentOptions
 
         if (indentOptions != null) {

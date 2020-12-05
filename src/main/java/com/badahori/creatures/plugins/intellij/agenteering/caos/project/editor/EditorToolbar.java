@@ -96,6 +96,7 @@ public class EditorToolbar {
         defaultComboBoxModel1.addElement("CV");
         defaultComboBoxModel1.addElement("C3");
         defaultComboBoxModel1.addElement("DS");
+        defaultComboBoxModel1.addElement("SM");
         variant.setModel(defaultComboBoxModel1);
         variant.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/caos-bundle", "caos.toolbar.varaint-tool-tip"));
         panel.add(variant, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
