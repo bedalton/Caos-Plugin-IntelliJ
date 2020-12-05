@@ -86,14 +86,16 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
             var didDeleteComments = true
             for (comment in comments) {
-                if (comment.isValid) {
-                    didDeleteComments = comment.getParentOfType(CaosScriptCodeBlockLine::class.java)?.apply {
+                didDeleteComments = if (comment.isValid) {
+                    comment.getParentOfType(CaosScriptCodeBlockLine::class.java)?.apply {
                         delete()
                     } != null && didDeleteComments
+                } else {
+                    false
                 }
             }
             if (!didDeleteComments) {
-                CaosInjectorNotifications.createErrorNotification(project, "CAOS Formatting Error", "Failed to remove comments from document for injection")
+                CaosInjectorNotifications.showError(project, "CAOS Formatting Error", "Failed to remove comments from document for injection")
                 return null
             }
             element.document?.let {
@@ -104,6 +106,10 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             for (newLine in newLines) {
                 if (newLine.isValid)
                     replaceWithSpaceOrComma(newLine, collapseChar)
+                else {
+                    CaosInjectorNotifications.showError(project, "CAOS Formatting Error", "Failed to remove comments from document for injection")
+                    return null
+                }
             }
             while (trailingText.matches(element.firstChild.text))
                 element.firstChild.delete()
