@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosPresentation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
@@ -27,6 +28,6 @@ val CaosScriptCompositeElement.containingCaosFile : CaosScriptFile? get() = cont
 
 val PsiElement.variant: CaosVariant?
     get() = (containingFile as? CaosScriptFile)?.variant
-            ?: (originalElement.containingFile as? CaosScriptFile)?.variant
+        ?: (containingFile?.originalFile as? CaosScriptFile)?.variant
             ?: (containingFile as? CaosDefFile)?.variants?.firstOrNull()
-            ?: (originalElement?.containingFile as? CaosDefFile)?.variants?.firstOrNull()
+            ?: (containingFile?.originalFile as? CaosDefFile)?.variants?.firstOrNull()
