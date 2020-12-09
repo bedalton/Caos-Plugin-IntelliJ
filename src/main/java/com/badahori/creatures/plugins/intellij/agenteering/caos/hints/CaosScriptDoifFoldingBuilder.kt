@@ -496,7 +496,7 @@ private fun formatEqOp(eqOp: EqOp, isBool: Boolean, boolOnLessThan: Boolean, oth
     return when (eqOp) {
         EQUAL -> if (isBool) IS else null
         NOT_EQUAL -> if (isBool) IS_NOT else null
-        GREATER_THAN -> if (isBool && otherValueInt == 0) IS else null
+        GREATER_THAN -> if (isBool && otherValueInt == 0) IS_NOT else null
         LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) IS_NOT else null
         else -> null
     } ?: eqOp.values.getOrNull(1) ?: eqOp.values.first()
