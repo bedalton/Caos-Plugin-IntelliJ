@@ -38,10 +38,11 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 ?: return
 
         val text = element.textWithoutCompletionIdString
-        if (text.isNotEmpty() && text.replace(IS_NUMBER, "").isEmpty()) {
+        if (text.isNotEmpty() && IS_NUMBER.matches(text)) {
             resultSet.stopHere()
             return
         }
+
         val previous = element.previous?.text
 
         // If previous is not whitespace and not square or double quote symbol, return
@@ -51,12 +52,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         val case = text.case
-
+        LOGGER.info("Getting completions for ${element.elementType}")
         // Add equality expression completions for known types
         val argument = element.getSelfOrParentOfType(CaosScriptArgument::class.java)
         (argument as? CaosScriptRvalue)?.let { expression ->
             // If has parent RValue, should continue with normal completion
-            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, argument)
+            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, variant, argument)
             // Else use special EQ expression completion
             (expression.parent as? CaosScriptEqualityExpressionPrime)?.let { equalityExpression ->
                 CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(variant, resultSet, case, equalityExpression, argument)
