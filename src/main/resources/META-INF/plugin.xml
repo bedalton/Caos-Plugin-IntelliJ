@@ -35,6 +35,15 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 0.01.95</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix bad subroutine resolution</li>
+          <li>Fix bad subroutine rename</li>
+          <li>Fix erroneous doif folding of 'agent ne 0' to 'agent is null' instead of 'agent is not null'</li>
+        </ul>
+      </li>
+      <li>
         <b>Version: 0.01.93</b><br/>
         <b>#Fixes</b>
         <ul>
