@@ -26,15 +26,13 @@ class CaosScriptHighlighterAnnotator : Annotator {
             element is CaosScriptByteString && !isAnimationByteString(element) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.BYTE_STRING)
             element is CaosScriptIsPrefixToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.PREFIX_TOKEN)
             element is CaosScriptIsSuffixToken -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUFFIX_TOKEN)
-            element is CaosScriptCGsub -> colorize(element.cKwGsub, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element is CaosScriptSubroutineName || element.parent is CaosScriptSubroutineName -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
             element.text.toLowerCase() == "inst" -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.KEYWORDS)
-            element.elementType == CaosScriptTypes.CaosScript_WORD -> if (element.hasParentOfType(CaosScriptErrorCommand::class.java))
-                colorize(element, wrapper, CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN)
-            else if (element.parent is CaosScriptCGsub)
-                colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
-            else
-                colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
+            element.elementType == CaosScriptTypes.CaosScript_WORD -> when {
+                element.hasParentOfType(CaosScriptErrorCommand::class.java) -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN)
+                element.parent is CaosScriptCGsub -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.SUBROUTINE_NAME)
+                else -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
+            }
         }
     }
 
