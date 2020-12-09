@@ -1,11 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptBodyElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
@@ -24,7 +22,7 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
             return false
         }
         if (myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)) {
-            return element.parent?.parent is CaosScriptSubroutine
+            return element.hasParentOfType(CaosScriptSubroutineHeader::class.java)
         }
         return false
     }
@@ -35,7 +33,7 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
         val name = myElement.name
         //if (resolvedElement == myElement)
           //  return null
-        return CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull {
+        return CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull { element ->
             myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
         } ?: myElement.getParentOfType(CaosScriptScriptElement::class.java)?.let { scriptElement ->
             PsiTreeUtil.collectElementsOfType(scriptElement, CaosScriptSubroutine::class.java)
