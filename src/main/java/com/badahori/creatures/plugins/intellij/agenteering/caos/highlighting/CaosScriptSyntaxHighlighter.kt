@@ -35,7 +35,6 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             in CaosScriptTokenSets.NUMBER_LITERALS -> NUMBER
             in CaosScriptTokenSets.KEYWORDS -> KEYWORDS
             CaosScriptTypes.CaosScript_WORD -> COMMAND_TOKEN
-            CaosScriptTypes.CaosScript_K_GSUB -> COMMAND_TOKEN
             in CaosScriptTokenSets.ALL_COMMANDS -> COMMAND_TOKEN
             CaosScriptTypes.CaosScript_EQ_OP_OLD_ -> EQ_OP_KEYWORD
             CaosScriptTypes.CaosScript_EQ_OP_NEW_ -> SYMBOL
