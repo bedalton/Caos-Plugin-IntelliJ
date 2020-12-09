@@ -1,32 +1,27 @@
-
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.library
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
-import com.intellij.openapi.vfs.VirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
-import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
+import com.intellij.openapi.vfs.VirtualFile
 import java.util.logging.Logger
 
 
 object CaosBundleSourcesRegistrationUtil {
 
-    private val LOGGER = Logger.getLogger("#"+ CaosBundleSourcesRegistrationUtil::class.java)
+    private val LOGGER = Logger.getLogger("#" + CaosBundleSourcesRegistrationUtil::class.java)
     private const val LIBRARY_NAME = "CaosDef-Std-Lib"
     private const val VERSION_TEXT_FILE_NAME = "version.txt"
+    private var registeredOnce = false
+    private var didSucceedOnce = false
 
-    fun register(module:Module?, project:Project) {
-
+    fun register(module: Module?, project: Project) {
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
                 register(module, project)
@@ -64,28 +59,40 @@ object CaosBundleSourcesRegistrationUtil {
     }
 
 */
-    private fun registerSourcesAsLibrary(project:Project) : Boolean {
+    private fun registerSourcesAsLibrary(project: Project): Boolean {
+        if (registeredOnce) {
+            return didSucceedOnce
+        }
         val rootModel = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
         val modifiableModel = rootModel.modifiableModel
         val libraryPath = libraryPath()
         // Check if library exists and needs no processing
-        if (modifiableModel.libraries.any { it.name == LIBRARY_NAME } && isSourceCurrent(libraryPath, modifiableModel))
-            return true
-
-        // Check if library is added properly
-        if (!addLibrary(modifiableModel)) {
+        didSucceedOnce = if (modifiableModel.libraries.any { it.name == LIBRARY_NAME } && isSourceCurrent(
+                libraryPath,
+                modifiableModel
+            )) {
+            true
+        } else if (!addLibrary(modifiableModel)) {
+            // Check if library is added properly
             modifiableModel.dispose()
             LOGGER.severe("Failed to add library to modifiable model")
-            return false
+            registeredOnce = true
+            false
+        } else {
+           true
         }
-        return true
+        registeredOnce = true
+        return didSucceedOnce
     }
 
-    private fun addLibrary(modifiableModel: ModifiableModel) : Boolean {
+    private fun addLibrary(modifiableModel: ModifiableModel): Boolean {
         val libraryPath = libraryPath()
-                ?: return false
-        val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
-                ?: modifiableModel.createLibrary(LIBRARY_NAME, CaosLibraryType.LIBRARY)
+            ?: return false
+        val library = cleanAndReturnLibrary(
+            modifiableModel = modifiableModel,
+            libraryPath = libraryPath.path
+        )
+            ?: modifiableModel.createLibrary(LIBRARY_NAME, CaosLibraryType.LIBRARY)
         val libModel = library.modifiableModel
         libModel.addRoot(libraryPath, OrderRootType.SOURCES)
         libModel.commit()
@@ -93,27 +100,29 @@ object CaosBundleSourcesRegistrationUtil {
         return true
     }
 
-    private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {
+    private fun isSourceCurrent(newLibraryPath: VirtualFile?, model: ModifiableModel): Boolean {
         val versionString = newLibraryPath?.findFileByRelativePath("version.txt")?.contents
-                ?: return false
+            ?: return false
         val oldVersionString = currentLibraryVersion(model)
-                ?: ""
+            ?: ""
         if (versionString.isEmpty())
             throw Exception("Caos definitions versions cannot be null")
         return versionString == oldVersionString
     }
 
 
-    private fun cleanAndReturnLibrary(modifiableModel: ModifiableModel) : Library? {
+    private fun cleanAndReturnLibrary(modifiableModel: ModifiableModel, libraryPath: String): Library? {
         val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return null
         oldLibrary.modifiableModel.removeRoot(BUNDLE_DEFINITIONS_FOLDER, OrderRootType.SOURCES)
+        oldLibrary.modifiableModel.removeRoot(libraryPath, OrderRootType.SOURCES)
         return oldLibrary
     }
 
-    private fun currentLibraryVersion(model:ModifiableModel) : String? {
+    private fun currentLibraryVersion(model: ModifiableModel): String? {
         return model.getLibraryByName(LIBRARY_NAME)
-                ?.getFiles(OrderRootType.SOURCES)
-                .orEmpty().firstOrNull { it.name == VERSION_TEXT_FILE_NAME }
-                ?.contents
+            ?.getFiles(OrderRootType.SOURCES)
+            .orEmpty()
+            .firstOrNull { it.name == VERSION_TEXT_FILE_NAME }
+            ?.contents
     }
 }
