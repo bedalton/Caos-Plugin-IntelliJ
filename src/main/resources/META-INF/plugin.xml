@@ -35,6 +35,14 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 0.01.96</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Values list completions not-working in scratch files or non-IDEA IDEs</li>
+          <li>Fixed indent problems with new lines preceeding a comment</li>
+        </ul>
+      </li>
+      <li>
         <b>Version: 0.01.95</b><br/>
         <b>#Fixes</b>
         <ul>
