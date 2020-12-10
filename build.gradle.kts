@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "0.01.95"
+version = "0.01.96"
 
 repositories {
     mavenCentral()
