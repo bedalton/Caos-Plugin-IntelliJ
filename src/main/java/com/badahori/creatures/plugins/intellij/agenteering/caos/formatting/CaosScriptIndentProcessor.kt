@@ -3,8 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
@@ -19,18 +19,13 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             ?: return Indent.getNoneIndent()
 
         // Handle indent if cursor is at block end (ie. NEXT, ENDI)
-        if (node.elementType in CaosScriptTokenSets.BLOCK_START_AND_ENDS) {
-            val cursor = element.editor?.caretModel?.offset
-                ?: -1
-            // Cursor is actually at token, not just some newline before end
-            if (abs(node.startOffset - cursor) <= 2) {
-                return Indent.getNoneIndent()
-            }
+        if (node.elementType in CaosScriptTokenSets.BLOCK_STARTS_AND_ENDS) {
+            return Indent.getNoneIndent()
         } else if (node.elementType == CaosScriptTypes.CaosScript_COMMENT) {
             val previousText = node.previous?.text
                 ?: return Indent.getAbsoluteNoneIndent()
-            when {
-                previousText.endsWith("\n") -> return Indent.getAbsoluteNoneIndent()
+            return when {
+                previousText.endsWith("\n") -> Indent.getAbsoluteNoneIndent()
                 else -> Indent.getNoneIndent()
             }
         } else if (element is CaosScriptCodeBlock) {
@@ -40,7 +35,8 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
                     is CaosScriptEventScript -> parentBlock.scriptTerminator != null
                     is CaosScriptInstallScript -> parentBlock.scriptTerminator != null
                     is CaosScriptRemovalScript -> parentBlock.scriptTerminator != null
-                    else -> false
+                    is CaosScriptMacro -> false
+                    else -> true
                 }
                 return if (indent)
                     Indent.getNormalIndent()
