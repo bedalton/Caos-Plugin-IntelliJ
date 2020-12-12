@@ -3,13 +3,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK_LINE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
@@ -19,14 +20,15 @@ import com.intellij.psi.formatter.common.AbstractBlock
 
 
 class CaosScriptBlock internal constructor(
-        node: ASTNode,
-        wrap: Wrap?,
-        alignment: Alignment?,
-        val settings: CommonCodeStyleSettings
+    node: ASTNode,
+    wrap: Wrap?,
+    alignment: Alignment?,
+    val settings: CommonCodeStyleSettings
 ) : AbstractBlock(node, wrap, alignment) {
 
     private val caosSettings by lazy {
-        CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(CaosScriptCodeStyleSettings::class.java)
+        CodeStyleSettingsManager.getSettings(node.psi.project)
+            .getCustomSettings(CaosScriptCodeStyleSettings::class.java)
     }
 
     private val spacingProcessor: CaosScriptSpacingProcessor by lazy {
@@ -42,10 +44,10 @@ class CaosScriptBlock internal constructor(
         while (child != null) {
             if (child.elementType !in CaosScriptTokenSets.WHITESPACES && child.text.isNotBlank()) {
                 val block: Block = CaosScriptBlock(
-                        child,
-                        NONE_WRAP,
-                        Alignment.createAlignment(),
-                        settings
+                    child,
+                    NONE_WRAP,
+                    Alignment.createAlignment(),
+                    settings
                 )
                 blocks.add(block)
             }
@@ -58,16 +60,18 @@ class CaosScriptBlock internal constructor(
         if (!caosSettings.indentBlocks) {
             return noneIndent
         }
-        val elementType = myNode.elementType
-        val canIndent = elementType == CaosScript_CODE_BLOCK_LINE
-                || myNode.treeParent?.elementType == CaosScript_CODE_BLOCK_LINE
-        if (canIndent || myNode.psi is CaosScriptHasCodeBlock) {
-            val isChildElement = myNode.psi.getSelfOrParentOfType(CaosScriptCodeBlock::class.java)
-                    ?.let { it !is CaosScriptMacro && it !is CaosScriptEventScript }
-                    .orFalse()
-            if (isChildElement) {
-                return normalIndent
-            }
+
+        val codeBlock = myNode.psi as? CaosScriptCodeBlock
+            ?: return if (myNode.psi.parent !is CaosScriptCodeBlock)
+                normalIndent
+            else
+                noneIndent
+
+        (codeBlock.parent as? CaosScriptScriptElement)?.let {scriptParent ->
+            return if (scriptParent is CaosScriptMacro || (scriptParent is CaosScriptEventScript && scriptParent.scriptTerminator == null))
+                noneIndent
+            else
+                normalIndent
         }
         return noneIndent
     }
