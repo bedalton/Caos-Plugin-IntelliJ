@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
@@ -1937,3 +1938,5 @@ fun getDepth(element: PsiElement): Int {
     }
     return depth
 }
+
+val ASTNode.endOffset:Int get() = textRange.endOffset
