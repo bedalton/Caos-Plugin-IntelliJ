@@ -15,7 +15,7 @@ internal data class CaosVariantData(
         val vars: CaosVarConstraints,
         val commands: Map<String, Int>,
         val lvalues: Map<String, Int>,
-        val rvalues: Map<String, Int>,
+        val rvalues: Map<String, Map<Int,Int>>,
         val valuesListsIds:List<Int> = listOf()
 ) {
     val isOld: Boolean by lazy {
@@ -66,7 +66,7 @@ internal data class CaosVarConstraints(
 @Serializable
 internal data class CaosLibDefinitions(
         val modDate:Long,
-        val commands: Map<String, CaosCommand>,
+        val commands: Map<String,CaosCommand>,
         val variantMap: Map<String, CaosVariantData>,
         val valuesLists: Map<String, CaosValuesList>
 )
