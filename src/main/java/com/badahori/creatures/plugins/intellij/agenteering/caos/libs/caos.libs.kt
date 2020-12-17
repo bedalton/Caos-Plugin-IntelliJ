@@ -1,26 +1,25 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosLibException
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 
 
+typealias ReturnTypeId = Int
+typealias CommandId = Int
+
 /**
  * Interface marking a class as having an get operator
  */
-interface CommandGetter {
+internal interface CommandGetter {
     operator fun get(tokenString: String, bias: CaosExpressionValueType = CaosExpressionValueType.ANY): CaosCommand?
 }
 
 /**
  * Makes a list of CaosCommands queryable by token
  */
-private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<String, Int>) : CommandGetter {
+private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<String, CommandId>) : CommandGetter {
     private val map = mapCommands(commands, tokenIds)
 
     /**
@@ -30,22 +29,59 @@ private class CaosCommandMap(commands: Map<String, CaosCommand>, tokenIds: Map<S
      */
     override operator fun get(tokenString: String, bias: CaosExpressionValueType): CaosCommand? {
         val token = normalize(tokenString)
-                ?: return null
-        // Find list of sub tokens for a given token
+            ?: return null
         return map[token]
+    }
+}
+/**
+ * Makes a list of CaosCommands queryable by token
+ */
+private class CaosCommandMapWithReturnType(commands: Map<String, CaosCommand>, tokenIds: Map<String, Map<ReturnTypeId,CommandId>>) : CommandGetter {
+    private val map = mapCommandsWithReturnType(commands, tokenIds)
+
+    /**
+     * Gets a command definition given a word token as int and a token stream
+     * Token stream is required to read more tokens if need be
+     * Bias is required for special processing of TRAN
+     */
+    override operator fun get(tokenString: String, bias: CaosExpressionValueType): CaosCommand? {
+        val token = normalize(tokenString)
+            ?: return null
+        // Find list of sub tokens for a given token
+        val mapped = map.filter { (key, _) ->
+            key.first == token
+        }.ifEmpty { null }
+            ?: return null
+        return mapped.filter { it.key.second == bias.value }.values.firstOrNull() ?: mapped.values.firstOrNull()
     }
 }
 
 /**
  * Transforms a list of CAOS commands into a map for use in a CAOS command map object
  */
+private fun mapCommandsWithReturnType(
+    commands: Map<String, CaosCommand>,
+    tokenIds: Map<String, Map<ReturnTypeId,CommandId>>
+): Map<Pair<String, ReturnTypeId>, CaosCommand> {
+    val map:List<Pair<Pair<String, Int>, CaosCommand>> = tokenIds.flatMap flatMap@{ (commandString:String, commandIds:Map<Int,Int>) ->
+        val tokenString = normalize(commandString)
+            ?: return@flatMap emptyList()
+        commandIds.mapNotNull { (returnTypeId:ReturnTypeId, commandId:CommandId) ->
+            commands["$commandId"]?.let { command ->
+                Pair(tokenString, returnTypeId) to command
+            }
+        }
+    }
+    return map.toMap()
+}
+
 private fun mapCommands(
-        commands: Map<String, CaosCommand>,
-        tokenIds: Map<String, Int>
+    commands: Map<String, CaosCommand>,
+    tokenIds: Map<String, Int>
 ): Map<String, CaosCommand> {
     return tokenIds.mapNotNull map@{ (commandStringIn, commandId) ->
         val commandString = normalize(commandStringIn)
-                ?: return@map null
+            ?: return@map null
         commands["$commandId"]?.let { command ->
             commandString to command
         }
@@ -56,19 +92,21 @@ private fun mapCommands(
  * A queryable CAOS lib object
  */
 @Suppress("unused")
-class CaosLib internal constructor(private val lib: CaosLibDefinitions, val variant: CaosVariantData) {
+internal class CaosLib internal constructor(private val lib: CaosLibDefinitions, val variant: CaosVariantData) {
 
     /**
      * Rvalue definitions getter
      */
-    val rvalue: CommandGetter = CaosCommandMap(lib.commands, variant.rvalues)
+    val rvalue: CommandGetter = CaosCommandMapWithReturnType(lib.commands, variant.rvalues)
 
     /**
      * List of all RValues in this variant
      */
     val rvalues: List<CaosCommand> by lazy {
 
-        val rvalueCommandIds = variant.rvalues.values
+        val rvalueCommandIds = variant.rvalues.values.flatMap { returnTypeIdMap ->
+            returnTypeIdMap.values
+        }
         lib.commands.values.filter { command ->
             command.id in rvalueCommandIds
         }
@@ -106,7 +144,7 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
     }
 
     val allCommands: Collection<CaosCommand> by lazy {
-        val commandIds = variant.rvalues.values + variant.lvalues.values + variant.commands.values
+        val commandIds = variant.rvalues.values.flatMap { it.values } + variant.lvalues.values + variant.commands.values
         lib.commands.values.filter { command ->
             command.id in commandIds
         }
@@ -168,7 +206,7 @@ class CaosLib internal constructor(private val lib: CaosLibDefinitions, val vari
 /**
  * Holder object to fetch and store the variant Libs
  */
-object CaosLibs {
+internal object CaosLibs {
     private val libs = mutableMapOf<String, CaosLib>()
 
     val valuesList: HasGetter<Int, CaosValuesList?> = object : HasGetter<Int, CaosValuesList?> {
@@ -210,22 +248,22 @@ object CaosLibs {
             return it
         }
         val variant = universalLib.variantMap[variantCode]
-                ?: throw CaosLibException("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
+            ?: throw Exception("Invalid variant: '$variantCode' encountered. Known variants are: ${universalLib.variantMap.keys}")
         val lib = CaosLib(universalLib, variant)
         libs[variantCode] = lib
         return lib
     }
 }
 
-interface HasLib {
+internal interface HasLib {
     var caosLib: CaosLib
 }
 
 private fun normalize(commandString: String?): String? {
     return commandString
-            .nullIfUndefOrBlank()
-            ?.toUpperCase()
-            ?.replace("\\s\\s+".toRegex(), " ")
+        .nullIfUndefOrBlank()
+        ?.toUpperCase()
+        ?.replace("\\s\\s+".toRegex(), " ")
 }
 
 enum class EqOp(val commonName: String, vararg val values: String) {

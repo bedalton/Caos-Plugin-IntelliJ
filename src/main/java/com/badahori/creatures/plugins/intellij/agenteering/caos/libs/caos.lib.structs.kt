@@ -2,7 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -20,7 +19,7 @@ data class CaosVariantData(
         val vars: CaosVarConstraints,
         val commands: Map<String, Int>,
         val lvalues: Map<String, Int>,
-        val rvalues: Map<String, Int>,
+        val rvalues: Map<String, Map<Int,Int>>,
         val valuesListsIds:List<Int> = listOf()
 ) {
     val isOld: Boolean by lazy {
@@ -71,7 +70,7 @@ data class CaosVarConstraints(
 @Serializable
 data class CaosLibDefinitions(
         val modDate:Long,
-        val commands: Map<String, CaosCommand>,
+        val commands: Map<String,CaosCommand>,
         val variantMap: Map<String, CaosVariantData>,
         val valuesLists: Map<String, CaosValuesList>
 )
