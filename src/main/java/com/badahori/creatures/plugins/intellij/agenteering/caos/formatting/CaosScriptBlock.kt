@@ -61,18 +61,27 @@ class CaosScriptBlock internal constructor(
             return noneIndent
         }
 
-        val codeBlock = myNode.psi as? CaosScriptCodeBlock
-            ?: return if (myNode.psi.parent !is CaosScriptCodeBlock)
-                normalIndent
-            else
-                noneIndent
+        LOGGER.info("MyNode: ${myNode.elementType}")
 
-        (codeBlock.parent as? CaosScriptScriptElement)?.let {scriptParent ->
-            return if (scriptParent is CaosScriptMacro || (scriptParent is CaosScriptEventScript && scriptParent.scriptTerminator == null))
+        val psi = myNode.psi
+        if (psi is CaosScriptHasCodeBlock)
+            return if (psi is CaosScriptScriptElement && psi.scriptTerminator == null)
                 noneIndent
             else
                 normalIndent
+        if (psi is CaosScriptCodeBlock) {
+            return normalIndent
         }
+
+        // Needs to check if my node is a DoifStatement parent
+        // Because the end of any child (internal doif block, elif, else) end before the ENDI,
+        // meaning the last line would never be indented
+        if (psi is CaosScriptDoifStatement)
+            return normalIndent
+        if (psi is CaosScriptCodeBlockLine)
+            return normalIndent
+        if (psi.elementType in CaosScriptTokenSets.WHITESPACES)
+            return normalIndent
         return noneIndent
     }
 

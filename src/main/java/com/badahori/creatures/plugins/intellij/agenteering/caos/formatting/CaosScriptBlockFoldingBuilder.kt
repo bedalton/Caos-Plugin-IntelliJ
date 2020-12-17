@@ -1,11 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -34,29 +34,49 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
      * Gets placeholder text, for now it is simply ellipsis
      */
     override fun getPlaceholderText(node: ASTNode): String? {
-        return if (node.elementType == CaosScriptTypes.CaosScript_CODE_BLOCK) "..." else null
+        return if (node.elementType.let { it == CaosScriptTypes.CaosScript_CODE_BLOCK || it == CaosScriptTypes.CaosScript_DOIF_STATEMENT }) "..." else null
     }
 
     /**
      * Gets folding regions for all code blocks in the given element
      */
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
-        return PsiTreeUtil.findChildrenOfType(root, CaosScriptHasCodeBlock::class.java).mapNotNull blocks@{ parent ->
+        return (PsiTreeUtil.findChildrenOfType(root, CaosScriptHasCodeBlock::class.java).mapNotNull blocks@{ parent ->
+
+            (parent.parent as? CaosScriptDoifStatement)?.let {doif->
+                // If doif has no sub code blocks,
+                // defer collapsing to the doif specific method
+                if (doif.elseIfStatementList.isEmpty() && (doif.elseStatement?.codeBlock?.codeBlockLineList?.firstOrNull() == null))
+                    return@blocks null
+            }
             ProgressIndicatorProvider.checkCanceled()
             val group = FoldingGroup.newGroup("CaosScript_BLOCK_FOLDING")
-            val codeBlock = parent.codeBlock ?: return@blocks null // If block is empty, there is nothing to fold
-            val rangeStart = getBlockStart(codeBlock)
+            val codeBlock = parent.codeBlock
+                ?: return@blocks null // If block is empty, there is nothing to fold
+            // Determine whether to start fold at end of start expression, or start of
+            val startAtNextLine = parent is CaosScriptDoifStatementStatement
+            val rangeStart = getBlockStart(codeBlock, startAtNextLine)
             val rangeEnd = getBlockEnd(codeBlock)
             if (rangeStart < 0 || rangeStart >= rangeEnd)
                 return@blocks null
             FoldingDescriptor(parent.node, TextRange(rangeStart, rangeEnd), group)
-        }.toTypedArray()
+        } + PsiTreeUtil.findChildrenOfType(root, CaosScriptDoifStatement::class.java).mapNotNull {doif ->
+            doif.doifStatementStatement.equalityExpression?.endOffset?.let { foldStart ->
+                val foldEnd = doif.cEndi?.startOffset ?: doif.endOffset
+                FoldingDescriptor(doif.node, TextRange(foldStart, foldEnd))
+            }
+        }).toTypedArray()
     }
 
     /**
      * Gets block start by consuming all previous whitespace elements
      */
-    private fun getBlockStart(codeBlock: CaosScriptCodeBlock): Int {
+    private fun getBlockStart(codeBlock: CaosScriptCodeBlock, startAtNextLine:Boolean): Int {
+        if (startAtNextLine) {
+            codeBlock.codeBlockLineList.firstOrNull()?.startOffset?.let {
+                return it
+            }
+        }
         var previous = codeBlock.previous
         while (previous != null) {
             ProgressIndicatorProvider.checkCanceled()
@@ -67,6 +87,9 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
                 break
         }
         return if (consume(previous))
+            // This starts fold at start of last leading whitespace,
+            // TODO: perhaps this should be at end of last leading whitespace
+                //// this though would push it the start down to the next line which may not be what we want
             previous.startOffset
         else
             codeBlock.startOffset
