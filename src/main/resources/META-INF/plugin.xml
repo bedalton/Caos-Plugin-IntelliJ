@@ -39,7 +39,9 @@
         <b>#Fixes</b>
         <ul>
           <li>Values list completions not-working in scratch files or non-IDEA IDEs</li>
-          <li>Fixed indent problems with new lines preceeding a comment</li>
+          <li>Fix indent problems with new lines preceding a comment</li>
+          <li>Fix false positives on Creature OWNR inspection</li>
+          <li>Fix bad command information caching.</li>
         </ul>
       </li>
       <li>
