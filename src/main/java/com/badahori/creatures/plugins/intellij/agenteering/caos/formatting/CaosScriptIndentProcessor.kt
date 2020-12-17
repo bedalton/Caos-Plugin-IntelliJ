@@ -28,21 +28,17 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
                 previousText.endsWith("\n") -> Indent.getAbsoluteNoneIndent()
                 else -> Indent.getNoneIndent()
             }
-        } else if (element is CaosScriptCodeBlock) {
-            val parentBlock = element.parent
-            if (parentBlock is CaosScriptScriptElement) {
-                val indent = when (parentBlock) {
-                    is CaosScriptEventScript -> parentBlock.scriptTerminator != null
-                    is CaosScriptInstallScript -> parentBlock.scriptTerminator != null
-                    is CaosScriptRemovalScript -> parentBlock.scriptTerminator != null
-                    is CaosScriptMacro -> false
-                    else -> true
-                }
-                return if (indent)
-                    Indent.getNormalIndent()
-                else
-                    Indent.getNoneIndent()
+        } else if (element is CaosScriptCodeBlockLine) {
+            (element.parent?.parent as? CaosScriptScriptElement)?.let {
+                return getIndent(it)
             }
+            return Indent.getNormalIndent()
+        } else if (element is CaosScriptCodeBlock) {
+            if (element.firstChild?.firstChild?.firstChild is CaosScriptComment) {
+                return Indent.getNormalIndent()
+            }
+            return Indent.getNoneIndent()
+        } else if (node.elementType in CaosScriptTokenSets.WHITESPACES) {
             return Indent.getNormalIndent()
         }
 
@@ -53,4 +49,18 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
         private val afterNewlineRegex = ".*\n$".toRegex()
         private val spacesBeforeRegex = ".*[ ]$".toRegex()
     }
+}
+
+private fun getIndent(parentBlock:CaosScriptScriptElement) : Indent {
+    val indent = when (parentBlock) {
+        is CaosScriptEventScript -> parentBlock.scriptTerminator != null
+        is CaosScriptInstallScript -> parentBlock.scriptTerminator != null
+        is CaosScriptRemovalScript -> parentBlock.scriptTerminator != null
+        is CaosScriptMacro -> false
+        else -> true
+    }
+    return if (indent)
+        Indent.getNormalIndent()
+    else
+        Indent.getNoneIndent()
 }
