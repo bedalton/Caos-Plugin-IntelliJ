@@ -38,6 +38,17 @@
         <b>Version: 0.01.96</b><br/>
         <b>#Fixes</b>
         <ul>
+          <li>Fix accidental indent on Macro newline</li>
+        </ul>
+        <b>#Additions</b>
+        <ul>
+          <li>Added experimental ATT file editing view. (Can be disabled in settings)</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.96</b><br/>
+        <b>#Fixes</b>
+        <ul>
           <li>Values list completions not-working in scratch files or non-IDEA IDEs</li>
           <li>Fix indent problems with new lines preceding a comment</li>
           <li>Fix false positives on Creature OWNR inspection</li>
@@ -619,9 +630,32 @@
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
     /-->
 
+
     <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
 
-    <!-- Virtual File System -->
+
+    <!-- =========================== -->
+    <!-- ====== ATT Files ======= -->
+    <!-- =========================== -->
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider" />
+
+    <fileType name="ATTFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType"
+              fieldName="INSTANCE"
+              language="Att"
+              extensions="att"
+    />
+
+    <lang.parserDefinition
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParserDefinition"
+        language="Att"
+    />
+
+
+    <!-- =========================== -->
+    <!-- === Virtual File System  == -->
+    <!-- =========================== -->
     <virtualFileSystem
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
         key="caosvfs"

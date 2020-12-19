@@ -20,7 +20,7 @@ dependencies {
 
 }
 sourceSets.main {
-    java.srcDirs("src/main/java", "gen")
+    java.srcDirs("src/main/java", "gen", "src/main/gen")
 }
 
 java {
