@@ -63,7 +63,10 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
         } + PsiTreeUtil.findChildrenOfType(root, CaosScriptDoifStatement::class.java).mapNotNull {doif ->
             doif.doifStatementStatement.equalityExpression?.endOffset?.let { foldStart ->
                 val foldEnd = doif.cEndi?.startOffset ?: doif.endOffset
-                FoldingDescriptor(doif.node, TextRange(foldStart, foldEnd))
+                if (foldStart >= foldEnd)
+                    FoldingDescriptor(doif.node, TextRange(foldStart, foldEnd))
+                else
+                    null
             }
         }).toTypedArray()
     }
