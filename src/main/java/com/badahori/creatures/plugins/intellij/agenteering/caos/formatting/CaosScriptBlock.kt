@@ -69,7 +69,7 @@ class CaosScriptBlock internal constructor(
                 noneIndent
             else
                 normalIndent
-        if (psi is CaosScriptCodeBlock) {
+        if (psi is CaosScriptCodeBlock && (psi.parent as? CaosScriptScriptElement)?.let { it !is CaosScriptMacro && it.scriptTerminator != null}.orFalse()) {
             return normalIndent
         }
 
