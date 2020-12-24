@@ -15,12 +15,12 @@ import java.awt.Dimension
 
 
 private val colors = listOf(
-    JBColor.WHITE,
-    JBColor.GREEN,
-    JBColor.CYAN,
-    JBColor.MAGENTA,
-    JBColor.ORANGE,
-    JBColor.PINK
+    Color.YELLOW,
+    Color.GREEN,
+    Color.CYAN,
+    Color.MAGENTA,
+    Color(47,170, 240),
+    Color.PINK
 )
 
 
@@ -43,7 +43,7 @@ internal class AttSpriteCellComponent() : JPanel() {
         this.border = BorderFactory.createEmptyBorder(5, 16, 10, 5)
     }
 
-    internal fun update(scale: Double, value: AttSpriteCellData) {
+    internal fun update(labels:Boolean, scale: Double, value: AttSpriteCellData) {
         removeAll()
         this.add(JLabel("${value.index}."))
         val imageValue = value.image
@@ -70,24 +70,27 @@ internal class AttSpriteCellComponent() : JPanel() {
                 g.drawImage(image, 0, 0, this)
                 val g2 = g as Graphics2D
                 scaledPoints.forEachIndexed { index, point ->
-                    val label: String = value.pointNames.getOrNull(index) ?: "Point: $index"
+                    val label: String = if (labels)
+                        value.pointNames.getOrNull(index)?.let { name -> "${index + 1}: $name" } ?: "Point $index"
+                    else
+                        "${index+1}"
                     g2.color = colors[index]
                     if (scaledFont == null)
                         scaledFont = g2.font.deriveFont(8)
                     g2.font = scaledFont!!
                     g2.drawString(label, point.first + 4, point.second + 4)
                 }
-                g2.stroke = BasicStroke(2.0f)
+                g2.stroke = BasicStroke(maxOf(0.8f * scale.toFloat(), 2.0f))
                 scaledPoints.forEachIndexed { index, point ->
                     g2.color = colors[index]
                     g2.drawLine(point.first, point.second, point.first, point.second)
                 }
             }
         }.apply {
-            val imageDimension = Dimension(width.toInt() + 50, height.toInt())
+            val imageDimension = Dimension(width.toInt() + 50, height.toInt() + 40)
             size = imageDimension
             preferredSize = imageDimension
-            minimumSize = Dimension(width.toInt() + 50, height.toInt())
+            minimumSize = imageDimension
             background = Color.BLACK;
         }
         val dimension = Dimension(width.toInt() + 120, height.toInt() + 40)
@@ -101,7 +104,6 @@ internal class AttSpriteCellComponent() : JPanel() {
                     return
                 val point = e.point
                 if (!canvas.contains(point)) {
-                    LOGGER.info("Canvas does not contain point at: (${point.x}, ${point.y})")
                     return
                 }
                 if (e.button == MouseEvent.BUTTON1) {
@@ -109,17 +111,15 @@ internal class AttSpriteCellComponent() : JPanel() {
                     val y = (e.y / scale).toInt()
 
                     if (imageValue.width < x || imageValue.height < y) {
-                        LOGGER.info("Clicked outside of image at range: (${point.x}, ${point.y})")
                         return
                     }
                     value.onPlace(Pair(x, y))
-                    LOGGER.info("Clicked image at ($x,$y)")
-                } else {
-                    LOGGER.info("Did not click with left mouse button")
                 }
             }
         })
         add(canvas)
+        revalidate()
+        repaint()
     }
 }
 
@@ -130,7 +130,8 @@ internal class AttSpriteCellList(
     private var listItems: List<AttSpriteCellData>,
     private var scale: Double = 1.0,
     var maxWidth: Int = 300,
-    var maxHeight: Int = 300
+    var maxHeight: Int = 300,
+    var labels:Boolean = true
 ) : JPanel() {
 
     private val pool: MutableList<AttSpriteCellComponent> = mutableListOf()
@@ -186,7 +187,7 @@ internal class AttSpriteCellList(
 
     private fun setCell(value: AttSpriteCellData, index: Int) {
         val panel = get(index)
-        panel.update(scale, value)
+        panel.update(labels, scale, value)
     }
 }
 

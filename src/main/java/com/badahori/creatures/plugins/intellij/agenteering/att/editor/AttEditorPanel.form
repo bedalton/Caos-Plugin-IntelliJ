@@ -2,30 +2,16 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel">
   <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="707" height="400"/>
+      <xy x="20" y="20" width="837" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <scrollpane id="cba0e">
+      <scrollpane id="cba0e" binding="scrollPane" custom-create="true">
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
-        <children>
-          <scrollpane id="2b622">
-            <constraints/>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <grid id="9f5e8" binding="display" custom-create="true" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints/>
-                <properties/>
-                <border type="none"/>
-                <children/>
-              </grid>
-            </children>
-          </scrollpane>
-        </children>
+        <children/>
       </scrollpane>
       <grid id="b651a" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints border-constraint="North"/>
@@ -45,11 +31,47 @@
                 <item value="C1"/>
                 <item value="C2"/>
                 <item value="CV"/>
-                <item value="C3/DS"/>
+                <item value="C3+"/>
               </model>
             </properties>
           </component>
           <component id="35ff" class="javax.swing.JSeparator">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="c3245" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Part"/>
+            </properties>
+          </component>
+          <component id="e5029" class="javax.swing.JComboBox" binding="part">
+            <constraints/>
+            <properties>
+              <editable value="false"/>
+              <enabled value="true"/>
+              <model>
+                <item value="A"/>
+                <item value="B"/>
+                <item value="C"/>
+                <item value="D"/>
+                <item value="E"/>
+                <item value="F"/>
+                <item value="G"/>
+                <item value="H"/>
+                <item value="I"/>
+                <item value="J"/>
+                <item value="K"/>
+                <item value="L"/>
+                <item value="M"/>
+                <item value="M"/>
+                <item value="O"/>
+                <item value="P"/>
+                <item value="Q"/>
+              </model>
+            </properties>
+          </component>
+          <component id="35d0c" class="javax.swing.JSeparator">
             <constraints/>
             <properties/>
           </component>
@@ -95,41 +117,16 @@
               <text value="6"/>
             </properties>
           </component>
+          <component id="6b4d" class="javax.swing.JCheckBox" binding="labels">
+            <constraints/>
+            <properties>
+              <selected value="true"/>
+              <text value="Labels"/>
+            </properties>
+          </component>
           <component id="87f6e" class="javax.swing.JSeparator">
             <constraints/>
             <properties/>
-          </component>
-          <component id="c3245" class="javax.swing.JLabel">
-            <constraints/>
-            <properties>
-              <text value="Part"/>
-            </properties>
-          </component>
-          <component id="e5029" class="javax.swing.JComboBox" binding="part">
-            <constraints/>
-            <properties>
-              <editable value="false"/>
-              <enabled value="true"/>
-              <model>
-                <item value="A"/>
-                <item value="B"/>
-                <item value="C"/>
-                <item value="D"/>
-                <item value="E"/>
-                <item value="F"/>
-                <item value="G"/>
-                <item value="H"/>
-                <item value="I"/>
-                <item value="J"/>
-                <item value="K"/>
-                <item value="L"/>
-                <item value="M"/>
-                <item value="M"/>
-                <item value="O"/>
-                <item value="P"/>
-                <item value="Q"/>
-              </model>
-            </properties>
           </component>
           <component id="fb5c3" class="javax.swing.JLabel">
             <constraints/>
