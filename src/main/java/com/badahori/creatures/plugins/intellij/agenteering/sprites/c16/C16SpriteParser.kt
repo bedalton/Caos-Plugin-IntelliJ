@@ -74,7 +74,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
     private fun decode(bytes:ByteBuffer, offset:Long) : BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
-        val image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {
             var x = 0
             while (x < width) {
