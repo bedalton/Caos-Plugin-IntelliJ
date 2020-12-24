@@ -11,7 +11,7 @@ import javax.xml.bind.DatatypeConverter
 
 
 fun BufferedImage.createTransformed(at: AffineTransform) : BufferedImage {
-    val newImage = UIUtil.createImage(
+    val newImage = BufferedImage(
             width, height,
             BufferedImage.TYPE_INT_ARGB)
     val g = newImage.createGraphics()
@@ -30,7 +30,7 @@ fun BufferedImage.flipVertical() : BufferedImage? {
 fun BufferedImage.flipHorizontal() : BufferedImage? {
     val at = AffineTransform()
     at.concatenate(AffineTransform.getScaleInstance(-1.0, 1.0))
-    at.concatenate(AffineTransform.getTranslateInstance(0.0, -height.toDouble()))
+    at.concatenate(AffineTransform.getTranslateInstance(-width.toDouble(), 0.0))
     return createTransformed(at)
 }
 

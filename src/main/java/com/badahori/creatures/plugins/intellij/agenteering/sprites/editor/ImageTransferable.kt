@@ -12,10 +12,10 @@ internal class ImageTransferable(private val imageTransferItem: ImageTransferIte
     /**
      * Alternate constructor for raw parts
      */
-    constructor(name: String, image: BufferedImage) : this(ImageTransferItem(name, image))
+    constructor(name: String, image: BufferedImage?) : this(ImageTransferItem(name, image))
 
     @Throws(UnsupportedFlavorException::class)
-    override fun getTransferData(flavor: DataFlavor): Any {
+    override fun getTransferData(flavor: DataFlavor): Any? {
         return when (flavor) {
             DataFlavor.javaFileListFlavor -> fileList
             DataFlavor.imageFlavor -> imageTransferItem.image

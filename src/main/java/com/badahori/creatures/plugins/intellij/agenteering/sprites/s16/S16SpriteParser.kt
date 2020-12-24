@@ -87,7 +87,7 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
 
     /*private fun decode(bytesBuffer: ByteBuffer, position:Int, encoding: ColorEncoding, width:Int, height:Int) : BufferedImage? {
         bytesBuffer.position(position)
-        val image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val color = SpriteColorUtil.getColor(bytesBuffer.uInt16, encoding)
