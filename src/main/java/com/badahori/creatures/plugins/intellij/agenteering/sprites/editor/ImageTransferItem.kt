@@ -6,14 +6,15 @@ import java.io.File
 import java.nio.file.Files
 
 interface HasImage {
-    val image:BufferedImage
+    val image:BufferedImage?
 }
 
-internal data class ImageTransferItem(internal val fileName:String, override val image: BufferedImage) : HasImage {
+internal data class ImageTransferItem(internal val fileName:String, override val image: BufferedImage?) : HasImage {
     internal val file: File by lazy {
         val tempDirectory = Files.createTempDirectory(null).toFile()
         File(tempDirectory.path + File.separator + fileName).apply {
-            if (!exists()) {writeBytes(image.toPngByteArray())
+            if (!exists()) {
+                writeBytes(image?.toPngByteArray() ?: ByteArray(0))
                 createNewFile()
             }
         }

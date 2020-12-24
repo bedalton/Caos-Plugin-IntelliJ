@@ -10,7 +10,7 @@ internal class ImageListTransferable(private val items: List<ImageTransferItem>)
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
     @Throws(UnsupportedFlavorException::class)
-    override fun getTransferData(flavor: DataFlavor): Any {
+    override fun getTransferData(flavor: DataFlavor): Any? {
         return when (flavor) {
             DataFlavor.javaFileListFlavor -> fileList
             DataFlavor.imageFlavor -> items.first().image
