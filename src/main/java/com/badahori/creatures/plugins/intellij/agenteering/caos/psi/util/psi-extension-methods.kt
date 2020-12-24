@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.psi.PsiElement
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -10,7 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 /**
  * Helper val to get element type for PSIElement
  */
-val PsiElement.elementType: IElementType get() = node.elementType
+val PsiElement.elementType: IElementType get() = node?.elementType ?: TokenType.DUMMY_HOLDER
 
 
 /**

@@ -49,6 +49,7 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
                 if (doif.elseIfStatementList.isEmpty() && (doif.elseStatement?.codeBlock?.codeBlockLineList?.firstOrNull() == null))
                     return@blocks null
             }
+
             ProgressIndicatorProvider.checkCanceled()
             val group = FoldingGroup.newGroup("CaosScript_BLOCK_FOLDING")
             val codeBlock = parent.codeBlock
@@ -62,11 +63,13 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
             FoldingDescriptor(parent.node, TextRange(rangeStart, rangeEnd), group)
         } + PsiTreeUtil.findChildrenOfType(root, CaosScriptDoifStatement::class.java).mapNotNull {doif ->
             doif.doifStatementStatement.equalityExpression?.endOffset?.let { foldStart ->
+                if (doif.cEndi == null)
+                    return@let null
                 val foldEnd = doif.cEndi?.startOffset ?: doif.endOffset
                 if (foldStart >= foldEnd)
-                    FoldingDescriptor(doif.node, TextRange(foldStart, foldEnd))
-                else
                     null
+                else
+                    FoldingDescriptor(doif.node, TextRange(foldStart, foldEnd))
             }
         }).toTypedArray()
     }
