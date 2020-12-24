@@ -11,6 +11,7 @@ public interface CaosScriptIcons {
     Icon CAOS_FILE_ICON = IconLoader.getIcon("/icons/caos-script-file-icon.png");
     Icon CAOS_DEF_FILE_ICON = IconLoader.getIcon("/icons/caos-def-file-icon.png");
     Icon COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.png");
+    Icon ATT_FILE_ICON = IconLoader.getIcon("/icons/att-file-icon.png");
     Icon C1_COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.png");
     Icon C2_COB_FILE_ICON = IconLoader.getIcon("/icons/c2-cob-file-icon.png");
     Icon SFC_FILE_ICON = IconLoader.getIcon("/icons/sfc-file-icon.png");
