@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import java.awt.Image
-import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.Transferable
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
@@ -11,7 +10,7 @@ import javax.swing.TransferHandler
 /**
  * Transfer handle to allow copying files outside of the Sprite image list view
  */
-internal class SpriteTransferHandler(private val fileName: String, private val image: BufferedImage) : TransferHandler() {
+internal class SpriteTransferHandler(private val fileName: String, private val image: BufferedImage?) : TransferHandler() {
     constructor(imageTransferItem: ImageTransferItem) : this(imageTransferItem.fileName, imageTransferItem.image)
     val imageTransferable by lazy {
         ImageTransferable(fileName, image)
@@ -37,7 +36,7 @@ internal class SpriteTransferHandler(private val fileName: String, private val i
         return COPY_OR_MOVE
     }
 
-    override fun getDragImage(): Image {
+    override fun getDragImage(): Image? {
         return image
     }
 }
