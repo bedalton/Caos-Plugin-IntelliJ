@@ -1,8 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipHorizontal
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
@@ -12,6 +16,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import java.awt.image.BufferedImage
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -26,17 +31,20 @@ internal class AttEditorImpl(
 ) : UserDataHolderBase(), FileEditor {
     private val myFile: VirtualFile = file
     private var myProject: Project? = project
-    private val variant:CaosVariant?
+    private val variant: CaosVariant?
 
+    private lateinit var panel: AttEditorPanel
 
     init {
         variant = getInitialVariant(null, file)
     }
 
-    private fun getInitialVariant(project: Project?, file: VirtualFile) : CaosVariant? {
+    private fun getInitialVariant(project: Project?, file: VirtualFile): CaosVariant {
         val breed = file.name.substring(3, 4)
-        val part = file.name.substring(0,1)
-        return file.cachedVariant ?: if (breed.toIntSafe()?.let { it >= 0 && it <= 7}.orFalse()) {
+        val part = file.name.substring(0, 1)
+        if (part likeAny listOf("O","P", "Q"))
+            return CaosVariant.CV
+        return file.cachedVariant ?: if (breed.toIntSafe()?.let { it in 0..7 }.orFalse()) {
             CaosVariant.C1
         } else if (project != null) {
             file.getModule(project)?.variant
@@ -46,8 +54,8 @@ internal class AttEditorImpl(
         } ?: getVariantByAttLengths(file, part)
     }
 
-    private fun getVariantByAttLengths(file:VirtualFile, part:String) : CaosVariant {
-        val contents = file.contents
+    private fun getVariantByAttLengths(file: VirtualFile, part: String): CaosVariant {
+        val contents = file.contents.trim()
         val lines = contents.split("[\r\n]+".toRegex())
         if (lines.size == 16) {
             if (part like "a") {
@@ -64,7 +72,8 @@ internal class AttEditorImpl(
     }
 
     override fun getComponent(): JComponent {
-        return AttEditorPanel(myProject, variant, myFile, spriteFile).`$$$getRootComponent$$$`()
+        panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
+        return panel.`$$$getRootComponent$$$`()
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -98,10 +107,13 @@ internal class AttEditorImpl(
         return null
     }
 
-    override fun dispose() {}
+    override fun dispose() {
+        if (this::panel.isInitialized)
+            this.panel.dispose()
+    }
 
     override fun <T> getUserData(key: Key<T>): T? {
-        return myFile.getUserData(key);
+        return myFile.getUserData(key)
     }
 
     override fun <T> putUserData(key: Key<T>, value: T?) {
@@ -116,9 +128,9 @@ internal class AttEditorImpl(
         private const val NAME = "ATTEditor"
 
         @JvmStatic
-        fun assumedLinesAndPoints(variant:CaosVariant, part:String) : Pair<Int,Int> {
+        fun assumedLinesAndPoints(variant: CaosVariant, part: String): Pair<Int, Int> {
             val lines = if (variant.isOld) 10 else 16
-            val columns = when(part.toUpperCase()) {
+            val columns = when (part.toUpperCase()) {
                 "A" -> when {
                     variant.isOld -> 2
                     else -> 5
@@ -129,5 +141,53 @@ internal class AttEditorImpl(
             }
             return Pair(lines, columns)
         }
+
+        @JvmStatic
+        fun getImages(variant: CaosVariant, part: String, spriteFile: VirtualFile): List<BufferedImage?> {
+            val images = parse(spriteFile).images
+            if (part notLike "a" || variant != CaosVariant.CV)
+                return images
+            return images.mapIndexed { i, image ->
+                var out: BufferedImage? = image
+                if (i % 16 in 4..7) {
+                    val repeated =
+                        image == null || (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
+                    if (repeated) {
+                        try {
+                            out = images[i - 4]?.flipHorizontal() ?: image
+                            if (out?.width != image?.width || out?.height != image?.height) {
+                                LOGGER.severe("Failed to properly maintain scale in image.")
+                            }
+                        } catch (e: Exception) {
+                        }
+                    }
+                }
+                out
+            }
+        }
+
+        @JvmStatic
+        fun cacheVariant(virtualFile: VirtualFile, variant: CaosVariant) {
+            virtualFile.putUserData(CaosScriptFile.VariantUserDataKey, variant)
+            VariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+        }
+
     }
+}
+
+private val BufferedImage.isCompletelyTransparent: Boolean
+    get() {
+        for (i in 0 until this.height) {
+            for (j in 0 until this.width) {
+                if (this.isTransparent(j, i)) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+fun BufferedImage.isTransparent(x: Int, y: Int): Boolean {
+    val pixel = this.getRGB(x, y)
+    return pixel shr 24 == 0x00
 }

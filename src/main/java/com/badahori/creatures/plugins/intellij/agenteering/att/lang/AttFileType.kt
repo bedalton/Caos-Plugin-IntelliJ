@@ -4,6 +4,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.lang
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IFileElementType
+import icons.CaosScriptIcons
 import javax.swing.Icon
 
 /**
@@ -20,7 +21,7 @@ object AttFileType : FileType {
 
     override fun getDefaultExtension(): String = DEFAULT_EXTENSION
 
-    override fun getIcon(): Icon? = null
+    override fun getIcon(): Icon? = CaosScriptIcons.ATT_FILE_ICON
 
     override fun getCharset(p0: VirtualFile, p1: ByteArray): String = Charsets.US_ASCII.name()
 
