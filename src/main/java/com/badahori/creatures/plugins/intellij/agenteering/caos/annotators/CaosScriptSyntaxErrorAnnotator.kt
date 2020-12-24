@@ -6,18 +6,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.LVALUE
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.STRING
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.LVALUE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
+import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -88,6 +89,20 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             //is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> annotateNewLineLike(variant, element, annotationWrapper)
             is CaosScriptTrailingSpace -> annotationTrailingWhiteSpace(variant, element, annotationWrapper)
+            is CaosScriptOutOfCommandLiteral -> simpleError(
+                element,
+                message("caos.annotator.syntax-error-annotator.out-of-command-literal"),
+                annotationWrapper,
+                DeleteElementFix("Delete extraneous rvalue", element)
+            )
+            is CaosScriptSwiftEscapeLiteral -> {
+                val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
+                if (!"^\\*\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex().matches(firstChildText)) {
+                    simpleError(element, "invalid element", annotationWrapper)
+                } else if (element.textLength < 4) {
+                    simpleError(element, "Swift escape body cannot be empty", annotationWrapper)
+                }
+            }
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, annotationWrapper)
@@ -200,6 +215,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         annotationWrapper.newErrorAnnotation(message)
                 .range(element)
                 .create()
+    }
+
+    /**
+     * Annotates an error message on an element
+     */
+    @Suppress("SameParameterValue")
+    private fun simpleError(element: PsiElement, message: String, annotationWrapper: AnnotationHolderWrapper, vararg fixes:IntentionAction) {
+        annotationWrapper.newErrorAnnotation(message)
+            .withFixes(*fixes)
+            .range(element)
+            .create()
     }
 
     /**

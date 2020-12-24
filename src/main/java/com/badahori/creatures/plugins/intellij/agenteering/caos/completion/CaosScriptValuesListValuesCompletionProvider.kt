@@ -213,7 +213,6 @@ object CaosScriptValuesListValuesCompletionProvider {
             )
             resultSet.addElement(lookupElement)
         }
-        LOGGER.info("Values list has ${values.size} values in list")
         // Actually add lookup element completion values
         for (value in values) {
             val name = value.name.matchCase(case)
