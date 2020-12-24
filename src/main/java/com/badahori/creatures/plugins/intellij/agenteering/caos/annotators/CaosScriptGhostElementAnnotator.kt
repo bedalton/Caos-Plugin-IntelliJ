@@ -71,18 +71,24 @@ class CaosScriptGhostElementAnnotator : Annotator {
         if (check(element))
             return
         // Get next element after control block
-        var range:PsiElement? = element.next
+        var next:PsiElement? = element.next
         // Ensure that range is not whitespace
-        while (range != null && range.text.isBlank()) {
-            range = range.next
+        while (next != null && next.text.isBlank()) {
+            next = next.next
         }
+        var range = next?.textRange
         // There is no non-whitespace next element, so use last child of control statement
         if (range == null)
-            range = element.lastChild
+            range = element.lastChild.textRange.let {
+                var startOffset = it.endOffset - 4
+                if (startOffset < 0)
+                    startOffset = it.startOffset
+                TextRange(startOffset, it.endOffset)
+            }
 
         // Add annotation
         annotationWrapper.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
-                .range(range!!)
+                .range(range)
                 .withFix(AppendStatementTerminator(element, expectedToken))
                 .create()
     }

@@ -52,7 +52,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         val case = text.case
-        LOGGER.info("Getting completions for ${element.elementType}")
         // Add equality expression completions for known types
         val argument = element.getSelfOrParentOfType(CaosScriptArgument::class.java)
         (argument as? CaosScriptRvalue)?.let { expression ->
