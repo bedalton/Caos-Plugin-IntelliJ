@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.canonicalName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.vfs.*
+import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -127,8 +128,13 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                                  newParentIn: VirtualFile) {
         if (newParentIn !is CaosVirtualFile) {
             LOGGER.info("VirtualFileTypeMove. NewParentFileType: ${newParentIn.canonicalName}. FileSystem: ${newParentIn.fileSystem.canonicalName}")
-            (newParentIn.fileSystem as? LocalFileSystem)?.apply {
-                moveFile(requestor, virtualFileIn, newParentIn)
+            (newParentIn.fileSystem as? LocalFileSystem)?.let { vfs ->
+                val temp = File.createTempFile(virtualFileIn.nameWithoutExtension, virtualFileIn.extension)
+                temp.writeBytes(virtualFileIn.contentsToByteArray())
+                val tempVirtualFile = VfsUtil.findFileByURL(temp.toURI().toURL())
+                vfs.moveFile(requestor, tempVirtualFile!!, newParentIn)
+                fireFileMoved(requestor, virtualFileIn, virtualFileIn.parent)
+                return
             }
             LOGGER.info("New parent was not CAOS virtual file System. Was: ${newParentIn.fileSystem.className}")
             return
@@ -295,8 +301,12 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                           virtualFile: VirtualFile,
                           newParent: VirtualFile,
                           copyName: String): VirtualFile {
-        if (newParent !is CaosVirtualFile)
+        if (newParent !is CaosVirtualFile) {
+            (newParent.fileSystem as? LocalFileSystem)?.let { vfs ->
+                return vfs.copyFile(requestor, virtualFile, newParent, virtualFile.name)
+            }
             throw IOException("Cannot copy Caos Virtual file to non-Caos Virtual file directory")
+        }
         return CaosVirtualFile(copyName, virtualFile.contents, virtualFile.isDirectory).apply {
             parent = newParent
             fireFileCopied(requestor, virtualFile, this)
