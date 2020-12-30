@@ -10,6 +10,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
@@ -36,7 +38,7 @@ class CaosScriptHelperActionAnnotator : Annotator {
                 addExpandCollapseLinesActions(element, holder)
             }
             is CaosScriptRvalue -> annotateExpectsValue(element, holder)
-            is CaosScriptSpaceLikeOrNewline -> expandCollapseOnSpaceOrNewline(element, holder)
+            is CaosScriptWhiteSpaceLike -> expandCollapseOnSpaceOrNewline(element, holder)
         }
     }
 
@@ -66,6 +68,11 @@ class CaosScriptHelperActionAnnotator : Annotator {
     private fun addExpandCollapseLinesActions(element: CaosScriptCommandLike, holder: AnnotationHolder) {
         val next = element.next
 
+        val fileText = element.containingFile.text
+        val fixes = mutableListOf<IntentionAction>()
+        if (fileText.contains("\n")) {
+            fixes.
+        }
         val wrapper = AnnotationHolderWrapper(holder)
         // If there are only commas next, simply allow for expansion
         if (next != null && COMMAS_ONLY_REGEX.matches(next.text)) {
@@ -90,7 +97,8 @@ class CaosScriptHelperActionAnnotator : Annotator {
             val fixes:MutableList<IntentionAction> = mutableListOf(CaosScriptExpandCommasIntentionAction)
             // If there are newlines in file, also allow collapsing of lines
             if (element.containingFile.text.contains("\n")) {
-                fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+                if (element.variant?.isOld.orFalse())
+                    fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
                 fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
             }
             wrapper
@@ -104,14 +112,15 @@ class CaosScriptHelperActionAnnotator : Annotator {
     /**
      *
      */
-    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptSpaceLikeOrNewline, holder: AnnotationHolder) {
+    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptWhiteSpaceLike, holder: AnnotationHolder) {
         val fixes = mutableListOf<IntentionAction>()
         val isAtEnd = element.next == null
         if (element.text == "," || element.text == " " || isAtEnd) {
             fixes.add(CaosScriptExpandCommasIntentionAction)
         }
         if (element.text.contains("\n") || isAtEnd) {
-            fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
+            if (element.variant?.isOld.orFalse())
+                fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
             fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
         }
         AnnotationHolderWrapper(holder)
