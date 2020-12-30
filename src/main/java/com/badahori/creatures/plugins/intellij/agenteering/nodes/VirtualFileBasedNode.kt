@@ -14,10 +14,15 @@ import javax.swing.JComponent
 import javax.swing.TransferHandler
 
 internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, protected val myVirtualFile:VfsT)
-    : AbstractTreeNode<VfsT>(project, myVirtualFile), SortableTreeElement {
-    override fun getAlphaSortKey(): String = virtualFile.name
+    : AbstractTreeNode<VfsT>(project, myVirtualFile){
+    override fun getName(): String = myVirtualFile.name
 
-    override fun getName(): String? = virtualFile.name
+    override fun toString(): String = myVirtualFile.name
+
+    override fun getVirtualFile(): VirtualFile {
+        return myVirtualFile
+    }
+
 }
 
 private fun createTransferable(virtualFile: VirtualFile) : Transferable {
