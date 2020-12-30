@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -10,14 +11,16 @@ import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.psi.util.PsiTreeUtil
+import java.awt.Color
 
 
 internal class CaosScriptFileTreeNode(
+        private val parentName:String,
         private val caosFile: CaosScriptFile,
         private val scriptIndex: Int,
         private val presentableTextIn: String? = null,
         private val alwaysLeaf: Boolean = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java).size < 2
-) : AbstractTreeNode<CaosScriptFile>(caosFile.project, caosFile), SortableTreeElement {
+) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile), SortableTreeElement {
 
     override fun isAlwaysLeaf(): Boolean {
         return alwaysLeaf
@@ -49,9 +52,9 @@ internal class CaosScriptFileTreeNode(
         }
         return when (val script = scripts.firstOrNull { it !is CaosScriptMacro }) {
             is CaosScriptEventScript -> "${script.family} ${script.genus} ${script.species} ${script.eventNumber}"
-            is CaosScriptInstallScript -> "Install Script"
-            is CaosScriptRemovalScript -> "Removal Script"
-            else -> "Script $scriptIndex"
+            is CaosScriptInstallScript -> parentName.nullIfEmpty()?.let {"$it "}.orEmpty() + "- Install Script"
+            is CaosScriptRemovalScript -> parentName.nullIfEmpty()?.let {"$it "}.orEmpty() + " - Removal Script"
+            else -> parentName.nullIfEmpty()?.let {"$it - "}.orEmpty() + "Script $scriptIndex"
         }
     }
 
