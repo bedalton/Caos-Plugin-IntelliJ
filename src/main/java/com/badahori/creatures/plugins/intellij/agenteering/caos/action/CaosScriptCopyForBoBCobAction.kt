@@ -28,6 +28,7 @@ class CaosScriptCopyForBoBCobAction : CopyAction(), DumbAware {
         val dataContext = event.dataContext
         val enabled = (dataContext.getData(PlatformDataKeys.PSI_FILE) as? CaosScriptFile)?.variant?.isOld.orFalse()
         presentation.isEnabled = enabled
+        presentation.isVisible = enabled
         presentation.text = CaosBundle.message("caos.actions.copy-for-bob-cob.title")
         presentation.description = CaosBundle.message("caos.actions.copy-for-bob-cob.description")
         presentation.icon = AllIcons.Actions.Copy
