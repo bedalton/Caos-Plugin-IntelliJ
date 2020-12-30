@@ -345,8 +345,25 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     }
 
     private fun annotateNewLineLike(variant: CaosVariant, element: CaosScriptSpaceLikeOrNewline, annotationWrapper: AnnotationHolderWrapper) {
-        if (variant.isNotOld)
+        if (variant.isNotOld) {
+            if (element.textContains(',')) {
+                var start = 0
+                val text = element.text
+                val startOffset = element.startOffset
+                while (true) {
+                    val commaPos = text.indexOf(',', start)
+                    if (commaPos >= start) {
+                        start = commaPos + 1
+                        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-annotator.invalid-command-in-c2e"))
+                            .range(TextRange(startOffset+commaPos, startOffset+commaPos+1))
+                            .create()
+                    } else {
+                        break
+                    }
+                }
+            }
             return
+        }
         if (element.parent == element.containingFile && element.containingFile.firstChild == element && variant == CaosVariant.C1) {
             simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
             return
