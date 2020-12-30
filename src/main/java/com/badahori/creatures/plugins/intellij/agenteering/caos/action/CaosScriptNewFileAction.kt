@@ -1,18 +1,24 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
 import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.fileTemplates.actions.AttributesDefaults
 import com.intellij.ide.fileTemplates.ui.CreateFromTemplateDialog
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidatorEx
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
+import com.intellij.psi.search.FilenameIndex
 import icons.CaosScriptIcons
 import java.util.*
 
@@ -25,6 +31,15 @@ class CaosScriptNewFileAction : CreateFileFromTemplateAction(
         CaosBundle.message("caos.actions.new-file.description"),
         CaosScriptIcons.CAOS_FILE_ICON), DumbAware {
 
+    override fun update(e: AnActionEvent) {
+        super.update(e)
+        val project = e.project
+            ?: return
+        val hasCaosModule = ModuleManager.getInstance(project).modules.any {
+            it.moduleTypeName == CaosScriptModuleType.INSTANCE.name
+        } || FilenameIndex.getAllFilesByExt(project, "cos").isNotEmpty()
+        e.presentation.isVisible = hasCaosModule
+    }
     /**
      * Gets the menu name
      */
