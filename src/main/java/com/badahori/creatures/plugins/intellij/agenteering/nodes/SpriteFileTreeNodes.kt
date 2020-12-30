@@ -80,8 +80,7 @@ internal class SpriteImageTreeNode(
         enclosingImage: CaosVirtualFile,
         private val fileName: String,
         data: ByteArray
-) : VirtualFileBasedNode<VirtualFile>(project, enclosingImage.createChildWithContent("$fileName.png", data)),
-        SortableTreeElement {
+) : VirtualFileBasedNode<VirtualFile>(project, enclosingImage.createChildWithContent("$fileName.png", data)) {
     override fun getVirtualFile(): VirtualFile = myVirtualFile
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(focus: Boolean) {
@@ -96,7 +95,7 @@ internal class SpriteImageTreeNode(
         presentationData.setIcon(CaosScriptIcons.IMAGE)
     }
 
-    override fun getAlphaSortKey(): String {
-        return "$weight"
+    override fun toString(): String {
+        return fileName
     }
 }
