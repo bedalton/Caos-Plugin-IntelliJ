@@ -28,3 +28,11 @@ fun executeOnPooledThread(runnable: Runnable) : Future<*> {
     val application = ApplicationManager.getApplication();
     return application.executeOnPooledThread(runnable)
 }
+
+fun runWriteAction(runnable: () -> Unit) {
+    com.intellij.openapi.application.runWriteAction(runnable)
+}
+
+fun runUndoTransparentWriteAction(runnable: () -> Unit) {
+    com.intellij.openapi.application.runUndoTransparentWriteAction(runnable)
+}
