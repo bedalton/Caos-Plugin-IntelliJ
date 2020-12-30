@@ -24,9 +24,10 @@ import java.nio.ByteBuffer
 class CobFileTreeNode(
         private val nonNullProject: Project,
         private val file: VirtualFile
-) : AbstractTreeNode<VirtualFile>(nonNullProject, file), SortableTreeElement {
+) : AbstractTreeNode<VirtualFile>(nonNullProject, file) {
 
-    val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
+    private val cobNameWithoutExtension = file.nameWithoutExtension
+    private val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
 
     private val cobVirtualFile: CaosVirtualFile by lazy {
         CobVirtualFileUtil.getOrCreateCobVirtualFileDirectory(file)
@@ -43,10 +44,16 @@ class CobFileTreeNode(
 
     override fun canNavigateToSource(): Boolean = false
 
-    override fun getChildren(): List<AbstractTreeNode<*>> = when (cobData) {
-        is CobFileData.C1CobData -> getChildren(cobData)
-        is CobFileData.C2CobData -> getChildren(cobData)
-        else -> emptyList()
+    override fun getChildren(): List<AbstractTreeNode<*>> {
+        val children = when (cobData) {
+            is CobFileData.C1CobData -> getChildren(cobData)
+            is CobFileData.C2CobData -> getChildren(cobData)
+            else -> emptyList()
+        }
+        children.forEach {
+            it.parent = this
+        }
+        return children
     }
 
     private fun getChildren(data: CobFileData.C1CobData): List<AbstractTreeNode<*>> {
@@ -64,8 +71,8 @@ class CobFileTreeNode(
             is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, block))
             is AgentBlock -> {
                 val scripts = listOfNotNull(
-                        block.installScript?.let { CaosScriptFileTreeNode(it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, "Install Script") },
-                        block.removalScript?.let { CaosScriptFileTreeNode(it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, "Removal Script") }
+                        block.installScript?.let { CaosScriptFileTreeNode(cobNameWithoutExtension, it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, file.nameWithoutExtension + " Install Script") },
+                        block.removalScript?.let { CaosScriptFileTreeNode(cobNameWithoutExtension, it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, file.nameWithoutExtension + " Removal Script") }
                 )
                 val previews:List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
                     SpriteImageTreeNode(
@@ -76,7 +83,7 @@ class CobFileTreeNode(
                             )
                 })
                 previews + scripts + block.eventScripts.mapIndexed { index, script ->
-                    CaosScriptFileTreeNode(script.toCaosFile(nonNullProject, cobVirtualFile, variant), index)
+                    CaosScriptFileTreeNode(cobNameWithoutExtension, script.toCaosFile(nonNullProject, cobVirtualFile, variant), index)
                 }
             }
             is CobBlock.UnknownCobBlock -> emptyList()
@@ -94,8 +101,7 @@ class CobFileTreeNode(
         presentationData.locationString = null
     }
 
-    override fun getAlphaSortKey(): String = virtualFile.name
-    override fun getName(): String? = virtualFile.name
+    override fun getName(): String = virtualFile.name
 }
 
 internal class AuthorTreeNode(project: Project, block: AuthorBlock)

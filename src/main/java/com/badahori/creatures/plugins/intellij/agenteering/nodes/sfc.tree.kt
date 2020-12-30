@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 internal class SfcFileTreeNode(project: Project, private val myVirtualFile: VirtualFile) : AbstractTreeNode<VirtualFile>(project, myVirtualFile) {
 
+    private val sfcNameWithoutExtension = myVirtualFile.nameWithoutExtension
+
     override fun update(presentation: PresentationData) {
         presentation.presentableText = myVirtualFile.name
         presentation.setIcon(CaosScriptIcons.SFC_FILE_ICON)
@@ -54,7 +56,7 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
         }
     }
 
-    fun getScriptName(index: Int, maxIndexLength: Int, script: String): String {
+    private fun getScriptName(index: Int, maxIndexLength: Int, script: String): String {
         val matches = eventScriptRegex.matchEntire(script)
                 ?: return "Macro ${"$index".padStart(maxIndexLength, '0')}"
         return matches.groupValues.drop(1).dropLast(0).joinToString(" ")
@@ -63,6 +65,7 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
     override fun getChildren(): MutableCollection<out AbstractTreeNode<*>> {
         return scripts.mapIndexed { index, file ->
             CaosScriptFileTreeNode(
+                    sfcNameWithoutExtension,
                     file,
                     index,
                     file.containingFile.name,
