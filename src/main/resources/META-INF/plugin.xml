@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.93</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.100</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -23,6 +23,7 @@
       <li>Parameter hints</li>
       <li>Known value completion from list. (ie. Drives or Chemicals by name)</li>
       <li>Sprite viewers</li>
+      <li>ATT file editor</li>
     </ul>
     <b>Todo:</b>
     <ul>
@@ -34,6 +35,66 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.99</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix exception thrown on bad frames on SPR parse</li>
+          <li>Exception thrown on non-lowercase file names in ATT file editor</li>
+          <li>Fix inconsistent numbering on ATT point radio buttons and in graphic labels</li>
+        </ul>
+        <b>Improvements</b>
+        <ul>
+          <li>Make ATT/Sprite matching case insensitive</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.97</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix accidental indent on Macro newline</li>
+          <li>Fix DOIF folding error</li>
+        </ul>
+        <b>#Additions</b>
+        <ul>
+          <li>Added experimental ATT file editor</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.100</b><br/>
+        <b>#Fixes</b>
+        <ul>
+        </ul>
+        <b>Improvements</b>
+        <ul>
+          <li>Use number keys in ATT editor to select point type</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.99</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix exception thrown on bad frames on SPR parse</li>
+          <li>Exception thrown on non-lowercase file names in ATT file editor</li>
+          <li>Fix inconsistent numbering on ATT point radio buttons and in graphic labels</li>
+        </ul>
+        <b>Improvements</b>
+        <ul>
+          <li>Make ATT/Sprite matching case insensitive</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.97</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix accidental indent on Macro newline</li>
+          <li>Fix DOIF folding error</li>
+        </ul>
+        <b>#Additions</b>
+        <ul>
+          <li>Added experimental ATT file editor</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.96</b><br/>
         <b>#Fixes</b>
@@ -131,7 +192,7 @@
           <ul style="font-size:0.7em">
             <li style="font-size:1em">Cannot copy to file system directly. Must copy and paste in project view</li>
             <li style="font-size:1em">Copy requires shortcut key copy/paste or right-click or menu copy/paste</li>
-            <listyle="font-size:1em">Copy by drag does not work</li>
+            <li style="font-size:1em">Copy by drag does not work</li>
           </ul>
         </div>
       </li>
@@ -249,7 +310,8 @@
                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                 classpathProvider="true" />
 
-    <additionalLibraryRootsProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosScriptAdditionalLibraryRootsProvider" />
+    <additionalLibraryRootsProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosScriptAdditionalLibraryRootsProvider" />
 
     <!-- Completion -->
     <completion.contributor language="CaosScript"
@@ -308,7 +370,7 @@
 
 
     <annotator language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
+               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" />
 
     <!-- Inspections -->
     <localInspection language="CaosScript"
@@ -593,7 +655,6 @@
               extensions="c16" />
 
 
-
     <!-- SFC File Handling -->
     <!--fileType name="SFCFile"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
@@ -619,9 +680,33 @@
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
     /-->
 
-    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
 
-    <!-- Virtual File System -->
+    <treeStructureProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
+
+
+    <!-- =========================== -->
+    <!-- ====== ATT Files ======= -->
+    <!-- =========================== -->
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider" />
+
+    <fileType name="ATTFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType"
+              fieldName="INSTANCE"
+              language="Att"
+              extensions="att"
+    />
+
+    <lang.parserDefinition
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParserDefinition"
+        language="Att"
+    />
+
+
+    <!-- =========================== -->
+    <!-- === Virtual File System  == -->
+    <!-- =========================== -->
     <virtualFileSystem
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
         key="caosvfs"

@@ -116,6 +116,7 @@ INCOMPLETE_WORD={WORD_CHAR}{1,3}
 CHAR_ESCAPE_CHAR=("\\\\"|"\\\'"|"\\"[^\'])
 CHAR_CHAR=[^\'\\]
 CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
+SWIFT_ESCAPE=\\\([^)]*\)
 
 %state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME
 %%
@@ -212,6 +213,7 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 	"]"                    	{ braceDepth--; return CaosScript_CLOSE_BRACKET; }
 	","                    	{ return CaosScript_COMMA; }
     "'"						{ yybegin(IN_CHAR); return CaosScript_SINGLE_QUOTE; }
+ 	{SWIFT_ESCAPE}			{ return CaosScript_SWIFT_ESCAPE; }
 	{EQ_C1}				 	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}			 	{ return CaosScript_EQ_OP_NEW_; }
 	{N_CONST}				{ return CaosScript_N_CONST; }

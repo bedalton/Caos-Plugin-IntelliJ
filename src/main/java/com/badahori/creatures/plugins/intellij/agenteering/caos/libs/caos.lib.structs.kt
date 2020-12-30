@@ -265,6 +265,7 @@ data class CaosValuesListValue(
         val beforeRegion: String? = null
 ) {
     val intValue: Int? by lazy {
+        val value = value.trim()
         if (value.startsWith(">") || value.startsWith("!"))
             value.substring(1).toIntOrNull()
         else

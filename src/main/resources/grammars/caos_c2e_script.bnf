@@ -428,6 +428,7 @@ private caos_element
 	|	control_statement
 	|	command_call
 	|	error_command
+	|	out_of_command_literal
 	;
 
 comment_block
@@ -1976,6 +1977,7 @@ rvalue
 	|	rvalue_prefix_incompletes <<popParameter>>
 	|	incomplete <<popParameter>>
 	|	error_rvalue <<popParameter>>
+	|	swift_escape_literal
 	{
    		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -2015,6 +2017,16 @@ rvalue
 			getCommandDefinition
 		]
 	}
+	;
+
+out_of_command_literal
+	::= var_token <<popParameter>>
+	|	named_game_var <<popParameter>>
+	|	string_literal <<popParameter>>
+	|	byte_string <<popParameter>>
+	|	animation_string <<popParameter>>
+	|	number <<popParameter>>
+	|	pict_dimension_literal <<popParameter>>
 	;
 
 error_rvalue
@@ -2286,7 +2298,9 @@ event_number_element
 		]
 	}
 	;
-
+swift_escape_literal
+	::= SWIFT_ESCAPE
+	;
 incomplete ::= ID |	ERROR_WORD;
 
 command_call
@@ -3159,6 +3173,7 @@ lvalue
 	|	var_token <<popParameter>>
 	|	incomplete <<popParameter>>
 	|	error_lvalue <<popParameter>>
+	| 	swift_escape_literal
 	{
 		pin=1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptLValueStub"
