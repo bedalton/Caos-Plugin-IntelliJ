@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.ui.components.JBList
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -11,11 +10,10 @@ import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.Action
 import javax.swing.DefaultListModel
-import javax.swing.JList
 import javax.swing.TransferHandler
 
 
-internal class ImageListPanel(private val list: List<ImageTransferItem>) : JBList<ImageTransferItem>(),
+internal class ImageListPanel<T:HasImage>(private val list: List<T>) : JBList<T>(),
         DragSourceListener,
         DragGestureListener,
         KeyListener,
@@ -24,10 +22,10 @@ internal class ImageListPanel(private val list: List<ImageTransferItem>) : JBLis
 
     init {
         DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this)
-        this.model = DefaultListModel<ImageTransferItem>().apply {
+        this.model = DefaultListModel<T>().apply {
             list.forEach { addElement(it) }
         }
-        actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), TransferHandler.getCopyAction());
+        actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), TransferHandler.getCopyAction())
         transferHandler = SpriteListTransferHandler
     }
     override fun dragEnter(dsde: DragSourceDragEvent?) {
@@ -60,9 +58,9 @@ internal class ImageListPanel(private val list: List<ImageTransferItem>) : JBLis
 
     override fun keyPressed(e: KeyEvent) {
         if (e.isMetaDown && (e.keyChar == 'c')) {
-            val data:Transferable? = SpriteListTransferHandler.createTransferable(this);
+            val data:Transferable? = SpriteListTransferHandler.createTransferable(this)
             if (data != null) {
-                Toolkit.getDefaultToolkit().systemClipboard.setContents(data, this@ImageListPanel);
+                Toolkit.getDefaultToolkit().systemClipboard.setContents(data, this@ImageListPanel)
             }
         }
     }

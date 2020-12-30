@@ -311,7 +311,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values
-            val valuesListValue = valuesList[value]
+            val valuesListValue = valuesList.get(value)
                     ?: return EMPTY_INLAY_LIST
 
             // Format hint and return

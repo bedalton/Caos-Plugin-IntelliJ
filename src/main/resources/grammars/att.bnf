@@ -1,0 +1,76 @@
+{
+	parserClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParser"
+	parserUtilClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParserUtil"
+	implements="com.badahori.creatures.plugins.intellij.agenteering.att.psi.api.AttCompositeElement"
+	extends="com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.AttCompositeElementImpl"
+	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttTypes"
+	elementTypePrefix="ATT_"
+	elementTypeClass="com.badahori.creatures.plugins.intellij.agenteering.att.psi.types.AttElementType"
+	tokenTypeClass="com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttTokenType"
+	psiClassPrefix="Att"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.att.psi.api"
+	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl"
+	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.att.psi.util.AttPsiImplUtil"
+	generateTokenAccessors=true
+	tokens = [
+		INT_LITERAL = "regexp:[0-9]+"
+		ERROR_VALUE_LITERAL = "regexp:[^0-9 \r\n]+"
+		NEWLINE_LITERAL = "regexp:[\r]?[\n]"
+		SPACE_LITERAL = "regexp:[ ]+"
+		ERROR_SPACE_LITERAL = "regexp:[\t]"
+	]
+}
+
+
+private file
+	::= (!<<eof>> line)*
+	;
+
+line
+	::= line_items (newline|<<eof>>)//
+	|	newline // Can be a blank line, though this is not valid
+	;
+
+private line_items
+	::= space? item (space item)*
+	|	space // Can be just a single space on a line
+	;
+
+private line_items_recover
+	::= !(NEWLINE_LITERAL)
+	;
+
+item
+	::= int
+	| 	error_value
+	{
+		methods = [
+			index
+			valid
+		]
+	}
+	;
+
+space
+	::= SPACE_LITERAL
+	|	ERROR_SPACE_LITERAL
+	;
+
+int
+	::= INT_LITERAL
+	;
+
+error_value
+	::= ERROR_VALUE_LITERAL
+	;
+
+newline
+	::= NEWLINE_LITERAL+
+	{
+		methods = [
+			isValid
+		]
+	}
+	;
+

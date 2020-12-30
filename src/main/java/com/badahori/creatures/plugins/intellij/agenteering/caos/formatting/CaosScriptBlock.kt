@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK_LINE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
@@ -12,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
@@ -60,23 +62,23 @@ class CaosScriptBlock internal constructor(
         if (!caosSettings.indentBlocks) {
             return noneIndent
         }
-
-        LOGGER.info("MyNode: ${myNode.elementType}")
-
         val psi = myNode.psi
+            ?: return noneIndent
         if (psi is CaosScriptHasCodeBlock)
             return if (psi is CaosScriptScriptElement && psi.scriptTerminator == null)
                 noneIndent
             else
                 normalIndent
-        if (psi is CaosScriptCodeBlock && (psi.parent as? CaosScriptScriptElement)?.let { it !is CaosScriptMacro && it.scriptTerminator != null}.orFalse()) {
+        if (psi is CaosScriptCodeBlock && (psi.parent as? CaosScriptScriptElement)?.let { it !is CaosScriptMacro && it.scriptTerminator != null}.orTrue()) {
             return normalIndent
         }
 
         // Needs to check if my node is a DoifStatement parent
-        // Because the end of any child (internal doif block, elif, else) end before the ENDI,
+        // Because the end of any child (internal doif block, elif, else) are considered the end,
         // meaning the last line would never be indented
         if (psi is CaosScriptDoifStatement)
+            return normalIndent
+        if (psi.parent?.elementType in listOf(CaosScriptTypes.CaosScript_DOIF_STATEMENT_STATEMENT, CaosScriptTypes.CaosScript_ELSE_IF_STATEMENT, CaosScriptTypes.CaosScript_ELSE_STATEMENT))
             return normalIndent
         if (psi is CaosScriptCodeBlockLine)
             return normalIndent
