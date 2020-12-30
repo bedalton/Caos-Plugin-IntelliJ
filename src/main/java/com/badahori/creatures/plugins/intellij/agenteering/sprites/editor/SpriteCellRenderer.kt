@@ -3,17 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import java.awt.Color
 import java.awt.Component
-import java.awt.Cursor
 import java.awt.Image
-import java.awt.Toolkit.getDefaultToolkit
-import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.Transferable
-import java.awt.dnd.DnDConstants
-import java.awt.dnd.DragGestureEvent
-import java.awt.dnd.DragGestureListener
-import java.awt.dnd.DragSource
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -55,16 +45,20 @@ internal class SpriteCellRenderer : ListCellRenderer<ImageTransferItem> {
         panel.add(textBox)
         val imageValue = value.image
         val image = if (scale > 1.01) {
-            val width = imageValue.width * scale
-            val height = imageValue.height * scale
-            imageValue.getScaledInstance(width.toInt(), height.toInt(), Image.SCALE_AREA_AVERAGING) // scale it the smooth way
+            val width = imageValue?.width?.let { it * scale } ?: 1
+            val height = imageValue?.height?.let { it * scale } ?: 1
+            imageValue?.getScaledInstance(width.toInt(), height.toInt(), Image.SCALE_AREA_AVERAGING) // scale it the smooth way
         } else {
             imageValue
         }
-        val imageIcon = ImageIcon(image).apply {
-            description = "Sprite image $index"
+        val imageView = if (image != null) {
+            val imageIcon = ImageIcon(image).apply {
+                description = "Sprite image $index"
+            }
+            JLabel(imageIcon)
+        } else {
+            JLabel("Failed to parse frame $index")
         }
-        val imageView = JLabel(imageIcon)
         //imageView.setBounds(0,0,((value as BufferedImage) * scale).width, (value as BufferedImage).height)
         //imageView.minimumSize = Dimension((value as BufferedImage).width, (value as BufferedImage).height)
         textBox.labelFor = imageView

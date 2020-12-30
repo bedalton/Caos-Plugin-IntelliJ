@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "0.01.96"
+version = "0.01.100"
 
 repositories {
     mavenCentral()
@@ -20,7 +20,7 @@ dependencies {
 
 }
 sourceSets.main {
-    java.srcDirs("src/main/java", "gen")
+    java.srcDirs("src/main/java", "gen", "src/main/gen")
 }
 
 java {
