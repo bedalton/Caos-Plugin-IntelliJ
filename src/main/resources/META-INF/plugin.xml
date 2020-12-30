@@ -192,8 +192,7 @@
           <ul style="font-size:0.7em">
             <li style="font-size:1em">Cannot copy to file system directly. Must copy and paste in project view</li>
             <li style="font-size:1em">Copy requires shortcut key copy/paste or right-click or menu copy/paste</li>
-            <listyle
-            ="font-size:1em">Copy by drag does not work</li>
+            <li style="font-size:1em">Copy by drag does not work</li>
           </ul>
         </div>
       </li>
