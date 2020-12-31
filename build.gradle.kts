@@ -59,7 +59,9 @@ tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
     this.createFolder = true
     this.generateCaosDef()
 }
-
+tasks.getByName("runIde") {
+    dependsOn("generateCaosDef")
+}
 tasks.getByName("buildPlugin") {
     dependsOn("generateCaosDef")
 }
