@@ -35,7 +35,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             // Ensure a variant is set for this file
             // so that we can validate this option
             val variant = (file as? CaosScriptFile)?.variant
-                    ?: return false
+                ?: return false
             // Return if variant is new variant
             if (variant.isNotOld)
                 return false
@@ -67,6 +67,8 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
 
     companion object {
+        val COLLAPSE_WITH_COMMA = CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA)
+        val COLLAPSE_WITH_SPACE = CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE)
 
         private val whitespaceOrComma = "(\\s|,)+".toRegex()
         private val trailingText = "[ \n,\t]+".toRegex()
@@ -136,7 +138,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 previous = previous.previous
             }
             val next = pointer.element
-                    ?: return
+                ?: return
             val previousIsNotCollapseChar = next.previous?.text != collapseChar.char
             if ((next.text != "\n" && !next.text.contains('\n')) || (next.text == collapseChar.char && previousIsNotCollapseChar))
                 return
