@@ -184,6 +184,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             val isBool = extensionType?.startsWith("bool") ?: false
             // Whether or not to convert "<" to "is". This is based on the extension value
             val boolOnLessThan = isBool && extensionType notLike "bool:gt"
+            var doubleNegative = isBool && otherValueInt == 0 && (eqOp == GREATER_THAN || eqOp == NOT_EQUAL)
 
             // Get other value from its values list value
             val otherValueText = returnValuesList
@@ -194,7 +195,23 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     // Join bitflags to single string for use in doif format
                     ?.joinToString(", ") { it.name }
             // Get the other value as a values list value
-                    ?: otherValueInt?.let { returnValuesList?.get(it) }?.name
+                    ?: otherValueInt?.let {
+                        returnValuesList?.get(it)?.name?.let { trueValue ->
+                            var out = trueValue
+                            if (doubleNegative) {
+                                if (trueValue.toLowerCase()
+                                        .let { lower -> lower.startsWith("not")
+                                                && !lower.startsWith("noth") // Ensure it != 'Nothing'
+                                        }
+                                ) {
+                                    out = returnValuesList[1]?.name ?: out
+                                }
+                            }
+                            // If value is not replaced, then do not invert Eq/NE
+                            doubleNegative = out != trueValue
+                            out
+                        }
+                    }
 
             // Formats the primary value as a drive or chemical name as needed
             val thisValueAsDriveOrChemical = thisValue.rvaluePrime?.let { rvaluePrime -> formatThisValue(variant, rvaluePrime) }
@@ -204,7 +221,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             val formatInfo = FormatInfo(
                     command = command,
                     variant = variant,
-                    eqOp = eqOp,
+                    eqOp = if (doubleNegative) EQUAL else eqOp,
                     isBool = isBool,
                     boolOnLessThan = boolOnLessThan,
                     thisValue = formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
