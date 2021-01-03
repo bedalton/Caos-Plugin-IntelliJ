@@ -30,14 +30,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	private int repsDepth = 0;
 	private int doifDepth = 0;
 	private int subrDepth = 0;
+	private boolean hadNumber = false;
 
 	protected boolean isByteString() {
 		int index = 0;
+		boolean isFirstChar = true;
 		try {
-			char nextChar = yycharat(++index);
+		    char nextChar = yycharat(++index);
 			while (nextChar != ']') {
 				if (!BYTE_STRING_CHARS.contains(nextChar)) {
 	  				return false;
+				}
+				if (nextChar == 'R' || nextChar == 'r') {
+				    return yycharat(index + 1) == ']';
 				}
 				nextChar = yycharat(++index);
 			}
