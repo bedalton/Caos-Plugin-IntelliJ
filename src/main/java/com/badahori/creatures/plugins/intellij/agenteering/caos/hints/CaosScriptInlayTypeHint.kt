@@ -13,10 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
@@ -249,6 +246,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return EMPTY_INLAY_LIST
             val parent = element.parent as? CaosScriptEqualityExpressionPrime
                     ?: return EMPTY_INLAY_LIST
+            if (element.commandStringUpper?.let { it == "CHEM" || it == "DRIV" }.orTrue())
+                return EMPTY_INLAY_LIST
             val variant = element.variant
                     ?: return EMPTY_INLAY_LIST
             val valuesList = parent.getValuesList(variant, element)
