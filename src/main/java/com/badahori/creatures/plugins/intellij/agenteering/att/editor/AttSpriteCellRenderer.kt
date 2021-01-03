@@ -117,6 +117,7 @@ internal class AttSpriteCellComponent() : JPanel() {
                 }
             }
         })
+        canvas.isFocusable = true
         add(canvas)
         revalidate()
         repaint()
