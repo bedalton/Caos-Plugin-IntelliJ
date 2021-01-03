@@ -113,7 +113,7 @@ fun ASTNode?.getPreviousPossiblyEmptySibling(): ASTNode? {
 
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.previous ?: return null
-    while (shouldSkipNode(out, ignoreLineTerminator)) {
+    while (isWhitespace(out, ignoreLineTerminator)) {
         out = out.previous ?: return null
     }
     return out
@@ -160,7 +160,7 @@ fun ASTNode.getNextNonEmptySiblingIgnoringComments(): ASTNode? {
 
 fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.next ?: return null
-    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
+    while (out != null && isWhitespace(out, ignoreLineTerminator)) {
         out = out.next ?: return null
     }
     return out
@@ -190,7 +190,7 @@ fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode?
 
 fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.node?.next ?: return null
-    while (shouldSkipNode(out, ignoreLineTerminator)) {
+    while (isWhitespace(out, ignoreLineTerminator)) {
         out = out.next ?: return null
     }
     return out
@@ -317,18 +317,18 @@ fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?,
 }
 
 
-internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean {
+internal fun isWhitespace(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean {
     if (out == null) {
         return false
     }
-    return if (ignoreLineTerminator && out.elementType === CaosScriptTypes.CaosScript_NEWLINE)
-        true
-    else if (out.elementType == TokenType.WHITE_SPACE)
-        true
-    else {
-        out.text.let {
-            if (!ignoreLineTerminator && it.contains("\n"))
-                false
+    val elementType = out.elementType
+    return when {
+        elementType === CaosScriptTypes.CaosScript_NEWLINE -> ignoreLineTerminator
+        elementType == TokenType.WHITE_SPACE -> true
+        elementType in CaosScriptTokenSets.WHITESPACES -> true
+        else -> out.text.let {
+            if (it.contains("\n"))
+                ignoreLineTerminator
             else
                 it.isBlank()
         }
