@@ -297,7 +297,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     .range(element)
                     .create()
         }
-        if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump::class.java))
+        if (!element.hasParentOfType(CaosScriptNoJump::class.java))
             return
         annotationWrapper.newAnnotation(HighlightSeverity.ERROR, message("caos.annotator.command-annotator.loop-should-not-be-jumped-out-of"))
                 .range(element.textRange)
