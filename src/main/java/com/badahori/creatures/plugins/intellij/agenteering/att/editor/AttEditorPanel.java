@@ -23,9 +23,11 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Logger;
@@ -67,7 +69,6 @@ public class AttEditorPanel implements OnChangePoint {
         this.spriteFile = spriteFile;
         this.variant = variantIn;
         $$$setupUI$$$();
-        initListeners();
         final String part = virtualFile.getName().substring(0, 1);
         this.setVariant(variantIn);
         this.setPart(part);
@@ -108,54 +109,32 @@ public class AttEditorPanel implements OnChangePoint {
                 }
             });
         }
+        initListeners();
+        display.setFocusable(true);
+        scrollPane.setFocusable(true);
+        spriteCellList.setFocusable(true);
     }
 
     private void initListeners() {
-        panel1.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
 
-            }
+        // Add KEY listeners for point selection
+        initKeyListeners();
 
-            @Override
-            public void keyPressed(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyChar() == '1') {
-                    point1.setSelected(true);
-                    currentPoint = 0;
-                } else if (e.getKeyChar() == '2') {
-                    point2.setSelected(true);
-                    currentPoint = 1;
-                } else if (e.getKeyChar() == '3') {
-                    point3.setSelected(true);
-                    currentPoint = 2;
-                } else if (e.getKeyChar() == '4') {
-                    point4.setSelected(true);
-                    currentPoint = 3;
-                } else if (e.getKeyChar() == '5') {
-                    point5.setSelected(true);
-                    currentPoint = 4;
-                } else if (e.getKeyChar() == '6') {
-                    point6.setSelected(true);
-                    currentPoint = 5;
-                }
-            }
-        });
+        // Add scale dropdown listener
         scale.setSelectedIndex(6);
         scale.addItemListener((e) -> {
             final String value = (String) Objects.requireNonNull(scale.getSelectedItem());
             final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
             spriteCellList.setScale(newScale);
         });
+
+        // Add listener for PART dropdown
         part.addItemListener((e) -> {
             final String value = (String) Objects.requireNonNull(part.getSelectedItem());
             update(variant, value.trim());
         });
 
+        // Add Variant dropdown listener
         variantComboBox.addItemListener((e) -> {
             final String value = (String) Objects.requireNonNull(variantComboBox.getSelectedItem());
             CaosVariant newVariant;
@@ -178,17 +157,112 @@ public class AttEditorPanel implements OnChangePoint {
             update(newVariant, (String) part.getSelectedItem());
         });
 
+        // Add Point radiobuttons listener
         addPointListener(point1, 0);
         addPointListener(point2, 1);
         addPointListener(point3, 2);
         addPointListener(point4, 3);
         addPointListener(point5, 4);
         addPointListener(point6, 5);
+
+        // Add LABELS checkbox listener
         labels.addChangeListener((e) -> {
             spriteCellList.setLabels(labels.isSelected());
             spriteCellList.reload();
         });
+
+        // Add Sprite cell list to scroll pane
         scrollPane.setViewportView(spriteCellList);
+
+        panel1.setFocusable(true);
+        spriteCellList.setFocusable(true);
+        spriteCellList.requestFocusInWindow();
+    }
+
+    /**
+     * Inits the key listeners to set the current point to edit
+     */
+    private void initKeyListeners() {
+        final InputMap inputMap = panel1.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        final ActionMap actionMap = panel1.getActionMap();
+        addNumberedPointKeyBinding(inputMap, actionMap,0);
+        addNumberedPointKeyBinding(inputMap, actionMap,1);
+        addNumberedPointKeyBinding(inputMap, actionMap,2);
+        addNumberedPointKeyBinding(inputMap, actionMap,3);
+        addNumberedPointKeyBinding(inputMap, actionMap,4);
+        addNumberedPointKeyBinding(inputMap, actionMap,5);
+
+        final String SELECT_NEXT_POINT = "Next Point";
+        inputMap.put(KeyStroke.getKeyStroke("W"), SELECT_NEXT_POINT);
+        actionMap.put(SELECT_NEXT_POINT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setCurrentPoint(wrapCurrentPoint(currentPoint+1));
+            }
+        });
+        final String SELECT_PREVIOUS_POINT = "Next Point";
+        inputMap.put(KeyStroke.getKeyStroke("Q"), SELECT_PREVIOUS_POINT);
+        actionMap.put(SELECT_PREVIOUS_POINT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setCurrentPoint(wrapCurrentPoint(currentPoint - 1));
+            }
+        });
+    }
+
+    public void requestFocus() {
+        panel1.requestFocusInWindow();
+        panel1.requestFocus();
+    }
+
+    private int wrapCurrentPoint(final int point) {
+        if (point < 0)
+            return this.numPoints-1;
+        else if (point >= this.numPoints)
+            return 0;
+        else
+            return point;
+    }
+
+    private void addNumberedPointKeyBinding(final InputMap inputMap, final ActionMap actionMap, final int point) {
+        final String TEXT = "Set Point " + point;
+        inputMap.put(KeyStroke.getKeyStroke(""+(point+1)), TEXT);
+        actionMap.put(TEXT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setCurrentPoint(point);
+            }
+        });
+    }
+
+    private void setCurrentPoint(final int newPoint) {
+        if (newPoint < 0) {
+            throw new IndexOutOfBoundsException("New point cannot be less than zero. Found: " + newPoint);
+        }
+        if (newPoint > 5) {
+            throw new IndexOutOfBoundsException("New point '"+newPoint+"' is out of bound. Should be (0..5)");
+        }
+        this.currentPoint = newPoint;
+        switch(newPoint) {
+            case 0:
+                point1.setSelected(true);
+                break;
+            case 1:
+                point2.setSelected(true);
+                break;
+            case 2:
+                point3.setSelected(true);
+                break;
+            case 3:
+                point4.setSelected(true);
+                break;
+            case 4:
+                point5.setSelected(true);
+                break;
+            case 5:
+                point6.setSelected(true);
+                break;
+        }
     }
 
     public void setPart(final String part) {
@@ -270,7 +344,6 @@ public class AttEditorPanel implements OnChangePoint {
                 return;
             }
             currentPoint = index;
-            return;
         });
     }
 
@@ -296,7 +369,11 @@ public class AttEditorPanel implements OnChangePoint {
     }
 
     private List<BufferedImage> getImages() {
-        return AttEditorImpl.getImages(variant, (String) part.getSelectedItem(), spriteFile);
+        final String selected = (String)part.getSelectedItem();
+        if (selected == null) {
+            return Collections.emptyList();
+        }
+        return AttEditorImpl.getImages(variant, selected, spriteFile);
     }
 
     private List<String> pointNames(final String part) {

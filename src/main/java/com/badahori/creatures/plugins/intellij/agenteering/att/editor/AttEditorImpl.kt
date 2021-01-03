@@ -77,7 +77,7 @@ internal class AttEditorImpl(
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return null
+        return panel.scrollPane
     }
 
     override fun getName(): String {
