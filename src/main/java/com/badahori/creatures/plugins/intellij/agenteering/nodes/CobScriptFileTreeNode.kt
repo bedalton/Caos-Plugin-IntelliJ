@@ -17,6 +17,7 @@ import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 import java.nio.ByteBuffer
 
@@ -27,7 +28,9 @@ class CobFileTreeNode(
 ) : AbstractTreeNode<VirtualFile>(nonNullProject, file) {
 
     private val cobNameWithoutExtension = file.nameWithoutExtension
-    private val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
+    private val cobData by lazy {
+        CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
+    }
 
     private val cobVirtualFile: CaosVirtualFile by lazy {
         CobVirtualFileUtil.getOrCreateCobVirtualFileDirectory(file)
@@ -45,9 +48,9 @@ class CobFileTreeNode(
     override fun canNavigateToSource(): Boolean = false
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
-        val children = when (cobData) {
-            is CobFileData.C1CobData -> getChildren(cobData)
-            is CobFileData.C2CobData -> getChildren(cobData)
+        val children = when (val data = cobData) {
+            is CobFileData.C1CobData -> getChildren(data)
+            is CobFileData.C2CobData -> getChildren(data)
             else -> emptyList()
         }
         children.forEach {
@@ -99,6 +102,10 @@ class CobFileTreeNode(
         presentationData.setIcon(icon)
         presentationData.presentableText = file.name
         presentationData.locationString = null
+    }
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ASYNC
     }
 
     override fun getName(): String = virtualFile.name
@@ -163,6 +170,10 @@ internal class CobSpriteFileTreeNode(
     }
     override fun getName() = virtualFile.name
     override fun getAlphaSortKey(): String  = virtualFile.name
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ASYNC
+    }
 }
 
 private fun wrapFileBlock(enclosingCob:CaosVirtualFile, block:CobBlock.FileBlock) : VirtualFile {
