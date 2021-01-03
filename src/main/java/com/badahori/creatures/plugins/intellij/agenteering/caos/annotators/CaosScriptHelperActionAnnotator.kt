@@ -13,7 +13,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPrev
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
@@ -26,25 +25,31 @@ import com.intellij.psi.PsiElement
 class CaosScriptHelperActionAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+
         when(element) {
             is CaosScriptCommandCall -> {
                 var child: PsiElement? = element.firstChild
                 if (child != null && child !is CaosScriptCommandLike) {
                     child = child.firstChild
                 }
+                val wrapper = AnnotationHolderWrapper(holder)
                 (child as? CaosScriptCAssignment)?.let {
                     val variant = element.variant ?: CaosVariant.UNKNOWN
-                    annotateAssignment(variant, it, holder)
+                    annotateAssignment(variant, it, wrapper)
                 }
                 //Annotate
-                addExpandCollapseLinesActions(element, holder)
+                addExpandCollapseLinesActions(element, wrapper)
             }
-            is CaosScriptRvalue -> annotateExpectsValue(element, holder)
-            is CaosScriptWhiteSpaceLike -> expandCollapseOnSpaceOrNewline(element, holder)
+            is CaosScriptRvalue -> {
+                val wrapper = AnnotationHolderWrapper(holder)
+                annotateExpectsValue(element, wrapper)
+                addExpandCollapseLinesActions(element, wrapper)
+            }
+            is CaosScriptWhiteSpaceLike -> expandCollapseOnSpaceOrNewline(element, AnnotationHolderWrapper(holder))
         }
     }
 
-    private fun annotateExpectsValue(argument:CaosScriptRvalue, holder: AnnotationHolder) {
+    private fun annotateExpectsValue(argument:CaosScriptRvalue, wrapper: AnnotationHolderWrapper) {
         val index = argument.index
         val command = argument.getParentOfType(CaosScriptCommandElement::class.java)
             ?: return
@@ -57,7 +62,7 @@ class CaosScriptHelperActionAnnotator : Annotator {
                 val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
                     ?: return
                 when (previousToken) {
-                    "CLAS" -> AnnotationHolderWrapper(holder)
+                    "CLAS" -> wrapper
                         .newInfoAnnotation("")
                         .range(argument)
                         .withFix(GenerateClasIntegerAction(argument))
@@ -67,10 +72,10 @@ class CaosScriptHelperActionAnnotator : Annotator {
         }
     }
 
-    private fun addExpandCollapseLinesActions(element: PsiElement, holder: AnnotationHolder) {
+    private fun addExpandCollapseLinesActions(element: PsiElement, wrapper: AnnotationHolderWrapper) {
         val fileText = element.containingFile.text
         val fixes = mutableListOf<IntentionAction>()
-        if (fileText.contains("\n")) {
+        if (fileText.contains('\n')) {
             if (element.variant?.isOld.orFalse()) {
                 fixes.add(CaosScriptCollapseNewLineIntentionAction.COLLAPSE_WITH_COMMA)
             }
@@ -78,7 +83,6 @@ class CaosScriptHelperActionAnnotator : Annotator {
         }
         if (element.getPreviousNonEmptyNode(true) != null || element.getNextNonEmptySibling(true) != null)
             fixes.add(CaosScriptExpandCommasIntentionAction)
-        val wrapper = AnnotationHolderWrapper(holder)
 
         wrapper
             .newInfoAnnotation(null)
@@ -90,7 +94,7 @@ class CaosScriptHelperActionAnnotator : Annotator {
     /**
      *
      */
-    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptWhiteSpaceLike, holder: AnnotationHolder) {
+    private fun expandCollapseOnSpaceOrNewline(element: CaosScriptWhiteSpaceLike, wrapper: AnnotationHolderWrapper) {
         val fixes = mutableListOf<IntentionAction>()
         val isAtEnd = element.next == null
         if (element.text == "," || element.text == " " || isAtEnd) {
@@ -101,14 +105,14 @@ class CaosScriptHelperActionAnnotator : Annotator {
                 fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA))
             fixes.add(CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE))
         }
-        AnnotationHolderWrapper(holder)
+        wrapper
             .newInfoAnnotation(null)
             .range(element)
             .withFixes(*fixes.toTypedArray())
             .create()
     }
 
-    private fun annotateAssignment(variant: CaosVariant, assignment: CaosScriptCAssignment, holder: AnnotationHolder) {
+    private fun annotateAssignment(variant: CaosVariant, assignment: CaosScriptCAssignment, wrapper: AnnotationHolderWrapper) {
         val commandDefinition = assignment.lvalue?.commandDefinition
             ?: return
         val valuesList = commandDefinition.returnValuesList[variant]
@@ -127,15 +131,11 @@ class CaosScriptHelperActionAnnotator : Annotator {
                 valuesList.values,
                 currentValue
             )
-            AnnotationHolderWrapper(holder)
+            wrapper
                 .newInfoAnnotation(null)
                 .range(range)
                 .withFix(bitFlagsGenerator)
                 .create()
         }
-    }
-
-    companion object {
-        private val COMMAS_ONLY_REGEX = "[,]+".toRegex()
     }
 }
