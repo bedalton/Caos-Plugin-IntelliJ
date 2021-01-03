@@ -42,6 +42,8 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
      */
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
         return (PsiTreeUtil.findChildrenOfType(root, CaosScriptHasCodeBlock::class.java).mapNotNull blocks@{ parent ->
+            if (parent is CaosScriptMacro)
+                    return@blocks null
 
             (parent.parent as? CaosScriptDoifStatement)?.let {doif->
                 // If doif has no sub code blocks,
