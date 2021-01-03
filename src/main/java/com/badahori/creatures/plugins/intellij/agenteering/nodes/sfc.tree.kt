@@ -14,6 +14,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -72,6 +73,10 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
                     true
             )
         }.toMutableList()
+    }
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ASYNC
     }
 }
 
