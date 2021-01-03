@@ -196,10 +196,6 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             val thisValueAsDriveOrChemical: String? = if (hasDriveOrChemical && commandName notLike "DRV!")
                 thisValue.rvaluePrime?.let { rvaluePrime ->
                     formatChemicalValue(variant, rvaluePrime)
-                        ?: run {
-                            LOGGER.severe("Chemical should not be null for command $commandName. With Rvalue ${rvaluePrime.text}")
-                            null
-                        }
                 }
             else
                 null
