@@ -36,6 +36,34 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 0.01.100</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix bad parse of C1 string starting with R</li>
+          <li>Fix bad DOIF folding on DRIV</li>
+          <li>Fix bad DOIF hint on DRIV and CHEM</li>
+          <li>Fix no error shown on commas in CV+ variants</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Simplify double negative DOIF folding</li>
+          <li>Delay COB decompile for faster project opening</li>
+          <li>Add DOIF folding on CHEM</li>
+          <li>Hide project list context menu items when not relevant</li>
+        </ul>
+        <b>Version: 0.01.99</b><br/>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix exception thrown on bad frames on SPR parse</li>
+          <li>Exception thrown on non-lowercase file names in ATT file editor</li>
+          <li>Fix inconsistent numbering on ATT point radio buttons and in graphic labels</li>
+        </ul>
+        <b>Improvements</b>
+        <ul>
+          <li>Make ATT/Sprite matching case insensitive</li>
+        </ul>
+      </li>
+      <li>
         <b>Version: 0.01.99</b><br/>
         <b>#Fixes</b>
         <ul>
