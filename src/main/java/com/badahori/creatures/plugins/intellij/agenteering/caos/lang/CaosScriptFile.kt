@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
@@ -25,6 +26,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.FileContentUtilCore
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.min
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
@@ -152,9 +154,11 @@ val VirtualFile.cachedVariant: CaosVariant?
 
 val maxDumpHeader = "* Scriptorium Dump".length + 4 // Arbitrary spaces pad
 
-val dumpRegex = "^\\*\\s*([Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]|[Dd][Uu][Mm][Pp]|[Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]\\s*[Dd][Uu][Mm][Pp]).*".toRegex()
+val dumpRegex = "\\*\\s*([Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]|[Dd][Uu][Mm][Pp]|[Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]\\s*[Dd][Uu][Mm][Pp]).*".toRegex()
 
 val PsiFile.isDump:Boolean get() {
-    val text = text.substring(0, maxDumpHeader)
-    return dumpRegex.matches(text)
+    return text.trim().let { text ->
+        val commentText:String = text.split("\n", ignoreCase = true, limit = 2)[0]
+        dumpRegex.matches(commentText)
+    }
 }
