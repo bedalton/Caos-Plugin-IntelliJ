@@ -9,24 +9,34 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
 import com.intellij.AppTopics
 import com.intellij.ProjectTopics
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import java.util.logging.Logger
 
 
-class CaosProjectComponent(private val project: Project) : ProjectComponent {
+class CaosProjectStartupActivity : StartupActivity {
 
-    init {
+    private lateinit var project:Project
+
+    override fun runActivity(project: Project) {
+        this.project = project
         registerFileOpenHandler(project)
         registerProjectRootChangeListener(project)
         registerFileSaveHandler()
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).runReadActionInSmartMode {
+                registerOnAny()
+            }
+        } else {
+            registerOnAny()
+        }
     }
 
     private fun registerFileOpenHandler(project: Project) {
@@ -61,11 +71,6 @@ class CaosProjectComponent(private val project: Project) : ProjectComponent {
         project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, CaosSdkProjectRootsChangeListener)
     }
 
-    override fun projectOpened() {
-        super.projectOpened()
-        registerOnAny()
-    }
-
     private fun registerOnAny() {
         if (hasAnyCaosFiles(project))
             CaosBundleSourcesRegistrationUtil.register(null, project)
@@ -82,7 +87,7 @@ class CaosProjectComponent(private val project: Project) : ProjectComponent {
     }
 
     companion object {
-        private val LOGGER = Logger.getLogger("#" + CaosProjectComponent::class.java)
+        private val LOGGER = Logger.getLogger("#" + CaosProjectStartupActivity::class.java)
 
         private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent")
 

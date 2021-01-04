@@ -4,12 +4,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent
+import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.impl.FilePropertyPusher
 import com.intellij.openapi.util.Key
@@ -36,15 +38,15 @@ fun warningNotification(project: Project? = null, message: String, title: String
             NotificationType.WARNING), project)
 }
 
-val Module.settings:CaosModuleSettingsComponent get() {
-    return this.getComponent(CaosModuleSettingsComponent::class.java)
+val Module.settings:CaosModuleSettingsService get() {
+    return ModuleServiceManager.getService(this, CaosModuleSettingsService::class.java)!!
 }
 
 var Module.variant: CaosVariant?
 get() {
-    return settings.state.variant
+    return settings.getState().variant
 } set(newVariant) {
-    settings.state.variant = newVariant
+    settings.getState().variant = newVariant
 }
     /*
     get() {
