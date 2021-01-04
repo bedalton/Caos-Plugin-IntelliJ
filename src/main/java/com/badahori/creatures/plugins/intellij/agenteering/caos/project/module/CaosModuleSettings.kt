@@ -8,12 +8,16 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.util.xmlb.Converter
 import com.intellij.util.xmlb.annotations.Attribute
 
+interface CaosModuleSettingsService {
+    fun getState(): CaosModuleSettings
+    fun loadState(settingsIn: CaosModuleSettings)
+}
 
 @State(
         name = "CaosModuleSettings",
         storages = [Storage(file = StoragePathMacros.MODULE_FILE)]
 )
-class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings> {
+class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings>, CaosModuleSettingsService {
 
     private var settings = CaosModuleSettings()
 
@@ -25,6 +29,8 @@ class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings>
         this.settings = settingsIn
     }
 }
+
+
 
 data class CaosModuleSettings(
         @Attribute("com.badahori.creatures.caos.variant", converter = CaosVariantConverter::class)

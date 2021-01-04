@@ -10,6 +10,7 @@ plugins {
 group = "com.badahori.creatures.plugins.intellij.agenteering"
 version = "0.01.100"
 
+
 repositories {
     mavenCentral()
 }
@@ -68,6 +69,7 @@ tasks.getByName("buildPlugin") {
 
 tasks.withType<org.jetbrains.intellij.tasks.RunIdeTask>().all {
     maxHeapSize = "1g"
+    autoReloadPlugins = true
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
