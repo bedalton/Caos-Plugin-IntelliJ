@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin >
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
   <version><!-- *** SET VERSION IN GRADLE *** -->0.01.100</version>
@@ -324,6 +324,7 @@
     <!-- ===== CAOS Script ====== -->
     <!-- ======================== -->
     <!-- LANG -->
+    <postStartupActivity implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectStartupActivity" />
     <fileTypeFactory
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
     <lang.parserDefinition
@@ -337,6 +338,9 @@
     <moduleType id="CAOS_MODULE"
                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                 classpathProvider="true" />
+    <moduleService
+        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService"
+        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent" />
 
     <additionalLibraryRootsProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosScriptAdditionalLibraryRootsProvider" />
@@ -755,21 +759,4 @@
       <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths" />
     </action>
   </actions>
-
-  <module-components>
-    <component>
-      <implementation-class>
-        com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent
-      </implementation-class>
-    </component>
-  </module-components>
-
-  <project-components>
-    <component>
-      <implementation-class>com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectComponent
-      </implementation-class>
-    </component>
-  </project-components>
-  <application-components>
-  </application-components>
 </idea-plugin>
