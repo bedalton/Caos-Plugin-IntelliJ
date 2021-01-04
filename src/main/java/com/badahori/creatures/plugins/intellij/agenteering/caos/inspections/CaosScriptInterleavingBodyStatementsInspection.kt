@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isDump
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
@@ -42,6 +43,8 @@ class CaosScriptInterleavingBodyStatements : LocalInspectionTool() {
     private fun annotate(thisScript: CaosScriptScriptElement, problemsHolder: ProblemsHolder) {
         val file = thisScript.containingCaosFile
                 ?: return
+        if (file.isDump)
+            return
         if (file.variant?.isOld.orFalse())
             return
         val thisScriptStart = thisScript.startOffset
