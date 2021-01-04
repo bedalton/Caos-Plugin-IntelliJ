@@ -13,6 +13,7 @@ import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 
 
@@ -72,6 +73,10 @@ internal class SpriteFileTreeNode(
             else -> null
         }
         presentationData.setIcon(icon)
+    }
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ASYNC
     }
 }
 

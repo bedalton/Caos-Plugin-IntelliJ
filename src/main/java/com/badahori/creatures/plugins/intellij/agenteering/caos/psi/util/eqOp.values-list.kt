@@ -39,13 +39,11 @@ private fun getValuesListId(
         when {
             // If there is no opposing expression yet, bail out
             rvaluesList.size < 2 -> {
-                LOGGER.severe("Equality operator expects exactly TWO expressions. Found: ${rvaluesList.size}.")
                 null
             }
             // If there are too many expressions, bail out
             // This should not happen
             rvaluesList.size > 2 -> {
-                LOGGER.severe("Equality operator expects exactly TWO expressions. Found: ${rvaluesList.size}. Expressions ${rvaluesList.map { "'${it.text}'" }}")
                 null
             }
             // Expression is left side expression, return right
@@ -54,6 +52,7 @@ private fun getValuesListId(
             else -> rvaluesList[0]
         }
     } ?: return null
+    
     val commandDefinition: CaosCommand = other
             // Only rvalue primes have command types as they are command calls
             .rvaluePrime

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil.getInferredType
@@ -50,7 +52,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun getDoifFold(expression: CaosScriptEqualityExpressionPrime): String? {
         ProgressIndicatorProvider.checkCanceled()
         val variant = expression.variant
-                ?: return null
+            ?: return null
 
         val eqOp = EqOp.fromValue(expression.eqOp.text)
         if (eqOp == INVALID) {
@@ -59,9 +61,9 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
         val firstExpression = expression.first
         val secondExpression = expression.second
-                ?: return null
+            ?: return null
         var text = formatComparison(variant, eqOp, firstExpression, secondExpression, false)
-                ?: formatComparison(variant, eqOp, secondExpression, firstExpression, true)
+            ?: formatComparison(variant, eqOp, secondExpression, firstExpression, true)
 
         text = if (text like expression.text)
             null
@@ -81,19 +83,22 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         if (children.size > 400)
             return emptyArray()
         return children
-                .filter {
-                    ProgressIndicatorProvider.checkCanceled()
-                    shouldFold(it)
-                }
-                .mapNotNull {
-                    ProgressIndicatorProvider.checkCanceled()
-                    getFoldingRegion(it, group)
-                }
-                .toTypedArray()
+            .filter {
+                ProgressIndicatorProvider.checkCanceled()
+                shouldFold(it)
+            }
+            .mapNotNull {
+                ProgressIndicatorProvider.checkCanceled()
+                getFoldingRegion(it, group)
+            }
+            .toTypedArray()
     }
 
     // Helper function to get actual folding regions for command calls
-    private fun getFoldingRegion(expression: CaosScriptEqualityExpressionPrime, group: FoldingGroup): FoldingDescriptor? {
+    private fun getFoldingRegion(
+        expression: CaosScriptEqualityExpressionPrime,
+        group: FoldingGroup
+    ): FoldingDescriptor? {
         if (!shouldFold(expression))
             return null
         return FoldingDescriptor(expression.node, expression.textRange, group)
@@ -106,7 +111,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
      */
     private fun shouldFold(expression: CaosScriptEqualityExpressionPrime): Boolean {
         val variant = expression.variant
-                ?: return false
+            ?: return false
 
         // Checks cached value first to prevent needing to check all arguments
         expression.getUserData(CACHE_KEY)?.let {
@@ -120,17 +125,17 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         // Get right side argument
         val second = expression.second
         // If second argument is null, there is nothing to compare
-                ?: return false
+            ?: return false
 
-        val firstCommand = first.text.toUpperCase();
-        val secondCommand = second.text.toUpperCase()
+        val firstCommand = first.commandStringUpper
+        val secondCommand = second.commandStringUpper
         val isP1P2 = firstCommand in P1P2 || secondCommand in P1P2
         // Get containing script number to find a possible _P1_ or _P2_ named value
         val containingScriptNumber = (if (isP1P2 && variant.isNotOld)
             first.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber
         else null) ?: -1
         // Check if any of the values has a value list
-        return listOf(firstCommand, secondCommand).intersect(listOf("CHEM", "DRIV", "DRV!")).isNotEmpty()
+        return listOf(firstCommand, secondCommand).intersect(foldableChemicals).isNotEmpty()
                 || AGENT in listOf(getInferredType(first, false), getInferredType(second, false))
                 || getValuesList(variant, first) != null
                 || getValuesList(variant, second) != null
@@ -141,12 +146,14 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 || "KEYD" in listOfNotNull(first.commandStringUpper, second.commandStringUpper)
     }
 
-    private fun hasParamName(variant:CaosVariant, containingScriptNumber:Int, first:CaosScriptRvalue) : Boolean {
+    private fun hasParamName(variant: CaosVariant, containingScriptNumber: Int, first: CaosScriptRvalue): Boolean {
         return getParamName(variant, containingScriptNumber, first) != null
     }
 
 
     companion object {
+
+        val foldableChemicals = listOf("CHEM", "DRIV", "DRV!")
 
         /**
          * Takes comparison operator properties and formats them
@@ -155,7 +162,13 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
          * @param thisValue the base value to build the other value from
          * @param otherValue the value to convert from int to another value
          */
-        fun formatComparison(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue, reversed: Boolean): String? {
+        fun formatComparison(
+            variant: CaosVariant,
+            eqOp: EqOp,
+            thisValue: CaosScriptRvalue,
+            otherValue: CaosScriptRvalue,
+            reversed: Boolean
+        ): String? {
 
             if (thisValue.textUppercase in P1P2) {
                 // If is _P1_ or _P2_ get replacement value if any
@@ -165,64 +178,59 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             }
             // Get command definition
             val command = thisValue.commandDefinition
-                    // If there is no command definition,
-                    // then there is no way to get values lists for argument
-                    ?: return null
+            // If there is no command definition,
+            // then there is no way to get values lists for argument
+                ?: return null
 
+            val commandName = command.command
             // If this is not an int value, there is no way to convert it to a list value
             val otherValueInt = otherValue.intValue
-            val hasDriveOrChemical = command.command.let { it like "CHEM" || it like "DRV!" || it like "DRIV" }
+
+            // Check if foldable
+            val hasDriveOrChemical = commandName likeAny foldableChemicals
             if (otherValueInt == null && !hasDriveOrChemical && otherValue.commandDefinition?.returnType != AGENT)
                 return null
 
-            // Get return value of "thisValue" as a values list
-            val returnValuesList = command.returnValuesList[variant]
-
-            // Get extension value type
-            val extensionType = returnValuesList?.extensionType
-            // Check whether value type is bool like
-            val isBool = extensionType?.startsWith("bool") ?: false
-            // Whether or not to convert "<" to "is". This is based on the extension value
-            val boolOnLessThan = isBool && extensionType notLike "bool:gt"
-
-            // Get other value from its values list value
-            val otherValueText = returnValuesList
-                    // Get value as bitflags if possible
-                    ?.getWithBitFlags(otherValueInt ?: 0)
-                    // If bitflags is empty -> nullify to prevent empty string
-                    ?.nullIfEmpty()
-                    // Join bitflags to single string for use in doif format
-                    ?.joinToString(", ") { it.name }
-            // Get the other value as a values list value
-                    ?: otherValueInt?.let { returnValuesList?.get(it) }?.name
 
             // Formats the primary value as a drive or chemical name as needed
-            val thisValueAsDriveOrChemical = thisValue.rvaluePrime?.let { rvaluePrime -> formatThisValue(variant, rvaluePrime) }
-
+            val thisValueAsDriveOrChemical: String? = if (hasDriveOrChemical && commandName notLike "DRV!")
+                thisValue.rvaluePrime?.let { rvaluePrime ->
+                    formatChemicalValue(variant, rvaluePrime)
+                }
+            else
+                null
             // Package parameters for use in formatting
             // Package was build to prevent having to pass so many parameters to each unique formatting function
-            val formatInfo = FormatInfo(
-                    command = command,
-                    variant = variant,
-                    eqOp = eqOp,
-                    isBool = isBool,
-                    boolOnLessThan = boolOnLessThan,
-                    thisValue = formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
-                    thisValuesArgs = thisValue.arguments.map { it.text },
-                    thisValueType = thisValue.inferredType,
-                    otherValue = formatPrimary(otherValueText ?: otherValue.text),
-                    otherValueInt = otherValue.text.toIntSafe(),
-                    reversed = reversed
+            var formatInfo = FormatInfo(
+                command = command,
+                variant = variant,
+                thisValue = formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
+                thisValuesArgs = thisValue.arguments.map { it.text },
+                thisValueType = thisValue.inferredType,
+                otherValueInt = otherValue.text.toIntSafe(),
+                reversed = reversed,
+                eqOp = eqOp,
+                isBool = false,
+                boolOnLessThan = false,
+                otherValue = formatPrimary(otherValue.text)
             )
+            // Get return value of "thisValue" as a values list
+            if (otherValueInt != null && (!hasDriveOrChemical || commandName like "DRV!")) {
+                formatInfo = getFormatInfoWithValuesList(formatInfo, otherValueInt)
+
+                // Ensure that info contains either other value text, or a chemical name
+                if (formatInfo.otherValue.nullIfEmpty() == null)
+                    return DEFAULT_FORMATTER(
+                        formatInfo.copy(
+                            otherValue = formatPrimary(otherValue.text)
+                        )
+                    )
+            }
 
             // Ensure that eq operation actually has a format to use
             val pattern = command.doifFormat
-                    ?: return DEFAULT_FORMATTER(formatInfo)
+                ?: return DEFAULT_FORMATTER(formatInfo)
 
-            // Ensure that info contains either other value text, or a chemical name
-            if (otherValueText == null) {
-                return DEFAULT_FORMATTER(formatInfo)
-            }
 
             // Resolve format to an equation
             val format = resolvePattern(pattern)
@@ -231,23 +239,72 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
         }
 
         /**
+         * Formats the other value using a values list for the command
+         */
+        private fun getFormatInfoWithValuesList(formatInfo: FormatInfo, otherValueInt: Int): FormatInfo {
+            val returnValuesList = formatInfo.command.returnValuesList[formatInfo.variant]
+            val eqOp = formatInfo.eqOp
+            // Get extension value type
+            val extensionType = returnValuesList?.extensionType
+            // Check whether value type is bool like
+            val isBool = extensionType?.startsWith("bool") ?: false
+            // Whether or not to convert "<" to "is". This is based on the extension value
+            val boolOnLessThan = isBool && extensionType notLike "bool:gt"
+            var doubleNegative = isBool && otherValueInt == 0 && (eqOp == GREATER_THAN || eqOp == NOT_EQUAL)
+
+            // Get other value from its values list value
+            val otherValueText = returnValuesList
+                // Get value as bitflags if possible
+                ?.getWithBitFlags(otherValueInt)
+                // If bitflags is empty -> nullify to prevent empty string
+                ?.nullIfEmpty()
+                // Join bitflags to single string for use in doif format
+                ?.joinToString(", ") { it.name }
+            // Get the other value as a values list value
+                ?: otherValueInt.let {
+                    returnValuesList?.get(it)?.name?.let { trueValue ->
+                        var out = trueValue
+                        if (doubleNegative) {
+                            if (trueValue.toLowerCase()
+                                    .let { lower ->
+                                        lower.startsWith("not")
+                                                && !lower.startsWith("noth") // Ensure it != 'Nothing'
+                                    }
+                            ) {
+                                out = returnValuesList[1]?.name ?: out
+                            }
+                        }
+                        // If value is not replaced, then do not invert Eq/NE
+                        doubleNegative = out != trueValue
+                        out
+                    }
+                }
+            return formatInfo.copy(
+                eqOp = if (doubleNegative) EQUAL else eqOp,
+                isBool = isBool,
+                boolOnLessThan = boolOnLessThan,
+                otherValue = formatPrimary(otherValueText ?: "")
+            )
+        }
+
+        /**
          * Formats the primary value to a Drive or chemical name based on its first parameter
          */
-        private fun formatThisValue(variant: CaosVariant, rvaluePrime: CaosScriptRvaluePrime?): String? {
+        private fun formatChemicalValue(variant: CaosVariant, rvaluePrime: CaosScriptRvaluePrime?): String? {
             if (rvaluePrime == null)
                 return null
             val commandString = rvaluePrime.commandStringUpper
-            if (commandString != "CHEM" && commandString != "DRIV" && commandString != "DRV!")
+            if (commandString likeNone foldableChemicals)
                 return null
-            val chemicalIndex = rvaluePrime.arguments.firstOrNull()?.text
-                    ?: return null
+            val chemicalIndex = rvaluePrime.arguments.firstOrNull()?.text?.toIntSafe()
+                ?: return null
             return when (commandString) {
                 "CHEM" -> CaosLibs[variant].valuesList("Chemicals")
-                        ?.get(chemicalIndex)?.name
-                        ?: "Chemical $chemicalIndex"
+                    ?.get(chemicalIndex)?.name
+                    ?: "Chemical $chemicalIndex"
                 "DRIV" -> CaosLibs[variant].valuesList("Drives")
-                        ?.get(chemicalIndex)?.name
-                        ?: "Driv $chemicalIndex"
+                    ?.get(chemicalIndex)?.name
+                    ?: "Driv $chemicalIndex"
                 else -> null
             }
         }
@@ -274,7 +331,8 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         internal const val IS = "is"
         internal const val IS_NOT = "is not"
-        private val CACHE_KEY = Key<Pair<String, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.DOIF_FOLDING_STRING")
+        private val CACHE_KEY =
+            Key<Pair<String, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.DOIF_FOLDING_STRING")
     }
 
 }
@@ -299,17 +357,17 @@ private val EQ_IS_REGEX = "\\{(is|eq)}".toRegex()
  * Holds information that might be necessary to format a doif comparison expression
  */
 data class FormatInfo(
-        val command: CaosCommand,
-        val variant: CaosVariant,
-        val eqOp: EqOp,
-        val isBool: Boolean,
-        val boolOnLessThan: Boolean,
-        val thisValue: String,
-        val thisValueType: CaosExpressionValueType,
-        val thisValuesArgs: List<String>,
-        val otherValue: String,
-        val otherValueInt: Int?,
-        val reversed: Boolean
+    val command: CaosCommand,
+    val variant: CaosVariant,
+    val eqOp: EqOp,
+    val isBool: Boolean,
+    val boolOnLessThan: Boolean,
+    val thisValue: String,
+    val thisValueType: CaosExpressionValueType,
+    val thisValuesArgs: List<String>,
+    val otherValue: String,
+    val otherValueInt: Int?,
+    val reversed: Boolean
 )
 
 
@@ -334,10 +392,10 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
     val otherValueInt = formatInfo.otherValueInt
     if (otherValueInt == 0 && formatInfo.thisValueType == AGENT) {
         val eqOpText = formatEqOp(
-                formatInfo.eqOp,
-                isBool = true,
-                boolOnLessThan = false,
-                otherValueInt = otherValueInt
+            formatInfo.eqOp,
+            isBool = true,
+            boolOnLessThan = false,
+            otherValueInt = otherValueInt
         )
         if (eqOpText == IS || eqOpText == IS_NOT)
             return@formatter "$thisValue $eqOpText ${formatPrimary("NULL")}"
@@ -412,7 +470,7 @@ private val CAGE: Formatter = { formatInfo: FormatInfo ->
  */
 private val HIST_CAGE = formatter@{ formatInfo: FormatInfo ->
     val moniker = formatInfo.thisValuesArgs.firstOrNull()?.nullIfEmpty()
-            ?: return@formatter DEFAULT_FORMATTER(formatInfo)
+        ?: return@formatter DEFAULT_FORMATTER(formatInfo)
     val root = CAGE(formatInfo)
     (formatInfo.thisValuesArgs.getOrNull(1))?.let {
         "'$moniker' $root at Event#$it"
@@ -438,31 +496,36 @@ private val TIME: Formatter = formatter@{ formatInfo: FormatInfo ->
 /**
  * Gets the DOIF fold when _P1_ or _P2_
  */
-private fun onP1P2(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue): String? {
+private fun onP1P2(
+    variant: CaosVariant,
+    eqOp: EqOp,
+    thisValue: CaosScriptRvalue,
+    otherValue: CaosScriptRvalue
+): String? {
     // Gets event number safely,
     // as an infinite loop is created if calling before index is build
     val eventScriptNumber = (if (DumbService.isDumb(thisValue.project))
         thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumberElement?.text?.toIntOrNull()
     else
         thisValue.getParentOfType(CaosScriptEventScript::class.java)?.eventNumber)
-            ?: return null
+        ?: return null
 
     // Get the parameter name value as parts.
     // Parameters can be in format paramName@valuesListName
     // ie keyCode@KeyCodes
     val paramNameParts = getParamName(variant, eventScriptNumber, thisValue)?.split("@")
-            ?: return null
+        ?: return null
     // Get param name without trailing values list name
     val paramName = paramNameParts[0]
 
     // Get the other value as literal text value, or values list value if available
     val otherValueName = paramNameParts.getOrNull(1)?.let otherValue@{ valuesListName ->
         val key = otherValue.intValue
-                // Other value is not int. Bail out as there will be no value found
-                ?: return@otherValue null
+        // Other value is not int. Bail out as there will be no value found
+            ?: return@otherValue null
         // Get the associated values list
         val valuesList = CaosLibs[variant].valuesList(valuesListName)
-                ?: return@otherValue null
+            ?: return@otherValue null
         // Get the associated value
         valuesList[key]?.name
     } ?: otherValue.text
@@ -477,12 +540,12 @@ private fun onP1P2(variant: CaosVariant, eqOp: EqOp, thisValue: CaosScriptRvalue
  */
 private val KEYD = formatter@{ formatInfo: FormatInfo ->
     val keycodeAsString = formatInfo.command
-            .parameters
-            .getOrNull(0)
-            ?.valuesList
-            ?.get(formatInfo.variant)
-            ?.get(formatInfo.thisValuesArgs.getOrNull(0) ?: "")
-            ?.name
+        .parameters
+        .getOrNull(0)
+        ?.valuesList
+        ?.get(formatInfo.variant)
+        ?.get(formatInfo.thisValuesArgs.getOrNull(0) ?: "")
+        ?.name
     val key = keycodeAsString?.let { "'$it' Key" } ?: ("Key #" + (formatInfo.thisValuesArgs.getOrNull(0) ?: "??"))
     val equals = formatEqOp(formatInfo.eqOp, true, boolOnLessThan = false, otherValueInt = formatInfo.otherValueInt)
     val other = formatInfo.otherValue
@@ -539,7 +602,7 @@ private val upperCaseFirstOnAllWords: FormatString = { text: String ->
     }
 }
 
-private val noChange:FormatString = { string:String -> string }
+private val noChange: FormatString = { string: String -> string }
 
 /**
  * Formats text to unify case of words.
@@ -557,7 +620,7 @@ private val formatPrimary: FormatString = noChange
 /**
  * Gets a _P1_ or _P2_ name given an event script number
  */
-private fun getParamName(variant:CaosVariant, containingScriptNumber: Int, thisValue:CaosScriptRvalue) : String? {
+private fun getParamName(variant: CaosVariant, containingScriptNumber: Int, thisValue: CaosScriptRvalue): String? {
 
     // No named parameters exist or are known for C1 or C2
     if (variant.isOld)
