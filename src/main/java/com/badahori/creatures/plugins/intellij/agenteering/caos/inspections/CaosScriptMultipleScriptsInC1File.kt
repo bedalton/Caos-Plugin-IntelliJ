@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isDump
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -60,6 +61,8 @@ class CaosScriptMultipleScriptsInC1File : LocalInspectionTool() {
     private fun annotate(script: CaosScriptScriptElement, problemsHolder: ProblemsHolder) {
         val file = script.containingCaosFile
                 ?: return
+        if (file.isDump)
+            return
         if (file.variant?.isNotOld.orFalse() || !file.runInspections)
             return
         val thisScriptStart = script.startOffset

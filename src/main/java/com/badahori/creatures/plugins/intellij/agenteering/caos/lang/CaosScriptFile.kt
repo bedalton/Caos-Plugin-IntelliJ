@@ -149,3 +149,12 @@ val VirtualFile.cachedVariant: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
             ?: VariantFilePropertyPusher.readFromStorage(this)
             ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
+
+val maxDumpHeader = "* Scriptorium Dump".length + 4 // Arbitrary spaces pad
+
+val dumpRegex = "^\\*\\s*([Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]|[Dd][Uu][Mm][Pp]|[Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]\\s*[Dd][Uu][Mm][Pp]).*".toRegex()
+
+val PsiFile.isDump:Boolean get() {
+    val text = text.substring(0, maxDumpHeader)
+    return dumpRegex.matches(text)
+}
