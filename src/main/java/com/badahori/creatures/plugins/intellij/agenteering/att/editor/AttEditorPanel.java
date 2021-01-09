@@ -4,6 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.event.DocumentEvent;
@@ -17,17 +19,13 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import javafx.scene.control.RadioButton;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Logger;
@@ -59,9 +57,12 @@ public class AttEditorPanel implements OnChangePoint {
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);
     private final Project project;
     private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
+    @SuppressWarnings("FieldCanBeLocal")
     private final String COMMAND_GROUP_ID = "ATTEditor";
     private boolean changedSelf = false;
     private Document document;
+    private boolean lockY;
+    private final JMenuItem[] pointMenuItems = new JMenuItem[6];
 
     AttEditorPanel(final Project project, final CaosVariant variantIn, final VirtualFile virtualFile, final VirtualFile spriteFile) {
         this.project = project;
@@ -70,8 +71,6 @@ public class AttEditorPanel implements OnChangePoint {
         this.variant = variantIn;
         $$$setupUI$$$();
         final String part = virtualFile.getName().substring(0, 1);
-        this.setVariant(variantIn);
-        this.setPart(part);
         this.point1.setSelected(true);
         final PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
         if (psiFile != null) {
@@ -110,9 +109,14 @@ public class AttEditorPanel implements OnChangePoint {
             });
         }
         initListeners();
+        initPopupMenu();
         display.setFocusable(true);
         scrollPane.setFocusable(true);
         spriteCellList.setFocusable(true);
+        this.setVariant(variantIn);
+        this.setPart(part);
+        update(variantIn, part);
+        labels.setSelected(CaosScriptProjectSettings.INSTANCE.getShowLabels());
     }
 
     private void initListeners() {
@@ -157,7 +161,7 @@ public class AttEditorPanel implements OnChangePoint {
             update(newVariant, (String) part.getSelectedItem());
         });
 
-        // Add Point radiobuttons listener
+        // Add Point radio-buttons listener
         addPointListener(point1, 0);
         addPointListener(point2, 1);
         addPointListener(point3, 2);
@@ -178,7 +182,56 @@ public class AttEditorPanel implements OnChangePoint {
         spriteCellList.setFocusable(true);
         spriteCellList.requestFocusInWindow();
     }
-
+    private void initPopupMenu() {
+        final JPopupMenu menu = new JPopupMenu();
+        /*final JMenuItem labels = new JCheckBoxMenuItem("Labels");
+        labels.setSelected(this.labels.isSelected());
+        labels.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                labels.setSelected(!labels.isSelected());
+                panel1.repaint();
+                update();
+            }
+        });
+        menu.add(labels);*/
+        final JMenuItem lockY = new JCheckBoxMenuItem("Lock Y-axis");
+        lockY.setSelected(this.lockY);
+        lockY.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AttEditorPanel.this.lockY = ! AttEditorPanel.this.lockY;
+                lockY.setSelected(AttEditorPanel.this.lockY);
+            }
+        });
+        menu.add(lockY);
+        menu.addSeparator();
+        for(int i=0; i < 6; i++) {
+            final JMenuItem pointMenuItem = new JMenuItem("Point " + i);
+            JRadioButton button;
+            switch(i) {
+                case 0: button = point1; break;
+                case 1: button = point2; break;
+                case 2: button = point3; break;
+                case 3: button = point4; break;
+                case 4: button = point5; break;
+                case 5: button = point6; break;
+                default:
+                    throw new IndexOutOfBoundsException("Invalid point number '"+i+"' passed  in initMenuItems");
+            }
+            pointMenuItem.setAction(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    button.setSelected(true);
+                }
+            });
+            pointMenuItems[i] = pointMenuItem;
+        }
+        panel1.setComponentPopupMenu(menu);
+        display.setInheritsPopupMenu(true);
+        scrollPane.setInheritsPopupMenu(true);
+        spriteCellList.setInheritsPopupMenu(true);
+    }
     /**
      * Inits the key listeners to set the current point to edit
      */
@@ -208,11 +261,25 @@ public class AttEditorPanel implements OnChangePoint {
                 setCurrentPoint(wrapCurrentPoint(currentPoint - 1));
             }
         });
-    }
+        final String LOCK_Y = "LockY";
+        inputMap.put(KeyStroke.getKeyStroke("Y"), LOCK_Y);
+        actionMap.put(LOCK_Y, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lockY = !lockY;
+            }
+        });
 
-    public void requestFocus() {
-        panel1.requestFocusInWindow();
-        panel1.requestFocus();
+        final String LABELS = "Labels";
+        inputMap.put(KeyStroke.getKeyStroke("L"), LABELS);
+        actionMap.put(LABELS, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final boolean show = !labels.isSelected();
+                CaosScriptProjectSettings.INSTANCE.setShowLabels(show);
+                labels.setSelected(show);
+            }
+        });
     }
 
     private int wrapCurrentPoint(final int point) {
@@ -296,14 +363,14 @@ public class AttEditorPanel implements OnChangePoint {
         Pair<Integer, Integer> linesAndColumns = AttEditorImpl.assumedLinesAndPoints(variant, part);
         this.numLines = linesAndColumns.getFirst();
         this.numPoints = linesAndColumns.getSecond();
+        final List<String> pointNames = pointNames(part);
+        this.pointNames = pointNames;
+        for(int i=0; i < pointNames.size(); i++) {
+            pointMenuItems[i].setText(i + "- " + pointNames.get(i));
+        }
         setMaxPoints(this.numPoints);
-        this.pointNames = pointNames(part);
         fileData = AttFileParser.INSTANCE.parse(project, file, numLines, numPoints);
         update();
-    }
-
-    public void setNumLines(final int numLines) {
-        this.numLines = numLines;
     }
 
     public void setMaxPoints(int numPoints) {
@@ -311,26 +378,36 @@ public class AttEditorPanel implements OnChangePoint {
         switch (numPoints) {
             case 1:
                 point2.setVisible(false);
+                pointMenuItems[1].setVisible(false);
             case 2:
                 point3.setVisible(false);
+                pointMenuItems[2].setVisible(false);
             case 3:
                 point4.setVisible(false);
+                pointMenuItems[3].setVisible(false);
             case 4:
                 point5.setVisible(false);
+                pointMenuItems[4].setVisible(false);
             case 5:
                 point6.setVisible(false);
+                pointMenuItems[5].setVisible(false);
                 break;
         }
         if (numPoints > 1) {
             point2.setVisible(true);
+            pointMenuItems[1].setVisible(true);
             if (numPoints > 2) {
                 point3.setVisible(true);
+                pointMenuItems[2].setVisible(true);
                 if (numPoints > 3) {
                     point4.setVisible(true);
+                    pointMenuItems[3].setVisible(true);
                     if (numPoints > 4) {
                         point5.setVisible(true);
+                        pointMenuItems[4].setVisible(true);
                         if (numPoints > 5) {
                             point6.setVisible(true);
+                            pointMenuItems[5].setVisible(true);
                         }
                     }
                 }
@@ -434,12 +511,15 @@ public class AttEditorPanel implements OnChangePoint {
     }
 
     @Override
-    public synchronized void onChangePoint(final int lineNumber, final @NotNull
+    public synchronized void onChangePoint(final int lineNumber, @NotNull
             Pair<Integer, Integer> newPoint) {
         final AttFileLine line = fileData.getLines().get(lineNumber);
         final List<Pair<Integer, Integer>> oldPoints = line != null ? line.getPoints() : emptyPointsList(this.numPoints);
         final List<Pair<Integer, Integer>> newPoints = new ArrayList<>();
         for (int i = 0; i < oldPoints.size(); i++) {
+            if (currentPoint == i && lockY) {
+                newPoint = new Pair<>(newPoint.getFirst(), oldPoints.get(i).getSecond());
+            }
             newPoints.add(i == currentPoint ? newPoint : oldPoints.get(i));
         }
         final AttFileLine newLine = new AttFileLine(newPoints);
@@ -449,12 +529,11 @@ public class AttEditorPanel implements OnChangePoint {
             newLines.add(i == lineNumber ? newLine : oldLines.get(i));
         }
         fileData = new AttFileData(newLines);
-        try {
-            if (! writeFile(fileData)) {
+        try { 
+            if (!writeFile(fileData)) {
                 LOGGER.severe("Failed to write Att file data");
                 return;
             }
-            update();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -478,9 +557,7 @@ public class AttEditorPanel implements OnChangePoint {
                 project,
                 "Move Points",
                 COMMAND_GROUP_ID,
-                () -> {
-                    document.replaceString(0, psiFile.getTextRange().getEndOffset(), fileData.toFileText(variant));
-                });
+                () -> document.replaceString(0, psiFile.getTextRange().getEndOffset(), fileData.toFileText(variant)));
         return true;
     }
 

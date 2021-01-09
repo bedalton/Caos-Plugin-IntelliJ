@@ -45,6 +45,16 @@ object CaosScriptProjectSettings {
         INDENT_SETTING.value = indent
     }
 
+
+    private const val LABELS_KEY = "att.LABELS"
+    private const val DEFAULT_SHOW_LABELS = true
+    private val SHOW_LABELS_SETTING = CaosPluginSettingsUtil.BooleanSetting(LABELS_KEY, DEFAULT_SHOW_LABELS)
+    var showLabels:Boolean
+        get() = SHOW_LABELS_SETTING.value ?: DEFAULT_SHOW_LABELS
+        set(show) {
+            SHOW_LABELS_SETTING.value = show
+        }
+
     // === CAOS Injection URLS === //
     fun getInjectURL(project:Project) : String? {//Map<String,String>?  {
         //val invalidNameCharsRegex = "[<>]".toRegex() // Used when doing multiple injection urls
