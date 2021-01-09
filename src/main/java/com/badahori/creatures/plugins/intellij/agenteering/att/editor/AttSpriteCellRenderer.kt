@@ -41,11 +41,12 @@ internal class AttSpriteCellComponent() : JPanel() {
     init {
         this.layout = BoxLayout(this, BoxLayout.X_AXIS)
         this.border = BorderFactory.createEmptyBorder(5, 16, 10, 5)
+        inheritsPopupMenu = true
     }
 
     internal fun update(labels:Boolean, scale: Double, value: AttSpriteCellData) {
         removeAll()
-        this.add(JLabel("${value.index}."))
+        this.add(JLabel("${value.index + 1}.").apply { inheritsPopupMenu = true })
         val imageValue = value.image
         val width = imageValue.width * scale
         val height = imageValue.height * scale
@@ -118,6 +119,7 @@ internal class AttSpriteCellComponent() : JPanel() {
             }
         })
         canvas.isFocusable = true
+        canvas.inheritsPopupMenu = true
         add(canvas)
         revalidate()
         repaint()
