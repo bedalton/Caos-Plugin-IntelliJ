@@ -11,9 +11,9 @@ object CaosScriptsQuickCollapseToLine {
     private val whitespaceRegex = "[, \\t\\n\\r]+".toRegex()
     @Suppress("SpellCheckingInspection")
     // Randomish pattern that hopefully never exists in a users code
-    private const val replacePattern = ";;;;__xZZZZx___&&&&_xZZZx__;;;"
-    private const val c1eStringPattern = "([ \t]*\\[[^]]+][ \t]*)"
-    private const val c2eStringPattern = "([ \t]*\"(\\\\.|[^\\\"])*\"[ \t]*|[ \t]*'(\\\\.|[^\\'])*'[ \t]*)"
+    private const val replacePattern = ";;;;__xZZZZx___&&&&___xZZZx__;;;"
+    private val c1eStringPattern = "([ \t]*\\[[^\\]]+][ \t]*)".toRegex(RegexOption.MULTILINE)
+    private val c2eStringPattern = "([ \t]*\"(\\\\.|[^\\\"])*\"[ \t]*|[ \t]*'(\\\\.|[^\\'])*'[ \t]*)".toRegex()
 
     fun collapse(variant:CaosVariant, script: String, collapseChar:CollapseChar = CollapseChar.SPACE): String {
         return if (variant.isOld)
@@ -22,12 +22,12 @@ object CaosScriptsQuickCollapseToLine {
             collapse(c2eStringPattern, script, collapseChar)
     }
 
-    private fun collapse(stringPattern:String, caos: String, collapseChar:CollapseChar): String {
-        val stringRegex = stringPattern.toRegex()
-        val matches = stringRegex.findAll(caos).toList().nullIfEmpty()
-        if (matches != null) {
-            stringPattern.toRegex().replace(caos, replacePattern)
-        }
+    private fun collapse(stringRegex:Regex, caosIn: String, collapseChar:CollapseChar): String {
+        val matches = stringRegex.findAll(caosIn).toList().nullIfEmpty()
+        val caos = if (matches != null) {
+            stringRegex.replace(caosIn, replacePattern)
+        } else
+            caosIn
         val mapper: (string: String) -> String = { string ->
             string.replace(whitespaceRegex, collapseChar.char).trim()
         }
@@ -41,7 +41,7 @@ object CaosScriptsQuickCollapseToLine {
         if (matches != null) {
             val pattern = replacePattern.toRegex()
             for(match in matches) {
-                var string = match.value
+                val string = match.value
                 val prefix = if (string.startsWith(" ") || string.startsWith("\t")) " " else ""
                 val suffix = if (string.endsWith(" ") || string.endsWith("\t")) " " else ""
                 out = pattern.replaceFirst(out, prefix + match.value.trim() + suffix)
@@ -49,5 +49,4 @@ object CaosScriptsQuickCollapseToLine {
         }
         return out.trim()
     }
-
 }
