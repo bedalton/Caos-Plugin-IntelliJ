@@ -22,28 +22,6 @@ fun CaosScriptFile.copyAsOneLine() {
     }
 }
 
-/**
- * Copies text for BoBCob COB making tool
- * BoBCob does has some issues with this plugins way of formatting code
- * It also does not allow comments in files, so those must be stripped out.
- */
-fun copyForBobCob(caosFile:CaosScriptFile) {
-    if (caosFile.variant?.isNotOld.orFalse()) {
-        copyToClipboard(caosFile.text)
-    }
-    val lines = caosFile.text.split("[\n,]+".toRegex())
-            .mapNotNull { line ->
-                line.trim(' ', '\t', '\n',',').let {
-                    if (it.startsWith("*"))
-                        null
-                    else
-                        it.nullIfEmpty()
-                }
-            }
-    val value = lines.joinToString("\n")
-    copyToClipboard(value)
-}
-
 fun CaosScriptFile.trimErrorSpaces() {
     ApplicationManager.getApplication().runWriteAction {
         CommandProcessor.getInstance().executeCommand(project, run@{
