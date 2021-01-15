@@ -26,7 +26,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
         if (child1 !is AbstractBlock || child2 !is AbstractBlock) {
             return noneSpace
         }
-        val keepBlankLines = 2
+        val keepBlankLines = 20
         val type = myNode.elementType
         val node1 = child1.node
         val type1 = node1.elementType
@@ -46,6 +46,26 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
             val lineFeeds = if (mySettings.KEEP_LINE_BREAKS) 1 else 0
             return Spacing.createSpacing(0, 0, lineFeeds, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
         }
+        if (type1 == CaosScriptTypes.CaosScript_EQUAL_SIGN || type2 == CaosScriptTypes.CaosScript_EQUAL_SIGN) {
+            return Spacing.createSpacing(1,1,0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
+        }
+        if (type2 == CaosScriptTypes.CaosScript_CAOS_2_COMMENT_START) {
+            return Spacing.createSpacing(0,0,0,mySettings.KEEP_LINE_BREAKS, 0)
+        }
+        if (type1 == CaosScriptTypes.CaosScript_CAOS_2_COMMENT_START) {
+            return Spacing.createSpacing(1,1,0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
+        }
+        if (type1 == CaosScriptTypes.CaosScript_CAOS_2_COMMENT_VALUE || type2 == CaosScriptTypes.CaosScript_CAOS_2_COMMENT_VALUE) {
+            return Spacing.createSpacing(1,1,0, mySettings.KEEP_LINE_BREAKS, 0)
+        }
+        if (type1 == CaosScriptTypes.CaosScript_CAOS_2_COMMAND) {
+            return Spacing.createSpacing(1,1,0, mySettings.KEEP_LINE_BREAKS, 0)
+        }
+
+        if (type1 == CaosScriptTypes.CaosScript_CAOS_2_BLOCK_HEADER) {
+            return Spacing.createSpacing(0,0,1, mySettings.KEEP_LINE_BREAKS, 0)
+        }
+
         return when (node1.psi) {
             is CaosScriptRvalue -> spaceAfterIsValueOfType(node2,keepBlankLines)
             is CaosScriptIsCommandToken -> spaceAfterIsCommandToken(node2,keepBlankLines)
