@@ -38,8 +38,14 @@ internal inline fun <T> StubOutputStream.writeList(list:List<T>, writer:StubOutp
         writer(item)
     }
 }
+internal inline fun <T> StubOutputStream.writeList(list:Set<T>, writer:StubOutputStream.(T)->Unit) {
+    writeInt(list.size)
+    for(item in list) {
+        writer(item)
+    }
+}
 
-internal inline fun <T:Any> StubInputStream.readList(reader:StubInputStream.()->T) : List<T> {
+internal inline fun <T:Any> StubInputStream.readList(reader:StubInputStream.()->T?) : List<T> {
     val listSize = readInt()
     return (0 until listSize).mapNotNull {
         reader()
