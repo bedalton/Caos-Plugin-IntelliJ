@@ -20,6 +20,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -89,27 +90,24 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
             return true
         }
 
-        // Get this document
-        var document = fileIn.document ?: PsiDocumentManager.getInstance(project).getCachedDocument(file)
-
-        // If document is not null, commit it so we can alter it
-        if (document != null) {
-            PsiDocumentManager.getInstance(project).commitDocument(document)
-        }
+        // Commit it so we can alter it
+        fileIn.document?.apply { PsiDocumentManager.getInstance(project).commitDocument(this) }
 
         // Get all possible newline elements
         val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
+            .map { SmartPointerManager.createPointer(it) }
         // Replace newline like elements
-        for (newLine in newLines) {
+        for (newLinePointer in newLines) {
+            val newLine = newLinePointer.element
+                ?: continue
             replaceIfBlankOrComma(newLine)
         }
         // Get the document again, and this time commit it
-        document = file.document ?: PsiDocumentManager.getInstance(project).getCachedDocument(file)
-        document?.let {
+        file.document?.let {
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
         // Return success only if there are enough newlines to cover the elements, ignoring enum blocks
-        return document?.text.orEmpty().count { it =='\n'} > numCommands - 1
+        return true
     }
 
     private fun shouldNotCollapse(file: PsiFile) : Boolean {
