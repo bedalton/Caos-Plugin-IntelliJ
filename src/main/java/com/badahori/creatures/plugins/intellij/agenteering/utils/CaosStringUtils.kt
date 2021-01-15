@@ -296,5 +296,50 @@ val EMPTY_STRING_LIST = emptyList<String>()
 
 
 val WHITESPACE = "\\s+".toRegex()
+val WHITESPACE_OR_DASH = "[ \\-]+".toRegex()
 val MULTI_WHITESPACE_REGEX = "\\s\\s+".toRegex()
 val MULTI_SPACE_REGEX = "[ ][ ]+".toRegex()
+
+fun CharSequence.levenshteinDistance(b: CharSequence): Int {
+    val cost = Array(this.length + 1, { IntArray(b.length + 1) })
+    for (iA in 0..this.length) {
+        cost[iA][0] = iA
+    }
+    for (iB in 0..b.length) {
+        cost[0][iB] = iB
+    }
+    val mapCharAToIndex = hashMapOf<Char, Int>()
+
+    for (iA in 1 .. this.length) {
+        var prevMatchingBIndex = 0
+        for (iB in 1..b.length) {
+            val doesPreviousMatch = (this[iA - 1] == b[iB - 1])
+
+            val possibleCosts = mutableListOf<Int>()
+            if (doesPreviousMatch) {
+                // Perfect match cost.
+                possibleCosts.add(cost[iA - 1][iB - 1])
+            } else {
+                // Substitution cost.
+                possibleCosts.add(cost[iA - 1][iB - 1] + 1)
+            }
+            // Insertion cost.
+            possibleCosts.add(cost[iA][iB - 1] + 1)
+            // Deletion cost.
+            possibleCosts.add(cost[iA - 1][iB] + 1)
+
+            // Transposition cost.
+            val bCharIndexInA = mapCharAToIndex.getOrDefault(b[iB - 1], 0)
+            if (bCharIndexInA != 0 && prevMatchingBIndex != 0) {
+                possibleCosts.add(cost[bCharIndexInA - 1][prevMatchingBIndex - 1]
+                        + (iA - bCharIndexInA - 1) + 1 + (iB - prevMatchingBIndex - 1))
+            }
+
+            cost[iA][iB] = possibleCosts.min()!!
+
+            if (doesPreviousMatch) prevMatchingBIndex = iB
+        }
+        mapCharAToIndex[this[iA - 1]] = iA
+    }
+    return cost[this.length][b.length]
+}
