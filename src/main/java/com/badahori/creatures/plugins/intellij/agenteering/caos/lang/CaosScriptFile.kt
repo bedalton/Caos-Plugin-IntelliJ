@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
@@ -24,9 +24,9 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
 import com.intellij.util.FileContentUtilCore
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.min
 
 class CaosScriptFile(viewProvider: FileViewProvider)
     : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
@@ -161,4 +161,20 @@ val PsiFile.isDump:Boolean get() {
         val commentText:String = text.split("\n", ignoreCase = true, limit = 2)[0]
         dumpRegex.matches(commentText)
     }
+}
+
+val CaosScriptFile.isCaos2Pray:Boolean get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.isCaos2Pray.orFalse()
+val CaosScriptFile.caos2CobVariant:CaosVariant? get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.cobVariant
+val CaosScriptFile.isCaos2Cob:Boolean get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.isCaos2Cob.orFalse()
+
+val CaosScriptFile.tags:Map<String,String> get() {
+    return collectElementsOfType(this, CaosScriptCaos2Tag::class.java).mapNotNull tags@{
+        val value:String = it.caos2CommentValue?.let { it.int?.text ?: it.quoteStringLiteral?.stringValue }
+            ?: return@tags null
+        it.cobCommentDirective.text to value
+    }.toMap()
+}
+
+val CaosScriptFile?.disableMultiScriptChecks:Boolean get() {
+    return this == null || this.isDump || this.isCaos2Cob
 }
