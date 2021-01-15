@@ -40,7 +40,7 @@ public class CaosScriptParserDefinition implements ParserDefinition {
 
     @Override
     public IFileElementType getFileNodeType() {
-        return CaosScriptStubTypes.FILE;
+        return CaosScriptStubTypes.Companion.getFILE();
     }
 
     @NotNull
