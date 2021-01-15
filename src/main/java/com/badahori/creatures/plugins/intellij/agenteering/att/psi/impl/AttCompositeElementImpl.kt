@@ -21,7 +21,7 @@ open class AttCompositeElementImpl(node:ASTNode) : ASTWrapperPsiElement(node), C
     override val descriptiveText:String? get() = null
     override val locationString:String? get() = null
     override val icon: Icon? get() = null
-    override fun getPresentation():ItemPresentation = CaosPresentation(descriptiveText, locationString, icon)
+    override fun getPresentation():ItemPresentation = CaosPresentation(descriptiveText ?: node.text, locationString, icon)
 }
 
 val PsiElement.variant: CaosVariant?

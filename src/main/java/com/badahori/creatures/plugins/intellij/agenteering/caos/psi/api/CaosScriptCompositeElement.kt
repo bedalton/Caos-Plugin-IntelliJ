@@ -20,11 +20,11 @@ interface CaosScriptCompositeElement : PsiElement, NavigationItem {
 
 
 class CaosPresentation(
-        private val descriptiveText:String?,
+        private val descriptiveText:String,
         private val locationString:String? = null,
         private val icon: Icon? = null
 ) : ItemPresentation {
-    override fun getPresentableText(): String? = descriptiveText
+    override fun getPresentableText(): String = descriptiveText
     override fun getLocationString(): String? = locationString
     override fun getIcon(unused: Boolean): Icon? = icon
 
