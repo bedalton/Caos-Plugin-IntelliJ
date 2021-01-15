@@ -67,7 +67,7 @@ object CaosScriptPsiImplUtil {
      * Gets command token for a TARG {agent} command call
      */
     @JvmStatic
-    fun getCommandToken(element: CaosScriptCTarg): CaosScriptIsCommandToken? {
+    fun getCommandToken(element: CaosScriptCTarg): CaosScriptIsCommandToken {
         return element.cKwTarg
     }
 
@@ -273,7 +273,7 @@ object CaosScriptPsiImplUtil {
      * Gets command string as uppercase
      */
     @JvmStatic
-    fun getCommandStringUpper(command: CaosScriptCAssignment): String? {
+    fun getCommandStringUpper(command: CaosScriptCAssignment): String {
         return command.commandString.toUpperCase()
     }
 
@@ -306,7 +306,7 @@ object CaosScriptPsiImplUtil {
      * Gets command string as uppercase
      */
     @JvmStatic
-    fun getCommandStringUpper(element: CaosScriptCommandCall): String? {
+    fun getCommandStringUpper(element: CaosScriptCommandCall): String {
         return element.stub?.commandUpper.nullIfUndefOrBlank() ?: getCommandString(element).toUpperCase()
     }
 
@@ -1057,13 +1057,13 @@ object CaosScriptPsiImplUtil {
     // ========= Arguments ========== //
     // ============================== //
 
-    /**
+    /* *
      * Gets the expected type of an argument
-     */
+     * /
     @JvmStatic
     fun getExpectedType(element: CaosScriptLvalue): CaosExpressionValueType {
         return CaosExpressionValueType.VARIABLE
-    }
+    }*/
 
     /**
      * Gets index of an LValue in a CAOS command
@@ -1296,9 +1296,9 @@ object CaosScriptPsiImplUtil {
     // ======= Value Getters ======== //
     // ============================== //
 
-    /**
+    /* *
      * Gets return type for an RValue command call
-     */
+     * /
     @JvmStatic
     fun getReturnType(rvaluePrime: CaosScriptRvaluePrime): CaosExpressionValueType {
         rvaluePrime.stub?.caosVar?.let { return it }
@@ -1311,7 +1311,7 @@ object CaosScriptPsiImplUtil {
                     ?.returnType
             }
         } ?: CaosExpressionValueType.UNKNOWN
-    }
+    }*/
 
     /**
      * Gets the byte string as an array of ints
@@ -1753,7 +1753,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getPresentation(element: CaosScriptNamedGameVar): ItemPresentation {
         return object : ItemPresentation {
-            override fun getPresentableText(): String? {
+            override fun getPresentableText(): String {
                 return if (element.keyType == CaosExpressionValueType.STRING)
                     "${element.varType.token} \"${element.key}\""
                 else
@@ -1869,6 +1869,143 @@ object CaosScriptPsiImplUtil {
         return "srcp $classifierText $eventNumber"
     }
 
+    // ============================== //
+    // =========== PRAY 2 =========== //
+    // ============================== //
+
+    /**
+     * Returns whether or not this CAOS2Block is a CAOS2Pray block
+     */
+    @JvmStatic
+    fun isCaos2Pray(def: CaosScriptCaos2Block): Boolean {
+        return def.stub?.isCaos2Pray ?: def.caos2BlockHeader.caos2PrayHeader != null
+    }
+
+    /**
+     * Returns whether or not this CAOS2Block is a CAOS2Cob block
+     */
+    @JvmStatic
+    fun isCaos2Cob(def: CaosScriptCaos2Block): Boolean {
+        return def.stub?.isCaos2Cob ?: def.caos2BlockHeader.caos2CobHeader != null
+    }
+
+    /**
+     * Gets the CaosVariant for this CAOS2 block ensuring it is C1 or C2
+     */
+    @JvmStatic
+    fun getCobVariant(def: CaosScriptCaos2Block): CaosVariant? {
+        if (!isCaos2Cob(def))
+            return null
+        val variant = def.caos2BlockHeader.caos2CobHeader?.let { header ->
+            val text = header.text.trim()
+            if (text.length < 13)
+                def.variant
+            else {
+                when (text.substring(text.length - 3)) {
+                    "C1" -> CaosVariant.C1
+                    "C2" -> CaosVariant.C2
+                    else -> null
+                }
+            }
+        }
+        return variant?.ifOld {
+            this
+        }
+    }
+
+    /**
+     * Gets CAOS2Block commands
+     */
+    @JvmStatic
+    fun getCommands(def: CaosScriptCaos2Block): List<Pair<String, List<String>>> {
+        def.stub?.commands?.let { commands ->
+            return commands
+        }
+        return PsiTreeUtil
+            .collectElementsOfType(def, CaosScriptCaos2Command::class.java)
+            .mapNotNull map@{
+                val key = getCommandName(it)
+                val args = getCommandArgs(it)
+                Pair(key, args)
+            }
+    }
+    /**
+     * Gets arguments for the CAOS2Block command by command name
+     */
+    @JvmStatic
+    fun getCommandArgs(def: CaosScriptCaos2Block, commandName: String): List<String>? {
+        return getCommands(def).firstOrNull {
+            it.first == commandName
+        }?.second
+    }
+
+    /**
+     * Gets command name for a command in a CAOS2Block
+     */
+    @JvmStatic
+    fun getCommandName(tag: CaosScriptCaos2Command): String {
+        return tag.stub?.commandName ?: tag.caos2CommandName.text
+    }
+
+    /**
+     * Gets command arguments for a command in a CAOS2Block
+     */
+    @JvmStatic
+    fun getCommandArgs(tag: CaosScriptCaos2Command): List<String> {
+        return tag.stub?.args ?: tag.caos2CommentValueList.map {
+            it.quoteStringLiteral?.text ?: it.text
+        }
+    }
+
+    /**
+     * Gets tag value for a CAOS2Block tag by tag name
+     */
+    @JvmStatic
+    fun getTagValue(def: CaosScriptCaos2Block, tagName: String): String? {
+        return getTags(def)[tagName]
+    }
+
+    /**
+     * Gets tags for a CAOS2Block
+     */
+    @JvmStatic
+    fun getTags(def: CaosScriptCaos2Block): Map<String, String> {
+        def.stub?.tags?.let { tags ->
+            return tags
+        }
+        return PsiTreeUtil
+            .collectElementsOfType(def, CaosScriptCaos2Tag::class.java)
+            .mapNotNull map@{
+                val key = getTagName(it)
+                val value = getValue(it)
+                    ?: return@map null
+                key to value
+            }.toMap()
+    }
+
+    /**
+     * Gets tag name for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun getTagName(tag: CaosScriptCaos2Tag): String {
+        return tag.stub?.tagName ?: tag.cobCommentDirective.text.replace(WHITESPACE_OR_DASH, " ")
+    }
+
+    /**
+     * Gets tag value for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun getValue(tag: CaosScriptCaos2Tag): String? {
+        return tag.stub?.value ?: tag.caos2CommentValue?.let { it.quoteStringLiteral?.stringValue ?: it.text }
+    }
+
+    /**
+     * Gets tag value as int if possible for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun getIntValue(tag: CaosScriptCaos2Tag): Int? {
+        return getValue(tag)?.toIntSafe()
+    }
 }
 
 /**
@@ -1946,3 +2083,5 @@ fun getDepth(element: PsiElement): Int {
 }
 
 val ASTNode.endOffset: Int get() = textRange.endOffset
+
+
