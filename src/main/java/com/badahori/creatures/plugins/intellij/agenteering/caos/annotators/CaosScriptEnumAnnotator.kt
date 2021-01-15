@@ -41,7 +41,7 @@ class CaosScriptEnumAnnotator : Annotator {
         }
         if (parent is CaosScriptEnumSceneryStatement) {
             val next = "NSCN".matchCase(element.text)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", "ESCN", "NSCN", "NEXT"))
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.enum-terminator-invalid", "ESCN", "NSCN", "NEXT"))
                     .range(element)
                     .withFix(CaosScriptReplaceWordFix(next, element))
                     .create()
@@ -65,7 +65,7 @@ class CaosScriptEnumAnnotator : Annotator {
         if (parent is CaosScriptEnumNextStatement) {
             val enum = parent.enumHeaderCommand.commandStringUpper!!
             val next = "NEXT".matchCase(element.text)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
+            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(element)
                     .withFix(CaosScriptReplaceWordFix(next, element))
                     .create()
@@ -78,7 +78,7 @@ class CaosScriptEnumAnnotator : Annotator {
     private fun annotateSceneryEnum(variant: CaosVariant, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolderWrapper) {
         if (variant == CaosVariant.C2)
             return
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.escn-only-on-c2-error-message"))
+        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.escn-only-on-c2-error-message"))
                 .range(element.escnHeader.cEscn)
                 .create()
     }
@@ -102,7 +102,7 @@ class CaosScriptEnumAnnotator : Annotator {
         }
 
         // Mark statement as error in C1 and C2
-        var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.bad-enum-error-message", enumText))
+        var builder = annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.bad-enum-error-message", enumText))
                 .range(enumToken)
 
         // Add optional fix to ETCH, though it is quite experimental

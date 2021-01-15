@@ -43,7 +43,7 @@ class CaosScriptCommandCaseAnnotator : Annotator {
         }
         val fix = CaosScriptTokenToLowerCaseFix(token)
         annotationWrapper
-                .newErrorAnnotation(CaosBundle.message("caos.annotator.command-annotator.invalid-command-case", variant))
+                .newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-command-case", variant))
                 .range(token)
                 .newFix(fix)
                 .batch()
