@@ -17,7 +17,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -250,13 +250,16 @@
 		K_SCLE = "regexp:[Ss][Cc][Ll][Ee]";
 		K_SHAD = "regexp:[Ss][Hh][Aa][Dd]";
 		K_STRC = "regexp:[Ss][Tt][Rr][Cc]";
+		CAOS_2_COMMENT_START = "*#";
+		CAOS_2_PRAY_HEADER = "regexp:[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]"
+		CAOS_2_COB_HEADER = "regexp:[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]\s*[Cc][12]"
 		K_BAD_LOOP_TERMINATOR = "terminator"
 		K_CRETN = "RETN inside SUBR"
 		K_F__K = "regexp:[Ff][*]{2}[Kk]"
 		K_XX_DEF = " "
 		K_XX_EXPR = " "
 		K_CONST = "regexp:[*]\s*[Cc][Oo][nN][sS][tT]";
-		CONST_EQ = "regexp:=";
+		EQUAL_SIGN = "=";
 		N_CONST = "regexp:[:][a-zA-Z_0-9]+"
 		N_VAR = "regexp:[$][a-zA-Z_0-9]+"
 		COMMENT_LITERAL = "regexp:\*[^\n]*"
@@ -313,12 +316,12 @@ expression_factory
 	;
 
 private file_body
-	::= ((<<isOldVariant>> |	<<isNewVariant 'true'>>) file_body_with_variant)
+	::= ((<<isOldVariant>> | <<isNewVariant 'true'>>) file_body_with_variant)
 	|	raw_token_stream
 	;
 
 raw_token_stream
-	::= (!(<<isOldVariant>> |	<<isNewVariant 'true'>>)) token_stream_tokens+
+	::= (!(<<isOldVariant>> | <<isNewVariant 'true'>>)) token_stream_tokens+
 	;
 
 private token_stream_tokens
@@ -330,7 +333,115 @@ private token_stream_tokens
 	;
 
 private file_body_with_variant
-	::=script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
+	::= (caos_2_block space_like_or_newline)? script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
+	;
+
+caos_2_block
+	::= caos_2_block_header (space_like_or_newline caos_2_block_comment)*
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2BlockStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+    	]
+		methods = [
+			isCaos2Pray
+			isCaos2Cob
+			getCobVariant
+			getTagValue
+			getTags
+			getCommands
+			getCommandArgs
+		]
+	}
+	;
+
+caos_2_block_header
+	::= caos_2_cob_header
+	|	caos_2_pray_header
+	;
+
+private caos_2_pray_header
+	::= CAOS_2_PRAY_HEADER
+	;
+
+private caos_2_cob_header
+	::= CAOS_2_COB_HEADER
+	;
+
+caos_2_block_comment
+	::= CAOS_2_COMMENT_START caos_2_comment_body?
+	;
+
+private caos_2_comment_body
+	::= caos_2_command_item+
+	;
+
+private caos_2_command_item
+	::=	caos_2_tag
+	|	caos_2_command
+	;
+
+caos_2_tag
+	::= cob_comment_directive '=' (caos_2_comment_value caos_2_comment_error_value*)?
+	{
+		pin=2
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2TagStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2"
+		]
+		methods = [
+			getTagName
+			getValue
+			getIntValue
+		]
+	}
+	;
+
+caos_2_command
+	::= caos_2_command_name caos_2_comment_value*
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2CommandStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2"
+		]
+
+		methods = [
+			getCommandName
+			getCommandArgs
+		]
+	}
+	;
+
+caos_2_command_name
+	::= ID
+	;
+
+caos_2_comment_value
+	::= string_literal
+	|	INT
+	|	ID
+	;
+
+
+
+cob_comment_directive
+	::= ID*
+	{
+		methods = [
+			isValid
+		]
+	}
+	;
+
+caos_2_comment_error_value
+	::= string_literal
+	|	INT
+	|	ID
 	;
 
 script_body_element
