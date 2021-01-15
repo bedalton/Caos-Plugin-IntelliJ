@@ -2,14 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -85,6 +85,16 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
         fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement? {
             val project = element.project
+            PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2Block::class.java).firstOrNull()?.let {caos2Block ->
+                val next = caos2Block.next
+                val spacePointer = if (next != null && next.elementType in CaosScriptTokenSets.WHITESPACES)
+                    SmartPointerManager.createPointer(next)
+                else
+                    null
+                caos2Block.delete()
+                spacePointer?.element?.delete()
+            }
+
             val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
             var didDeleteComments = true
             for (comment in comments) {
@@ -97,7 +107,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 }
             }
             if (!didDeleteComments) {
-                CaosInjectorNotifications.showError(project, "CAOS Formatting Error", "Failed to remove comments from document for injection")
+                CaosNotifications.showError(project, "CAOS Formatting Error", "Failed to remove comments from document for flattening")
                 return null
             }
             element.document?.let {
@@ -105,13 +115,22 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 CodeStyleManager.getInstance(project).reformat(element, false)
             }
             val newLines = PsiTreeUtil.collectElementsOfType(element, CaosScriptSpaceLikeOrNewline::class.java)
-            for (newLine in newLines) {
-                if (newLine.isValid)
-                    replaceWithSpaceOrComma(newLine, collapseChar)
-                else {
-                    CaosInjectorNotifications.showError(project, "CAOS Formatting Error", "Failed to remove comments from document for injection")
-                    return null
+                .map {
+                    SmartPointerManager.createPointer(it)
                 }
+            var didReplaceAll = true
+            for (newLinePointer in newLines) {
+                val newLine = newLinePointer.element
+                    ?: continue
+                if (newLine.isValid) {
+                    replaceWithSpaceOrComma(newLine, collapseChar)
+                } else {
+                    didReplaceAll = false
+                }
+            }
+            if (!didReplaceAll) {
+                CaosInjectorNotifications.showError(project, "CAOS Formatting Error", "Failed to replace new lines with ${if (collapseChar == CollapseChar.SPACE) "spaces" else "commas"}")
+                return null
             }
             while (trailingText.matches(element.firstChild.text))
                 element.firstChild.delete()
@@ -127,10 +146,8 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         }
 
         private fun replaceWithSpaceOrComma(nextIn: PsiElement?, collapseChar: CollapseChar) {
-
             if (nextIn == null)
                 return
-
             val pointer = SmartPointerManager.createPointer(nextIn)
             var previous = nextIn.previous
             while(previous is PsiWhiteSpace) {
