@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+
 
 fun <T> T?.orElse(defaultValue:T) : T {
     return this ?: defaultValue
@@ -22,3 +24,6 @@ val Any?.className:String get() = if (this == null) "NULL" else this::class.java
 
 val Any?.canonicalName:String get() = if (this == null) "NULL" else this::class.java.canonicalName
 
+operator fun CaosScriptFile.plus(list:List<CaosScriptFile>) : List<CaosScriptFile> {
+    return mutableListOf(this).apply { addAll(list) }
+}
