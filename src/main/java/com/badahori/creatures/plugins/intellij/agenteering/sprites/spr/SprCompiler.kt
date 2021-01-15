@@ -1,14 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
-import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt32
-import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt8
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.ditherCopy
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.util.io.toByteArray
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream
+import org.apache.commons.imaging.palette.Dithering
+import org.apache.commons.imaging.palette.Palette
+import org.apache.commons.imaging.palette.SimplePalette
 import java.awt.Color
 import java.awt.color.ColorSpace
 import java.awt.image.BufferedImage
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import kotlin.math.abs
 
@@ -18,6 +21,7 @@ object SprCompiler {
     private const val HEADER_NUM_IMAGES_SIZE = 2
     val blackIntArray = intArrayOf(0, 0, 0, 1)
     var black:Int = 0
+    val blackColors = arrayOf(0,243,244,245)
     val blackColorRGB = Color(0,0,0).rgb
     private val colors: List<IntArray> by lazy {
         val pathToPalette = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath("support/palette.dta")
@@ -41,17 +45,31 @@ object SprCompiler {
         }
     }
 
+    private val ditherPalette by lazy {
+        val colorsAsInt:List<Int> = colors.map {rgb ->
+            var out: Int = rgb[0]
+            out = (out shl 8) + rgb[1]
+            out = (out shl 8) + rgb[2]
+            out
+        }
+        SimplePalette(colorsAsInt.toIntArray())
+    }
+
 
     private fun compareColors(colorA: IntArray, red:Int, green:Int, blue:Int): Int {
         return abs(colorA[0] - red) + abs(colorA[1] - green) + abs(colorA[2] - blue)
     }
 
-    private fun getColorIndex(red:Int, green:Int, blue:Int) : Int {
+    private fun getColorIndex(red:Int, green:Int, blue:Int, allowBlack:Boolean) : Int {
         var selectedColor = black
         var deviation:Int = Int.MAX_VALUE
+
+        if (red > 250 && green == 250 && blue > 250) {
+            return 255
+        }
         for(i in 0 .. colors.lastIndex) {
             val currentDeviation = compareColors(colors[i], red, green, blue)
-            if (currentDeviation < deviation) {
+            if (currentDeviation < deviation && (allowBlack || i !in blackColors)) {
                 deviation = currentDeviation
                 selectedColor = i
             }
@@ -59,16 +77,16 @@ object SprCompiler {
         return selectedColor
     }
 
-    fun compileSprites(images:List<BufferedImage>) : ByteArray {
+    fun compileSprites(images:List<BufferedImage>, dither:Boolean = false) : ByteArray {
         val imagesBytes = images.sumBy {
             it.width * it.height
         }
         val bufferSize = HEADER_NUM_IMAGES_SIZE + (images.size * IMAGE_HEADER_SIZE) + imagesBytes
-        val buffer = ByteBuffer.allocateDirect(bufferSize)
+        val buffer = ByteOutputStream(bufferSize)
         var imageOffset = HEADER_NUM_IMAGES_SIZE + (images.size * IMAGE_HEADER_SIZE)
         buffer.writeUInt16(images.size)
         for (image in images) {
-            buffer.writeUInt32(imageOffset.toLong())
+            buffer.writeUint32(imageOffset.toLong())
             val width = image.width
             val height = image.height
             buffer.writeUInt16(width)
@@ -76,30 +94,50 @@ object SprCompiler {
             imageOffset += width * height
         }
         for (image in images) {
-            val width = image.width
-            val height = image.height
-            for (y in 0 until height) {
-                for (x in 0 until width) {
-                    val pixel = image.getRGB(x, y)
-                    val alpha: Int = pixel shr 24 and 0xff
-                    if (alpha > 1 || alpha < 0) {
-                        buffer.writeUInt8(black)
-                    } else {
-                        val red: Int = pixel shr 16 and 0xff
-                        val green: Int = pixel shr 8 and 0xff
-                        val blue: Int = pixel shr 0 and 0xff
-                        val color = getColorIndex(red, green, blue)
-                        buffer.writeUInt8(color)
+            compileSprite(image, buffer, dither)
+        }
+        //val byteArray = ByteArray(bufferSize)
+        return buffer.bytes
+    }
+
+    fun compileSprite(imageIn: BufferedImage, buffer: OutputStream, dither: Boolean) {
+        val image = if (dither)
+            imageIn.ditherCopy(ditherPalette)
+        else
+            imageIn
+        val width = image.width
+        val height = image.height
+        val alphaValues = mutableSetOf<Int>()
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val pixel = image.getRGB(x, y)
+                val alpha: Int = (pixel shr 24) and 0xFF
+                alphaValues.add(alpha)
+                if (alpha < 127) {
+                    buffer.writeUInt8(black)
+                } else {
+                    val red: Int = pixel shr 16 and 0xff
+                    val green: Int = pixel shr 8 and 0xff
+                    val blue: Int = pixel shr 0 and 0xff
+                    val color = if (red + green + blue == 0)
+                        black
+                    else {
+                        val subFrom: Int = arrayOf(255 - alpha, red - 2, green - 2, blue - 2).min()!!
+                        getColorIndex(red - subFrom, green - subFrom, blue - subFrom, false)
                     }
+                    buffer.writeUInt8(color)
                 }
             }
         }
-        //val byteArray = ByteArray(bufferSize)
-        return buffer.toByteArray()
+        LOGGER.info("Alpha values: $alphaValues")
     }
 
     @JvmStatic
-    fun compileForPreview(image:BufferedImage) : BufferedImage {
+    fun compileForPreview(imageIn:BufferedImage, dither:Boolean = false) : BufferedImage {
+        val image = if (dither)
+            imageIn.ditherCopy(ditherPalette)
+        else
+            imageIn
         val outImage = BufferedImage(image.width, image.height, ColorSpace.TYPE_RGB)
         val width = image.width
         val height = image.height
@@ -113,7 +151,7 @@ object SprCompiler {
                     val red: Int = pixel shr 16 and 0xff
                     val green: Int = pixel shr 8 and 0xff
                     val blue: Int = pixel shr 0 and 0xff
-                    val color = getColorIndex(red, green, blue)
+                    val color = getColorIndex(red, green, blue, false)
                     outImage.setRGB(x,y, colorRGBs[color])
                 }
             }
