@@ -125,7 +125,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             return
         }
         // Create error message
-        val message = CaosBundle.message("caos.annotator.command-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
+        val message = CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
         // Annotate element with type error
         holder.registerProblem(argument, message)
     }

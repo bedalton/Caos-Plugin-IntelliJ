@@ -25,7 +25,7 @@ class CaosScriptTokenToLowerCaseFix(element: CaosScriptShouldBeLowerCase) : Loca
         return true
     }
 
-    override fun getText(): String = CaosBundle.message("caos.annotator.command-annotator.invalid-command-case.text")
+    override fun getText(): String = CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-command-case.text")
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val element = element.element

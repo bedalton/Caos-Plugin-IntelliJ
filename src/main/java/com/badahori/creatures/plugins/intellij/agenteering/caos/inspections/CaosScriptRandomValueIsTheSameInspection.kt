@@ -35,6 +35,6 @@ class CaosScriptRandomValueIsTheSameInspection : LocalInspectionTool() {
         if (minMax.first != minMax.second) {
             return
         }
-        holder.registerProblem(element, CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same", min))
+        holder.registerProblem(element, CaosBundle.message("caos.annotator.syntax-error-annotator.rndv-result-is-the-same", min))
     }
 }

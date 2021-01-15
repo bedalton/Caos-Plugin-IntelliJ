@@ -57,9 +57,9 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         val lvalueCommand = lvalue.commandString?.toUpperCase()
                 ?: return
         if (variant == CaosVariant.C2 && lvalueCommand == "CLAS") {
-            problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.command-annotator.setv-clas-replaced-in-c2"), CaosScriptC1ClasToCls2Fix(element))
+            problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.syntax-error-annotator.setv-clas-replaced-in-c2"), CaosScriptC1ClasToCls2Fix(element))
         } else if (variant == CaosVariant.C1 && lvalueCommand == "CLS2") {
-            problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.command-annotator.setv-cl2-is-c2-only"), CaosScriptCls2ToClasFix(element))
+            problemsHolder.registerProblem(lvalue, CaosBundle.message("caos.annotator.syntax-error-annotator.setv-cl2-is-c2-only"), CaosScriptCls2ToClasFix(element))
         }
     }
 
