@@ -425,6 +425,11 @@ caos_2_comment_value
 	::= string_literal
 	|	INT
 	|	ID
+	{
+		methods = [
+			getValue
+		]
+	}
 	;
 
 
