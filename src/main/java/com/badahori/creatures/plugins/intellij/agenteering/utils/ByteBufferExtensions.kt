@@ -82,12 +82,14 @@ fun ByteBuffer.cString(length: Long) : String {
     return bytes(length).joinToString("") { it.toChar()+"" }
 }
 
+private const val NULL_BYTE:Byte = 0.toByte()
+
 val ByteBuffer.cString : String get() {
     val stringBuilder = StringBuilder()
     while(true) {
         try {
             val byte = get()
-            if (byte == 0.toByte()) {
+            if (byte == NULL_BYTE) {
                 break
             }
             stringBuilder.append(byte.toChar())

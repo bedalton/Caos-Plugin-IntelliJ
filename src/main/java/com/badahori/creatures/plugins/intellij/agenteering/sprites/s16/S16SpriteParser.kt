@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
@@ -70,10 +71,11 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val toRgb = encoding.toRgb
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val pixel = bytesBuffer.uInt16
-                val color = SpriteColorUtil.getColor(pixel, encoding)
+                val color = toRgb(pixel)
                 if (color[0] == 0 && color[1] == 0 && color[2] == 0)
                     image.alphaRaster.setPixel(x, y, transparent)
                 else {
