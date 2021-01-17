@@ -15,7 +15,6 @@ object CobToDataObjectDecompiler {
 
     fun decompile(virtualFile:VirtualFile) : CobFileData? {
         val buffer = ByteBuffer.wrap(virtualFile.contentsToByteArray()).littleEndian()
-        LOGGER.info("Decompiling COB ${virtualFile.name}")
         return try {
             decompile(buffer)
         } catch(e:Exception) {
