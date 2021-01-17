@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -68,7 +67,7 @@ private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
             lastUsageDate = lastUsageDate.toInt(),
             useInterval = reuseInterval.toInt(),
             eventScripts = eventScripts,
-            installScript = installScript,
+            installScripts = listOf(installScript),
             removalScript = removalScript,
             dependencies = dependencies
     )

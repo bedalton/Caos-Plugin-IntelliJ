@@ -68,7 +68,7 @@ object CobVirtualFileUtil {
     /**
      * Converts a COB block into a list of virtual files
      */
-    private    fun blockToVirtualFiles(project: Project, variant: CaosVariant, block: CobBlock, parent: CaosVirtualFile): List<CaosVirtualFile> {
+    private fun blockToVirtualFiles(project: Project, variant: CaosVariant, block: CobBlock, parent: CaosVirtualFile): List<CaosVirtualFile> {
         return when (block) {
             is CobBlock.FileBlock.SpriteBlock -> listOf(parent.createChildWithContent(block.fileName, block.contents))
             is CobBlock.FileBlock.SoundBlock -> listOf(parent.createChildWithContent(block.fileName, block.contents))
@@ -76,8 +76,17 @@ object CobVirtualFileUtil {
             is CobBlock.AgentBlock -> {
                 val agentBlockName = block.name.nullIfEmpty() ?: UUID.randomUUID().toString()
                 val agentDirectory = parent.createChildDirectory(agentBlockName)
-                val scripts: List<CaosVirtualFile> = listOfNotNull(
-                        block.installScript?.let { createChildCaosScript(project, agentDirectory, variant, it.scriptName, it.code) },
+                val installScripts:List<CaosVirtualFile> = block.installScripts.let { installScripts ->
+                    if (installScripts.size == 1) {
+                        val script = installScripts.first()
+                        listOf(createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code))
+                    } else {
+                        installScripts.mapIndexed { i, script ->
+                            createChildCaosScript(project, agentDirectory, variant, script.scriptName + "($i)", script.code)
+                        }
+                    }
+                }
+                val scripts: List<CaosVirtualFile> = installScripts + listOfNotNull(
                         block.removalScript?.let { createChildCaosScript(project, agentDirectory, variant, it.scriptName, it.code) }
                 ) + block.eventScripts.map map@{ script ->
                     createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code)

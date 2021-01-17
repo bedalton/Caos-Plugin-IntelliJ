@@ -16,13 +16,13 @@ object CobToDataObjectDecompiler {
     fun decompile(virtualFile:VirtualFile) : CobFileData? {
         val buffer = ByteBuffer.wrap(virtualFile.contentsToByteArray()).littleEndian()
         return try {
-            decompile(buffer)
+            decompile(buffer, virtualFile.nameWithoutExtension)
         } catch(e:Exception) {
             null
         }
     }
 
-    fun decompile(buffer: ByteBuffer): CobFileData {
+    fun decompile(buffer: ByteBuffer, fileName: String?): CobFileData {
         val header = buffer.cString(4)
         buffer.position(0)
         return if (header == "cob2") {
@@ -36,7 +36,7 @@ object CobToDataObjectDecompiler {
             } catch (e: Exception) {
                 buffer.position(0)
                 if (buffer.cString(4) != "cob2")
-                    return decompileC1Cob(buffer)
+                    return decompileC1Cob(buffer, fileName)
                 buffer
             }
             decompileC2Cob(decompressed.littleEndian())
@@ -44,7 +44,7 @@ object CobToDataObjectDecompiler {
     }
 
 
-    private fun decompileC1Cob(buffer: ByteBuffer): CobFileData {
+    private fun decompileC1Cob(buffer: ByteBuffer, fileName:String?): CobFileData {
         buffer.position(0)
         val version = buffer.uInt16
         if (version > 4) {
@@ -54,7 +54,7 @@ object CobToDataObjectDecompiler {
             LOGGER.severe(error)
             return CobFileData.InvalidCobData(error)
         }
-        return CobFileData.C1CobData(buffer.readC1Cob())
+        return CobFileData.C1CobData(buffer.readC1Cob(fileName))
     }
 
     private fun decompileC2Cob(buffer: ByteBuffer): CobFileData {

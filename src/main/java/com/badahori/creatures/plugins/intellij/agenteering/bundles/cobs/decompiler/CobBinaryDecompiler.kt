@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.cString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -33,12 +34,12 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             if (byteBuffer.cString(4) == "****") {
                 return byteArray.contentToString()
             }
-            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer)
+            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtils.getBaseName(fileName))
             return presentCobData(fileName, cobData)
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
-            val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(byteArray).littleEndian())
+            val cobData = CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(byteArray).littleEndian(), FileNameUtils.getBaseName(fileName))
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
@@ -95,19 +96,25 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             val agentBlock = cobData.cobBlock
             val scriptHeaderLength = 30
             val wrapChar = "="
-            val installScript = (agentBlock.installScript?.code?.trim().nullIfEmpty()?.let { "\n\n${wrap("Install Script", scriptHeaderLength, wrapChar)}\n$it" }
-                    ?: "")
-            val eventScripts = agentBlock.eventScripts.joinToString("\n\n") {
-                "${wrap(it.scriptName, scriptHeaderLength, wrapChar)}\n${it.code}"
-            }
-            val header = "COB...............$fileName"
-            val agentName = "Agent.............${agentBlock.name}"
-            val expiry = "Expiry............${agentBlock.expiry.let { DATE_FORMAT.format(it.time) }}"
-            val quantity = "Quantity..........${agentBlock.quantityAvailable}"
-            val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.max()!! + 5
-            val top = (1..width).joinToString("") { "*" }
-            val offset = 3 // leading asterisk, space and trailing asterisk
-            val items = listOfNotNull(
+            val installScript = agentBlock.installScripts.nullIfEmpty()?.let { installScripts ->
+                        installScripts
+                            .joinToString(""){
+                                    installScript -> "\n*** INSTALL SCRIPT ***\n" + installScript.code
+                            }
+                            .trim()
+                            .nullIfEmpty()
+            } ?: ""
+                val eventScripts = agentBlock.eventScripts.joinToString("\n\n") {
+                    "${wrap(it.scriptName, scriptHeaderLength, wrapChar)}\n${it.code}"
+                }
+                val header = "COB...............$fileName"
+                val agentName = "Agent.............${agentBlock.name}"
+                val expiry = "Expiry............${agentBlock.expiry.let { DATE_FORMAT.format(it.time) }}"
+                val quantity = "Quantity..........${agentBlock.quantityAvailable}"
+                val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.max()!! + 5
+                val top = (1..width).joinToString("") { "*" }
+                val offset = 3 // leading asterisk, space and trailing asterisk
+                val items = listOfNotNull(
                     top,
                     header.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
                     agentName.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
@@ -117,8 +124,8 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                     installScript.trim().nullIfEmpty()?.let { "\n$it" },
                     eventScripts.trim().nullIfEmpty()?.let { "\n$it" }
 
-            )
-            return items.joinToString("\n")
+                )
+                return items.joinToString("\n")
         }
 
         private fun presentC2CobData(fileName: String, cobData: CobFileData.C2CobData): String {
@@ -145,9 +152,11 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                 ).max()!! + 5
                 val top = (1..width).joinToString("") { "*" }
                 val padLength = width - "* Agent.........".length
-                val installScript = (block.installScript?.code?.trim().nullIfEmpty())?.let {
-                    "\n\n***** INSTALL SCRIPT *****\n$it"
-                } ?: ""
+                val installScript = block.installScripts.joinToString("") {
+                    it.code.trim().nullIfEmpty()?.let {
+                        "\n\n***** INSTALL SCRIPT *****\n$it"
+                    } ?: ""
+                }?: ""
                 val removalScript = (block.removalScript?.code?.trim()?.nullIfEmpty())?.let {
                     "\n\n***** REMOVAL SCRIPT *****\n$it"
                 } ?: ""

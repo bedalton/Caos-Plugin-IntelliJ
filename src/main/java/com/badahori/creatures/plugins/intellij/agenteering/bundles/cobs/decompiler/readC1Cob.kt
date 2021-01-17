@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 import java.util.*
 
 
-internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
+internal fun ByteBuffer.readC1Cob(fileName:String?): CobBlock.AgentBlock {
     val quantityAvailable = int16
 
     val expiresMonth = int32
@@ -29,10 +29,9 @@ internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
         val code = readC1Script()
         AgentScript(code, "Script $index", AgentScriptType.OBJECT)
     }
-    val installScriptString = (0 until numInstallScripts).joinToString("*** INSTALL SCRIPT PART ***") {
-        readC1Script()
+    val installScripts = (0 until numInstallScripts).mapNotNull { index ->
+        AgentScript.InstallScript(readC1Script(), (fileName?.let { "$it "} ?: "") + "Install Script ($index)")
     }
-    val installScript = AgentScript.InstallScript(installScriptString)
     val pictureWidth = int32
     val pictureHeight = int32
     skip(2)
@@ -52,7 +51,7 @@ internal fun ByteBuffer.readC1Cob(): CobBlock.AgentBlock {
             lastUsageDate = null,
             useInterval = null,
             eventScripts = objectScripts,
-            installScript = installScript,
+            installScripts = installScripts,
             removalScript = null,
             dependencies = emptyList()
     )
