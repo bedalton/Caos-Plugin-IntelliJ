@@ -36,6 +36,20 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 0.01.101</b>
+        <b>#Fixes</b>
+        <ul>
+        </ul>
+        <b>#Additions</b>
+        <ul>
+        	<li>CAOS2COB compiler. See https:// </li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Add action to CAOS context file menu</li>
+        </ul>
+      </li>
+      <li>
         <b>Version: 0.01.100</b>
         <b>#Fixes</b>
         <ul>
@@ -51,6 +65,8 @@
           <li>Add DOIF folding on CHEM</li>
           <li>Hide project list context menu items when not relevant</li>
         </ul>
+      </li>
+      <li>
         <b>Version: 0.01.99</b><br/>
         <b>#Fixes</b>
         <ul>
@@ -356,6 +372,8 @@
     <!--vetoRenameCondition
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptVetoRenameCondition" / -->
 
+    <enterHandlerDelegate implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler" />
+
     <!-- Project -->
     <iconProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
@@ -565,6 +583,76 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresCreatureOwnrInspection"
     />
 
+    <localInspection language="CaosScript"
+                     level="WARNING"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Invalid property value"
+                     shortName="Caos2CobInvalidTagValue"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobIsExpectedTagValueType"
+    />
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Source file does not exist"
+                     shortName="Caos2CobSourceFileDoesNotExist"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobRequiredFileExistsInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="WARNING"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Out of variant CAOS2Cob directive"
+                     shortName="Caos2CobOutOfVariantDirective"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobOutOfVariantDirectiveInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="WARNING"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Invalid CAOS2Cob property"
+                     shortName="Caos2CobInvalidProperty"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobPropertyIsValidInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="WARNING"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Invalid CAOS2Cob command"
+                     shortName="Caos2CobInvalidCommand"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobCommandIsValidInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Missing required CAOS2Cob properties"
+                     shortName="Caos2CobMissingRequiredProperties"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobHasRequiredFieldsInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Included file is valid type"
+                     shortName="Caos2CobIncludedFileIsValidType"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobIncludedFileIsCorrectTypeInspection"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
@@ -757,6 +845,16 @@
             class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
             text="Copy for BoBCob" description="Copy script for BoBCob file editor formatting as neccessary">
       <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths" />
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
+            class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
+            text="Expand CAOS commands" description="Places each CAOS command onto its own line">">
+      <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths" />
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.actions.CompileCaos2CobAction"
+            class="com.badahori.creatures.plugins.intellij.agenteering.bundles.actions.CompileCaos2CobAction"
+            text="Compile CAOS2Cob files" description="Compile CAOS2Cob CAOS files into C1/C2 COBs">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ExternalToolsGroup" />
     </action>
   </actions>
 </idea-plugin>
