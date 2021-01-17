@@ -21,10 +21,7 @@ internal fun ByteBuffer.readC2CobBlock() : CobBlock? {
         "agnt" -> readC2AgentBlock()
         "auth" -> readC2AuthorBlock()
         "file" -> readC2FileBlock()
-        else -> {
-            LOGGER.severe("Encountered BAD C2 COB Block. Type: $type; Size: $size")
-            CobBlock.UnknownCobBlock(type, bytes(size))
-        }
+        else -> throw Exception("Encountered BAD C2 COB Block. Type: $type; Size: $size")
     }
 }
 
@@ -55,7 +52,10 @@ private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
 
     val thumbWidth = uInt16
     val thumbHeight = uInt16
-    val image = S16SpriteFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565).image
+    val image = if (thumbWidth > 0 && thumbHeight > 0)
+        S16SpriteFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565).image
+    else
+        null
     skip(thumbWidth * thumbHeight * 2)
     return CobBlock.AgentBlock(
             format = CobFormat.C2,
@@ -99,7 +99,11 @@ private fun ByteBuffer.readC2AuthorBlock() : CobBlock.AuthorBlock {
 }
 
 private fun ByteBuffer.readC2FileBlock() : CobBlock.FileBlock {
-    val type = if (uInt16 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
+    val type = when (val typeInt = uInt16) {
+        0 -> CobFileBlockType.SPRITE
+        1 -> CobFileBlockType.SOUND
+        else -> throw Exception("Invalid file block type '$typeInt'")
+    }
     val reserved = uInt32.toInt()
     val size = uInt32
     val fileName = cString

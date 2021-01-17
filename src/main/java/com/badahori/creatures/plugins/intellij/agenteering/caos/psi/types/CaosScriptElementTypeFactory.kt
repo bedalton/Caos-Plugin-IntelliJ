@@ -24,6 +24,9 @@ class CaosScriptElementTypeFactory {
                 "CaosScript_REMOVAL_SCRIPT" -> CaosScriptStubTypes.REMOVAL_SCRIPT
                 "CaosScript_INSTALL_SCRIPT" -> CaosScriptStubTypes.INSTALL_SCRIPT
                 "CaosScript_C_RNDV" -> CaosScriptStubTypes.RNDV
+                "CaosScript_CAOS_2_TAG" -> CaosScriptStubTypes.CAOS_2_TAG
+                "CaosScript_CAOS_2_COMMAND" -> CaosScriptStubTypes.CAOS_2_COMMAND
+                "CaosScript_CAOS_2_BLOCK" -> CaosScriptStubTypes.CAOS_2_BLOCK
                 else -> throw IndexOutOfBoundsException("Caos token '$debugName' is not recognized")
             }
         }

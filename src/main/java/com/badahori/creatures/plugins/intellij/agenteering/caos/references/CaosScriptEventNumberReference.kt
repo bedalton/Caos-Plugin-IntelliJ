@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.isVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventNumberElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.intellij.openapi.project.Project

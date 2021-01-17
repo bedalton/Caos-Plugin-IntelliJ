@@ -55,6 +55,15 @@ object CaosScriptProjectSettings {
             SHOW_LABELS_SETTING.value = show
         }
 
+    private const val DITHER_SPR_KEY = "sprites.DITHER_SPR"
+    private const val DEFAULT_DITHER_SPR = true
+    private val DITHER_SPR_SETTING = CaosPluginSettingsUtil.BooleanSetting(DITHER_SPR_KEY, DEFAULT_DITHER_SPR)
+    var ditherSpr:Boolean
+        get() = DITHER_SPR_SETTING.value ?: DEFAULT_DITHER_SPR
+        set(show) {
+            DITHER_SPR_SETTING.value = show
+        }
+
     // === CAOS Injection URLS === //
     fun getInjectURL(project:Project) : String? {//Map<String,String>?  {
         //val invalidNameCharsRegex = "[<>]".toRegex() // Used when doing multiple injection urls

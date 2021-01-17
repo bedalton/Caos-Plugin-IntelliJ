@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptEventNumberReference.Companion.EVENT_NUMBER_VALUES_LIST_NAME
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase

@@ -3,8 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffsetInParent
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange

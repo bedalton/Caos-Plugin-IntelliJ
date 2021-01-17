@@ -19,30 +19,38 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             ?: return Indent.getNoneIndent()
 
         // Handle indent if cursor is at block end (ie. NEXT, ENDI)
-        if (node.elementType in CaosScriptTokenSets.BLOCK_STARTS_AND_ENDS) {
-            return Indent.getNoneIndent()
-        } else if (node.elementType == CaosScriptTypes.CaosScript_COMMENT) {
-            val previousText = node.previous?.text
-                ?: return Indent.getAbsoluteNoneIndent()
-            return when {
-                previousText.endsWith("\n") -> Indent.getAbsoluteNoneIndent()
-                else -> Indent.getNoneIndent()
+        when {
+            node.elementType in CaosScriptTokenSets.BLOCK_STARTS_AND_ENDS -> {
+                return Indent.getNoneIndent()
             }
-        } else if (element is CaosScriptCodeBlockLine) {
-            (element.parent?.parent as? CaosScriptScriptElement)?.let {
-                return getIndent(it)
+            node.elementType == CaosScriptTypes.CaosScript_COMMENT -> {
+                val previousText = node.previous?.text
+                    ?: return Indent.getAbsoluteNoneIndent()
+                return when {
+                    previousText.endsWith("\n") -> Indent.getAbsoluteNoneIndent()
+                    else -> Indent.getNoneIndent()
+                }
             }
-            return Indent.getNormalIndent()
-        } else if (element is CaosScriptCodeBlock) {
-            if (element.firstChild?.firstChild?.firstChild is CaosScriptComment) {
+            element is CaosScriptCodeBlockLine -> {
+                (element.parent?.parent as? CaosScriptScriptElement)?.let {
+                    return getIndent(it)
+                }
                 return Indent.getNormalIndent()
             }
-            return Indent.getNoneIndent()
-        } else if (node.elementType in CaosScriptTokenSets.WHITESPACES) {
-            return Indent.getNormalIndent()
+            element is CaosScriptCodeBlock -> {
+                if (element.firstChild?.firstChild?.firstChild is CaosScriptComment) {
+                    return Indent.getNormalIndent()
+                }
+                return Indent.getNoneIndent()
+            }
+            node.elementType in CaosScriptTokenSets.WHITESPACES -> {
+                return Indent.getNormalIndent()
+            }
+            element is CaosScriptCaos2Block -> return Indent.getAbsoluteNoneIndent()
+            element is CaosScriptCaos2BlockComment -> return Indent.getAbsoluteNoneIndent()
+            else -> return Indent.getNoneIndent()
         }
 
-        return Indent.getNoneIndent()
     }
 
     companion object {

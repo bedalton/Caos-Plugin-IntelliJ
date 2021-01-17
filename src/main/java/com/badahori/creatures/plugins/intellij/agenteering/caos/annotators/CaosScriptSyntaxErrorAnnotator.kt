@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.LVALUE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -13,11 +14,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.STRING
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isDirectlyPrecededByNewline
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -66,7 +66,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             is CaosScriptErrorCommand -> annotateErrorCommand(variant, element, annotationWrapper)
             is CaosScriptCharacter -> {
                 if (element.charChar?.textLength.orElse(0) > 1 && element.charChar?.text != "\\\\") {
-                    simpleError(element.charChar ?: element, "Char value can be only one character", annotationWrapper)
+                    simpleError(element.charChar ?: element, message("caos.annotator.syntax-error-annotator.char-value-too-long"), annotationWrapper)
                 }
             }
             is CaosScriptErrorLvalue -> {
@@ -78,13 +78,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     element.byteString != null -> "byte-string"
                     else -> "literal"
                 }
-                simpleError(element, "Variable expected. Found $variableType", annotationWrapper)
+                simpleError(element, message("caos.annotator.syntax-error-annotator.variable-expected", variableType), annotationWrapper)
             }
             is CaosScriptIncomplete -> {
                 if (element.hasParentOfType(CaosScriptSubroutineName::class.java)) {
                     return
                 }
-                simpleError(element, "invalid element", annotationWrapper)
+                simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
             }
             //is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
             is CaosScriptSpaceLikeOrNewline -> annotateNewLineLike(variant, element, annotationWrapper)
@@ -98,14 +98,22 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             is CaosScriptSwiftEscapeLiteral -> {
                 val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
                 if (!"^\\*\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex().matches(firstChildText)) {
-                    simpleError(element, "invalid element", annotationWrapper)
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
                 } else if (element.textLength < 4) {
-                    simpleError(element, "Swift escape body cannot be empty", annotationWrapper)
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), annotationWrapper)
                 }
             }
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, annotationWrapper)
+            }
+            is CaosScriptCaos2CommentErrorValue -> {
+                val isCaos2Cob = (element.containingFile as? CaosScriptFile)?.isCaos2Cob ?: false
+                val directiveType = if(isCaos2Cob)
+                    "CAOS2Cob property"
+                else
+                    "CAOS2Pray tag"
+                simpleError(element, message("caos.annotator.syntax-error-annotator.too-many-tag-values", directiveType), annotationWrapper)
             }
         }
     }
@@ -120,7 +128,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         if (isLvalue) {
             val setv = "SETV".matchCase(command)
             annotationWrapper
-                    .newErrorAnnotation(message("caos.annotator.command-annotator.clas-is-lvalue-and-requires-setv", commandUpperCase))
+                    .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.clas-is-lvalue-and-requires-setv", commandUpperCase))
                     .range(element)
                     .withFix(CaosScriptInsertBeforeFix("Insert '$setv' before $command", setv, element))
                     .create()
@@ -134,7 +142,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         if (variant != CaosVariant.C1 || element.float == null)
             return
         val floatValue = element.text.toFloat()
-        var builder = annotationWrapper.newErrorAnnotation(message("caos.annotator.command-annotator.float-value-not-allowed-in-variant"))
+        var builder = annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.float-value-not-allowed-in-variant"))
                 .range(element)
                 .withFix(CaosScriptRoundNumberFix(element, floatValue, true))
         if (abs(floatValue - floor(floatValue)) > 0.00001)
@@ -145,7 +153,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateEqualityExpressionPlus(variant: CaosVariant, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
         if (variant.isNotOld)
             return
-        annotationWrapper.newErrorAnnotation(message("caos.annotator.command-annotator.compound-equality-operator-not-allowed"))
+        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.compound-equality-operator-not-allowed"))
                 .range(element)
                 .create()
     }
@@ -165,9 +173,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
      * Annotates a string in double quotes as out of variant in C1/C2
      */
     private fun annotateDoubleQuoteString(variant: CaosVariant, quoteStringLiteral: CaosScriptQuoteStringLiteral, wrapper: AnnotationHolderWrapper) {
-        if (variant.isNotOld)
+        if (variant.isNotOld || quoteStringLiteral.parent is CaosScriptCaos2CommentValue)
             return
-        wrapper.newErrorAnnotation(message("caos.annotator.command-annotator.out-of-variant-quote-string"))
+        wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-quote-string"))
                 .range(quoteStringLiteral)
                 .withFix(CaosScriptFixQuoteType(quoteStringLiteral, '[', ']'))
                 .create()
@@ -179,17 +187,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateC1String(variant: CaosVariant, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
         if (variant.isOld) {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
-                wrapper.newErrorAnnotation(message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
+                wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.string-comparisons-not-allowed", variant))
                         .range(element)
                         .create()
             } else if (element.getParentOfType(CaosScriptArgument::class.java)?.parent is CaosScriptCAssignment) {
-                wrapper.newErrorAnnotation(message("caos.annotator.command-annotator.variable-string-assignments-not-allowed", variant))
+                wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed", variant))
                         .range(element)
                         .create()
             }
             return
         }
-        wrapper.newErrorAnnotation(message("caos.annotator.command-annotator.out-of-variant-c1-string"))
+        wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-c1-string"))
                 .range(element)
                 .withFix(CaosScriptFixQuoteType(element, '"'))
                 .create()
@@ -293,13 +301,13 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
     private fun annotateRetnCommand(element: CaosScriptCRetn, annotationWrapper: AnnotationHolderWrapper) {
         if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine::class.java)) {
-            annotationWrapper.newErrorAnnotation(message("caos.annotator.command-annotator.retn-used-outside-of-subr"))
+            annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.retn-used-outside-of-subr"))
                     .range(element)
                     .create()
         }
         if (!element.hasParentOfType(CaosScriptNoJump::class.java))
             return
-        annotationWrapper.newAnnotation(HighlightSeverity.ERROR, message("caos.annotator.command-annotator.loop-should-not-be-jumped-out-of"))
+        annotationWrapper.newAnnotation(HighlightSeverity.ERROR, message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
                 .range(element.textRange)
                 .create()
     }
@@ -315,7 +323,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 else
                     CaosScriptInferenceUtil.getInferredType(element)
                 if (type == CaosExpressionValueType.C1_STRING || type == CaosExpressionValueType.BYTE_STRING || type == STRING) {
-                    annotationWrapper.newErrorAnnotation(message("caos.annotator.command-annotator.string-comparisons-not-allowed", variant))
+                    annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.string-comparisons-not-allowed", variant))
                             .range(element)
                             .create()
                 }
@@ -363,7 +371,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             else -> element.text
         }
 
-        val error = message("caos.annotator.command-annotator.invalid-var-type-for-variant", varName, variants)
+        val error = message("caos.annotator.syntax-error-annotator.invalid-var-type-for-variant", varName, variants)
         annotationWrapper
                 .newErrorAnnotation(error)
                 .range(element)
@@ -380,7 +388,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     val commaPos = text.indexOf(',', start)
                     if (commaPos >= start) {
                         start = commaPos + 1
-                        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-annotator.invalid-command-in-c2e"))
+                        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command-in-c2e"))
                             .range(TextRange(startOffset+commaPos, startOffset+commaPos+1))
                             .create()
                     } else {
@@ -391,7 +399,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             return
         }
         if (element.parent == element.containingFile && element.containingFile.firstChild == element && variant == CaosVariant.C1) {
-            simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
+            // Leading spaces at start of file matters very little now I think.
+            // I think BoBCoB trims them out, and so does my injector
+            // and also the CAOS tool I believe
+            // SO SKIP
+            //simpleError(element, "CAOS files should not begin with leading whitespace", annotationWrapper)
             return
         }
         if (element.spaceLikeList.isNotEmpty() && element.newLineLikeList.isNotEmpty()) {
@@ -404,7 +416,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             }
             if (prevSpaces.isNotEmpty()) {
                 val range = TextRange.create(prevSpaces.first().startOffset, prevSpaces.last().endOffset)
-                val error = message("caos.annotator.syntax-annotator.invalid-trailing-whitespace")
+                val error = message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace")
                 annotationWrapper
                         .newErrorAnnotation(error)
                         .range(range)
@@ -446,7 +458,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
     private fun annotationTrailingWhiteSpace(variant: CaosVariant, element: CaosScriptTrailingSpace, annotationWrapper: AnnotationHolderWrapper) {
         if (element.textContains(',')) {
-            annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-annotator.invalid-trailing-whitespace"))
+            annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace"))
                     .range(element)
                     .withFix(CaosScriptFixTooManySpaces(element))
                     .create()

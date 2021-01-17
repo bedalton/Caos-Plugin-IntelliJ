@@ -75,6 +75,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val toRgb = encoding.toRgb
         for (y in 0 until height) {
             var x = 0
             while (x < width) {
@@ -92,7 +93,7 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
                     }
                 } else {
                     while (x < z) {
-                        val color = SpriteColorUtil.getColor(bytesBuffer.uInt16, encoding)
+                        val color = toRgb(bytesBuffer.uInt16)
                         image.raster.setPixel(x,y,color)
                         image.alphaRaster.setPixel(x, y, SpriteColorUtil.solid)
                         x++
