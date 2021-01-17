@@ -168,10 +168,10 @@ val CaosScriptFile.caos2CobVariant:CaosVariant? get() = PsiTreeUtil.getChildOfTy
 val CaosScriptFile.isCaos2Cob:Boolean get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.isCaos2Cob.orFalse()
 
 val CaosScriptFile.tags:Map<String,String> get() {
-    return collectElementsOfType(this, CaosScriptCaos2Tag::class.java).mapNotNull tags@{
-        val value:String = it.caos2CommentValue?.let { it.int?.text ?: it.quoteStringLiteral?.stringValue }
+    return collectElementsOfType(this, CaosScriptCaos2Tag::class.java).mapNotNull tags@{ tag ->
+        val value:String = tag.caos2CommentValue?.let { it.int?.text ?: it.quoteStringLiteral?.stringValue ?: it.text }
             ?: return@tags null
-        it.cobCommentDirective.text to value
+        tag.cobCommentDirective.text to value
     }.toMap()
 }
 

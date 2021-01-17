@@ -135,23 +135,17 @@ class CompileCaos2CobAction : AnAction(
             )
             ++compilationResult.failures
             return false
-        } else {
-            LOGGER.info("Parent file for COB '${file.name}' is not null")
         }
         val dataOut = compile(project, file, compilerData)
         if (dataOut == null) {
             ++compilationResult.failures
             LOGGER.severe("Failed to compile data for file: ${file.name}")
             return false
-        } else {
-            LOGGER.severe("Compiled COB data for file: ${file.name}")
         }
         if (!writeCob(project, parent, compilerData, dataOut)) {
             ++compilationResult.failures
             LOGGER.severe("Failed write COB data for file: ${file.name}")
             return false
-        } else {
-            LOGGER.info("Wrote COB data to ${compilerData.targetFile}. Update Results: $compilationResult")
         }
         if (compilerData is Caos2CobC1) {
             if (!writeRemoverCob(project, compilationResult, parent, file, compilerData)) {
@@ -190,15 +184,12 @@ class CompileCaos2CobAction : AnAction(
             ++compilationResult.failures
             LOGGER.severe("Failed to compile remover COB data")
             return false
-        } else {
-            LOGGER.info("Compiled remover COB data")
         }
         if (!writeCob(project, parent, removerCob, removerData)) {
             ++compilationResult.failures
             LOGGER.severe("Failed to write remover COB data")
             return false
         } else {
-            LOGGER.info("Wrote remover COB data to ${removerCob.targetFile}")
             return true
         }
     }

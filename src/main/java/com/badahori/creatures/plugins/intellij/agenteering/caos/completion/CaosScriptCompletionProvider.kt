@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.tags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*
@@ -12,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.ProcessingContext
@@ -45,8 +45,37 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val caosElement = element.getSelfOrParentOfType(CaosScriptCompositeElement::class.java) ?: element
 
         if (isCaos2Cob) {
-            val previousText = (caosElement.getPreviousNonEmptySibling(false) as? CaosScriptCaos2CommandName)?.text
-            addCaos2CobTagCompletions(resultSet, variant, caosFile, text, previousText)
+            val directory = caosFile.virtualFile.parent
+            val previous = caosElement.getPreviousNonEmptySibling(false)
+            val previousText = (previous as? CaosScriptCaos2CommandName)?.text
+            if (previousText != null || previous?.text == "*#") {
+                addCaos2CobTagCompletions(resultSet, variant, caosFile, text, previousText)
+                val case = text.nullIfEmpty()?.case ?: Case.CAPITAL_FIRST
+                resultSet.addElement(LookupElementBuilder.create("Link".matchCase(case)))
+                if (variant == CaosVariant.C2) {
+                    listOf("Attach", "Depend", "Inline").forEach {
+                        resultSet.addElement(LookupElementBuilder.create(it.matchCase(case)))
+                    }
+                }
+            }
+            val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text ?: ""
+            val openChar = if (stringValue.startsWith("\"") || stringValue.startsWith("'")) "" else ""
+            val closeChar = if (stringValue.endsWith("\"") && stringValue.startsWith("\""))
+                ""
+            else if (stringValue.startsWith("'") && stringValue.endsWith("'"))
+                ""
+            else if (stringValue.startsWith("'"))
+                "'"
+            else
+                "\""
+            caosElement.getSelfOrParentOfType(CaosScriptCaos2Tag::class.java)?.let {
+                val tag = CobTag.fromString(it.tagName)
+                addCaos2CobFileNameCompletions(resultSet, directory, tag, openChar, closeChar)
+            }
+            caosElement.getSelfOrParentOfType(CaosScriptCaos2Command::class.java)?.let {
+                val tag = CobCommand.fromString(it.commandName)
+                addCaos2CobFileNameCompletions(resultSet, directory, tag, openChar, closeChar)
+            }
             resultSet.stopHere()
             return
         }
@@ -315,6 +344,58 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 
+    private fun addCaos2CobFileNameCompletions(resultSet: CompletionResultSet, directory: VirtualFile, tag: CobCommand?, openChar:String, closeChar:String) {
+        val files = if (tag == CobCommand.LINK) {
+            VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
+        } else if (tag != null ){
+            VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
+        } else
+            return
+        val parentPathLength = directory.path.length + 1
+        for (file in files) {
+            val relativePath = file.path.substring(parentPathLength)
+            resultSet.addElement(LookupElementBuilder.create(openChar+relativePath+closeChar))
+        }
+
+    }
+
+    private fun addCaos2CobFileNameCompletions(resultSet: CompletionResultSet, directory: VirtualFile, tag: CobTag?, openChar:String, closeChar:String) {
+
+        // Get files of appropriate type
+        val files = if (tag == CobTag.THUMBNAIL) {
+            VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
+        } else if (tag == CobTag.ISCR || tag == CobTag.RSCR) {
+            VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
+        } else {
+            return
+        }
+
+        // Ensure there are matching files
+        if (files.isEmpty())
+            return
+
+        // Get parent path length for sizing down the relative child paths
+        val parentPathLength = directory.path.length + 1
+
+        // Create insert handler for use by thumbnail tags to move the cursor between the [^] in sprite thumbnails
+        val insertHandler = OffsetCursorInsertHandler(6) // ^].spr"
+
+        // Loop through files and add lookup elements
+        for (file in files) {
+            val relativePath = file.path.substring(parentPathLength)
+            resultSet.addElement(LookupElementBuilder.create(openChar+relativePath+closeChar))
+            if (tag == CobTag.THUMBNAIL) {
+                val fileParts = relativePath.split(".")
+                if (fileParts.size < 2)
+                    continue
+                val basePath = fileParts.dropLast(1).joinToString(".")
+                LookupElementBuilder.create(openChar+basePath+"[]."+fileParts.last()+closeChar)
+                    .withLookupString("\""+basePath+"[#]."+fileParts.last() + "\"")
+                    .withInsertHandler(insertHandler)
+            }
+        }
+    }
+
     private fun addCaos2CobTagCompletions(
         resultSet: CompletionResultSet,
         variant: CaosVariant,
@@ -326,7 +407,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             CobTag.fromString(tagString)
         }
         var tagsRaw = CobTag.getTags(variant).filterNot { tag -> tag in existingTags }
-        LOGGER.info("ExistingTags: $existingTags. New Tags: $tagsRaw")
         var text = textIn
         if (previousText != null) {
             text = "$previousText $textIn"
