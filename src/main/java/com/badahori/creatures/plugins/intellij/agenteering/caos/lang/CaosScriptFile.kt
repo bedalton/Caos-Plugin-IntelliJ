@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.utils.filterNotNull
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -28,14 +29,17 @@ import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
 import com.intellij.util.FileContentUtilCore
 import java.util.concurrent.atomic.AtomicBoolean
 
-class CaosScriptFile(viewProvider: FileViewProvider)
-    : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
+class CaosScriptFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
     private val didFormatInitial = AtomicBoolean(false)
     override var variant: CaosVariant?
         get() {
             val storedVariant = getUserData(VariantUserDataKey)
-                    ?: this.virtualFile?.cachedVariant
-                    ?: (module ?: originalFile.module)?.variant
+                ?: this.virtualFile?.cachedVariant
+                ?: getCaos2VariantRaw(this.text)
+                    ?.apply {
+                        variant = this
+                    }
+                ?: (module ?: originalFile.module)?.variant
             return if (storedVariant == CaosVariant.UNKNOWN)
                 null
             else
@@ -44,16 +48,16 @@ class CaosScriptFile(viewProvider: FileViewProvider)
         set(newVariant) {
             putUserData(VariantUserDataKey, newVariant)
             this.virtualFile
-                    ?.let {
-                        (it as? CaosVirtualFile)?.variant = variant
-                        if (it is com.intellij.openapi.vfs.VirtualFileWithId) {
-                            VariantFilePropertyPusher.writeToStorage(it, newVariant ?: CaosVariant.UNKNOWN)
-                        }
-                        it.putUserData(VariantUserDataKey, newVariant)
-                        if (ApplicationManager.getApplication().isDispatchThread)
-                            FileContentUtilCore.reparseFiles(it)
+                ?.let { virtualFile ->
+                    (virtualFile as? CaosVirtualFile)?.variant = variant
+                    if (virtualFile is com.intellij.openapi.vfs.VirtualFileWithId) {
+                        VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant ?: CaosVariant.UNKNOWN)
                     }
-            if (ApplicationManager.getApplication().isDispatchThread) {
+                    virtualFile.putUserData(VariantUserDataKey, newVariant)
+                    if (ApplicationManager.getApplication().isDispatchThread)
+                        FileContentUtilCore.reparseFiles(virtualFile)
+                }
+            if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
             }
         }
@@ -67,11 +71,11 @@ class CaosScriptFile(viewProvider: FileViewProvider)
     }
 
     fun <PsiT : PsiElement> getChildOfType(childClass: Class<PsiT>): PsiT? =
-            PsiTreeUtil.getChildOfType(this, childClass)
+        PsiTreeUtil.getChildOfType(this, childClass)
 
 
     fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> =
-            PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
+        PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
 
     override fun toString(): String {
         return "Caos Script"
@@ -83,7 +87,8 @@ class CaosScriptFile(viewProvider: FileViewProvider)
 
     companion object {
         @JvmStatic
-        val VariantUserDataKey = Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.SCRIPT_VARIANT_KEY")
+        val VariantUserDataKey =
+            Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.SCRIPT_VARIANT_KEY")
 
         fun quickFormat(caosFile: CaosScriptFile) {
             if (caosFile.didFormatInitial.getAndSet(true))
@@ -128,7 +133,6 @@ class CaosScriptFile(viewProvider: FileViewProvider)
             if (caosFile.virtualFile?.apply { isWritable = true }?.isWritable.orFalse())
                 CaosScriptExpandCommasIntentionAction.invoke(caosFile.project, caosFile)
         }
-
     }
 }
 
@@ -149,32 +153,95 @@ var PsiFile.runInspections: Boolean
 
 val VirtualFile.cachedVariant: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
-            ?: VariantFilePropertyPusher.readFromStorage(this)
-            ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
+        ?: VariantFilePropertyPusher.readFromStorage(this)
+        ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
 
 val maxDumpHeader = "* Scriptorium Dump".length + 4 // Arbitrary spaces pad
 
-val dumpRegex = "\\*\\s*([Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]|[Dd][Uu][Mm][Pp]|[Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]\\s*[Dd][Uu][Mm][Pp]).*".toRegex()
+val dumpRegex =
+    "\\*\\s*([Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]|[Dd][Uu][Mm][Pp]|[Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]\\s*[Dd][Uu][Mm][Pp]).*".toRegex()
 
-val PsiFile.isDump:Boolean get() {
-    return text.trim().let { text ->
-        val commentText:String = text.split("\n", ignoreCase = true, limit = 2)[0]
-        dumpRegex.matches(commentText)
+val PsiFile.isDump: Boolean
+    get() {
+        return text.trim().let { text ->
+            val commentText: String = text.split("\n", ignoreCase = true, limit = 2)[0]
+            dumpRegex.matches(commentText)
+        }
     }
-}
 
-val CaosScriptFile.isCaos2Pray:Boolean get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.isCaos2Pray.orFalse()
-val CaosScriptFile.caos2CobVariant:CaosVariant? get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.cobVariant
-val CaosScriptFile.isCaos2Cob:Boolean get() = PsiTreeUtil.getChildOfType(this, CaosScriptCaos2Block::class.java)?.isCaos2Cob.orFalse()
+val CaosScriptFile.isCaos2Pray: Boolean
+    get() = PsiTreeUtil.getChildOfType(
+        this,
+        CaosScriptCaos2Block::class.java
+    )?.isCaos2Pray.orFalse()
+val CaosScriptFile.caos2CobVariant: CaosVariant?
+    get() = PsiTreeUtil.getChildOfType(
+        this,
+        CaosScriptCaos2Block::class.java
+    )?.cobVariant
+val CaosScriptFile.isCaos2Cob: Boolean
+    get() = PsiTreeUtil.getChildOfType(
+        this,
+        CaosScriptCaos2Block::class.java
+    )?.isCaos2Cob.orFalse()
 
-val CaosScriptFile.tags:Map<String,String> get() {
-    return collectElementsOfType(this, CaosScriptCaos2Tag::class.java).mapNotNull tags@{ tag ->
-        val value:String = tag.caos2CommentValue?.let { it.int?.text ?: it.quoteStringLiteral?.stringValue ?: it.text }
-            ?: return@tags null
-        tag.cobCommentDirective.text to value
-    }.toMap()
-}
+val CaosScriptFile.tags: Map<String, String>
+    get() {
+        return collectElementsOfType(this, CaosScriptCaos2Tag::class.java).mapNotNull tags@{ tag ->
+            val value: String = tag.value
+                ?: return@tags null
+            tag.tagName to value
+        }.toMap()
+    }
 
-val CaosScriptFile?.disableMultiScriptChecks:Boolean get() {
-    return this == null || this.isDump || this.isCaos2Cob
+val CaosScriptFile?.disableMultiScriptChecks: Boolean
+    get() {
+        return this == null || this.isDump || this.isCaos2Cob
+    }
+
+private val CAOS2COB_VARIANT_REGEX = "[*]{2}Caos2Cob\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
+private val CAOS2_BLOCK_VARIANT_REGEX =
+    "^(C1|C2|CV|C3|DS|[A-Z]{2}|[a-zA-Z][a-zA-Z0-9]{3})(-?Name)?".toRegex(RegexOption.IGNORE_CASE)
+
+private fun getCaos2VariantRaw(text: String): CaosVariant? {
+    var variant = text.trim().split('\n', limit = 2)[0].trim().let { firstLineText ->
+        CAOS2COB_VARIANT_REGEX.matchEntire(firstLineText)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.let { variantCode ->
+                CaosVariant.fromVal(variantCode)
+            }
+    }
+    if (variant == null || variant == CaosVariant.UNKNOWN) {
+        variant = text
+            .split("*#")
+            .mapNotNull {
+                CAOS2_BLOCK_VARIANT_REGEX
+                    .matchEntire(it.trim())
+                    ?.groupValues
+                    ?.filterNotNull()
+                    ?.last()
+                    ?.trim()
+                    ?.toUpperCase()
+                    ?.let { variantCode ->
+                        when (variantCode) {
+                            "AGNT" -> CaosVariant.C3
+                            "DSAG" -> CaosVariant.DS
+                            else -> {
+                                val parsedVariant = CaosVariant.fromVal(variantCode)
+                                if (parsedVariant == CaosVariant.UNKNOWN)
+                                    CaosVariant.DS
+                                else
+                                    parsedVariant
+                            }
+                        }
+                    }
+            }
+            .minBy { it.index }
+            ?: return null
+    }
+    if (variant == CaosVariant.UNKNOWN) {
+        return null
+    }
+    return variant
 }

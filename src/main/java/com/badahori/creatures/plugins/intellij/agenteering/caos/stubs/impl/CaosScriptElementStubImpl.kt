@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes
@@ -200,7 +201,9 @@ class CaosScriptCaos2BlockStubImpl(
         override val isCaos2Pray: Boolean,
         override val isCaos2Cob: Boolean,
         override val tags:Map<String,String>,
-        override val commands:List<Pair<String,List<String>>>
+        override val commands:List<Pair<String,List<String>>>,
+        override val agentBlockNames: List<Pair<String, String>>,
+        override val caos2Variants: List<CaosVariant>
 ): StubBase<CaosScriptCaos2BlockImpl>(parent, CaosScriptStubTypes.CAOS_2_BLOCK),CaosScriptCaos2BlockStub  {
         override val cobTags: Map<CobTag, String> by lazy {
                 tags.mapNotNull { (key, value) ->

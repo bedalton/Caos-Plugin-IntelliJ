@@ -1870,7 +1870,7 @@ object CaosScriptPsiImplUtil {
     }
 
     // ============================== //
-    // =========== PRAY 2 =========== //
+    // ====== CAOS 2 COB/PRAY ======= //
     // ============================== //
 
     /**
@@ -1878,7 +1878,47 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isCaos2Pray(def: CaosScriptCaos2Block): Boolean {
-        return def.stub?.isCaos2Pray ?: def.caos2BlockHeader.caos2PrayHeader != null
+        return def.stub?.isCaos2Pray
+                ?: def.stub?.agentBlockNames?.none { it.first == "C1" || it.first == "C2" }
+                ?: def.caos2BlockHeader?.caos2PrayHeader != null
+    }
+
+    @JvmStatic
+    fun getAgentBlockNames(def: CaosScriptCaos2Block): List<Pair<String, String>> {
+        (def.stub?.agentBlockNames)?.let {
+            return it
+        }
+        val nameRegex = "^(C1|C2|CV|C3|DS|[A-Z]{2}|[a-zA-Z][a-zA-Z0-9]{3})(-?Name)?".toRegex(RegexOption.IGNORE_CASE)
+        val agentNameFromCobTag = def.tags
+            .filter { CobTag.AGENT_NAME.isTag(it.key) }
+            .values
+            .firstOrNull()
+        val cobNamePair = if (agentNameFromCobTag != null) {
+            val variant = def.cobVariant
+            if (variant != null)
+                variant.code to agentNameFromCobTag
+            else
+                null
+        } else {
+            null
+        }
+        return def.commands.flatMap map@{ (commandName, args) ->
+            val agentBlockName: String = when {
+                commandName like "AGNT" -> "C3"
+                commandName like "DSAG" -> "DS"
+                else -> {
+                    val blockName = nameRegex
+                        .matchEntire(commandName)
+                        ?.groupValues
+                        ?.getOrNull(1)
+                        ?: return@map emptyList()
+                    blockName
+                }
+            }
+            args.map { arg ->
+                agentBlockName.toUpperCase() to arg
+            }
+        } + listOfNotNull(cobNamePair)
     }
 
     /**
@@ -1886,7 +1926,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isCaos2Cob(def: CaosScriptCaos2Block): Boolean {
-        return def.stub?.isCaos2Cob ?: def.caos2BlockHeader.caos2CobHeader != null
+        return def.stub?.isCaos2Cob ?: def.caos2BlockHeader?.caos2CobHeader != null || def.agentBlockNames.any { it.first == "C1" || it.first == "C2" }
     }
 
     /**
@@ -1894,9 +1934,44 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCobVariant(def: CaosScriptCaos2Block): CaosVariant? {
+        def.stub?.caos2Variants?.minBy { it.index }
         if (!isCaos2Cob(def))
             return null
-        val variant = def.caos2BlockHeader.caos2CobHeader?.let { header ->
+        val variant = def.caos2BlockHeader?.caos2CobHeader?.let { header ->
+            val text = header.text.trim()
+            if (text.length < 13)
+                def.variant
+            else {
+                when (text.substring(text.length - 3)) {
+                    "C1" -> CaosVariant.C1
+                    "C2" -> CaosVariant.C2
+                    else -> null
+                }
+            }
+        } ?: def.agentBlockNames
+            .filter { it.first == "C1" || it.first == "C2" }
+            .nullIfEmpty()
+            ?.firstOrNull()
+            ?.let {
+                if (it.first == "C1")
+                    CaosVariant.C1
+                else
+                    CaosVariant.C2
+            }
+        return variant?.ifOld {
+            this
+        }
+    }
+
+    /**
+     * Gets all variants covered by this CAOS2 block
+     */
+    @JvmStatic
+    fun getCaos2Variants(def: CaosScriptCaos2Block): List<CaosVariant> {
+        def.stub?.caos2Variants?.let {
+            return it
+        }
+        val cobVariant:CaosVariant? = def.caos2BlockHeader?.caos2CobHeader?.let { header ->
             val text = header.text.trim()
             if (text.length < 13)
                 def.variant
@@ -1908,9 +1983,25 @@ object CaosScriptPsiImplUtil {
                 }
             }
         }
-        return variant?.ifOld {
-            this
-        }
+        val blockVariants = def.agentBlockNames
+            .mapNotNull {
+                val variant = CaosVariant.fromVal(it.first)
+                if (variant == CaosVariant.UNKNOWN)
+                    null
+                else
+                    variant
+            }
+        return if (cobVariant != null)
+            blockVariants + cobVariant
+        else
+            blockVariants
+    }
+    /**
+     * Gets the minimum CAOS variant for this CAOS2 block
+     */
+    @JvmStatic
+    fun getCaos2Variant(def: CaosScriptCaos2Block): CaosVariant? {
+        return getCaos2Variants(def).minBy { it.index }
     }
 
     /**
@@ -1929,6 +2020,7 @@ object CaosScriptPsiImplUtil {
                 Pair(key, args)
             }
     }
+
     /**
      * Gets arguments for the CAOS2Block command by command name
      */
@@ -2076,19 +2168,6 @@ fun String?.nullIfUndefOrBlank(): String? {
  */
 val CaosScriptCommandLike.commandStringUpper: String? get() = commandString?.toUpperCase()
 
-
-/**
- * Gets number of nested code blocks an element is in
- */
-fun getDepth(element: PsiElement): Int {
-    var depth = 0
-    var parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
-    while (parent != null) {
-        depth++
-        parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
-    }
-    return depth
-}
 
 val ASTNode.endOffset: Int get() = textRange.endOffset
 
