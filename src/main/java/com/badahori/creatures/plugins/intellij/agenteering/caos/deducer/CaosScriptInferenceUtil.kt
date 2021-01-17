@@ -7,7 +7,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -211,33 +213,35 @@ fun CaosScriptIsVariable?.getAssignments(): List<CaosScriptCAssignment> {
     val startOffset = startOffset
     val scope = CaosScriptPsiImplUtil.getScope(this)
     // Determine the assignments to return based on variable type
-    if (this is CaosScriptVarToken) {
-        // Only resolve event scripts assignments
-        // TODO resolve variables types outside of event script scope
-        if (this.varGroup != CaosScriptVarTokenGroup.VARx && this.varGroup != CaosScriptVarTokenGroup.VAxx)
-            return emptyList()
+    when (this) {
+        is CaosScriptVarToken -> {
+            // Only resolve event scripts assignments
+            // TODO resolve variables types outside of event script scope
+            if (this.varGroup != CaosScriptVarTokenGroup.VARx && this.varGroup != CaosScriptVarTokenGroup.VAxx)
+                return emptyList()
 
-        // At this point variable can only be an event variable
-        // Limit returned assignments to those declared within the same event
-        val assignments = this
+            // At this point variable can only be an event variable
+            // Limit returned assignments to those declared within the same event
+            val assignments = this
                 .getParentOfType(CaosScriptEventScript::class.java)?.let { parentEventScript ->
                     PsiTreeUtil.collectElementsOfType(parentEventScript, CaosScriptCAssignment::class.java)
                 } ?: return emptyList()
-        // Filter assignments by scope and when they are assigned
-        // Conflicting variants out of scope should not be returned
-        // Also later assignments should not be returned either
-        return assignments
+            // Filter assignments by scope and when they are assigned
+            // Conflicting variants out of scope should not be returned
+            // Also later assignments should not be returned either
+            return assignments
                 .filter {
                     it.endOffset < startOffset && it.scope.sharesScope(scope)
                 }
                 .sortedByDescending { it.endOffset }
-    } else if (this is CaosScriptNamedGameVar) {
-        // Only find assignments to GAME and EAME variables, as they are universal
-        // And not tied to an agent
-        // TODO implement filtering on NAME and MAME variables by agent classifier
-        if (this.varType != CaosScriptNamedGameVarType.EAME && this.varType != CaosScriptNamedGameVarType.GAME)
-            return emptyList()
-        return CaosScriptNamedGameVarIndex
+        }
+        is CaosScriptNamedGameVar -> {
+            // Only find assignments to GAME and EAME variables, as they are universal
+            // And not tied to an agent
+            // TODO implement filtering on NAME and MAME variables by agent classifier
+            if (this.varType != CaosScriptNamedGameVarType.EAME && this.varType != CaosScriptNamedGameVarType.GAME)
+                return emptyList()
+            return CaosScriptNamedGameVarIndex
                 .instance[this.varType, this.key ?: "", this.project]
                 .mapNotNull {
                     // Return this assignment only if its parent is an lvalue
@@ -247,8 +251,9 @@ fun CaosScriptIsVariable?.getAssignments(): List<CaosScriptCAssignment> {
                     else
                         null
                 }
-    } else
-        return emptyList()
+        }
+        else -> return emptyList()
+    }
 }
 
 /**

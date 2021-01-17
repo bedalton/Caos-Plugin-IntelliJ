@@ -11,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.AGENT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.textUppercase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
@@ -253,7 +252,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
             var doubleNegative = isBool && otherValueInt == 0 && (eqOp == GREATER_THAN || eqOp == NOT_EQUAL)
 
             // Get other value from its values list value
-            val otherValueText = returnValuesList
+            @Suppress("SpellCheckingInspection") val otherValueText = returnValuesList
                 // Get value as bitflags if possible
                 ?.getWithBitFlags(otherValueInt)
                 // If bitflags is empty -> nullify to prevent empty string

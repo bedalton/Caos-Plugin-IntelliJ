@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
@@ -31,5 +31,17 @@ class CloseQuoteInsertHandler(private val closeQuote:String) : InsertHandler<Loo
         if (EditorUtil.isTextAtOffset(context, closeQuote))
             return
         EditorUtil.insertText(context, closeQuote, true)
+    }
+}
+object EqualSignInsertHandler : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
+        context.editor.caretModel.currentCaret.offset
+        if (EditorUtil.isTextAtOffset(context, "=") || EditorUtil.isTextAtOffset(context, " ="))
+            return
+        val text = if (EditorUtil.isTextAtOffset(context, " "))
+            "= "
+        else
+            " = "
+        EditorUtil.insertText(context, text, true)
     }
 }

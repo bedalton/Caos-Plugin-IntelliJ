@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isNotFolded
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotFolded
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option

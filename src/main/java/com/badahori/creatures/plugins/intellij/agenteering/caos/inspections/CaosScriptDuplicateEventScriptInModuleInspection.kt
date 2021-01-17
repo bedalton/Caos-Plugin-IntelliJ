@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffsetInParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.codeInspection.LocalInspectionTool

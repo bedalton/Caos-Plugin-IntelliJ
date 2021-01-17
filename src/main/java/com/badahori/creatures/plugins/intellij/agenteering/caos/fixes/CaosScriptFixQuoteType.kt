@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 
 class CaosScriptFixQuoteType(element:PsiElement, private val quoteStart:Char, private val quoteEnd:Char = quoteStart) : IntentionAndQuickFixAction() {
     private val pointer = SmartPointerManager.createPointer(element)

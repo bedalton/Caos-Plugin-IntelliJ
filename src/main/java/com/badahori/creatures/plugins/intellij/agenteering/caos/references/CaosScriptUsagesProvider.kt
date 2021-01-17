@@ -6,8 +6,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
 import com.intellij.lang.cacheBuilder.DefaultWordsScanner
 import com.intellij.lang.cacheBuilder.WordsScanner

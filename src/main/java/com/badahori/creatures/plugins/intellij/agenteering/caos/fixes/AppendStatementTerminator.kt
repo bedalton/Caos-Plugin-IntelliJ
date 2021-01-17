@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber

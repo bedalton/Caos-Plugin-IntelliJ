@@ -85,7 +85,6 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
 
         // Check that there are more than two commands.
         // If not, no need to try to separate them by newlines
-        val numCommands = PsiTreeUtil.collectElementsOfType(file, CaosScriptCommandCall::class.java).size
         if (shouldNotCollapse(file)) {
             return true
         }
