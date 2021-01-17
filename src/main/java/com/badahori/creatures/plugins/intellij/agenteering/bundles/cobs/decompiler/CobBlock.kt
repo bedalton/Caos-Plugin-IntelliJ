@@ -27,19 +27,19 @@ sealed class CobFileData {
 
 sealed class CobBlock {
     data class AgentBlock(
-            val format: CobFormat,
-            val name: String,
-            val description: String,
-            val lastUsageDate: Int? = null,
-            val useInterval: Int? = null,
-            val quantityAvailable: Int,
-            val quantityUsed: Int? = null,
-            val expiry: Calendar,
-            val dependencies: List<CobDependency> = emptyList(),
-            val installScript: AgentScript.InstallScript? = null,
-            val removalScript: AgentScript.RemovalScript? = null,
-            val eventScripts: List<AgentScript>,
-            val image: BufferedImage?
+        val format: CobFormat,
+        val name: String,
+        val description: String,
+        val lastUsageDate: Int? = null,
+        val useInterval: Int? = null,
+        val quantityAvailable: Int,
+        val quantityUsed: Int? = null,
+        val expiry: Calendar,
+        val dependencies: List<CobDependency> = emptyList(),
+        val installScripts:List<AgentScript.InstallScript> = emptyList(),
+        val removalScript: AgentScript.RemovalScript? = null,
+        val eventScripts: List<AgentScript>,
+        val image: BufferedImage?
     ) : CobBlock() {
         val expiresYear by lazy {
             expiry.get(Calendar.YEAR)

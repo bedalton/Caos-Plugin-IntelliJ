@@ -29,7 +29,7 @@ class CobFileTreeNode(
 
     private val cobNameWithoutExtension = file.nameWithoutExtension
     private val cobData by lazy {
-        CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian())
+        CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian(), file.nameWithoutExtension)
     }
 
     private val cobVirtualFile: CaosVirtualFile by lazy {
@@ -73,8 +73,15 @@ class CobFileTreeNode(
             is SoundBlock -> listOf(SoundFileTreeNode(nonNullProject, cobVirtualFile, block))
             is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, block))
             is AgentBlock -> {
-                val scripts = listOfNotNull(
-                        block.installScript?.let { CaosScriptFileTreeNode(cobNameWithoutExtension, it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, file.nameWithoutExtension + " Install Script") },
+                val installScripts = block.installScripts.mapIndexed { i, installScript ->
+                    CaosScriptFileTreeNode(
+                        cobNameWithoutExtension,
+                        installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                        0,
+                        file.nameWithoutExtension + " Install Script ($i)"
+                    )
+                }
+                val scripts = installScripts + listOfNotNull(
                         block.removalScript?.let { CaosScriptFileTreeNode(cobNameWithoutExtension, it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, file.nameWithoutExtension + " Removal Script") }
                 )
                 val previews:List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
