@@ -39,7 +39,7 @@ class CaosScriptCommandCallStubType(debugName: String) : CaosScriptStubElementTy
 
         return CaosScriptCommandCallStubImpl(
                 parent = parent,
-                command = element.commandString,
+                command = element.commandString ?: "",
                 argumentValues = element.argumentValues
         )
     }
