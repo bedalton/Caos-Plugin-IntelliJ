@@ -157,7 +157,7 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Gets command string from a COAS def command word
+     * Gets command string from a CAOS def command word
      */
     @JvmStatic
     fun getCommandString(word: CaosDefCommandWord): String {
@@ -221,14 +221,14 @@ object CaosScriptPsiImplUtil {
      * Gets a command string from a command call.
      */
     @JvmStatic
-    fun getCommandString(call: CaosScriptCommandCall): String {
+    fun getCommandString(call: CaosScriptCommandCall): String? {
         return call.stub?.command.nullIfUndefOrBlank()
             ?: getCommandToken(call)
                 ?.text
-                .orEmpty()
-                .split(" ")
-                .filterNot { it.isEmpty() }
-                .joinToString(" ")
+                .nullIfEmpty()
+                ?.split(" ")
+                ?.filterNot { it.isEmpty() }
+                ?.joinToString(" ")
     }
 
     /**
@@ -306,8 +306,8 @@ object CaosScriptPsiImplUtil {
      * Gets command string as uppercase
      */
     @JvmStatic
-    fun getCommandStringUpper(element: CaosScriptCommandCall): String {
-        return element.stub?.commandUpper.nullIfUndefOrBlank() ?: getCommandString(element).toUpperCase()
+    fun getCommandStringUpper(element: CaosScriptCommandCall): String? {
+        return element.stub?.commandUpper.nullIfUndefOrBlank() ?: getCommandString(element)?.toUpperCase()
     }
 
     // ============================== //
@@ -1953,7 +1953,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandArgs(tag: CaosScriptCaos2Command): List<String> {
         return tag.stub?.args ?: tag.caos2CommentValueList.map {
-            it.quoteStringLiteral?.text ?: it.text
+            it.quoteStringLiteral?.stringValue ?: it.text
         }
     }
 
@@ -1996,7 +1996,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getValue(tag: CaosScriptCaos2Tag): String? {
-        return tag.stub?.value ?: tag.caos2CommentValue?.let { it.quoteStringLiteral?.stringValue ?: it.text }
+        return tag.stub?.value ?: tag.caos2CommentValue?.let { getValue(it) }
     }
 
     /**
@@ -2005,6 +2005,14 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getIntValue(tag: CaosScriptCaos2Tag): Int? {
         return getValue(tag)?.toIntSafe()
+    }
+
+    /**
+     * Gets tag value as int if possible for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun getValue(value: CaosScriptCaos2CommentValue): String {
+        return value.quoteStringLiteral?.stringValue ?: value.text
     }
 }
 

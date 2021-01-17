@@ -13,7 +13,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
-class Caos2CobRemoveFileFix(element: PsiElement) : IntentionAction,
+class Caos2CobRemoveFileFix(element: PsiElement, private val fixText:String? = null) : IntentionAction,
     LocalQuickFix {
 
     private val fileName = (element.text.trim('\n','\r','\t', ' ', '"'))
@@ -27,7 +27,7 @@ class Caos2CobRemoveFileFix(element: PsiElement) : IntentionAction,
         return pointer.element != null && file is CaosScriptFile
     }
 
-    override fun getText(): String = CaosBundle.message("cob.caos2cob.fixes.delete-error-file", fileName)
+    override fun getText(): String = fixText ?: CaosBundle.message("cob.caos2cob.fixes.delete-error-file", fileName)
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val element = pointer.element

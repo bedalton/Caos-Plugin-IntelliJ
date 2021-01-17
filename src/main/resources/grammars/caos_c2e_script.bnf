@@ -333,7 +333,7 @@ private token_stream_tokens
 	;
 
 private file_body_with_variant
-	::= (caos_2_block space_like_or_newline)? script_body_element (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
+	::= ((caos_2_block (space_like_or_newline script_body_element)?)| script_body_element) (!<<eof>> space_like_or_newline script_body_element)* trailing_space?
 	;
 
 caos_2_block

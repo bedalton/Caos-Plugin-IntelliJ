@@ -1,11 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.actions
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2Cob
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobC1
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobC2
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobException
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobFileData
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobToDataObjectDecompiler
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
@@ -18,13 +13,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -32,7 +30,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.writeChild
 import icons.CaosScriptIcons
-import java.nio.ByteBuffer
+import kotlinx.coroutines.awaitAll
+import java.util.*
 
 /**
  * Creates a file
@@ -61,125 +60,151 @@ class CompileCaos2CobAction : AnAction(
             return
         }
 
+        val compilationResult = CompilationResults(numFiles)
         // Run compile phase in background
         // Requires read access though, so will have to move back onto ui thread I think
-        runBackgroundableTask("Compiling $numFiles Caos2Cob files", e.project) { progressIndicator ->
-
-            var success = 0
-            var failure = 0
+        runBackgroundableTask("Compile $numFiles Caos2Cob files") { progressIndicator ->
             files.forEachIndexed { i, file ->
                 // Run on pooled event dispatch thread
                 ApplicationManager.getApplication().invokeLater {
-
+                    progressIndicator.checkCanceled()
                     // Ensure in read action
                     runWriteAction action@{
-                        // Try to get Caos2Cob manifest from CAOS file.
-                        val compilerData:Caos2Cob = try {
-                            getCobManifest(project, file)?.apply {
-                                LOGGER.info("Got CAOS2Cob manifest data: $this")
-                            }
-                                ?: throw Caos2CobException("COB compiler manifest could not be built")
-                        } catch(e:Caos2CobException) {
-                            // Failed to convert CAOS script file to COB data struct
-                            CaosNotifications.showError(
-                                project,
-                                "CAOS2Cob Failure",
-                                "Failed to compile ${file.name} with error: ${e.message}"
-                            )
-                            failure++
-                            return@action
-                        } catch(e:Exception) {
-                            LOGGER.severe(e.message)
-                            e.printStackTrace()
-                            return@action
+                        processFile(project, compilationResult, file, progressIndicator)
+                        if (compilationResult.index == numFiles) {
+                            printResult(project, compilationResult)
                         }
-                        // Update progress indicator
-                        val type = if (compilerData is Caos2CobC1) "C1" else "C2"
-                        progressIndicator.fraction = i / numFiles.toDouble()
-                        progressIndicator.text = "Compile $i/$numFiles COBS"
-                        progressIndicator.text2 = "Compiling $type COB: ${compilerData.targetFile}"
-                        val parent = (file.virtualFile ?: file.originalFile.virtualFile).parent
-                        if (parent == null) {
-                            CaosNotifications.showError(
-                                project,
-                                "COAS2Cob Plugin Error",
-                                "Failed to find parent directory of CAOS2Cob file '${file.name}'")
-                            failure++
-                            return@action
-                        } else {
-                            LOGGER.info("Parent file for COB is not null")
-                        }
-                        val dataOut = compile(project, file, compilerData)
-                        if (dataOut == null) {
-                            failure++
-                            LOGGER.severe("Failed to compile data")
-                            return@action
-                        } else {
-                            LOGGER.severe("Compiled COB data")
-                        }
-                        if (!writeCob(project, parent, compilerData, dataOut)) {
-                            failure++
-                            LOGGER.severe("Failed write COB data")
-                            return@action
-                        } else {
-                            LOGGER.info("Wrote COB data")
-                        }
-                        if (compilerData is Caos2CobC1) {
-                            // If C1 COB, create remover COB
-                            compilerData.removerCob?.let { removerCob ->
-                                val error = CaosBundle.message(
-                                    "cob.caos2cob.compile.auto-remover-name",
-                                    removerCob.targetFile
-                                )
-                                if (compilerData.removerName.nullIfEmpty() == null) {
-                                    CaosNotifications.showWarning(
-                                        project,
-                                        "CAOS2Cob Removal Script Warning",
-                                        error
-                                    )
-                                }
-                                val removerData = compile(project, file, removerCob)
-                                if (removerData == null) {
-                                    failure++
-                                    LOGGER.severe("Failed to compile remover COB data")
-                                    return@action
-                                } else {
-                                    LOGGER.info("Compiled remover COB data")
-                                }
-                                if (!writeCob(project, parent,removerCob, removerData)) {
-                                    failure++
-                                    LOGGER.severe("Failed to write remover COB data")
-                                    return@action
-                                } else {
-                                    LOGGER.info("Wrote remover COB data")
-                                }
-                            }
-                        }
-                        success++
                     }
                 }
             }
-            val message = when {
-                failure == 0 && success > 0 -> "Compiled all $numFiles CAOS2Cob cobs successfully"
-                failure > 0 && success == 0 -> "Failed to compile any of the $numFiles CAOS2Cob files successfully"
-                failure == 0 && success == 0 -> "Compiler failed to run without error"
-                else -> "Failed to compile $failure out of $numFiles CAOS2Cob files"
-            }
-            CaosNotifications.showInfo(
-                project,
-                "CAOS2Cob Result",
-                message
-            )
         }
     }
 
-    private fun compile(project: Project, file:CaosScriptFile, cob: Caos2Cob) : ByteArray? {
+    private fun printResult(project: Project, compilationResult: CompilationResults) {
+        val successes = compilationResult.success
+        val failures = compilationResult.failures
+        val warningText = if (compilationResult.warnings > 0)
+            " with ${compilationResult.warnings} warnings"
+        else
+            ""
+        val numFiles = compilationResult.caos2CobFiles
+        val message = when {
+            failures == 0 && successes > 0-> "Compiled $numFiles CAOS2Cob cobs successfully$warningText"
+            failures > 0 && successes == 0 -> "Failed to compile any of the $numFiles CAOS2Cob files successfully"
+            failures == 0 && successes == 0 -> "Compiler failed to run without error"
+            else -> "Failed to compile $failures out of $numFiles CAOS2Cob files"
+        }
+        CaosNotifications.showInfo(
+            project,
+            "CAOS2Cob Result",
+            message
+        )
+    }
+
+    private fun processFile(project: Project, compilationResult: CompilationResults, file:CaosScriptFile, progressIndicator:ProgressIndicator) : Boolean {
+        // Try to get Caos2Cob manifest from CAOS file.
+        val compilerData: Caos2Cob = try {
+            getCobManifest(project, compilationResult, file)
+        } catch (e: Caos2CobException) {
+            // Failed to convert CAOS script file to COB data struct
+            CaosNotifications.showError(
+                project,
+                "CAOS2Cob Failure",
+                "Failed to compile ${file.name} with error: ${e.message}"
+            )
+            compilationResult.failures++
+            return false
+        } catch (e: Exception) {
+            LOGGER.severe(e.message)
+            e.printStackTrace()
+            return false
+        }
+        // Update progress indicator
+        val type = if (compilerData is Caos2CobC1) "C1" else "C2"
+        val i = compilationResult.failures + compilationResult.success
+        val numFiles = compilationResult.caos2CobFiles
+        progressIndicator.fraction = i / numFiles.toDouble()
+        progressIndicator.text = "Compile $i/$numFiles COBS"
+        progressIndicator.text2 = "Compiling $type COB: ${compilerData.targetFile}"
+        val parent = (file.virtualFile ?: file.originalFile.virtualFile).parent
+        if (parent == null) {
+            CaosNotifications.showError(
+                project,
+                "CAOS2Cob Plugin Error",
+                "Failed to find parent directory of CAOS2Cob file '${file.name}'"
+            )
+            ++compilationResult.failures
+            return false
+        } else {
+            LOGGER.info("Parent file for COB '${file.name}' is not null")
+        }
+        val dataOut = compile(project, file, compilerData)
+        if (dataOut == null) {
+            ++compilationResult.failures
+            LOGGER.severe("Failed to compile data for file: ${file.name}")
+            return false
+        } else {
+            LOGGER.severe("Compiled COB data for file: ${file.name}")
+        }
+        if (!writeCob(project, parent, compilerData, dataOut)) {
+            ++compilationResult.failures
+            LOGGER.severe("Failed write COB data for file: ${file.name}")
+            return false
+        } else {
+            LOGGER.info("Wrote COB data to ${compilerData.targetFile}. Update Results: $compilationResult")
+        }
+        if (compilerData is Caos2CobC1) {
+            if (!writeRemoverCob(project, compilationResult, parent, file, compilerData)) {
+                ++compilationResult.failures
+                return false
+            }
+        }
+        ++compilationResult.success
+        return true
+    }
+
+    private fun writeRemoverCob(
+        project: Project,
+        compilationResult: CompilationResults,
+        parent:VirtualFile,
+        file: CaosScriptFile,
+        compilerData: Caos2CobC1
+    ) : Boolean {
+        // If C1 COB, create remover COB
+        val removerCob = compilerData.removerCob
+            ?: return true
+        val error = CaosBundle.message(
+            "cob.caos2cob.compile.auto-remover-name",
+            removerCob.targetFile
+        )
+        if (!didShowAutoRemoverCobWarning && compilerData.removerName.nullIfEmpty() == null) {
+            didShowAutoRemoverCobWarning = true
+            CaosNotifications.showWarning(
+                project,
+                "CAOS2Cob Removal Script Warning",
+                error
+            )
+        }
+        val removerData = compile(project, file, removerCob)
+        if (removerData == null) {
+            ++compilationResult.failures
+            LOGGER.severe("Failed to compile remover COB data")
+            return false
+        } else {
+            LOGGER.info("Compiled remover COB data")
+        }
+        if (!writeCob(project, parent, removerCob, removerData)) {
+            ++compilationResult.failures
+            LOGGER.severe("Failed to write remover COB data")
+            return false
+        } else {
+            LOGGER.info("Wrote remover COB data to ${removerCob.targetFile}")
+            return true
+        }
+    }
+
+    private fun compile(project: Project, file: CaosScriptFile, cob: Caos2Cob): ByteArray? {
         return try {
-            /*val bytes = cob.compile()
-            return if (validateBytes(cob, bytes))
-                bytes
-            else
-                null*/
             cob.compile()
         } catch (e: Caos2CobException) {
             CaosNotifications.showError(
@@ -188,7 +213,7 @@ class CompileCaos2CobAction : AnAction(
                 "Failed to compile ${file.name} with error: ${e.message}"
             )
             null
-        } catch(e:Exception) {
+        } catch (e: Exception) {
             CaosNotifications.showError(
                 project,
                 "CAOS2Cob Failure",
@@ -200,23 +225,7 @@ class CompileCaos2CobAction : AnAction(
         }
     }
 
-    private fun validateBytes(cob:Caos2Cob, bytes:ByteArray) : Boolean {
-        val output = try {
-            CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(bytes))
-        } catch(e:Exception) {
-            throw Caos2CobException("Compilation result was invalid. ${e.message}")
-        }
-        if (cob is Caos2CobC1) {
-            assert (output is CobFileData.C1CobData)  { "Output COB data does not match input" }
-            val cobBlock = (output as CobFileData.C1CobData).cobBlock
-            assert (cob.agentName == cobBlock.name) { "Output COB name '${cobBlock.name}' does not match input '${cob.agentName}'"}
-            assert ( cob.quantityAvailable == cobBlock.quantityAvailable) { "Output COB name '${cobBlock.quantityAvailable}' does not match input '${cob.quantityAvailable}'"}
-            assert ( cob.quantityUsed == cobBlock.quantityUsed) { "Output COB name '${cobBlock.quantityUsed}' does not match input '${cob.quantityUsed}'"}
-        }
-        return true
-    }
-
-    private fun getCobManifest(project: Project, mainFile: CaosScriptFile): Caos2Cob? {
+    private fun getCobManifest(project: Project, compilationResults:CompilationResults, mainFile: CaosScriptFile): Caos2Cob {
         // Get parent directory for all read and write operations
         val directory = mainFile.virtualFile.parent
 
@@ -229,11 +238,20 @@ class CompileCaos2CobAction : AnAction(
             ?: throw Caos2CobException("No CAOS2Cob directive block found")
 
         // Parse Caos2Cpb directives
-        val cobTags = getCobTags(variant, block)
+        val cobTags = getCobTags(variant, block).map { (key, value) ->
+            if (key == CobTag.THUMBNAIL && value != null) {
+                val parts = Caos2CobUtil.getSpriteFrameInformation(value)
+                key to directory.findChild(parts.first)?.let {
+                    it.parent.path + "/" + value
+                }
+            } else {
+                key to value
+            }
+        }.toMap()
         val cobCommands = getCobCommands(variant, block)
 
         // Take find all scripts in this file and all linked files.
-        val linkedFiles = mainFile + collectLinkedFiles(project,variant, directory, cobCommands)
+        val linkedFiles = mainFile + collectLinkedFiles(project, compilationResults, variant, directory, cobCommands)
         val scripts = mutableListOf<CaosScriptScriptElement>()
         runWriteAction {
             linkedFiles.forEach { fileIn ->
@@ -255,38 +273,41 @@ class CompileCaos2CobAction : AnAction(
         val objectScripts = scripts.filterIsInstance<CaosScriptEventScript>().map { it.text }
 
         // Get all install scripts
-        val installScripts:List<String> = scripts.filterIsInstance<CaosScriptInstallScript>().map(stripIscr)
+        val installScripts: List<String> = scripts.filterIsInstance<CaosScriptInstallScript>().map(stripIscr)
+
+        if (scripts.any { it is CaosScriptMacro }) {
+            compilationResults.warnings++
+            CaosNotifications
+                .showWarning(project, "CAOS2Cob", "Body scripts in CAOS2Cob files are ignored")
+        }
 
         // Get removal script
         val removalScripts = scripts.filterIsInstance<CaosScriptRemovalScript>()
-        val removalScript = getRemovalScript(project, mainFile.name, directory, cobTags, removalScripts)
+        val removalScript = getRemovalScript(project, compilationResults, mainFile.name, directory, cobTags, removalScripts)
+
+
 
         // Format C1/C2 cobs respectively
         return if (variant == C1) {
             Caos2CobC1(
-                cobData = cobTags.map { (key, value) ->
-                    if (key == CobTag.THUMBNAIL && value != null) {
-                        key to directory.findChild(value)?.path
-                    } else {
-                        key to value
-                    }
-                }.toMap(),
-                objectScripts =
-                objectScripts,
+                cobData = cobTags,
+                objectScripts = objectScripts,
                 installScripts = installScripts,
                 removalScript = removalScript
             )
         } else {
-            val installScript = installScripts.joinToString(",").let { script ->
-                "$script,endm"
-            }
-            val attachments:Set<String> = cobCommands.filter { it.first == CobCommand.ATTACH }.flatMap { it.second }.toSet()
-            val dependencies:Set<String> = attachments + cobCommands
+            val installScript = installScripts.joinToString(",")
+
+            // Attach files are added to both depends and inline files list
+            val attachments: Set<String> =
+                cobCommands.filter { it.first == CobCommand.ATTACH }.flatMap { it.second }.toSet()
+
+            val dependencies: Set<String> = attachments + cobCommands
                 .filter { it.first == CobCommand.DEPEND }
                 .flatMap { it.second }
                 .toSet()
 
-            val inlineFileNames:Set<String> = attachments +  cobCommands
+            val inlineFileNames: Set<String> = attachments + cobCommands
                 .filter { it.first == CobCommand.INLINE }
                 .flatMap { it.second }
                 .toSet()
@@ -296,17 +317,23 @@ class CompileCaos2CobAction : AnAction(
                     ?: throw Caos2CobException("Failed to locate inline/attach file: '$fileName' for Caos2Cob script: '${mainFile.name}'")
                 virtualFile
             }
-            Caos2CobC2(cobTags, installScript = installScript, objectScripts = objectScripts, removalScript = removalScript, depends = dependencies, inline = inlineFiles)
+            Caos2CobC2(
+                cobTags,
+                installScript = installScript,
+                objectScripts = objectScripts,
+                removalScript = removalScript,
+                depends = dependencies,
+                inline = inlineFiles
+            )
         }
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun collectLinkedFiles(
         project: Project,
+        compilationResults: CompilationResults,
         variant: CaosVariant,
         directory: VirtualFile,
-        cobCommands: List<Pair<CobCommand, List<String>>>,
-        depth:Int = 0
+        cobCommands: List<Pair<CobCommand, List<String>>>
     ): List<CaosScriptFile> {
         val links = cobCommands.flatMap { (command, args) ->
             if (command != CobCommand.LINK)
@@ -314,35 +341,29 @@ class CompileCaos2CobAction : AnAction(
             else
                 args
         }
-        /*return links.flatMap map@{ relativePath ->
+        return links.map map@{ relativePath ->
             val file = directory.findChild(relativePath)
-                ?: return@map emptyList()
-            val caosFile = (file.getPsiFile(project) as? CaosScriptFile)
-                ?: return@map emptyList()
-            val out = mutableListOf(caosFile)
-            if (caosFile.isCaos2Cob) {
-                val thisFileVariant = caosFile.caos2CobVariant
-                if (thisFileVariant != variant) {
-                    val error = "Linked file '${file.name}' has conflicting CAOS variant at a link depth of $depth. " +
-                            "Expected variant ${variant.code}. Found: ${thisFileVariant.code}"
-                    throw Caos2CobException(file.name, error)
-                }
-                val fileCommands = caosFile.getChildOfType(CaosScriptCaos2Block::class.java)?.let { block ->
-                    getCobCommands(variant, block).nullIfEmpty()
-                } ?: return@map listOf(caosFile)
-                out.addAll(collectLinkedFiles(project, variant, directory, fileCommands, depth + 1))
+                ?: throw Caos2CobException("Failed to locate linked file: at '${directory.path + "/" +relativePath}'")
+            val extension = FileNameUtils.getExtension(relativePath).toLowerCase()
+            if (extension == "wav" || extension in SpriteParser.VALID_SPRITE_EXTENSIONS) {
+                throw Caos2CobException("Linked file was not a CAOS file. Did you mean Attach or Inline?")
             }
-            out
-        }*/
-        return links.mapNotNull map@{ relativePath ->
-            val file = directory.findChild(relativePath)
-                ?: return@map null
-            (file.getPsiFile(project) as? CaosScriptFile)?.apply {
-                if (isCaos2Cob)
-                    CaosNotifications.showWarning(project,
+            (file.getPsiFile(project) as? CaosScriptFile)?.let { caosFile ->
+                if (caosFile.isCaos2Cob) {
+                    compilationResults.warnings++
+                    CaosNotifications.showWarning(
+                        project,
                         "CAOS2Cob",
-                        "CAOS2Cob directives are ignored in Linked files. Only scripts imported from $name")
-            }
+                        "CAOS2Cob directives are ignored in linked files. Only scripts were imported from '$relativePath'"
+                    )
+                }
+                val thisVariant = caosFile.variant
+                if (thisVariant != null && thisVariant != variant) {
+                    throw Caos2CobException("Linked file '$relativePath' has conflicting variant. Expected ${variant.code}. Found ${thisVariant.code}")
+                } else {
+                    caosFile
+                }
+            } ?: throw Caos2CobException("Linked file is not valid CAOS file.")
         }
     }
 
@@ -359,8 +380,8 @@ class CompileCaos2CobAction : AnAction(
     // Static Methods
     companion object {
         private val isCaos2CobRegex = "^[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]".toRegex()
-
-        private fun hasCaos2Cob(file:VirtualFile) : Boolean {
+        var didShowAutoRemoverCobWarning:Boolean = false
+        private fun hasCaos2Cob(file: VirtualFile): Boolean {
             if (file.isDirectory) {
                 return file.children.any(::hasCaos2Cob)
             }
@@ -386,15 +407,15 @@ class CompileCaos2CobAction : AnAction(
             }
         }
 
-        private val stripRscr:(script:CaosScriptScriptElement)-> String  = { script:CaosScriptScriptElement ->
+        private val stripRscr: (script: CaosScriptScriptElement) -> String = { script: CaosScriptScriptElement ->
             stripScriptStartEnd(script, "rscr")
         }
 
-        private val stripIscr:(script:CaosScriptScriptElement)-> String  = { script:CaosScriptScriptElement ->
+        private val stripIscr: (script: CaosScriptScriptElement) -> String = { script: CaosScriptScriptElement ->
             stripScriptStartEnd(script, "iscr")
         }
 
-        private fun stripScriptStartEnd(script:CaosScriptScriptElement, prefix:String) : String {
+        private fun stripScriptStartEnd(script: CaosScriptScriptElement, prefix: String): String {
             var text = script.text
             text.toLowerCase().let { asLower ->
                 if (asLower.startsWith(prefix))
@@ -405,22 +426,24 @@ class CompileCaos2CobAction : AnAction(
             return text.trim('\t', '\r', '\n', ' ', ',')
         }
 
-        private fun writeCob(project:Project, directory: VirtualFile, cob:Caos2Cob, data:ByteArray) : Boolean {
+        private fun writeCob(project: Project, directory: VirtualFile, cob: Caos2Cob, data: ByteArray): Boolean {
             val targetFile = cob.targetFile.nullIfEmpty()
                 ?: throw Caos2CobException("Cannot write COB for agent: '${cob.agentName}' without target file.")
             if (!directory.isDirectory)
                 throw Caos2CobException("Cannot write COB '${targetFile}'. File '${directory.name}' is not a directory")
-            try {
+            return try {
                 directory.writeChild(targetFile, data)
-                return true
-            } catch(e:Exception) {
+                true
+            } catch (e: Exception) {
+
                 CaosNotifications.showError(
                     project,
                     "CAOS2Cob Write Error",
                     "Failed to write cob '$targetFile' from CAOS2Cob script. Error: ${e.message}"
                 )
+                //throw Caos2CobException("Failed to write cob '$targetFile' from CAOS2Cob script. Error: ${e.message}")
+                false
             }
-            return false
         }
 
 
@@ -434,7 +457,8 @@ class CompileCaos2CobAction : AnAction(
         }
 
         private fun getRemovalScript(
-            project:Project,
+            project: Project,
+            compilationResults: CompilationResults,
             mainFileName: String,
             directory: VirtualFile,
             cobData: Map<CobTag, String?>,
@@ -442,25 +466,22 @@ class CompileCaos2CobAction : AnAction(
         ): String? {
 
             cobData[CobTag.RSCR]?.let { removalScriptPath ->
-                return getRemovalScriptFromCobDataPath(project, mainFileName, directory, removalScriptPath)?.let {
-                    it.trim('\t', '\r', '\n', ' ', ',')
+                return getRemovalScriptFromCobDataPath(project, compilationResults, mainFileName, directory, removalScriptPath)?.let { removalScript ->
+                    removalScript.trim('\t', '\r', '\n', ' ', ',')
                         .nullIfEmpty()
-                        ?.let {
-                            "$it,endm"
-                        }
                 }
             }
-            return when(removalScripts.size) {
+            return when (removalScripts.size) {
                 0 -> null
                 1 -> {
                     stripRscr(removalScripts.first())
                         .nullIfEmpty()
-                        ?.let {
-                            "$it,endm"
-                        }
                 }
                 else -> {
-                    val base = removalScripts.first().containingFile.name.let { if (it == mainFileName) "root file" else it}
+                    val base =
+                        removalScripts.first().containingFile.name.let { if (it == mainFileName) "root file" else it }
+
+                    compilationResults.warnings++
                     // Show a warning letting the user know additional scripts are ignored.
                     CaosNotifications.showWarning(
                         project,
@@ -473,11 +494,12 @@ class CompileCaos2CobAction : AnAction(
         }
 
         private fun getRemovalScriptFromCobDataPath(
-            project:Project,
-            mainFileName:String,
+            project: Project,
+            compilationResults: CompilationResults,
+            mainFileName: String,
             directory: VirtualFile,
-            removalScriptPath:String
-        ) : String? {
+            removalScriptPath: String
+        ): String? {
             // Get the RSCR child virtual file from the directory
             val child = directory.findChild(removalScriptPath)
                 ?: throw Caos2CobException("Failed to find RSCR file '$removalScriptPath'")
@@ -488,6 +510,7 @@ class CompileCaos2CobAction : AnAction(
             // Find all script elements inside the file for use in finding the right removal scripts
             val scripts = PsiTreeUtil.collectElementsOfType(removalScriptFile, CaosScriptScriptElement::class.java)
             if (scripts.isEmpty()) {
+                compilationResults.warnings++
                 CaosNotifications.showWarning(
                     project,
                     "CAOS2Cob Removal Script",
@@ -498,7 +521,9 @@ class CompileCaos2CobAction : AnAction(
             val trueRemovalScript = scripts.filterIsInstance<CaosScriptRemovalScript>()
             // Check if more than one removal script is found inside the reference CAOS file.
             if (trueRemovalScript.size > 1) {
-                val base = trueRemovalScript.first().containingFile.name.let { if (it == mainFileName) "root file" else it}
+                val base =
+                    trueRemovalScript.first().containingFile.name.let { if (it == mainFileName) "root file" else it }
+                ++compilationResults.warnings
                 // Show a warning letting the user know additional scripts are ignored.
                 CaosNotifications.showWarning(
                     project,
@@ -534,12 +559,25 @@ class CompileCaos2CobAction : AnAction(
             // THIS SHOULD NOT HAPPEN
             if (types.isEmpty())
                 throw Caos2CobException(
-                    "Parser failed to recognize internal script class [${scripts.map{ it.className}.toSet() }]." +
+                    "Parser failed to recognize internal script class [${scripts.map { it.className }.toSet()}]." +
                             " Please let plugin author know."
                 )
+            ++compilationResults.warnings
             // Show users a warning about how the scripts inside the RSCR file are ignored.
-            CaosNotifications.showWarning(project, "CAOS2Cob RSCR","${types.joinToString(" and ")} scripts are ignored in RSCR imported file.")
+            CaosNotifications.showWarning(
+                project,
+                "CAOS2Cob RSCR",
+                "${types.joinToString(" and ")} scripts are ignored in RSCR imported file."
+            )
             return null
+        }
+
+        /**
+         * Class to hold compilation results as it takes place in a separate thread
+         * and needs to be passed by reference
+         */
+        private data class CompilationResults(val caos2CobFiles:Int, var success:Int = 0, var failures:Int = 0, var warnings:Int = 0) {
+            val index:Int get() = success + failures
         }
     }
 }

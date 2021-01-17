@@ -31,6 +31,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val EXPECTATIONS_KEY = Key.create<MutableList<Int>>("com.badahori.caos.parser.EXPECTATIONS_KEY")
     private val BLOCKS_KEY = Key.create<Int>("com.badahori.caos.parser.BLOCKS")
     private val CAOS_VARIANT = Key.create<CaosVariant>("CAOS_VARIANT")
+    private val CAOS2_COB_VARIANT = Key.create<CaosVariant>("CAOS2_COB_VARIANT")
+    private val CAOS_2_COB_REGEX = "^\\*\\*\\s*CAOS2COB\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
     private val lock = Object()
     const val NUMBER = 0
     const val STRING = 1
@@ -147,6 +149,12 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                 ?: psiFile.originalFile.virtualFile?.cachedVariant
                 ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariant
                 ?: psiFile.module?.variant
+                ?: builder_.getUserData(CAOS2_COB_VARIANT)
+                ?: builder_.originalText.trim().split('\n', limit = 2)[0].trim().let { text ->
+                    CAOS_2_COB_REGEX.matchEntire(text)?.groupValues?.getOrNull(1)?.let { variantCode ->
+                        CaosVariant.fromVal(variantCode)
+                    }
+                }
         if (variant == CaosVariant.UNKNOWN)
             return null
         return variant

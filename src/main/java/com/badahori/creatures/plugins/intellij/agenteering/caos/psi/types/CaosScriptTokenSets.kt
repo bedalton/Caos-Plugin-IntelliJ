@@ -952,5 +952,21 @@ class CaosScriptTokenSets {
             create(*tokens)
         }
 
+        @JvmStatic
+        val CAOS_2_TOKENS: TokenSet by lazy {
+            create(
+                CaosScript_CAOS_2_BLOCK,
+                CaosScript_CAOS_2_COMMENT_ERROR_VALUE,
+                CaosScript_CAOS_2_COMMENT_VALUE,
+                CaosScript_CAOS_2_BLOCK_COMMENT,
+                CaosScript_CAOS_2_COB_HEADER,
+                CaosScript_CAOS_2_PRAY_HEADER,
+                CaosScript_CAOS_2_BLOCK_HEADER,
+                CaosScript_CAOS_2_COMMAND_NAME,
+                CaosScript_CAOS_2_COMMAND,
+                CaosScript_CAOS_2_TAG,
+                CaosScript_CAOS_2_COMMENT_START
+            )
+        }
     }
 }

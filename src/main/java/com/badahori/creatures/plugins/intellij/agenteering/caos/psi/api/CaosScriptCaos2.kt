@@ -32,11 +32,6 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
     DESCRIPTION("Agent Description", "Description", "Desc", "Agent Desc", variant = C2),
     LAST_USAGE_DATE("Last Usage Date", "Last Usage", variant = C2),
     REUSE_INTERVAL("Reuse Interval", "Interval", variant = C2),
-    RESERVED("Reserved", variant = C2),
-    LINK("Link", variant = C2),
-    DEPENDS("Depends", variant = C2),
-    ATTACH("Attach", variant = C2),
-    INLINE("Include", variant = C2),
 
     // C2 Author
     CREATION_DATE("Creation Date", "Created", "Created Date", variant = C2),
@@ -101,7 +96,7 @@ enum class CobCommand(val keyString: String, val variant: CaosVariant? = null) {
     INLINE("Inline", variant = C2),
     DEPEND("Depend", variant = C2)
     ;
-    val key = "^$keyString\\$".toRegex(RegexOption.IGNORE_CASE)
+    val key = "^$keyString$".toRegex(RegexOption.IGNORE_CASE)
 
     companion object {
         val C1_COMMANDS: List<CobCommand> by lazy {
