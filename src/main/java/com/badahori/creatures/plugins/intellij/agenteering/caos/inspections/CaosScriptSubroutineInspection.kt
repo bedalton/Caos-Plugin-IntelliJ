@@ -35,7 +35,7 @@ class CaosScriptSubroutineInspection : LocalInspectionTool()  {
         val variant = element.containingCaosFile?.variant
                 ?: return
         if ((variant == CaosVariant.C1 || variant == CaosVariant.C2) && name.length != 4) {
-            holder.registerProblem(element, CaosBundle.message("caos.annotator.command-annotator.subroutine-name-invalid-length", variant))
+            holder.registerProblem(element, CaosBundle.message("caos.annotator.syntax-error-annotator.subroutine-name-invalid-length", variant))
         }
         if (element.hasParentOfType(CaosScriptSubroutineHeader::class.java))
             return
@@ -47,7 +47,7 @@ class CaosScriptSubroutineInspection : LocalInspectionTool()  {
             return
         }
 
-        holder.registerProblem(element, CaosBundle.message("caos.annotator.command-annotator.subroutine-not-found", name))
+        holder.registerProblem(element, CaosBundle.message("caos.annotator.syntax-error-annotator.subroutine-not-found", name))
     }
 
     private fun manualSearch(containingScript:CaosScriptScriptBodyElement, subroutineName:String) : Boolean {

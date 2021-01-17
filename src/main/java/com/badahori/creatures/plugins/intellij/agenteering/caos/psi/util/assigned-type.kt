@@ -37,7 +37,7 @@ fun CaosScriptCAssignment.getAssignedType(): CaosExpressionValueType? {
         else
             CaosExpressionValueType.DECIMAL
     }
-    return when (commandStringUpper!!.replace("\\s\\s+".toRegex(), " ")) {
+    return when (commandStringUpper.replace("\\s\\s+".toRegex(), " ")) {
         "SETV" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
         in INT_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.INT
         "RTAR" -> CaosExpressionValueType.AGENT

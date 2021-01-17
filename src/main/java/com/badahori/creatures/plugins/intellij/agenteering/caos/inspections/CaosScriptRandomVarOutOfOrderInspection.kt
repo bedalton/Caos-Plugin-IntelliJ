@@ -35,12 +35,12 @@ class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
         if (min < max)
             return
         if (minMax.first == minMax.second) {
-            holder.registerProblem(element, CaosBundle.message("caos.annotator.command-annotator.rndv-result-is-the-same", min))
+            holder.registerProblem(element, CaosBundle.message("caos.annotator.syntax-error-annotator.rndv-result-is-the-same", min))
             return
         }
         listOfNotNull(element.minElement, element.maxElement).forEach {
             // Todo Infer min/max values from each variable value
-            holder.registerProblem(it, CaosBundle.message("caos.annotator.command-annotator.rndv-out-of-order"), CaosScriptReorderRndvParameters(element))
+            holder.registerProblem(it, CaosBundle.message("caos.annotator.syntax-error-annotator.rndv-out-of-order"), CaosScriptReorderRndvParameters(element))
         }
     }
 }

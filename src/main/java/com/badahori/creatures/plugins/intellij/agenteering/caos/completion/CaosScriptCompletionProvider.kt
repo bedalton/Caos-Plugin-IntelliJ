@@ -2,21 +2,16 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.VARIANT_OLD
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.tags
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
-import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.CompletionUtilCore
+import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.ProcessingContext
@@ -30,19 +25,60 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     private val IS_NUMBER = "^[0-9]+".toRegex()
     private val WHITESPACE = "^\\s+$".toRegex()
     private val SKIP_VAR_NAMES = listOf("VARX", "OBVX", "MVXX", "OVXX", "VAXX")
-    override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, resultSet: CompletionResultSet) {
+    override fun addCompletions(
+        parameters: CompletionParameters,
+        context: ProcessingContext,
+        resultSet: CompletionResultSet
+    ) {
         val element = parameters.position
         val caosFile = element.containingFile.originalFile as? CaosScriptFile
-                ?: return
+            ?: return
         val variant = caosFile.variant
-                ?: return
+            ?: return
 
         val text = element.textWithoutCompletionIdString
         if (text.isNotEmpty() && IS_NUMBER.matches(text)) {
             resultSet.stopHere()
             return
         }
+        val isCaos2Cob = element.isOrHasParentOfType(CaosScriptCaos2Block::class.java)
+        val caosElement = element.getSelfOrParentOfType(CaosScriptCompositeElement::class.java) ?: element
 
+        if (isCaos2Cob) {
+            val directory = caosFile.virtualFile.parent
+            val previous = caosElement.getPreviousNonEmptySibling(false)
+            val previousText = (previous as? CaosScriptCaos2CommandName)?.text
+            if (previousText != null || previous?.text == "*#") {
+                addCaos2CobTagCompletions(resultSet, variant, caosFile, text, previousText)
+                val case = text.nullIfEmpty()?.case ?: Case.CAPITAL_FIRST
+                resultSet.addElement(LookupElementBuilder.create("Link".matchCase(case)))
+                if (variant == CaosVariant.C2) {
+                    listOf("Attach", "Depend", "Inline").forEach {
+                        resultSet.addElement(LookupElementBuilder.create(it.matchCase(case)))
+                    }
+                }
+            }
+            val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text ?: ""
+            val openChar = if (stringValue.startsWith("\"") || stringValue.startsWith("'")) "" else "\""
+            val closeChar = if (stringValue.endsWith("\"") && stringValue.startsWith("\"") && stringValue.length > 1)
+                ""
+            else if (stringValue.startsWith("'") && stringValue.endsWith("'") && stringValue.length > 1)
+                ""
+            else if (stringValue.startsWith("'"))
+                "'"
+            else
+                "\""
+            caosElement.getSelfOrParentOfType(CaosScriptCaos2Tag::class.java)?.let {
+                val tag = CobTag.fromString(it.tagName)
+                addCaos2CobFileNameCompletions(resultSet, directory, tag, openChar, closeChar)
+            }
+            caosElement.getSelfOrParentOfType(CaosScriptCaos2Command::class.java)?.let {
+                val tag = CobCommand.fromString(it.commandName)
+                addCaos2CobFileNameCompletions(resultSet, directory, tag, openChar, closeChar)
+            }
+            resultSet.stopHere()
+            return
+        }
         val previous = element.previous?.text
 
         // If previous is not whitespace and not square or double quote symbol, return
@@ -56,10 +92,20 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val argument = element.getSelfOrParentOfType(CaosScriptArgument::class.java)
         (argument as? CaosScriptRvalue)?.let { expression ->
             // If has parent RValue, should continue with normal completion
-            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(resultSet, variant, argument)
+            CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(
+                resultSet,
+                variant,
+                argument
+            )
             // Else use special EQ expression completion
             (expression.parent as? CaosScriptEqualityExpressionPrime)?.let { equalityExpression ->
-                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(variant, resultSet, case, equalityExpression, argument)
+                CaosScriptValuesListValuesCompletionProvider.addEqualityExpressionCompletions(
+                    variant,
+                    resultSet,
+                    case,
+                    equalityExpression,
+                    argument
+                )
                 addCommandCompletions(resultSet, variant, RVALUE, argument)
                 resultSet.stopHere()
                 return
@@ -74,9 +120,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         // Previous token is CLAS, add class generator
         if (previousTokenText == "CLAS") {
             val builderElement = LookupElementBuilder
-                    .create("")
-                    .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
-                    .withInsertHandler(GenerateClasIntegerInsertHandler)
+                .create("")
+                .withPresentableText(GENERATE_CLAS_LOOKUP_STRING)
+                .withInsertHandler(GenerateClasIntegerInsertHandler)
             resultSet.addElement(builderElement)
             resultSet.stopHere()
             return
@@ -91,9 +137,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         // Previous token is DDE: PICT, add PICT value generator
         if (previousTokenText == "DDE: PICT") {
             val builderElement = LookupElementBuilder
-                    .create("")
-                    .withPresentableText(GENERATE_DDE_PICT_LOOKUP_STRING)
-                    .withInsertHandler(GeneratePictDimensionsAction)
+                .create("")
+                .withPresentableText(GENERATE_DDE_PICT_LOOKUP_STRING)
+                .withInsertHandler(GeneratePictDimensionsAction)
             resultSet.addElement(builderElement)
             resultSet.stopHere()
             return
@@ -133,7 +179,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             addVariableCompletions(variant, element, resultSet)
     }
 
-    private fun addCommandCompletions(resultSet: CompletionResultSet, variant: CaosVariant, commandType: CaosCommandType, element: PsiElement) {
+    private fun addCommandCompletions(
+        resultSet: CompletionResultSet,
+        variant: CaosVariant,
+        commandType: CaosCommandType,
+        element: PsiElement
+    ) {
         val case = element.case
         val allowUppercase = variant !in VARIANT_OLD
         val caosLib = CaosLibs[variant]
@@ -144,7 +195,15 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             else -> return
         }.filter { it.command likeNone SKIP_VAR_NAMES }.map {
             ProgressIndicatorProvider.checkCanceled()
-            createCommandTokenLookupElement(allowUppercase, element, case, it.command, commandType, it.parameters, it.returnType)
+            createCommandTokenLookupElement(
+                allowUppercase,
+                element,
+                case,
+                it.command,
+                commandType,
+                it.parameters,
+                it.returnType
+            )
         }
         resultSet.addAllElements(singleCommands)
     }
@@ -188,7 +247,16 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     /**
      * Creates a completion lookup element for a command
      */
-    private fun createCommandTokenLookupElement(allowUppercase: Boolean, element: PsiElement, case: Case, commandIn: String, commandType:CaosCommandType, parameters: List<CaosParameter>, returnType: CaosExpressionValueType, prefixIn: String? = null): LookupElementBuilder {
+    private fun createCommandTokenLookupElement(
+        allowUppercase: Boolean,
+        element: PsiElement,
+        case: Case,
+        commandIn: String,
+        commandType: CaosCommandType,
+        parameters: List<CaosParameter>,
+        returnType: CaosExpressionValueType,
+        prefixIn: String? = null
+    ): LookupElementBuilder {
         // Tail text for command display element
         var tailText = returnType.simpleName
         if (!tailText.startsWith("["))
@@ -216,9 +284,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         // Create actual element
         var builder = LookupElementBuilder
-                .create(command)
-                .withTailText(tailText)
-                .withIcon(icon)
+            .create(command)
+            .withTailText(tailText)
+            .withIcon(icon)
         // Check needs space requirement
         // Mostly just adds a space if there are additional parameters
         val needsSpace = needsSpaceAfter(element, command)
@@ -244,7 +312,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         if (parent == null)
             return false
         val variant = (element.containingFile as? CaosScriptFile)?.variant
-                ?: return true
+            ?: return true
         val caosLib = CaosLibs[variant]
         val matches = when (parent) {
             is CaosScriptCommandCall -> caosLib.commands
@@ -265,15 +333,108 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val file = element.containingFile
         val scope = GlobalSearchScope.everythingScope(project)
         val subroutines = CaosScriptSubroutineIndex.instance.getAllInScope(project, scope)
-                .filter {
-                    file.name == (it.originalElement?.containingFile ?: it.containingFile)?.name
-                }
-                .mapNotNull { it.name.nullIfEmpty() }
-                .toSet()
+            .filter {
+                file.name == (it.originalElement?.containingFile ?: it.containingFile)?.name
+            }
+            .mapNotNull { it.name.nullIfEmpty() }
+            .toSet()
         for (subr in subroutines) {
             val builder = LookupElementBuilder.create(subr)
             resultSet.addElement(builder)
         }
+    }
+
+    private fun addCaos2CobFileNameCompletions(resultSet: CompletionResultSet, directory: VirtualFile, tag: CobCommand?, openChar:String, closeChar:String) {
+        val files = if (tag == CobCommand.LINK) {
+            VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
+        } else if (tag != null ){
+            VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
+        } else
+            return
+        val parentPathLength = directory.path.length + 1
+        for (file in files) {
+            val relativePath = file.path.substring(parentPathLength)
+            resultSet.addElement(LookupElementBuilder.create(openChar+relativePath+closeChar))
+        }
+
+    }
+
+    private fun addCaos2CobFileNameCompletions(resultSet: CompletionResultSet, directory: VirtualFile, tag: CobTag?, openChar:String, closeChar:String) {
+
+        // Get files of appropriate type
+        val files = if (tag == CobTag.THUMBNAIL) {
+            VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
+        } else if (tag == CobTag.ISCR || tag == CobTag.RSCR) {
+            VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
+        } else {
+            return
+        }
+
+        // Ensure there are matching files
+        if (files.isEmpty())
+            return
+
+        // Get parent path length for sizing down the relative child paths
+        val parentPathLength = directory.path.length + 1
+
+        // Create insert handler for use by thumbnail tags to move the cursor between the [^] in sprite thumbnails
+        val insertHandler = OffsetCursorInsertHandler(6) // ^].spr"
+
+        // Loop through files and add lookup elements
+        for (file in files) {
+            val relativePath = file.path.substring(parentPathLength)
+            resultSet.addElement(LookupElementBuilder.create(openChar+relativePath+closeChar))
+            if (tag == CobTag.THUMBNAIL) {
+                val fileParts = relativePath.split(".")
+                if (fileParts.size < 2)
+                    continue
+                val basePath = fileParts.dropLast(1).joinToString(".")
+                LookupElementBuilder.create(openChar+basePath+"[]."+fileParts.last()+closeChar)
+                    .withLookupString(basePath+"[#]."+fileParts.last())
+                    .withInsertHandler(insertHandler)
+            }
+        }
+    }
+
+    private fun addCaos2CobTagCompletions(
+        resultSet: CompletionResultSet,
+        variant: CaosVariant,
+        caosFile: CaosScriptFile,
+        textIn: String,
+        previousText:String?
+    ) {
+        val existingTags: List<CobTag> = caosFile.tags.keys.mapNotNull { tagString ->
+            CobTag.fromString(tagString)
+        }
+        var tagsRaw = CobTag.getTags(variant).filterNot { tag -> tag in existingTags }
+        var text = textIn
+        if (previousText != null) {
+            text = "$previousText $textIn"
+            tagsRaw = tagsRaw.filter { it.keys.any { it.startsWith(previousText) }}
+        }
+        val case = previousText?.case ?: text.nullIfEmpty()?.case ?: Case.CAPITAL_FIRST
+        val tags = tagsRaw.map { tag ->
+            val keys = tag.keys
+            keys.firstOrNull { it.startsWith(text) }?.let {
+                return@map it
+            }
+            val sorted = keys.map { key ->
+                Pair(text.levenshteinDistance(key), key)
+            }.sortedBy { it.first }
+            if (sorted.first().first > 8)
+                keys.first()
+            else
+                sorted.first().second
+        }.map { tagRaw ->
+            val tag = if (previousText != null) {
+                tagRaw.split(" ").last()
+            } else {
+                tagRaw
+            }.matchCase(case)
+            LookupElementBuilder.create(tag)
+                .withInsertHandler(EqualSignInsertHandler)
+        }
+        resultSet.addAllElements(tags)
     }
 
 }

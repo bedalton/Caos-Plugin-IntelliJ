@@ -1,14 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isDump
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffsetInParent
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffsetInParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.codeInspection.LocalInspectionTool
@@ -40,7 +37,7 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
         val eventNumber = thisEventScript.eventNumber
         val key = CaosScriptEventScriptIndex.toIndexKey(family, genus, species, eventNumber)
         val containingFile = thisEventScript.containingFile
-        if ((containingFile as? CaosScriptFile)?.isDump.orTrue())
+        if ((containingFile as? CaosScriptFile).disableMultiScriptChecks)
             return
         val moduleFilePath = thisEventScript.containingFile?.module?.moduleFilePath ?: "UNDEF"
         val exists = CaosScriptEventScriptIndex.instance[key, thisEventScript.project]
@@ -48,7 +45,7 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
                     // Checks against containing module, as duplicate event numbers in a single file
                     // are covered in another inspection
                     anEventScript.containingFile?.let { aFile ->
-                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFile?.path == moduleFilePath && !(aFile as? CaosScriptFile)?.isDump.orFalse()
+                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFile?.path == moduleFilePath && !(aFile as? CaosScriptFile).disableMultiScriptChecks
                     }.orFalse()
                 }
         if (exists) {

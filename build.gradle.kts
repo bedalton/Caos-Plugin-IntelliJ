@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "0.01.100"
+version = "0.01.101"
 
 
 repositories {
@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
+    implementation("org.apache.commons:commons-imaging:1.0-alpha2")
     testImplementation("junit", "junit", "4.12")
 
 }

@@ -10,7 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptCommandCallStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
-class CaosScriptCommandCallStubType(debugName: String) : com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubElementType<CaosScriptCommandCallStub, CaosScriptCommandCallImpl>(debugName) {
+class CaosScriptCommandCallStubType(debugName: String) : CaosScriptStubElementType<CaosScriptCommandCallStub, CaosScriptCommandCallImpl>(debugName) {
 
     override fun createPsi(stub: CaosScriptCommandCallStub): CaosScriptCommandCallImpl {
         return CaosScriptCommandCallImpl(stub, this)
@@ -39,7 +39,7 @@ class CaosScriptCommandCallStubType(debugName: String) : com.badahori.creatures.
 
         return CaosScriptCommandCallStubImpl(
                 parent = parent,
-                command = element.commandString,
+                command = element.commandString ?: "",
                 argumentValues = element.argumentValues
         )
     }

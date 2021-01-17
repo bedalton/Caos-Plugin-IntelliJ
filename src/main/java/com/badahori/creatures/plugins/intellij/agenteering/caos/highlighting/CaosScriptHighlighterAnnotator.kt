@@ -8,8 +8,8 @@ import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.AnnotationHolderWrapper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 
 class CaosScriptHighlighterAnnotator : Annotator {

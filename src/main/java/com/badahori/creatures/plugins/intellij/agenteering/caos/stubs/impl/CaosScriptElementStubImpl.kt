@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes
 import com.intellij.psi.stubs.StubBase
@@ -192,3 +193,33 @@ class CaosScriptTargAssignmentStubImpl(
         override val scope: CaosScope,
         override val rvalue: CaosExpressionValueType?
 ) : StubBase<CaosScriptCTargImpl>(parent, CaosScriptStubTypes.TARG_ASSIGNMENT), CaosScriptTargAssignmentStub
+
+
+class CaosScriptCaos2BlockStubImpl(
+        parent: StubElement<*>?,
+        override val isCaos2Pray: Boolean,
+        override val isCaos2Cob: Boolean,
+        override val tags:Map<String,String>,
+        override val commands:List<Pair<String,List<String>>>
+): StubBase<CaosScriptCaos2BlockImpl>(parent, CaosScriptStubTypes.CAOS_2_BLOCK),CaosScriptCaos2BlockStub  {
+        override val cobTags: Map<CobTag, String> by lazy {
+                tags.mapNotNull { (key, value) ->
+                        CobTag.fromString(key)?.let { cobKey ->
+                                cobKey to value
+                        }
+                }.toMap()
+        }
+}
+
+
+class CaosScriptCaos2TagStubImpl(
+        parent: StubElement<*>?,
+        override val tagName:String,
+        override val value:String?
+):StubBase<CaosScriptCaos2TagImpl>(parent, CaosScriptStubTypes.CAOS_2_TAG),CaosScriptCaos2TagStub
+
+class CaosScriptCaos2CommandStubImpl(
+        parent: StubElement<*>?,
+        override val commandName:String,
+       override val args:List<String>
+):StubBase<CaosScriptCaos2CommandImpl>(parent, CaosScriptStubTypes.CAOS_2_COMMAND), CaosScriptCaos2CommandStub

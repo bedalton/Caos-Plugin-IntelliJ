@@ -21,7 +21,7 @@ open class CaosScriptCompositeElementImpl(node:ASTNode) : ASTWrapperPsiElement(n
     override val descriptiveText:String? get() = null
     override val locationString:String? get() = null
     override val icon: Icon? get() = null
-    override fun getPresentation():ItemPresentation = CaosPresentation(descriptiveText, locationString, icon)
+    override fun getPresentation():ItemPresentation = CaosPresentation(descriptiveText ?: node.text, locationString, icon)
 }
 
 val CaosScriptCompositeElement.containingCaosFile : CaosScriptFile? get() = containingFile as? CaosScriptFile

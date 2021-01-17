@@ -87,7 +87,7 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
             if (!expectedType.isNumberType)
                 return
             // Create a message stating agent to reference coercion
-            val message = CaosBundle.message("caos.annotator.command-annotator.agent-to-integer-coercion")
+            val message = CaosBundle.message("caos.annotator.syntax-error-annotator.agent-to-integer-coercion")
             // Register message as information and not error.
             // TODO should this be a weak warning. People using it this way might know what they are doing
             // Perhaps should make this warning a second inspection

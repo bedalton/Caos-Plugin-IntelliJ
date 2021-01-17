@@ -71,6 +71,13 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     }
 }
 
+fun <T> CaosVariant.ifOld(callback:CaosVariant.()->T) : T {
+    return callback()
+}
+fun <T> CaosVariant.ifNew(callback:CaosVariant.()->T) : T {
+    return callback()
+}
+
 fun CaosVariant?.orDefault(): CaosVariant? {
     if (this != null)
         return this

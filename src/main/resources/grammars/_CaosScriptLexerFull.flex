@@ -31,6 +31,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	private int doifDepth = 0;
 	private int subrDepth = 0;
 	private boolean hadNumber = false;
+	private int beforeString = START_OF_LINE;
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -114,6 +115,10 @@ N_VAR = [$][a-zA-Z_0-9]+
 ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
 QUOTE_STRING_CHAR=[^\"\\\n]
 QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
+
+SINGLE_QUOTE_ESCAPE_CHAR=("\\\\"|"\\'"|"\\"[^\'])
+SINGLE_QUOTE_STRING_CHAR=[^\'\\\n]
+SINGLE_QUOTE_CHARS=({SINGLE_QUOTE_ESCAPE_CHAR}|{SINGLE_QUOTE_STRING_CHAR})+
 WORD_CHAR = [a-zA-Z0-9_$#:!+*]
 ERROR_WORD={WORD_CHAR}{5,100}
 WORD={WORD_CHAR}{4}
@@ -122,13 +127,19 @@ CHAR_ESCAPE_CHAR=("\\\\"|"\\\'"|"\\"[^\'])
 CHAR_CHAR=[^\'\\]
 CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 SWIFT_ESCAPE=\\\([^)]*\)
+CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
+CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
+CAOS_2_ID=[^\s\"']+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING
 %%
 
 <START_OF_LINE> {
+	{CAOS_2_COB} 			{ return CaosScript_CAOS_2_COB_HEADER; }
+	{CAOS_2_PRAY} 			{ return CaosScript_CAOS_2_PRAY_HEADER; }
 	\n						{ return CaosScript_NEWLINE; }
 	[\s\t]+					{ return WHITE_SPACE; }
+    "*#"					{ yybegin(DIRECTIVE_COMMENT); return CaosScript_CAOS_2_COMMENT_START; }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
@@ -146,7 +157,16 @@ SWIFT_ESCAPE=\\\([^)]*\)
     " "						{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
-
+<DIRECTIVE_COMMENT> {
+    "="						{ return CaosScript_EQUAL_SIGN; }
+	\"						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\'						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_SINGLE_QUOTE_STRING); return CaosScript_DOUBLE_QUOTE; }
+    " "						{ return WHITE_SPACE; }
+    \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+	{CAOS_2_ID}				{ return CaosScript_ID; }
+  	{INT}					{ return CaosScript_INT; }
+    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+}
 <IN_COMMENT> {
 	{COMMENT_TEXT}			{ return CaosScript_COMMENT_TEXT; }
     " "						{ return WHITE_SPACE; }
@@ -165,7 +185,7 @@ SWIFT_ESCAPE=\\\([^)]*\)
 }
 
 <IN_CONST> {
-	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
+	{CONST_EQ}			 	{ return CaosScript_EQUAL_SIGN; }
 	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
     {FLOAT}					{ return CaosScript_FLOAT; }
 	{INT}				 	{ return CaosScript_INT; }
@@ -174,7 +194,7 @@ SWIFT_ESCAPE=\\\([^)]*\)
 }
 
 <IN_VAR> {
-	{CONST_EQ}			 	{ return CaosScript_CONST_EQ; }
+	{CONST_EQ}			 	{ return CaosScript_EQUAL_SIGN; }
 	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }
@@ -192,8 +212,16 @@ SWIFT_ESCAPE=\\\([^)]*\)
 }
 
 <IN_STRING> {
-	\"						{ yybegin(IN_LINE); return CaosScript_DOUBLE_QUOTE;}
+	\"						{ yybegin(beforeString); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
+  	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
+	[ \t]+					{ return WHITE_SPACE; }
+    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+}
+
+<IN_SINGLE_QUOTE_STRING> {
+	\'						{ yybegin(beforeString); return CaosScript_DOUBLE_QUOTE;}
+	{SINGLE_QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
   	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
 	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_LINE); yypushback(yylength());}
@@ -211,7 +239,7 @@ SWIFT_ESCAPE=\\\([^)]*\)
 }
 
 <IN_LINE> {
-	\"         				{ yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\"         				{ beforeString = IN_LINE; yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
 	":"                    	{ return CaosScript_COLON; }
 	"+"                    	{ return CaosScript_PLUS; }
 	"["                    	{ braceDepth++; yybegin(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }

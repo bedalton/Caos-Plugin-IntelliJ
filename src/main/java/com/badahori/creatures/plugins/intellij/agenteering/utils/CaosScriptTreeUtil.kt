@@ -13,6 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.intellij.psi.PsiFile
 import java.util.logging.Logger
 

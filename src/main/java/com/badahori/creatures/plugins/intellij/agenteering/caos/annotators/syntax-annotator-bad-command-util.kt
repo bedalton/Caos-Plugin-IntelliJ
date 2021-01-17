@@ -2,6 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
@@ -15,6 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNext
 import com.badahori.creatures.plugins.intellij.agenteering.utils.case
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.psi.PsiElement
 
 
@@ -29,13 +32,16 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
     // Get command as upper case
     val commandToUpperCase = commandToken.toUpperCase()
 
+    if ((commandToUpperCase == "RSCR" || commandToUpperCase == "ISCR") && (element.containingFile as? CaosScriptFile)?.isCaos2Cob.orFalse())
+        return null
+
     // Ascertain the type of command involved
     val commandType = element.getEnclosingCommandType()
 
     // If command type cannot be determined, exit This means it was used as out of command expression
     if (commandType == CaosCommandType.UNDEFINED)
         return annotationWrapper
-                .newErrorAnnotation(message("caos.annotator.command-annotator.invalid-command", commandToUpperCase))
+                .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command", commandToUpperCase))
                 .range(element)
 
     if (CaosLibs[variant][commandType][commandToUpperCase] != null) {
@@ -49,7 +55,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
     // Based on type and variants involved
     if (commands.isEmpty()) {
         return annotationWrapper
-                .newErrorAnnotation(message("caos.annotator.command-annotator.invalid-command", commandToUpperCase))
+                .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command", commandToUpperCase))
                 .range(element)
     }
 
@@ -105,7 +111,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
     val variantsString = variantsString(commands)
 
     val message = message(
-            "caos.annotator.command-annotator.invalid-command-and-type",
+            "caos.annotator.syntax-error-annotator.invalid-command-and-type",
             commandToUpperCase,
             type,
             variantsString
@@ -135,7 +141,7 @@ private fun annotationInvalidCommandTypeInVariant(
     val alternativeCommandTypesAsString = formatPossibleCommandTypes(commandsInVariant)
     // Format message
     val message = message(
-            "caos.annotator.command-annotator.invalid-command-type-in-variant",
+            "caos.annotator.syntax-error-annotator.invalid-command-type-in-variant",
             commandToUpperCase,
             commandType.value.toLowerCase(),
             alternativeCommandTypesAsString,
@@ -202,7 +208,7 @@ private fun validTypeInOtherVariantsAnnotation(
 
     // Format message for command and variant
     val message = message(
-            "caos.annotator.command-annotator.invalid-variant",
+            "caos.annotator.syntax-error-annotator.invalid-variant",
             commandToken.toUpperCase(),
             commandType.value.toLowerCase(),
             variantsString
@@ -316,7 +322,7 @@ internal fun annotateInvalidLoopTerminator(element:CaosScriptCKwInvalidLoopTermi
         "NSCN" -> "ESCN loop"
         else -> "Control Statement"
     }
-    val error = message("caos.annotator.command-annotator.invalid-loop-terminator", commandStringUpper, expectedLoop)
+    val error = message("caos.annotator.syntax-error-annotator.invalid-loop-terminator", commandStringUpper, expectedLoop)
     wrapper.newErrorAnnotation(error)
             .range(element)
             .create()
