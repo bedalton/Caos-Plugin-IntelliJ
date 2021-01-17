@@ -40,7 +40,17 @@ sealed class CobBlock {
             val removalScript: AgentScript.RemovalScript? = null,
             val eventScripts: List<AgentScript>,
             val image: BufferedImage?
-    ) : CobBlock()
+    ) : CobBlock() {
+        val expiresYear by lazy {
+            expiry.get(Calendar.YEAR)
+        }
+        val expiresMonth by lazy {
+            expiry.get(Calendar.MONTH) + 1
+        }
+        val expiresDay by lazy {
+            expiry.get(Calendar.DAY_OF_MONTH) + 1
+        }
+    }
 
     data class AuthorBlock(
             val creationDate:Calendar,

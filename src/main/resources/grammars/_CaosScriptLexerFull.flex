@@ -115,6 +115,10 @@ N_VAR = [$][a-zA-Z_0-9]+
 ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
 QUOTE_STRING_CHAR=[^\"\\\n]
 QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
+
+SINGLE_QUOTE_ESCAPE_CHAR=("\\\\"|"\\'"|"\\"[^\'])
+SINGLE_QUOTE_STRING_CHAR=[^\'\\\n]
+SINGLE_QUOTE_CHARS=({SINGLE_QUOTE_ESCAPE_CHAR}|{SINGLE_QUOTE_STRING_CHAR})+
 WORD_CHAR = [a-zA-Z0-9_$#:!+*]
 ERROR_WORD={WORD_CHAR}{5,100}
 WORD={WORD_CHAR}{4}
@@ -125,9 +129,9 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
-CAOS_2_ID=[^\s\"]+
+CAOS_2_ID=[^\s\"']+
 
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING
 %%
 
 <START_OF_LINE> {
@@ -156,6 +160,7 @@ CAOS_2_ID=[^\s\"]+
 <DIRECTIVE_COMMENT> {
     "="						{ return CaosScript_EQUAL_SIGN; }
 	\"						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\'						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_SINGLE_QUOTE_STRING); return CaosScript_DOUBLE_QUOTE; }
     " "						{ return WHITE_SPACE; }
     \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
 	{CAOS_2_ID}				{ return CaosScript_ID; }
@@ -209,6 +214,14 @@ CAOS_2_ID=[^\s\"]+
 <IN_STRING> {
 	\"						{ yybegin(beforeString); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
+  	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
+	[ \t]+					{ return WHITE_SPACE; }
+    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+}
+
+<IN_SINGLE_QUOTE_STRING> {
+	\'						{ yybegin(beforeString); return CaosScript_DOUBLE_QUOTE;}
+	{SINGLE_QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
   	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
 	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_LINE); yypushback(yylength());}

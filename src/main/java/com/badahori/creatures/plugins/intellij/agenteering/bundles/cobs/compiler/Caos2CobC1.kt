@@ -1,19 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobToDataObjectDecompiler
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprCompiler
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFileManager
 import kotlinx.serialization.Serializable
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.nio.ByteBuffer
 import javax.imageio.ImageIO
 
 @Serializable
@@ -29,10 +26,16 @@ data class Caos2CobC1(
     val removalScript: String? = null,
     val quantityUsed: Int? = null,
     val pictureUrl: String? = null,
-    val removerName:String? = null,
+    val removerName: String? = null,
 ) : Caos2Cob {
 
-    constructor(cobData:Map<CobTag, String?>, objectScripts: List<String>, installScripts: List<String>, removalScript:String?, yearMonthDay:List<Int?> = cobData[CobTag.EXPIRY]?.split("-")?.map { it.toIntSafe() } .orEmpty()) : this(
+    constructor(
+        cobData: Map<CobTag, String?>,
+        objectScripts: List<String>,
+        installScripts: List<String>,
+        removalScript: String?,
+        yearMonthDay: List<Int?> = cobData[CobTag.EXPIRY]?.split("-")?.map { it.toIntSafe() }.orEmpty()
+    ) : this(
         agentName = cobData[CobTag.AGENT_NAME] ?: throw Caos2CobException("Cannot create C1 cob without agent name"),
         targetFile = cobData[CobTag.COB_NAME] ?: throw Caos2CobException("Cannot create C1 COB without COB file name"),
         quantityAvailable = cobData[CobTag.QUANTITY_AVAILABLE]?.toIntSafe() ?: 255,
@@ -48,24 +51,9 @@ data class Caos2CobC1(
     )
 
     private val thumbnail: BufferedImage? by lazy {
-        val image:BufferedImage? = try {
-            pictureUrl?.trim()?.let { pictureUrl ->
-                LocalFileSystem.getInstance().findFileByPath(pictureUrl)?.let { virtualFile ->
-                    VfsUtil.virtualToIoFile(virtualFile).let { file ->
-                        ImageIO.read(file)
-                            ?: throw Caos2CobException("Failed to read image with ImageIO.read(file)")
-                    }
-                } ?: throw Caos2CobException("Failed to located virtual file for image: '$pictureUrl'")
-            }
-        } catch (e: Exception) {
-            LOGGER.severe(e.message)
-            e.printStackTrace()
-            null
+        pictureUrl?.let { url ->
+            loadThumbnail(url)
         }
-        if (pictureUrl != null && image == null) {
-            throw Caos2CobException("Could not resolve COB thumbnail image at path: '$pictureUrl'")
-        }
-        image
     }
 
     override fun compile(): ByteArray {
@@ -88,17 +76,15 @@ data class Caos2CobC1(
         buffer.writeUint32(image?.width ?: 0)
         buffer.writeUint32(image?.height ?: 0)
         buffer.writeUInt16(image?.width ?: 0)
-        if (image != null) {
-            LOGGER.info("Image is not null")
-            image.flipVertical().let { thumbnail ->
-                SprCompiler.compileSprite(thumbnail, buffer, false)
-            } ?: throw Caos2CobException("Image is null after flip")
+        image?.flipVertical()?.let { thumbnail ->
+            SprCompiler.writeCompiledSprite(thumbnail, buffer, false)
         }
         buffer.writeSfcString(agentName)
+        buffer.writeNullByte()
         return buffer.toByteArray()
     }
 
-    val removerCob : Caos2CobC1? by lazy {
+    val removerCob: Caos2CobC1? by lazy {
         val removalScript = removalScript
             ?: return@lazy null
         Caos2CobC1(
