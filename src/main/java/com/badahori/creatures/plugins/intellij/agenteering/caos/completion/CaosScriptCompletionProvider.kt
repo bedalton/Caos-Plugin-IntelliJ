@@ -59,10 +59,10 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 }
             }
             val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text ?: ""
-            val openChar = if (stringValue.startsWith("\"") || stringValue.startsWith("'")) "" else ""
-            val closeChar = if (stringValue.endsWith("\"") && stringValue.startsWith("\""))
+            val openChar = if (stringValue.startsWith("\"") || stringValue.startsWith("'")) "" else "\""
+            val closeChar = if (stringValue.endsWith("\"") && stringValue.startsWith("\"") && stringValue.length > 1)
                 ""
-            else if (stringValue.startsWith("'") && stringValue.endsWith("'"))
+            else if (stringValue.startsWith("'") && stringValue.endsWith("'") && stringValue.length > 1)
                 ""
             else if (stringValue.startsWith("'"))
                 "'"
@@ -390,7 +390,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     continue
                 val basePath = fileParts.dropLast(1).joinToString(".")
                 LookupElementBuilder.create(openChar+basePath+"[]."+fileParts.last()+closeChar)
-                    .withLookupString("\""+basePath+"[#]."+fileParts.last() + "\"")
+                    .withLookupString(basePath+"[#]."+fileParts.last())
                     .withInsertHandler(insertHandler)
             }
         }
