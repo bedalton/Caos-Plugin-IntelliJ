@@ -99,13 +99,13 @@ INT_SIGN=[-+]
 INT = [0-9]+
 NUMBER={INT_SIGN}?({INT}[.])?{INT}
 ANIMATION=\[({INT}[ ]?)+R?\]
-BRACKET_STRING=\[[^\]]\]
+BRACKET_STRING=\[[^\]]*\]
 QUOTE_STRING=\"(\\\"|[^\"])*\"
 STRING={QUOTE_STRING}|{BRACKET_STRING}
 AND=[Aa][Nn][Dd]
 OR=[Oo][Rr]
 AND_OR={AND}|{OR}
-COMMENT=[*][^\n\*]*
+COMMENT=[*][^\n\*\}]*
 %state IN_VALUES_LIST IN_VALUES_LIST_VALUE IN_VALUES_LIST_TEXT IN_LINK IN_COMMENT COMMENT_START IN_PARAM_COMMENT IN_COMMENT_AFTER_VAR IN_HEADER IN_BODY IN_VARIANT IN_HASHTAG_LINE AFTER_VALUES_LIST_NAME IN_CODE_BLOCK_LITERAL IN_LVALUE
 
 %%
@@ -194,6 +194,9 @@ COMMENT=[*][^\n\*]*
 }
 
 <IN_CODE_BLOCK_LITERAL> {
+ 	"*" 						{ return WHITE_SPACE; }
+    \}#?						{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
+    \s+							{ return WHITE_SPACE; }
 	{ANIMATION}					{ return CaosDef_CODE_BLOCK_ANIMATION; }
     {STRING}					{ return CaosDef_CODE_BLOCK_STRING; }
 	{WORD}   					{ return CaosDef_WORD; }
@@ -201,8 +204,6 @@ COMMENT=[*][^\n\*]*
  	{EQ}						{ return CaosDef_CODE_BLOCK_EQ; }
     {AND_OR}					{ return CaosDef_CODE_BLOCK_AND_OR; }
   	{COMMENT}					{ return CaosDef_CODE_BLOCK_COMMENT;}
-    \}#?						{ yybegin(IN_COMMENT); return CaosDef_CLOSE_BRACE; }
-    \s+							{ return WHITE_SPACE; }
  	[^]							{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
 
