@@ -51,7 +51,7 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
         return this.variant == variant
     }
 
-    private fun isTag(value: String): Boolean {
+    internal fun isTag(value: String): Boolean {
         return value.matches(keysRegex)
     }
 

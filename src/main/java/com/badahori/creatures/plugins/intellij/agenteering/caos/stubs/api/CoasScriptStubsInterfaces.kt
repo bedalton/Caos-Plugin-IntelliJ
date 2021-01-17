@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
@@ -136,6 +137,8 @@ interface CaosScriptVarTokenStub : StubElement<CaosScriptVarTokenImpl> {
 interface CaosScriptCaos2BlockStub:StubElement<CaosScriptCaos2BlockImpl> {
     val isCaos2Pray:Boolean
     val isCaos2Cob:Boolean
+    val caos2Variants: List<CaosVariant>
+    val agentBlockNames: List<Pair<String, String>>
     val tags:Map<String,String>
     val cobTags:Map<CobTag, String>
     val commands:List<Pair<String,List<String>>>

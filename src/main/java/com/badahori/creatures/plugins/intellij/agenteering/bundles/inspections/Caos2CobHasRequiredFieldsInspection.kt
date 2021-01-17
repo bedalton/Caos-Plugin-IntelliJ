@@ -1,18 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import kotlin.math.min
 
 class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
 
@@ -37,43 +36,41 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
 
     companion object {
 
+        private val PRAY_AGENT_BLOCK_VARIANTS = listOf("CV", "C3", "DS", "SM")
+
         /**
          * Validates a COB comment directive, to ensure that it actually exists
          */
         private fun validateBlock(element:CaosScriptCaos2Block, holder: ProblemsHolder) {
+            if (!element.isCaos2Cob) {
+                if (element.agentBlockNames.none { it.first in PRAY_AGENT_BLOCK_VARIANTS}) {
+                    val error = CaosBundle.message("cob.caos2cob.inspections.missing-required-properties.missing-agent-name-command")
+                    holder.registerProblem(element, error)
+                }
+                return
+            }
             val variant = element.cobVariant
-                ?: return
             val tagStrings = element.tags.keys
             val foundTags = tagStrings.mapNotNull { key -> CobTag.fromString(key) }
-            val missingTags = mutableListOf<String>()
+            val missingTags = mutableListOf<CobTag>()
             for (tag in CobTag.getTags(variant).filter { it.required }) {
                 if (tag !in foundTags)
-                    missingTags.add(tag.keys.first())
+                    missingTags.add(tag)
+            }
+            if (missingTags.contains(CobTag.AGENT_NAME) && element.agentBlockNames.any { it.first == "C1" || it.first == "C2" }) {
+                missingTags.remove(CobTag.AGENT_NAME)
             }
             if (missingTags.isEmpty())
                 return
-
-            holder.registerProblem(element.caos2BlockHeader,
-                CaosBundle.message("cob.caos2cob.inspections.missing-required-properties", missingTags.joinToString(", "))
-            )
-
-        }
-
-        private fun getFixesForSimilar(variant:CaosVariant?, element:PsiElement, tagName:String) : List<CaosScriptReplaceElementFix> {
-            return CobTag.getTags(variant)
-                .mapNotNull { aTag ->
-                    aTag.keys.map { key ->
-                        Pair(key, key.levenshteinDistance(tagName))
-                    }.minBy { it.second }
-                }.filter {
-                    it.second < 7
-                }.map {
-                    CaosScriptReplaceElementFix(
-                        element,
-                        it.first,
-                        CaosBundle.message("cob.caos2cob.fix.replace-cob-command", it.first)
-                    )
+            val textRange = element.caos2BlockHeader?.textRange
+                ?: element.firstChild?.let {
+                    TextRange(element.startOffset, element.startOffset + min(2, it.textLength))
                 }
+            val missingTagsString = missingTags.joinToString(", ") { it.keys.first() }
+            holder.registerProblem(element,
+                textRange,
+                CaosBundle.message("cob.caos2cob.inspections.missing-required-properties", missingTagsString)
+            )
         }
     }
 }

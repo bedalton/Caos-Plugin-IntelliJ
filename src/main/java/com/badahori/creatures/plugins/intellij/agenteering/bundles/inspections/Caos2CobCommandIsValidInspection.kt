@@ -29,24 +29,29 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
         return object : CaosScriptVisitor() {
             override fun visitCaos2CommandName(element: CaosScriptCaos2CommandName) {
                 super.visitCaos2CommandName(element)
-                validateCobCommentDirective(element, holder)
+                validateCobCommandName(element, holder)
             }
         }
     }
 
     companion object {
 
+        val COB_NAME_COMMAND_REGEX = "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
+
         /**
          * Validates a COB comment directive, to ensure that it actually exists
          */
-        private fun validateCobCommentDirective(element:CaosScriptCaos2CommandName, holder: ProblemsHolder) {
+        private fun validateCobCommandName(element:CaosScriptCaos2CommandName, holder: ProblemsHolder) {
             if (!element.containingCaosFile?.isCaos2Cob.orFalse())
                 return
             val tagNameRaw = element.text
-            val tagName = element.text.replace(WHITESPACE_OR_DASH, " ")
-            val tag = CobCommand.fromString(tagName)
+            if (tagNameRaw.matches(COB_NAME_COMMAND_REGEX))
+                return
+            val tagName = element.text.replace(WHITESPACE_OR_DASH, " ").nullIfEmpty()
+                ?: return
+            val command = CobCommand.fromString(tagName)
             val variant = element.variant
-            if (tag != null) {
+            if (command != null) {
                 return
             }
             val similar = getFixesForSimilar(variant, element, tagName)

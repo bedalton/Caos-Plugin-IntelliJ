@@ -238,9 +238,16 @@ class CompileCaos2CobAction : AnAction(
             } else {
                 key to value
             }
-        }.toMap()
+        }.toMap().toMutableMap()
         val cobCommands = getCobCommands(variant, block)
 
+        val agentNameFromTags = cobTags[CobTag.AGENT_NAME]
+        val agentNameFromCommand = block.agentBlockNames.filter { it.first == variant.code}.firstOrNull()?.second
+        if (agentNameFromCommand != null && agentNameFromTags != null && agentNameFromCommand != agentNameFromTags) {
+            throw Caos2CobException("Conflicting use of '${variant.code}-Name' command and 'Agent Name' property")
+        }
+        val agentName = agentNameFromCommand ?: agentNameFromTags
+        cobTags[CobTag.AGENT_NAME] = agentName
         // Take find all scripts in this file and all linked files.
         val linkedFiles = mainFile + collectLinkedFiles(project, compilationResults, variant, directory, cobCommands)
         val scripts = mutableListOf<CaosScriptScriptElement>()
@@ -370,7 +377,7 @@ class CompileCaos2CobAction : AnAction(
 
     // Static Methods
     companion object {
-        private val isCaos2CobRegex = "^[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]".toRegex()
+        private val isCaos2CobRegex = "^[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]|[*][#]\\s*(C1-Name|C2-Name)".toRegex(RegexOption.IGNORE_CASE)
         var didShowAutoRemoverCobWarning:Boolean = false
         private fun hasCaos2Cob(file: VirtualFile): Boolean {
             if (file.isDirectory) {

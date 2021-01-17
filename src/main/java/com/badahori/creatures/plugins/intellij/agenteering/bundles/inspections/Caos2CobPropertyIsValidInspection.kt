@@ -9,6 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptyNode
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -37,14 +39,30 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
     }
 
     companion object {
-
+        private val COB_NAME_COMMAND_REGEX =  "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
         /**
          * Validates a COB comment directive, to ensure that it actually exists
          */
         private fun validateCobCommentDirective(element:CaosScriptCobCommentDirective, holder: ProblemsHolder) {
             if (!element.containingCaosFile?.isCaos2Cob.orFalse())
                 return
-            val tagNameRaw = element.text
+            val tagNameRaw = element.text?.nullIfEmpty()
+                ?: return
+            if (tagNameRaw.matches(COB_NAME_COMMAND_REGEX)) {
+                val error = CaosBundle.message("cob.caos2cob.inspections.property-valid.command-name-is-not-tag", tagNameRaw)
+                val possibleEqualSign = element.getNextNonEmptySibling(false)
+                if (possibleEqualSign?.text == "=") {
+                    holder.registerProblem(element, error, CaosScriptReplaceElementFix(
+                        possibleEqualSign,
+                        "",
+                        "Make $tagNameRaw into a command statement",
+                        true
+                    ))
+                } else {
+                    holder.registerProblem(element, error)
+                }
+                return
+            }
             val tagName = element.text.replace(WHITESPACE_OR_DASH, " ")
             val tag = CobTag.fromString(tagName)
             val variant = element.variant

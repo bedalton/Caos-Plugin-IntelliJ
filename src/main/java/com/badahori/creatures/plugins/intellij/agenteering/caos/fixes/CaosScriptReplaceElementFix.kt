@@ -12,11 +12,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTransparentWriteAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.util.TextRange
 
-class CaosScriptReplaceElementFix (element:PsiElement, private val replacement:String, private val fixText:String = "Replace '${element.text}' with '$replacement'")  : IntentionAction, LocalQuickFix {
+class CaosScriptReplaceElementFix(
+    element: PsiElement,
+    private val replacement: String,
+    private val fixText: String = "Replace '${element.text}' with '$replacement'",
+    private val trimSpaces: Boolean = false
+)  : IntentionAction, LocalQuickFix {
 
     private val pointer = SmartPointerManager.createPointer(element)
 
@@ -43,8 +48,18 @@ class CaosScriptReplaceElementFix (element:PsiElement, private val replacement:S
     private fun applyFix(element:PsiElement) {
         val document = element.document
             ?: return
+        val startOffset = element.startOffset
+        var endOffset = element.endOffset
+        if (trimSpaces) {
+            var next = element.next
+            while (next != null && next.text.trim(' ').isEmpty()) {
+                endOffset = next.endOffset
+                next = next.next
+            }
+        }
+        val spaces =
         runUndoTransparentWriteAction {
-            EditorUtil.replaceText(document, element.textRange, replacement)
+            EditorUtil.replaceText(document, TextRange(startOffset, endOffset), replacement)
         }
     }
 

@@ -337,8 +337,9 @@ private file_body_with_variant
 	;
 
 caos_2_block
-	::= caos_2_block_header (space_like_or_newline caos_2_block_comment)*
+	::= (caos_2_block_header|caos_2_block_comment) (space_like_or_newline caos_2_block_comment)*
 	{
+		pin= 1
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2BlockStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
@@ -348,10 +349,13 @@ caos_2_block
 			isCaos2Pray
 			isCaos2Cob
 			getCobVariant
+			getCaos2Variant
+			getCaos2Variants
 			getTagValue
 			getTags
 			getCommands
 			getCommandArgs
+			getAgentBlockNames
 		]
 	}
 	;

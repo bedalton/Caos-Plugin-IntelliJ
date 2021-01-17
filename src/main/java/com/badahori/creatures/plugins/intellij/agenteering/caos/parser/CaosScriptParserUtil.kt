@@ -39,13 +39,13 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     const val OTHER = -1
     const val WHITE_SPACE_OPTIONAL = "whiteSpaceOptional"
     val needsNoWhitespace = TokenSet.create(
-            CaosScriptTypes.CaosScript_BYTE_STRING,
-            CaosScriptTypes.CaosScript_OPEN_BRACKET,
-            CaosScriptTypes.CaosScript_INT,
-            CaosScriptTypes.CaosScript_FLOAT,
-            CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL,
-            CaosScriptTypes.CaosScript_CHAR_CHAR,
-            CaosScriptTypes.CaosScript_CHARACTER
+        CaosScriptTypes.CaosScript_BYTE_STRING,
+        CaosScriptTypes.CaosScript_OPEN_BRACKET,
+        CaosScriptTypes.CaosScript_INT,
+        CaosScriptTypes.CaosScript_FLOAT,
+        CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL,
+        CaosScriptTypes.CaosScript_CHAR_CHAR,
+        CaosScriptTypes.CaosScript_CHARACTER
     )
 
     private val commandStrings by lazy {
@@ -55,7 +55,17 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     private val blockEnds = listOf<IElementType>(
-            CaosScriptTypes.CaosScript_K_ENDM, CaosScriptTypes.CaosScript_K_NEXT, CaosScriptTypes.CaosScript_K_ELSE, CaosScriptTypes.CaosScript_K_ENDI, CaosScriptTypes.CaosScript_K_ELIF, CaosScriptTypes.CaosScript_K_REPE, CaosScriptTypes.CaosScript_K_NSCN, CaosScriptTypes.CaosScript_K_UNTL, CaosScriptTypes.CaosScript_K_EVER, CaosScriptTypes.CaosScript_K_RETN, CaosScriptTypes.CaosScript_K_SUBR
+        CaosScriptTypes.CaosScript_K_ENDM,
+        CaosScriptTypes.CaosScript_K_NEXT,
+        CaosScriptTypes.CaosScript_K_ELSE,
+        CaosScriptTypes.CaosScript_K_ENDI,
+        CaosScriptTypes.CaosScript_K_ELIF,
+        CaosScriptTypes.CaosScript_K_REPE,
+        CaosScriptTypes.CaosScript_K_NSCN,
+        CaosScriptTypes.CaosScript_K_UNTL,
+        CaosScriptTypes.CaosScript_K_EVER,
+        CaosScriptTypes.CaosScript_K_RETN,
+        CaosScriptTypes.CaosScript_K_SUBR
     )
 
     private fun getParsingModes(builder_: PsiBuilder): TObjectLongHashMap<String>? {
@@ -67,42 +77,46 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun isVariant(builder_: PsiBuilder,
-                  level: Int,
-                  vararg variants: CaosVariant): Boolean {
+    fun isVariant(
+        builder_: PsiBuilder,
+        level: Int,
+        vararg variants: CaosVariant
+    ): Boolean {
         val fileVariant = fileVariant(builder_)
-                ?: return false//CaosScriptProjectSettings.variant
+            ?: return false//CaosScriptProjectSettings.variant
         return fileVariant in variants
     }
 
     @JvmStatic
-    fun isOldVariant(builder_: PsiBuilder,
-                     level: Int): Boolean {
+    fun isOldVariant(
+        builder_: PsiBuilder,
+        level: Int
+    ): Boolean {
         val fileVariant = variant(builder_)
-                ?: return false//CaosScriptProjectSettings.variant
+            ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isOld
     }
 
     @JvmStatic
     fun isNewVariant(
-            builder_: PsiBuilder,
-            level: Int,
-            includeSeaMonkeys: Boolean
+        builder_: PsiBuilder,
+        level: Int,
+        includeSeaMonkeys: Boolean
     ): Boolean {
-        return fileVariant(builder_)?.let {variant ->
+        return fileVariant(builder_)?.let { variant ->
             variant.isNotOld && (includeSeaMonkeys || variant != CaosVariant.SM)
         } ?: false
     }
 
     private fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
-                ?: return null
+            ?: return null
         // Get CAOS file, and if it has variant, return it
         (psiFile as? CaosScriptFile ?: psiFile.originalFile as? CaosScriptFile)
-                ?.variant
-                ?.let { variant ->
-                    return variant
-                }
+            ?.variant
+            ?.let { variant ->
+                return variant
+            }
 
         (psiFile.virtualFile)?.let { virtualFile ->
             VariantFilePropertyPusher.readFromStorage(virtualFile)?.let { variant ->
@@ -119,8 +133,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
         // PsiFile had not variant, find virtual file, and try to extract it
         val virtualFile = psiFile.virtualFile
-                ?: psiFile.originalFile.virtualFile
-                ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)
+            ?: psiFile.originalFile.virtualFile
+            ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)
         (virtualFile as? CaosVirtualFile)?.let { caosVirtualFile ->
             return caosVirtualFile.variant
         }
@@ -146,23 +160,19 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             return variant
         }
         val variant = psiFile.virtualFile?.cachedVariant
-                ?: psiFile.originalFile.virtualFile?.cachedVariant
-                ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariant
-                ?: psiFile.module?.variant
-                ?: builder_.getUserData(CAOS2_COB_VARIANT)
-                ?: builder_.originalText.trim().split('\n', limit = 2)[0].trim().let { text ->
-                    CAOS_2_COB_REGEX.matchEntire(text)?.groupValues?.getOrNull(1)?.let { variantCode ->
-                        CaosVariant.fromVal(variantCode)
-                    }
-                }
+            ?: psiFile.originalFile.virtualFile?.cachedVariant
+            ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariant
+            ?: psiFile.module?.variant
         if (variant == CaosVariant.UNKNOWN)
             return null
         return variant
     }
 
     @JvmStatic
-    fun enterMode(builder_: PsiBuilder,
-                  level: Int, mode: String?): Boolean {
+    fun enterMode(
+        builder_: PsiBuilder,
+        level: Int, mode: String?
+    ): Boolean {
         val flags = getParsingModes(builder_)
         if (!flags!!.increment(mode)) {
             flags.put(mode, 1)
@@ -171,22 +181,28 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun enterBlock(builder_: PsiBuilder,
-                   level: Int): Boolean {
+    fun enterBlock(
+        builder_: PsiBuilder,
+        level: Int
+    ): Boolean {
         builder_.putUserData(BLOCKS_KEY, builder_.getUserData(BLOCKS_KEY)?.let { it + 1 }.orElse(1))
         return true
     }
 
     @JvmStatic
-    fun exitBlock(builder_: PsiBuilder,
-                  level: Int): Boolean {
+    fun exitBlock(
+        builder_: PsiBuilder,
+        level: Int
+    ): Boolean {
         builder_.putUserData(BLOCKS_KEY, builder_.getUserData(BLOCKS_KEY)?.let { if (it > 0) it - 1 else 0 }.orElse(0))
         return true
     }
 
     @JvmStatic
-    fun insideBlock(builder_: PsiBuilder,
-                    level: Int): Boolean {
+    fun insideBlock(
+        builder_: PsiBuilder,
+        level: Int
+    ): Boolean {
         return builder_.getUserData(BLOCKS_KEY).orElse(0) > 0
     }
 
@@ -195,8 +211,10 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun exitMode(builder_: PsiBuilder,
-                 level: Int, mode: String): Boolean {
+    fun exitMode(
+        builder_: PsiBuilder,
+        level: Int, mode: String
+    ): Boolean {
         val flags = getParsingModes(builder_)
         val count = flags!![mode]
         when {
@@ -207,14 +225,18 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun inMode(builder_: PsiBuilder,
-               level: Int, mode: String?): Boolean {
+    fun inMode(
+        builder_: PsiBuilder,
+        level: Int, mode: String?
+    ): Boolean {
         return getParsingModes(builder_)!![mode] > 0
     }
 
     @JvmStatic
-    fun notInMode(builder_: PsiBuilder,
-                  level: Int, mode: String?): Boolean {
+    fun notInMode(
+        builder_: PsiBuilder,
+        level: Int, mode: String?
+    ): Boolean {
         return getParsingModes(builder_)!![mode] == 0L
     }
 
@@ -224,23 +246,25 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun eofNext(builder_: PsiBuilder,
-                level: Int): Boolean {
+    fun eofNext(
+        builder_: PsiBuilder,
+        level: Int
+    ): Boolean {
         return builder_.lookAhead(1) == null || builder_.eof()
     }
 
     @JvmStatic
     fun pushParameter(
-            builder_: PsiBuilder,
-            level: Int,
-            vararg parameters: Int
+        builder_: PsiBuilder,
+        level: Int,
+        vararg parameters: Int
     ): Boolean {
         if (parameters.isEmpty())
             return true
         if (!pushPop(builder_))
             return true
         val expectations = builder_.getUserData(EXPECTATIONS_KEY)
-                ?: mutableListOf()
+            ?: mutableListOf()
         if (expectations.isEmpty())
             expectations.addAll(parameters.toList())
         else
@@ -251,15 +275,15 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun popParameter(
-            builder_: PsiBuilder,
-            level: Int
+        builder_: PsiBuilder,
+        level: Int
     ): Boolean {
         if (!pushPop(builder_))
             return true
         val expectations = builder_.getUserData(EXPECTATIONS_KEY)
-                // Nullify on empty to simplify return without popping
-                ?.nullIfEmpty()
-                ?: return true
+            // Nullify on empty to simplify return without popping
+            ?.nullIfEmpty()
+            ?: return true
         expectations.removeAt(0)
         builder_.putUserData(EXPECTATIONS_KEY, expectations)
         return true
@@ -267,32 +291,32 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun needsString(
-            builder_: PsiBuilder,
-            level: Int
+        builder_: PsiBuilder,
+        level: Int
     ): Boolean {
         if (!pushPop(builder_)) {
             return true
         }
-        return builder_.getUserData(EXPECTATIONS_KEY)?.firstOrNull()?.let {expectedType ->
+        return builder_.getUserData(EXPECTATIONS_KEY)?.firstOrNull()?.let { expectedType ->
             expectedType == STRING || expectedType == OTHER
         } ?: true
     }
 
     @JvmStatic
     fun needsInt(
-            builder_: PsiBuilder,
-            level: Int
+        builder_: PsiBuilder,
+        level: Int
     ): Boolean {
         if (!pushPop(builder_)) {
             return true
         }
-        return builder_.getUserData(EXPECTATIONS_KEY)?.firstOrNull()?.let {expectedType ->
+        return builder_.getUserData(EXPECTATIONS_KEY)?.firstOrNull()?.let { expectedType ->
             expectedType == NUMBER || expectedType == OTHER
         } ?: true
     }
 
-    private fun expectedTypeString(expectedType:Int?) : String  {
-        return when(expectedType) {
+    private fun expectedTypeString(expectedType: Int?): String {
+        return when (expectedType) {
             NUMBER -> "NUMBER"
             STRING -> "STRING"
             OTHER -> "OTHER"
@@ -303,10 +327,10 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun tagParameters(
-            builder_: PsiBuilder,
-            level: Int,
-            commandType:CaosCommandType
-    ) : Boolean {
+        builder_: PsiBuilder,
+        level: Int,
+        commandType: CaosCommandType
+    ): Boolean {
         // If push is not needed, (ie. not in variant CV), bail out
         if (!pushPop(builder_))
             return true
@@ -326,8 +350,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             }
             if (prevPrevToken != null) {
                 // Try to find a command match with this, plus prev prev
-                CaosLibs[CaosVariant.CV][commandType]["$prevPrevToken $prevToken"]?.let {command ->
-                    val parameters = command.parameters.map {parameter ->
+                CaosLibs[CaosVariant.CV][commandType]["$prevPrevToken $prevToken"]?.let { command ->
+                    val parameters = command.parameters.map { parameter ->
                         when {
                             parameter.type.isNumberType -> NUMBER
                             parameter.type.isStringType -> STRING
@@ -335,11 +359,11 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                         }
                     }
                     val expectations = builder_.getUserData(EXPECTATIONS_KEY)
-                            ?.nullIfEmpty()
-                            ?.apply {
-                                addAll(0, parameters)
-                            }
-                            ?: parameters.toMutableList()
+                        ?.nullIfEmpty()
+                        ?.apply {
+                            addAll(0, parameters)
+                        }
+                        ?: parameters.toMutableList()
                     builder_.putUserData(EXPECTATIONS_KEY, expectations)
                     return true
                 }
@@ -355,11 +379,11 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                     }
                 }
                 val expectations = builder_.getUserData(EXPECTATIONS_KEY)
-                        ?.nullIfEmpty()
-                        ?.apply {
-                            addAll(0, parameters)
-                        }
-                        ?: parameters.toMutableList()
+                    ?.nullIfEmpty()
+                    ?.apply {
+                        addAll(0, parameters)
+                    }
+                    ?: parameters.toMutableList()
                 builder_.putUserData(EXPECTATIONS_KEY, expectations)
             }
         }
@@ -380,35 +404,35 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun commandNext(builder_: PsiBuilder, level: Int): Boolean {
         val nextToken = nextToken(builder_)?.toUpperCase()
-                ?: return false
+            ?: return false
         if (nextToken in commandStrings)
             return true
         val startsWith = commandStrings.filter { it.startsWith(nextToken) }
         if (startsWith.isEmpty())
             return false
         val nextNextToken = nextToken(builder_, 5)
-                ?.toUpperCase()
-                ?.let { nextNextToken ->
-                    "$nextToken $nextNextToken"
-                }
-                ?: return false
+            ?.toUpperCase()
+            ?.let { nextNextToken ->
+                "$nextToken $nextNextToken"
+            }
+            ?: return false
         return nextNextToken in commandStrings
     }
 
     @JvmStatic
     fun isNext(
-            builder_: PsiBuilder,
-            level: Int,
-            key: String
+        builder_: PsiBuilder,
+        level: Int,
+        key: String
     ): Boolean {
         return nextToken(builder_) like key
     }
 
     @JvmStatic
     fun isNext(
-            builder_: PsiBuilder,
-            level: Int,
-            vararg keys: String
+        builder_: PsiBuilder,
+        level: Int,
+        vararg keys: String
     ): Boolean {
         return nextToken(builder_)?.let { nextToken ->
             keys.any { it like nextToken }
@@ -461,45 +485,45 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     private val nextIsString: List<IElementType> = listOf(
-            CaosScriptTypes.CaosScript_K_CATX,
-            CaosScriptTypes.CaosScript_K_WILD,
-            CaosScriptTypes.CaosScript_K_BKGD,
-            CaosScriptTypes.CaosScript_K_TRAN,
-            CaosScriptTypes.CaosScript_K_DBG_NUM,
-            CaosScriptTypes.CaosScript_K_DBGA,
-            CaosScriptTypes.CaosScript_K_FVWM,
-            CaosScriptTypes.CaosScript_K_GTOS,
-            CaosScriptTypes.CaosScript_K_BKDS,
-            CaosScriptTypes.CaosScript_K_ERID,
-            CaosScriptTypes.CaosScript_K_MLOC,
-            CaosScriptTypes.CaosScript_K_RATE,
-            CaosScriptTypes.CaosScript_K_RLOC,
-            CaosScriptTypes.CaosScript_K_CAOS,
-            CaosScriptTypes.CaosScript_K_SORC,
-            CaosScriptTypes.CaosScript_K_MMSC,
-            CaosScriptTypes.CaosScript_K_RMSC,
-            CaosScriptTypes.CaosScript_K_RTIF,
-            CaosScriptTypes.CaosScript_K_GAMN,
-            CaosScriptTypes.CaosScript_K_READ,
-            CaosScriptTypes.CaosScript_K_SUBS,
-            CaosScriptTypes.CaosScript_K_VTOS,
-            CaosScriptTypes.CaosScript_K_PSWD,
-            CaosScriptTypes.CaosScript_K_WRLD
+        CaosScriptTypes.CaosScript_K_CATX,
+        CaosScriptTypes.CaosScript_K_WILD,
+        CaosScriptTypes.CaosScript_K_BKGD,
+        CaosScriptTypes.CaosScript_K_TRAN,
+        CaosScriptTypes.CaosScript_K_DBG_NUM,
+        CaosScriptTypes.CaosScript_K_DBGA,
+        CaosScriptTypes.CaosScript_K_FVWM,
+        CaosScriptTypes.CaosScript_K_GTOS,
+        CaosScriptTypes.CaosScript_K_BKDS,
+        CaosScriptTypes.CaosScript_K_ERID,
+        CaosScriptTypes.CaosScript_K_MLOC,
+        CaosScriptTypes.CaosScript_K_RATE,
+        CaosScriptTypes.CaosScript_K_RLOC,
+        CaosScriptTypes.CaosScript_K_CAOS,
+        CaosScriptTypes.CaosScript_K_SORC,
+        CaosScriptTypes.CaosScript_K_MMSC,
+        CaosScriptTypes.CaosScript_K_RMSC,
+        CaosScriptTypes.CaosScript_K_RTIF,
+        CaosScriptTypes.CaosScript_K_GAMN,
+        CaosScriptTypes.CaosScript_K_READ,
+        CaosScriptTypes.CaosScript_K_SUBS,
+        CaosScriptTypes.CaosScript_K_VTOS,
+        CaosScriptTypes.CaosScript_K_PSWD,
+        CaosScriptTypes.CaosScript_K_WRLD
     )
     private val histStrings: List<IElementType> = listOf(
-            CaosScriptTypes.CaosScript_K_FOTO,
-            CaosScriptTypes.CaosScript_K_NAME,
-            CaosScriptTypes.CaosScript_K_NEXT,
-            CaosScriptTypes.CaosScript_K_PREV,
-            CaosScriptTypes.CaosScript_K_UTXT,
-            CaosScriptTypes.CaosScript_K_WNAM,
-            CaosScriptTypes.CaosScript_K_WUID,
-            CaosScriptTypes.CaosScript_K_MON1,
-            CaosScriptTypes.CaosScript_K_MON2
+        CaosScriptTypes.CaosScript_K_FOTO,
+        CaosScriptTypes.CaosScript_K_NAME,
+        CaosScriptTypes.CaosScript_K_NEXT,
+        CaosScriptTypes.CaosScript_K_PREV,
+        CaosScriptTypes.CaosScript_K_UTXT,
+        CaosScriptTypes.CaosScript_K_WNAM,
+        CaosScriptTypes.CaosScript_K_WUID,
+        CaosScriptTypes.CaosScript_K_MON1,
+        CaosScriptTypes.CaosScript_K_MON2
     )
     private val prayStrings: List<IElementType> = listOf(
-            CaosScriptTypes.CaosScript_K_PREV,
-            CaosScriptTypes.CaosScript_K_NEXT,
-            CaosScriptTypes.CaosScript_K_AGTS
+        CaosScriptTypes.CaosScript_K_PREV,
+        CaosScriptTypes.CaosScript_K_NEXT,
+        CaosScriptTypes.CaosScript_K_AGTS
     )
 }

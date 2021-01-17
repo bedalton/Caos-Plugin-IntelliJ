@@ -4,12 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRemovalScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.trimErrorSpaces
@@ -22,6 +18,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
@@ -36,8 +33,7 @@ import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.*
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.text.BlockSupport
@@ -70,9 +66,13 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
         })
     }
 
-    override fun createNotificationPanel(virtualFile: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
+    override fun createNotificationPanel(
+        virtualFile: VirtualFile,
+        fileEditor: FileEditor,
+        project: Project
+    ): EditorNotificationPanel? {
         val caosFile = virtualFile.getPsiFile(project) as? CaosScriptFile
-                ?: return null
+            ?: return null
         val headerComponent = createCaosScriptHeaderComponent(virtualFile, caosFile)
         val panel = EditorNotificationPanel(TRANSPARENT_COLOR)
         panel.add(headerComponent)
@@ -101,6 +101,45 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
         pointer.element?.trimErrorSpaces()
     }
 
+    val assignVariant = select@{ selected: CaosVariant? ->
+        // If can inject, enable injection button
+        val canInject = selected != null && Injector.canConnectToVariant(selected)
+        toolbar.setInjectButtonEnabled(canInject)
+
+        if (selected !in CaosConstants.VARIANTS) {
+            toolbar.setDocsButtonEnabled(false)
+            return@select
+        }
+        // Set default variant in settings
+        CaosScriptProjectSettings.setVariant(selected!!)
+        var file = pointer.element
+            ?: return@select
+        // Set selected variant in file
+        file.variant = selected
+
+        // Re-parse file with new variant
+        runWriteAction run@{
+            file = pointer.element
+                ?: return@run
+            try {
+                BlockSupport.getInstance(project).reparseRange(file, 0, file.endOffset, file.text)
+            } catch (e: Exception) {
+            }
+        }
+        file = pointer.element
+            ?: return@select
+        DaemonCodeAnalyzer.getInstance(project).restart(file)
+
+        // Enable docs button now that a variant has been set
+        toolbar.setDocsButtonEnabled(true)
+    }
+
+    val listener = CaosFileTreeChangedListener(pointer, caosFile.variant ?: caosFile.module?.variant) { variant ->
+        assignVariant(variant)
+        toolbar.selectVariant(variant?.code ?: "")
+    }
+    PsiManager.getInstance(project).addPsiTreeChangeListener(listener)
+
     // If variant is unknown, allow for variant selection
     if (caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFile.virtualFile !is CaosVirtualFile) {
         // Make variant selector visible
@@ -118,33 +157,9 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
                 return@variant
             // Get the selected variant
             val selected = CaosVariant.fromVal(it.item as String)
-            if (selected !in CaosConstants.VARIANTS) {
-                toolbar.setDocsButtonEnabled(false)
-                LOGGER.severe("Unhandled CAOS variant: ${selected.code}")
-                return@variant
-            }
             if (caosFile.variant == selected)
                 return@variant
-            // If can inject, enable injection button
-            val canInject = Injector.canConnectToVariant(selected)
-            toolbar.setInjectButtonEnabled(canInject)
-            // Set default variant in settings
-            CaosScriptProjectSettings.setVariant(selected)
-
-            // Set selected variant in file
-            caosFile.variant = selected
-
-            // Re-parse file with new variant
-            runWriteAction {
-                try {
-                    BlockSupport.getInstance(project).reparseRange(caosFile, 0, caosFile.endOffset, caosFile.text)
-                } catch (e: Exception) {
-                }
-            }
-            DaemonCodeAnalyzer.getInstance(project).restart(caosFile)
-
-            // Enable docs button now that a variant has been set
-            toolbar.setDocsButtonEnabled(true)
+            assignVariant(selected)
         }
     }
 
@@ -161,7 +176,9 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
 
     // If the OS is not windows, and no POST url is set, hide injection button
     // show inject button
-    if (!System.getProperty("os.name").contains("Windows") && CaosScriptProjectSettings.getInjectURL(project).isNullOrBlank()) {
+    if (!System.getProperty("os.name").contains("Windows") && CaosScriptProjectSettings.getInjectURL(project)
+            .isNullOrBlank()
+    ) {
         toolbar.showInjectionButton(false)
     }
 
@@ -183,51 +200,56 @@ private fun initToolbarWithVariantSelect(toolbar: EditorToolbar, pointer: CaosSc
 /**
  * Create action handler to handle the opening of the CAOS doc on click
  */
-private fun createDocsOpenClickHandler(toolbar: EditorToolbar, pointer: CaosScriptPointer): ActionListener = ActionListener listener@{
-    // Get file from pointer
-    val caosFile = pointer.element
+private fun createDocsOpenClickHandler(toolbar: EditorToolbar, pointer: CaosScriptPointer): ActionListener =
+    ActionListener listener@{
+        // Get file from pointer
+        val caosFile = pointer.element
 
-    // If pointer was invalidated, return
-    if (caosFile == null) {
-        LOGGER.warning("CaosScript pointer was invalidated before show DOCS")
-        return@listener
-    }
+        // If pointer was invalidated, return
+        if (caosFile == null) {
+            LOGGER.warning("CaosScript pointer was invalidated before show DOCS")
+            return@listener
+        }
 
-    // Get project
-    val project = caosFile.project
+        // Get project
+        val project = caosFile.project
 
-    // Get variant from current file
-    val selectedVariant = caosFile.variant
+        // Get variant from current file
+        val selectedVariant = caosFile.variant
 
-    // If variant is null, show error message and abort
-    if (selectedVariant == null) {
-        toolbar.setDocsButtonEnabled(false)
-        val builder = DialogBuilder(project)
-        builder.setErrorText("Failed to access module game variant")
-        builder.title("Variant Error")
-        builder.show()
-        return@listener
-    }
-    // Get path to documents
-    val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
-    // Load document virtual file
-    val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
+        // If variant is null, show error message and abort
+        if (selectedVariant == null) {
+            toolbar.setDocsButtonEnabled(false)
+            val builder = DialogBuilder(project)
+            builder.setErrorText("Failed to access module game variant")
+            builder.title("Variant Error")
+            builder.show()
+            return@listener
+        }
+        // Get path to documents
+        val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/$selectedVariant-Lib.caosdef"
+        // Load document virtual file
+        val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
             ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
 
-    // Fetch psi file from virtual file
-    val file = virtualFile?.getPsiFile(project)
-            ?: FilenameIndex.getFilesByName(project, "$selectedVariant-Lib.caosdef", GlobalSearchScope.allScope(caosFile.project))
-                    .firstOrNull()
+        // Fetch psi file from virtual file
+        val file = virtualFile?.getPsiFile(project)
+            ?: FilenameIndex.getFilesByName(
+                project,
+                "$selectedVariant-Lib.caosdef",
+                GlobalSearchScope.allScope(caosFile.project)
+            )
+                .firstOrNull()
 
-    // If failed to find variant docs, disable button and return
-    if (file == null) {
-        toolbar.setDocsButtonEnabled(false)
-        return@listener
+        // If failed to find variant docs, disable button and return
+        if (file == null) {
+            toolbar.setDocsButtonEnabled(false)
+            return@listener
+        }
+
+        // Navigate to Docs.
+        file.navigate(true)
     }
-
-    // Navigate to Docs.
-    file.navigate(true)
-}
 
 /**
  * Create handler for variant select in dropdown menu
@@ -270,12 +292,12 @@ private fun createVariantSelectHandler(toolbar: EditorToolbar, pointer: CaosScri
     // Try to re-parse file with the new variant
     try {
         WriteCommandAction.writeCommandAction(project)
-                .withName("Set CAOS variant ${selected.code}")
-                .withGroupId("CaosScript")
-                .shouldRecordActionForActiveDocument(false)
-                .run<Throwable> {
-                    reparseAfterSet(pointer, selected)
-                }
+            .withName("Set CAOS variant ${selected.code}")
+            .withGroupId("CaosScript")
+            .shouldRecordActionForActiveDocument(false)
+            .run<Throwable> {
+                reparseAfterSet(pointer, selected)
+            }
     } catch (e: Exception) {
         LOGGER.severe("Failed to re-parse and re-analyze after variant change with error: '${e.message}'")
         e.printStackTrace()
@@ -304,15 +326,19 @@ private fun reparseAfterSet(pointer: CaosScriptPointer, variant: CaosVariant) {
     val currentVariant = pointer.element?.variant
     if (currentVariant == null) {
         CaosNotifications.showError(
-                project,
-                "Set Variant",
-                "Failed to set variant to selected variant: ${variant.code}. Variant is still 'NULL'"
+            project,
+            "Set Variant",
+            "Failed to set variant to selected variant: ${variant.code}. Variant is still 'NULL'"
         )
         return
     }
     // Check that the caos file actually did have its variant set.
     if (currentVariant != variant) {
-        CaosNotifications.showError(project, "Set Variant", "Failed to set variant to selected variant: ${variant.code}. Variant is still '${currentVariant.code}'")
+        CaosNotifications.showError(
+            project,
+            "Set Variant",
+            "Failed to set variant to selected variant: ${variant.code}. Variant is still '${currentVariant.code}'"
+        )
         LOGGER.severe("Failed to set variant to selected variant: ${variant.code}")
         return
     }
@@ -354,31 +380,31 @@ private fun createInjectHandler(pointer: CaosScriptPointer, checkedSettings: Jec
             return@let
         val detector = CodeSmellDetector.getInstance(project)
         val smells = detector.findCodeSmells(listOf(virtualFile))
-                .filter {
-                    it.severity == HighlightSeverity.ERROR
-                }
+            .filter {
+                it.severity == HighlightSeverity.ERROR
+            }
         if (smells.isNotEmpty()) {
             CaosInjectorNotifications
-                    .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
-                    .addAction(object: AnAction("Ignore for session and inject") {
-                        override fun actionPerformed(e: AnActionEvent) {
-                            CaosScriptProjectSettings.injectionCheckDisabled = true
-                            injectActual(project, variant, caosFile)
-                        }
-                    })
-                    .addAction(object: AnAction("Inject Anyways") {
-                        override fun actionPerformed(e: AnActionEvent) {
-                            injectActual(project, variant, caosFile)
-                        }
-                    })
-                    .show()
+                .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
+                .addAction(object : AnAction("Ignore for session and inject") {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        CaosScriptProjectSettings.injectionCheckDisabled = true
+                        injectActual(project, variant, caosFile)
+                    }
+                })
+                .addAction(object : AnAction("Inject Anyways") {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        injectActual(project, variant, caosFile)
+                    }
+                })
+                .show()
             return@handler
         }
     }
     injectActual(project, variant, caosFile)
 }
 
-private fun injectActual(project: Project, variant:CaosVariant, caosFile:CaosScriptFile) {
+private fun injectActual(project: Project, variant: CaosVariant, caosFile: CaosScriptFile) {
     // If variant is CV+ ask which parts of the file to inject
     if (caosFile.variant?.isNotOld.orTrue()) {
         injectC3WithDialog(caosFile)
@@ -387,20 +413,20 @@ private fun injectActual(project: Project, variant:CaosVariant, caosFile:CaosScr
 
     // Get contents of file and format for injection
     WriteCommandAction.writeCommandAction(project)
-            .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
-            .shouldRecordActionForActiveDocument(false)
-            .run<Throwable> run@{
-                val content = caosFile.text
-                    ?: return@run
-                if (content.isBlank()) {
-                    Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
-                    return@run
-                }
-                // Add inject command to thread pool
-                executeOnPooledThread {
-                    Injector.inject(project, variant, content)
-                }
+        .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
+        .shouldRecordActionForActiveDocument(false)
+        .run<Throwable> run@{
+            val content = caosFile.text
+                ?: return@run
+            if (content.isBlank()) {
+                Injector.postInfo(project, "Empty Injection", "Empty code body was not injected")
+                return@run
             }
+            // Add inject command to thread pool
+            executeOnPooledThread {
+                Injector.inject(project, variant, content)
+            }
+        }
 
 }
 
@@ -416,9 +442,9 @@ private val JectSettingsKey = Key<JectSettings>("com.badahori.creature.plugins.i
  * Holds settings for Ject dialog
  */
 private data class JectSettings(
-        var injectRemovalScriptsSelected: Boolean = true,
-        var injectEventScriptsSelected: Boolean = true,
-        var injectInstallScriptsSelected: Boolean = true
+    var injectRemovalScriptsSelected: Boolean = true,
+    var injectEventScriptsSelected: Boolean = true,
+    var injectInstallScriptsSelected: Boolean = true
 )
 
 /**
@@ -429,11 +455,11 @@ private fun injectC3WithDialog(file: CaosScriptFile) {
     val variant = file.variant
     if (variant == null) {
         DialogBuilder(project)
-                .title("Variant Error")
-                .apply {
-                    setErrorText("No variant detected for CAOS file")
-                }
-                .showModal(true)
+            .title("Variant Error")
+            .apply {
+                setErrorText("No variant detected for CAOS file")
+            }
+            .showModal(true)
         return
     }
     val removalScripts = PsiTreeUtil.collectElementsOfType(file, CaosScriptRemovalScript::class.java)
@@ -459,7 +485,12 @@ private data class ScriptBundle(val type: JectScriptType, val scripts: Collectio
 /**
  * Creates a popup dialog box to select the kind of scripts to inject in cases of CV+
  */
-private fun showC3InjectPanel(project: Project, variant: CaosVariant, file: CaosScriptFile, scriptsIn: List<ScriptBundle>) {
+private fun showC3InjectPanel(
+    project: Project,
+    variant: CaosVariant,
+    file: CaosScriptFile,
+    scriptsIn: List<ScriptBundle>
+) {
 
     // Init panel
     val panel = JPanel()
@@ -506,42 +537,50 @@ private fun showC3InjectPanel(project: Project, variant: CaosVariant, file: Caos
 
     // Build actual injection dialog box
     DialogBuilder(project)
-            .centerPanel(panel).apply {
-                okActionEnabled(true)
-                setOkOperation {
-                    this.dialogWrapper.close(0)
-                    val scriptsInOrder = mutableListOf<CaosScriptScriptElement>()
-                    removalScriptsCheckBox?.isSelected?.let {
-                        jectSettings.injectRemovalScriptsSelected = it
-                    }
-                    eventScriptsCheckBox?.isSelected?.let {
-                        jectSettings.injectEventScriptsSelected = it
-                    }
-                    installScriptsCheckBox?.isSelected?.let {
-                        jectSettings.injectInstallScriptsSelected = it
-                    }
-                    file.putUserData(JectSettingsKey, jectSettings)
-                    // Order is important
-                    if (removalScriptsCheckBox?.isSelected.orFalse()) {
-                        removalScripts?.let { scriptsInOrder.addAll(it) }
-                    }
-                    if (eventScriptsCheckBox?.isSelected.orFalse()) {
-                        eventScripts?.let { inject(project, variant, it) }
-                    }
-                    if (installScriptsCheckBox?.isSelected.orFalse()) {
-                        installScripts?.let { inject(project, variant, it) }
-                    }
+        .centerPanel(panel).apply {
+            okActionEnabled(true)
+            setOkOperation {
+                this.dialogWrapper.close(0)
+                val scriptsInOrder = mutableListOf<CaosScriptScriptElement>()
+                removalScriptsCheckBox?.isSelected?.let {
+                    jectSettings.injectRemovalScriptsSelected = it
                 }
-            }.showModal(true)
+                eventScriptsCheckBox?.isSelected?.let {
+                    jectSettings.injectEventScriptsSelected = it
+                }
+                installScriptsCheckBox?.isSelected?.let {
+                    jectSettings.injectInstallScriptsSelected = it
+                }
+                file.putUserData(JectSettingsKey, jectSettings)
+                // Order is important
+                if (removalScriptsCheckBox?.isSelected.orFalse()) {
+                    removalScripts?.let { scriptsInOrder.addAll(it) }
+                }
+                if (eventScriptsCheckBox?.isSelected.orFalse()) {
+                    eventScripts?.let { inject(project, variant, it) }
+                }
+                if (installScriptsCheckBox?.isSelected.orFalse()) {
+                    installScripts?.let { inject(project, variant, it) }
+                }
+            }
+        }.showModal(true)
 }
 
 private fun inject(project: Project, variant: CaosVariant, scripts: Collection<CaosScriptScriptElement>): Boolean {
     return runReadAction run@{
         for (script in scripts) {
             val content = script.codeBlock?.text
-                    ?: continue
+                ?: continue
             val result = if (script is CaosScriptEventScript) {
-                Injector.injectEventScript(project, variant, script.family, script.genus, script.species, script.eventNumber, content)
+                Injector.injectEventScript(
+                    project,
+                    variant,
+                    script.family,
+                    script.genus,
+                    script.species,
+                    script.eventNumber,
+                    content
+                )
             } else {
                 Injector.inject(project, variant, content)
             }
@@ -560,4 +599,83 @@ private class CaosScriptPointer(private val virtualFile: VirtualFile, caosFileIn
     private val project: Project = caosFileIn.project
     val element: CaosScriptFile?
         get() = pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
+}
+
+private typealias OnVariantChangeListener = (variant: CaosVariant?) -> Unit
+
+
+private class CaosFileTreeChangedListener(
+    var pointer: CaosScriptPointer?,
+    private var currentVariant: CaosVariant?,
+    private var variantChangedListener: OnVariantChangeListener?
+) : PsiTreeChangeListener, Disposable {
+
+    override fun beforeChildAddition(event: PsiTreeChangeEvent) {
+    }
+
+    override fun beforeChildRemoval(event: PsiTreeChangeEvent) {
+    }
+
+    override fun beforeChildReplacement(event: PsiTreeChangeEvent) {
+    }
+
+    override fun beforeChildMovement(event: PsiTreeChangeEvent) {
+    }
+
+    override fun beforeChildrenChange(event: PsiTreeChangeEvent) {
+    }
+
+    override fun beforePropertyChange(event: PsiTreeChangeEvent) {
+    }
+
+    override fun childAdded(event: PsiTreeChangeEvent) {
+        onChange(event.child)
+    }
+
+    override fun childRemoved(event: PsiTreeChangeEvent) {
+        onChange(event.child)
+    }
+
+    override fun childReplaced(event: PsiTreeChangeEvent) {
+        onChange(event.child)
+    }
+
+    override fun childrenChanged(event: PsiTreeChangeEvent) {
+        onChange(event.child)
+    }
+
+    override fun childMoved(event: PsiTreeChangeEvent) {
+    }
+
+    override fun propertyChanged(event: PsiTreeChangeEvent) {
+    }
+
+    override fun dispose() {
+        pointer = null
+        currentVariant = null
+        variantChangedListener = null
+    }
+
+    private fun onChange(child: PsiElement?) {
+        try {
+            val associatedFile = pointer?.element
+                ?: return
+            if (!child?.containingFile?.isEquivalentTo(associatedFile).orFalse())
+                return
+            val block = child?.getSelfOrParentOfType(CaosScriptCaos2Block::class.java)
+                ?: return
+            val newVariant = block.caos2Variant
+            if (newVariant == currentVariant) {
+                return
+            }
+            currentVariant = newVariant ?: associatedFile.variant
+            invokeLater {
+                runWriteAction {
+                    variantChangedListener?.let { it(newVariant) }
+                }
+            }
+        } catch (e: PsiInvalidElementAccessException) {
+
+        }
+    }
 }
