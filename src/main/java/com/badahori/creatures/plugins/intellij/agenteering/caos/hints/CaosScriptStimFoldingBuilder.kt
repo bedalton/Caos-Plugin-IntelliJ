@@ -8,8 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toFloatSafe
@@ -77,7 +77,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 ?: return null
         val arguments = commandCall.arguments
         if (arguments.size < 2)
-            return null;
+            return null
         val caNumber = (arguments[0] as? CaosScriptRvalue)?.intValue
                 ?: return null
         val ca = commandDefinition
@@ -133,7 +133,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         // Create string builder to hold folding text
         val stringBuilder = StringBuilder()
-        val format = ValuesFormat.getFormat(variant, commandCall.commandString)
+        val format = ValuesFormat.getFormat(variant, commandCall.commandString ?: "")
 
         // Fold chemical amount pairs
         for (i in 0 until numParameters) {
@@ -173,7 +173,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         if (format == ValuesFormat.STIM) {
             stringBuilder.append(" * ").append(amount)
-            return;
+            return
         }
 
         // Format amount based on variant
@@ -233,7 +233,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
     // Gets the folding descriptor using the command call and the group
     private fun getFoldingDescriptor(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
-        if (shouldFoldAll.matches(commandCall.commandString))
+        if (shouldFoldAll.matches(commandCall.commandString ?: ""))
             return FoldingDescriptor(commandCall.node, commandCall.textRange, group)
         val arguments = commandCall.arguments
         val parameters = commandCall.commandDefinition?.parameters
@@ -255,7 +255,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     }
 
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
-        if (!shouldFold.matches(commandCall.commandString))
+        if (!shouldFold.matches(commandCall.commandString ?: ""))
             return false
         if (commandCall.arguments.none { it.inferredType.isNumberType })
             return false

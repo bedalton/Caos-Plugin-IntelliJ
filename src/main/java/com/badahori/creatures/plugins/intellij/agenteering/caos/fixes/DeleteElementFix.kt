@@ -3,9 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.codeInspection.IntentionAndQuickFixAction
