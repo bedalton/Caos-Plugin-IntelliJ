@@ -134,10 +134,11 @@ internal fun createCaosScriptHeaderComponent(virtualFile: VirtualFile, caosFile:
         toolbar.setDocsButtonEnabled(true)
     }
 
-    val listener = CaosFileTreeChangedListener(pointer, caosFile.variant ?: caosFile.module?.variant) { variant ->
-        assignVariant(variant)
-        toolbar.selectVariant(variant?.code ?: "")
-    }
+    val listener =
+        CaosFileTreeChangedListener(project, pointer, caosFile.variant ?: caosFile.module?.variant) { variant ->
+            assignVariant(variant)
+            toolbar.selectVariant(variant?.code ?: "")
+        }
     PsiManager.getInstance(project).addPsiTreeChangeListener(listener)
 
     // If variant is unknown, allow for variant selection
@@ -598,14 +599,19 @@ private class CaosScriptPointer(private val virtualFile: VirtualFile, caosFileIn
     private val pointer = SmartPointerManager.createPointer(caosFileIn)
     private val project: Project = caosFileIn.project
     val element: CaosScriptFile?
-        get() = pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
+        get() = try {
+            pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
+        } catch (e: Exception) {
+            null
+        }
 }
 
 private typealias OnVariantChangeListener = (variant: CaosVariant?) -> Unit
 
 
 private class CaosFileTreeChangedListener(
-    var pointer: CaosScriptPointer?,
+    private var project: Project?,
+    private var pointer: CaosScriptPointer?,
     private var currentVariant: CaosVariant?,
     private var variantChangedListener: OnVariantChangeListener?
 ) : PsiTreeChangeListener, Disposable {
@@ -651,15 +657,19 @@ private class CaosFileTreeChangedListener(
     }
 
     override fun dispose() {
+        val theProject = project
+            ?: return
+        project = null
         pointer = null
         currentVariant = null
         variantChangedListener = null
+        PsiManager.getInstance(theProject).removePsiTreeChangeListener(this)
     }
 
     private fun onChange(child: PsiElement?) {
         try {
             val associatedFile = pointer?.element
-                ?: return
+                    ?: return dispose()
             if (!child?.containingFile?.isEquivalentTo(associatedFile).orFalse())
                 return
             val block = child?.getSelfOrParentOfType(CaosScriptCaos2Block::class.java)
