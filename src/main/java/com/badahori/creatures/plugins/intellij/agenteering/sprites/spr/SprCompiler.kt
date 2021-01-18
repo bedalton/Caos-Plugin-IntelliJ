@@ -56,7 +56,7 @@ object SprCompiler : SpriteCompiler {
         var selectedColor = black
         var deviation:Int = Int.MAX_VALUE
 
-        if (red > 250 && green == 250 && blue > 250) {
+        if (red > 245 && green > 245 && blue > 245) {
             return 255
         }
         for(i in 0 .. colors.lastIndex) {
