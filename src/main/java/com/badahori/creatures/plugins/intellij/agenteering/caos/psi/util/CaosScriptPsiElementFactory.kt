@@ -117,4 +117,8 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, text, CaosScriptCodeBlock::class.java)!!
     }
 
+    fun createScriptElement(project: Project, tag: String): CaosScriptScriptElement? {
+        return createAndGet(project, "$tag\nendm", CaosScriptScriptElement::class.java)
+    }
+
 }
