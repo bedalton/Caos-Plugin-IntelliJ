@@ -21,8 +21,6 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
     QUANTITY_AVAILABLE("Quantity Available", "Quantity", "Qty", "Qty Available"),
     THUMBNAIL("Thumbnail", "Image", "Picture", "Preview"),
     EXPIRY("Expiry Date", "Expiry", "Expires", "Expires Date", "Expires On"),
-    ISCR("ISCR", "Install Script", "Install"),
-    RSCR("RSCR", "Removal Script"), // This is used and turned into a RCB or Remover Cob
 
     //C1
     REMOVER_NAME("Remover Name", "Remover", variant = C1),
@@ -92,6 +90,8 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
 
 enum class CobCommand(val keyString: String, val variant: CaosVariant? = null) {
     LINK("Link"),
+    INSTALL_SCRIPTS("Iscr"),
+    REMOVAL_SCRIPTS("Rscr"),
     ATTACH("Attach", variant = C2),
     INLINE("Inline", variant = C2),
     DEPEND("Depend", variant = C2)

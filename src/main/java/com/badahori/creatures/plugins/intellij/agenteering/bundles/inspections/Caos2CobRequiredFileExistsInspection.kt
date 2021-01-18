@@ -83,7 +83,6 @@ class Caos2CobRequiredFileExistsInspection : LocalInspectionTool() {
                 }
                 val check = when (tag) {
                     CobTag.THUMBNAIL -> true
-                    CobTag.RSCR -> true
                     else -> false
                 }
                 if (!check)

@@ -34,15 +34,13 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                     ?: return
                 if (commandType !in HAS_FILES)
                     return
-                val directory = commandElement.directory
-                    ?: return
 
                 // Collect FileName and File element items
                 val fileNames = commandElement.commandArgs
                 val fileNameElements = commandElement.caos2CommentValueList
 
                 val expectedExtensions = when (commandType) {
-                    LINK -> listOf("cos", "caos")
+                    LINK, INSTALL_SCRIPTS, REMOVAL_SCRIPTS -> listOf("cos", "caos")
                     else -> listOf("s16", "wav")
                 }
 
@@ -100,7 +98,7 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                     ?: return
                 val tagValueElement = tagElement.caos2CommentValue
                     ?: return
-                if (tag != CobTag.THUMBNAIL && tag != CobTag.RSCR)
+                if (tag != CobTag.THUMBNAIL)
                     return
                 val fileName = getFileName(tagValueElement.value)
                     ?: tagElement.value
@@ -110,7 +108,6 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                     .toLowerCase()
                 val check = when (tag) {
                     CobTag.THUMBNAIL -> extension in listOf("gif", "jpeg", "jpg", "png", "spr", "s16", "c16", "bmp")
-                    CobTag.RSCR -> extension == "cos" || extension == "caos"
                     else -> true
                 }
                 if (check)
