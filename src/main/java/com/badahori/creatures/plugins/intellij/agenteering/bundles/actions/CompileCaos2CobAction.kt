@@ -248,7 +248,7 @@ class CompileCaos2CobAction : AnAction(
         val cobCommands = getCobCommands(variant, block)
 
         val agentNameFromTags = cobTags[CobTag.AGENT_NAME]
-        val agentNameFromCommand = block.agentBlockNames.filter { it.first == variant.code }.firstOrNull()?.second
+        val agentNameFromCommand = block.agentBlockNames.firstOrNull { it.first == variant.code }?.second
         if (agentNameFromCommand != null && agentNameFromTags != null && agentNameFromCommand != agentNameFromTags) {
             throw Caos2CobException("Conflicting use of '${variant.code}-Name' command and 'Agent Name' property")
         }
@@ -259,25 +259,42 @@ class CompileCaos2CobAction : AnAction(
         val scripts = mutableListOf<CaosScriptScriptElement>()
         runWriteAction {
             linkedFiles.forEach { fileIn ->
-                WriteCommandAction.writeCommandAction(project)
-                    .shouldRecordActionForActiveDocument(false)
-                    .withGroupId("CAOS2Cob")
-                    .withName("Collapse CAOS2Cob script with commas")
-                    .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
-                    .run<Exception> {
-                        val file = fileIn.copy()
-                        val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLines(file, CollapseChar.COMMA)
-                        val items = PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java)
-                        scripts.addAll(items)
-                    }
+                scripts.addAll(getFileScripts(fileIn))
             }
         }
 
         // Find Object scripts
         val objectScripts = scripts.filterIsInstance<CaosScriptEventScript>().map { it.text }
 
-        // Get all install scripts
-        val installScripts: List<String> = scripts.filterIsInstance<CaosScriptInstallScript>().map(stripIscr)
+        val missingInstallFile = mutableListOf<String>()
+        var isNotCaosFile = false
+        val installScripts:List<String> = cobCommands
+            .filter { it.first == CobCommand.INSTALL_SCRIPTS }
+            .flatMap { (_, files) ->
+                files.flatMap files@{ fileName ->
+                    val file = directory.findChild(fileName)?.getPsiFile(project)
+                    if (file == null) {
+                        missingInstallFile.add(fileName)
+                        return@files emptyList()
+                    }
+                    if (file !is CaosScriptFile) {
+                        isNotCaosFile = true
+                        return@files emptyList()
+                    }
+                    getFileScripts(file)
+                        .filter { it is CaosScriptMacro || it is CaosScriptInstallScript }
+                        .map {
+                            stripIscr(it)
+                        }
+                }
+            } + scripts.filterIsInstance<CaosScriptInstallScript>().map(stripIscr)
+
+        if (isNotCaosFile) {
+            throw Caos2CobException("Linked install script is not a CAOS file")
+        }
+        if (missingInstallFile.isNotEmpty()) {
+            throw Caos2CobException("Failed to located ISCR files: [${missingInstallFile.joinToString()}")
+        }
 
         if (scripts.any { it is CaosScriptMacro }) {
             compilationResults.warnings++
@@ -330,6 +347,29 @@ class CompileCaos2CobAction : AnAction(
                 inline = inlineFiles
             )
         }
+    }
+
+    /**
+     * Flattens a file and gets its scripts
+     */
+    private fun getFileScripts(fileIn: CaosScriptFile) : List<CaosScriptScriptElement> {
+        val scripts = mutableListOf<CaosScriptScriptElement>()
+        WriteCommandAction.writeCommandAction(fileIn.project)
+            .shouldRecordActionForActiveDocument(false)
+            .withGroupId("CAOS2Cob")
+            .withName("Collapse CAOS2Cob script with commas")
+            .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
+            .run<Exception> {
+                /*
+                val document = file.document!!
+                EditorUtil.replaceText(document, file.textRange, CaosScriptsQuickCollapseToLine.collapse(variant,file.text))
+                PsiDocumentManager.getInstance(file.project).commitDocument(document)*/
+                val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(fileIn, CollapseChar.COMMA)
+                    ?:return@run
+                LOGGER.info("Collapsed: <${collapsed.text}>")
+                scripts.addAll(PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java))
+            }
+        return scripts
     }
 
     private fun collectLinkedFiles(
@@ -432,8 +472,11 @@ class CompileCaos2CobAction : AnAction(
         }
 
         private fun writeCob(project: Project, directory: VirtualFile, cob: Caos2Cob, data: ByteArray): Boolean {
-            val targetFile = cob.targetFile.nullIfEmpty()
+            var targetFile = cob.targetFile.nullIfEmpty()
                 ?: throw Caos2CobException("Cannot write COB for agent: '${cob.agentName}' without target file.")
+            if (FileNameUtils.getExtension(targetFile).isBlank()) {
+                targetFile += ".cob"
+            }
             if (!directory.isDirectory)
                 throw Caos2CobException("Cannot write COB '${targetFile}'. File '${directory.name}' is not a directory")
             return try {
@@ -475,7 +518,7 @@ class CompileCaos2CobAction : AnAction(
                 .flatMap { it.second }
                 .filterNotNull()
 
-            val removalScriptStrings:List<String> = removalScriptPaths
+            val removalScriptStrings: List<String> = removalScriptPaths
                 .flatMap { removalScriptPath ->
                     getRemovalScriptFromCobDataPath(
                         project,
