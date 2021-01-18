@@ -349,28 +349,6 @@ class CompileCaos2CobAction : AnAction(
         }
     }
 
-    /**
-     * Flattens a file and gets its scripts
-     */
-    private fun getFileScripts(fileIn: CaosScriptFile) : List<CaosScriptScriptElement> {
-        val scripts = mutableListOf<CaosScriptScriptElement>()
-        WriteCommandAction.writeCommandAction(fileIn.project)
-            .shouldRecordActionForActiveDocument(false)
-            .withGroupId("CAOS2Cob")
-            .withName("Collapse CAOS2Cob script with commas")
-            .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
-            .run<Exception> {
-                /*
-                val document = file.document!!
-                EditorUtil.replaceText(document, file.textRange, CaosScriptsQuickCollapseToLine.collapse(variant,file.text))
-                PsiDocumentManager.getInstance(file.project).commitDocument(document)*/
-                val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(fileIn, CollapseChar.COMMA)
-                    ?:return@run
-                LOGGER.info("Collapsed: <${collapsed.text}>")
-                scripts.addAll(PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java))
-            }
-        return scripts
-    }
 
     private fun collectLinkedFiles(
         project: Project,
@@ -424,7 +402,7 @@ class CompileCaos2CobAction : AnAction(
     // Static Methods
     companion object {
         private val isCaos2CobRegex =
-            "^[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]|[*][#]\\s*(C1-Name|C2-Name)".toRegex(RegexOption.IGNORE_CASE)
+            "[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]|[*][#]\\s*(C1-Name|C2-Name)".toRegex(RegexOption.IGNORE_CASE)
         var didShowAutoRemoverCobWarning: Boolean = false
         private fun hasCaos2Cob(file: VirtualFile): Boolean {
             if (file.isDirectory) {
@@ -549,11 +527,11 @@ class CompileCaos2CobAction : AnAction(
             val child = directory.findChild(removalScriptPath)
                 ?: throw Caos2CobException("Failed to find RSCR file '$removalScriptPath'")
             // Get the virtual file as a CAOS Script PSI file
-            val removalScriptFile = child.getPsiFile(project)
+            val removalScriptFile = child.getPsiFile(project) as? CaosScriptFile
                 ?: throw Caos2CobException("Removal script '$removalScriptPath' is not a valid CAOS script file.")
 
             // Find all script elements inside the file for use in finding the right removal scripts
-            val scripts = PsiTreeUtil.collectElementsOfType(removalScriptFile, CaosScriptScriptElement::class.java)
+            val scripts = getFileScripts(removalScriptFile)
             if (scripts.isEmpty()) {
                 compilationResults.warnings++
                 CaosNotifications.showWarning(
@@ -617,6 +595,29 @@ class CompileCaos2CobAction : AnAction(
                 "${types.joinToString(" and ")} scripts are ignored in RSCR imported file."
             )
             return emptyList()
+        }
+
+        /**
+         * Flattens a file and gets its scripts
+         */
+        private fun getFileScripts(fileIn: CaosScriptFile) : List<CaosScriptScriptElement> {
+            val scripts = mutableListOf<CaosScriptScriptElement>()
+            WriteCommandAction.writeCommandAction(fileIn.project)
+                .shouldRecordActionForActiveDocument(false)
+                .withGroupId("CAOS2Cob")
+                .withName("Collapse CAOS2Cob script with commas")
+                .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
+                .run<Exception> {
+                    /*
+                    val document = file.document!!
+                    EditorUtil.replaceText(document, file.textRange, CaosScriptsQuickCollapseToLine.collapse(variant,file.text))
+                    PsiDocumentManager.getInstance(file.project).commitDocument(document)*/
+                    val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(fileIn, CollapseChar.COMMA)
+                        ?:return@run
+                    LOGGER.info("Collapsed: <${collapsed.text}>")
+                    scripts.addAll(PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java))
+                }
+            return scripts
         }
 
         /**
