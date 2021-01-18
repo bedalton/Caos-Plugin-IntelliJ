@@ -52,10 +52,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 addCaos2CobTagCompletions(resultSet, variant, caosFile, text, previousText)
                 val case = text.nullIfEmpty()?.case ?: Case.CAPITAL_FIRST
                 resultSet.addElement(LookupElementBuilder.create("Link".matchCase(case)))
-                if (variant == CaosVariant.C2) {
-                    listOf("Attach", "Depend", "Inline").forEach {
-                        resultSet.addElement(LookupElementBuilder.create(it.matchCase(case)))
-                    }
+                CobCommand.getCommands(variant).forEach {
+                    resultSet.addElement(LookupElementBuilder.create(it.keyString.matchCase(case))
+                        .withInsertHandler(SpaceAfterInsertHandler))
                 }
             }
             val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text ?: ""
@@ -345,12 +344,15 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     }
 
     private fun addCaos2CobFileNameCompletions(resultSet: CompletionResultSet, directory: VirtualFile, tag: CobCommand?, openChar:String, closeChar:String) {
-        val files = if (tag == CobCommand.LINK) {
-            VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
-        } else if (tag != null ){
-            VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
-        } else
-            return
+        val files = when {
+            tag?.cosFiles.orFalse() -> {
+                VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
+            }
+            tag != null -> {
+                VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
+            }
+            else -> return
+        }
         val parentPathLength = directory.path.length + 1
         for (file in files) {
             val relativePath = file.path.substring(parentPathLength)

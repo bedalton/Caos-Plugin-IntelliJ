@@ -87,14 +87,13 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
         }
     }
 }
-
-enum class CobCommand(val keyString: String, val variant: CaosVariant? = null) {
-    LINK("Link"),
-    INSTALL_SCRIPTS("Iscr"),
-    REMOVAL_SCRIPTS("Rscr"),
-    ATTACH("Attach", variant = C2),
-    INLINE("Inline", variant = C2),
-    DEPEND("Depend", variant = C2)
+enum class CobCommand(val keyString: String, val cosFiles:Boolean, val variant: CaosVariant? = null) {
+    LINK("Link", true),
+    INSTALL_SCRIPTS("Iscr", true),
+    REMOVAL_SCRIPTS("Rscr", true),
+    ATTACH("Attach", false, variant = C2),
+    INLINE("Inline", false, variant = C2),
+    DEPEND("Depend", false, variant = C2)
     ;
     val key = "^$keyString$".toRegex(RegexOption.IGNORE_CASE)
 
