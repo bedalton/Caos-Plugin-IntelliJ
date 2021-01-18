@@ -1,28 +1,34 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction, LocalQuickFix {
+class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction,
+    LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
@@ -76,7 +82,8 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
         fun collapseLinesInCopy(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement? {
             val project = elementIn.project
-            val document = PsiDocumentManager.getInstance(project).getCachedDocument(elementIn.containingFile) ?: elementIn.document
+            val document = PsiDocumentManager.getInstance(project).getCachedDocument(elementIn.containingFile)
+                ?: elementIn.document
             if (document != null) {
                 PsiDocumentManager.getInstance(project).commitDocument(document)
             }
@@ -84,41 +91,70 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             return collapseLines(element, collapseChar)
         }
 
-        fun collapseLines(element: PsiElement, collapseChar: CollapseChar): PsiElement? {
-            val project = element.project
-            PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2Block::class.java).firstOrNull()?.let {caos2Block ->
-                val next = caos2Block.next
-                val spacePointer = if (next != null && next.elementType in CaosScriptTokenSets.WHITESPACES)
-                    SmartPointerManager.createPointer(next)
-                else
-                    null
-                caos2Block.delete()
-                spacePointer?.element?.delete()
-            }
+        fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar): PsiElement? {
+            val project = elementIn.project
+            val pointer = SmartPointerManager.createPointer(elementIn)
+            var element = pointer.element!!
+            PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2Block::class.java).firstOrNull()
+                ?.let { caos2Block ->
+                    val next = caos2Block.next
+                    val spacePointer = if (next != null && next.elementType in CaosScriptTokenSets.WHITESPACES)
+                        SmartPointerManager.createPointer(next)
+                    else
+                        null
+                    caos2Block.delete()
+                    spacePointer?.element?.delete()
+                }
 
-            val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java)
+            val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java).map {
+                SmartPointerManager.createPointer(it)
+            }
             var didDeleteComments = true
-            for (comment in comments) {
-                didDeleteComments = if (comment.isValid) {
+            for (commentPointer in comments) {
+                val comment = commentPointer.element
+                didDeleteComments = if (comment != null && comment.isValid) {
                     comment.getParentOfType(CaosScriptCodeBlockLine::class.java)?.apply {
+                        var next = this.next?.next
+                            ?.let {
+                                SmartPointerManager.createPointer(it)
+                            }
                         delete()
+                        while(next != null) {
+                            val toDelete = next.element
+                                ?: break
+                            if (toDelete.text.isNotBlank())
+                                break
+                            val nextNext = toDelete.next
+                            next = if (nextNext != null && nextNext.text.trim().isBlank())
+                                SmartPointerManager.createPointer(nextNext)
+                            else
+                                null
+                            toDelete.delete()
+                        }
                     } != null && didDeleteComments
                 } else {
                     false
                 }
             }
             if (!didDeleteComments) {
-                CaosNotifications.showError(project, "CAOS Formatting Error", "Failed to remove comments from document for flattening")
+                CaosNotifications.showError(
+                    project,
+                    "CAOS Formatting Error",
+                    "Failed to remove comments from document for flattening"
+                )
                 return null
             }
-            element.document?.let {
+
+            pointer.element?.document?.let {
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
                 CodeStyleManager.getInstance(project).reformat(element, false)
             }
+           element = pointer.element!!
             val newLines = PsiTreeUtil.collectElementsOfType(element, CaosScriptSpaceLikeOrNewline::class.java)
                 .map {
                     SmartPointerManager.createPointer(it)
                 }
+
             var didReplaceAll = true
             for (newLinePointer in newLines) {
                 val newLine = newLinePointer.element
@@ -130,12 +166,26 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 }
             }
             if (!didReplaceAll) {
-                CaosInjectorNotifications.showError(project, "CAOS Formatting Error", "Failed to replace new lines with ${if (collapseChar == CollapseChar.SPACE) "spaces" else "commas"}")
+                CaosInjectorNotifications.showError(
+                    project,
+                    "CAOS Formatting Error",
+                    "Failed to replace new lines with ${if (collapseChar == CollapseChar.SPACE) "spaces" else "commas"}"
+                )
                 return null
             }
-            while (trailingText.matches(element.firstChild.text))
+            element = pointer.element!!
+            PsiTreeUtil.collectElementsOfType(element, PsiWhiteSpace::class.java)
+                .filter { LOGGER.info("TokenType: ${it.elementType}"); it.elementType == TokenType.WHITE_SPACE }
+                .map { SmartPointerManager.createPointer(it) }
+                .forEachIndexed { i, it ->
+                    LOGGER.info("Deleting space $i")
+                    it.element?.delete()
+                }
+            element = pointer.element!!
+
+            while (trailingText.matches(element.firstChild?.text ?: "x;x;x"))
                 element.firstChild.delete()
-            while (trailingText.matches(element.lastChild.text))
+            while (trailingText.matches(element.lastChild?.text ?: "x;x;x"))
                 element.lastChild.delete()
             runWriteAction {
                 element.document?.let {
@@ -143,7 +193,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                     CodeStyleManager.getInstance(project).reformat(element, true)
                 }
             }
-            return element
+            return pointer.element!!
         }
 
         private fun replaceWithSpaceOrComma(nextIn: PsiElement?, collapseChar: CollapseChar) {
@@ -151,7 +201,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 return
             val pointer = SmartPointerManager.createPointer(nextIn)
             var previous = nextIn.previous
-            while(previous is PsiWhiteSpace) {
+            while (previous is PsiWhiteSpace) {
                 previous.delete()
                 previous = previous.previous
             }
@@ -170,9 +220,14 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             } else {
                 next
             } ?: return
+            var nextPointer: SmartPsiElementPointer<PsiElement>?
             while (whitespaceOrComma.matches(superNext.text)) {
-                superNext.delete()
-                superNext = superNext.next ?: return
+                val toDelete = superNext
+                nextPointer = superNext.next?.let {
+                    SmartPointerManager.createPointer(it)
+                }
+                toDelete.delete()
+                superNext = nextPointer?.element ?: return
             }
         }
     }

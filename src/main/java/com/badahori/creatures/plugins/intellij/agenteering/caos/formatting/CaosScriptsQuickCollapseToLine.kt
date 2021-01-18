@@ -12,24 +12,24 @@ object CaosScriptsQuickCollapseToLine {
     @Suppress("SpellCheckingInspection")
     // Randomish pattern that hopefully never exists in a users code
     private const val replacePattern = ";;;;__xZZZZx___&&&&___xZZZx__;;;"
-    private val c1eStringPattern = "([ \t]*\\[[^\\]]+][ \t]*)".toRegex(RegexOption.MULTILINE)
-    private val c2eStringPattern = "([ \t]*\"(\\\\.|[^\\\"])*\"[ \t]*|[ \t]*'(\\\\.|[^\\'])*'[ \t]*)".toRegex()
+    private val c1eStringPattern = "([ \t]*\\[[^]]+][ \t]*)".toRegex(RegexOption.MULTILINE)
+    private val c2eStringPattern = "([ \t]*\"(\\\\.|[^\"])*\"[ \t]*|[ \t]*'(\\\\.|[^'])*'[ \t]*)".toRegex()
 
-    fun collapse(variant:CaosVariant, script: String, collapseChar:CollapseChar = CollapseChar.SPACE): String {
+    fun collapse(variant:CaosVariant, script: String): String {
         return if (variant.isOld)
-            collapse(c1eStringPattern, script, collapseChar)
+            collapse(c1eStringPattern, script)
         else
-            collapse(c2eStringPattern, script, collapseChar)
+            collapse(c2eStringPattern, script)
     }
 
-    private fun collapse(stringRegex:Regex, caosIn: String, collapseChar:CollapseChar): String {
+    private fun collapse(stringRegex:Regex, caosIn: String): String {
         val matches = stringRegex.findAll(caosIn).toList().nullIfEmpty()
         val caos = if (matches != null) {
             stringRegex.replace(caosIn, replacePattern)
         } else
             caosIn
         val mapper: (string: String) -> String = { string ->
-            string.replace(whitespaceRegex, collapseChar.char).trim()
+            string.replace(whitespaceRegex, " ").trim()
         }
         var out = caos
             .split("\n")
