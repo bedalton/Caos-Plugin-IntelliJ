@@ -44,8 +44,6 @@ class Caos2CobIsExpectedTagValueType : LocalInspectionTool() {
                     QUANTITY_AVAILABLE -> INT
                     THUMBNAIL -> STRING
                     EXPIRY -> DATE
-                    ISCR -> STRING
-                    RSCR -> STRING
                     REMOVER_NAME -> STRING
                     QUANTITY_USED -> INT
                     DESCRIPTION -> STRING

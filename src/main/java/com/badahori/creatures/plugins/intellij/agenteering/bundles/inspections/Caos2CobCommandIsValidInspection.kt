@@ -61,11 +61,11 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
         }
 
         private fun getFixesForSimilar(variant:CaosVariant?, element:PsiElement, tagName:String) : List<CaosScriptReplaceElementFix> {
-            return CobTag.getTags(variant)
-                .mapNotNull { aTag ->
-                    aTag.keys.map { key ->
+            return CobCommand.getCommands(variant)
+                .map { aTag ->
+                    aTag.keyString.let { key ->
                         Pair(key, key.levenshteinDistance(tagName))
-                    }.minBy { it.second }
+                    }
                 }.filter {
                     it.second < 7
                 }.map {

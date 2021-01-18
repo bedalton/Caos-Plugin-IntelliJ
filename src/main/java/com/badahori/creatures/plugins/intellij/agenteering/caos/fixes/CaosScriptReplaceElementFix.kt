@@ -57,7 +57,6 @@ class CaosScriptReplaceElementFix(
                 next = next.next
             }
         }
-        val spaces =
         runUndoTransparentWriteAction {
             EditorUtil.replaceText(document, TextRange(startOffset, endOffset), replacement)
         }

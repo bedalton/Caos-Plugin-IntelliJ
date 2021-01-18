@@ -364,8 +364,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         // Get files of appropriate type
         val files = if (tag == CobTag.THUMBNAIL) {
             VirtualFileUtil.childrenWithExtensions(directory, true, "s16", "c16", "spr")
-        } else if (tag == CobTag.ISCR || tag == CobTag.RSCR) {
-            VirtualFileUtil.childrenWithExtensions(directory, true, "cos", "caos")
         } else {
             return
         }

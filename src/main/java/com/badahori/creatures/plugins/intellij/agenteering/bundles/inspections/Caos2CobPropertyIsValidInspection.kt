@@ -5,14 +5,18 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCobCommentDirective
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE_OR_DASH
+import com.badahori.creatures.plugins.intellij.agenteering.utils.levenshteinDistance
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
@@ -39,7 +43,10 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
     }
 
     companion object {
-        private val COB_NAME_COMMAND_REGEX =  "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
+
+        private val REMOVAL_SCRIPT_REGEX = "Removal\\s*Script|Remover\\s*Script".toRegex(RegexOption.IGNORE_CASE)
+        private val INSTALL_SCRIPT_REGEX = "Install(\\s*Script|er)".toRegex(RegexOption.IGNORE_CASE)
+        private val COB_NAME_COMMAND_REGEX =  "(C1|C2)-?Name|Inst|Rscr".toRegex(RegexOption.IGNORE_CASE)
         /**
          * Validates a COB comment directive, to ensure that it actually exists
          */
@@ -63,16 +70,43 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
                 }
                 return
             }
+            val fixes = mutableListOf<LocalQuickFix>()
+            if (tagNameRaw.matches(REMOVAL_SCRIPT_REGEX)) {
+                val fix = element.getParentOfType(CaosScriptCaos2Tag::class.java)?.let { tag->
+                    CaosScriptReplaceElementFix(
+                        tag,
+                        "Rscr \"${tag.value}\"",
+                        "Make $tagNameRaw into a 'Rscr' command statement",
+                        true
+                    )
+                }
+                if (fix != null) {
+                    fixes.add(fix)
+                }
+            }
+
+            if (tagNameRaw.matches(INSTALL_SCRIPT_REGEX)) {
+                val fix = element.getParentOfType(CaosScriptCaos2Tag::class.java)?.let { tag->
+                    CaosScriptReplaceElementFix(
+                        tag,
+                        "Iscr \"${tag.value}\"",
+                        "Make $tagNameRaw into an 'Iscr' install command statement",
+                        true
+                    )
+                }
+                if (fix != null) {
+                    fixes.add(fix)
+                }
+            }
             val tagName = element.text.replace(WHITESPACE_OR_DASH, " ")
             val tag = CobTag.fromString(tagName)
             val variant = element.variant
             if (tag != null) {
                 return
             }
-            val similar = getFixesForSimilar(variant, element, tagName)
-                .toTypedArray()
+            fixes.addAll(getFixesForSimilar(variant, element, tagName))
             val error = "'$tagNameRaw' is not a recognized COB property"
-            holder.registerProblem(element, error, *similar)
+            holder.registerProblem(element, error, *fixes.toTypedArray())
         }
 
         private fun getFixesForSimilar(variant:CaosVariant?, element:PsiElement, tagName:String) : List<CaosScriptReplaceElementFix> {

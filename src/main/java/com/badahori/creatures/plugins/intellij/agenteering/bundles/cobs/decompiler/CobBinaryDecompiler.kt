@@ -156,7 +156,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                     it.code.trim().nullIfEmpty()?.let {
                         "\n\n***** INSTALL SCRIPT *****\n$it"
                     } ?: ""
-                }?: ""
+                }
                 val removalScript = (block.removalScript?.code?.trim()?.nullIfEmpty())?.let {
                     "\n\n***** REMOVAL SCRIPT *****\n$it"
                 } ?: ""
