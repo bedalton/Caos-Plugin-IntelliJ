@@ -600,7 +600,10 @@ private class CaosScriptPointer(private val virtualFile: VirtualFile, caosFileIn
     private val project: Project = caosFileIn.project
     val element: CaosScriptFile?
         get() = try {
-            pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
+            if (virtualFile.isValid)
+                pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
+            else
+                null
         } catch (e: Exception) {
             null
         }
