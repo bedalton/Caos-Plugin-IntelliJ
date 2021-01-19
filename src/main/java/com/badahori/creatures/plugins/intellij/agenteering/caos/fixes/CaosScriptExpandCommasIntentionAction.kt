@@ -90,7 +90,11 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
         }
 
         // Commit it so we can alter it
-        fileIn.document?.apply { PsiDocumentManager.getInstance(project).commitDocument(this) }
+        fileIn.document?.let { document ->
+            val manager = PsiDocumentManager.getInstance(project)
+            manager.doPostponedOperationsAndUnblockDocument(document)
+            manager.commitDocument(document)
+        }
 
         // Get all possible newline elements
         val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
