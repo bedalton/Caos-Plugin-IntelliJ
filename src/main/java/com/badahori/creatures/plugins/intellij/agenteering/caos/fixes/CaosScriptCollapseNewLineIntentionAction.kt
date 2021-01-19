@@ -175,7 +175,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             PsiTreeUtil.collectElementsOfType(element, PsiWhiteSpace::class.java)
                 .filter { it.elementType == TokenType.WHITE_SPACE }
                 .map { SmartPointerManager.createPointer(it) }
-                .forEachIndexed { i, it ->
+                .forEach {
                     it.element?.delete()
                 }
             element = pointer.element!!
@@ -198,7 +198,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 return
             val pointer = SmartPointerManager.createPointer(nextIn)
             var previous = nextIn.previous
-            while (previous is PsiWhiteSpace) {
+            while (previous != null && (previous is PsiWhiteSpace || whitespaceOrComma.matches(previous.text))) {
                 previous.delete()
                 previous = previous.previous
             }
