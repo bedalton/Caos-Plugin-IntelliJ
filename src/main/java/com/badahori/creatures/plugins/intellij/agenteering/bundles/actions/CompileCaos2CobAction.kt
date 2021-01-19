@@ -85,17 +85,32 @@ class CompileCaos2CobAction : AnAction(
         else
             ""
         val numFiles = compilationResult.caos2CobFiles
-        val message = when {
-            failures == 0 && successes > 0 -> "Compiled $numFiles CAOS2Cob cobs successfully$warningText"
-            failures > 0 && successes == 0 -> "Failed to compile any of the $numFiles CAOS2Cob files successfully"
-            failures == 0 && successes == 0 -> "Compiler failed to run without error"
-            else -> "Failed to compile $failures out of $numFiles CAOS2Cob files"
+        when {
+            failures == 0 && successes > 0 ->
+                CaosNotifications.showInfo(
+                    project,
+                    "CAOS2Cob Result",
+                    "Compiled $numFiles CAOS2Cob cobs successfully$warningText"
+                )
+            failures > 0 && successes == 0 ->
+                CaosNotifications.showError(
+                    project,
+                    "CAOS2Cob Result",
+                    "Failed to compile any of the $numFiles CAOS2Cob files successfully"
+                )
+            failures == 0 && successes == 0 ->
+                CaosNotifications.showError(
+                    project,
+                    "CAOS2Cob Result",
+                "Compiler failed to run without error"
+                )
+            else ->
+                CaosNotifications.showError(
+                    project,
+                    "CAOS2Cob Result",
+                    "Failed to compile $failures out of $numFiles CAOS2Cob files"
+                )
         }
-        CaosNotifications.showInfo(
-            project,
-            "CAOS2Cob Result",
-            message
-        )
     }
 
     private fun processFile(
@@ -169,31 +184,38 @@ class CompileCaos2CobAction : AnAction(
         // If C1 COB, create remover COB
         val removerCob = compilerData.removerCob
             ?: return true
-        val error = CaosBundle.message(
-            "cob.caos2cob.compile.auto-remover-name",
-            removerCob.targetFile
-        )
-        if (!didShowAutoRemoverCobWarning && compilerData.removerName.nullIfEmpty() == null) {
+        /*
+        *** Originally this Check alerted the user to the fact that a remover cob was automatically generated
+        * But I think now it should be assumed that the remover cob should be generated unless set to an empty string
+
+        if (false && !didShowAutoRemoverCobWarning && compilerData.removerName.nullIfEmpty() == null) {
+            val error = CaosBundle.message(
+                "cob.caos2cob.compile.auto-remover-name",
+                removerCob.targetFile
+            )
             didShowAutoRemoverCobWarning = true
             CaosNotifications.showWarning(
                 project,
                 "CAOS2Cob Removal Script Warning",
                 error
             )
-        }
-        val removerData = compile(project, file, removerCob)
-        if (removerData == null) {
-            ++compilationResult.failures
-            LOGGER.severe("Failed to compile remover COB data")
-            return false
-        }
-        if (!writeCob(project, parent, removerCob, removerData)) {
-            ++compilationResult.failures
-            LOGGER.severe("Failed to write remover COB data")
-            return false
-        } else {
+        }*/
+        if (FileNameUtils.getBaseName(removerCob.targetFile).let { it.isNotBlank() && it notLike "false" }) {
+            val removerData = compile(project, file, removerCob)
+            if (removerData == null) {
+                ++compilationResult.failures
+                LOGGER.severe("Failed to compile remover COB data")
+                return false
+            }
+            if (!writeCob(project, parent, removerCob, removerData)) {
+                ++compilationResult.failures
+                LOGGER.severe("Failed to write remover COB data")
+                return false
+            } else {
+                return true
+            }
+        } else
             return true
-        }
     }
 
     private fun compile(project: Project, file: CaosScriptFile, cob: Caos2Cob): ByteArray? {
@@ -248,6 +270,9 @@ class CompileCaos2CobAction : AnAction(
         val cobCommands = getCobCommands(variant, block)
 
         val agentNameFromTags = cobTags[CobTag.AGENT_NAME]
+        if (block.agentBlockNames.map { it.first }.size > 1) {
+            throw Caos2CobException("CAOS2Cob allows only 1 Agent Name tag. Found ${block.agentBlockNames}")
+        }
         val agentNameFromCommand = block.agentBlockNames.firstOrNull { it.first == variant.code }?.second
         if (agentNameFromCommand != null && agentNameFromTags != null && agentNameFromCommand != agentNameFromTags) {
             throw Caos2CobException("Conflicting use of '${variant.code}-Name' command and 'Agent Name' property")
@@ -296,7 +321,12 @@ class CompileCaos2CobAction : AnAction(
             throw Caos2CobException("Failed to located ISCR files: [${missingInstallFile.joinToString()}")
         }
 
-        if (scripts.any { it is CaosScriptMacro }) {
+        if (scripts.any {
+                // Ensure no scripts are macros, and if they are, that they are not blocks of comments only
+                it is CaosScriptMacro && it.text.split('\n')
+                    .filterNot { line -> line.startsWith("*") }
+                    .isNotEmpty()
+        }) {
             compilationResults.warnings++
             CaosNotifications
                 .showWarning(project, "CAOS2Cob", "Body scripts in CAOS2Cob files are ignored")
