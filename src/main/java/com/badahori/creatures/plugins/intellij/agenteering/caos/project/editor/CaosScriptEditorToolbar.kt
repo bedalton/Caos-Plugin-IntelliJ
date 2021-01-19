@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
@@ -407,7 +408,7 @@ private fun createInjectHandler(pointer: CaosScriptPointer, checkedSettings: Jec
 
 private fun injectActual(project: Project, variant: CaosVariant, caosFile: CaosScriptFile) {
     // If variant is CV+ ask which parts of the file to inject
-    if (caosFile.variant?.isNotOld.orTrue()) {
+    if (caosFile.variant?.isNotOld.orTrue() || caosFile.isCaos2Cob) {
         injectC3WithDialog(caosFile)
         return
     }
