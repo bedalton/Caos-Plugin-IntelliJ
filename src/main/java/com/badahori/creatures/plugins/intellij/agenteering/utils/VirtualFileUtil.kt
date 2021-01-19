@@ -21,4 +21,20 @@ object VirtualFileUtil {
         }
     }
 
+    /**
+     * Collects non-directory child files within a virtual file directory
+     */
+    fun collectChildFiles(virtualFile:VirtualFile, recursive:Boolean) : List<VirtualFile> {
+        if (!recursive) {
+            return virtualFile.children.filterNot { it.isDirectory }
+        }
+        return virtualFile.children.flatMap {
+            if (it.isDirectory) {
+                collectChildFiles(it, true)
+            } else {
+                listOf(it)
+            }
+        }
+    }
+
 }
