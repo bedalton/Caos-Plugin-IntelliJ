@@ -1888,7 +1888,7 @@ object CaosScriptPsiImplUtil {
         (def.stub?.agentBlockNames)?.let {
             return it
         }
-        val nameRegex = "^(C1|C2|CV|C3|DS|[A-Z]{2}|[a-zA-Z][a-zA-Z0-9]{3})(-?Name)?".toRegex(RegexOption.IGNORE_CASE)
+        val nameRegex = "(C1|C2|CV|C3|DS|[A-Z]{2})-?Name|([a-zA-Z][a-zA-Z0-9]{3})".toRegex(RegexOption.IGNORE_CASE)
         val agentNameFromCobTag = def.tags
             .filter { CobTag.AGENT_NAME.isTag(it.key) }
             .values
@@ -1906,11 +1906,13 @@ object CaosScriptPsiImplUtil {
             val agentBlockName: String = when {
                 commandName like "AGNT" -> "C3"
                 commandName like "DSAG" -> "DS"
+                commandName like "Link" -> return@map emptyList()
+                commandName like "Cob" -> return@map emptyList()
                 else -> {
                     val blockName = nameRegex
                         .matchEntire(commandName)
                         ?.groupValues
-                        ?.getOrNull(1)
+                        ?.let { it.getOrNull(1)?.nullIfEmpty() ?: it.getOrNull(2)?.nullIfEmpty() }
                         ?: return@map emptyList()
                     blockName
                 }
