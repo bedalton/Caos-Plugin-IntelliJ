@@ -132,8 +132,10 @@ class VariantFilePropertyPusher private constructor() : FilePropertyPusher<CaosV
         }
 
         internal fun writeToStorage(file: VirtualFile, variantIn: CaosVariant) {
-            if (file is CaosVirtualFile)
+            if (file is CaosVirtualFile) {
                 file.variant = variantIn
+                return
+            }
             if (file !is VirtualFileWithId)
                 return
             val stream = VARIANT_FILE_ATTRIBUTE.writeAttribute(file)

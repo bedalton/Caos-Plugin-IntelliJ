@@ -2,12 +2,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.utils.filterNotNull
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -21,6 +21,7 @@ import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -33,24 +34,19 @@ class CaosScriptFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider,
     private val didFormatInitial = AtomicBoolean(false)
     override var variant: CaosVariant?
         get() {
-            val storedVariant = getUserData(VariantUserDataKey)
-                ?: this.virtualFile?.cachedVariant
-                ?: getCaos2VariantRaw(this.text)
-                    ?.apply {
-                        variant = this
-                    }
+            return variantOverride
+                ?: getUserData(VariantUserDataKey)
+                ?: (this.virtualFile?.cachedVariant ?: this.originalFile.virtualFile?.cachedVariant)
                 ?: (module ?: originalFile.module)?.variant
-            return if (storedVariant == CaosVariant.UNKNOWN)
-                null
-            else
-                storedVariant
+                    .nullIfUnknown()
         }
         set(newVariant) {
+            variantOverride = newVariant
             putUserData(VariantUserDataKey, newVariant)
-            this.virtualFile
+            (this.virtualFile ?: this.originalFile.virtualFile)
                 ?.let { virtualFile ->
-                    (virtualFile as? CaosVirtualFile)?.variant = variant
-                    if (virtualFile is com.intellij.openapi.vfs.VirtualFileWithId) {
+                    (virtualFile as? CaosVirtualFile)?.variant = newVariant
+                    if (virtualFile is VirtualFileWithId) {
                         VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant ?: CaosVariant.UNKNOWN)
                     }
                     virtualFile.putUserData(VariantUserDataKey, newVariant)
@@ -61,6 +57,8 @@ class CaosScriptFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider,
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
             }
         }
+
+    var variantOverride: CaosVariant? = null
 
     override fun getFileType(): FileType {
         return CaosScriptFileType.INSTANCE
@@ -150,11 +148,15 @@ var PsiFile.runInspections: Boolean
     set(value) {
         putUserData(RUN_INSPECTIONS_KEY, value)
     }
+val VirtualFile.cachedVariantStrict
+    get() = (this as? CaosVirtualFile)?.variant
+        ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
 
 val VirtualFile.cachedVariant: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
-        ?: VariantFilePropertyPusher.readFromStorage(this)
         ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
+        ?: VariantFilePropertyPusher.readFromStorage(this)
+
 
 val maxDumpHeader = "* Scriptorium Dump".length + 4 // Arbitrary spaces pad
 
@@ -201,10 +203,10 @@ val CaosScriptFile?.disableMultiScriptChecks: Boolean
 
 private val CAOS2COB_VARIANT_REGEX = "[*]{2}Caos2Cob\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
 private val CAOS2_BLOCK_VARIANT_REGEX =
-    "^(C1|C2|CV|C3|DS|[A-Z]{2}|[a-zA-Z][a-zA-Z0-9]{3})(-?Name)?".toRegex(RegexOption.IGNORE_CASE)
+    "^[*]#\\s*(C1|C2|CV|C3|DS|[A-Z]{2}|[a-zA-Z][a-zA-Z0-9]{3})(-?Name)?".toRegex(RegexOption.IGNORE_CASE)
 
-private fun getCaos2VariantRaw(text: String): CaosVariant? {
-    var variant = text.trim().split('\n', limit = 2)[0].trim().let { firstLineText ->
+fun getCaos2VariantRaw(text: CharSequence): CaosVariant? {
+    val variant = text.trim().split('\n', limit = 2)[0].trim().let { firstLineText ->
         CAOS2COB_VARIANT_REGEX.matchEntire(firstLineText)
             ?.groupValues
             ?.getOrNull(1)
@@ -213,35 +215,24 @@ private fun getCaos2VariantRaw(text: String): CaosVariant? {
             }
     }
     if (variant == null || variant == CaosVariant.UNKNOWN) {
-        variant = text
-            .split("*#")
-            .mapNotNull {
-                CAOS2_BLOCK_VARIANT_REGEX
-                    .matchEntire(it.trim())
-                    ?.groupValues
-                    ?.filterNotNull()
-                    ?.last()
-                    ?.trim()
-                    ?.toUpperCase()
-                    ?.let { variantCode ->
-                        when (variantCode) {
-                            "AGNT" -> CaosVariant.C3
-                            "DSAG" -> CaosVariant.DS
-                            else -> {
-                                val parsedVariant = CaosVariant.fromVal(variantCode)
-                                if (parsedVariant == CaosVariant.UNKNOWN)
-                                    CaosVariant.DS
-                                else
-                                    parsedVariant
-                            }
+        val variants = mutableListOf<CaosVariant>()
+        CAOS2_BLOCK_VARIANT_REGEX
+            .findAll(text)
+            .iterator()
+            .forEach { match ->
+                match.groupValues.getOrNull(1)?.let { variantCode ->
+                    when (variantCode) {
+                        "AGNT" -> CaosVariant.C3
+                        "DSAG" -> CaosVariant.DS
+                        else -> {
+                            val parsedVariant = CaosVariant.fromVal(variantCode)
+                            if (parsedVariant != CaosVariant.UNKNOWN)
+                                variants.add(parsedVariant)
                         }
                     }
+                }
             }
-            .minBy { it.index }
-            ?: return null
+        return variants.minBy { it.index }
     }
-    if (variant == CaosVariant.UNKNOWN) {
-        return null
-    }
-    return variant
+    return null
 }

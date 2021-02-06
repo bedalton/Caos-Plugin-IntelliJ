@@ -65,12 +65,11 @@ internal class SfcFileTreeNode(project: Project, private val myVirtualFile: Virt
 
     override fun getChildren(): MutableCollection<out AbstractTreeNode<*>> {
         return scripts.mapIndexed { index, file ->
-            CaosScriptFileTreeNode(
+            ChildCaosScriptFileTreeNode(
                     sfcNameWithoutExtension,
                     file,
                     index,
-                    file.containingFile.name,
-                    true
+                    file.containingFile.name
             )
         }.toMutableList()
     }

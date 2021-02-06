@@ -1,23 +1,28 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile.Companion.VariantUserDataKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getCaos2VariantRaw
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isStringType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.resolve.FileContextUtil
 import com.intellij.psi.tree.IElementType
@@ -31,8 +36,10 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val EXPECTATIONS_KEY = Key.create<MutableList<Int>>("com.badahori.caos.parser.EXPECTATIONS_KEY")
     private val BLOCKS_KEY = Key.create<Int>("com.badahori.caos.parser.BLOCKS")
     private val CAOS_VARIANT = Key.create<CaosVariant>("CAOS_VARIANT")
+    private val CAOS_VARIANT_HEADER = Key.create<String>("CAOS_VARIANT_HEADER")
     private val CAOS2_COB_VARIANT = Key.create<CaosVariant>("CAOS2_COB_VARIANT")
     private val CAOS_2_COB_REGEX = "^\\*\\*\\s*CAOS2COB\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
+    private val CAOS_VARIANT_REGEX = "^\\*\\*\\s*VARIANT\\s*([a-zA-Z0-9]{2}[+]?)".toRegex(RegexOption.IGNORE_CASE)
     private val lock = Object()
     const val NUMBER = 0
     const val STRING = 1
@@ -92,7 +99,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         builder_: PsiBuilder,
         level: Int
     ): Boolean {
-        val fileVariant = variant(builder_)
+        val fileVariant = fileVariant(builder_)
             ?: return false//CaosScriptProjectSettings.variant
         return fileVariant.isOld
     }
@@ -108,27 +115,30 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         } ?: false
     }
 
-    private fun fileVariant(builder_: PsiBuilder): CaosVariant? {
+    /*private fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
             ?: return null
         // Get CAOS file, and if it has variant, return it
-        (psiFile as? CaosScriptFile ?: psiFile.originalFile as? CaosScriptFile)
-            ?.variant
-            ?.let { variant ->
-                return variant
-            }
-
-        (psiFile.virtualFile)?.let { virtualFile ->
-            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let { variant ->
-                (psiFile as? CaosScriptFile)?.variant = variant
-                return variant
-            }
+        (psiFile as? CaosScriptFile)?.getUserData(VariantUserDataKey).nullIfUnknown()?.let {
+            return it
         }
-        (psiFile.originalFile.virtualFile)?.let { virtualFile ->
-            VariantFilePropertyPusher.readFromStorage(virtualFile)?.let { variant ->
-                (psiFile as? CaosScriptFile)?.variant = variant
-                return variant
-            }
+        (psiFile.originalFile as? CaosScriptFile)?.getUserData(VariantUserDataKey).nullIfUnknown()?.let {
+            return it
+        }
+
+        getCaos2VariantRaw(builder_.originalText).nullIfUnknown()?.let { variant ->
+            LOGGER.info("Variant == " + variant.code)
+            psiFile.putUserData(VariantUserDataKey, variant)
+            (psiFile as? CaosScriptFile)?.variant = variant
+            (psiFile.originalFile as? CaosScriptFile)?.variant = variant
+            return variant
+        }
+
+        (psiFile.virtualFile)?.cachedVariant.nullIfUnknown()?.let { variant ->
+            return variant
+        }
+        (psiFile.originalFile.virtualFile)?.cachedVariant?.let { variant ->
+            return variant
         }
 
         // PsiFile had not variant, find virtual file, and try to extract it
@@ -138,7 +148,76 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         (virtualFile as? CaosVirtualFile)?.let { caosVirtualFile ->
             return caosVirtualFile.variant
         }
-        return psiFile.module?.variant
+        virtualFile?.cachedVariant.nullIfUnknown()?.let {
+            return it
+        }
+        return (psiFile as? CaosScriptFile)?.variant ?: psiFile.module?.variant
+    }*/
+
+    @JvmStatic
+    fun updateVariantFromCaos2Cob(builder_: PsiBuilder, level: Int): Boolean {
+        getCaos2VariantRaw(builder_.originalText).nullIfUnknown()?.let { variant ->
+            val psiFile = (psiFile(builder_) as? CaosScriptFile)
+                ?: return false
+
+            psiFile.variant = variant
+            if (psiFile.variant != variant) {
+                return false
+            }
+
+            psiFile.virtualFile?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+            psiFile.originalFile.virtualFile?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+            psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+        }
+        return true
+    }
+
+    @JvmStatic
+    fun updateVariantFromHeader(builder_: PsiBuilder, level: Int): Boolean {
+        val text = builder_.originalText.trim()
+        val tokenText = text.split("\n", limit = 2)[0].trim().removeSuffix("IntellijIdeaRulezzz").nullIfEmpty()
+        val cachedText = builder_.getUserData(CAOS_VARIANT_HEADER)
+        if (tokenText == null || tokenText == cachedText)
+            return true
+        builder_.putUserData(CAOS_VARIANT_HEADER, tokenText)
+        CAOS_VARIANT_REGEX.matchEntire(tokenText)?.groupValues?.getOrNull(1)?.let { variantCode ->
+            val variant = CaosVariant.fromVal(variantCode)
+            if (variant == CaosVariant.UNKNOWN)
+                return false
+            val psiFile = (psiFile(builder_) as? CaosScriptFile)
+                ?: return false
+
+            psiFile.variant = variant
+            if (psiFile.variant != variant) {
+                return false
+            }
+
+            psiFile.virtualFile?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+            psiFile.originalFile.virtualFile?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+            psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+        }
+        return true
+    }
+
+    private fun setVirtualFileVariant(virtualFile: VirtualFile, variant: CaosVariant) {
+        virtualFile.putUserData(VariantUserDataKey, variant)
+        if (virtualFile is CaosVirtualFile)
+            virtualFile.variant = variant
+        else if (virtualFile is VirtualFileWithId)
+            VariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+
     }
 
     /**
@@ -150,7 +229,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun variant(builder_: PsiBuilder): CaosVariant? {
+    fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
         if (psiFile == null) {
             LOGGER.severe("CaosParser is parsing non-caos-script file")
@@ -392,7 +471,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     private fun pushPop(builder_: PsiBuilder): Boolean {
-        return variant(builder_) == CaosVariant.CV
+        return fileVariant(builder_) == CaosVariant.CV
     }
 
     @JvmStatic

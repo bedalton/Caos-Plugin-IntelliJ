@@ -23,7 +23,7 @@ object CobFileType : FileType {
 
     override fun getIcon(): Icon? = CaosScriptIcons.COB_FILE_ICON
 
-    override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.US_ASCII.name()
+    override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.UTF_8.name()
 
     @JvmStatic
     val DEFAULT_EXTENSION = "cob"

@@ -1,7 +1,6 @@
 package icons;
 
 import com.intellij.openapi.util.IconLoader;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
@@ -14,6 +13,7 @@ public interface CaosScriptIcons {
     Icon ATT_FILE_ICON = IconLoader.getIcon("/icons/att-file-icon.png");
     Icon C1_COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.png");
     Icon C2_COB_FILE_ICON = IconLoader.getIcon("/icons/c2-cob-file-icon.png");
+    Icon RCB_FILE_ICON = IconLoader.getIcon("/icons/rcb-file-icon.png");
     Icon SFC_FILE_ICON = IconLoader.getIcon("/icons/sfc-file-icon.png");
     Icon PRAY_FILE_ICON = IconLoader.getIcon("/icons/pray-file-icon.png");
     Icon S16_FILE_ICON = IconLoader.getIcon("/icons/s16-file-icon.png");
@@ -29,5 +29,9 @@ public interface CaosScriptIcons {
     Icon C3 = IconLoader.getIcon("/icons/C3.png");
     Icon DS = IconLoader.getIcon("/icons/DS.png");
     Icon SM = IconLoader.getIcon("/icons/SM.png");
+    Icon MACRO = IconLoader.getIcon("/icons/macro-icon.png");
+    Icon INSTALL_SCRIPT = IconLoader.getIcon("/icons/install-script-icon.png");
+    Icon REMOVAL_SCRIPT = IconLoader.getIcon("/icons/removal-script-icon.png");
+    Icon EVENT_SCRIPT = IconLoader.getIcon("/icons/event-script-icon.png");
     Icon IMAGE = IconLoader.getIcon("/icons/ImagesFileType.svg");
 }

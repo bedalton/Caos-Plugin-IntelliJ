@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -74,7 +75,7 @@ class CobFileTreeNode(
             is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, block))
             is AgentBlock -> {
                 val installScripts = block.installScripts.mapIndexed { i, installScript ->
-                    CaosScriptFileTreeNode(
+                    ChildCaosScriptFileTreeNode(
                         cobNameWithoutExtension,
                         installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
                         0,
@@ -82,7 +83,7 @@ class CobFileTreeNode(
                     )
                 }
                 val scripts = installScripts + listOfNotNull(
-                        block.removalScript?.let { CaosScriptFileTreeNode(cobNameWithoutExtension, it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, file.nameWithoutExtension + " Removal Script") }
+                        block.removalScript?.let { ChildCaosScriptFileTreeNode(cobNameWithoutExtension, it.toCaosFile(nonNullProject, cobVirtualFile, variant), 0, file.nameWithoutExtension + " Removal Script") }
                 )
                 val previews:List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
                     SpriteImageTreeNode(
@@ -93,7 +94,7 @@ class CobFileTreeNode(
                             )
                 })
                 previews + scripts + block.eventScripts.mapIndexed { index, script ->
-                    CaosScriptFileTreeNode(cobNameWithoutExtension, script.toCaosFile(nonNullProject, cobVirtualFile, variant), index)
+                    ChildCaosScriptFileTreeNode(cobNameWithoutExtension, script.toCaosFile(nonNullProject, cobVirtualFile, variant), index)
                 }
             }
             is CobBlock.UnknownCobBlock -> emptyList()
@@ -101,9 +102,10 @@ class CobFileTreeNode(
     }
 
     override fun update(presentationData: PresentationData) {
-        val icon = when (cobData.variant) {
-            CaosVariant.C1 -> CaosScriptIcons.C1_COB_FILE_ICON
-            CaosVariant.C2 -> CaosScriptIcons.C2_COB_FILE_ICON
+        val icon = when {
+            cobVirtualFile.extension like "rcb" -> CaosScriptIcons.RCB_FILE_ICON
+            cobData.variant == CaosVariant.C1 -> CaosScriptIcons.C1_COB_FILE_ICON
+            cobData.variant == CaosVariant.C2 -> CaosScriptIcons.C2_COB_FILE_ICON
             else -> CaosScriptIcons.COB_FILE_ICON
         }
         presentationData.setIcon(icon)
