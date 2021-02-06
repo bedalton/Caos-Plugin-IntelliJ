@@ -99,8 +99,8 @@ internal class WineConnection(path:String, private val variant: CaosVariant) : C
                         InjectionStatus.BadConnection(message)
                     }
                     "BAD" -> InjectionStatus.Bad(response.messageOr { "An unknown error occurred" })
-                    "OK" -> InjectionStatus.Ok(response.response ?: "")
-                    else -> InjectionStatus.Bad("Invalid response received. Data: '" + readFile.readText() + "'")
+                    "OK"  -> InjectionStatus.Ok(response.response ?: "")
+                    else  -> InjectionStatus.Bad("Invalid response received. Data: '" + readFile.readText() + "'")
                 }
             } catch (e: Exception) {
                 InjectionStatus.Bad("Invalid response received. Data: '" + readFile.readText() + "'")

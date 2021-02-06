@@ -96,7 +96,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                     if (response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none { it.matches(response) }) {
                         InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
                     } else if (code == "!RES") {
-                        InjectionStatus.Ok(response.substringFromEnd(4, 1))
+                        InjectionStatus.Ok(response)
                     } else {
                         InjectionStatus.Bad("INJECTOR Exception: "+response.substringFromEnd(0, 1))
                     }

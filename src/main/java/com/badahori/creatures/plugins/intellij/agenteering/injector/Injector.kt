@@ -3,7 +3,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.escapeHTML
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -56,7 +59,15 @@ object Injector {
     /**
      * Injects an event script into the Creatures scriptorium
      */
-    fun injectEventScript(project: Project, variant: CaosVariant, family: Int, genus: Int, species: Int, eventNumber: Int, rawCaosIn: String): Boolean {
+    fun injectEventScript(
+        project: Project,
+        variant: CaosVariant,
+        family: Int,
+        genus: Int,
+        species: Int,
+        eventNumber: Int,
+        rawCaosIn: String
+    ): Boolean {
         val response = injectPrivate(project, variant, rawCaosIn) { connection, formattedCaos ->
             connection.injectEventScript(family, genus, species, eventNumber, formattedCaos)
         }
@@ -67,7 +78,7 @@ object Injector {
     /**
      * Ensures that variant is supported, and if C1e, that the correct game is running
      */
-    private fun isValidVariant(project:Project, variant:CaosVariant) : Boolean {
+    private fun isValidVariant(project: Project, variant: CaosVariant): Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
             invokeLater {
@@ -78,7 +89,11 @@ object Injector {
         if (variant.isOld) {
             val actualVersion = getActualVersion(project, variant)
             if (actualVersion != variant) {
-                postError(project, "Connection Error", "Grammar set to variant [${variant}], but ide is connected to ${actualVersion.fullName}")
+                postError(
+                    project,
+                    "Connection Error",
+                    "Grammar set to variant [${variant}], but ide is connected to ${actualVersion.fullName}"
+                )
                 return false
             }
         }
@@ -89,9 +104,14 @@ object Injector {
     /**
      * Responsible for actually injecting the CAOS code.
      */
-    private fun injectPrivate(project: Project, variant: CaosVariant, caosIn: String, run:(connection: CaosConnection, formattedCode: String) -> InjectionStatus?): InjectionStatus? {
+    private fun injectPrivate(
+        project: Project,
+        variant: CaosVariant,
+        caosIn: String,
+        run: (connection: CaosConnection, formattedCode: String) -> InjectionStatus?
+    ): InjectionStatus? {
         val connection = connection(variant, project)
-                ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
+            ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
         if (creditsCalled[variant].orFalse()) {
             creditsCalled[variant] = true
             connection.showAttribution(project, variant)
@@ -128,9 +148,14 @@ object Injector {
     @JvmStatic
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
         val prefix = "&gt;"
-        val message = response.response.trim().nullIfEmpty()?.let {
-            "<pre>\n$prefix" + it.split("\n").joinToString("\n$prefix").escapeHTML() + "</pre>"
-        } ?: ""
+        var responseString = response.response;
+        if (responseString.isNotEmpty()) {
+            responseString = responseString.substringFromEnd(0, 1)
+        }
+        val message = if (responseString.isBlank())
+            ""
+        else
+            "<pre>\n$prefix" + responseString.split("\n").joinToString("\n$prefix").escapeHTML() + "</pre>"
         invokeLater {
             CaosInjectorNotifications.show(project, "Injection Success", message, NotificationType.INFORMATION)
         }
@@ -219,12 +244,12 @@ object Injector {
      * All code to inject CAOS was written by other people. I need to credit them
      */
     private val creditsCalled = mutableMapOf(
-            CaosVariant.C1 to false,
-            CaosVariant.C2 to false,
-            CaosVariant.CV to false,
-            CaosVariant.C3 to false,
-            CaosVariant.DS to false,
-            CaosVariant.SM to false
+        CaosVariant.C1 to false,
+        CaosVariant.C2 to false,
+        CaosVariant.CV to false,
+        CaosVariant.C3 to false,
+        CaosVariant.DS to false,
+        CaosVariant.SM to false
     )
 
 }

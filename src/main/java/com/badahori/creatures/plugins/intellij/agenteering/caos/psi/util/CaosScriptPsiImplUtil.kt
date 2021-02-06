@@ -1902,12 +1902,21 @@ object CaosScriptPsiImplUtil {
         } else {
             null
         }
+        val nonAgentKeyWords = listOf(
+            "Link",
+            "ISCR",
+            "RSCR",
+            "File",
+            "Attach",
+            "Inline",
+            "Depend"
+        ) + CobTag.values().filter { it != CobTag.AGENT_NAME }.flatMap { it.keys.toList() }
+
         return def.commands.flatMap map@{ (commandName, args) ->
             val agentBlockName: String = when {
                 commandName like "AGNT" -> "C3"
                 commandName like "DSAG" -> "DS"
-                commandName like "Link" -> return@map emptyList()
-                commandName like "Cob" -> return@map emptyList()
+                commandName likeAny nonAgentKeyWords -> return@map emptyList()
                 else -> {
                     val blockName = nameRegex
                         .matchEntire(commandName)

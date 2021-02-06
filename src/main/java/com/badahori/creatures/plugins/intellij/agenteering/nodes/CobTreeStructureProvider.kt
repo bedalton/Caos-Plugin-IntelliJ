@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree
+package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.nodes.CobFileTreeNode
 import com.badahori.creatures.plugins.intellij.agenteering.nodes.SfcFileTreeNode
@@ -42,7 +42,7 @@ class CobNodeProjectViewProvider : TreeStructureProvider, DumbAware {
 
 private fun VirtualFile.toNode(project:Project) : AbstractTreeNode<*>? {
     return when (extension?.toLowerCase()) {
-        "cob" -> CobFileTreeNode(project, this)
+        "cob", "rcb" -> CobFileTreeNode(project, this)
         //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
         "sfc" -> SfcFileTreeNode(project, this)
         else -> null

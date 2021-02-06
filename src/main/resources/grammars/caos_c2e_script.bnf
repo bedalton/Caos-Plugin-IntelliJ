@@ -42,6 +42,7 @@
 	name("error_lvalue") = "variable"
 	tokens = [
 		NEWLINE = "regexp:\n";
+		VARIANT_HEADER_LITERAL = "Caos Variant Header"
 		K_ENDM = "regexp:[eE][nN][dD][mM]"
 		K_SUBR = "regexp:[sS][uU][bB][rR]"
 		K_REPS = "regexp:[rR][eE][pP][sS]"
@@ -287,7 +288,7 @@
 	]
 }
 
-private def	::= space_like_or_newline* (word_factory_element|expression_factory|file_body)?
+private def	::= (caos_variant_header <<updateVariantFromHeader>>)? space_like_or_newline* (word_factory_element|expression_factory|file_body)?
 	;
 
 word_factory_element ::= K_XX_DEF space_like a_word;
@@ -326,6 +327,7 @@ raw_token_stream
 
 private token_stream_tokens
 	::= all_tokens
+	|	comment
 	|	rvalue
 	|	eq_op
 	|	token
@@ -360,6 +362,11 @@ caos_2_block
 	}
 	;
 
+
+caos_variant_header
+	::= VARIANT_HEADER_LITERAL
+	;
+
 caos_2_block_header
 	::= caos_2_cob_header
 	|	caos_2_pray_header
@@ -387,7 +394,7 @@ private caos_2_command_item
 	;
 
 caos_2_tag
-	::= cob_comment_directive '=' (caos_2_comment_value caos_2_comment_error_value*)?
+	::= cob_comment_directive '=' (caos_2_comment_value caos_2_comment_error_value*)? <<updateVariantFromCaos2Cob>>
 	{
 		pin=2
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2TagStub"
@@ -552,7 +559,7 @@ private caos_element
 	;
 
 comment_block
-	::= comment (comment)*
+	::= (comment space_like_or_newline)*
 	;
 
 event_script
@@ -2375,6 +2382,7 @@ named_game_var_kw
 
 comment
 	::= COMMENT_START comment_body?
+	|	VARIANT_HEADER_LITERAL
 	;
 
 comment_body

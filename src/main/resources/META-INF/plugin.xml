@@ -37,16 +37,12 @@
     <ul>
       <li>
         <b>Version: 0.01.101</b>
-        <b>#Fixes</b>
         <ul>
-        </ul>
-        <b>#Additions</b>
-        <ul>
-        	<li>CAOS2COB compiler. https://github.com/bedalton/Caos-Plugin-IntelliJ/blob/master/CAOS2Cob%20Readme.md </li>
-        </ul>
-        <b>#Improvements</b>
-        <ul>
-          <li>Add action to CAOS context file menu</li>
+          <li>Fix bad decompile of multiple install scripts in C1 COBs</li>
+          <li>Fix token values not highlighted correctly when text is the same as an existing command</li>
+        	<li>Add CAOS2Cob compiler. <a href="https://github.com/bedalton/Caos-Plugin-IntelliJ/blob/master/CAOS2Cob%20Readme.md">README on GitHub</a></li>
+          <li>Add "Expand CAOS Commands" action to CAOS context file menu to place commands on separate lines</li>
+          <li>Add script element navigation to project view</li>
         </ul>
       </li>
       <li>
@@ -374,6 +370,8 @@
 
     <enterHandlerDelegate implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler" />
 
+    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosFileTreeStructureProvider" />
+
     <!-- Project -->
     <iconProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
@@ -653,6 +651,16 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobIncludedFileIsCorrectTypeInspection"
     />
 
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Only one agent name"
+                     shortName="Caos2CobTooManyAgentNames"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections.Caos2CobOnlyOneAgentNameInspection"
+    />
+
     <!-- Documentation & Hints -->
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
@@ -802,7 +810,7 @@
 
 
     <treeStructureProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.tree.CobNodeProjectViewProvider" />
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CobNodeProjectViewProvider" />
 
 
     <!-- =========================== -->

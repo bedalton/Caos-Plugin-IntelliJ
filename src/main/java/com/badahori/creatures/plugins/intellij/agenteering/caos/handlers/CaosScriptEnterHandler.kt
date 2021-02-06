@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate.Result.Continue
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -37,6 +38,8 @@ class CaosScriptEnterHandler : EnterHandlerDelegate {
         editor: Editor,
         dataContext: DataContext
     ): EnterHandlerDelegate.Result {
+        if (dataContext.getData(CommonDataKeys.PSI_FILE)?.textLength.orElse(0) > 20000)
+            return Continue
         val caret = dataContext.getData(CommonDataKeys.CARET)?.selectionStart
             ?: return Continue
         val document = editor.document

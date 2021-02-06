@@ -130,11 +130,13 @@ SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
 CAOS_2_ID=[^\s\"']+
+CAOS_VARIANT=[*]{2}[Vv][Aa][Rr][Ii][Aa][Nn][Tt]\s+[a-zA-Z0-9]{2}[+]?
 
 %state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING
 %%
 
 <START_OF_LINE> {
+	{CAOS_VARIANT}			{ return CaosScript_VARIANT_HEADER_LITERAL; }
 	{CAOS_2_COB} 			{ return CaosScript_CAOS_2_COB_HEADER; }
 	{CAOS_2_PRAY} 			{ return CaosScript_CAOS_2_PRAY_HEADER; }
 	\n						{ return CaosScript_NEWLINE; }
