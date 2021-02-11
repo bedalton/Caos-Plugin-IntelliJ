@@ -5,8 +5,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompilerException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUint32
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream
 import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -28,13 +28,13 @@ object C16Compiler : SpriteCompiler {
             (it.height - 1) * 4
         }
         val bufferSize =  imageDataOffset
-        val buffer = ByteOutputStream(bufferSize)
+        val buffer = ByteArrayOutputStream(bufferSize)
         buffer.writeUint32(colorEncoding.marker + 1)
         buffer.writeUInt16(images.size)
         for (frame in frames) {
             imageDataOffset = frame.writeHeader(buffer, imageDataOffset)
         }
-        assert (buffer.count == imageDataOffset) { "Image offset may be inaccurate in S16 file"}
+        assert (buffer.size() == imageDataOffset) { "Image offset may be inaccurate in C16 file"}
         for (frame in frames) {
             frame.lines.forEach { runs ->
                 runs.forEach { run ->
@@ -49,7 +49,7 @@ object C16Compiler : SpriteCompiler {
                 }
             }
         }
-        return buffer.bytes
+        return buffer.toByteArray()
     }
 
 

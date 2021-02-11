@@ -5,9 +5,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.ditherCopy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream
 import org.apache.commons.imaging.palette.SimplePalette
 import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import kotlin.math.abs
@@ -19,7 +19,7 @@ object SprCompiler : SpriteCompiler {
     private const val HEADER_NUM_IMAGES_SIZE = 2
     private val blackIntArray = intArrayOf(0, 0, 0, 1)
     var black:Int = 0
-    private val blackColors = arrayOf(0,243,244,245)
+    private val blackColors = arrayOf(0,243,244)
     private val defaultDither get() = CaosScriptProjectSettings.ditherSpr
     private val colors: List<IntArray> by lazy {
         val pathToPalette = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath("support/palette.dta")
@@ -78,7 +78,7 @@ object SprCompiler : SpriteCompiler {
             it.width * it.height
         }
         val bufferSize = HEADER_NUM_IMAGES_SIZE + (images.size * IMAGE_HEADER_SIZE) + imagesBytes
-        val buffer = ByteOutputStream(bufferSize)
+        val buffer = ByteArrayOutputStream(bufferSize)
         var imageOffset = HEADER_NUM_IMAGES_SIZE + (images.size * IMAGE_HEADER_SIZE)
         buffer.writeUInt16(images.size)
         for (image in images) {
@@ -93,7 +93,7 @@ object SprCompiler : SpriteCompiler {
             writeCompiledSprite(image, buffer, dither)
         }
         //val byteArray = ByteArray(bufferSize)
-        return buffer.bytes
+        return buffer.toByteArray()
     }
 
     override fun writeCompiledSprite(image: BufferedImage, buffer: OutputStream) {
@@ -133,10 +133,10 @@ object SprCompiler : SpriteCompiler {
     @JvmStatic
     @Throws
     fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean = defaultDither) : BufferedImage {
-        val bytes = ByteOutputStream(imageIn.width * imageIn.height)
+        val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
         return SprSpriteFrame(
-            bytes = ByteBuffer.wrap(bytes.bytes),
+            bytes = ByteBuffer.wrap(bytes.toByteArray()),
             offset = 0L,
             width = imageIn.width,
             height = imageIn.height
