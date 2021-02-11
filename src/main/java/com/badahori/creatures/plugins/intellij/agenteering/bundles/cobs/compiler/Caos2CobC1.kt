@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import kotlinx.serialization.Serializable
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.File
 import javax.imageio.ImageIO
 
 @Serializable
@@ -89,7 +90,7 @@ data class Caos2CobC1(
             ?: return@lazy null
         Caos2CobC1(
             agentName = "$agentName Remover",
-            targetFile = removerName ?: FileNameUtils.getBaseName(targetFile) + ".rcb",
+            targetFile = removerName ?: (targetFile.split(File.separatorChar).dropLast(1).joinToString(File.separatorChar + "") + File.separatorChar + FileNameUtils.getBaseName(targetFile)) + ".rcb",
             installScripts = listOf(removalScript),
             quantityUsed = 0,
             quantityAvailable = 255
