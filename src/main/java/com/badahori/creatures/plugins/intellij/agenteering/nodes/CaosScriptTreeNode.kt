@@ -7,8 +7,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
+import com.intellij.psi.impl.source.tree.java.JavaFileElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
@@ -116,7 +118,7 @@ internal class ChildCaosScriptFileTreeNode(
     private val caosFile: CaosScriptFile,
     private val scriptIndex: Int,
     private val presentableTextIn: String? = null
-) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile), SortableTreeElement {
+) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile) {
 
     private val scripts by lazy {
         PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
@@ -127,11 +129,16 @@ internal class ChildCaosScriptFileTreeNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
-        runWriteAction {
-            caosFile.quickFormat()
-            caosFile.navigate(requestFocus)
-            caosFile.virtualFile?.isWritable = false
+        if (ApplicationManager.getApplication().isDispatchThread) {
+            caosFile.virtualFile?.isWritable = true
+            runWriteAction {
+                caosFile.quickFormat()
+                caosFile.virtualFile?.isWritable = false
+            }
         }
+
+        caosFile.navigate(requestFocus)
+        caosFile.virtualFile?.isWritable = false
     }
 
     override fun canNavigate(): Boolean {
@@ -152,7 +159,7 @@ internal class ChildCaosScriptFileTreeNode(
         }
         return when (val script = scripts.firstOrNull { it !is CaosScriptMacro }) {
             is CaosScriptEventScript -> "${script.family} ${script.genus} ${script.species} ${script.eventNumber}"
-            is CaosScriptInstallScript -> parentName.nullIfEmpty()?.let { "$it " }.orEmpty() + "- Install Script"
+            is CaosScriptInstallScript -> parentName.nullIfEmpty()?.let { "$it " }.orEmpty() + " - Install Script"
             is CaosScriptRemovalScript -> parentName.nullIfEmpty()?.let { "$it " }.orEmpty() + " - Removal Script"
             else -> parentName.nullIfEmpty()?.let { "$it - " }.orEmpty() + "Script $scriptIndex"
         }
@@ -198,17 +205,14 @@ internal class ChildCaosScriptFileTreeNode(
         presentationData.locationString = "(Decompiled)"
     }
 
-    override fun getAlphaSortKey(): String {
-        return "$weight"
-    }
-
     override fun getWeight(): Int {
         val script = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
             .firstOrNull { it !is CaosScriptMacro }
         return when (script) {
-            is CaosScriptInstallScript -> 7
-            is CaosScriptRemovalScript -> 8
-            else -> 9
+            is CaosScriptInstallScript -> 17
+            is CaosScriptRemovalScript -> 18
+            is CaosScriptMacro -> 19
+            else -> 16
         }
     }
 
@@ -225,7 +229,7 @@ internal class SubScriptLeafNode(
     private val script: CaosScriptScriptElement,
     private val index: Int? = null,
     private val enclosingCobFileName: String? = null
-) : AbstractTreeNode<CaosScriptScriptElement>(script.project, script), SortableTreeElement {
+) : AbstractTreeNode<CaosScriptScriptElement>(script.project, script) {
 
     override fun isAlwaysLeaf(): Boolean {
         return true
@@ -266,17 +270,6 @@ internal class SubScriptLeafNode(
 
     override fun canNavigateToSource(): Boolean = navigationNode.canNavigateToSource()
 
-    override fun getAlphaSortKey(): String {
-        return when (script) {
-            is CaosScriptEventScript -> listOf(script.family, script.genus, script.species, script.eventNumber)
-                .joinToString("|") { it.toString().padStart(6, '0') }
-            is CaosScriptInstallScript -> "w"
-            is CaosScriptRemovalScript -> "x"
-            is CaosScriptMacro -> "y"
-            else -> "z"
-        } + text
-    }
-
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = text
         if (enclosingCobFileName != null)
@@ -293,10 +286,10 @@ internal class SubScriptLeafNode(
     }
 
     override fun getWeight(): Int = when (script) {
-        is CaosScriptInstallScript -> 7
-        is CaosScriptRemovalScript -> 8
-        is CaosScriptMacro -> 9
-        else -> 6
+        is CaosScriptInstallScript -> 17
+        is CaosScriptRemovalScript -> 18
+        is CaosScriptMacro -> 19
+        else -> 16
     }
 
     override fun getLeafState(): LeafState {

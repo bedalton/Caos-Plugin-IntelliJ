@@ -1592,7 +1592,9 @@ object CaosScriptPsiImplUtil {
         (expression.c1String ?: expression.animationString ?: expression.byteString)?.let {
             return it.text.trim('[', ']')
         }
-        return expression.token?.text ?: expression.quoteStringLiteral?.stringValue
+        return (expression.token?.text ?: expression.quoteStringLiteral?.stringValue)
+            ?.replace("\\\"", "\"")
+            ?.replace("\\'", "'")
     }
 
     /**
@@ -2115,7 +2117,9 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getValue(value: CaosScriptCaos2CommentValue): String {
-        return value.quoteStringLiteral?.stringValue ?: value.text
+        return (value.quoteStringLiteral?.stringValue ?: value.text)
+            .replace("\\\"", "\"")
+            .replace("\\'", "'")
     }
 }
 

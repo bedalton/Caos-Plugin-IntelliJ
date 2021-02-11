@@ -18,7 +18,7 @@ import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 import java.util.concurrent.atomic.AtomicInteger
 
-internal class SfcFileTreeNode(project: Project, private val myVirtualFile: VirtualFile) : AbstractTreeNode<VirtualFile>(project, myVirtualFile) {
+internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile) : VirtualFileBasedNode<VirtualFile>(project, myVirtualFile) {
 
     private val sfcNameWithoutExtension = myVirtualFile.nameWithoutExtension
 
