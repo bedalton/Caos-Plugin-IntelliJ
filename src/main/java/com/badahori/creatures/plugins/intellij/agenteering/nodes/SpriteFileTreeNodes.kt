@@ -99,8 +99,4 @@ internal class SpriteImageTreeNode(
         presentationData.locationString = null
         presentationData.setIcon(CaosScriptIcons.IMAGE)
     }
-
-    override fun toString(): String {
-        return fileName
-    }
 }

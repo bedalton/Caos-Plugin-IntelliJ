@@ -15,12 +15,21 @@ import javax.swing.TransferHandler
 
 internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, protected val myVirtualFile:VfsT)
     : AbstractTreeNode<VfsT>(project, myVirtualFile){
-    override fun getName(): String = myVirtualFile.name
-
-    override fun toString(): String = myVirtualFile.name
 
     override fun getVirtualFile(): VirtualFile {
         return myVirtualFile
+    }
+
+    override fun getWeight(): Int {
+        return SORT_WEIGHT
+    }
+
+    override fun getName(): String? {
+        return myVirtualFile.name
+    }
+
+    override fun toString(): String {
+        return myVirtualFile.name
     }
 
 }
@@ -62,6 +71,7 @@ internal class VfsTransferHandler(virtualFile: VirtualFile): TransferHandler() {
     override fun canImport(support: TransferSupport?): Boolean {
         return false
     }
+
 
     /**
      * Actions for this list include copying only
