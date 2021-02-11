@@ -110,7 +110,10 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
                 if (it < 0 || it > 256) {
                     throw SpriteParserException("Color value '$it' is invalid")
                 }
-                SprParser.colors[it]
+                if (it == 245)
+                    -1
+                else
+                    SprParser.colors[it]
             }
         }
         return decode(pixels)
@@ -126,9 +129,14 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
             val base = y * width
             (0 until width).mapIndexed { i, x ->
                 val rgb = pixels[base + i]
-                bufferedImage.setRGB(x, y, rgb)
-                val alpha = if (rgb == black) transparent else solid
-                alphaRaster.setPixel(x, y, alpha)
+                if (rgb == -1) {
+                    bufferedImage.setRGB(x, y, black)
+                    alphaRaster.setPixel(x, y, solid)
+                } else {
+                    bufferedImage.setRGB(x, y, rgb)
+                    val alpha = if (rgb == black) transparent else solid
+                    alphaRaster.setPixel(x, y, alpha)
+                }
             }
         }
         return bufferedImage
