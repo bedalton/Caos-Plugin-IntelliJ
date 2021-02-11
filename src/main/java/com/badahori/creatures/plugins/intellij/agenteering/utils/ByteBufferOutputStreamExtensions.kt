@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 
@@ -98,6 +98,6 @@ fun OutputStream.writeNullByte() {
     write(NULL_BYTE)
 }
 
-fun ByteOutputStream.trimmed() : ByteArray {
-    return bytes.sliceArray(0..size())
+fun ByteArrayOutputStream.trimmed() : ByteArray {
+    return toByteArray().sliceArray(0..size())
 }
