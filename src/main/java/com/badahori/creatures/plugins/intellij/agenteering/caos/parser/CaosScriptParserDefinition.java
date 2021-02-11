@@ -72,7 +72,7 @@ public class CaosScriptParserDefinition implements ParserDefinition {
             getLOGGER().info("ParserDef: Create File: " + fileViewProvider.getVirtualFile().getName() + "; FileType: " + fileViewProvider.getFileType());
         }
         assert (!fileViewProvider.getVirtualFile().getName().endsWith("cob")) : "CaosScriptParserDefinition called, but COB file type was not properly set";
-        return new CaosScriptFile(fileViewProvider);
+        return new CaosScriptFile(fileViewProvider, fileViewProvider.getVirtualFile());
     }
 
     @SuppressWarnings("deprecation")
