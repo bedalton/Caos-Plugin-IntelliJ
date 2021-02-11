@@ -73,6 +73,12 @@
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
+  <option name="CAOS_COB_INVALID">
+    <value>
+      <option name="EFFECT_COLOR" value="D72D2D"/>
+      <option name="EFFECT" value="WAVE_UNDERSCORE"/>
+    </value>
+  </option>
   <!-- option name="CaosScript_NUMBER_LITERAL">
     <value>
       <option name="FOREGROUND" value="0000FF"/>
