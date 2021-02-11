@@ -4,14 +4,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2CobVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptFileStubType
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -21,6 +20,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -436,9 +436,10 @@ class CompileCaos2CobAction : AnAction(
         var didShowAutoRemoverCobWarning: Boolean = false
         private fun hasCaos2Cob(file: VirtualFile): Boolean {
             if (file.isDirectory) {
+                ProgressIndicatorProvider.checkCanceled()
                 return file.children.any(::hasCaos2Cob)
             }
-            return isCaos2CobRegex.containsMatchIn(file.contents)
+            return file.fileType == CaosScriptFileType.INSTANCE && isCaos2CobRegex.containsMatchIn(file.contents)
         }
 
         private fun getCobTags(variant: CaosVariant, block: CaosScriptCaos2Block): Map<CobTag, String?> {
@@ -643,8 +644,7 @@ class CompileCaos2CobAction : AnAction(
                     EditorUtil.replaceText(document, file.textRange, CaosScriptsQuickCollapseToLine.collapse(variant,file.text))
                     PsiDocumentManager.getInstance(file.project).commitDocument(document)*/
                     val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(fileIn, CollapseChar.COMMA)
-                        ?:return@run
-                    LOGGER.info("Collapsed: <${collapsed.text}>")
+                        ?: throw Exception("Failed to collapse script")
                     scripts.addAll(PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java))
                 }
             return scripts
