@@ -247,7 +247,7 @@ open class CaosVirtualFile private constructor(
 
 
     fun createChildWithContent(name: String, content: String?, overwrite: Boolean = true): CaosVirtualFile {
-        if (hasChild(name) && !overwrite)
+        if (hasChild(name) && !overwrite &&  children[name]?.stringContents != content)
             throw IOException("Child with name '$name' already exists in $name")
         return CaosVirtualFile(name, content, false).let {
             it.setContent(content)
