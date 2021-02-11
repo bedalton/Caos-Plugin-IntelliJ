@@ -30,29 +30,29 @@ import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
 import com.intellij.util.FileContentUtilCore
 import java.util.concurrent.atomic.AtomicBoolean
 
-class CaosScriptFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
+class CaosScriptFile constructor(viewProvider: FileViewProvider, val myFile: VirtualFile) :
+    PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
     private val didFormatInitial = AtomicBoolean(false)
     override var variant: CaosVariant?
         get() {
             return variantOverride
                 ?: getUserData(VariantUserDataKey)
-                ?: (this.virtualFile?.cachedVariant ?: this.originalFile.virtualFile?.cachedVariant)
+                ?: myFile.cachedVariant ?: (this.originalFile as? CaosScriptFile)?.myFile?.cachedVariant
                 ?: (module ?: originalFile.module)?.variant
                     .nullIfUnknown()
         }
         set(newVariant) {
             variantOverride = newVariant
             putUserData(VariantUserDataKey, newVariant)
-            (this.virtualFile ?: this.originalFile.virtualFile)
-                ?.let { virtualFile ->
-                    (virtualFile as? CaosVirtualFile)?.variant = newVariant
-                    if (virtualFile is VirtualFileWithId) {
-                        VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant ?: CaosVariant.UNKNOWN)
-                    }
-                    virtualFile.putUserData(VariantUserDataKey, newVariant)
-                    if (ApplicationManager.getApplication().isDispatchThread)
-                        FileContentUtilCore.reparseFiles(virtualFile)
+            this.myFile.let { virtualFile ->
+                (virtualFile as? CaosVirtualFile)?.variant = newVariant
+                if (virtualFile is VirtualFileWithId) {
+                    VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant ?: CaosVariant.UNKNOWN)
                 }
+                virtualFile.putUserData(VariantUserDataKey, newVariant)
+                if (ApplicationManager.getApplication().isDispatchThread)
+                    FileContentUtilCore.reparseFiles(virtualFile)
+            }
             if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
             }
@@ -77,6 +77,10 @@ class CaosScriptFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider,
 
     override fun toString(): String {
         return "Caos Script"
+    }
+
+    override fun getName(): String {
+        return myFile.name
     }
 
     fun quickFormat() {
