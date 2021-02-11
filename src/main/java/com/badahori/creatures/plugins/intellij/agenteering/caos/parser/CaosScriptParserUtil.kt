@@ -127,7 +127,6 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         }
 
         getCaos2VariantRaw(builder_.originalText).nullIfUnknown()?.let { variant ->
-            LOGGER.info("Variant == " + variant.code)
             psiFile.putUserData(VariantUserDataKey, variant)
             (psiFile as? CaosScriptFile)?.variant = variant
             (psiFile.originalFile as? CaosScriptFile)?.variant = variant
@@ -180,6 +179,38 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun updateVariantFromHeader(builder_: PsiBuilder, level: Int): Boolean {
+        val text = builder_.originalText.trim()
+        val tokenText = text.split("\n", limit = 2)[0].trim().removeSuffix("IntellijIdeaRulezzz").nullIfEmpty()
+        val cachedText = builder_.getUserData(CAOS_VARIANT_HEADER)
+        if (tokenText == null || tokenText == cachedText)
+            return true
+        builder_.putUserData(CAOS_VARIANT_HEADER, tokenText)
+        CAOS_VARIANT_REGEX.matchEntire(tokenText)?.groupValues?.getOrNull(1)?.let { variantCode ->
+            val variant = CaosVariant.fromVal(variantCode)
+            if (variant == CaosVariant.UNKNOWN)
+                return false
+            val psiFile = (psiFile(builder_) as? CaosScriptFile)
+                ?: return false
+
+            psiFile.variant = variant
+            if (psiFile.variant != variant) {
+                return false
+            }
+
+            psiFile.virtualFile?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+            psiFile.originalFile.virtualFile?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+            psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+        }
+        return true
+    }
+    @JvmStatic
+    fun clearVariantFromHeader(builder_: PsiBuilder, level: Int): Boolean {
         val text = builder_.originalText.trim()
         val tokenText = text.split("\n", limit = 2)[0].trim().removeSuffix("IntellijIdeaRulezzz").nullIfEmpty()
         val cachedText = builder_.getUserData(CAOS_VARIANT_HEADER)
