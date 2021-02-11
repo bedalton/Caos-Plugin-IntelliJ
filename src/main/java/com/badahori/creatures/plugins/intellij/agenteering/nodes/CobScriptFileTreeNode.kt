@@ -5,6 +5,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AuthorBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SpriteBlock
+import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator
+import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighterFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
@@ -15,22 +18,35 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
+import com.intellij.openapi.editor.HighlighterColors
+import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.openapi.editor.markup.EffectType
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import java.awt.Color
 import java.nio.ByteBuffer
 
 
-class CobFileTreeNode(
+internal class CobFileTreeNode(
         private val nonNullProject: Project,
         private val file: VirtualFile
-) : AbstractTreeNode<VirtualFile>(nonNullProject, file) {
+) : VirtualFileBasedNode<VirtualFile>(nonNullProject, file) {
 
     private val cobNameWithoutExtension = file.nameWithoutExtension
     private val cobData by lazy {
-        CobToDataObjectDecompiler.decompile(ByteBuffer.wrap(file.contentsToByteArray()).littleEndian(), file.nameWithoutExtension)
+        try {
+            CobToDataObjectDecompiler.decompile(
+                ByteBuffer.wrap(file.contentsToByteArray()).littleEndian(),
+                file.nameWithoutExtension
+            )
+        } catch (e:Exception) {
+            CobFileData.InvalidCobData("Failed to parse COB. ${e.message}")
+        }
     }
 
     private val cobVirtualFile: CaosVirtualFile by lazy {
@@ -111,17 +127,19 @@ class CobFileTreeNode(
         presentationData.setIcon(icon)
         presentationData.presentableText = file.name
         presentationData.locationString = null
+        if (cobData is CobFileData.InvalidCobData) {
+            presentationData.setAttributesKey(ERROR_COB_TEXT_ATTRIBUTES)
+            presentationData.tooltip = "$name is invalid"
+        }
     }
 
     override fun getLeafState(): LeafState {
         return LeafState.ASYNC
     }
-
-    override fun getName(): String = virtualFile.name
 }
 
 internal class AuthorTreeNode(project: Project, block: AuthorBlock)
-    : AbstractTreeNode<AuthorBlock>(project, block), SortableTreeElement {
+    : AbstractTreeNode<AuthorBlock>(project, block) {
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(p0: Boolean) {}
     override fun canNavigate(): Boolean = false
@@ -133,7 +151,6 @@ internal class AuthorTreeNode(project: Project, block: AuthorBlock)
     }
 
     override fun getName() = virtualFile.name
-    override fun getAlphaSortKey(): String  = virtualFile.name
 
 }
 
@@ -141,7 +158,7 @@ internal class CobSpriteFileTreeNode(
         project: Project,
         enclosingCob:CaosVirtualFile,
         private val block: SpriteBlock
-) : AbstractTreeNode<VirtualFile>(project, wrapFileBlock(enclosingCob, block)), SortableTreeElement {
+) : AbstractTreeNode<VirtualFile>(project, wrapFileBlock(enclosingCob, block)) {
     override fun getVirtualFile(): VirtualFile = value
 
     private val spritesVirtualFileContainer:CaosVirtualFile by lazy {
@@ -178,7 +195,6 @@ internal class CobSpriteFileTreeNode(
         presentationData.setIcon(null)
     }
     override fun getName() = virtualFile.name
-    override fun getAlphaSortKey(): String  = virtualFile.name
 
     override fun getLeafState(): LeafState {
         return LeafState.ASYNC
@@ -192,7 +208,7 @@ private fun wrapFileBlock(enclosingCob:CaosVirtualFile, block:CobBlock.FileBlock
 }
 
 internal class SoundFileTreeNode(project: Project, private val enclosingCob: CaosVirtualFile, private val block: SoundBlock)
-    : AbstractTreeNode<SoundBlock>(project, block) , SortableTreeElement{
+    : AbstractTreeNode<SoundBlock>(project, block) {
 
     private val virtualFile  by lazy {
         CaosVirtualFile(block.fileName, block.contents, false).apply {
@@ -213,5 +229,10 @@ internal class SoundFileTreeNode(project: Project, private val enclosingCob: Cao
 
 
     override fun getName() = virtualFile.name
-    override fun getAlphaSortKey(): String  = virtualFile.name
 }
+
+private val ERROR_COB_TEXT_ATTRIBUTES =
+    TextAttributesKey.createTextAttributesKey("INVALID_COB", HighlighterColors.NO_HIGHLIGHTING).apply {
+        defaultAttributes.effectColor = Color(223,45,45)
+        defaultAttributes.effectType = EffectType.WAVE_UNDERSCORE
+    }

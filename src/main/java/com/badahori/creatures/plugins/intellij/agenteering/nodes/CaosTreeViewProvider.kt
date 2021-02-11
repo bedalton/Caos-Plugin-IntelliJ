@@ -1,20 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.badahori.creatures.plugins.intellij.agenteering.nodes.CobFileTreeNode
-import com.badahori.creatures.plugins.intellij.agenteering.nodes.SfcFileTreeNode
-import com.badahori.creatures.plugins.intellij.agenteering.nodes.SpriteFileTreeNode
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import java.io.File
 
-class CobNodeProjectViewProvider : TreeStructureProvider, DumbAware {
+class CaosTreeViewProvider : TreeStructureProvider{
     override fun modify(
             parent: AbstractTreeNode<*>,
             children: MutableCollection<AbstractTreeNode<*>>,
@@ -23,7 +21,9 @@ class CobNodeProjectViewProvider : TreeStructureProvider, DumbAware {
         val project = parent.project
                 ?: return children
         return children.map { child ->
-            virtualFileFromNode(child)?.toNode(project) ?: child
+            virtualFileFromNode(child)?.toNode(project) ?: child.apply {
+                LOGGER.info("Non-Caos NODE: ${child.value}")
+            }
         }.toMutableList()
     }
 
@@ -43,8 +43,14 @@ class CobNodeProjectViewProvider : TreeStructureProvider, DumbAware {
 private fun VirtualFile.toNode(project:Project) : AbstractTreeNode<*>? {
     return when (extension?.toLowerCase()) {
         "cob", "rcb" -> CobFileTreeNode(project, this)
+        "cos" -> (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
+            ProjectCaosScriptFileTreeNode(psiFile)
+        }
         //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
         "sfc" -> SfcFileTreeNode(project, this)
         else -> null
     }
 }
+
+
+internal const val SORT_WEIGHT = 20
