@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.100</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.102</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,12 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 0.01.102</b>
+        <ul>
+          <li>Fix slow access to context menus on folders</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.101</b>
         <ul>
@@ -370,8 +376,6 @@
 
     <enterHandlerDelegate implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler" />
 
-    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosFileTreeStructureProvider" />
-
     <!-- Project -->
     <iconProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
@@ -380,6 +384,11 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory" />
     <moduleConfigurationEditorProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider" />
+
+    <treeStructureProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider" />
+
+
     <!-- Formatting -->
     <lang.formatter language="CaosScript"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptFormattingModelBuilder" />
@@ -789,7 +798,7 @@
               fieldName="INSTANCE"
               language="PlainText"
               extensions="sfc" />
-    <treeStructureProvider implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.SfcTreeStructureProvider" / -->
+   -->
 
     <!-- =========================== -->
     <!-- ======== COB Files ======== -->
@@ -807,10 +816,6 @@
         filetype="COBFile"
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
     /-->
-
-
-    <treeStructureProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CobNodeProjectViewProvider" />
 
 
     <!-- =========================== -->
