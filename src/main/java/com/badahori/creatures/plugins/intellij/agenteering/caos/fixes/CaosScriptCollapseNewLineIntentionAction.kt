@@ -2,10 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
@@ -104,10 +101,18 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                     spacePointer?.element?.delete()
                 }
 
+            var didDeleteComments = PsiTreeUtil.collectElementsOfType(element, CaosScriptCommentBlock::class.java).map {
+                SmartPointerManager.createPointer(it)
+            }.all { commentBlockPointer ->
+                commentBlockPointer.element?.let {
+                    it.delete()
+                    true
+                } ?: false
+            }
+
             val comments = PsiTreeUtil.collectElementsOfType(element, CaosScriptComment::class.java).map {
                 SmartPointerManager.createPointer(it)
             }
-            var didDeleteComments = true
             for (commentPointer in comments) {
                 val comment = commentPointer.element
                 didDeleteComments = if (comment != null && comment.isValid) {
