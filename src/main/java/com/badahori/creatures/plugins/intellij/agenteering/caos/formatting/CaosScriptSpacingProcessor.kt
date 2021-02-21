@@ -66,6 +66,10 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
             return Spacing.createSpacing(0,0,1, mySettings.KEEP_LINE_BREAKS, 0)
         }
 
+        if (type1 == CaosScriptTypes.CaosScript_COMMENT_BLOCK) {
+            return Spacing.createSpacing(0,0, 1, mySettings.KEEP_LINE_BREAKS, 0)
+        }
+
         return when (node1.psi) {
             is CaosScriptRvalue -> spaceAfterIsValueOfType(node2,keepBlankLines)
             is CaosScriptIsCommandToken -> spaceAfterIsCommandToken(node2,keepBlankLines)
