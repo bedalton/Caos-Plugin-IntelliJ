@@ -1,11 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import com.intellij.ide.projectView.ProjectViewNode
+import com.intellij.ide.projectView.ProjectViewSettings
+import com.intellij.ide.projectView.ViewSettings
+import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.io.File
@@ -13,8 +18,8 @@ import java.io.IOException
 import javax.swing.JComponent
 import javax.swing.TransferHandler
 
-internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, protected val myVirtualFile:VfsT)
-    : AbstractTreeNode<VfsT>(project, myVirtualFile){
+internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, protected val myVirtualFile:VfsT, viewSettings:ViewSettings?)
+    : ProjectViewNode<VfsT>(project, myVirtualFile, viewSettings) {
 
     override fun getVirtualFile(): VirtualFile {
         return myVirtualFile
@@ -30,6 +35,21 @@ internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, 
 
     override fun toString(): String {
         return myVirtualFile.name
+    }
+
+    override fun getTypeSortKey(): PsiFileNode.ExtensionSortKey? {
+        val extension = myVirtualFile.extension
+        return if (extension == null) null else PsiFileNode.ExtensionSortKey(extension)
+    }
+
+
+    override fun canRepresent(element: Any?): Boolean {
+        if (super.canRepresent(element)) return true
+        return value != null && element != null && element == myVirtualFile
+    }
+
+    override fun contains(file: VirtualFile): Boolean {
+        return myVirtualFile == file
     }
 
 }

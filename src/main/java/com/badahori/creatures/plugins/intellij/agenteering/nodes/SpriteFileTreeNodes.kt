@@ -7,8 +7,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
+import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -18,9 +18,10 @@ import icons.CaosScriptIcons
 
 
 internal class SpriteFileTreeNode(
-        project: Project,
-        spriteVirtualFile: VirtualFile
-) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile) {
+    project: Project,
+    spriteVirtualFile: VirtualFile,
+    viewSettings: ViewSettings?
+) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile, viewSettings) {
     override fun getVirtualFile(): VirtualFile = value
 
     private val spritesVirtualFileContainer: CaosVirtualFile by lazy {
@@ -45,10 +46,11 @@ internal class SpriteFileTreeNode(
         images.mapIndexed map@{ index, image ->
             image?.toPngByteArray()?.let {
                 SpriteImageTreeNode(
-                        project,
-                        spritesVirtualFileContainer,
-                        fileNameBase + "$index".padStart(padLength, '0'),
-                        it
+                    project,
+                    spritesVirtualFileContainer,
+                    fileNameBase + "$index".padStart(padLength, '0'),
+                    it,
+                    viewSettings
                 )
             }
         }.filterNotNull()
@@ -61,7 +63,9 @@ internal class SpriteFileTreeNode(
     }
 
     override fun expandOnDoubleClick(): Boolean = false
-    override fun canNavigate(): Boolean = PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
+    override fun canNavigate(): Boolean =
+        PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
+
     override fun canNavigateToSource(): Boolean = false
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = value.name
@@ -81,18 +85,25 @@ internal class SpriteFileTreeNode(
 }
 
 internal class SpriteImageTreeNode(
-        project: Project,
-        enclosingImage: CaosVirtualFile,
-        private val fileName: String,
-        data: ByteArray
-) : VirtualFileBasedNode<VirtualFile>(project, enclosingImage.createChildWithContent("$fileName.png", data)) {
+    project: Project,
+    enclosingImage: CaosVirtualFile,
+    private val fileName: String,
+    data: ByteArray,
+    viewSettings: ViewSettings?
+) : VirtualFileBasedNode<VirtualFile>(
+    project,
+    enclosingImage.createChildWithContent("$fileName.png", data),
+    viewSettings
+) {
     override fun getVirtualFile(): VirtualFile = myVirtualFile
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(focus: Boolean) {
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
     }
 
-    override fun canNavigate(): Boolean = PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
+    override fun canNavigate(): Boolean =
+        PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
+
     override fun canNavigateToSource(): Boolean = false
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = fileName

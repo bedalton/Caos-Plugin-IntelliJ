@@ -21,9 +21,7 @@ class CaosTreeViewProvider : TreeStructureProvider{
         val project = parent.project
                 ?: return children
         return children.map { child ->
-            virtualFileFromNode(child)?.toNode(project) ?: child.apply {
-                LOGGER.info("Non-Caos NODE: ${child.value}")
-            }
+            virtualFileFromNode(child)?.toNode(project, settings) ?: child
         }.toMutableList()
     }
 
@@ -40,14 +38,14 @@ class CaosTreeViewProvider : TreeStructureProvider{
 }
 
 
-private fun VirtualFile.toNode(project:Project) : AbstractTreeNode<*>? {
+private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings?) : AbstractTreeNode<*>? {
     return when (extension?.toLowerCase()) {
-        "cob", "rcb" -> CobFileTreeNode(project, this)
+        "cob", "rcb" -> CobFileTreeNode(project, this, viewSettings)
         "cos" -> (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
-            ProjectCaosScriptFileTreeNode(psiFile)
+            ProjectCaosScriptFileTreeNode(psiFile, viewSettings)
         }
         //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
-        "sfc" -> SfcFileTreeNode(project, this)
+        "sfc" -> SfcFileTreeNode(project, this, viewSettings)
         else -> null
     }
 }
