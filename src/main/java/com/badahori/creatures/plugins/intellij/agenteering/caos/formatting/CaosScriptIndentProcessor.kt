@@ -31,6 +31,19 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
                     else -> Indent.getNoneIndent()
                 }
             }
+
+            node.elementType == CaosScriptTypes.CaosScript_COMMENT_BLOCK -> {
+                return Indent.getAbsoluteNoneIndent()
+            }
+
+            node.previous?.elementType == CaosScriptTypes.CaosScript_COMMENT_BLOCK -> {
+                return Indent.getNoneIndent()
+            }
+
+            element is CaosScriptCommentBlock  -> {
+                return Indent.getAbsoluteNoneIndent()
+            }
+
             element is CaosScriptCodeBlockLine -> {
                 (element.parent?.parent as? CaosScriptScriptElement)?.let {
                     return getIndent(it)

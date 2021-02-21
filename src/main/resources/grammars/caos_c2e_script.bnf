@@ -473,7 +473,7 @@ script_body_element
 	;
 
 macro
-	::= (macro_code_block (space_like_or_newline script_terminator)?|script_terminator)
+	::= (<<enterMode "inMacro">> macro_code_block (space_like_or_newline script_terminator)?|script_terminator) <<exitMode "inMacro">>
 	{
 
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptMacroStub"
@@ -537,7 +537,9 @@ private macro_code_block
 	;
 
 code_block
-	::= code_block_line (space_like_or_newline code_block_line)*
+	::= <<inMode "macro">> <<enterMode "noComment">> code_block_line space_like_or_newline <<exitMode "noComment">>  (space_like_or_newline code_block_line)*
+	|	<<inMode "macro">> code_block_line <<inMode "noComment">> space_like_or_newline code_block_line <<exitMode "noComment">>  (space_like_or_newline code_block_line)*
+	| 	<<notInMode "macro">> code_block_line (space_like_or_newline code_block_line)*
 	{
 		pin=1
 		implements = [
@@ -551,7 +553,7 @@ code_block_line
 	;
 
 private caos_element
-	::=	comment
+	::=	<<notInMode "noComment">> comment
 	|	control_statement
 	|	command_call
 	|	error_command

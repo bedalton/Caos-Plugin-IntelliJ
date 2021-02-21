@@ -3,16 +3,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_CODE_BLOCK_LINE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
