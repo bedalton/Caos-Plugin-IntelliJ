@@ -81,6 +81,7 @@ public class AttEditorPanel implements OnChangePoint {
                     public void documentChanged(@NotNull DocumentEvent event) {
                         if (changedSelf) {
                             changedSelf = false;
+                            update();
                             return;
                         }
                         final String text = event.getDocument().getText();
@@ -528,8 +529,9 @@ public class AttEditorPanel implements OnChangePoint {
         for (int i = 0; i < oldLines.size(); i++) {
             newLines.add(i == lineNumber ? newLine : oldLines.get(i));
         }
+
         fileData = new AttFileData(newLines);
-        try { 
+        try {
             if (!writeFile(fileData)) {
                 LOGGER.severe("Failed to write Att file data");
                 return;
