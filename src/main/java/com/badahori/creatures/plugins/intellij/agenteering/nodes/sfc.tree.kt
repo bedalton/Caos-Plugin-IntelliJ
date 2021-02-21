@@ -10,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
+import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -18,7 +19,8 @@ import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 import java.util.concurrent.atomic.AtomicInteger
 
-internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile) : VirtualFileBasedNode<VirtualFile>(project, myVirtualFile) {
+internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, private val viewSettings: ViewSettings?) :
+    VirtualFileBasedNode<VirtualFile>(project, myVirtualFile, viewSettings) {
 
     private val sfcNameWithoutExtension = myVirtualFile.nameWithoutExtension
 
@@ -34,12 +36,16 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile) : V
         try {
             // Caching is handled by read file method in SfcReader
             SfcReader.readFile(myVirtualFile).data
-        } catch (e:Exception) {
+        } catch (e: Exception) {
             val error = "Failed to parse SFC file: '${myVirtualFile.path}' with error:\n\t${e.message}"
             SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
             LOGGER.severe(error)
             e.printStackTrace()
-            CaosNotifications.showError(project, "SFC Error", "Failed to parse SFC file '${myVirtualFile.name}. *Note: Non-vanilla Eden.sfc files are un-parsable.")
+            CaosNotifications.showError(
+                project,
+                "SFC Error",
+                "Failed to parse SFC file '${myVirtualFile.name}. *Note: Non-vanilla Eden.sfc files are un-parsable."
+            )
             null
         }
     }
@@ -59,17 +65,18 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile) : V
 
     private fun getScriptName(index: Int, maxIndexLength: Int, script: String): String {
         val matches = eventScriptRegex.matchEntire(script)
-                ?: return "Macro ${"$index".padStart(maxIndexLength, '0')}"
+            ?: return "Macro ${"$index".padStart(maxIndexLength, '0')}"
         return matches.groupValues.drop(1).dropLast(0).joinToString(" ")
     }
 
     override fun getChildren(): MutableCollection<out AbstractTreeNode<*>> {
         return scripts.mapIndexed { index, file ->
             ChildCaosScriptFileTreeNode(
-                    sfcNameWithoutExtension,
-                    file,
-                    index,
-                    file.containingFile.name
+                sfcNameWithoutExtension,
+                file,
+                index,
+                file.containingFile.name,
+                viewSettings
             )
         }.toMutableList()
     }
@@ -82,7 +89,7 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile) : V
 
 private fun getSfcAsFolder(virtualFile: VirtualFile): CaosVirtualFile {
     val folderName = virtualFile.getUserData(SFC_FOLDER_KEY)
-            ?: "${virtualFile.name}.(${decompiledId.incrementAndGet()})"
+        ?: "${virtualFile.name}.(${decompiledId.incrementAndGet()})"
     return CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory(folderName)
 }
 

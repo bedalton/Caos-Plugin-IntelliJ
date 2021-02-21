@@ -5,27 +5,28 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.ide.projectView.PresentationData
+import com.intellij.ide.projectView.ProjectViewSettings
+import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
-import com.intellij.psi.impl.source.tree.java.JavaFileElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 
 
 internal class ProjectCaosScriptFileTreeNode(
-    private val caosFile: CaosScriptFile
-) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile) {
+    private val caosFile: CaosScriptFile,
+    viewSettings: ViewSettings?
+) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile, viewSettings) {
 
     private val scripts by lazy {
         PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
     }
 
     private val possibleScripts: Int by lazy {
-        var count = 0;
+        var count = 0
         SCRIPT_HEADER_REGEX.findAll(caosFile.text).iterator().forEach { _ ->
             count++
         }
@@ -100,10 +101,10 @@ internal class ProjectCaosScriptFileTreeNode(
     }
 
     override fun getLeafState(): LeafState {
-        if (isAlwaysLeaf)
-            return LeafState.ALWAYS
+        return if (isAlwaysLeaf)
+            LeafState.ALWAYS
         else
-            return LeafState.ASYNC
+            LeafState.ASYNC
     }
 
     companion object {
@@ -117,8 +118,9 @@ internal class ChildCaosScriptFileTreeNode(
     private val parentName: String,
     private val caosFile: CaosScriptFile,
     private val scriptIndex: Int,
-    private val presentableTextIn: String? = null
-) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile) {
+    private val presentableTextIn: String? = null,
+    viewSettings: ViewSettings?
+) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile, viewSettings) {
 
     private val scripts by lazy {
         PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
