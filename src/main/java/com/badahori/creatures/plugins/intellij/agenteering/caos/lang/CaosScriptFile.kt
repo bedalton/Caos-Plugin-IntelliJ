@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
@@ -205,9 +206,14 @@ val CaosScriptFile?.disableMultiScriptChecks: Boolean
         return this == null || this.isDump || this.isCaos2Cob
     }
 
-private val CAOS2COB_VARIANT_REGEX = "[*]{2}Caos2Cob\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
+private val CAOS2COB_VARIANT_REGEX = "^[*]{2}Caos2Cob\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
 private val CAOS2_BLOCK_VARIANT_REGEX =
-    "^[*]#\\s*(C1|C2|CV|C3|DS|[A-Z]{2}|[a-zA-Z][a-zA-Z0-9]{3})(-?Name)?".toRegex(RegexOption.IGNORE_CASE)
+    "^[*]#\\s*(C1|C2|CV|C3|DS|SM|[a-zA-Z][a-zA-Z0-9]{3}[ ])(-?Name)?".toRegex(
+        setOf(
+            RegexOption.IGNORE_CASE,
+            RegexOption.MULTILINE
+        )
+    )
 
 fun getCaos2VariantRaw(text: CharSequence): CaosVariant? {
     val variant = text.trim().split('\n', limit = 2)[0].trim().let { firstLineText ->
@@ -217,21 +223,22 @@ fun getCaos2VariantRaw(text: CharSequence): CaosVariant? {
             ?.let { variantCode ->
                 CaosVariant.fromVal(variantCode)
             }
+            ?.nullIfUnknown()
     }
-    if (variant == null || variant == CaosVariant.UNKNOWN) {
+    if (variant == null) {
         val variants = mutableListOf<CaosVariant>()
         CAOS2_BLOCK_VARIANT_REGEX
             .findAll(text)
             .iterator()
             .forEach { match ->
-                match.groupValues.getOrNull(1)?.let { variantCode ->
+                match.groupValues.getOrNull(1)?.let{ variantCode ->
                     when (variantCode) {
                         "AGNT" -> CaosVariant.C3
                         "DSAG" -> CaosVariant.DS
                         else -> {
-                            val parsedVariant = CaosVariant.fromVal(variantCode)
-                            if (parsedVariant != CaosVariant.UNKNOWN)
-                                variants.add(parsedVariant)
+                            CaosVariant.fromVal(variantCode).nullIfUnknown()?.let {
+                                variants.add(it)
+                            }
                         }
                     }
                 }
