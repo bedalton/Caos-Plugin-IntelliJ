@@ -2,8 +2,13 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.intellij.util.io.toByteArray
+import java.io.ByteArrayOutputStream
+import java.io.UnsupportedEncodingException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.zip.Deflater
+import java.util.zip.InflaterOutputStream
 
 
 private fun byteToUInt(b: Byte): Int {
@@ -171,4 +176,26 @@ fun ByteBuffer.writeUInt8(iIn: Int) {
 fun ByteBuffer.littleEndian() :ByteBuffer {
     order(ByteOrder.LITTLE_ENDIAN)
     return this
+}
+
+
+fun ByteArray.decompress() : ByteArray {
+    return try {
+        val decompressed = ByteArrayOutputStream()
+        val decompressor = InflaterOutputStream(decompressed)
+        decompressor.write(this)
+        decompressed.toByteArray()
+    } catch (e:Exception) {
+        this
+    } ?: this
+}
+
+fun ByteArray.compressed() : ByteArray {
+    val compressor = Deflater()
+    val data = this.copyOf()
+    compressor.setInput(data)
+    compressor.finish()
+    val bytesWritten = compressor.bytesWritten
+    compressor.end()
+    return data.copyOfRange(0, bytesWritten.toInt())
 }
