@@ -6,12 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.equalTo
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.notEqualTo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -23,8 +21,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 
 /**
  * Turns an ETCH..NEXT statement on C1 to ENUM..NEXT with DOIF TOUC
@@ -102,22 +98,13 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
      */
     private fun applyFix(document: Document, editor: Editor?, element: CaosScriptEnumNextStatement) {
         val project = element.project
-        val etch = if (element.enumHeaderCommand.commandToken equalTo "ETCH")
-            element.enumHeaderCommand.commandToken
-        else
+        if (element.enumHeaderCommand.commandToken notEqualTo "ETCH")
             return
         val varNumber = getVarNumberToUse(element)
                 ?: return
         val insertionPoint = element.enumHeaderCommand.endOffset
-        val etchText = etch.text
-        val varText = "var$varNumber".matchCase(etchText)
-        val doif = "DOIF".matchCase(etchText)
-        val endi = "ENDI".matchCase(etchText)
-        val enum = "ENUM".matchCase(etchText)
-        val touch = "TOUC".matchCase(etchText)
-        val targ = "TARG".matchCase(etchText)
-        val gt = "GT".matchCase(etchText)
-        val replacement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, enum)
+        val varText = "var$varNumber"
+        val replacement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, "enum")
                 ?: return
         PsiDocumentManager.getInstance(project).commitDocument(document)
         element.enumHeaderCommand.commandToken.replace(replacement)
@@ -125,12 +112,12 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
             "\n"
         else
             " "
-        val text = "$lineDelim$doif $touch $varText $targ $gt 0$lineDelim" + element.codeBlock?.text + "$lineDelim$endi"
+        val text = "${lineDelim}doif touc $varText targ gt 0$lineDelim" + element.codeBlock?.text + "${lineDelim}endi"
         element.codeBlock?.textRange?.let {
             PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.deleteText(document, it)
         }
-        val setv = "SETV".matchCase(etchText) + " $varText $targ$lineDelim"
+        val setv = "setv $varText targ$lineDelim"
         if (editor != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
             EditorUtil.insertText(editor, setv, element.startOffset, false)

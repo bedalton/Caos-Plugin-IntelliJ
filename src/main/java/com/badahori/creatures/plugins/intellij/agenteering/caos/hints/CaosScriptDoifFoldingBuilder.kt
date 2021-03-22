@@ -28,7 +28,7 @@ import com.intellij.psi.util.PsiTreeUtil
  * Folder for DOIF statement equality expressions
  * Takes a command like doif CAGE gt 3 -> "Is Older Than Child
  */
-class CaosScriptDoifFoldingBuilder : FoldingBuilderEx(), DumbAware {
+class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
 
     /**
      * Gets command call placeholder text for folding if it should be folded

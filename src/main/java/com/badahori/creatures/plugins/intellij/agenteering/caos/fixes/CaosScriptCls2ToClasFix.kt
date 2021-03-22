@@ -56,16 +56,13 @@ class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction,
         if (familyAndGenus.size != 2)
             return null
 
-        val case = element.commandString.case
-        val clasText = "CLAS".matchCase(case)
         val clas:Int
-        val setv = "setv".matchCase(case)
         return try {
             val family = familyAndGenus[0].text.toInt()
             val genus = familyAndGenus[1].text.toInt()
             val species = element.getChildrenOfType(CaosScriptArgument::class.java).last().text.toInt()
             clas = CaosAgentClassUtils.toClas(family, genus, species)
-            "$setv $clasText $clas"
+            "setv clas $clas"
         } catch (e:Exception) {
             null
         }

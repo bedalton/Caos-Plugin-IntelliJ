@@ -11,13 +11,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCKwInvalidLoopTerminator
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.case
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.psi.PsiElement
 
 
@@ -34,6 +30,17 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
 
     if ((commandToUpperCase == "RSCR" || commandToUpperCase == "ISCR") && (element.containingFile as? CaosScriptFile)?.isCaos2Cob.orFalse())
         return null
+
+    if (commandToUpperCase == "VARX" ||
+        commandToUpperCase == "VAXX" ||
+        commandToUpperCase == "OVXX" ||
+        commandToUpperCase == "OBVX" ||
+        commandToUpperCase == "MVXX"
+    ) {
+        return annotationWrapper
+            .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command", commandToUpperCase))
+            .range(element)
+    }
 
     // Ascertain the type of command involved
     val commandType = element.getEnclosingCommandType()
@@ -174,7 +181,7 @@ private fun addSetvLikeFixes(variant: CaosVariant, element:PsiElement, commandTo
         // If old variant and lvalue is not a string value return
         if (!expectsString)
             builder = builder
-                    .withFix(CaosScriptInsertBeforeFix("Insert SETV before $commandToUpperCase", "SETV".matchCase(commandToken), element))
+                    .withFix(CaosScriptInsertBeforeFix("Insert SETV before $commandToUpperCase", "setv", element))
     } else {
         val case = commandToken.case
         if (expectsString)

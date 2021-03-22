@@ -20,8 +20,8 @@ class CaosScriptEnumAnnotator : Annotator {
         val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         when (element) {
             is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)
-            is CaosScriptCNext -> annotateNext(element, annotationWrapper)
-            is CaosScriptCNscn -> annotateNscn(element, annotationWrapper)
+            is CaosScriptCNext -> annotateNext(variant, element, annotationWrapper)
+            is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
             is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationWrapper)
         }
     }
@@ -31,7 +31,7 @@ class CaosScriptEnumAnnotator : Annotator {
      * ENUM..NSCN is allowed in grammar in case it is accidentally used by user
      * this annotation marks it as invalid as it should be
      */
-    private fun annotateNext(element: CaosScriptCNext, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNext(variant: CaosVariant, element: CaosScriptCNext, annotationWrapper: AnnotationHolderWrapper) {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
         if (parent == null) {
             annotationWrapper.newErrorAnnotation("NEXT should not be used outside of enum")
@@ -40,7 +40,7 @@ class CaosScriptEnumAnnotator : Annotator {
             return
         }
         if (parent is CaosScriptEnumSceneryStatement) {
-            val next = "NSCN".matchCase(element.text)
+            val next = "NSCN".matchCase(element.text, variant)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.enum-terminator-invalid", "ESCN", "NSCN", "NEXT"))
                     .range(element)
                     .withFix(CaosScriptReplaceWordFix(next, element))
@@ -52,7 +52,7 @@ class CaosScriptEnumAnnotator : Annotator {
      * Annotate NSCN if used in ENUM..NEXT
      * Grammar allows construct on off chance it is used by accident. This marks it as an error
      */
-    private fun annotateNscn(element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNscn(variant: CaosVariant, element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
 
         if (parent == null) {
@@ -64,7 +64,7 @@ class CaosScriptEnumAnnotator : Annotator {
 
         if (parent is CaosScriptEnumNextStatement) {
             val enum = parent.enumHeaderCommand.commandStringUpper!!
-            val next = "NEXT".matchCase(element.text)
+            val next = "NEXT".matchCase(element.text, variant)
             annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.enum-terminator-invalid", enum, "NEXT", "NSCN"))
                     .range(element)
                     .withFix(CaosScriptReplaceWordFix(next, element))
