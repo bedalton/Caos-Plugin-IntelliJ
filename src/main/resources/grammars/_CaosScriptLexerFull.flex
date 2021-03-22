@@ -30,8 +30,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	private int repsDepth = 0;
 	private int doifDepth = 0;
 	private int subrDepth = 0;
+	private int jsDepth = 0;
 	private boolean hadNumber = false;
 	private int beforeString = START_OF_LINE;
+	private int beforeJs = START_OF_LINE;
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -93,7 +95,7 @@ VAxx=[Vv][Aa][0-9][0-9]
 OBVx=[Oo][Bb][Vv][0-9]
 OVxx=[Oo][Vv][0-9][0-9]
 MVxx=[Mm][Vv][0-9][0-9]
-COMMENT_TEXT=[^ \n]+
+COMMENT_TEXT=[^ \n\t\r\s]+
 FLOAT=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
@@ -131,8 +133,9 @@ CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
 CAOS_2_ID=[^\s\"']+
 CAOS_VARIANT=[*]{2}[Vv][Aa][Rr][Ii][Aa][Nn][Tt]\s+[a-zA-Z0-9]{2}[+]?
-
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING
+JS_INSIDE_BRACES=[$]?\{[^}]*[}]
+JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING IN_JS
 %%
 
 <START_OF_LINE> {
@@ -156,7 +159,7 @@ CAOS_VARIANT=[*]{2}[Vv][Aa][Rr][Ii][Aa][Nn][Tt]\s+[a-zA-Z0-9]{2}[+]?
 <COMMENT_START> {
 	//{N_CONST}				{ yybegin(IN_CONST); return CaosScript_N_CONST; }
   	//{N_VAR}				{ yybegin(IN_VAR); return CaosScript_N_VAR; }
-    " "						{ return WHITE_SPACE; }
+    [ \t]					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
 <DIRECTIVE_COMMENT> {
@@ -167,13 +170,13 @@ CAOS_VARIANT=[*]{2}[Vv][Aa][Rr][Ii][Aa][Nn][Tt]\s+[a-zA-Z0-9]{2}[+]?
     \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
 	{CAOS_2_ID}				{ return CaosScript_ID; }
   	{INT}					{ return CaosScript_INT; }
-    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
 }
 <IN_COMMENT> {
 	{COMMENT_TEXT}			{ return CaosScript_COMMENT_TEXT; }
-    " "						{ return WHITE_SPACE; }
+    [ \t]					{ return WHITE_SPACE; }
     \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
-    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
 }
 
 <IN_TEXT> {
@@ -248,6 +251,7 @@ CAOS_VARIANT=[*]{2}[Vv][Aa][Rr][Ii][Aa][Nn][Tt]\s+[a-zA-Z0-9]{2}[+]?
 	"]"                    	{ braceDepth--; return CaosScript_CLOSE_BRACKET; }
 	","                    	{ return CaosScript_COMMA; }
     "'"						{ yybegin(IN_CHAR); return CaosScript_SINGLE_QUOTE; }
+	{JS_BODY}				{ return CaosScript_JS_BODY_LITERAL; }
  	{SWIFT_ESCAPE}			{ return CaosScript_SWIFT_ESCAPE; }
 	{EQ_C1}				 	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}			 	{ return CaosScript_EQ_OP_NEW_; }
