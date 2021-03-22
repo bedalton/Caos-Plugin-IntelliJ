@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.utils.escapeHTML
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -148,10 +147,7 @@ object Injector {
     @JvmStatic
     internal fun postOk(project: Project, response: InjectionStatus.Ok) {
         val prefix = "&gt;"
-        var responseString = response.response;
-        if (responseString.isNotEmpty()) {
-            responseString = responseString.substringFromEnd(0, 1)
-        }
+        val responseString = response.response
         val message = if (responseString.isBlank())
             ""
         else
@@ -211,9 +207,6 @@ object Injector {
     private fun getConnectionObject(variant: CaosVariant, project: Project): CaosConnection {
         val injectUrl = runReadAction { CaosScriptProjectSettings.getInjectURL(project) }
         if (injectUrl != null) {
-            if (injectUrl.startsWith("wine:")) {
-                return WineConnection(injectUrl.substring(5), variant)
-            }
             return PostConnection(injectUrl, variant)
         }
         return when (variant) {

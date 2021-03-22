@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.pretty_tools.dde.client.DDEClientConversation
@@ -22,9 +23,11 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
             return InjectionStatus.Bad("Poke macro failed with error: ${e.message}")
         }
         return try {
-            val response = conn.request("Macro")
+            var response = conn.request("Macro")
             if (response == "0000") {
                 InjectionStatus.Bad("Silent exception raised during injected script execution")
+            } else if (response.length > 1) {
+                response = response.substringFromEnd(0, 1)
             }
             InjectionStatus.Ok(response)
         } catch(e:Exception) {
@@ -40,7 +43,7 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
              if (removalRegex.matches(caos)) {
                  caos.replace(removalRegex, "")
              } else
-                 expectedHeader + caos
+                 "$expectedHeader $caos"
         } else
             caos
         return inject(caosFormatted)
