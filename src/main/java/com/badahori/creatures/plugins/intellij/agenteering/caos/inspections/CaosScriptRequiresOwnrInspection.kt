@@ -1,11 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -19,6 +17,17 @@ class CaosScriptRequiresOwnrInspection : LocalInspectionTool() {
             override fun visitIsCommandToken(o: CaosScriptIsCommandToken) {
                 super.visitIsCommandToken(o)
                 annotateCommand(o, holder)
+            }
+
+            override fun visitVarToken(o: CaosScriptVarToken) {
+                super.visitVarToken(o)
+                if (o.varGroup == CaosScriptVarTokenGroup.MVxx) {
+                    val scriptParent = o.getParentOfType(CaosScriptScriptElement::class.java)
+                    if (scriptParent is CaosScriptEventScript) {
+                        return
+                    }
+                    holder.registerProblem(o, CaosBundle.message("caos.inspections.ownr-inspection.mvxx-requires-ownr"))
+                }
             }
         }
     }
