@@ -79,7 +79,16 @@ internal class PostConnection(urlString:String, variant: CaosVariant) : CaosConn
     }
 
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus {
-        return inject(caos);
+        val expectedHeader = "scrp $family $genus $species $eventNumber"
+        val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
+        val caosFormatted = if (!caos.trim().toLowerCase().startsWith(expectedHeader)) {
+            if (removalRegex.matches(caos)) {
+                caos.replace(removalRegex, "")
+            } else
+                "$expectedHeader $caos"
+        } else
+            caos
+        return inject(caosFormatted)
     }
 
     override fun disconnect(): Boolean = true
