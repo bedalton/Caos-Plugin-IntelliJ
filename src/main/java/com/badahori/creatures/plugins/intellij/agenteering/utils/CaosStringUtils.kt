@@ -2,6 +2,8 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.GameVariant
 import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.pow
@@ -161,7 +163,9 @@ fun String.indexOfFirstNonWhitespaceCharacter(): Int {
     return -1
 }
 
-fun String.matchCase(stringToMatch: String): String {
+fun String.matchCase(stringToMatch: String, variant:CaosVariant? = null): String {
+    if (variant != null && variant < 3)
+        return toLowerCase()
     return when (stringToMatch.case) {
         Case.UPPER_CASE -> toUpperCase()
         Case.LOWER_CASE -> toLowerCase()
@@ -169,7 +173,9 @@ fun String.matchCase(stringToMatch: String): String {
     }
 }
 
-fun String.matchCase(case:Case): String {
+fun String.matchCase(case:Case, variant:CaosVariant? = null): String {
+    if (variant != null && variant < 3)
+        return toLowerCase()
     return when (case) {
         Case.UPPER_CASE -> toUpperCase()
         Case.LOWER_CASE -> toLowerCase()
