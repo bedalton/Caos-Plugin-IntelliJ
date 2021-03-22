@@ -559,11 +559,12 @@ private fun showC3InjectPanel(
                     removalScripts?.let { scriptsInOrder.addAll(it) }
                 }
                 if (eventScriptsCheckBox?.isSelected.orFalse()) {
-                    eventScripts?.let { inject(project, variant, it) }
+                    eventScripts?.let { scriptsInOrder.addAll(it) }
                 }
                 if (installScriptsCheckBox?.isSelected.orFalse()) {
-                    installScripts?.let { inject(project, variant, it) }
+                    installScripts?.let { scriptsInOrder.addAll(it) }
                 }
+                inject(project, variant, scriptsInOrder)
             }
         }.showModal(true)
 }
