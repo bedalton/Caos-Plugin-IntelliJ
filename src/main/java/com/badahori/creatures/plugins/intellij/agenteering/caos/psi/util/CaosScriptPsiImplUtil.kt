@@ -1890,17 +1890,27 @@ object CaosScriptPsiImplUtil {
         (def.stub?.agentBlockNames)?.let {
             return it
         }
-        val nameRegex = "(C1|C2|CV|C3|DS|[A-Z]{2})-?Name|([a-zA-Z][a-zA-Z0-9]{3})".toRegex(RegexOption.IGNORE_CASE)
+        val nameRegex = "^(C1|C2|CV|C3|DS|[A-Z]{2})[-]?Name|([a-zA-Z][a-zA-Z0-9]{3})".toRegex(RegexOption.IGNORE_CASE)
         val agentNameFromCobTag = def.tags
             .filter { CobTag.AGENT_NAME.isTag(it.key) }
             .values
             .firstOrNull()
         val cobNamePair = if (agentNameFromCobTag != null) {
-            val variant = def.cobVariant
-            if (variant != null)
-                variant.code to agentNameFromCobTag
+            val variantString = def.caos2BlockHeader
+                ?.text
+                ?.trim()
+                .nullIfEmpty()
+                ?.let { it.substring(it.length - 2) }
+                ?.toUpperCase()
+            LOGGER.info("variantString:$variantString")
+            if (variantString == "C1" || variantString == "C2")
+                variantString to agentNameFromCobTag
+            else if (def.tags.any { it.key.toUpperCase().startsWith("C1") })
+                "C1" to agentNameFromCobTag
+            else if (def.tags.any { it.key.toUpperCase().startsWith("C2") })
+                "C2" to agentNameFromCobTag
             else
-                null
+                null//def.variant?.code?.let { it to agentNameFromCobTag}
         } else {
             null
         }
@@ -1952,16 +1962,22 @@ object CaosScriptPsiImplUtil {
             return null
         val variant = def.caos2BlockHeader?.caos2CobHeader?.let { header ->
             val text = header.text.trim()
-            if (text.length < 13)
+            if (text.length < 12)
                 def.variant
             else {
-                when (text.substring(text.length - 3)) {
+                when (text.substring(text.length - 2)) {
                     "C1" -> CaosVariant.C1
                     "C2" -> CaosVariant.C2
                     else -> null
                 }
             }
-        } ?: def.agentBlockNames
+        } ?:
+            when(CAOS2CobVariantRegex.matchEntire(def.text)?.groupValues?.firstOrNull()?.toUpperCase()) {
+                "C1" -> CaosVariant.C1
+                "C2" -> CaosVariant.C2
+                else ->null
+            }
+        ?: def.agentBlockNames
             .filter { it.first == "C1" || it.first == "C2" }
             .nullIfEmpty()
             ?.firstOrNull()
@@ -2187,3 +2203,4 @@ val CaosScriptCommandLike.commandStringUpper: String? get() = commandString?.toU
 val ASTNode.endOffset: Int get() = textRange.endOffset
 
 
+private val CAOS2CobVariantRegex = "^\\s*[*]{2}CAOS2Cob\\s*([C][12])|^\\s*[*][#]\\s*([C][12])[\\- ]?Name".toRegex(RegexOption.IGNORE_CASE)

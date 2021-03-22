@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.fixes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -86,7 +87,7 @@ class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: Cob
                 }
             }
             EditorUtil
-                .insertText(document, prefix + command.keyString.matchCase(case) + " " + element.text, insertionPoint)
+                .insertText(document, prefix + command.keyString.matchCase(case, element.variant) + " " + element.text, insertionPoint)
         } else {
             val commandElement = commandPointer.element!!
             val commandRange = commandElement.textRange

@@ -55,7 +55,7 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
                 return
             val tagNameRaw = element.text?.nullIfEmpty()
                 ?: return
-            if (tagNameRaw.matches(COB_NAME_COMMAND_REGEX)) {
+            /*if (tagNameRaw.matches(COB_NAME_COMMAND_REGEX)) {
                 val error = CaosBundle.message("cob.caos2cob.inspections.property-valid.command-name-is-not-tag", tagNameRaw)
                 val possibleEqualSign = element.getNextNonEmptySibling(false)
                 if (possibleEqualSign?.text == "=") {
@@ -69,7 +69,7 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
                     holder.registerProblem(element, error)
                 }
                 return
-            }
+            }*/
             val fixes = mutableListOf<LocalQuickFix>()
             if (tagNameRaw.matches(REMOVAL_SCRIPT_REGEX)) {
                 val fix = element.getParentOfType(CaosScriptCaos2Tag::class.java)?.let { tag->

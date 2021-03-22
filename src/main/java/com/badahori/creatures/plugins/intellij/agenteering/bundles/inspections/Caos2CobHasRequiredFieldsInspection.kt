@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -57,15 +58,45 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
                 if (tag !in foundTags)
                     missingTags.add(tag)
             }
+
+            val textRange = element.caos2BlockHeader?.textRange
+                ?: element.firstChild?.let {
+                    TextRange(0, min(2, it.textLength))
+                }
+
             if (missingTags.contains(CobTag.AGENT_NAME) && element.agentBlockNames.any { it.first == "C1" || it.first == "C2" }) {
                 missingTags.remove(CobTag.AGENT_NAME)
+            } else if (CobTag.AGENT_NAME in foundTags && element.agentBlockNames.none { it.first == "C1" || it.first == "C2" }) {
+                val fixes = element.caos2BlockHeader?.let {header ->
+                    val text = header.text.trim()
+                    arrayOf(
+                        CaosScriptReplaceElementFix(header, "$text C1", "Set variant to C1"),
+                        CaosScriptReplaceElementFix(header, "$text C2", "Set variant to C2")
+                    )
+                } ?: arrayOf(
+                    CaosScriptInsertBeforeFix(
+                        "Set variant to C1",
+                        "**CAOS2Cob C1",
+                        element.children.first(),
+                        '\n'
+                    ),
+                    CaosScriptInsertBeforeFix(
+                        "Set variant to C2",
+                        "**CAOS2Cob C2",
+                        element.children.first(),
+                        '\n'
+                    )
+                )
+                holder.registerProblem(
+                    element,
+                    textRange,
+                    CaosBundle.message("cob.caos2cob.inspections.missing-game-variant"),
+                    *fixes
+                )
             }
             if (missingTags.isEmpty())
                 return
-            val textRange = element.caos2BlockHeader?.textRange
-                ?: element.firstChild?.let {
-                    TextRange(element.startOffset, element.startOffset + min(2, it.textLength))
-                }
+
             val missingTagsString = missingTags.joinToString(", ") { it.keys.first() }
             holder.registerProblem(element,
                 textRange,
