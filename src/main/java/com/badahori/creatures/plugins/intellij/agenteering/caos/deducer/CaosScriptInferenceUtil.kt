@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -72,6 +73,8 @@ object CaosScriptInferenceUtil {
      */
     fun getInferredType(element: CaosScriptIsVariable?): CaosExpressionValueType? {
         if (element == null)
+            return null
+        if (DumbService.isDumb(element.project))
             return null
         // Get all assignments for this variable
         return element.getAssignments()
