@@ -67,3 +67,53 @@ val <T:Any> Iterator<T>.values:List<T> get() {
         out.add(next())
     return out
 }
+
+
+fun <T> List<T>.equalIgnoringOrder(other:List<T>) : Boolean {
+    if (other.size != size)
+        return false
+    val otherCopy:MutableList<T> = ArrayList<T>(other)
+    for (e in this) {
+        if (e !in otherCopy)
+            return false
+        otherCopy.remove(e)
+    }
+    return true
+}
+
+
+fun <T> Collection<T>.equalIgnoringOrder(other:Array<T>) : Boolean {
+    if (other.size != size)
+        return false
+    val otherCopy:MutableList<T> = other.toMutableList()
+    for (e in this) {
+        if (e !in otherCopy)
+            return false
+        otherCopy.remove(e)
+    }
+    return true
+}
+
+fun <T> Array<T>.equalIgnoringOrder(other:Array<T>) : Boolean {
+    if (other.size != size)
+        return false
+    val otherCopy:MutableList<T> = other.toMutableList()
+    for (e in this) {
+        if (e !in otherCopy)
+            return false
+        otherCopy.remove(e)
+    }
+    return true
+}
+
+fun IntArray.equalIgnoringOrder(other:IntArray) : Boolean {
+    if (other.size != size)
+        return false
+    val otherCopy:MutableList<Int> = other.toMutableList()
+    for (e in this) {
+        if (e !in otherCopy)
+            return false
+        otherCopy.remove(e)
+    }
+    return true
+}
