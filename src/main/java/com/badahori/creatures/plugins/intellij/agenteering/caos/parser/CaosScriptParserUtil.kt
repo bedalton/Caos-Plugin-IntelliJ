@@ -167,9 +167,17 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             psiFile.virtualFile?.let { virtualFile ->
                 setVirtualFileVariant(virtualFile, variant)
             }
+            
             psiFile.originalFile.virtualFile?.let { virtualFile ->
                 setVirtualFileVariant(virtualFile, variant)
             }
+
+            psiFile.putUserData(VariantUserDataKey, variant)
+
+            psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
+                setVirtualFileVariant(virtualFile, variant)
+            }
+
             psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
                 setVirtualFileVariant(virtualFile, variant)
             }
