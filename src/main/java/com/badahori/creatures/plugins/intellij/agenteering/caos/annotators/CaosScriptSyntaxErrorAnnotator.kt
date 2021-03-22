@@ -103,6 +103,14 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), annotationWrapper)
                 }
             }
+            is CaosScriptJsElement -> {
+                val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
+                if (!"^\\*\\s*FOR\\s*JS\\s*|^[*]{2}VARIANT[^\n]*".toRegex(RegexOption.IGNORE_CASE).matches(firstChildText)) {
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
+                } else if (element.textLength < 4) {
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.js-value-empty"), annotationWrapper)
+                }
+            }
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, annotationWrapper)
