@@ -69,6 +69,14 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     override fun toString(): String {
         return code
     }
+
+    operator fun compareTo(version: Int): Int {
+        return when {
+            index - version < 0 -> -1
+            index - version > 0 -> 1
+            else -> 0
+        }
+    }
 }
 
 fun CaosVariant?.nullIfUnknown() : CaosVariant? {
@@ -92,3 +100,5 @@ fun CaosVariant?.orDefault(): CaosVariant? {
 }
 
 val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
+
+typealias GameVariant = CaosVariant
