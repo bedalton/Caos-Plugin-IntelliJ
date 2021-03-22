@@ -203,7 +203,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 return
             val pointer = SmartPointerManager.createPointer(nextIn)
             var previous = nextIn.previous
-            while (previous != null && (previous is PsiWhiteSpace || whitespaceOrComma.matches(previous.text))) {
+            while (previous != null && previous.isWhitespaceOrComma()) {
                 previous.delete()
                 previous = previous.previous
             }
@@ -223,7 +223,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 next
             } ?: return
             var nextPointer: SmartPsiElementPointer<PsiElement>?
-            while (whitespaceOrComma.matches(superNext.text)) {
+            while (superNext.isWhitespaceOrComma()) {
                 val toDelete = superNext
                 nextPointer = superNext.next?.let {
                     SmartPointerManager.createPointer(it)
@@ -231,6 +231,13 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 toDelete.delete()
                 superNext = nextPointer?.element ?: return
             }
+        }
+
+        /**
+         * Check if PSI element is blank or made up of whitespace and/or commas
+         */
+        private fun PsiElement.isWhitespaceOrComma() : Boolean {
+            return this is PsiWhiteSpace || whitespaceOrComma.matches(text) || text.isBlank()
         }
     }
 }

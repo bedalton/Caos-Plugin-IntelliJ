@@ -11,7 +11,9 @@ import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
@@ -48,7 +50,7 @@ class AppendStatementTerminator(elementIn: PsiElement, private val replacementTe
         val other = element.previous ?: element.next ?: element
         val singleLine = !other.textContains('\n')
         var separatorToken = if (!singleLine) "\n" else if (other.textContains(',')) "," else " "
-        val text = replacementText.matchCase(element.lastChild.text)
+        val text = replacementText.matchCase(element.lastChild.text, element.variant ?: CaosVariant.C1)
         var replacement = "$separatorToken$text"
         var insertAt:Int = element.lastChild.endOffset
         var next = element.next

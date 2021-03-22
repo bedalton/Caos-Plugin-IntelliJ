@@ -50,7 +50,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
         val setv = element.commandToken
                 ?: return
-        annotateSetvNew(setv, actualType, problemsHolder)
+        annotateSetvNew(variant, setv, actualType, problemsHolder)
     }
 
     private fun annotateSetvClassic(variant: CaosVariant, element: CaosScriptCAssignment, lvalue: CaosScriptLvalue, problemsHolder: ProblemsHolder) {
@@ -63,10 +63,10 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
     }
 
-    private fun annotateSetvNew(setv: CaosScriptIsCommandToken, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSetvNew(variant:CaosVariant, setv: CaosScriptIsCommandToken, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (type.isNumberType || type.isAnyType)
             return
-        annotateUnexpectedType(setv, CaosExpressionValueType.DECIMAL, type, problemsHolder)
+        annotateUnexpectedType(variant, setv, CaosExpressionValueType.DECIMAL, type, problemsHolder)
     }
 
     private fun annotateSets(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
@@ -74,7 +74,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
             return
         val commandToken = element.commandToken
                 ?: return
-        annotateUnexpectedType(commandToken, CaosExpressionValueType.STRING, type, problemsHolder)
+        annotateUnexpectedType(variant, commandToken, CaosExpressionValueType.STRING, type, problemsHolder)
     }
 
 
@@ -83,16 +83,16 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
             return
         val commandToken = element.commandToken
                 ?: return
-        annotateUnexpectedType(commandToken, CaosExpressionValueType.AGENT, type, problemsHolder)
+        annotateUnexpectedType(variant, commandToken, CaosExpressionValueType.AGENT, type, problemsHolder)
     }
 
-    private fun annotateUnexpectedType(element: CaosScriptIsCommandToken, expectedType: CaosExpressionValueType, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateUnexpectedType(variant:CaosVariant, element: CaosScriptIsCommandToken, expectedType: CaosExpressionValueType, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
         if (actualType == expectedType)
             return
         val replacement = when {
-            actualType.isNumberType -> "SETV".matchCase(element.text)
-            actualType.isStringType -> "SETS".matchCase(element.text)
-            actualType.isAgentType -> "SETA".matchCase(element.text)
+            actualType.isNumberType -> "SETV".matchCase(element.text, variant)
+            actualType.isStringType -> "SETS".matchCase(element.text, variant)
+            actualType.isAgentType -> "SETA".matchCase(element.text, variant)
             else -> null
         }
         val typeName = when {

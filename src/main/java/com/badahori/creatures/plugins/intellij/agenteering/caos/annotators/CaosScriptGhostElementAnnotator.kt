@@ -3,7 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.AppendStatementTerminator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
@@ -56,7 +58,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
                 if (element.firstChild is CaosScriptLvalue) {
                     annotationWrapper.newErrorAnnotation("${element.text.substring(0,4).toUpperCase()} is an LValue and must be used with an lvalue operator such as SETV ")
                             .range(element.firstChild)
-                            .withFix(CaosScriptInsertBeforeFix("Prepend SETV to statement", "SETV".matchCase(element.lastChild.text), element))
+                            .withFix(CaosScriptInsertBeforeFix("Prepend SETV to statement", "SETV".matchCase(element.lastChild.text, element.variant ?: CaosVariant.C1), element))
                             .create()
                 }
             }

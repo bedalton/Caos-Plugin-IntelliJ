@@ -12,6 +12,7 @@ import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -60,9 +61,8 @@ class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionActio
                 ?: return null
         val clas = CaosAgentClassUtils.parseClas(clasInt)
                 ?: return null
-        val case = element.commandString.case
-        val setv = "setv".matchCase(case)
-        val clasText = "CLS2".matchCase(case)
+        val setv = "setv"
+        val clasText = "cls2"
         return "$setv $clasText ${clas.family} ${clas.genus} ${clas.species}"
     }
 
