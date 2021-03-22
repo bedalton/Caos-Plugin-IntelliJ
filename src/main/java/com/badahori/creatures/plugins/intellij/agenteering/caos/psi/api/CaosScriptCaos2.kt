@@ -16,7 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile
 interface CaosScriptCaos2 : CaosScriptCompositeElement
 
 enum class CobTag(vararg val keys: String, val required:Boolean = false, val variant: CaosVariant? = null) {
-    AGENT_NAME("Agent Name", "Agent", required = true),
+    AGENT_NAME("Agent Name", "Agent", "C1Name", "C1-Name", "C2Name", "C2-Name", required = true),
     COB_NAME("COB File", "Cob File Name", "COB Name", "COB", required = true),
     QUANTITY_AVAILABLE("Quantity Available", "Quantity", "Qty", "Qty Available"),
     THUMBNAIL("Thumbnail", "Image", "Picture", "Preview"),
