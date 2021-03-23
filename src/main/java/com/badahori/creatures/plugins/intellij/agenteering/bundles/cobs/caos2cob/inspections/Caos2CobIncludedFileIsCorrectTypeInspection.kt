@@ -1,10 +1,9 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil.ARRAY_ACCESS_BEFORE_EXTENSION_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil.ARRAY_ACCESS_REGEX
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.fixes.Caos2CobMoveFileToCommandFix
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.fixes.Caos2CobRemoveFileFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobMoveFileToCommandFix
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand.*

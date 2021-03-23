@@ -1,8 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobException
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.fixes.Caos2CobRemoveFileFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag

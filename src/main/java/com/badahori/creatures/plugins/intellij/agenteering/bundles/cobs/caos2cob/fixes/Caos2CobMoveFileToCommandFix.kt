@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.fixes
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile

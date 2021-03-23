@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.inspections
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
