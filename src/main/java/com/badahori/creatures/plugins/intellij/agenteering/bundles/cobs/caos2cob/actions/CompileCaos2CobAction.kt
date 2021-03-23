@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.actions
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler.CompilationResults
