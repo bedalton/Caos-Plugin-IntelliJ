@@ -33,5 +33,6 @@ public interface CaosScriptIcons {
     Icon INSTALL_SCRIPT = IconLoader.getIcon("/icons/install-script-icon.png");
     Icon REMOVAL_SCRIPT = IconLoader.getIcon("/icons/removal-script-icon.png");
     Icon EVENT_SCRIPT = IconLoader.getIcon("/icons/event-script-icon.png");
+    Icon SUBROUTINE = IconLoader.getIcon("/icons/subroutine-icon.png");
     Icon IMAGE = IconLoader.getIcon("/icons/ImagesFileType.svg");
 }

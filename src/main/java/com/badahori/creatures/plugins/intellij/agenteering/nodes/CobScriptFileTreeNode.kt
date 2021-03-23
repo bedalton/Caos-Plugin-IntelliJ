@@ -87,15 +87,17 @@ internal class CobFileTreeNode(
             is SoundBlock -> listOf(SoundFileTreeNode(nonNullProject, cobVirtualFile, block))
             is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, block))
             is AgentBlock -> {
+                val needsInstallScriptIdentifier = block.installScripts.size > 2
                 val installScripts = block.installScripts.mapIndexed { i, installScript ->
                     ChildCaosScriptFileTreeNode(
                         cobNameWithoutExtension,
                         installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
                         0,
-                        file.nameWithoutExtension + " Install Script ($i)",
+                        file.nameWithoutExtension + " Install Script" + (if (needsInstallScriptIdentifier)  " ($i)" else ""),
                         viewSettings
                     )
                 }
+
                 val scripts = installScripts + listOfNotNull(
                     block.removalScript?.let {
                         ChildCaosScriptFileTreeNode(
