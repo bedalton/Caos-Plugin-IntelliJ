@@ -12,8 +12,8 @@ import com.intellij.psi.PsiManager
 
 
 open class AgentScript(val code: String, val scriptName: String, val type: AgentScriptType) {
-    class InstallScript(code: String, scriptName: String = "InstallScript") : AgentScript(code, scriptName, AgentScriptType.INSTALL)
-    class RemovalScript(code: String, scriptName: String = "RemovalScript") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
+    class InstallScript(code: String, scriptName: String = "Install Script") : AgentScript(code, scriptName, AgentScriptType.INSTALL)
+    class RemovalScript(code: String, scriptName: String = "Removal Script") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
     fun toCaosFile(project: Project, cobPath: CaosVirtualFile, caosVariant: CaosVariant): CaosScriptFile {
         val fileName = getEventScriptName(code) ?: scriptName
         val file = CobVirtualFileUtil.createChildCaosScript(project, cobPath, caosVariant, "$fileName.cos", code).apply {

@@ -81,8 +81,15 @@ object CobVirtualFileUtil {
                         val script = installScripts.first()
                         listOf(createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code))
                     } else {
+                        val multipleInstallScripts = installScripts.size > 1
                         installScripts.mapIndexed { i, script ->
-                            createChildCaosScript(project, agentDirectory, variant, script.scriptName + "($i)", script.code)
+                            val scriptName = "Install ${script.scriptName}".let { scriptName ->
+                                if (multipleInstallScripts)
+                                    "$scriptName ($i)"
+                                else
+                                    scriptName
+                            }
+                            createChildCaosScript(project, agentDirectory, variant, scriptName, script.code)
                         }
                     }
                 }

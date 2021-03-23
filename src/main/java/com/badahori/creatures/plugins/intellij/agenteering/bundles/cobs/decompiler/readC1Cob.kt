@@ -30,7 +30,8 @@ internal fun ByteBuffer.readC1Cob(fileName:String?): CobBlock.AgentBlock {
         AgentScript(code, "Script $index", AgentScriptType.OBJECT)
     }
     val installScripts = (0 until numInstallScripts).mapNotNull { index ->
-        AgentScript.InstallScript(readC1Script(), (fileName?.let { "$it "} ?: "") + "Install Script ($index)")
+        val suffix = if(numInstallScripts > 1) " ($index)" else ""
+        AgentScript.InstallScript(readC1Script(), (fileName?.let { "$it "} ?: "") + "Install Script$suffix")
     }
     val pictureWidth = int32
     val pictureHeight = int32
