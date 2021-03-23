@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->0.01.102</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.03.22</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,28 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 2020.03.22</b>
+        <ul>
+          <li>Fix bad CAOS on compile and inject when control statement contains only comments</li>
+          <li>Script injector not injecting removal scripts</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.104</b>
+        <ul>
+          <li>Fix formatter not formatting some scripts</li>
+          <li>Fix sort issues in project view node</li>
+          <li>Fix brittle CAOS parser due to overeager sytax error detection</li>
+          <li>Add missing commands from CAOS lib</li>
+        </ul>
+      </li>
+      <li>
+        <b>Version: 0.01.103</b>
+        <ul>
+          <li>Fix ATT editor not updating</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 0.01.102</b>
         <ul>
