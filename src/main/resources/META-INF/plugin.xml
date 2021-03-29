@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.03.22</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.03.28</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,17 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Version: 2020.03.28</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix injector executable not found on Windows</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Add commenter. Comment out code blocks with CMND+'/'(Mac) CTRL+'/'(Windows)</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 2020.03.22</b>
         <b>#Fixes</b>
