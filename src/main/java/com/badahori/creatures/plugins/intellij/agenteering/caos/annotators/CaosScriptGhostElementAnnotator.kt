@@ -82,7 +82,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
         // There is no non-whitespace next element, so use last child of control statement
         if (range == null)
             range = element.lastChild.textRange.let {
-                var startOffset = it.endOffset - 4
+                var startOffset = it.endOffset - 2
                 if (startOffset < 0)
                     startOffset = it.startOffset
                 TextRange(startOffset, it.endOffset)
