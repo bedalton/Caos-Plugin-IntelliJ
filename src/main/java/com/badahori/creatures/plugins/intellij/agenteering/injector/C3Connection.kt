@@ -3,11 +3,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil.isWindows
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
@@ -18,8 +21,13 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
     private var ranOnce = false
     private val exeName = "C3CaosInjector.exe"
+    private val libName = "c2einjector"
     private val file: File by lazy {
-        val file = ensureExe(!ranOnce)
+        val file = if (isWindows) {
+             ensureExe(!ranOnce)
+        } else {
+            ensureLib(!ranOnce)
+        }
         ranOnce = true
         file
     }
@@ -41,7 +49,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         val file = try {
             this.file
         } catch (e: Exception) {
-            return InjectionStatus.BadConnection("Failed to locate injector exe in plugin library.")
+            return InjectionStatus.BadConnection("Failed to copy injector EXE to run directory. Error: ${e.message}.")
         }
         if (!file.exists()) {
             return InjectionStatus.BadConnection("Failed to initialize communication executable")
@@ -52,15 +60,30 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         if (escaped.isEmpty()) {
             return InjectionStatus.Ok("")
         }
+
+        LOGGER.severe("RAW:\n${argsIn.last()}\nEscaped:\n$escaped")
         // Create cmd args for caos injector exe
-        val args = listOf(
+        val args = if  (isWindows) {
+            listOf(
                 "cmd",
                 "/c",
                 file.path,
                 variant.code,
                 *argsIn.dropLast(1).toTypedArray(),
                 escaped
-        ).toTypedArray()
+            ).toTypedArray()
+        } else if (OsUtil.isLinux) {
+            listOf(
+                "cmd",
+                "/c",
+                file.path,
+                variant.code,
+                *argsIn.dropLast(1).toTypedArray(),
+                escaped
+            ).toTypedArray()
+        } else {
+            return InjectionStatus.BadConnection("Only windows and Linux versions of Creatures is supported")
+        }
         // Create injection process
         val proc: Process
         try {
@@ -80,8 +103,8 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
         // Parse result
         return try {
-            proc.waitFor(6, TimeUnit.SECONDS)
-            val response = proc.inputStream.bufferedReader().readText().substringFromEnd(0, 1).trim().nullIfEmpty()
+            proc.waitFor()
+            var response = proc.inputStream.bufferedReader().readText().substringFromEnd(0, 1).trim().nullIfEmpty()
                     ?: proc.errorStream.bufferedReader().readText().nullIfEmpty()
                     ?: "!ERRInjector returned un-formatted empty response"
             val code = if (response.length >= 4) {
@@ -96,6 +119,11 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                     if (response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none { it.matches(response) }) {
                         InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
                     } else if (code == "!RES") {
+                        if (response.last() == 0.toChar()) {
+                            response = response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1)
+                        } else if (response.startsWith("!RES")) {
+                            response = response.substring(4)
+                        }
                         InjectionStatus.Ok(response)
                     } else {
                         InjectionStatus.Bad("INJECTOR Exception: "+response.substringFromEnd(0, 1))
@@ -140,8 +168,46 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
     private fun ensureExe(clear: Boolean): File {
         val pathTemp = "c3engine/$exeName"
         // have to use a stream
+        val inputStream: InputStream = try {
+            javaClass.classLoader.getResourceAsStream(pathTemp)
+                ?: throw Exception("Failed to get injector EXE resource as stream")
+        } catch (e:Exception) {
+            throw Exception("Failed to get injector EXE resource as stream. Error: ${e.message}")
+        }
+        // always write to different location
+        val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
+        if (fileOut.exists()) {
+            if (clear) {
+                try {
+                    fileOut.delete()
+                } catch (e: Exception) {
+                    LOGGER.severe("Failed to delete prior injector EXE")
+                }
+            } else
+                return fileOut
+        }
+        inputStream.use {stream ->
+            val success = try {
+                CaosFileUtil.copyStreamToFile(stream, fileOut, true)
+            } catch(e:Exception) {
+                throw IOException("Failed to copy Injector EXE by stream to run directory. Error: ${e.message}")
+            }
+            if (!success) {
+                throw IOException("Failed to copy Injector EXE by stream to run directory")
+            }
+            LOGGER.info("Saved Injector EXE to '${fileOut.absolutePath}'")
+        }
+        return fileOut
+    }
+
+    /**
+     * Ensures that the bundled exe is extracted to accessible location to be run
+     */
+    private fun ensureLib(clear: Boolean): File {
+        val pathTemp = "c3engine/$exeName"
+        // have to use a stream
         val inputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
-                ?: throw Exception("Failed to get resource as stream")
+            ?: throw Exception("Failed to get resource as stream")
         // always write to different location
         val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
         if (fileOut.exists()) {
@@ -322,21 +388,36 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
         private fun escape(caos: String): String {
             var escaped = caos.trim()
-            // Remove last endm, as injection requires its removal
             if (escaped.toLowerCase().endsWith("endm")) {
-                escaped = escaped.substringFromEnd(0, 4).trim()
+                // Remove last endm, as injection requires its removal on Windows
+                if (isWindows)
+                    escaped = escaped.substringFromEnd(0, 4).trim()
+
+            } else if (OsUtil.isLinux) {
+                // lc2e requires endm according to pyc2e
+                escaped += " endm"
             }
 
             // Escape escaped chars
             escaped = escaped.replace("\\\"", ESCAPED_QUOTE_PLACEHOLDER)
                     .replace("\"", "\\\"")
-                    .replace("\n", "^\n")
-            for(char in NEED_ESCAPE) {
-                escaped = escaped.replace(char, "^$char")
+
+            // Windows specific escaping
+            if (isWindows) {
+                for(char in NEED_ESCAPE) {
+                    escaped = escaped.replace(char, "^$char")
+                }
+                escaped = escaped.replace("\r\n", ";\\;n")
+                    .replace("\n", ";\\;n")
+                    .replace("\r", ";\\;n")
+            } else {
+                // Unix escaping
+                escaped = escaped.replace("\n", "\\n")
             }
             // Return
             return escaped
         }
     }
+
 
 }

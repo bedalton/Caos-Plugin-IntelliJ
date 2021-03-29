@@ -98,9 +98,15 @@ object CaosFileUtil {
     fun copyStreamToFile(source: InputStream, destination: String, throws:Boolean = false): Boolean {
         var success = true
         try {
-            Files.copy(source, Paths.get(destination), StandardCopyOption.REPLACE_EXISTING)
+            Files.copy(source, Paths.get(destination))
+        } catch(se:SecurityException) {
+            LOGGER.severe("Failed to copy resource to $destination with Security exception error: ${se.message}")
+            se.printStackTrace()
+            if (throws)
+                throw se
         } catch (ex: IOException) {
             LOGGER.severe("Failed to copy resource to $destination with error: ${ex.message}")
+            ex.printStackTrace()
             if (throws)
                 throw ex
             ex.printStackTrace()
@@ -119,6 +125,23 @@ object CaosFileUtil {
      * @return True if succeeded , False if not
      */
     fun copyStreamToFile(source: InputStream, destination: File, throws:Boolean = false): Boolean {
+
+        val directory = if (destination.isDirectory) {
+            destination
+        } else {
+            destination.parentFile
+        }
+        try {
+            val made = directory.mkdirs()
+            if (!made && !directory.exists()) {
+                throw IOException("Failed to create all parent directories for path: ${directory.absolutePath}")
+            }
+        } catch (e:Exception) {
+            LOGGER.severe("Failed to create destination parent folders.")
+            e.printStackTrace()
+            if (throws)
+                throw e
+        }
         return copyStreamToFile(source, destination.path, throws)
     }
 
