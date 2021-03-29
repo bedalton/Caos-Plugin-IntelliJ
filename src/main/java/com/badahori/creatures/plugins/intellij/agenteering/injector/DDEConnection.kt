@@ -27,7 +27,9 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
             if (response == "0000") {
                 InjectionStatus.Bad("Silent exception raised during injected script execution")
             } else if (response.length > 1) {
-                response = response.substringFromEnd(0, 1)
+                if (response.last() == 0.toChar()) {
+                    response = response.substringFromEnd(0, 1)
+                }
             }
             InjectionStatus.Ok(response)
         } catch(e:Exception) {
