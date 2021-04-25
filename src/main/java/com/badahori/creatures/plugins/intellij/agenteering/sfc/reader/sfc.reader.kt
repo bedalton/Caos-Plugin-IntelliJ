@@ -222,7 +222,13 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
             // Parse or create data holder
             val holder = try {
                 readRaw(virtualFile)
-            } catch (e: Exception) {
+            } catch (ae:AssertionError) {
+                if (safe) {
+                    LOGGER.severe("Failed to parse SFC with error: ${ae.message}")
+                    ae.printStackTrace()
+                    SfcFileDataHolder(error = "Failed to parse SFC with error: ${ae.message}")
+                } else throw SfcReadException(ae.localizedMessage)
+            }catch (e: Exception) {
                 if (safe) {
                     LOGGER.severe("Failed to parse SFC with error: ${e.message}")
                     e.printStackTrace()
