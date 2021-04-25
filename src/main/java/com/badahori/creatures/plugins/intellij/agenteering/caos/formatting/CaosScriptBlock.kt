@@ -5,11 +5,13 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
@@ -58,12 +60,32 @@ class CaosScriptBlock internal constructor(
         }
         val psi = myNode.psi
             ?: return noneIndent
+
+        if (psi is CaosScriptCommentBlock || psi.hasParentOfType(CaosScriptCommentBlock::class.java) || psi.getPreviousNonEmptySibling(
+                true
+            ) is CaosScriptCommentBlock
+        )
+            return ChildAttributes(Indent.getAbsoluteNoneIndent(), null)
+
         if (psi is CaosScriptHasCodeBlock)
             return if (psi is CaosScriptScriptElement && psi.scriptTerminator == null)
                 noneIndent
-            else
-                normalIndent
-        if (psi is CaosScriptCodeBlock && (psi.parent as? CaosScriptScriptElement)?.let { it !is CaosScriptMacro && it.scriptTerminator != null}.orTrue()) {
+            else {
+                val cursorElement = psi.editor?.let { it.cursorElementInside(psi.textRange) ?: it.primaryCursorElement }
+                    ?: return noneIndent
+                if (cursorElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java))
+                    absoluteNoneIndent
+                else {
+                    val previousElement = cursorElement.getPreviousNonEmptySibling(true)
+                    if (previousElement == null || previousElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java).orFalse())
+                        absoluteNoneIndent
+                    else
+                        normalIndent
+                }
+            }
+
+        if (psi is CaosScriptCodeBlock && (psi.parent as? CaosScriptScriptElement)?.let { it !is CaosScriptMacro && it.scriptTerminator != null }
+                .orTrue()) {
             return normalIndent
         }
 
@@ -72,7 +94,12 @@ class CaosScriptBlock internal constructor(
         // meaning the last line would never be indented
         if (psi is CaosScriptDoifStatement)
             return normalIndent
-        if (psi.parent?.elementType in listOf(CaosScriptTypes.CaosScript_DOIF_STATEMENT_STATEMENT, CaosScriptTypes.CaosScript_ELSE_IF_STATEMENT, CaosScriptTypes.CaosScript_ELSE_STATEMENT))
+        if (psi.parent?.elementType in listOf(
+                CaosScriptTypes.CaosScript_DOIF_STATEMENT_STATEMENT,
+                CaosScriptTypes.CaosScript_ELSE_IF_STATEMENT,
+                CaosScriptTypes.CaosScript_ELSE_STATEMENT
+            )
+        )
             return normalIndent
         if (psi is CaosScriptCodeBlockLine)
             return normalIndent
@@ -98,6 +125,7 @@ class CaosScriptBlock internal constructor(
     companion object {
         private val normalIndent = ChildAttributes(Indent.getNormalIndent(), null)
         private val noneIndent = ChildAttributes(Indent.getNoneIndent(), null)
+        private val absoluteNoneIndent = ChildAttributes(Indent.getAbsoluteNoneIndent(), null)
     }
 
 }
