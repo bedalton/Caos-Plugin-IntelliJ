@@ -16,9 +16,11 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.writeChild
+import com.intellij.util.io.write
+import java.nio.file.Paths
 
 object Caos2CobCompiler {
 
@@ -412,7 +414,8 @@ object Caos2CobCompiler {
         if (!directory.isDirectory)
             throw Caos2CobException("Cannot write COB '${targetFile}'. File '${directory.name}' is not a directory")
         return try {
-            directory.writeChild(targetFile, data)
+            val targetIoFile = Paths.get(VfsUtil.virtualToIoFile(directory).path, targetFile)
+            targetIoFile.write(data)
             true
         } catch (e: Exception) {
 
