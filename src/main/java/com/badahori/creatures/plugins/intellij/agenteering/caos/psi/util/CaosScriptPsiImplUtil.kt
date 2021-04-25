@@ -1902,7 +1902,6 @@ object CaosScriptPsiImplUtil {
                 .nullIfEmpty()
                 ?.let { it.substring(it.length - 2) }
                 ?.toUpperCase()
-            LOGGER.info("variantString:$variantString")
             if (variantString == "C1" || variantString == "C2")
                 variantString to agentNameFromCobTag
             else if (def.tags.any { it.key.toUpperCase().startsWith("C1") })

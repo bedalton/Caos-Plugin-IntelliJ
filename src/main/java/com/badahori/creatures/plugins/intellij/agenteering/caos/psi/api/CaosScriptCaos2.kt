@@ -16,7 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile
 interface CaosScriptCaos2 : CaosScriptCompositeElement
 
 enum class CobTag(vararg val keys: String, val required:Boolean = false, val variant: CaosVariant? = null) {
-    AGENT_NAME("Agent Name", "Agent", "C1Name", "C1-Name", "C2Name", "C2-Name", required = true),
+    AGENT_NAME("Agent Name", "Agent", "C1Name", "C1 Name", "C2Name", "C2 Name", required = true),
     COB_NAME("COB File", "Cob File Name", "COB Name", "COB", required = true),
     QUANTITY_AVAILABLE("Quantity Available", "Quantity", "Qty", "Qty Available"),
     THUMBNAIL("Thumbnail", "Image", "Picture", "Preview"),
@@ -42,15 +42,15 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
     ;
 
     private val keysRegex = ("^(" + keys.joinToString("|") {
-        it.replace(WHITESPACE, "\\\\s*") +"|"+it.replace(WHITESPACE, "-")
-    } + ")$").toRegex(RegexOption.IGNORE_CASE)
+        it.replace(WHITESPACE, "\\\\s*").trim()+ "|" + it.replace(WHITESPACE, "").trim() +"|"+it.replace(WHITESPACE, "-").trim()
+    } + ")$").trim().toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
     fun isVariant(variant:CaosVariant) : Boolean {
         return this.variant == variant
     }
 
     internal fun isTag(value: String): Boolean {
-        return value.matches(keysRegex)
+        return keysRegex.matches(value.trim())
     }
 
     companion object {
