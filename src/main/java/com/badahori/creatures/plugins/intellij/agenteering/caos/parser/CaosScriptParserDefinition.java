@@ -68,9 +68,6 @@ public class CaosScriptParserDefinition implements ParserDefinition {
 
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
-        if (fileViewProvider.getFileType() == CobFileType.INSTANCE) {
-            getLOGGER().info("ParserDef: Create File: " + fileViewProvider.getVirtualFile().getName() + "; FileType: " + fileViewProvider.getFileType());
-        }
         assert (!fileViewProvider.getVirtualFile().getName().endsWith("cob")) : "CaosScriptParserDefinition called, but COB file type was not properly set";
         return new CaosScriptFile(fileViewProvider, fileViewProvider.getVirtualFile());
     }
