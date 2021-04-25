@@ -7,10 +7,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.ui.UIUtil
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.OutputStream
 import java.nio.ByteBuffer
 
 
@@ -48,7 +46,7 @@ class SprSpriteFile @Throws constructor(file: VirtualFile) : SpriteFile<SprSprit
         val numRawBytes = rawBytes.size
         val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
         val numImages = bytesBuffer.uInt16
-        _frames =  (0 until numImages).map {
+        mFrames =  (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32
             if (offsetForData < 0) {
                 throw SpriteParserException("OffsetForData returned negative number. $offsetForData")

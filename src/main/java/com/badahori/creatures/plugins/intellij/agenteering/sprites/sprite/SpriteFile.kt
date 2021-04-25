@@ -7,40 +7,42 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 abstract class SpriteFile<SpriteT:SpriteFrame<SpriteT>>(private val type:SpriteType<SpriteT>) {
-    protected var _frames:List<SpriteT?> = listOf()
 
-    val images:List<BufferedImage?> get() = _frames.map { it?.image }
+    protected var mFrames:List<SpriteT?> = listOf()
+    val size: Int get() = mFrames.size
 
-    fun getFrame(frameNumber:Int) : SpriteT? = _frames.getOrNull(frameNumber)
+    val images:List<BufferedImage?> get() = mFrames.map { it?.image }
+
+    fun getFrame(frameNumber:Int) : SpriteT? = mFrames.getOrNull(frameNumber)
 
     fun removeFrame(frame:SpriteT) {
-        val frames = _frames.toMutableList()
+        val frames = mFrames.toMutableList()
         frames.remove(frame)
-        _frames = frames
+        mFrames = frames
     }
 
     fun removeFrame(frameIndex:Int) : SpriteT? {
-        if (frameIndex > _frames.lastIndex)
+        if (frameIndex > mFrames.lastIndex)
             return null
-        val frames = _frames.toMutableList()
+        val frames = mFrames.toMutableList()
         val frame = frames.removeAt(frameIndex)
-        _frames = frames
+        mFrames = frames
         return frame
     }
 
     fun addFrame(index:Int, frameIn:SpriteFrame<*>) : Boolean {
-        val frames = _frames.toMutableList()
+        val frames = mFrames.toMutableList()
         val converted = type.convert(frameIn)
                 ?: return false
         frames.add(index, converted)
-        _frames = frames
+        mFrames = frames
         return true
     }
 
     fun addFrame(frameIn:SpriteT): Boolean {
         val converted = type.convert(frameIn)
                 ?: return false
-        _frames = _frames + converted
+        mFrames = mFrames + converted
         return true
     }
 
@@ -51,6 +53,10 @@ abstract class SpriteFile<SpriteT:SpriteFrame<SpriteT>>(private val type:SpriteT
 
     abstract fun compile() : ByteArray
 
+
+    operator fun get(index:Int) : SpriteT? {
+        return mFrames[index]
+    }
 
 
 }
