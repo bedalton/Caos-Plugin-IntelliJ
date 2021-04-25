@@ -35,7 +35,7 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, pri
     val sfc: SfcFile? by lazy {
         try {
             // Caching is handled by read file method in SfcReader
-            SfcReader.readFile(myVirtualFile).data
+            SfcReader.readFile(myVirtualFile, cache = true, safe = true).data
         } catch (e: Exception) {
             val error = "Failed to parse SFC file: '${myVirtualFile.path}' with error:\n\t${e.message}"
             SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
