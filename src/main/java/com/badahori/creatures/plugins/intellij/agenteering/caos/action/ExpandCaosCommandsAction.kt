@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.ide.actions.CopyAction
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -15,7 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile
  * Creates a file
  * @todo implement multiple file types (ie. implementations or protocols)
  */
-class ExpandCaosCommandsAction : CopyAction(), DumbAware {
+class ExpandCaosCommandsAction : AnAction(), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
