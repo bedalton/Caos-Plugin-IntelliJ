@@ -50,7 +50,9 @@ class GenerateClasIntegerAction(element:CaosScriptRvalue) : LocalQuickFix, Inten
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean = true
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
-        ClasForm(project, pointer).showAndGet()
+        invokeLater {
+            ClasForm(project, pointer).showAndGet()
+        }
     }
 
     override fun getName(): String = "Generate CLAS value"
