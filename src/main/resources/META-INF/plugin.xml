@@ -1,7 +1,7 @@
 <idea-plugin >
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.03.28</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.04.24</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,20 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Versions: 2021.04.24</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix CAOS2Cob throwing error in IntelliJ 2021</li>
+          <li>SFC parser throwing error on non-eden sfc</li>
+          <li>Insert CLAS action throwing AWT error</li>
+          <li>Fix indent following comments in file body</li>
+        </ul>
+        <b>#Inspections</b>
+        <ul>
+          <li>Added empty LOOP statement inspection</li>
+        </ul>
+      </li>
       <li>
         <b>Version: 2020.03.28</b>
         <b>#Fixes</b>
@@ -631,6 +645,17 @@
                      displayName="Requires creature ownr object"
                      shortName="RequiresCreatureOwnr"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresCreatureOwnrInspection"
+    />
+
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Empty loop causes exception"
+                     shortName="EmptyLoopCausesException"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptEmptyLoopInspection"
     />
 
     <localInspection language="CaosScript"
