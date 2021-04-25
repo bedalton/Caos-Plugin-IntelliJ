@@ -46,6 +46,9 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
             val lineFeeds = if (mySettings.KEEP_LINE_BREAKS) 1 else 0
             return Spacing.createSpacing(0, 0, lineFeeds, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
         }
+        if (type1 == CaosScriptTypes.CaosScript_COMMENT_BLOCK) {
+            return Spacing.createSpacing(0,0,1, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
+        }
         if (type1 == CaosScriptTypes.CaosScript_EQUAL_SIGN || type2 == CaosScriptTypes.CaosScript_EQUAL_SIGN) {
             return Spacing.createSpacing(1,1,0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
         }
