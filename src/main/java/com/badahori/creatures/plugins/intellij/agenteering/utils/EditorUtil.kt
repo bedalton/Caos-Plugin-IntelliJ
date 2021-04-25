@@ -165,6 +165,22 @@ val PsiElement.editor : Editor? get() {
     return EditorUtil.editor(this)
 }
 
+val Editor.primaryCursorElement:PsiElement? get() {
+    val offset = caretModel.primaryCaret.offset
+    return psiFile?.findElementAt(offset)
+}
+
+fun Editor.cursorElementInside(range:TextRange):PsiElement? {
+    var offset = caretModel.primaryCaret.offset
+    if (offset !in range.startOffset .. range.endOffset) {
+        offset = caretModel.allCarets.firstOrNull{
+            it.offset !in range.startOffset .. range.endOffset
+        }?.offset
+            ?: return null
+    }
+    return psiFile?.findElementAt(offset)
+}
+
 val Editor.psiFile : PsiFile? get() {
     val file = virtualFile
             ?: return null
