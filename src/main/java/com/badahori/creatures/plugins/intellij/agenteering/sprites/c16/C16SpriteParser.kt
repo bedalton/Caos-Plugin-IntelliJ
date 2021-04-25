@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
 import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.ui.UIUtil
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 
@@ -29,7 +28,7 @@ class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C1
             throw Exception("File encoding not recognised. ('$buffer')")
         }
         val numImages = bytesBuffer.uInt16
-        _frames =  (0 until numImages).map {
+        mFrames =  (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32
             val width = bytesBuffer.uInt16
             val height = bytesBuffer.uInt16

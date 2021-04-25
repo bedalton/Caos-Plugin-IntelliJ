@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
@@ -28,7 +27,7 @@ class S16SpriteFile(rawBytes:ByteArray) : SpriteFile<S16SpriteFrame>(SpriteType.
             else -> throw Exception("File encoding not recognized. ('$buffer')")
         }
         val numImages = bytesBuffer.uInt16
-        _frames = (0 until numImages).map {
+        mFrames = (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32
             val width = bytesBuffer.uInt16
             val height = bytesBuffer.uInt16
