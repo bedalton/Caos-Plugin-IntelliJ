@@ -18,12 +18,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
-import java.util.logging.Logger
 
 
 class CaosProjectStartupActivity : StartupActivity {
 
-    private lateinit var project:Project
+    private var project:Project? = null
+
+    private val callback = object : FileEditorManagerListener {
+        override fun fileOpened(editorManager: FileEditorManager, file: VirtualFile) {
+            registerOnAny()
+        }
+    }
+
 
     override fun runActivity(project: Project) {
         this.project = project
@@ -40,12 +46,7 @@ class CaosProjectStartupActivity : StartupActivity {
     }
 
     private fun registerFileOpenHandler(project: Project) {
-        val bus = project.messageBus
-        bus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, object : FileEditorManagerListener {
-            override fun fileOpened(editorManager: FileEditorManager, file: VirtualFile) {
-                registerOnAny()
-            }
-        })
+        project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, callback)
     }
 
     private fun registerFileSaveHandler() {
@@ -71,7 +72,14 @@ class CaosProjectStartupActivity : StartupActivity {
         project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, CaosSdkProjectRootsChangeListener)
     }
 
+
     private fun registerOnAny() {
+        val project = project
+            ?: return
+        if (project.isDisposed) {
+            this.project = null
+            return
+        }
         if (hasAnyCaosFiles(project))
             CaosBundleSourcesRegistrationUtil.register(null, project)
         DumbService.getInstance(project).runWhenSmart {
@@ -87,15 +95,8 @@ class CaosProjectStartupActivity : StartupActivity {
     }
 
     companion object {
-        private val LOGGER = Logger.getLogger("#" + CaosProjectStartupActivity::class.java)
+        //private val LOGGER = Logger.getLogger("#" + CaosProjectStartupActivity::class.java)
 
-        private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent")
-
-        internal fun registerSourcesOnFileOpen(project: Project, file: VirtualFile) {
-            val module = file.getModule(project)
-            if (module != null) {
-                CaosBundleSourcesRegistrationUtil.register(module, project)
-            }
-        }
+        private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent", "agents")
     }
 }
