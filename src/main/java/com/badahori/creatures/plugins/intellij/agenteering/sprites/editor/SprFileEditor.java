@@ -5,6 +5,8 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
+import com.intellij.uiDesigner.core.Spacer;
+import org.apache.commons.compress.utils.Lists;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,16 +34,34 @@ public class SprFileEditor {
     private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
 
     SprFileEditor(VirtualFile file) {
-        List<BufferedImage> rawImages = SpriteParser.parse(file).getImages();
+
+        Exception parseException = null;
+        List<BufferedImage> rawImages;
+        images = new ArrayList<>();
+        try {
+            rawImages = SpriteParser.parse(file).getImages();
+        } catch (Exception e) {
+            rawImages = Lists.newArrayList();
+            parseException = e;
+        }
         final int padLength = (rawImages.size() + "").length();
         final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
         final String suffix = ".png";
-        images = new ArrayList<>();
         for (int i = 0; i < rawImages.size(); i++) {
             final String fileName = prefix + pad(i, padLength) + suffix;
             images.add(new ImageTransferItem(fileName, rawImages.get(i)));
         }
         $$$setupUI$$$();
+        if (parseException != null) {
+            main.removeAll();
+            main.setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            main.add(new JLabel("Failed to load sprite images with error: " + parseException.getLocalizedMessage()), gbc);
+            parseException.printStackTrace();
+            return;
+        }
         backgroundColor.addItemListener((itemEvent) -> {
             final String color = (String) itemEvent.getItem();
             switch (color) {

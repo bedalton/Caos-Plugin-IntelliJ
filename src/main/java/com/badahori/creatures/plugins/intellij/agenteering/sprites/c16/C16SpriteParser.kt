@@ -15,7 +15,7 @@ import java.nio.ByteBuffer
  * Based on c2ephp by telyn
  * @link https://github.com/telyn/c2ephp
  */
-class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C16) {
+class C16SpriteFile(file: VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C16) {
 
     init {
         val rawBytes = file.contentsToByteArray()
@@ -28,7 +28,7 @@ class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C1
             throw Exception("File encoding not recognised. ('$buffer')")
         }
         val numImages = bytesBuffer.uInt16
-        mFrames =  (0 until numImages).map {
+        mFrames = (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32
             val width = bytesBuffer.uInt16
             val height = bytesBuffer.uInt16
@@ -36,11 +36,11 @@ class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C1
                 bytesBuffer.uInt32
             }
             C16SpriteFrame(
-                    bytes = bytesBuffer,
-                    offset = offsetForData,
-                    width = width,
-                    height = height,
-                    encoding = encoding
+                bytes = bytesBuffer,
+                offset = offsetForData,
+                width = width,
+                height = height,
+                encoding = encoding
             )
         }
     }
@@ -50,28 +50,40 @@ class C16SpriteFile(file:VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C1
     }
 }
 
-class C16SpriteFrame private constructor(width:Int, height:Int, private val encoding:ColorEncoding) : SpriteFrame<C16SpriteFrame>(width, height, SpriteType.C16) {
+class C16SpriteFrame private constructor(width: Int, height: Int, private val encoding: ColorEncoding) :
+    SpriteFrame<C16SpriteFrame>(width, height, SpriteType.C16) {
 
-    private lateinit var getImage:()->BufferedImage?
+    private lateinit var getImage: () -> BufferedImage?
 
-    constructor(bytes:ByteBuffer, offset:Long, width:Int, height:Int, encoding: ColorEncoding) : this(width, height, encoding){
+    constructor(bytes: ByteBuffer, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(
+        width,
+        height,
+        encoding
+    ) {
         getImage = {
             decode(bytes, offset)
         }
     }
 
-    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.X_565) : this(image.width, image.height, encoding) {
+    constructor(image: BufferedImage, encoding: ColorEncoding = ColorEncoding.X_565) : this(
+        image.width,
+        image.height,
+        encoding
+    ) {
         getImage = { image }
     }
 
-    override fun decode() : BufferedImage? {
+    override fun decode(): BufferedImage? {
         if (this::getImage.isInitialized)
             return getImage()
         return null
     }
 
-    private fun decode(bytes:ByteBuffer, offset:Long) : BufferedImage? {
+    private fun decode(bytes: ByteBuffer, offset: Long): BufferedImage? {
         val bytesBuffer = bytes.duplicate()
+        if (bytesBuffer.limit() < offset.toInt()) {
+            throw Exception("Not enough bytes for next C16 image. Position ${"%,d".format(offset)} is invalid")
+        }
         bytesBuffer.position(offset.toInt())
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val toRgb = encoding.toRgb
@@ -80,20 +92,21 @@ class C16SpriteFrame private constructor(width:Int, height:Int, private val enco
             while (x < width) {
                 val run = bytesBuffer.uInt16
                 val runLength = (run and 0x7FFF) shr 1
-                val z = x+runLength
+                val z = x + runLength
                 if (z > width) {
-                    LOGGER.severe("RunLength ($runLength) + X($x) is greater than width($width)")
+                    val error = "RunLength ($runLength) + X($x) is greater than width($width)"
+                    LOGGER.severe(error)
                     return null
                 }
                 if ((run and 0x0001) <= 0) {
                     while (x < z) {
-                        image.alphaRaster.setPixel(x,y, SpriteColorUtil.transparent)
+                        image.alphaRaster.setPixel(x, y, SpriteColorUtil.transparent)
                         x++
                     }
                 } else {
                     while (x < z) {
                         val color = toRgb(bytesBuffer.uInt16)
-                        image.raster.setPixel(x,y,color)
+                        image.raster.setPixel(x, y, color)
                         image.alphaRaster.setPixel(x, y, SpriteColorUtil.solid)
                         x++
                     }
