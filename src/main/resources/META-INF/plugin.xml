@@ -35,6 +35,16 @@
 
   <change-notes><![CDATA[
     <ul>
+
+      <li>
+        <b>Versions: 2021.04.29</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix exception when a project closes</li>
+          <li>Fix exception on bad sprite read</li>
+          <li>Fix missing validation on C1e CAOS token values</li>
+        </ul>
+      </li>
       <li>
         <b>Versions: 2021.04.24</b>
         <b>#Fixes</b>

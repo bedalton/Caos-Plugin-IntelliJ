@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
@@ -170,8 +171,14 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
      * Annotates a token as unexpected if not found in proper Token parent
      */
     private fun annotateToken(element: CaosScriptToken, annotationWrapper: AnnotationHolderWrapper) {
-        if (element.hasParentOfType(CaosScriptTokenRvalue::class.java))
+        if (element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {
+            if (element.variant?.isOld.orFalse() && element.textLength != 4) {
+                annotationWrapper.newErrorAnnotation("Tokens must be 4 characters long")
+                    .range(element)
+                    .create()
+            }
             return
+        }
         annotationWrapper.newErrorAnnotation("Unexpected token")
                 .range(element)
                 .create()
