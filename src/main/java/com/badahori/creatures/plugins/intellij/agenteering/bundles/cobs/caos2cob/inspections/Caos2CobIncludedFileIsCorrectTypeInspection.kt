@@ -53,7 +53,7 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                 // Add error messages to bad file references
                 for ((fileNameElement, fileName) in badFileNameData) {
                     val fixes = mutableListOf<LocalQuickFix>(Caos2CobRemoveFileFix(fileNameElement, "Remove invalid file"))
-                    val extension = FileNameUtils.getExtension(fileName).toLowerCase()
+                    val extension = FileNameUtils.getExtension(fileName)?.toLowerCase()
                     val error = if (commandType == LINK) {
                         if (extension == "s16" || extension == "wav") {
                             fixes.add(
@@ -104,7 +104,7 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                     ?: return
                 val extension = FileNameUtils
                     .getExtension(fileName)
-                    .toLowerCase()
+                    ?.toLowerCase()
                 val check = when (tag) {
                     CobTag.THUMBNAIL -> extension in listOf("gif", "jpeg", "jpg", "png", "spr", "s16", "c16", "bmp")
                     else -> true

@@ -111,7 +111,7 @@ object Caos2CobCompiler {
                 error
             )
         }*/
-        if (FileNameUtils.getBaseName(removerCob.targetFile).let { it.isNotBlank() && it notLike "false" }) {
+        if (FileNameUtils.getBaseName(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
             val removerData = compile(project, file, removerCob)
             if (removerData == null) {
                 ++compilationResult.failures
@@ -325,7 +325,7 @@ object Caos2CobCompiler {
         return links.map map@{ relativePath ->
             val file = directory.findChild(relativePath)
                 ?: throw Caos2CobException("Failed to locate linked file: at '${directory.path + "/" + relativePath}'")
-            val extension = FileNameUtils.getExtension(relativePath).toLowerCase()
+            val extension = FileNameUtils.getExtension(relativePath)?.toLowerCase()
             if (extension == "wav" || extension in SpriteParser.VALID_SPRITE_EXTENSIONS) {
                 throw Caos2CobException("Linked file was not a CAOS file. Did you mean Attach or Inline?")
             }
@@ -408,7 +408,7 @@ object Caos2CobCompiler {
     private fun writeCob(project: Project, directory: VirtualFile, cob: Caos2Cob, data: ByteArray): Boolean {
         var targetFile = cob.targetFile.nullIfEmpty()
             ?: throw Caos2CobException("Cannot write COB for agent: '${cob.agentName}' without target file.")
-        if (FileNameUtils.getExtension(targetFile).isBlank()) {
+        if (FileNameUtils.getExtension(targetFile).isNullOrBlank()) {
             targetFile += ".cob"
         }
         if (!directory.isDirectory)
