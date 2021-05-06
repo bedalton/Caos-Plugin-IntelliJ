@@ -1,7 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFileByVariantIndex
+import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosSdkProjectRootsChangeListener
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -18,6 +21,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 
 
 class CaosProjectStartupActivity : StartupActivity {
@@ -37,7 +41,7 @@ class CaosProjectStartupActivity : StartupActivity {
         registerProjectRootChangeListener(project)
         registerFileSaveHandler()
         if (DumbService.isDumb(project)) {
-            DumbService.getInstance(project).runReadActionInSmartMode {
+            DumbService.getInstance(project).runWhenSmart {
                 registerOnAny()
             }
         } else {
@@ -92,6 +96,12 @@ class CaosProjectStartupActivity : StartupActivity {
                 CaosBundleSourcesRegistrationUtil.register(module, project)
             }
         }
+    }
+
+    private fun indexAttAndSpriteFiles(project: Project) {
+        BreedSpriteIndex.indexOnce(project, GlobalSearchScope.projectScope(project))
+        AttFileByVariantIndex.indexOnce(project, GlobalSearchScope.projectScope(project))
+        AttFilesIndex.indexOnce(project, GlobalSearchScope.projectScope(project))
     }
 
     companion object {
