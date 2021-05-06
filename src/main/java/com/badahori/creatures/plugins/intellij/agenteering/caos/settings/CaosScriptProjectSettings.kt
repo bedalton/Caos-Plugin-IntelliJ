@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.project.Project
@@ -49,6 +48,7 @@ object CaosScriptProjectSettings {
     private const val LABELS_KEY = "att.LABELS"
     private const val DEFAULT_SHOW_LABELS = true
     private val SHOW_LABELS_SETTING = CaosPluginSettingsUtil.BooleanSetting(LABELS_KEY, DEFAULT_SHOW_LABELS)
+    @JvmStatic
     var showLabels:Boolean
         get() = SHOW_LABELS_SETTING.value ?: DEFAULT_SHOW_LABELS
         set(show) {
@@ -62,6 +62,15 @@ object CaosScriptProjectSettings {
         get() = DITHER_SPR_SETTING.value ?: DEFAULT_DITHER_SPR
         set(show) {
             DITHER_SPR_SETTING.value = show
+        }
+    private const val ATT_SCALE_KEY = "att.SCALE"
+    private const val DEFAULT_ATT_SCALE = 6
+    private val ATT_SCALE_SETTING = CaosPluginSettingsUtil.IntegerSetting(ATT_SCALE_KEY, DEFAULT_ATT_SCALE)
+    @JvmStatic
+    var attScale:Int
+        get() = ATT_SCALE_SETTING.value ?: DEFAULT_ATT_SCALE
+        set(scale) {
+            ATT_SCALE_SETTING.value = scale
         }
 
     // === CAOS Injection URLS === //

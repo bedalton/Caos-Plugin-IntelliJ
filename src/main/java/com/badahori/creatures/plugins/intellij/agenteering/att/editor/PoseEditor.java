@@ -1,0 +1,1866 @@
+package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
+
+import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.CreatureSpriteSet;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.PartVisibility;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.Pose;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex;
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
+import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart;
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile;
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.IndexNotReadyException;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@SuppressWarnings("SpellCheckingInspection")
+public class PoseEditor {
+    private static final Logger LOGGER = Logger.getLogger("#PoseEditor");
+    private static final char[] allParts = "abcdefghijklmnopq".toCharArray();
+    private final Project project;
+    private final BreedPartKey baseBreed;
+    private final String[] directions = new String[]{
+            "Up",
+            "Straight",
+            "Down",
+            "Far Down"
+    };
+    private final Map<Character, VirtualFile> manualAtts = new HashMap<>();
+    JPanel panel1;
+    JComboBox<VirtualFile> headBreed;
+    JComboBox<VirtualFile> bodyBreed;
+    JComboBox<String> rightUpperArmPose;
+    JComboBox<String> leftUpperArmPose;
+    JComboBox<String> headPose;
+    JComboBox<String> bodyPose;
+    JComboBox<VirtualFile> armsBreed;
+    JComboBox<String> leftForearmPose;
+    JComboBox<String> rightForearmPose;
+    JComboBox<VirtualFile> legsBreed;
+    JComboBox<String> leftThighPose;
+    JComboBox<String> leftShinPose;
+    JComboBox<String> leftFootPose;
+    JComboBox<String> rightThighPose;
+    JComboBox<String> rightShinPose;
+    JComboBox<String> rightFootPose;
+    JComboBox<VirtualFile> tailBreed;
+    JComboBox<String> tailTipPose;
+    JComboBox<String> tailBasePose;
+    JComboBox<VirtualFile> earBreed;
+    JComboBox<VirtualFile> hairBreed;
+    JComboBox<String> facing;
+    JComboBox<String> zoom;
+    JPanel imageHolder;
+    JComboBox<String> focusMode;
+    JLabel earLabel;
+    JLabel hairLabel;
+    JLabel tailLabel;
+    JLabel tailBaseLabel;
+    JLabel tailTipLabel;
+    JLabel facingLabel;
+    JLabel focusModeLabel;
+    JComboBox<String> headDirection2;
+    List<BodyPartFiles> files;
+    private CaosVariant variant;
+    private CreatureSpriteSet spriteSet;
+    private Pose pose;
+    private boolean valid;
+    private boolean didInitOnce = false;
+    private Map<Character, PartVisibility> visibilityMask = new HashMap<>();
+    private Character visibilityFocus;
+    private String rootPath;
+
+    public PoseEditor(final Project project, final CaosVariant variant, final BreedPartKey breedKey) {
+        this.project = project;
+        $$$setupUI$$$();
+        this.baseBreed = breedKey.copyWithPart(null);
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).runWhenSmart(() -> this.init(variant));
+        } else {
+            init(variant);
+        }
+    }
+
+    /**
+     * Reverses the items in an array
+     *
+     * @param items array to reverse
+     * @param <T>   the type of items in array
+     */
+    private static <T> void reverse(T[] items) {
+        final int n = items.length;
+        T t;
+        for (int i = 0; i < n / 2; i++) {
+            t = items[i];
+            items[i] = items[n - i - 1];
+            items[n - i - 1] = t;
+        }
+    }
+
+    // Initializes this pose editor given a variant
+    private void init(CaosVariant variant) {
+        setVariant(variant);
+        initComboBoxes();
+        addChangeHandlers();
+        didInitOnce = true;
+        try {
+            update(variant);
+        } catch (IndexNotReadyException e) {
+            DumbService.getInstance(project).runWhenSmart(() -> update(variant));
+        }
+    }
+
+    /**
+     * Sets the variant and loads the files to use
+     *
+     * @param variant variant to use for the pose editor
+     */
+    private void setVariant(final CaosVariant variant) {
+        Runnable runner = () -> {
+            this.variant = (variant == CaosVariant.DS.INSTANCE) ? CaosVariant.C3.INSTANCE : variant;
+            files = BodyPartsIndex.variantParts(project, variant);
+            setVariantControls(variant);
+        };
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).runWhenSmart(runner);
+        } else {
+            runner.run();
+        }
+    }
+
+    /**
+     * Enables/Disables/Shows/Hides controls for certain variants
+     *
+     * @param variant variant to set controls for
+     */
+    private void setVariantControls(CaosVariant variant) {
+
+        // Only CV uses ear and hair breeds
+        if (variant.isNotOld()) {
+            freeze(earBreed, false, false);
+            freeze(hairBreed, false, false);
+            setLabelVisibility('o', true);
+            setLabelVisibility('p', true);
+            setLabelVisibility('q', true);
+        } else {
+            // Hide ear and hair data for non-CV variants
+            freeze(earBreed, true, true);
+            freeze(hairBreed, true, true);
+            setLabelVisibility('o', false);
+            setLabelVisibility('p', false);
+            setLabelVisibility('q', false);
+        }
+
+        // If variant is old, it does not have multiple tilts for front facing and back facing head sprites
+        if (variant.isOld()) {
+            freeze(headDirection2, true, true);
+        } else {
+            freeze(headDirection2, ! headDirection2.isEditable(), false);
+        }
+
+        // If is C1, hide controls for tails as they are not used in C1
+        if (variant == CaosVariant.C1.INSTANCE) {
+            setLabelVisibility('m', false);
+            setLabelVisibility('n', false);
+            freeze(tailBreed, true, true);
+            freeze(tailBasePose, true, true);
+            freeze(tailTipPose, true, true);
+        } else {
+            // Allow tail controls in all variants other than C1
+            setLabelVisibility('m', true);
+            setLabelVisibility('n', true);
+            freeze(tailBreed, false, false);
+            freeze(tailBasePose, false, false);
+            freeze(tailTipPose, false, false);
+        }
+    }
+
+    /**
+     * Inits the combo boxes
+     */
+    private void initComboBoxes() {
+        zoom.setSelectedIndex(baseBreed.getAgeGroup() == null || baseBreed.getAgeGroup() > 2 ? 1 : 2);
+        headPose.setSelectedIndex(2);
+        freeze(headDirection2, true, false);
+        if (variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
+            reverse(directions);
+            assign(bodyPose, directions, 1);
+            reverse(directions);
+        } else {
+            assign(bodyPose, directions, 1);
+        }
+        assign(leftThighPose, directions, 2);
+        assign(leftShinPose, directions, 2);
+        assign(leftFootPose, directions, 1);
+        assign(rightThighPose, directions, 2);
+        assign(rightShinPose, directions, 2);
+        assign(rightFootPose, directions, 1);
+        assign(leftUpperArmPose, directions, 2);
+        assign(leftForearmPose, directions, 2);
+        assign(rightUpperArmPose, directions, 2);
+        assign(rightForearmPose, directions, 2);
+        assign(tailBasePose, directions, 2);
+        assign(tailTipPose, directions, 2);
+
+        populate(headBreed, files, 'a');
+        populate(bodyBreed, files, 'b');
+        populate(legsBreed, files, 'c');
+        populate(armsBreed, files, 'i');
+        populate(tailBreed, files, 'm', 'n');
+        populate(earBreed, files, 'o', 'p');
+        if (earBreed.getItemCount() < 1) {
+            setLabelVisibility('o', false);
+            freeze(earBreed, true, true);
+        } else {
+            setLabelVisibility('o', true);
+            freeze(earBreed, false, false);
+        }
+        populate(hairBreed, files, 'q');
+        if (variant.isNotOld()) {
+            // Hide ears if no breeds are available
+            if (earBreed.getItemCount() < 1) {
+                freeze(earBreed, true, true);
+            } else {
+                freeze(earBreed, false, false);
+            }
+
+            // Hide hair if no breed choices are available
+            if (hairBreed.getItemCount() < 1) {
+                freeze(hairBreed, true, true);
+            } else {
+                freeze(hairBreed, false, false);
+            }
+
+        }
+    }
+
+    /**
+     * Adds change handlers to all drop down menus
+     */
+    private void addChangeHandlers() {
+
+        zoom.addItemListener((e) -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                redraw();
+            }
+        });
+        focusMode.addItemListener((e) -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                if (visibilityFocus != null) {
+                    visibilityMask = getVisibilityMask(visibilityFocus);
+                } else {
+                    visibilityMask = PartVisibility.getAllVisible();
+                }
+                redraw();
+            }
+        });
+        // Head
+        headBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('a');
+                redraw('a');
+            }
+        });
+
+        // Body
+        bodyBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('b');
+                redraw('b');
+            }
+        });
+        // Legs
+        legsBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('c');
+                manualAtts.remove('d');
+                manualAtts.remove('e');
+                manualAtts.remove('f');
+                manualAtts.remove('g');
+                manualAtts.remove('h');
+                redraw('c', 'd', 'e', 'f', 'g', 'h');
+            }
+        });
+        // Arms
+        armsBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('i');
+                manualAtts.remove('j');
+                manualAtts.remove('k');
+                manualAtts.remove('l');
+                redraw('i', 'j', 'k', 'l');
+            }
+        });
+        // Tail
+        tailBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('m');
+                manualAtts.remove('n');
+                redraw('m', 'n');
+            }
+        });
+        // Ears
+        earBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('o');
+                manualAtts.remove('p');
+                redraw('o', 'p');
+            }
+        });
+        // Hair
+        hairBreed.addItemListener(e -> {
+            if (didInitOnce) {
+                manualAtts.remove('q');
+                redraw('q');
+            }
+        });
+
+        // Poses
+        headPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('a');
+            }
+            freeze(headDirection2, ! variant.isNotOld() || headPose.getSelectedIndex() <= 3, false);
+        });
+
+        headDirection2.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('a');
+            }
+        });
+
+        bodyPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('b');
+            }
+        });
+        leftThighPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('c');
+            }
+        });
+        leftShinPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('d');
+            }
+        });
+        leftFootPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('e');
+            }
+        });
+        rightThighPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('f');
+            }
+        });
+        rightShinPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('g');
+            }
+        });
+        rightFootPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('h');
+            }
+        });
+        leftUpperArmPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('i');
+            }
+        });
+        leftForearmPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('j');
+            }
+        });
+        rightUpperArmPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('k');
+            }
+        });
+        rightForearmPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('l');
+            }
+        });
+        tailBasePose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('m');
+            }
+        });
+        tailTipPose.addItemListener(e -> {
+            if (didInitOnce) {
+                redraw('n');
+            }
+        });
+    }
+
+    public void update(final CaosVariant variant) {
+        setVariant(variant);
+        valid = redraw(allParts);
+    }
+
+    /**
+     * @return <b>True</b> if the last render was successful. <b>False</b> if it was not
+     */
+    public boolean isValid() {
+        return valid;
+    }
+
+    /**
+     * Gets the file given for selected breed and part
+     *
+     * @param baseFile virtual file referenced in the breed drop down
+     * @param part     the part to get body/sprite data for
+     * @return the selected Sprite/Body data object
+     */
+    @Nullable
+    private SpriteBodyPart file(VirtualFile baseFile, char part) {
+        if (baseFile == null) {
+            return null;
+        }
+        return getPart(part, baseFile);
+    }
+
+    /**
+     * Reloads files and then queues redraw as necessary
+     *
+     * @param parts parts that have been changed
+     * @return <b>True</b> if redraw was successful; <b>False</b> otherwise
+     */
+    public boolean redraw(char... parts) {
+        if (! didInitOnce) {
+            return false;
+        }
+        return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
+            if (DumbService.isDumb(project)) {
+                DumbService.getInstance(project).runWhenSmart(() -> {
+                    files = BodyPartsIndex.variantParts(project, variant);
+                    redrawActual(parts);
+                });
+                return false;
+            } else {
+                files = BodyPartsIndex.variantParts(project, variant);
+                return redrawActual(parts);
+            }
+        });
+    }
+
+    /**
+     * Redraws the pose after updating the given part part and breed information
+     *
+     * @param parts parts that have been changed
+     * @return <b>True</b> if redraw was successful; <b>False</b> otherwise
+     */
+    private boolean redrawActual(char... parts) {
+        final CreatureSpriteSet updatedSprites;
+        try {
+            updatedSprites = getUpdatedSpriteSet(parts);
+        } catch (Exception e) {
+            LOGGER.severe("Failed to located required sprites Error:(" + e.getClass().getSimpleName() + ") " + e.getLocalizedMessage());
+            e.printStackTrace();
+            return valid = false;
+        }
+        final Pose updatedPose = getUpdatedPose(parts);
+        final BufferedImage image;
+        try {
+            image = PoseRenderer.render(variant, updatedSprites, updatedPose, visibilityMask, zoom.getSelectedIndex() + 1);
+        } catch (Exception e) {
+            LOGGER.severe("Failed to render pose. Error:(" + e.getClass().getSimpleName() + ") " + e.getLocalizedMessage());
+            e.printStackTrace();
+            return valid = false;
+        }
+        ((CenteredImagePanel) imageHolder).updateImage(image);
+        return valid = true;
+    }
+
+    /**
+     * Sets the att file data manually for a given part
+     *
+     * @param part part to update att data for
+     * @param att  new att file data
+     */
+    public void setAtt(char part, AttFileData att) {
+        if (att == null || variant == null) {
+            return;
+        }
+        String breedString = "" + part + getComboBoxForPart(part).getSelectedItem();
+        CaosVirtualFile file = new CaosVirtualFile(breedString + ".att", att.toFileText(variant));
+        CaosVirtualFileSystem.getInstance().addFile(file, true);
+        manualAtts.put(part, file);
+        spriteSet = spriteSet.replacing(part, att);
+        redraw(part);
+    }
+
+    /**
+     * Shows/Hides facing controls
+     *
+     * @param show whether to show the facing controls or not
+     */
+    public void showFacing(boolean show) {
+        freeze(facing, show, true);
+        facingLabel.setVisible(! show);
+    }
+
+    /**
+     * Freezes/Unfreezes controls and potentially hides them
+     *
+     * @param box    Box to freeze control of
+     * @param freeze whether or not to freeze(make readonly)
+     * @param hide   whether to hide the control after freezing
+     */
+    private void freeze(JComboBox<?> box, boolean freeze, Boolean hide) {
+        box.setEditable(! freeze);
+        box.setEnabled(! freeze);
+        if (hide != null) {
+            box.setVisible(! hide);
+        }
+    }
+
+    /**
+     * Convenience method to freeze/unfreeze a control given its part char
+     *
+     * @param part   part to alter state of
+     * @param freeze whether to freeze or unfreeze this part
+     */
+    public void freeze(char part, Boolean freeze) {
+        freeze(getComboBoxForBreed(part), freeze, null);
+        freeze(getComboBoxForPart(part), freeze, null);
+    }
+
+    /**
+     * Gets the Pose combo box given a part char
+     *
+     * @param part body part char
+     * @return Combo box for the pose control
+     */
+    private JComboBox<String> getComboBoxForPart(char part) {
+        switch (part) {
+            case 'a':
+            case 'o':
+            case 'p':
+            case 'q':
+                return headPose;
+            case 'b':
+                return bodyPose;
+            case 'c':
+                return leftThighPose;
+            case 'd':
+                return leftShinPose;
+            case 'e':
+                return leftFootPose;
+            case 'f':
+                return rightThighPose;
+            case 'g':
+                return rightShinPose;
+            case 'h':
+                return rightFootPose;
+            case 'i':
+                return leftUpperArmPose;
+            case 'j':
+                return leftForearmPose;
+            case 'k':
+                return rightUpperArmPose;
+            case 'l':
+                return rightForearmPose;
+            case 'm':
+                return tailBasePose;
+            case 'n':
+                return tailTipPose;
+            default:
+                throw new IndexOutOfBoundsException("Part: " + part + " is not a valid body part char");
+        }
+    }
+
+    /**
+     * Sets visibility of labels for a few optional controls
+     *
+     * @param part part of label to show/hide
+     * @param show whether to show or hide label
+     */
+    private void setLabelVisibility(char part, boolean show) {
+        switch (part) {
+            case 'o':
+            case 'p':
+                earLabel.setVisible(show);
+                break;
+            case 'q':
+                hairLabel.setVisible(show);
+            case 'm':
+                tailBaseLabel.setVisible(show);
+                break;
+            case 'n':
+                tailTipLabel.setVisible(show);
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Gets the breed combo box corresponding to the part
+     *
+     * @param part body part char
+     * @return breed combo box for the given part
+     */
+    private JComboBox<VirtualFile> getComboBoxForBreed(char part) {
+        switch (part) {
+            case 'a':
+                return headBreed;
+            case 'b':
+                return bodyBreed;
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'g':
+            case 'h':
+                return legsBreed;
+            case 'i':
+            case 'j':
+            case 'k':
+            case 'l':
+                return armsBreed;
+            case 'm':
+            case 'n':
+                return tailBreed;
+            case 'o':
+            case 'p':
+                return earBreed;
+            case 'q':
+                return hairBreed;
+            default:
+                throw new IndexOutOfBoundsException("Part: " + part + " is not a valid body part char");
+        }
+    }
+
+    /**
+     * Update the sprite set for changed chars and returns it
+     *
+     * @param parts parts that have changed
+     * @return update sprite set
+     */
+    private CreatureSpriteSet getUpdatedSpriteSet(char... parts) {
+        CreatureSpriteSet spriteTemp = spriteSet;
+        if (spriteTemp == null) {
+            spriteTemp = spriteSet = defaultSpriteSet();
+        }
+        if (parts.length < 1) {
+            parts = allParts;
+        }
+        for (char part : parts) {
+            switch (part) {
+                case 'a':
+                    spriteTemp.setHead(Objects.requireNonNull(getBodyData(headBreed, 'a')));
+                    break;
+                case 'b':
+                    spriteTemp.setBody(Objects.requireNonNull(getBodyData(bodyBreed, 'b')));
+                    break;
+                case 'c':
+                    spriteTemp.setLeftThigh(Objects.requireNonNull(getBodyData(legsBreed, 'c')));
+                    break;
+                case 'd':
+                    spriteTemp.setLeftShin(Objects.requireNonNull(getBodyData(legsBreed, 'd')));
+                    break;
+                case 'e':
+                    spriteTemp.setLeftFoot(Objects.requireNonNull(getBodyData(legsBreed, 'e')));
+                    break;
+                case 'f':
+                    spriteTemp.setRightThigh(Objects.requireNonNull(getBodyData(legsBreed, 'f')));
+                    break;
+                case 'g':
+                    spriteTemp.setRightShin(Objects.requireNonNull(getBodyData(legsBreed, 'g')));
+                    break;
+                case 'h':
+                    spriteTemp.setRightFoot(Objects.requireNonNull(getBodyData(legsBreed, 'h')));
+                    break;
+                case 'i':
+                    spriteTemp.setLeftUpperArm(Objects.requireNonNull(getBodyData(armsBreed, 'i')));
+                    break;
+                case 'j':
+                    spriteTemp.setLeftForearm(Objects.requireNonNull(getBodyData(armsBreed, 'j')));
+                    break;
+                case 'k':
+                    spriteTemp.setRightUpperArm(Objects.requireNonNull(getBodyData(armsBreed, 'k')));
+                    break;
+                case 'l':
+                    spriteTemp.setRightForearm(Objects.requireNonNull(getBodyData(armsBreed, 'l')));
+                    break;
+                case 'm':
+                    spriteTemp.setTailBase(getBodyData(tailBreed, 'm'));
+                    break;
+                case 'n':
+                    spriteTemp.setTailTip(getBodyData(tailBreed, 'n'));
+                    break;
+                case 'o':
+                    spriteTemp.setLeftEar(getBodyData(earBreed, 'o'));
+                    break;
+                case 'p':
+                    spriteTemp.setRightEar(getBodyData(earBreed, 'p'));
+                    break;
+                case 'q':
+                    spriteTemp.setHair(getBodyData(hairBreed, 'q'));
+                    break;
+                default:
+                    break;
+            }
+        }
+        spriteSet = spriteTemp;
+        return spriteTemp;
+    }
+
+    /**
+     * Generate a set of default sprites for this pose editor
+     *
+     * @return sprite set with default breeds applied to the parts
+     */
+    private CreatureSpriteSet defaultSpriteSet() {
+        return new CreatureSpriteSet(
+                Objects.requireNonNull(file(getBreed(headBreed), 'a')),
+                Objects.requireNonNull(file(getBreed(bodyBreed), 'b')),
+                Objects.requireNonNull(file(getBreed(legsBreed), 'c')),
+                Objects.requireNonNull(file(getBreed(legsBreed), 'd')),
+                Objects.requireNonNull(file(getBreed(legsBreed), 'e')),
+                Objects.requireNonNull(file(getBreed(legsBreed), 'f')),
+                Objects.requireNonNull(file(getBreed(legsBreed), 'g')),
+                Objects.requireNonNull(file(getBreed(legsBreed), 'h')),
+                Objects.requireNonNull(file(getBreed(armsBreed), 'i')),
+                Objects.requireNonNull(file(getBreed(armsBreed), 'j')),
+                Objects.requireNonNull(file(getBreed(armsBreed), 'k')),
+                Objects.requireNonNull(file(getBreed(armsBreed), 'l')),
+                file(getBreed(tailBreed), 'm'),
+                file(getBreed(tailBreed), 'n'),
+                file(getBreed(earBreed), 'o'),
+                file(getBreed(earBreed), 'p'),
+                file(getBreed(hairBreed), 'q')
+        );
+    }
+
+    /**
+     * Gets the breed body data file for the combo box
+     *
+     * @param menu breed combo box
+     * @return virtual file of body data for breed selected
+     */
+    private VirtualFile getBreed(JComboBox<VirtualFile> menu) {
+        return menu.getItemCount() > 0 ? (VirtualFile) menu.getSelectedItem() : null;
+    }
+
+    /**
+     * Assigns a set of values to a combo box
+     *
+     * @param menu          combo box to populate
+     * @param items         items to populate combo box with
+     * @param selectedIndex index to select after filling in items
+     * @param <T>           The kind of values to fill this combo box with
+     */
+    private <T> void assign(JComboBox<T> menu, T[] items, int selectedIndex) {
+        menu.removeAllItems();
+        for (T item : items) {
+            menu.addItem(item);
+        }
+        if (items.length > selectedIndex) {
+            menu.setSelectedIndex(selectedIndex);
+        }
+
+    }
+
+    /**
+     * Populates a breed combo box with available breed files
+     *
+     * @param menu      breed combo box
+     * @param files     a list of all available body data regardless of actual part
+     * @param partChars parts to filter breeds by
+     */
+    private void populate(JComboBox<VirtualFile> menu, final List<BodyPartFiles> files, Character... partChars) {
+        // Set the cell renderer for the Att file list
+        menu.setRenderer(new BreedFileCellRenderer());
+
+        // Filter list of body part files for breeds applicable to this list of parts
+        List<VirtualFile> items = findBreeds(files, partChars);
+
+        // Assign values to this drop down
+        assign(menu, items.toArray(new VirtualFile[0]), 0);
+
+        // No matching files, skip item selectors
+        if (items.isEmpty()) {
+            return;
+        }
+
+        // Find all breed files matching this path
+        List<Pair<Integer, VirtualFile>> matchingBreedFiles = Lists.newArrayList();
+        String baseBreedString = "" + baseBreed.get(1) + "" + baseBreed.get(2) + "" + baseBreed.get(3);
+        for (int i = 0; i < items.size(); i++) {
+            VirtualFile file = items.get(i);
+            String thisBreed = file.getNameWithoutExtension().substring(1);
+
+            if (thisBreed.equals(baseBreedString)) {
+                if (rootPath != null && file.getPath().startsWith(rootPath)) {
+                    menu.setSelectedIndex(i);
+                    return;
+                }
+                // Breed string matches
+                matchingBreedFiles.add(new Pair<>(i, file));
+            }
+        }
+
+
+        // TODO: figure out if I should prioritize matching breed or matching path
+        //  I think breed though. Not sure.
+
+        // Boolean to check if an item is set based on the root path
+        boolean didSet = false;
+
+
+        // If root path was set, find matching att files for this part.
+        if (rootPath != null) {
+            // If a matching breed was not found in root folder
+            // Look for any other breed file in the root folder.
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).getPath().startsWith(rootPath)) {
+                    didSet = true;
+                    menu.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+
+        // If there are any breed files matching the base breed
+        // Use them first.
+        if (! matchingBreedFiles.isEmpty()) {
+            menu.setSelectedIndex(matchingBreedFiles.get(0).first);
+            return;
+        }
+
+        // Nothing was found, so just select the first item in the list.
+        if (! didSet) {
+            menu.setSelectedIndex(0);
+        }
+    }
+
+    /**
+     * Finds breeds for a given part
+     *
+     * @param files     all available breed files for any part
+     * @param partChars parts to filter the breed list for
+     * @return breed body files available for the parts
+     */
+    private List<VirtualFile> findBreeds(List<BodyPartFiles> files, Character... partChars) {
+        BreedPartKey key = baseBreed
+                .copyWithBreed(null)
+                .copyWithPart(null);
+        List<Character> parts = Arrays.asList(partChars);
+        Stream<VirtualFile> out = files
+                .stream()
+                .filter(part -> {
+                    BreedPartKey thisKey = part.getKey();
+                    if (thisKey == null || thisKey.getBreed() == null) {
+                        return false;
+                    }
+                    return BreedPartKey.isGenericMatch(thisKey, key) && parts.contains(thisKey.getPart());
+                })
+                .map(BodyPartFiles::getBodyDataFile);
+        return out.collect(Collectors.toList());
+    }
+
+    /**
+     * Gets body data from a breed combo box for a given part
+     * Breed drop downs can cover multiple body parts, but hold a reference to only one part.
+     *
+     * @param menu     breed combo box
+     * @param partChar part to look for
+     * @return Sprite body part data
+     */
+    @Nullable
+    private SpriteBodyPart getBodyData(JComboBox<VirtualFile> menu, final char partChar) {
+        VirtualFile breedFile = ((VirtualFile) menu.getSelectedItem());
+        if (breedFile == null) {
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                breedFile = menu.getItemAt(i);
+                if (breedFile != null) {
+                    break;
+                }
+            }
+        }
+        if (breedFile == null) {
+            return null;
+        }
+        return getPart(partChar, breedFile);
+    }
+
+    /**
+     * Gets the body part file given a specific or related breed file
+     *
+     * @param partChar  char to look for
+     * @param breedFile selected breed file in drop down
+     * @return Sprite body part data for a part and breed file
+     */
+    @Nullable
+    private SpriteBodyPart getPart(char partChar, @NotNull VirtualFile breedFile) {
+        // Ensure that breed file has parent
+        if (breedFile.getParent() == null) {
+            return null;
+        }
+        final String parentPath = breedFile.getParent().getPath();
+        final String partString = partChar + "";
+        List<BodyPartFiles> matching;
+        // Generate a key from this breed file
+        BreedPartKey key = BreedPartKey.fromFileName("" + partChar + breedFile.getNameWithoutExtension().substring(1), variant);
+
+        // If this breed file is for this specific part
+        if (breedFile.getName().substring(0, 1).equals(partString)) {
+            final String thisPath = breedFile.getPath();
+            matching = files.stream()
+                    .filter(b -> b.getBodyDataFile().getPath().equals(thisPath))
+                    .collect(Collectors.toList());
+        } else {
+            // Breed file is for related part ie (leftUpperArm to right lower arm.)
+            // Only one breed file is referenced for all related parts
+            matching = files.stream()
+                    .filter(b -> b.getKey() != null && BreedPartKey.isGenericMatch(b.getKey(), key) && b.getBodyDataFile().getPath().startsWith(parentPath) && b.getBodyDataFile().getName().startsWith(partString))
+                    .collect(Collectors.toList());
+        }
+
+        // If item was found for this breed
+        // Wrap it to return
+        Optional<BodyPartFiles> selected;
+        if (! matching.isEmpty()) {
+            selected = Optional.of(matching.get(0));
+        } else {
+            // Body part data does not exist for this part and breed
+            // Happens when upper arm has breed sprite but lower arm doesn't, etc
+
+            // Get a breed free key
+            BreedPartKey fallback = baseBreed
+                    .copyWithBreed(null)
+                    .copyWithPart(partChar);
+            // Filter file age, gender, genus and part
+            selected = files.stream()
+                    .filter(b -> b.getKey() != null && BreedPartKey.isGenericMatch(b.getKey(), fallback))
+                    .findFirst();
+        }
+
+        // If still nothing was found, bail out
+        if (! selected.isPresent()) {
+            return null;
+        }
+
+        // Get body part Files
+        BodyPartFiles out = selected.get();
+
+        // If manual att was passed in, use it instead
+        if (manualAtts.containsKey(partChar)) {
+            out = out.copy(out.getSpriteFile(), manualAtts.get(partChar));
+        }
+
+        // Return the resolved sprite and att file from the two virtual files
+        return out.data(project);
+    }
+
+    /**
+     * Sets the root path for all related sprite and att files
+     * There was a problem when multiple files exist with the same name in different folders
+     * This matches the breed files to those in the same directory
+     *
+     * @param path parent path for all related breed files
+     */
+    public void setRootPath(String path) {
+        this.rootPath = path;
+        selectWithRoot(headBreed, path);
+        selectWithRoot(bodyBreed, path);
+        selectWithRoot(legsBreed, path);
+        selectWithRoot(armsBreed, path);
+        selectWithRoot(tailBreed, path);
+        selectWithRoot(earBreed, path);
+        selectWithRoot(hairBreed, path);
+        redraw(allParts);
+    }
+
+    /**
+     * Selects the combo box option matching the root path
+     *
+     * @param box      breed combo box
+     * @param rootPath path to find children for
+     */
+    private void selectWithRoot(JComboBox<VirtualFile> box, String rootPath) {
+        for (int i = 0; i < box.getItemCount(); i++) {
+            Object item = box.getItemAt(i);
+            // Items sometimes comes back as string, though I am not sure why
+            //noinspection ConstantConditions
+            if (item instanceof String) {
+                LOGGER.info("Item in ComboBox: " + box.getToolTipText() + " is String with value: (" + item + ")");
+                return;
+            }
+            if (((VirtualFile) item).getPath().startsWith(rootPath)) {
+                box.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Sets facing direction for the pose renderer
+     *
+     * @param direction direction that the creature will be facing
+     */
+    public void setFacing(int direction) {
+        facing.setSelectedIndex(direction);
+        redraw(allParts);
+    }
+
+    /**
+     * Sets the pose manually given a facing direction, a part and a pose
+     *
+     * @param facing   selected direction index
+     * @param charPart part to set
+     * @param pose     pose to set part to
+     */
+    public void setPose(int facing, char charPart, int pose) {
+        if (! didInitOnce) {
+            return;
+        }
+        setFacing(facing);
+        setPose(charPart, pose);
+    }
+
+    /**
+     * Sets the part to center focus modes around
+     *
+     * @param partChar part to focus on
+     */
+    public void setVisibilityFocus(char partChar) {
+        visibilityFocus = partChar;
+        visibilityMask = getVisibilityMask(partChar);
+        redraw(partChar);
+    }
+
+    /**
+     * Sets the visibility mask given a focus part
+     *
+     * @param part part to focus
+     * @return visibility mask for the part and selected focus mode
+     */
+    public Map<Character, PartVisibility> getVisibilityMask(char part) {
+        Map<Character, PartVisibility> parts = Collections.emptyMap();
+        PartVisibility associatedPartVisibility = null;
+        switch (focusMode.getSelectedIndex()) {
+            // 0 - Everything
+            case 0:
+                parts = PartVisibility.getAllVisible();
+                break;
+            // 1 - Ghost
+            case 1:
+                parts = PartVisibility.getAllGhost();
+                associatedPartVisibility = PartVisibility.GHOST;
+                break;
+            // 2 - Ghost (Solo)
+            case 2:
+                parts = PartVisibility.getAllHidden();
+                associatedPartVisibility = PartVisibility.GHOST;
+                parts.put('b', PartVisibility.HIDDEN);
+                break;
+            // 4 - Solo
+            case 3:
+                parts = PartVisibility.getAllHidden();
+                associatedPartVisibility = PartVisibility.VISIBLE;
+                break;
+            // 5 - Solo (With Body)
+            case 4:
+                parts = PartVisibility.getAllHidden();
+                associatedPartVisibility = PartVisibility.VISIBLE;
+                parts.put('b', PartVisibility.VISIBLE);
+                break;
+            // 6 - Solo (Ghost Body)
+            case 5:
+                parts = PartVisibility.getAllHidden();
+                associatedPartVisibility = PartVisibility.VISIBLE;
+                parts.put('b', PartVisibility.GHOST);
+                break;
+        }
+        if (associatedPartVisibility != null) {
+            applyVisibility(parts, associatedParts(part), associatedPartVisibility);
+        }
+        parts.put(part, PartVisibility.VISIBLE);
+        return parts;
+    }
+
+    /**
+     * Applies the visibility to the body parts for use in the renderer
+     *
+     * @param parts      all parts in pose system
+     * @param associated which parts to apply visibility to
+     * @param visibility what visibility to apply
+     */
+    private void applyVisibility(Map<Character, PartVisibility> parts, List<Character> associated, PartVisibility visibility) {
+        for (char part : associated) {
+            parts.put(part, visibility);
+        }
+    }
+
+    /**
+     * Finds associated parts given a char for use in focus modes
+     *
+     * @param part part to find related for
+     * @return related parts
+     */
+    public List<Character> associatedParts(final char part) {
+        String partString = "";
+        switch (part) {
+            case 'a':
+                partString = "opq";
+                break;
+            case 'b':
+                partString = "acfikm";
+                break;
+            case 'c':
+                partString = "de";
+                break;
+            case 'd':
+                partString = "ce";
+                break;
+            case 'e':
+                partString = "cd";
+                break;
+            case 'f':
+                partString = "gh";
+                break;
+            case 'g':
+                partString = "fh";
+                break;
+            case 'h':
+                partString = "fg";
+                break;
+            case 'i':
+                return Collections.singletonList('j');
+            case 'j':
+                return Collections.singletonList('i');
+            case 'k':
+                return Collections.singletonList('l');
+            case 'l':
+                return Collections.singletonList('k');
+            case 'm':
+                return Collections.singletonList('n');
+            case 'n':
+                return Collections.singletonList('m');
+            case 'o':
+            case 'p':
+            case 'q':
+                return Collections.singletonList('a');
+        }
+        return partString
+                .chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Sets the pose for a body part directly
+     * Alters the items in the corresponding drop down accordingly
+     *
+     * @param charPart part to set the pose for
+     * @param pose     the pose to apply
+     */
+    public void setPose(char charPart, int pose) {
+        if (! didInitOnce) {
+            return;
+        }
+        JComboBox<String> comboBox = getComboBoxForPart(charPart);
+        // If variant is old, any part facing front but face forces all other parts front
+        if (variant.isOld()) {
+            // Face all parts front
+            if (charPart != 'a' && pose == 4) {
+                pose = 0;
+                comboBox.removeAllItems();
+                comboBox.addItem("Front");
+
+                // face all parts back
+            } else if (charPart != 'a' && pose == 5) {
+                pose = 0;
+                comboBox.removeAllItems();
+                comboBox.addItem("Back");
+            } else if (comboBox.getItemCount() == 1) {
+                // Pose is neither front nor back, so fill in directions if not already filled in
+                assign(bodyPose, directions, 1);
+            }
+        }
+        // Select the pose in the dropdown box
+        comboBox.setSelectedIndex(pose);
+        // Redraw the image
+        redraw(charPart);
+    }
+
+    /**
+     * Updates the pose object with whatever parts may have changed according to the char parts given
+     *
+     * @param parts parts that need recalculating
+     * @return the updated pose, though the instance pose object is also updated
+     */
+    public Pose getUpdatedPose(char... parts) {
+        final int offset;
+
+        // Get facing direction to calculate the sprite offset in the sprite file
+        int facingDirection = facing.getSelectedIndex();
+        if (facingDirection == 0) {
+            offset = 0;
+        } else if (facingDirection == 1) {
+            offset = 4;
+        } else if (facingDirection == 2) {
+            offset = 8;
+        } else if (facingDirection == 3) {
+            offset = variant.isOld() ? 9 : 12;
+        } else {
+            throw new RuntimeException("Invalid direction offset");
+        }
+        // Gets the pose object for editing
+        Pose poseTemp = pose;
+
+        // If the pose object is not yet initialized, initialize it
+        if (poseTemp == null) {
+            int def = offset + 3;
+            poseTemp = pose = new Pose(offset + 2, def, def, def, def, def, def, def, def, def, def, def, def, def);
+        }
+        int temp;
+        // Go through each part passed in for updating, and update it.
+        for (char part : parts) {
+            switch (part) {
+                case 'a':
+                    // Head is funny, and needs special handling
+                    temp = headPose.getSelectedIndex();
+                    if (variant.isOld()) {
+                        if (facingDirection == 2 || temp == 4) {
+                            temp = 8;
+                        } else if (facingDirection == 3 || temp == 5) {
+                            temp = 9;
+                        } else {
+                            temp = 3 - temp;
+                            temp += offset;
+                        }
+                        if (temp > 9) {
+                            throw new RuntimeException("Invalid head pose " + temp + " found. SelectedIndex: " + headPose.getSelectedIndex() + "; Offset: " + offset + ";");
+                        }
+                    } else {
+                        if (temp == 4) {
+                            temp = 3 - headDirection2.getSelectedIndex();
+                            temp += 8;
+                        } else if (temp == 5) {
+                            temp = 3 - headDirection2.getSelectedIndex();
+                            temp += 12;
+                        } else {
+                            temp = 3 - temp;
+                            temp += offset;
+                        }
+                    }
+                    poseTemp.setHead(temp);
+                    break;
+                case 'b':
+                    poseTemp.setBody(getBodyPartPose(bodyPose, facingDirection, offset));
+                    break;
+                case 'c':
+                    poseTemp.setLeftThigh(getBodyPartPose(leftThighPose, facingDirection, offset));
+                    break;
+                case 'd':
+                    poseTemp.setLeftShin(getBodyPartPose(leftShinPose, facingDirection, offset));
+                    break;
+                case 'e':
+                    poseTemp.setLeftFoot(getBodyPartPose(leftFootPose, facingDirection, offset));
+                    break;
+                case 'f':
+                    poseTemp.setRightThigh(getBodyPartPose(rightThighPose, facingDirection, offset));
+                    break;
+                case 'g':
+                    poseTemp.setRightShin(getBodyPartPose(rightShinPose, facingDirection, offset));
+                    break;
+                case 'h':
+                    poseTemp.setRightFoot(getBodyPartPose(rightFootPose, facingDirection, offset));
+                    break;
+                case 'i':
+                    poseTemp.setLeftUpperArm(getBodyPartPose(leftUpperArmPose, facingDirection, offset));
+                    break;
+                case 'j':
+                    poseTemp.setLeftForearm(getBodyPartPose(leftForearmPose, facingDirection, offset));
+                    break;
+                case 'k':
+                    poseTemp.setRightUpperArm(getBodyPartPose(rightUpperArmPose, facingDirection, offset));
+                    break;
+                case 'l':
+                    poseTemp.setRightForearm(getBodyPartPose(rightForearmPose, facingDirection, offset));
+                    break;
+                case 'm':
+                    poseTemp.setTailBase(getBodyPartPose(tailBasePose, facingDirection, offset));
+                    break;
+                case 'n':
+                    poseTemp.setTailTip(getBodyPartPose(tailTipPose, facingDirection, offset));
+                    break;
+                default:
+                    break;
+            }
+        }
+        // Set the pose object back to itself or with a new version if it doesn't already exist.
+        pose = poseTemp;
+        return poseTemp;
+    }
+
+    /**
+     * Gets the pose for a given combobox
+     *
+     * @param box             combo box to check
+     * @param facingDirection facing direction of creature
+     * @param offset          offset into sprite set
+     * @return pose index in sprite file
+     */
+    private int getBodyPartPose(JComboBox<String> box, int facingDirection, int offset) {
+        return getBodyPartPose(box, facingDirection, offset, true);
+    }
+
+    /**
+     * Gets the pose for a given combobox
+     *
+     * @param box             combo box to check
+     * @param facingDirection facing direction of creature
+     * @param offset          offset into sprite set
+     * @param invert          whether or not to invert the pose from 1-4
+     * @return pose index in sprite file
+     */
+    private int getBodyPartPose(JComboBox<String> box, int facingDirection, int offset, boolean invert) {
+        int pose = box.getSelectedIndex();
+        if (pose < 0) {
+            return 0;
+        }
+        if (variant.isOld()) {
+            if (invert && pose < 4) {
+                pose = 3 - pose;
+            }
+            if (facingDirection == 2 || pose == 4) {
+                pose = 8;
+            } else if (facingDirection == 3 || pose == 5) {
+                pose = 9;
+            } else {
+                pose += offset;
+            }
+            if (pose > 9 || pose < 0) {
+                throw new RuntimeException("Invalid body pose " + pose + "found. SelectedIndex: " + bodyPose.getSelectedIndex() + "; Offset: " + offset + ";");
+            }
+        } else {
+            if (invert) {
+                pose = 3 - pose;
+            }
+            pose += offset;
+        }
+        return pose;
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        createUIComponents();
+        panel1 = new JPanel();
+        panel1.setLayout(new BorderLayout(0, 0));
+        panel1.setPreferredSize(new Dimension(250, 600));
+        imageHolder.setMinimumSize(new Dimension(250, 250));
+        imageHolder.setPreferredSize(new Dimension(250, 250));
+        panel1.add(imageHolder, BorderLayout.NORTH);
+        final JScrollPane scrollPane1 = new JScrollPane();
+        panel1.add(scrollPane1, BorderLayout.CENTER);
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new GridBagLayout());
+        scrollPane1.setViewportView(panel2);
+        final JPanel spacer1 = new JPanel();
+        GridBagConstraints gbc;
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(spacer1, gbc);
+        headBreed = new JComboBox();
+        headBreed.setPreferredSize(new Dimension(76, 25));
+        headBreed.setToolTipText("Head Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(headBreed, gbc);
+        final JLabel label1 = new JLabel();
+        label1.setText("Right Arm");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 8;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label1, gbc);
+        leftUpperArmPose = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        leftUpperArmPose.setModel(defaultComboBoxModel1);
+        leftUpperArmPose.setPreferredSize(new Dimension(76, 25));
+        leftUpperArmPose.setToolTipText("Left upper arm pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 9;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(leftUpperArmPose, gbc);
+        rightUpperArmPose = new JComboBox();
+        rightUpperArmPose.setPreferredSize(new Dimension(76, 25));
+        rightUpperArmPose.setToolTipText("Right upper arm pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 9;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(rightUpperArmPose, gbc);
+        final JLabel label2 = new JLabel();
+        label2.setText("Left Arm");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 8;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label2, gbc);
+        leftForearmPose = new JComboBox();
+        leftForearmPose.setPreferredSize(new Dimension(76, 25));
+        leftForearmPose.setToolTipText("Left forearm and hand pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 10;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(leftForearmPose, gbc);
+        rightForearmPose = new JComboBox();
+        rightForearmPose.setPreferredSize(new Dimension(76, 25));
+        rightForearmPose.setToolTipText("Right forearm and hand pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 10;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(rightForearmPose, gbc);
+        final JLabel label3 = new JLabel();
+        label3.setText("Legs");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label3, gbc);
+        legsBreed = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
+        defaultComboBoxModel2.addElement("H");
+        legsBreed.setModel(defaultComboBoxModel2);
+        legsBreed.setPreferredSize(new Dimension(76, 25));
+        legsBreed.setToolTipText("Legs Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 12;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(legsBreed, gbc);
+        leftThighPose = new JComboBox();
+        leftThighPose.setMinimumSize(new Dimension(81, 25));
+        leftThighPose.setPreferredSize(new Dimension(76, 25));
+        leftThighPose.setToolTipText("Left thigh pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 14;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(leftThighPose, gbc);
+        leftShinPose = new JComboBox();
+        leftShinPose.setPreferredSize(new Dimension(76, 25));
+        leftShinPose.setToolTipText("left shin pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 15;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(leftShinPose, gbc);
+        leftFootPose = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel3 = new DefaultComboBoxModel();
+        leftFootPose.setModel(defaultComboBoxModel3);
+        leftFootPose.setPreferredSize(new Dimension(76, 25));
+        leftFootPose.setToolTipText("left foot pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 16;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(leftFootPose, gbc);
+        rightThighPose = new JComboBox();
+        rightThighPose.setPreferredSize(new Dimension(76, 25));
+        rightThighPose.setToolTipText("Right thigh pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 14;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(rightThighPose, gbc);
+        rightShinPose = new JComboBox();
+        rightShinPose.setPreferredSize(new Dimension(76, 25));
+        rightShinPose.setToolTipText("Right shin pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 15;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(rightShinPose, gbc);
+        rightFootPose = new JComboBox();
+        rightFootPose.setPreferredSize(new Dimension(76, 25));
+        rightFootPose.setToolTipText("Right foot pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 16;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(rightFootPose, gbc);
+        final JLabel label4 = new JLabel();
+        label4.setText("Left Leg");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 13;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label4, gbc);
+        final JLabel label5 = new JLabel();
+        label5.setText("Head");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label5, gbc);
+        final JLabel label6 = new JLabel();
+        label6.setText("Body");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label6, gbc);
+        headPose = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel4 = new DefaultComboBoxModel();
+        defaultComboBoxModel4.addElement("Far Down");
+        defaultComboBoxModel4.addElement("Down");
+        defaultComboBoxModel4.addElement("Straight");
+        defaultComboBoxModel4.addElement("Up");
+        defaultComboBoxModel4.addElement("Forward");
+        defaultComboBoxModel4.addElement("Back");
+        headPose.setModel(defaultComboBoxModel4);
+        headPose.setPreferredSize(new Dimension(76, 25));
+        headPose.setToolTipText("Head Pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(headPose, gbc);
+        bodyBreed = new JComboBox();
+        bodyBreed.setPreferredSize(new Dimension(76, 25));
+        bodyBreed.setToolTipText("Body Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(bodyBreed, gbc);
+        bodyPose = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel5 = new DefaultComboBoxModel();
+        bodyPose.setModel(defaultComboBoxModel5);
+        bodyPose.setPreferredSize(new Dimension(76, 25));
+        bodyPose.setToolTipText("Body Pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(bodyPose, gbc);
+        earBreed = new JComboBox();
+        earBreed.setMinimumSize(new Dimension(81, 25));
+        final DefaultComboBoxModel defaultComboBoxModel6 = new DefaultComboBoxModel();
+        earBreed.setModel(defaultComboBoxModel6);
+        earBreed.setPreferredSize(new Dimension(76, 25));
+        earBreed.setToolTipText("Hair Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(earBreed, gbc);
+        hairBreed = new JComboBox();
+        hairBreed.setPreferredSize(new Dimension(76, 25));
+        hairBreed.setToolTipText("Ear Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 5;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(hairBreed, gbc);
+        armsBreed = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel7 = new DefaultComboBoxModel();
+        armsBreed.setModel(defaultComboBoxModel7);
+        armsBreed.setPreferredSize(new Dimension(76, 25));
+        armsBreed.setToolTipText("Arms Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 7;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(armsBreed, gbc);
+        final JLabel label7 = new JLabel();
+        label7.setText("Arms");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label7, gbc);
+        final JLabel label8 = new JLabel();
+        label8.setText("Tail");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 18;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label8, gbc);
+        tailBreed = new JComboBox();
+        tailBreed.setPreferredSize(new Dimension(76, 25));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 18;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(tailBreed, gbc);
+        tailBasePose = new JComboBox();
+        tailBasePose.setPreferredSize(new Dimension(76, 25));
+        tailBasePose.setToolTipText("Tail base pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 19;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(tailBasePose, gbc);
+        tailTipPose = new JComboBox();
+        tailTipPose.setPreferredSize(new Dimension(76, 25));
+        tailTipPose.setToolTipText("Tail tip pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 20;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(tailTipPose, gbc);
+        final JPanel spacer2 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 17;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel2.add(spacer2, gbc);
+        final JPanel spacer3 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 11;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel2.add(spacer3, gbc);
+        final JPanel spacer4 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 6;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel2.add(spacer4, gbc);
+        final JLabel label9 = new JLabel();
+        label9.setText("Right Leg");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 13;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label9, gbc);
+        final JLabel label10 = new JLabel();
+        label10.setText("Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label10, gbc);
+        final JLabel label11 = new JLabel();
+        label11.setText("Pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label11, gbc);
+        final JLabel label12 = new JLabel();
+        label12.setText("Ears");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label12, gbc);
+        final JLabel label13 = new JLabel();
+        label13.setText("Hair");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label13, gbc);
+        final JLabel label14 = new JLabel();
+        label14.setText("Up. Arm");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label14, gbc);
+        final JLabel label15 = new JLabel();
+        label15.setText("Forearm");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label15, gbc);
+        final JLabel label16 = new JLabel();
+        label16.setText("Thigh");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 14;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label16, gbc);
+        final JLabel label17 = new JLabel();
+        label17.setText("Shin");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 15;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label17, gbc);
+        final JLabel label18 = new JLabel();
+        label18.setText("Foot");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 16;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label18, gbc);
+        final JLabel label19 = new JLabel();
+        label19.setText("Base");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 19;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label19, gbc);
+        final JLabel label20 = new JLabel();
+        label20.setText("Tip");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 20;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label20, gbc);
+        final JLabel label21 = new JLabel();
+        label21.setText("Facing");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label21, gbc);
+        facing = new JComboBox();
+        facing.setMinimumSize(new Dimension(81, 10));
+        final DefaultComboBoxModel defaultComboBoxModel8 = new DefaultComboBoxModel();
+        defaultComboBoxModel8.addElement("Left");
+        defaultComboBoxModel8.addElement("Right");
+        defaultComboBoxModel8.addElement("Front");
+        defaultComboBoxModel8.addElement("Back");
+        facing.setModel(defaultComboBoxModel8);
+        facing.setPreferredSize(new Dimension(76, 25));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(facing, gbc);
+        headBreed.setNextFocusableComponent(headPose);
+        leftUpperArmPose.setNextFocusableComponent(leftForearmPose);
+        rightUpperArmPose.setNextFocusableComponent(rightForearmPose);
+        leftForearmPose.setNextFocusableComponent(rightUpperArmPose);
+        leftThighPose.setNextFocusableComponent(leftShinPose);
+        leftShinPose.setNextFocusableComponent(leftFootPose);
+        leftFootPose.setNextFocusableComponent(rightThighPose);
+        rightThighPose.setNextFocusableComponent(rightShinPose);
+        rightShinPose.setNextFocusableComponent(rightFootPose);
+        rightFootPose.setNextFocusableComponent(tailBreed);
+        bodyBreed.setNextFocusableComponent(bodyPose);
+        bodyPose.setNextFocusableComponent(armsBreed);
+        armsBreed.setNextFocusableComponent(armsBreed);
+        tailBreed.setNextFocusableComponent(tailBasePose);
+        tailTipPose.setNextFocusableComponent(headBreed);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return panel1;
+    }
+
+    private void createUIComponents() {
+        imageHolder = new CenteredImagePanel();
+    }
+
+    /**
+     * Panel to draw the rendered pose with
+     */
+    private static class CenteredImagePanel extends JPanel {
+        private BufferedImage image;
+        private Dimension minSize;
+
+        public void updateImage(@NotNull BufferedImage image) {
+            this.image = image;
+            if (minSize == null) {
+                minSize = getSize();
+            }
+            Dimension size = new Dimension(Math.max(minSize.width, image.getWidth()), Math.max(minSize.width, image.getHeight()));
+            setPreferredSize(size);
+            setMinimumSize(minSize);
+            revalidate();
+            repaint();
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (image == null) {
+                return;
+            }
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.translate(this.getWidth() / 2, this.getHeight() / 2);
+            g2d.translate(- image.getWidth(null) / 2, - image.getHeight(null) / 2);
+            g2d.drawImage(image, 0, 0, null);
+        }
+    }
+
+    /**
+     * Renders the virtual file for the breed in the drop down list
+     */
+    private static class BreedFileCellRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(
+                JList<?> list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            final VirtualFile file = (VirtualFile) value;
+            setText(file.getNameWithoutExtension().substring(1));
+            return this;
+        }
+    }
+}
