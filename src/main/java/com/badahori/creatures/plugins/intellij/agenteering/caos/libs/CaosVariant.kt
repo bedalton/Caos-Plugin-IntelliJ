@@ -12,6 +12,8 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     object DS : CaosVariant("DS", "Docking Station", 5, CaosScriptIcons.DS)
     object SM : CaosVariant("SM", "Sea Monkeys", 6, CaosScriptIcons.SM)
     object UNKNOWN : CaosVariant("??", "Unknown", -1, CaosScriptIcons.MODULE_ICON)
+
+
     data class OTHER internal constructor(
             override val code: String,
             override val fullName: String,
@@ -66,6 +68,9 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
             return this !in VARIANT_OLD
         }
 
+    val isC3DS get() = this == C3 || this == DS
+
+
     override fun toString(): String {
         return code
     }
@@ -76,6 +81,20 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
             index - version > 0 -> 1
             else -> 0
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CaosVariant) return false
+
+        if (code != other.code)
+            return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return code.hashCode()
     }
 }
 
