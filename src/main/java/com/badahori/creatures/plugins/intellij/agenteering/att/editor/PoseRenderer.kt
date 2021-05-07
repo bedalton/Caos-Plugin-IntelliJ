@@ -25,13 +25,8 @@ object PoseRenderer {
         visibilityMask: Map<Char, PartVisibility>,
         zoom: Int = 1
     ): BufferedImage {
-        val (parts, size) = try {
-            buildParts(variant, sprites, pose, visibilityMask)
-        } catch (e:Exception) {
-            LOGGER.severe("Failed to build body parts for render: Error(${e.className}): ${e.localizedMessage}")
-            e.printStackTrace()
-          null
-        } ?: throw Exception("Failed to render body part. Body direction invalid")
+        val (parts, size) = buildParts(variant, sprites, pose, visibilityMask)
+            ?: throw Exception("Failed to build body parts for pose render")
         val (width, height) = size
         val zoomWidth = width * zoom
         val zoomHeight = height * zoom
@@ -92,12 +87,18 @@ object PoseRenderer {
     ): Pair<List<RenderPart>, Pair<Int, Int>>? {
 
         // Body
+        if (pose.body !in 0..sprites.body.bodyData.lines.lastIndex) {
+            throw Exception("Body pose '${pose.body}' out of bounds.")
+        }
         val bodyAtt = sprites.body.bodyData[pose.body]
         val bodySprite = sprites.body.sprite[pose.body]?.image!!
         val bodyPart = RenderPart(bodySprite, Pair(0, 0), visibilityMask['b'] ?: VISIBLE)
 
         // Head
         val head = sprites.head
+        if (pose.head !in 0..head.bodyData.lines.lastIndex) {
+            throw Exception("Head pose '${pose.head}' out of bounds.")
+        }
         val headPart = RenderPart(
             head.sprite[pose.head]?.image!!,
             bodyAtt[0].let { (bodyHeadX, bodyHeadY) ->
@@ -111,92 +112,92 @@ object PoseRenderer {
         val leftEarPart = sprites.leftEar?.let { part ->
             val headAtt = head.bodyData[pose.head].getOrNull(2)?.let { headPart.position + it }
                 ?: return@let null
-            getPart(part, pose.head, headAtt, visibilityMask['o'] ?: VISIBLE)
+            getPart('o', part, pose.head, headAtt, visibilityMask['o'] ?: VISIBLE)
         }
 
         // Right Ear
         val rightEarPart = sprites.rightEar?.let { part ->
             val headAtt = head.bodyData[pose.head].getOrNull(3)?.let { headPart.position + it }
                 ?: return@let null
-            getPart(part, pose.head, headAtt, visibilityMask['p'] ?: VISIBLE)
+            getPart('p', part, pose.head, headAtt, visibilityMask['p'] ?: VISIBLE)
         }
 
         // Hair
         val hairPart = sprites.hair?.let { part ->
             val headAtt = head.bodyData[pose.head].getOrNull(4)?.let { headPart.position + it }
                 ?: return@let null
-            getPart(part, pose.head, headAtt, visibilityMask['q'] ?: VISIBLE)
+            getPart('q', part, pose.head, headAtt, visibilityMask['q'] ?: VISIBLE)
         }
 
         // Left Thigh
         val leftThigh = sprites.leftThigh.let { part ->
             val attachAt = bodyAtt.getOrNull(1)
                 ?: return@let null
-            getPart(part, pose.leftThigh, attachAt, visibilityMask['c'] ?: VISIBLE)
+            getPart('c', part, pose.leftThigh, attachAt, visibilityMask['c'] ?: VISIBLE)
         }
 
         // Left Shin
         val leftShin = sprites.leftShin.let { part ->
             val attachAt = leftThigh!!.position + sprites.leftThigh.bodyData[pose.leftThigh][1]
-            getPart(part, pose.leftShin, attachAt, visibilityMask['d'] ?: VISIBLE)
+            getPart('d', part, pose.leftShin, attachAt, visibilityMask['d'] ?: VISIBLE)
         }
 
         // Left Foot
         val leftFoot = sprites.leftFoot.let { part ->
             val attachAt = leftShin!!.position + sprites.leftShin.bodyData[pose.leftShin][1]
-            getPart(part, pose.leftFoot, attachAt, visibilityMask['e'] ?: VISIBLE)
+            getPart('e', part, pose.leftFoot, attachAt, visibilityMask['e'] ?: VISIBLE)
         }
 
         // Right Thigh
         val rightThigh = sprites.rightThigh.let { part ->
             val attachAt = bodyAtt.getOrNull(2)
                 ?: return@let null
-            getPart(part, pose.rightThigh, attachAt, visibilityMask['f'] ?: VISIBLE)
+            getPart('f', part, pose.rightThigh, attachAt, visibilityMask['f'] ?: VISIBLE)
         }
 
         // Right Shin
         val rightShin = sprites.rightShin.let { part ->
             val attachAt = rightThigh!!.position + sprites.rightThigh.bodyData[pose.rightThigh][1]
-            getPart(part, pose.rightShin, attachAt, visibilityMask['g'] ?: VISIBLE)
+            getPart('g', part, pose.rightShin, attachAt, visibilityMask['g'] ?: VISIBLE)
         }
 
         // Right Foot
         val rightFoot = sprites.rightFoot.let { part ->
             val attachAt = rightShin!!.position + sprites.rightShin.bodyData[pose.rightShin][1]
-            getPart(part, pose.rightFoot, attachAt, visibilityMask['h'] ?: VISIBLE)
+            getPart('h', part, pose.rightFoot, attachAt, visibilityMask['h'] ?: VISIBLE)
         }
 
         // Left Upper Arm
         val leftUpperArm = sprites.leftUpperArm.let { part ->
             val attachAt = bodyAtt.getOrNull(3)
                 ?: return@let null
-            getPart(part, pose.leftUpperArm, attachAt, visibilityMask['i'] ?: VISIBLE)
+            getPart('i', part, pose.leftUpperArm, attachAt, visibilityMask['i'] ?: VISIBLE)
         }
 
         // Left Forearm
         val leftForearm = sprites.leftForearm.let { part ->
             val attachAt = leftUpperArm!!.position + sprites.leftUpperArm.bodyData[pose.leftUpperArm][1]
-            getPart(part, pose.leftForearm, attachAt, visibilityMask['j'] ?: VISIBLE)
+            getPart('j', part, pose.leftForearm, attachAt, visibilityMask['j'] ?: VISIBLE)
         }
 
         // Right Upper Arm
         val rightUpperArm = sprites.rightUpperArm.let { part ->
             val attachAt = bodyAtt.getOrNull(4)
                 ?: return@let null
-            getPart(part, pose.rightUpperArm, attachAt, visibilityMask['k'] ?: VISIBLE)
+            getPart('k', part, pose.rightUpperArm, attachAt, visibilityMask['k'] ?: VISIBLE)
         }
 
         // Right Forearm
         val rightForearm = sprites.rightForearm.let { part ->
             val attachAt = rightUpperArm!!.position + sprites.rightUpperArm.bodyData[pose.rightUpperArm][1]
-            getPart(part, pose.rightForearm, attachAt, visibilityMask['l'] ?: VISIBLE)
+            getPart('l', part, pose.rightForearm, attachAt, visibilityMask['l'] ?: VISIBLE)
         }
 
         // Tail Base
         val tailBase = sprites.tailBase?.let { part ->
             val attachAt = bodyAtt.getOrNull(5)
                 ?: return@let null
-            getPart(part, pose.tailBase, attachAt, visibilityMask['m'] ?: VISIBLE)
+            getPart('m', part, pose.tailBase, attachAt, visibilityMask['m'] ?: VISIBLE)
         }
 
         // Tail Tip
@@ -204,7 +205,7 @@ object PoseRenderer {
             val attachAt =
                 sprites.tailBase?.bodyData?.getOrNull(pose.tailBase)?.getOrNull(1)?.let { tailBase!!.position + it }
                     ?: return@let null
-            getPart(part, pose.tailTip, attachAt, visibilityMask['n'] ?: VISIBLE)
+            getPart('n', part, pose.tailTip, attachAt, visibilityMask['n'] ?: VISIBLE)
         }
 
         // Head layer
@@ -263,25 +264,22 @@ object PoseRenderer {
 
 
         // Parts in order
-        val parts = if (sprites.body.sprite.size > 10) {
+        val parts = if (sprites.body.sprite.size == 10) {
+            // OLD VARIANTS
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + rightArm + headParts
                 in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + leftArm + headParts
-                // 8..11 can be interpreted differently based on old or new variant
-                in 8..11 -> if (variant.isOld && pose.body == 9)
-                // Old variant back
-                    headParts + leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail
-                else // All variants front
-                    tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
-                in 12..15 -> headParts + leftArm + rightArm + leftLeg + rightLeg + bodyPart + tail
+                8 -> tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
+                9 -> headParts + leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail
                 else -> null
             }
         } else {
+            // NEW VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + headParts + rightArm
-                in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + headParts + leftArm
-                8 -> tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
-                9 -> headParts + leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail
+                in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + rightArm + headParts
+                in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + leftArm + headParts
+                in 8..11 -> tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
+                in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
             }
         }?.filterNotNull()
@@ -303,11 +301,15 @@ object PoseRenderer {
     }
 
     private fun getPart(
+        partChar: Char,
         part: SpriteBodyPart,
         pose: Int,
         attachAt: Pair<Int, Int>,
         visibility: PartVisibility
     ): RenderPart? {
+        if (pose !in 0..part.bodyData.lines.lastIndex) {
+            throw Exception("Pose: '$pose' is out of range for part: '$partChar'")
+        }
         val thisAtt = part.bodyData[pose][0]
         val sprite = part.sprite[pose]?.image
             ?: return null
@@ -335,7 +337,31 @@ object PoseRenderer {
         var rightForearm: Int,
         var tailBase: Int,
         var tailTip: Int,
-    )
+        var ears: Int = head,
+    ) {
+        fun pose(part: Char): Int? {
+            return when (part) {
+                'a' -> head
+                'b' -> body
+                'c' -> leftThigh
+                'd' -> leftShin
+                'e' -> leftFoot
+                'f' -> rightThigh
+                'g' -> rightShin
+                'h' -> rightFoot
+                'i' -> leftUpperArm
+                'j' -> leftForearm
+                'k' -> rightUpperArm
+                'l' -> rightForearm
+                'm' -> tailBase
+                'n' -> tailTip
+                'o' -> ears
+                'p' -> ears
+                'q' -> head
+                else -> return null
+            }
+        }
+    }
 
     data class CreatureSpriteSet(
         var head: SpriteBodyPart,

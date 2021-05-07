@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
@@ -13,6 +14,7 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileEvent;
@@ -36,6 +38,7 @@ import static com.intellij.openapi.application.ApplicationManager.getApplication
 
 public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
+    private static Key<Pose> ATT_FILE_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.POSE_DATA");
     final VirtualFile file;
     final VirtualFile spriteFile;
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);
@@ -70,6 +73,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private boolean lockY;
     private PoseEditor poseEditor;
     private int cell = - 1;
+    private boolean didLoadOnce = false;
 
     AttEditorPanel(final Project project, final CaosVariant variantIn, final VirtualFile virtualFile, final VirtualFile spriteFile) {
         this.project = project;
@@ -142,13 +146,15 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
             spriteCellList.reload();
         });
 
-        // Add Sprite cell list to scroll pane
-        scrollPane.setViewportView(spriteCellList);
 
-        panel1.setFocusable(true);
-        spriteCellList.setFocusable(true);
-        spriteCellList.requestFocusInWindow();
-        scale.setSelectedIndex(CaosScriptProjectSettings.getAttScale());
+        // Adds a listener to the pose editor
+        poseEditor.addPoseChangeListener(false, pose -> {
+            if (! didLoadOnce) {
+                return;
+            }
+            file.putUserData(ATT_FILE_POSE_KEY, pose);
+        });
+
     }
 
     /**
@@ -326,10 +332,22 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     /**
      * Initializes the miscellaneous editor parts
-     * @param variantIn the variant to set controls to
+     *
+     * @param variantIn   the variant to set controls to
      * @param virtualFile the ATT file for this editor
      */
     private void initDisplay(final CaosVariant variantIn, final VirtualFile virtualFile) {
+
+        // Add Sprite cell list to scroll pane
+        scrollPane.setViewportView(spriteCellList);
+
+        // Make panel focusable
+        panel1.setFocusable(true);
+        spriteCellList.setFocusable(true);
+        spriteCellList.requestFocusInWindow();
+
+        // Set sprite scale
+        scale.setSelectedIndex(CaosScriptProjectSettings.getAttScale());
 
         // If part is known, hide part control
         // Part control could be confusing as one
@@ -350,7 +368,12 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         final String part = virtualFile.getName().substring(0, 1);
         this.setPart(part);
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
-        poseEditor.setRootPath(virtualFile.getPath());
+        poseEditor.setRootPath(virtualFile.getParent().getPath());
+        final Pose pose = virtualFile.getUserData(ATT_FILE_POSE_KEY);
+        if (pose != null) {
+            poseEditor.setPose(pose);
+        }
+        didLoadOnce = true;
         // Select defaults
         this.point1.setSelected(true);
         //poseEditor.setPose(0, partChar, 0);
@@ -360,6 +383,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     /**
      * Wraps the given point from zero to end and end to zero
      * Used for setting the points when using error keys in the menu
+     *
      * @param point point to wrap
      * @return the wrapped point
      */
@@ -375,9 +399,10 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     /**
      * Enables a number key to set the point for editing in the att file
-     * @param inputMap input map for all keys
+     *
+     * @param inputMap  input map for all keys
      * @param actionMap action map for all keys
-     * @param point the point to edit when the number key is pressed
+     * @param point     the point to edit when the number key is pressed
      */
     private void addNumberedPointKeyBinding(final InputMap inputMap, final ActionMap actionMap, final int point) {
         final String TEXT = "Set Point " + point;
@@ -393,6 +418,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     /**
      * Sets the current point to be edited by the editor.
      * The point being head, body, start attachment, end attachment, etc.
+     *
      * @param newPoint point to edit in att line
      */
     private void setCurrentPoint(final int newPoint) {
@@ -433,6 +459,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     /**
      * Sets the part to be edited
      * Parts have different argument/point list lengths
+     *
      * @param part part to be editing
      */
     public void setPart(final String part) {
@@ -450,6 +477,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     /**
      * Selects the variant in the editor menu panel
+     *
      * @param variantIn the variant to select in the editor.
      */
     public void setSelectedVariant(final CaosVariant variantIn) {
@@ -477,8 +505,9 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     /**
      * Update the editor image
+     *
      * @param variant variant of att file
-     * @param part part to refresh
+     * @param part    part to refresh
      */
     public void update(final CaosVariant variant, final String part) {
         final Pair<Integer, Integer> linesAndColumns = AttEditorImpl.assumedLinesAndPoints(variant, part);
@@ -496,6 +525,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     /**
      * Sets the maximum number of points to show in the editor for selection
+     *
      * @param numPoints number of point in att row to edit
      */
     public void setMaxPoints(final int numPoints) {
@@ -546,8 +576,9 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     /**
      * Adds a listener on the Point editor radio button
+     *
      * @param button radio button for a point
-     * @param index point index in att row
+     * @param index  point index in att row
      */
     private void addPointListener(final JRadioButton button, final int index) {
         button.addItemListener(e -> {
@@ -659,6 +690,18 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         poseEditor = new PoseEditor(project, variant, Objects.requireNonNull(key));
         posePanel = poseEditor.panel1;
         poseEditor.showFacing(false);
+    }
+
+    void commit() {
+        if (! didLoadOnce) {
+            return;
+        }
+        ApplicationManager.getApplication().invokeLater(() -> {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document);
+                PsiDocumentManager.getInstance(project).commitDocument(document);
+            });
+        });
     }
 
     @Override
@@ -869,6 +912,15 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     }
 
     void dispose() {
+        poseEditor.dispose();
+    }
+
+    void refresh() {
+        poseEditor.redrawAll();
+    }
+
+    void clearPose() {
+        poseEditor.clear();
     }
 
     @Override
@@ -891,11 +943,11 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
             } else if (index == 8) {
                 flip = false;
                 direction = 2;
-                pose = 4;
+                pose = 8;
             } else if (index == 9) {
                 flip = false;
                 direction = 3;
-                pose = 5;
+                pose = 8;
             } else {
                 throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
             }

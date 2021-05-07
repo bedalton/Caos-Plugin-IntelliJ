@@ -38,8 +38,10 @@ internal class AttEditorImpl(
     init {
         variant = getInitialVariant(project, file)
     }
+
     override fun getComponent(): JComponent {
-        panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
+        if (!this::panel.isInitialized)
+            panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
         return panel.`$$$getRootComponent$$$`()
     }
 
@@ -52,6 +54,7 @@ internal class AttEditorImpl(
     }
 
     override fun setState(state: FileEditorState) {}
+
     override fun isModified(): Boolean {
         return false
     }
@@ -67,7 +70,8 @@ internal class AttEditorImpl(
     }
 
     override fun deselectNotify() {
-
+        LOGGER.info("Deselect Notify: " + myFile.nameWithoutExtension)
+        panel.clearPose();
     }
 
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
@@ -87,8 +91,13 @@ internal class AttEditorImpl(
         myFile.putUserData(key, value)
     }
 
+    /**
+     * Callback called when custom editor window gains focus
+     * Is not called if file is selected but in text view
+     */
     override fun selectNotify() {
-
+        LOGGER.info("Select Notify: " + myFile.nameWithoutExtension)
+        panel.refresh()
     }
 
     companion object {

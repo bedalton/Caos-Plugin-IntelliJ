@@ -119,9 +119,7 @@
                   <gridbag weightx="0.0" weighty="0.0"/>
                 </constraints>
                 <properties>
-                  <model>
-                    <item value="H"/>
-                  </model>
+                  <model/>
                   <preferredSize width="76" height="25"/>
                   <toolTipText value="Legs Breed"/>
                 </properties>
@@ -573,8 +571,7 @@
                     <item value="Down"/>
                   </model>
                   <preferredSize width="76" height="25"/>
-                  <requestFocusEnabled value="true"/>
-                  <selectedIndex value="2"/>
+                  <requestFocusEnabled value="false"/>
                   <toolTipText value="Head Tilt"/>
                 </properties>
               </component>
