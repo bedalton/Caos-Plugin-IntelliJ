@@ -94,6 +94,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         initKeyListeners();
 
         // Add scale dropdown listener
+        scale.setSelectedIndex(CaosScriptProjectSettings.getAttScale());
         scale.addItemListener((e) -> {
             setScale(scale.getSelectedIndex());
         });
@@ -135,7 +136,6 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         addPointListener(point5, 4);
         addPointListener(point6, 5);
 
-        labels.setSelected(CaosScriptProjectSettings.getShowLabels());
         // Add LABELS checkbox listener
         labels.addChangeListener((e) -> {
             CaosScriptProjectSettings.setShowLabels(labels.isSelected());
@@ -376,6 +376,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
         // Set sprite scale
         setScale(CaosScriptProjectSettings.getAttScale());
+        labels.setSelected(CaosScriptProjectSettings.getShowLabels());
     }
 
     /**
