@@ -60,7 +60,7 @@ internal class AttSpriteCellComponent : JPanel() {
         val imageValue = value.image
         val width = imageValue.width * scale
         val height = imageValue.height * scale
-        val image = if (scale > 1.01) {
+        val image = if (width > 0 && height > 0) {
             imageValue.getScaledInstance(
                 width.toInt(),
                 height.toInt(),

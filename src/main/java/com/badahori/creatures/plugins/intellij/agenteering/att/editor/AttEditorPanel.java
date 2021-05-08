@@ -95,10 +95,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
         // Add scale dropdown listener
         scale.addItemListener((e) -> {
-            final String value = (String) Objects.requireNonNull(scale.getSelectedItem());
-            final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
-            CaosScriptProjectSettings.setAttScale(scale.getSelectedIndex());
-            spriteCellList.setScale(newScale);
+            setScale(scale.getSelectedIndex());
         });
 
         // Add listener for PART dropdown
@@ -154,7 +151,6 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
             }
             file.putUserData(ATT_FILE_POSE_KEY, pose);
         });
-
     }
 
     /**
@@ -346,8 +342,6 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         spriteCellList.setFocusable(true);
         spriteCellList.requestFocusInWindow();
 
-        // Set sprite scale
-        scale.setSelectedIndex(CaosScriptProjectSettings.getAttScale());
 
         // If part is known, hide part control
         // Part control could be confusing as one
@@ -374,10 +368,14 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
             poseEditor.setPose(pose);
         }
         didLoadOnce = true;
+
         // Select defaults
         this.point1.setSelected(true);
         //poseEditor.setPose(0, partChar, 0);
         update(variantIn, part);
+
+        // Set sprite scale
+        setScale(CaosScriptProjectSettings.getAttScale());
     }
 
     /**
@@ -454,6 +452,13 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
                 point6.setSelected(true);
                 break;
         }
+    }
+
+    private void setScale(final int index) {
+        final String value = Objects.requireNonNull(scale.getItemAt(index));
+        final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
+        CaosScriptProjectSettings.setAttScale(scale.getSelectedIndex());
+        spriteCellList.setScale(newScale);
     }
 
     /**
