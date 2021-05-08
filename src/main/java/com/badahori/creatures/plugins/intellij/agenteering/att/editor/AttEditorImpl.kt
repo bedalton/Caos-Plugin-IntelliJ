@@ -70,7 +70,6 @@ internal class AttEditorImpl(
     }
 
     override fun deselectNotify() {
-        LOGGER.info("Deselect Notify: " + myFile.nameWithoutExtension)
         panel.clearPose();
     }
 
@@ -96,7 +95,6 @@ internal class AttEditorImpl(
      * Is not called if file is selected but in text view
      */
     override fun selectNotify() {
-        LOGGER.info("Select Notify: " + myFile.nameWithoutExtension)
         panel.refresh()
     }
 
