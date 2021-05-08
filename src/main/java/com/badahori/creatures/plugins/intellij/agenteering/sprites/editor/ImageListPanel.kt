@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.Action
 import javax.swing.DefaultListModel
+import javax.swing.DefaultListSelectionModel
 import javax.swing.TransferHandler
 
 
@@ -22,6 +23,21 @@ internal class ImageListPanel<T:HasImage>(private val list: List<T>) : JBList<T>
 
     init {
         DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this)
+        this.selectionModel = object : DefaultListSelectionModel() {
+            var gestureStarted = false
+            override fun setSelectionInterval(index0: Int, index1: Int) {
+                if (!gestureStarted) {
+                    super.setSelectionInterval(index0, index1)
+                }
+                gestureStarted = true
+            }
+
+            override fun setValueIsAdjusting(isAdjusting: Boolean) {
+                if (!isAdjusting) {
+                    gestureStarted = false
+                }
+            }
+        }
         this.model = DefaultListModel<T>().apply {
             list.forEach { addElement(it) }
         }
