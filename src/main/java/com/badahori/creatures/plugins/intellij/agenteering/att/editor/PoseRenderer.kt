@@ -269,7 +269,7 @@ object PoseRenderer {
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + rightArm + headParts
                 in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + leftArm + headParts
-                8 -> tail + bodyPart + leftLeg + rightLeg + headParts + leftArm + rightArm
+                8 -> tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
                 9 -> headParts + leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail
                 else -> null
             }
@@ -278,7 +278,7 @@ object PoseRenderer {
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + rightArm + headParts
                 in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + leftArm + headParts
-                in 8..11 -> tail + leftLeg + rightLeg + bodyPart + headParts + leftArm + rightArm
+                in 8..11 -> tail + bodyPart + leftLeg + rightLeg + headParts + leftArm + rightArm
                 in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
             }
