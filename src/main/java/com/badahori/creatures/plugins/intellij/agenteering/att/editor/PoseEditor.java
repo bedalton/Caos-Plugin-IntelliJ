@@ -205,8 +205,11 @@ public class PoseEditor implements Disposable {
     private void initComboBoxes() {
         zoom.setSelectedIndex(baseBreed.getAgeGroup() == null || baseBreed.getAgeGroup() >= 2 ? 1 : 2);
         headPose.setSelectedIndex(0);
+        if (variant.isNotOld()) {
+            headDirection2.setSelectedIndex(2);
+        }
         initHeadComboBox(0, Integer.MAX_VALUE);
-        freeze(headDirection2, ! headDirection2.isEnabled(), variant.isOld());
+        freeze(headDirection2, !headDirection2.isEnabled(), variant.isOld());
         setFacing(0);
         if (variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
             reverse(directions);
@@ -603,6 +606,9 @@ public class PoseEditor implements Disposable {
     public void freeze(char part, Boolean freeze) {
         freeze(getComboBoxForBreed(part), freeze, null);
         freeze(getComboBoxForPart(part), freeze, null);
+        if (part == 'a') {
+            freeze(headDirection2, freeze, null);
+        }
     }
 
     /**
@@ -1122,7 +1128,7 @@ public class PoseEditor implements Disposable {
                         "Right",
                         "Backward"
                 }, 2);
-            } else if (direction < 2 && oldDirection >= 2) {
+            } else if (direction < 2 && oldDirection != direction) {
                 assign(headPose, new String[]{
                         direction == 0 ? "Left" : "Right",
                         "Forward",
