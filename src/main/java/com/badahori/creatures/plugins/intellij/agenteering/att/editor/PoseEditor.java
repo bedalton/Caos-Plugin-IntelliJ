@@ -16,9 +16,13 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.ui.JBColor;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +42,8 @@ import java.util.stream.Stream;
 public class PoseEditor implements Disposable {
     private static final Logger LOGGER = Logger.getLogger("#PoseEditor");
     private static final char[] allParts = "abcdefghijklmnopq".toCharArray();
+    private static final int ERROR_HEAD_POSE_C1E = 8;
+    private static final int ERROR_HEAD_POSE_C2E = 10;
     private final Project project;
     private final BreedPartKey baseBreed;
     private final String[] directions = new String[]{
@@ -82,6 +88,8 @@ public class PoseEditor implements Disposable {
     JLabel facingLabel;
     JLabel focusModeLabel;
     JComboBox<String> headDirection2;
+    JComboBox<VirtualFile> openRelated;
+    JLabel openRelatedLabel;
     List<BodyPartFiles> files;
     private CaosVariant variant;
     private CreatureSpriteSet spriteSet;
@@ -93,6 +101,7 @@ public class PoseEditor implements Disposable {
     private String rootPath;
     private boolean drawImmediately = false;
     private AttFileData bodyAttFile;
+    private Pose defaultPoseAfterInit;
 
     public PoseEditor(final Project project, final CaosVariant variant, final BreedPartKey breedKey) {
         this.project = project;
@@ -186,6 +195,7 @@ public class PoseEditor implements Disposable {
         if (variant == CaosVariant.C1.INSTANCE) {
             setLabelVisibility('m', false);
             setLabelVisibility('n', false);
+            tailLabel.setVisible(false);
             freeze(tailBreed, true, true);
             freeze(tailBasePose, true, true);
             freeze(tailTipPose, true, true);
@@ -193,6 +203,7 @@ public class PoseEditor implements Disposable {
             // Allow tail controls in all variants other than C1
             setLabelVisibility('m', true);
             setLabelVisibility('n', true);
+            tailLabel.setVisible(true);
             freeze(tailBreed, false, false);
             freeze(tailBasePose, false, false);
             freeze(tailTipPose, false, false);
@@ -209,7 +220,7 @@ public class PoseEditor implements Disposable {
             headDirection2.setSelectedIndex(2);
         }
         initHeadComboBox(0, Integer.MAX_VALUE);
-        freeze(headDirection2, !headDirection2.isEnabled(), variant.isOld());
+        freeze(headDirection2, ! headDirection2.isEnabled(), variant.isOld());
         setFacing(0);
         if (variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
             reverse(directions);
@@ -218,6 +229,7 @@ public class PoseEditor implements Disposable {
         } else {
             assign(bodyPose, directions, 1);
         }
+
         assign(leftThighPose, directions, 2);
         assign(leftShinPose, directions, 2);
         assign(leftFootPose, directions, 1);
@@ -259,8 +271,51 @@ public class PoseEditor implements Disposable {
             } else {
                 freeze(hairBreed, false, false);
             }
-
         }
+        defaultPoseAfterInit = getUpdatedPose(allParts);
+        initOpenRelatedComboBox();
+    }
+
+    private void initOpenRelatedComboBox() {
+        openRelated.setRenderer(new PartFileCellRenderer());
+        if (rootPath == null || files == null || files.isEmpty()) {
+            freeze(openRelated, true, true);
+            openRelatedLabel.setVisible(false);
+            return;
+        }
+        final BreedPartKey key = baseBreed.copyWithPart(null);
+        final List<VirtualFile> relatedFiles = files.stream()
+                .filter((f) -> {
+                    if (f == null) {
+                        return false;
+                    }
+                    final BreedPartKey partKey = f.getKey();
+                    if (partKey == null || ! BreedPartKey.isGenericMatch(key, partKey)) {
+                        return false;
+                    }
+                    // Strict match for root path. Must be in same exact root path
+                    // Not just a sub directory
+                    return rootPath.equals(f.getBodyDataFile().getParent().getPath());
+                })
+                .map(BodyPartFiles::getBodyDataFile)
+                .sorted(Comparator.comparing(VirtualFile::getPath))
+                .collect(Collectors.toList());
+        if (relatedFiles.isEmpty()) {
+            freeze(openRelated, true, true);
+            openRelatedLabel.setVisible(false);
+            return;
+        }
+        final int relatedItemCount = relatedFiles.size();
+        relatedFiles.add(0, null);
+        if (relatedItemCount >= relatedFiles.size()) {
+            LOGGER.severe("Null placeholder file has replaced the first real element in list of related files.");
+            freeze(openRelated, true, true);
+            openRelatedLabel.setVisible(false);
+            return;
+        }
+        assign(openRelated, relatedFiles.toArray(new VirtualFile[0]), 0);
+        freeze(openRelated, false, false);
+        openRelatedLabel.setVisible(true);
     }
 
     /**
@@ -353,6 +408,7 @@ public class PoseEditor implements Disposable {
         // Poses
         headPose.addItemListener(e -> {
             if (didInitOnce && headPose.getItemCount() > 0) {
+                (new RuntimeException("Setting head pose to: " + headPose.getSelectedIndex() + ": " + headPose.getSelectedItem())).printStackTrace();
                 if (drawImmediately) {
                     redraw('a');
                 }
@@ -456,6 +512,30 @@ public class PoseEditor implements Disposable {
                 if (drawImmediately) {
                     redraw('n');
                 }
+            }
+        });
+
+        openRelated.addItemListener((e) -> {
+            if (openRelated.getSelectedIndex() == 0) {
+                return;
+            }
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                final Object fileObject = openRelated.getSelectedItem();
+                if (! (fileObject instanceof VirtualFile)) {
+                    return;
+                }
+                final VirtualFile file = (VirtualFile) fileObject;
+                file.putUserData(AttEditorPanel.REQUESTED_POSE_KEY, pose);
+                final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+                if (psiFile == null) {
+                    final DialogBuilder builder = new DialogBuilder();
+                    builder.setTitle("Open Related Error");
+                    builder.setErrorText("We failed to open the related ATT editor file. Document not properly resolved.");
+                    builder.showAndGet();
+                    return;
+                }
+                psiFile.navigate(true);
+                openRelated.setSelectedIndex(0);
             }
         });
     }
@@ -565,7 +645,10 @@ public class PoseEditor implements Disposable {
         if (att == null || variant == null) {
             return;
         }
-        String breedString = "" + part + getComboBoxForPart(part).getSelectedItem();
+        final JComboBox<String> comboBox = getComboBoxForPart(part);
+        if (comboBox == null)
+            return;
+        String breedString = "" + part + comboBox.getSelectedItem();
         CaosVirtualFile file = new CaosVirtualFile(breedString + ".att", att.toFileText(variant));
         CaosVirtualFileSystem.getInstance().addFile(file, true);
         manualAtts.put(part, file);
@@ -579,7 +662,7 @@ public class PoseEditor implements Disposable {
      * @param show whether to show the facing controls or not
      */
     public void showFacing(boolean show) {
-        freeze(facing, show, true);
+        freeze(facing, show, ! show);
         facingLabel.setVisible(! show);
     }
 
@@ -591,6 +674,9 @@ public class PoseEditor implements Disposable {
      * @param hide   whether to hide the control after freezing
      */
     private void freeze(JComboBox<?> box, boolean freeze, Boolean hide) {
+        if (box == null) {
+            return;
+        }
         box.setEnabled(! freeze);
         if (hide != null) {
             box.setVisible(! hide);
@@ -605,7 +691,9 @@ public class PoseEditor implements Disposable {
      */
     public void freeze(char part, Boolean freeze) {
         freeze(getComboBoxForBreed(part), freeze, null);
-        freeze(getComboBoxForPart(part), freeze, null);
+        final JComboBox<String> poseComboBox = getComboBoxForPart(part);
+        if (poseComboBox != null)
+            freeze(getComboBoxForPart(part), freeze, null);
         if (part == 'a') {
             freeze(headDirection2, freeze, null);
         }
@@ -617,12 +705,10 @@ public class PoseEditor implements Disposable {
      * @param part body part char
      * @return Combo box for the pose control
      */
+    @Nullable
     private JComboBox<String> getComboBoxForPart(char part) {
         switch (part) {
             case 'a':
-            case 'o':
-            case 'p':
-            case 'q':
                 return headPose;
             case 'b':
                 return bodyPose;
@@ -650,6 +736,10 @@ public class PoseEditor implements Disposable {
                 return tailBasePose;
             case 'n':
                 return tailTipPose;
+            case 'o':
+            case 'p':
+            case 'q':
+                return null;
             default:
                 throw new IndexOutOfBoundsException("Part: " + part + " is not a valid body part char");
         }
@@ -712,7 +802,8 @@ public class PoseEditor implements Disposable {
             case 'q':
                 return hairBreed;
             default:
-                throw new IndexOutOfBoundsException("Part: " + part + " is not a valid body part char");
+                LOGGER.severe("Part: " + part + " is not a valid body part char");
+                return null;
         }
     }
 
@@ -1045,6 +1136,7 @@ public class PoseEditor implements Disposable {
         selectWithRoot(tailBreed, path);
         selectWithRoot(earBreed, path);
         selectWithRoot(hairBreed, path);
+        initOpenRelatedComboBox();
         redraw(allParts);
     }
 
@@ -1086,8 +1178,46 @@ public class PoseEditor implements Disposable {
         final int oldDirection = facing.getSelectedIndex();
         initHeadComboBox(direction, oldDirection);
         facing.setSelectedIndex(direction);
+        try {
+            resetIfNeeded();
+        } catch (Exception e) {
+            LOGGER.severe("Failed to reset pose combo boxes");
+        }
         if (drawImmediately) {
             redraw(allParts);
+        }
+    }
+
+    public void resetIfNeeded() {
+        int resetCount = 0;
+        LOGGER.info("Checking if reset is needed");
+        for (char part : allParts) {
+            final JComboBox<String> box = getComboBoxForPart(part);
+            if (box == null || box.getItemCount() < 1 || box.getSelectedIndex() == 0) {
+                resetCount++;
+            }
+        }
+
+        if (resetCount > (allParts.length - 3) && defaultPoseAfterInit != null) {
+            LOGGER.info("Reset is needed");
+            if (facing.getSelectedIndex() < 2) {
+                headPose.setSelectedIndex(3);
+                bodyPose.setSelectedIndex(1);
+            }
+            leftThighPose.setSelectedIndex(2);
+            leftShinPose.setSelectedIndex(2);
+            leftFootPose.setSelectedIndex(1);
+            rightThighPose.setSelectedIndex(2);
+            rightShinPose.setSelectedIndex(2);
+            rightFootPose.setSelectedIndex(1);
+            leftUpperArmPose.setSelectedIndex(2);
+            leftForearmPose.setSelectedIndex(2);
+            rightUpperArmPose.setSelectedIndex(2);
+            rightForearmPose.setSelectedIndex(2);
+            tailBasePose.setSelectedIndex(2);
+            tailTipPose.setSelectedIndex(2);
+        } else {
+            LOGGER.info("Reset is not needed");
         }
     }
 
@@ -1158,7 +1288,7 @@ public class PoseEditor implements Disposable {
      *
      * @param pose the full body pose
      */
-    public void setPose(Pose pose) {
+    public void setPose(Pose pose, boolean setFacing) {
         drawImmediately = false;
         final int bodyPose = pose.getBody();
         final int facing;
@@ -1172,7 +1302,8 @@ public class PoseEditor implements Disposable {
             } else if (bodyPose == 9) {
                 facing = 3;
             } else {
-                throw new IndexOutOfBoundsException("Invalid body pose '" + bodyPose + "' for facing test");
+                LOGGER.severe("Invalid body pose '" + bodyPose + "' for facing test");
+                return;
             }
         } else {
             if (bodyPose < 12) {
@@ -1180,7 +1311,8 @@ public class PoseEditor implements Disposable {
             } else if (bodyPose < 16) {
                 facing = 3;
             } else {
-                throw new IndexOutOfBoundsException("Invalid body pose '" + bodyPose + "' for facing test");
+                LOGGER.severe("Invalid body pose '" + bodyPose + "' for facing test");
+                return;
             }
         }
         final int offset;
@@ -1209,7 +1341,9 @@ public class PoseEditor implements Disposable {
 //                headPose = 5;
 //            }
 //        }
-        setFacing(facing);
+        if (setFacing) {
+            setFacing(facing);
+        }
         translateAndSetPart('a', facing, offset, headPose);
         translateAndSetPart('b', facing, offset, bodyPose);
         translateAndSetPart('c', facing, offset, pose.getLeftThigh());
@@ -1230,50 +1364,85 @@ public class PoseEditor implements Disposable {
         drawImmediately = true;
         this.pose = pose;
         redraw();
+        if (variant.isOld() && pose.getBody() >= 8) {
+            this.pose = null;
+        }
     }
 
     private void translateAndSetPart(final char part, final int facing, final int offset, final int pose) {
         final int translatedPose;
+        if (part == 'a') {
+            setHeadPose(facing, pose);
+            return;
+        }
         if (variant.isOld()) {
-            if (facing == 2 && part != 'a') {
+            if (facing == 2) {
                 translatedPose = 4;
-            } else if (facing == 3 && part != 'a') {
+            } else if (facing == 3) {
                 translatedPose = 5;
             } else {
-                if (part == 'a' && (facing == 2 || facing == 3)) {
-                    translatedPose = pose;
-                } else {
-                    final int offsetPose = (pose - offset);
-                    if (offsetPose > 3) {
-                        throw new IndexOutOfBoundsException("Part '" + part + "' has invalid pose offset '" + offsetPose + "' expected 0..3");
-                    }
-                    translatedPose = 3 - offsetPose;
+                final int offsetPose = (pose - offset);
+                if (offsetPose > 3) {
+                    LOGGER.severe("Part '" + part + "' has invalid pose offset '" + offsetPose + "' expected 0..3");
+                    return;
                 }
+                translatedPose = 3 - offsetPose;
             }
         } else {
-            final int offsetPose = (pose - offset);
-            if (offsetPose < 0 || offsetPose > 3) {
-                //throw new IndexOutOfBoundsException("Part '" + part + "' has invalid pose offset '" + offsetPose + "' expected 0..3; Pose: " + pose + "; Offset: " + offset+"; Facing: "  + facing);
+            final int offsetPose = pose % 4;
+            if (offsetPose < 0) {
+                LOGGER.severe("Part '" + part + "' has invalid pose offset '" + offsetPose + "' expected 0..3; Pose: " + pose + "; Offset: " + offset + "; Facing: " + facing);
                 return;
             }
             translatedPose = 3 - offsetPose;
-            if (part == 'a') {
-                if (offset == 0) {
-                    headPose.setSelectedIndex(0);
-                } else if (offset == 4) {
-                    headPose.setSelectedIndex(0);
-                } else if (offset == 8) {
-                    headPose.setSelectedIndex(1);
-                } else if (offset == 12) {
-                    headPose.setSelectedIndex(1);
-                } else {
-                    throw new IndexOutOfBoundsException("Invalid pose offset for head");
-                }
-                headDirection2.setSelectedIndex(translatedPose);
-                return;
-            }
         }
         setPose(part, translatedPose);
+    }
+
+
+    private void setHeadPose(final int facing, final int pose) {
+        if (variant.isOld()) {
+            setHeadPoseOldVariant(facing, pose);
+        } else {
+            setHeadPoseNewVariant(facing, pose);
+        }
+    }
+
+
+    private void setHeadPoseOldVariant(final int facing, final int pose) {
+        final int translatedPose;
+        if (facing == 2 || facing == 3) {
+            translatedPose = pose;
+        } else {
+            final int offsetPose = pose % 4;
+            translatedPose = 3 - offsetPose;
+        }
+        headPose.setSelectedIndex(translatedPose);
+    }
+
+    private void setHeadPoseNewVariant(final int facing, final int pose) {
+        final int translatedPose = 3 - (pose % 4);
+        if (pose < 4) {
+            headPose.setSelectedIndex(0);
+        } else if (pose < 8) {
+            if (facing < 2) {
+                headPose.setSelectedIndex(0);
+            } else {
+                headPose.setSelectedIndex(1);
+            }
+        } else if (pose < 12) {
+            // If face is facing forward
+            if (facing < 2) {
+                headPose.setSelectedIndex(1);
+            } else {
+                headPose.setSelectedIndex(2);
+            }
+        } else if (pose < 16) {
+            // If Face is facing backwards
+            headPose.setSelectedIndex(2);
+        }
+        headDirection2.setSelectedIndex(translatedPose);
+        LOGGER.info("Setting head selected index to " + headPose.getSelectedIndex() + "; Set head tilt to: " + headDirection2.getSelectedIndex());
     }
 
     /**
@@ -1417,47 +1586,24 @@ public class PoseEditor implements Disposable {
         if (! didInitOnce) {
             return;
         }
+        if (charPart == 'a') {
+            setHeadPose(facing.getSelectedIndex(), pose);
+            return;
+        }
         JComboBox<String> comboBox = getComboBoxForPart(charPart);
+        if (comboBox == null)
+            return;
         // If variant is old, any part facing front but face forces all other parts front
         if (variant.isOld()) {
             // Face all parts front
-            if (charPart != 'a' && pose == 4) {
+            if (pose == 4) {
                 pose = 0;
-                //comboBox.removeAllItems();
-                //comboBox.addItem("Front");
-                // face all parts back
-            } else if (charPart != 'a' && pose == 5) {
+            } else if (pose == 5) {
                 pose = 0;
-                //comboBox.removeAllItems();
-                //comboBox.addItem("Back");
             } else if (comboBox.getItemCount() == 1) {
                 // Pose is neither front nor back, so fill in directions if not already filled in
                 assign(bodyPose, directions, 1);
             }
-        } else if (charPart == 'a') {
-            if (pose < 0) {
-                throw new IndexOutOfBoundsException("Head pose not selected");
-            }
-            final int direction = facing.getSelectedIndex();
-            if (direction == 0) {
-                headPose.setSelectedIndex(0);
-                headDirection2.setSelectedIndex(pose);
-            } else if (direction == 1) {
-                headPose.setSelectedIndex(0);
-                headDirection2.setSelectedIndex(pose);
-            } else if (direction == 2) {
-                headPose.setSelectedIndex(2);
-                headDirection2.setSelectedIndex(pose);
-            } else if (direction == 3) {
-                headPose.setSelectedIndex(2);
-                headDirection2.setSelectedIndex(pose);
-            } else {
-                throw new IndexOutOfBoundsException("Invalid head pose '" + pose + "'");
-            }
-            if (drawImmediately) {
-                redraw(charPart);
-            }
-            return;
         }
 
         if (comboBox.getItemCount() == 0) {
@@ -1496,7 +1642,8 @@ public class PoseEditor implements Disposable {
         } else if (facingDirection == 3) {
             offset = variant.isOld() ? 9 : 12;
         } else {
-            throw new RuntimeException("Invalid direction offset");
+            LOGGER.severe("Invalid direction offset");
+            return pose;
         }
         // Gets the pose object for editing
         Pose poseTemp = pose;
@@ -1514,78 +1661,7 @@ public class PoseEditor implements Disposable {
         for (char part : parts) {
             switch (part) {
                 case 'a':
-                    // Head is funny, and needs special handling
-                    temp = headPose.getSelectedIndex();
-                    if (variant.isOld()) {
-                        if (facingDirection >= 2) {
-                            if (temp < 0) {
-                                throw new IndexOutOfBoundsException("No head pose selected");
-                            } else if (temp > 9) {
-                                throw new IndexOutOfBoundsException("Invalid head pose encountered for pose '" + temp + "' expected 0..10");
-                            }
-                            if (temp < 4) {
-                                temp = 3 - temp;
-                            } else if (temp < 8) {
-                                temp -= 4;
-                                temp = 4 + (3 - temp);
-                            } else if (facingDirection == 3) {
-                                temp = 9;
-                            }
-                        } else if (temp < 8) {
-                            if (temp == 4) {
-                                temp = 8;
-                            } else if (temp == 5) {
-                                temp = 9;
-                            } else {
-                                temp = 3 - temp;
-                                temp += offset;
-                            }
-                        } else if (temp > 9) {
-                            throw new RuntimeException("Invalid head pose " + temp + " found. SelectedIndex: " + headPose.getSelectedIndex() + "; Offset: " + offset + ";");
-                        }
-                    } else if (temp >= 0) {
-                        if (headPose.getItemCount() == 3) {
-                            if (temp == 2 && (facingDirection == 3 || facingDirection < 2)) {
-                                temp = 3;
-                            } else if (temp == 0 && facingDirection == 1) {
-                                temp = 1;
-                            } else if (temp == 1 && facingDirection < 2) {
-                                temp = 2;
-                            }
-                        }
-                        if (facingDirection >= 2) {
-                            final int headOffset;
-                            if (temp == 0) {
-                                headOffset = 0;
-                            } else if (temp == 1) {
-                                headOffset = 4;
-                            } else if (temp == 2) {
-                                headOffset = 8;
-                            } else if (temp == 3) {
-                                headOffset = 12;
-                            } else {
-                                throw new IndexOutOfBoundsException("Head direction offset is invalid. Expected 0..3. Found: '" + temp + "'");
-                            }
-                            temp = headOffset + (3 - headDirection2.getSelectedIndex());
-                        } else {
-                            if (temp == 0) {
-                                temp = 3 - headDirection2.getSelectedIndex();
-                            } else if (temp == 1) {
-                                temp = 3 - headDirection2.getSelectedIndex();
-                                temp += 4;
-                            } else if (temp == 2) {
-                                temp = 3 - headDirection2.getSelectedIndex();
-                                temp += 8;
-                            } else if (temp == 3) {
-                                temp = 3 - headDirection2.getSelectedIndex();
-                                temp += 12;
-                            }
-                        }
-                    } else {
-                        LOGGER.severe("Head pose is set to a number less than 0. Perhaps no head pose index is selected");
-                        temp = 8;
-                    }
-                    poseTemp.setHead(temp);
+                    poseTemp.setHead(getActualHeadPose(facingDirection));
                     break;
                 case 'b':
                     poseTemp.setBody(getBodyPartPose(bodyPose, facingDirection, offset));
@@ -1639,6 +1715,67 @@ public class PoseEditor implements Disposable {
         return poseTemp;
     }
 
+    private int getActualHeadPose(final int facingDirection) {
+        // Head is funny, and needs special handling
+        int temp = headPose.getSelectedIndex();
+        if (variant.isOld()) {
+            if (facingDirection >= 2) {
+                if (temp < 0) {
+                    LOGGER.severe("No head pose selected");
+                    return ERROR_HEAD_POSE_C1E;
+                } else if (temp > 9) {
+                    LOGGER.severe("Invalid head pose encountered for pose '" + temp + "' expected 0..10");
+                    return  ERROR_HEAD_POSE_C1E;
+                }
+                if (temp < 4) {
+                    temp = 3 - temp;
+                } else if (temp < 8) {
+                    temp -= 4;
+                    temp = 4 + (3 - temp);
+                } else if (facingDirection == 3) {
+                    temp = 9;
+                }
+            } else if (facingDirection == 0) {
+                    temp = 3 - temp;
+            } else if (facingDirection == 1) {
+                temp = 4+ (3 - temp);
+            } else if (temp > 9) {
+                LOGGER.severe("Invalid head pose " + temp + " found. SelectedIndex: " + headPose.getSelectedIndex() + ";");
+                return ERROR_HEAD_POSE_C1E;
+            }
+        } else if (temp >= 0) {
+            if (headPose.getItemCount() == 3) {
+                // If first option (Can be left or right)
+                if (temp == 0) {
+                    // If facing is right, value is right (1)
+                    if (facingDirection == 1) {
+                        temp = 1;
+                    } // Else: Value is truly left (0)
+                } else if (temp == 1) {
+                    // Second slot can be right or forward
+                    // If facing left or right
+                    if (facingDirection < 2) {
+                        // third slot is Forward
+                        temp = 2;
+                    } // else slot is right
+                } else if (temp == 2) {
+                    // Can be Forward or back
+                    if (facingDirection == 3 || facingDirection < 2) {
+                        // If not expressly facing forward, then the last slot is back
+                        temp = 3;
+                    }
+                }
+            }
+            final int offsetBase = temp * 4;
+            temp = (3 - headDirection2.getSelectedIndex());
+            temp += offsetBase;
+        } else {
+            LOGGER.severe("Head pose is set to a number less than 0. Perhaps no head pose index is selected");
+            temp =  ERROR_HEAD_POSE_C2E;
+        }
+        return temp;
+    }
+
     /**
      * Gets the pose for a given combobox
      *
@@ -1677,7 +1814,14 @@ public class PoseEditor implements Disposable {
                 pose += offset;
             }
             if (pose > 9 || pose < 0) {
-                throw new RuntimeException("Invalid body pose " + pose + "found. SelectedIndex: " + bodyPose.getSelectedIndex() + "; Offset: " + offset + ";");
+                LOGGER.severe("Invalid body pose " + pose + "found. SelectedIndex: " + bodyPose.getSelectedIndex() + "; Offset: " + offset + ";");
+                if (facingDirection == 0) {
+                    pose = 2;
+                } else if (facingDirection == 1) {
+                    pose = 6;
+                } else {
+                    pose = 8;
+                }
             }
         } else {
             if (invert) {
@@ -2210,6 +2354,81 @@ public class PoseEditor implements Disposable {
             }
             setText(file.getNameWithoutExtension().substring(1));
             return this;
+        }
+    }
+
+    /**
+     * Renders the virtual file for the breed in the drop down list
+     */
+    private static class PartFileCellRenderer extends DefaultListCellRenderer {
+
+        private static final Color TRANSLUCENT = new JBColor(new Color(0, 0, 0, 140), new Color(0, 0, 0, 140));
+        private static final Color BLACK = JBColor.BLACK;
+
+        public Component getListCellRendererComponent(
+                JList<?> list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            final VirtualFile file = (VirtualFile) value;
+            if (file == null) {
+                setText("..related part");
+                setForeground(TRANSLUCENT);
+                return this;
+            }
+            setForeground(BLACK);
+            String text = file.getNameWithoutExtension();
+            final String part = partName(text.charAt(0));
+            if (part != null) {
+                setText(text + " - " + part);
+            } else {
+                setText(text);
+            }
+            return this;
+        }
+
+        @Nullable
+        private String partName(char part) {
+            switch (part) {
+                case 'a':
+                    return "Head";
+                case 'b':
+                    return "Body";
+                case 'c':
+                    return "L. Thigh";
+                case 'd':
+                    return "L. Shin";
+                case 'e':
+                    return "L. Foot";
+                case 'f':
+                    return "R. Thigh";
+                case 'g':
+                    return "R. Shin";
+                case 'h':
+                    return "R. Foot";
+                case 'i':
+                    return "L. Upper Arm";
+                case 'j':
+                    return "L. Lower Arm";
+                case 'k':
+                    return "R. Upper Arm";
+                case 'l':
+                    return "R. Lower Arm";
+                case 'm':
+                    return "Tail Base";
+                case 'n':
+                    return "Tail Tip";
+                case 'o':
+                    return "Left Ear";
+                case 'p':
+                    return "Right Ear";
+                case 'q':
+                    return "Hair";
+                default:
+                    return null;
+            }
         }
     }
 

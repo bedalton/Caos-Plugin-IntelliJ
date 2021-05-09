@@ -276,8 +276,8 @@ object PoseRenderer {
         } else {
             // NEW VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + rightArm + headParts
-                in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + leftArm + headParts
+                in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + bodyPart + tail + headParts + leftLeg + leftArm
                 in 8..11 -> tail + bodyPart + leftLeg + rightLeg + headParts + leftArm + rightArm
                 in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
@@ -339,7 +339,7 @@ object PoseRenderer {
         var tailTip: Int,
         var ears: Int = head,
     ) {
-        fun pose(part: Char): Int? {
+        operator fun get(part: Char): Int? {
             return when (part) {
                 'a' -> head
                 'b' -> body

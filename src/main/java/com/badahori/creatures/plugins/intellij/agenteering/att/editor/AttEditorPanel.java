@@ -39,6 +39,7 @@ import static com.intellij.openapi.application.ApplicationManager.getApplication
 public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     private static Key<Pose> ATT_FILE_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.POSE_DATA");
+    static Key<Pose> REQUESTED_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.REQUESTED_POSE");
     final VirtualFile file;
     final VirtualFile spriteFile;
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);
@@ -74,6 +75,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private PoseEditor poseEditor;
     private int cell = - 1;
     private boolean didLoadOnce = false;
+    private boolean doNotCommitPose = false;
 
     AttEditorPanel(final Project project, final CaosVariant variantIn, final VirtualFile virtualFile, final VirtualFile spriteFile) {
         this.project = project;
@@ -147,6 +149,13 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         // Adds a listener to the pose editor
         poseEditor.addPoseChangeListener(false, pose -> {
             if (! didLoadOnce) {
+                return;
+            }
+            if (variant.isOld() && pose.getBody() >= 8) {
+                return;
+            }
+            if (doNotCommitPose) {
+                doNotCommitPose = false;
                 return;
             }
             file.putUserData(ATT_FILE_POSE_KEY, pose);
@@ -364,8 +373,13 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
         poseEditor.setRootPath(virtualFile.getParent().getPath());
         final Pose pose = virtualFile.getUserData(ATT_FILE_POSE_KEY);
-        if (pose != null) {
-            poseEditor.setPose(pose);
+        if (pose != null && (variant.isNotOld() || pose.getBody() < 8)) {
+            try {
+                poseEditor.setPose(pose, true);
+            } catch(Exception e) {
+                LOGGER.severe("Failed to set pose during init");
+                e.printStackTrace();
+            }
         }
         didLoadOnce = true;
 
@@ -377,6 +391,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         // Set sprite scale
         setScale(CaosScriptProjectSettings.getAttScale());
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
+        loadRequestedPose();
     }
 
     /**
@@ -922,7 +937,25 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     }
 
     void refresh() {
+        loadRequestedPose();
         poseEditor.redrawAll();
+    }
+
+    private void loadRequestedPose() {
+        final Pose requestedPose = file.getUserData(REQUESTED_POSE_KEY);
+        if (requestedPose == null)
+            return;
+        doNotCommitPose = true;
+        if (didLoadOnce) {
+            file.putUserData(REQUESTED_POSE_KEY, null);
+        }
+        poseEditor.setPose(requestedPose, true);
+        final Integer pose = requestedPose.get(file.getNameWithoutExtension().charAt(0));
+        if (pose != null) {
+            setSelected(pose);
+            final JComponent component = spriteCellList.get(pose);
+            scrollPane.scrollRectToVisible(component.getVisibleRect());
+        }
     }
 
     void clearPose() {
