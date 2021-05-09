@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
@@ -40,7 +41,7 @@ internal class SpriteFileTreeNode(
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FileNameUtils.getBaseName(value.name) + "."
+        val fileNameBase = FileNameUtils.getBaseName(value.name).orElse("_") + "."
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->

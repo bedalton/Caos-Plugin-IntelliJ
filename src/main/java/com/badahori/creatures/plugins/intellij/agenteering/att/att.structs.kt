@@ -11,13 +11,33 @@ import com.intellij.openapi.vfs.VirtualFile
 /**
  * Holds all points in the line
  */
-data class AttFileLine( val points: List<Pair<Int,Int>>)
+data class AttFileLine( val points: List<Pair<Int,Int>>) {
+    operator fun get(index:Int) : Pair<Int, Int> {
+        return points[index]
+    }
+
+    fun getOrNull(index:Int): Pair<Int, Int>? {
+        return points.getOrNull(index)
+    }
+}
 
 
 /**
  * Holds data about the points in the ATT file by line
  */
 data class AttFileData(val lines:List<AttFileLine>) {
+
+    /**
+     * Gets a specific line in an ATT file
+     */
+    operator fun get(index:Int) : AttFileLine {
+        return lines[index]
+    }
+
+    fun getOrNull(index:Int): AttFileLine? {
+        return lines.getOrNull(index)
+    }
+
     /**
      * Formats the ATT data object to proper ATT file text
      */
@@ -61,6 +81,7 @@ object AttFileParser {
     /**
      * Parses an ATT file from raw text to a data object, ensuring that there are the expected number of lines and points
      */
+    @JvmStatic
     fun parse(text:String, expectedLines:Int? = null, expectedPoints:Int? = null) : AttFileData {
         val rawLines = text.split("[\n\r]+".toRegex())
         val lines = (0 until (expectedLines ?: rawLines.size)).map { lineNumber ->
@@ -78,6 +99,7 @@ object AttFileParser {
     /**
      * Parses an ATT file from virtual file and project, to a data object ensuring that there are the expected number of lines and points
      */
+    @JvmStatic
     fun parse(project:Project, file:VirtualFile, expectedLines:Int? = null, expectedPoints:Int? = null) : AttFileData {
         val text = file.getPsiFile(project)?.text ?: file.contents
         val rawLines = text.split("[\n\r]+".toRegex())

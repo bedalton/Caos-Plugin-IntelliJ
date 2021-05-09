@@ -189,7 +189,7 @@ internal class CobSpriteFileTreeNode(
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FileNameUtils.getBaseName(block.fileName) + "_"
+        val fileNameBase = FileNameUtils.getBaseName(block.fileName).orEmpty() + "_"
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->

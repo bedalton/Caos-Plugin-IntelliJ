@@ -96,7 +96,7 @@ data class Caos2CobC2(
         objectScripts.forEach { script -> buffer.writeNullTerminatedString(script) }
         buffer.writeUInt16(dependencies.size)
         dependencies.forEach { fileName ->
-            val tag = when (FileNameUtils.getExtension(fileName).toLowerCase()) {
+            val tag = when (FileNameUtils.getExtension(fileName)?.toLowerCase()) {
                 "s16" -> 0
                 "wav" -> 1
                 else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
