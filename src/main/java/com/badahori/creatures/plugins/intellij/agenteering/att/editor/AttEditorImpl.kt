@@ -1,14 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFile
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -39,8 +38,10 @@ internal class AttEditorImpl(
     init {
         variant = getInitialVariant(project, file)
     }
+
     override fun getComponent(): JComponent {
-        panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
+        if (!this::panel.isInitialized)
+            panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
         return panel.`$$$getRootComponent$$$`()
     }
 
@@ -53,6 +54,7 @@ internal class AttEditorImpl(
     }
 
     override fun setState(state: FileEditorState) {}
+
     override fun isModified(): Boolean {
         return false
     }
@@ -68,7 +70,7 @@ internal class AttEditorImpl(
     }
 
     override fun deselectNotify() {
-
+        panel.clearPose();
     }
 
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
@@ -88,8 +90,12 @@ internal class AttEditorImpl(
         myFile.putUserData(key, value)
     }
 
+    /**
+     * Callback called when custom editor window gains focus
+     * Is not called if file is selected but in text view
+     */
     override fun selectNotify() {
-
+        panel.refresh()
     }
 
     companion object {
@@ -139,7 +145,6 @@ internal class AttEditorImpl(
             virtualFile.putUserData(CaosScriptFile.VariantUserDataKey, variant)
             VariantFilePropertyPusher.writeToStorage(virtualFile, variant)
         }
-
     }
 }
 

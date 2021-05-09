@@ -157,10 +157,15 @@ val VirtualFile.cachedVariantStrict
     get() = (this as? CaosVirtualFile)?.variant
         ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
 
-val VirtualFile.cachedVariant: CaosVariant?
+var VirtualFile.cachedVariant: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
         ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
         ?: VariantFilePropertyPusher.readFromStorage(this)
+    set(variant) {
+        (this as? CaosVirtualFile)?.variant = variant
+        this.putUserData(CaosScriptFile.VariantUserDataKey, variant)
+        VariantFilePropertyPusher.writeToStorage(this, variant ?: CaosVariant.UNKNOWN)
+    }
 
 
 val maxDumpHeader = "* Scriptorium Dump".length + 4 // Arbitrary spaces pad

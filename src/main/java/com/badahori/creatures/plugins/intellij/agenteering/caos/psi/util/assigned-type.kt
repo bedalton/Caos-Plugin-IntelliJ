@@ -38,16 +38,13 @@ fun CaosScriptCAssignment.getAssignedType(): CaosExpressionValueType? {
             CaosExpressionValueType.DECIMAL
     }
     return when (commandStringUpper.replace("\\s\\s+".toRegex(), " ")) {
-        "SETV" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
-        in INT_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.INT
-        "RTAR" -> CaosExpressionValueType.AGENT
-        "SETA" -> CaosExpressionValueType.AGENT
-        in STRING_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.STRING
-        "ABSV" -> CaosExpressionValueType.DECIMAL
-        "NOTV" -> CaosExpressionValueType.DECIMAL
-        else -> null
-    }?.let { type ->
-        return type
+        "ABSV", "NOTV" -> getSetvValue(arguments.getOrNull(0) as? CaosScriptRvalue)
+        //"SETV" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
+        //in INT_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.INT
+        //"RTAR" -> CaosExpressionValueType.AGENT
+        //"SETA" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
+        //in STRING_ASSIGNMENT_COMMANDS -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
+        else -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
     }
 }
 
@@ -59,6 +56,11 @@ private fun getSetvValue(rvalue: CaosScriptRvalue?): CaosExpressionValueType? {
             rvalue.isInt.orFalse() -> CaosExpressionValueType.INT
             rvalue.isFloat.orFalse() -> CaosExpressionValueType.FLOAT
             rvalue.isNumeric.orFalse() -> CaosExpressionValueType.DECIMAL
+            rvalue.isC1String -> CaosExpressionValueType.STRING
+            rvalue.isString -> CaosExpressionValueType.STRING
+            rvalue.isByteString -> CaosExpressionValueType.BYTE_STRING
+            rvalue.isToken -> CaosExpressionValueType.TOKEN
+            rvalue.animationString != null -> CaosExpressionValueType.ANIMATION
             else -> rvalue.inferredType
         }
     } else

@@ -1,0 +1,644 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseEditor">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="300" height="847"/>
+    </constraints>
+    <properties>
+      <preferredSize width="250" height="600"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <scrollpane id="76044">
+        <constraints border-constraint="Center"/>
+        <properties>
+          <minimumSize width="260" height="19"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <grid id="f9fd" layout-manager="GridBagLayout">
+            <constraints/>
+            <properties>
+              <minimumSize width="260" height="600"/>
+              <preferredSize width="260" height="600"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <hspacer id="b6220">
+                <constraints>
+                  <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+              </hspacer>
+              <component id="1a436" class="javax.swing.JComboBox" binding="headBreed">
+                <constraints>
+                  <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="100" height="25"/>
+                  <nextFocusableComponent value="4447f"/>
+                  <preferredSize width="100" height="25"/>
+                  <toolTipText value="Head Breed"/>
+                </properties>
+              </component>
+              <component id="ad106" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="12" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Right Arm"/>
+                </properties>
+              </component>
+              <component id="f2764" class="javax.swing.JComboBox" binding="leftUpperArmPose">
+                <constraints>
+                  <grid row="13" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model/>
+                  <nextFocusableComponent value="45ead"/>
+                  <preferredSize width="50" height="25"/>
+                  <toolTipText value="Left upper arm pose"/>
+                </properties>
+              </component>
+              <component id="418a5" class="javax.swing.JComboBox" binding="rightUpperArmPose">
+                <constraints>
+                  <grid row="13" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="a4bd1"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Right upper arm pose"/>
+                </properties>
+              </component>
+              <component id="946c" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="12" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Left Arm"/>
+                </properties>
+              </component>
+              <component id="45ead" class="javax.swing.JComboBox" binding="leftForearmPose">
+                <constraints>
+                  <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="418a5"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Left forearm and hand pose"/>
+                </properties>
+              </component>
+              <component id="a4bd1" class="javax.swing.JComboBox" binding="rightForearmPose">
+                <constraints>
+                  <grid row="14" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Right forearm and hand pose"/>
+                </properties>
+              </component>
+              <component id="d99c3" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Legs"/>
+                </properties>
+              </component>
+              <component id="97b2b" class="javax.swing.JComboBox" binding="legsBreed">
+                <constraints>
+                  <grid row="16" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Legs Breed"/>
+                </properties>
+              </component>
+              <component id="95810" class="javax.swing.JComboBox" binding="leftThighPose">
+                <constraints>
+                  <grid row="18" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="81" height="25"/>
+                  <nextFocusableComponent value="f4479"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Left thigh pose"/>
+                </properties>
+              </component>
+              <component id="f4479" class="javax.swing.JComboBox" binding="leftShinPose">
+                <constraints>
+                  <grid row="19" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="5f57c"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="left shin pose"/>
+                </properties>
+              </component>
+              <component id="5f57c" class="javax.swing.JComboBox" binding="leftFootPose">
+                <constraints>
+                  <grid row="20" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model/>
+                  <nextFocusableComponent value="28bc0"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="left foot pose"/>
+                </properties>
+              </component>
+              <component id="28bc0" class="javax.swing.JComboBox" binding="rightThighPose">
+                <constraints>
+                  <grid row="18" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="990b5"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Right thigh pose"/>
+                </properties>
+              </component>
+              <component id="990b5" class="javax.swing.JComboBox" binding="rightShinPose">
+                <constraints>
+                  <grid row="19" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="ef07c"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Right shin pose"/>
+                </properties>
+              </component>
+              <component id="ef07c" class="javax.swing.JComboBox" binding="rightFootPose">
+                <constraints>
+                  <grid row="20" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="a1dc0"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Right foot pose"/>
+                </properties>
+              </component>
+              <component id="b7b3a" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="17" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Left Leg"/>
+                </properties>
+              </component>
+              <component id="fc35e" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Head"/>
+                </properties>
+              </component>
+              <component id="1768e" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Body"/>
+                </properties>
+              </component>
+              <component id="4447f" class="javax.swing.JComboBox" binding="headPose">
+                <constraints>
+                  <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model>
+                    <item value="Far Up"/>
+                    <item value="Up"/>
+                    <item value="Straight"/>
+                    <item value="Down"/>
+                    <item value="Forward"/>
+                    <item value="Back"/>
+                  </model>
+                  <nextFocusableComponent value=""/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Head Pose"/>
+                </properties>
+              </component>
+              <component id="747f8" class="javax.swing.JComboBox" binding="bodyBreed">
+                <constraints>
+                  <grid row="5" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="80" height="25"/>
+                  <nextFocusableComponent value="2bb23"/>
+                  <preferredSize width="100" height="25"/>
+                  <toolTipText value="Body Breed"/>
+                </properties>
+              </component>
+              <component id="2bb23" class="javax.swing.JComboBox" binding="bodyPose">
+                <constraints>
+                  <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model/>
+                  <nextFocusableComponent value="aed8f"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Body Pose"/>
+                </properties>
+              </component>
+              <component id="85c91" class="javax.swing.JComboBox" binding="earBreed">
+                <constraints>
+                  <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="81" height="25"/>
+                  <model/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Hair Breed"/>
+                </properties>
+              </component>
+              <component id="20747" class="javax.swing.JComboBox" binding="hairBreed">
+                <constraints>
+                  <grid row="9" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Ear Breed"/>
+                </properties>
+              </component>
+              <component id="aed8f" class="javax.swing.JComboBox" binding="armsBreed">
+                <constraints>
+                  <grid row="11" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model/>
+                  <nextFocusableComponent value="aed8f"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Arms Breed"/>
+                </properties>
+              </component>
+              <component id="32d1b" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Arms"/>
+                </properties>
+              </component>
+              <component id="93501" class="javax.swing.JLabel" binding="tailLabel">
+                <constraints>
+                  <grid row="22" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <labelFor value="a1dc0"/>
+                  <text value="Tail"/>
+                </properties>
+              </component>
+              <component id="a1dc0" class="javax.swing.JComboBox" binding="tailBreed">
+                <constraints>
+                  <grid row="22" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="13b0f"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Tail Breed"/>
+                </properties>
+              </component>
+              <component id="13b0f" class="javax.swing.JComboBox" binding="tailBasePose">
+                <constraints>
+                  <grid row="23" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Tail base pose"/>
+                </properties>
+              </component>
+              <component id="5c8bf" class="javax.swing.JComboBox" binding="tailTipPose">
+                <constraints>
+                  <grid row="24" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <nextFocusableComponent value="1a436"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Tail tip pose"/>
+                </properties>
+              </component>
+              <vspacer id="6a28a">
+                <constraints>
+                  <grid row="21" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+              </vspacer>
+              <vspacer id="23b2">
+                <constraints>
+                  <grid row="15" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+              </vspacer>
+              <vspacer id="684b2">
+                <constraints>
+                  <grid row="10" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+              </vspacer>
+              <component id="6a9e0" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="17" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Right Leg"/>
+                </properties>
+              </component>
+              <component id="48a15" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Breed"/>
+                </properties>
+              </component>
+              <component id="c45a6" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Pose"/>
+                </properties>
+              </component>
+              <component id="2f779" class="javax.swing.JLabel" binding="earLabel">
+                <constraints>
+                  <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Ears"/>
+                </properties>
+              </component>
+              <component id="941ed" class="javax.swing.JLabel" binding="hairLabel">
+                <constraints>
+                  <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Hair"/>
+                </properties>
+              </component>
+              <component id="61be4" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Up. Arm"/>
+                </properties>
+              </component>
+              <component id="a1c78" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Forearm"/>
+                </properties>
+              </component>
+              <component id="8c31c" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="18" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Thigh"/>
+                </properties>
+              </component>
+              <component id="6f09f" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="19" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Shin"/>
+                </properties>
+              </component>
+              <component id="322a6" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="20" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Foot"/>
+                </properties>
+              </component>
+              <component id="59737" class="javax.swing.JLabel" binding="tailBaseLabel">
+                <constraints>
+                  <grid row="23" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <labelFor value="13b0f"/>
+                  <text value="Base"/>
+                </properties>
+              </component>
+              <component id="7c65e" class="javax.swing.JLabel" binding="tailTipLabel">
+                <constraints>
+                  <grid row="24" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <labelFor value="5c8bf"/>
+                  <maximumSize width="100" height="30"/>
+                  <minimumSize width="40" height="16"/>
+                  <preferredSize width="40" height="20"/>
+                  <text value="Tip"/>
+                </properties>
+              </component>
+              <component id="548b8" class="javax.swing.JLabel" binding="facingLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Facing"/>
+                </properties>
+              </component>
+              <component id="a481e" class="javax.swing.JComboBox" binding="facing">
+                <constraints>
+                  <grid row="3" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="81" height="25"/>
+                  <model>
+                    <item value="Left"/>
+                    <item value="Right"/>
+                    <item value="Front"/>
+                    <item value="Back"/>
+                  </model>
+                  <preferredSize width="76" height="25"/>
+                </properties>
+              </component>
+              <component id="e8f91" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Zoom"/>
+                </properties>
+              </component>
+              <component id="aa4f5" class="javax.swing.JComboBox" binding="zoom">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="45"/>
+                  <model>
+                    <item value="1x"/>
+                    <item value="2x"/>
+                    <item value="3x"/>
+                    <item value="4x"/>
+                    <item value="5x"/>
+                  </model>
+                  <preferredSize width="78" height="25"/>
+                  <toolTipText value="Zoom"/>
+                </properties>
+              </component>
+              <component id="39be8" class="javax.swing.JLabel" binding="focusModeLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <labelFor value="715b0"/>
+                  <text value="F.Mode"/>
+                  <toolTipText value="Focus Mode"/>
+                </properties>
+              </component>
+              <component id="715b0" class="javax.swing.JComboBox" binding="focusMode">
+                <constraints>
+                  <grid row="1" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model>
+                    <item value="Everything"/>
+                    <item value="Ghost"/>
+                    <item value="Ghost (Solo)"/>
+                    <item value="Solo"/>
+                    <item value="Solo (With Body)"/>
+                    <item value="Solo (Ghost Body)"/>
+                  </model>
+                  <preferredSize width="114" height="25"/>
+                </properties>
+              </component>
+              <component id="64f60" class="javax.swing.JComboBox" binding="headDirection2">
+                <constraints>
+                  <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="81" height="25"/>
+                  <model>
+                    <item value="Far Up"/>
+                    <item value="Up"/>
+                    <item value="Straight"/>
+                    <item value="Down"/>
+                  </model>
+                  <preferredSize width="76" height="25"/>
+                  <requestFocusEnabled value="false"/>
+                  <toolTipText value="Head Tilt"/>
+                </properties>
+              </component>
+              <component id="8dd2d" class="javax.swing.JLabel" binding="openRelatedLabel">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <labelFor value="aa0e9"/>
+                  <text value="Open"/>
+                </properties>
+              </component>
+              <component id="aa0e9" class="javax.swing.JComboBox" binding="openRelated">
+                <constraints>
+                  <grid row="2" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model/>
+                  <preferredSize width="78" height="25"/>
+                  <toolTipText value="Open related file"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </scrollpane>
+      <scrollpane id="d7cb">
+        <constraints border-constraint="North"/>
+        <properties>
+          <minimumSize width="250" height="250"/>
+          <preferredSize width="300" height="300"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <grid id="7253e" binding="imageHolder" custom-create="true" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints/>
+            <properties>
+              <minimumSize width="250" height="250"/>
+              <preferredSize width="250" height="300"/>
+            </properties>
+            <border type="none"/>
+            <children/>
+          </grid>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+</form>

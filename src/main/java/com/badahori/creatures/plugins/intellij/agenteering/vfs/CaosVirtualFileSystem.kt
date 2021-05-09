@@ -52,10 +52,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
      * Add a file to the file system.
      * @param file the file to add
      */
-    fun addFile(file: CaosVirtualFile) {
-        root.addChild(file)
-        if (!children.contains(file))
+    fun addFile(file: CaosVirtualFile, overwrite:Boolean = false) {
+        if (!overwrite && children.contains(file))
             throw IOException("Failed to add child file: ${file.name} to root. 'rootChildren': $children. 'root.childrenAsList':${root.childrenAsList()}")
+        root.addChild(file)
         fireFileCreated(null, file)
     }
 
@@ -377,6 +377,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     companion object {
         private const val TEMP_FOLDER_NAME = ".tmp"
         val index = AtomicInteger(0)
+        @JvmStatic
         val instance: CaosVirtualFileSystem by lazy {
             if (index.getAndIncrement() > 0)
                 throw IOException("Too many CAOS virtual file systems created")
