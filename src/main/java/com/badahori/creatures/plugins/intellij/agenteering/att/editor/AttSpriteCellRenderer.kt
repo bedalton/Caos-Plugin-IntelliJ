@@ -266,6 +266,11 @@ internal class AttSpriteCellList(
         val panel = get(index)
         panel.update(labels, scale, value, value.isFocused)
     }
+
+    fun scrollTo(pose: Int) {
+        val item = get(pose)
+
+    }
 }
 
 interface OnChangePoint {

@@ -145,7 +145,6 @@ internal class AttEditorImpl(
             virtualFile.putUserData(CaosScriptFile.VariantUserDataKey, variant)
             VariantFilePropertyPusher.writeToStorage(virtualFile, variant)
         }
-
     }
 }
 
