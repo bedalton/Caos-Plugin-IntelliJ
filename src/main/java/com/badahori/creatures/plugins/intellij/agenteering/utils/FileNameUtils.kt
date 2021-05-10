@@ -17,7 +17,8 @@ object FileNameUtils {
         return when {
             lastIndex < 0 -> null
             lastIndex == 0 -> return ""
-            else -> fileName.substring(0, lastIndex)
+            lastIndex < fileName.length - 1 -> fileName.substring(lastIndex + 1)
+            else -> null
         }
     }
 }
