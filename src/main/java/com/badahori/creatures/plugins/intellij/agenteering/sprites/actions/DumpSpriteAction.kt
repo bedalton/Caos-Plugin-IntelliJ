@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

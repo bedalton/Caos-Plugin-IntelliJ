@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse

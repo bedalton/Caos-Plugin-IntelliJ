@@ -1,18 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipVertical
+import com.badahori.creatures.plugins.intellij.agenteering.utils.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprCompiler
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VfsUtil
 import kotlinx.serialization.Serializable
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
-import javax.imageio.ImageIO
 
 @Serializable
 data class Caos2CobC1(
