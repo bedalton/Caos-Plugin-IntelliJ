@@ -1,9 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLib
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 
@@ -30,28 +33,24 @@ private val STRING_ASSIGNMENT_COMMANDS = listOf(
 )
 
 @Suppress("SpellCheckingInspection")
-fun CaosScriptCAssignment.getAssignedType(): CaosExpressionValueType? {
-    if (cKwAssignNumber != null) {
-        return if (this.variant?.isOld.orFalse())
-            CaosExpressionValueType.INT
-        else
-            CaosExpressionValueType.DECIMAL
-    }
+fun CaosScriptCAssignment.getAssignedType(bias:CaosExpressionValueType): CaosExpressionValueType? {
     return when (commandStringUpper.replace("\\s\\s+".toRegex(), " ")) {
-        "ABSV", "NOTV" -> getSetvValue(arguments.getOrNull(0) as? CaosScriptRvalue)
+        //"ABSV", "NOTV" -> getSetvValue(arguments.getOrNull(0) as? CaosScriptRvalue, bias)
         //"SETV" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
         //in INT_ASSIGNMENT_COMMANDS -> CaosExpressionValueType.INT
         //"RTAR" -> CaosExpressionValueType.AGENT
         //"SETA" -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
         //in STRING_ASSIGNMENT_COMMANDS -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
-        else -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue)
+        else -> getSetvValue(arguments.getOrNull(1) as? CaosScriptRvalue, bias)
     }
 }
 
-private fun getSetvValue(rvalue: CaosScriptRvalue?): CaosExpressionValueType? {
+private fun getSetvValue(rvalue: CaosScriptRvalue?, bias:CaosExpressionValueType): CaosExpressionValueType? {
     if (rvalue == null)
         return null
     return if (rvalue.variant?.isNotOld.orTrue()) {
+        val commandString = rvalue.commandStringUpper?.replace(WHITESPACE, " ")
+            ?: return null
         when {
             rvalue.isInt.orFalse() -> CaosExpressionValueType.INT
             rvalue.isFloat.orFalse() -> CaosExpressionValueType.FLOAT
@@ -61,8 +60,15 @@ private fun getSetvValue(rvalue: CaosScriptRvalue?): CaosExpressionValueType? {
             rvalue.isByteString -> CaosExpressionValueType.BYTE_STRING
             rvalue.isToken -> CaosExpressionValueType.TOKEN
             rvalue.animationString != null -> CaosExpressionValueType.ANIMATION
-            else -> rvalue.inferredType
+            else -> rvalue.variant?.let { variant ->
+                CaosLibs[variant].rvalues.filter { command -> command.command == commandString }.let { commands ->
+                    if (commands.any { command -> command.returnType == bias }) {
+                        bias
+                    } else
+                        commands.firstOrNull()?.returnType
+                }
+            }
         }
     } else
-        rvalue.inferredType
+        rvalue.getInferredType(bias)
 }
