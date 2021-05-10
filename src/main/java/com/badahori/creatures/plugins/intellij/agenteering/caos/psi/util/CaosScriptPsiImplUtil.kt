@@ -355,10 +355,19 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets a command definition for an rvalue prime command call
+     */
+    @JvmStatic
+    fun getCommandDefinition(element: CaosScriptRvaluePrime, bias:CaosExpressionValueType? = null): CaosCommand? {
+        // Return command definition if any
+        return element.commandString.nullIfEmpty()?.let { commandToken -> getCommandDefinition(element, commandToken, bias) }
+    }
+
+    /**
      * Gets a command definitions object from an element, and a command token
      * Is generic to handle both command elements themselves, and their tokens directly
      */
-    private fun getCommandDefinition(element: PsiElement, tokenText: String): CaosCommand? {
+    private fun getCommandDefinition(element: PsiElement, tokenText: String, bias: CaosExpressionValueType? = null): CaosCommand? {
         // Ensure that a variant has been set for this element,
         // if not, there is no way to ensure a proper return
         val variant = element.variant
@@ -395,7 +404,7 @@ object CaosScriptPsiImplUtil {
             null
 
         // Fetch command definition from CAOS lib
-        val command = getCommandDefinition(variant, commandType, tokenText, numArguments)
+        val command = getCommandDefinition(variant, commandType, tokenText, numArguments, bias)
 
         // Cache value, even if none was found
         element.putUserData(COMMAND_DEFINITION_KEY, Pair(variant, command))
@@ -419,7 +428,8 @@ object CaosScriptPsiImplUtil {
         variant: CaosVariant,
         commandType: CaosCommandType,
         tokenIn: String,
-        numArguments: Int? = null
+        numArguments: Int? = null,
+        bias: CaosExpressionValueType? = null
     ): CaosCommand? {
         val lib = CaosLibs[variant]
         val token = tokenIn.replace(WHITESPACE, " ")
@@ -443,7 +453,11 @@ object CaosScriptPsiImplUtil {
                 isCommandType(command) && command.command like token
             }
         }
-        return lib.allCommands.firstOrNull(filter)
+        return lib.allCommands.filter(filter).let { commands ->
+            if (bias != null)
+                commands.firstOrNull { command -> command.returnType == bias}?.let { return it }
+            commands.firstOrNull()
+        }
     }
 
     // ============================== //
@@ -899,6 +913,14 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets inferred type for an rvalue
+     */
+    @JvmStatic
+    fun getInferredType(element: CaosScriptRvalue, bias:CaosExpressionValueType): CaosExpressionValueType {
+        return CaosScriptInferenceUtil.getInferredType(element, bias)
+    }
+
+    /**
      * Gets an inferred type for an lvalue
      */
     @JvmStatic
@@ -1202,7 +1224,7 @@ object CaosScriptPsiImplUtil {
         val resolveVars = !DumbService.isDumb(arguments.first().project)
         return arguments.map { argument ->
             when (argument) {
-                is CaosScriptRvalue -> CaosScriptInferenceUtil.getInferredType(argument, resolveVars)
+                is CaosScriptRvalue -> CaosScriptInferenceUtil.getInferredType(argument, null, resolveVars)
                 is CaosScriptTokenRvalue -> CaosExpressionValueType.TOKEN
                 is CaosScriptLvalue -> (argument.commandDefinition?.returnType) ?: CaosExpressionValueType.VARIABLE
                 is CaosScriptSubroutineName -> CaosExpressionValueType.TOKEN
@@ -1488,7 +1510,7 @@ object CaosScriptPsiImplUtil {
         if (DumbService.isDumb(element.project))
             return null
         return element.stub?.keyType ?: element.rvalue?.let { rvalue ->
-            CaosScriptInferenceUtil.getInferredType(rvalue, false)
+            CaosScriptInferenceUtil.getInferredType(rvalue, null,false)
         }
     }
 

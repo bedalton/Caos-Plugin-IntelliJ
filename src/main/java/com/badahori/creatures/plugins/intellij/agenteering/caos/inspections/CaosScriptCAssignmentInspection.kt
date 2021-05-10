@@ -30,18 +30,19 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     private fun annotateAssignment(element: CaosScriptCAssignment, problemsHolder: ProblemsHolder) {
         val variant = element.containingCaosFile?.variant
                 ?: return
-        val type = element.getAssignedType()
-                ?: return
+
         when (element.commandString.toUpperCase()) {
-            "SETV" -> annotateSetv(variant, element, type, problemsHolder)
-            "SETA" -> annotateSeta(variant, element, type, problemsHolder)
-            "SETS" -> annotateSets(variant, element, type, problemsHolder)
+            "SETV" -> annotateSetv(variant, element, element.getAssignedType(CaosExpressionValueType.INT), problemsHolder)
+            "SETA" -> annotateSeta(variant, element, element.getAssignedType(CaosExpressionValueType.AGENT), problemsHolder)
+            "SETS" -> annotateSets(variant, element, element.getAssignedType(CaosExpressionValueType.STRING), problemsHolder)
         }
     }
 
 
 
-    private fun annotateSetv(variant: CaosVariant, element: CaosScriptCAssignment, actualType: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSetv(variant: CaosVariant, element: CaosScriptCAssignment, actualType: CaosExpressionValueType?, problemsHolder: ProblemsHolder) {
+        if (actualType == null)
+            return
         if (variant.isOld) {
             val lvalue = element.lvalue
                     ?: return
@@ -63,13 +64,17 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         }
     }
 
-    private fun annotateSetvNew(variant:CaosVariant, setv: CaosScriptIsCommandToken, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSetvNew(variant:CaosVariant, setv: CaosScriptIsCommandToken, type: CaosExpressionValueType?, problemsHolder: ProblemsHolder) {
+        if (type == null)
+            return
         if (type.isNumberType || type.isAnyType)
             return
         annotateUnexpectedType(variant, setv, CaosExpressionValueType.DECIMAL, type, problemsHolder)
     }
 
-    private fun annotateSets(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSets(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType?, problemsHolder: ProblemsHolder) {
+        if (type == null)
+            return
         if (variant.isOld)
             return
         val commandToken = element.commandToken
@@ -78,7 +83,9 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
     }
 
 
-    private fun annotateSeta(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType, problemsHolder: ProblemsHolder) {
+    private fun annotateSeta(variant: CaosVariant, element: CaosScriptCAssignment, type: CaosExpressionValueType?, problemsHolder: ProblemsHolder) {
+        if (type == null)
+            return
         if (variant.isOld)
             return
         val commandToken = element.commandToken

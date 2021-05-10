@@ -21,6 +21,13 @@ object CaosScriptInferenceUtil {
      * Infers the type of an rvalue used in a CAOS script
      */
     fun getInferredType(element: CaosScriptRvalue, resolveVars: Boolean = true): CaosExpressionValueType {
+        return getInferredType(element, null, resolveVars)
+    }
+
+    /**
+     * Infers the type of an rvalue used in a CAOS script
+     */
+    fun getInferredType(element: CaosScriptRvalue, bias:CaosExpressionValueType? = null, resolveVars: Boolean = true): CaosExpressionValueType {
 
         // If rvalue has any of these values
         // It is an incomplete command call, and cannot be resolved
@@ -29,11 +36,11 @@ object CaosScriptInferenceUtil {
 
         // If element has var token set,
         // infer value of variable at last assignment if desired
-        element.varToken?.let {  return if (resolveVars) getInferredType(it) ?: VARIABLE else VARIABLE }
+        element.varToken?.let {  return if (resolveVars) getInferredType(it, bias) ?: VARIABLE else VARIABLE }
 
         // If element has named var present,
         // infer value of variable at last assignment if desired
-        element.namedGameVar?.let { return if (resolveVars) getInferredType(it) ?: VARIABLE else VARIABLE }
+        element.namedGameVar?.let { return if (resolveVars) getInferredType(it, bias) ?: VARIABLE else VARIABLE }
         // Return inferred types for simple values
         return when {
             element.isInt -> INT
@@ -46,14 +53,14 @@ object CaosScriptInferenceUtil {
             element.animationString != null -> ANIMATION
             element.pictDimensionLiteral != null -> PICT_DIMENSION
             else -> null
-        } ?: getInferredType(element.rvaluePrime) ?: UNKNOWN
+        } ?: getInferredType(element.rvaluePrime, bias) ?: UNKNOWN
     }
 
     /**
      * Infer type for rvalue command calls
      */
-    fun getInferredType(prime: CaosScriptRvaluePrime?): CaosExpressionValueType? {
-        return prime?.commandDefinition?.returnType
+    fun getInferredType(prime: CaosScriptRvaluePrime?, bias:CaosExpressionValueType? = null): CaosExpressionValueType? {
+        return prime?.getCommandDefinition(bias)?.returnType
     }
 
     /**
@@ -71,7 +78,7 @@ object CaosScriptInferenceUtil {
      * Gets inferred type for a given variable
      * Checks for previous assignments for last assigned value
      */
-    fun getInferredType(element: CaosScriptIsVariable?): CaosExpressionValueType? {
+    fun getInferredType(element: CaosScriptIsVariable?, bias: CaosExpressionValueType? = null): CaosExpressionValueType? {
         if (element == null)
             return null
         if (DumbService.isDumb(element.project))
