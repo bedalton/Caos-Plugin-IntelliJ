@@ -201,7 +201,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
      */
     private fun annotateC1String(variant: CaosVariant, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
         if (variant.isOld) {
-            if (element.parent?.parent is CaosScriptEqualityExpression) {
+            if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
                 wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.string-comparisons-not-allowed", variant))
                         .range(element)
                         .create()
