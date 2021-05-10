@@ -1,8 +1,11 @@
-package com.badahori.creatures.plugins.intellij.agenteering.sprites
+package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import org.apache.commons.imaging.palette.Dithering
 import org.apache.commons.imaging.palette.Palette
 import java.awt.Graphics2D
+import java.awt.Image
+import java.awt.Toolkit
+import java.awt.datatransfer.*
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.awt.image.RenderedImage
@@ -76,4 +79,45 @@ fun RenderedImage.toPngDataUri() : String {
 }
 fun RenderedImage.toJpgDataUri() : String {
     return "data:image/jpg;base64," + DatatypeConverter.printBase64Binary(toJpgByteArray())
+}
+
+
+fun BufferedImage.copyToClipboard() {
+    val clipboardOwner = CopyImageToClipBoard()
+    val trans: CopyImageToClipBoard.TransferableImage = CopyImageToClipBoard.TransferableImage(this)
+    val c: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+    c.setContents(trans, clipboardOwner)
+}
+
+private class CopyImageToClipBoard : ClipboardOwner {
+
+    override fun lostOwnership(clip: Clipboard?, trans: Transferable?) {
+        println("Lost Clipboard Ownership")
+    }
+
+    class TransferableImage(val image: Image?) : Transferable {
+        override fun getTransferData(flavor: DataFlavor): Any {
+            return if (flavor.equals(DataFlavor.imageFlavor) && image != null) {
+                image
+            } else {
+                throw UnsupportedFlavorException(flavor)
+            }
+        }
+
+        override fun getTransferDataFlavors(): Array<DataFlavor?> {
+            val flavors: Array<DataFlavor?> = arrayOfNulls(1)
+            flavors[0] = DataFlavor.imageFlavor
+            return flavors
+        }
+
+        override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
+            val flavors: Array<DataFlavor?> = transferDataFlavors
+            for (i in flavors.indices) {
+                if (flavor.equals(flavors[i])) {
+                    return true
+                }
+            }
+            return false
+        }
+    }
 }

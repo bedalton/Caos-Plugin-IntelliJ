@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.ditherCopy
+import com.badahori.creatures.plugins.intellij.agenteering.utils.ditherCopy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import org.apache.commons.imaging.palette.SimplePalette

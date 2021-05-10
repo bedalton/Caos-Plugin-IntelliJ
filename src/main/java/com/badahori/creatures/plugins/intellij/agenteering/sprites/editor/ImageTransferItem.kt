@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Files
