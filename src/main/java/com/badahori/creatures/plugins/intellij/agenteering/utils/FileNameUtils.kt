@@ -3,15 +3,22 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import java.io.File
 
 object FileNameUtils {
+    @JvmStatic
     fun getBaseName(fileName:String) : String? {
+        var startIndex = fileName.lastIndexOf(File.separatorChar);
+        if (startIndex < 0)
+            startIndex = 0
+        else
+            startIndex +=1
         val lastIndex = fileName.lastIndexOf('.')
         return when {
             lastIndex < 0 -> fileName
             lastIndex == 0 -> null
-            else -> fileName.substring(0, lastIndex)
+            else -> fileName.substring(startIndex, lastIndex)
         }
     }
 
+    @JvmStatic
     fun getExtension(fileName:String) : String? {
         val lastIndex = fileName.lastIndexOf('.')
         return when {
