@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.flipHorizontal
+import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
