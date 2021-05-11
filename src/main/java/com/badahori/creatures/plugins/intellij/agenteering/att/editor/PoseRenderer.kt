@@ -3,9 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.PartVisibility.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -96,13 +95,22 @@ object PoseRenderer {
 
         // Head
         val head = sprites.head
-        if (pose.head !in 0..head.bodyData.lines.lastIndex) {
-            throw Exception("Head pose '${pose.head}' out of bounds.")
+
+        val headPose = pose.head.let {
+            when {
+                variant == CaosVariant.C2 -> it % 10
+                variant.isNotOld -> it % 16
+                it > 9 -> 8
+                else -> it
+            }
+        }
+        if (headPose !in 0..head.bodyData.lines.lastIndex) {
+            throw Exception("Head pose '${pose.head}->($headPose)' out of bounds.")
         }
         val headPart = RenderPart(
             head.sprite[pose.head]?.image!!,
             bodyAtt[0].let { (bodyHeadX, bodyHeadY) ->
-                val (headX, headY) = head.bodyData[pose.head][0]
+                val (headX, headY) = head.bodyData[headPose][0]
                 Pair(bodyHeadX - headX, bodyHeadY - headY)
             },
             visibilityMask['a'] ?: VISIBLE
@@ -110,23 +118,23 @@ object PoseRenderer {
 
         // Left Ear
         val leftEarPart = sprites.leftEar?.let { part ->
-            val headAtt = head.bodyData[pose.head].getOrNull(2)?.let { headPart.position + it }
+            val headAtt = head.bodyData[headPose].getOrNull(2)?.let { headPart.position + it }
                 ?: return@let null
-            getPart('o', part, pose.head, headAtt, visibilityMask['o'] ?: VISIBLE)
+            getPart('o', part, headPose, pose.ears, headAtt, visibilityMask['o'] ?: VISIBLE)
         }
 
         // Right Ear
         val rightEarPart = sprites.rightEar?.let { part ->
-            val headAtt = head.bodyData[pose.head].getOrNull(3)?.let { headPart.position + it }
+            val headAtt = head.bodyData[headPose].getOrNull(3)?.let { headPart.position + it }
                 ?: return@let null
-            getPart('p', part, pose.head, headAtt, visibilityMask['p'] ?: VISIBLE)
+            getPart('p', part, headPose, pose.ears, headAtt, visibilityMask['p'] ?: VISIBLE)
         }
 
         // Hair
         val hairPart = sprites.hair?.let { part ->
-            val headAtt = head.bodyData[pose.head].getOrNull(4)?.let { headPart.position + it }
+            val headAtt = head.bodyData[headPose].getOrNull(4)?.let { headPart.position + it }
                 ?: return@let null
-            getPart('q', part, pose.head, headAtt, visibilityMask['q'] ?: VISIBLE)
+            getPart('q', part, headPose, headAtt, visibilityMask['q'] ?: VISIBLE)
         }
 
         // Left Thigh
@@ -299,7 +307,6 @@ object PoseRenderer {
         }
         return Pair(partsAtOrigin, size)
     }
-
     private fun getPart(
         partChar: Char,
         part: SpriteBodyPart,
@@ -307,11 +314,21 @@ object PoseRenderer {
         attachAt: Pair<Int, Int>,
         visibility: PartVisibility
     ): RenderPart? {
+        return getPart(partChar, part, pose, pose, attachAt, visibility)
+    }
+    private fun getPart(
+        partChar: Char,
+        part: SpriteBodyPart,
+        pose: Int,
+        spritePose:Int,
+        attachAt: Pair<Int, Int>,
+        visibility: PartVisibility
+    ): RenderPart? {
         if (pose !in 0..part.bodyData.lines.lastIndex) {
             throw Exception("Pose: '$pose' is out of range for part: '$partChar'")
         }
         val thisAtt = part.bodyData[pose][0]
-        val sprite = part.sprite[pose]?.image
+        val sprite = part.sprite[spritePose]?.image
             ?: return null
         return RenderPart(sprite, attachAt - thisAtt, visibility)
     }
