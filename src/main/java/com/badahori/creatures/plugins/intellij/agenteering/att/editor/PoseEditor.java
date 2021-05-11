@@ -9,6 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.BufferedImageExtensionsKt;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.Disposable;
@@ -19,6 +21,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -30,7 +34,12 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Logger;
@@ -52,6 +61,44 @@ public class PoseEditor implements Disposable {
             "Down",
             "Far Down"
     };
+
+    private final String[] moodsC1 = new String[]{
+            "Neutral",
+            "Happy",
+            "Sad",
+            "Angry",
+    };
+
+    private final String[] moodsCV = new String[]{
+            "Neutral",
+            "Happy",
+            "Sad",
+            "Angry",
+            "Surprised",
+            "Sick",
+            "Sick (Mouth Open)",
+            "Elated",
+            "Angry 2",
+            "Concerned",
+            "Sick",
+            "Tongue Out",
+            "Neutral 2",
+            "Happy 3",
+            "Cry 1",
+            "Cry 2",
+            "Neutral 3",
+            "Neutral 4",
+    };
+
+    private final String[] moods = new String[]{
+            "Neutral",
+            "Happy",
+            "Sad",
+            "Angry",
+            "Surprised",
+            "Sick"
+    };
+
     private final Map<Character, VirtualFile> manualAtts = new HashMap<>();
     private final List<PoseChangeListener> poseChangeListeners = Lists.newArrayList();
     JPanel panel1;
@@ -90,6 +137,10 @@ public class PoseEditor implements Disposable {
     JComboBox<String> headDirection2;
     JComboBox<VirtualFile> openRelated;
     JLabel openRelatedLabel;
+    JComboBox<String> mood;
+    JLabel tiltLabel;
+    JLabel Eyes;
+    JComboBox<String> eyesStatus;
     List<BodyPartFiles> files;
     private CaosVariant variant;
     private CreatureSpriteSet spriteSet;
@@ -100,7 +151,6 @@ public class PoseEditor implements Disposable {
     private Character visibilityFocus;
     private String rootPath;
     private boolean drawImmediately = false;
-    private AttFileData bodyAttFile;
     private Pose defaultPoseAfterInit;
 
     public PoseEditor(final Project project, final CaosVariant variant, final BreedPartKey breedKey) {
@@ -187,8 +237,10 @@ public class PoseEditor implements Disposable {
         // If variant is old, it does not have multiple tilts for front facing and back facing head sprites
         if (variant.isOld()) {
             freeze(headDirection2, true, true);
+            tiltLabel.setVisible(false);
         } else {
             freeze(headDirection2, ! headDirection2.isEnabled(), false);
+            tiltLabel.setVisible(true);
         }
 
         // If is C1, hide controls for tails as they are not used in C1
@@ -220,6 +272,13 @@ public class PoseEditor implements Disposable {
             headDirection2.setSelectedIndex(2);
         }
         initHeadComboBox(0, Integer.MAX_VALUE);
+        if (variant == CaosVariant.C1.INSTANCE) {
+            assign(mood, moodsC1, 0);
+        } else if (variant == CaosVariant.CV.INSTANCE) {
+            assign(mood, moodsCV, 0);
+        } else {
+            assign(mood, moods, 0);
+        }
         freeze(headDirection2, ! headDirection2.isEnabled(), variant.isOld());
         setFacing(0);
         if (variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
@@ -408,7 +467,6 @@ public class PoseEditor implements Disposable {
         // Poses
         headPose.addItemListener(e -> {
             if (didInitOnce && headPose.getItemCount() > 0) {
-                (new RuntimeException("Setting head pose to: " + headPose.getSelectedIndex() + ": " + headPose.getSelectedItem())).printStackTrace();
                 if (drawImmediately) {
                     redraw('a');
                 }
@@ -417,6 +475,22 @@ public class PoseEditor implements Disposable {
 
         headDirection2.addItemListener(e -> {
             if (didInitOnce && headPose.getItemCount() > 0) {
+                if (drawImmediately) {
+                    redraw('a');
+                }
+            }
+        });
+
+        mood.addItemListener(e -> {
+            if (didInitOnce && mood.getItemCount() > 0) {
+                if (drawImmediately) {
+                    redraw('a');
+                }
+            }
+        });
+
+        eyesStatus.addItemListener(e -> {
+            if (didInitOnce && mood.getItemCount() > 0) {
                 if (drawImmediately) {
                     redraw('a');
                 }
@@ -646,8 +720,9 @@ public class PoseEditor implements Disposable {
             return;
         }
         final JComboBox<String> comboBox = getComboBoxForPart(part);
-        if (comboBox == null)
+        if (comboBox == null) {
             return;
+        }
         String breedString = "" + part + comboBox.getSelectedItem();
         CaosVirtualFile file = new CaosVirtualFile(breedString + ".att", att.toFileText(variant));
         CaosVirtualFileSystem.getInstance().addFile(file, true);
@@ -692,8 +767,9 @@ public class PoseEditor implements Disposable {
     public void freeze(char part, Boolean freeze) {
         freeze(getComboBoxForBreed(part), freeze, null);
         final JComboBox<String> poseComboBox = getComboBoxForPart(part);
-        if (poseComboBox != null)
+        if (poseComboBox != null) {
             freeze(getComboBoxForPart(part), freeze, null);
+        }
         if (part == 'a') {
             freeze(headDirection2, freeze, null);
         }
@@ -981,17 +1057,12 @@ public class PoseEditor implements Disposable {
         // TODO: figure out if I should prioritize matching breed or matching path
         //  I think breed though. Not sure.
 
-        // Boolean to check if an item is set based on the root path
-        boolean didSet = false;
-
-
         // If root path was set, find matching att files for this part.
         if (rootPath != null) {
             // If a matching breed was not found in root folder
             // Look for any other breed file in the root folder.
             for (int i = 0; i < items.size(); i++) {
                 if (items.get(i).getPath().startsWith(rootPath)) {
-                    didSet = true;
                     menu.setSelectedIndex(i);
                     return;
                 }
@@ -1067,7 +1138,9 @@ public class PoseEditor implements Disposable {
      * @return Sprite body part data for a part and breed file
      */
     @Nullable
-    private SpriteBodyPart getPart(char partChar, @NotNull VirtualFile breedFile) {
+    private SpriteBodyPart getPart(char partChar,
+                                   @NotNull
+                                           VirtualFile breedFile) {
         // Ensure that breed file has parent
         if (breedFile.getParent() == null) {
             LOGGER.severe("Breed file parent is null");
@@ -1129,6 +1202,9 @@ public class PoseEditor implements Disposable {
     public void setRootPath(String path) {
         this.rootPath = path;
         drawImmediately = false;
+        if (((CenteredImagePanel) imageHolder).lastDirectory == null || ((CenteredImagePanel) imageHolder).lastDirectory.length() < 1) {
+            ((CenteredImagePanel) imageHolder).lastDirectory = path;
+        }
         selectWithRoot(headBreed, path);
         selectWithRoot(bodyBreed, path);
         selectWithRoot(legsBreed, path);
@@ -1190,7 +1266,6 @@ public class PoseEditor implements Disposable {
 
     public void resetIfNeeded() {
         int resetCount = 0;
-        LOGGER.info("Checking if reset is needed");
         for (char part : allParts) {
             final JComboBox<String> box = getComboBoxForPart(part);
             if (box == null || box.getItemCount() < 1 || box.getSelectedIndex() == 0) {
@@ -1199,7 +1274,6 @@ public class PoseEditor implements Disposable {
         }
 
         if (resetCount > (allParts.length - 3) && defaultPoseAfterInit != null) {
-            LOGGER.info("Reset is needed");
             if (facing.getSelectedIndex() < 2) {
                 headPose.setSelectedIndex(3);
                 bodyPose.setSelectedIndex(1);
@@ -1216,8 +1290,6 @@ public class PoseEditor implements Disposable {
             rightForearmPose.setSelectedIndex(2);
             tailBasePose.setSelectedIndex(2);
             tailTipPose.setSelectedIndex(2);
-        } else {
-            LOGGER.info("Reset is not needed");
         }
     }
 
@@ -1334,13 +1406,6 @@ public class PoseEditor implements Disposable {
             }
         }
         int headPose = pose.getHead();
-//        if (!variant.isOld()) {
-//            if (headPose == 8) {
-//                headPose = 4;
-//            } else if (pose.getHead() == 9) {
-//                headPose = 5;
-//            }
-//        }
         if (setFacing) {
             setFacing(facing);
         }
@@ -1417,6 +1482,19 @@ public class PoseEditor implements Disposable {
             final int offsetPose = pose % 4;
             translatedPose = 3 - offsetPose;
         }
+        final int moodIndex;
+        if (variant == CaosVariant.C1.INSTANCE) {
+            if (pose < 10) {
+                moodIndex = 0;
+            } else {
+                moodIndex = (pose - 9);
+            }
+        } else {
+            moodIndex = (int) Math.floor(pose / 20.0);
+        }
+        if (mood.getItemCount() > moodIndex) {
+            mood.setSelectedIndex(moodIndex);
+        }
         headPose.setSelectedIndex(translatedPose);
     }
 
@@ -1440,6 +1518,10 @@ public class PoseEditor implements Disposable {
         } else if (pose < 16) {
             // If Face is facing backwards
             headPose.setSelectedIndex(2);
+        }
+        final int moodIndex = (int) Math.floor(pose / 20.0);
+        if (mood.getItemCount() > moodIndex) {
+            mood.setSelectedIndex(moodIndex);
         }
         headDirection2.setSelectedIndex(translatedPose);
         LOGGER.info("Setting head selected index to " + headPose.getSelectedIndex() + "; Set head tilt to: " + headDirection2.getSelectedIndex());
@@ -1591,8 +1673,9 @@ public class PoseEditor implements Disposable {
             return;
         }
         JComboBox<String> comboBox = getComboBoxForPart(charPart);
-        if (comboBox == null)
+        if (comboBox == null) {
             return;
+        }
         // If variant is old, any part facing front but face forces all other parts front
         if (variant.isOld()) {
             // Face all parts front
@@ -1656,7 +1739,6 @@ public class PoseEditor implements Disposable {
         } else {
             lastPoseHash = poseTemp.hashCode();
         }
-        int temp;
         // Go through each part passed in for updating, and update it.
         for (char part : parts) {
             switch (part) {
@@ -1702,6 +1784,9 @@ public class PoseEditor implements Disposable {
                 case 'n':
                     poseTemp.setTailTip(getBodyPartPose(tailTipPose, facingDirection, offset));
                     break;
+                case 'o':
+                case 'p':
+                    poseTemp.setEars(getEars(getActualHeadPose(facingDirection)));
                 default:
                     break;
             }
@@ -1718,6 +1803,8 @@ public class PoseEditor implements Disposable {
     private int getActualHeadPose(final int facingDirection) {
         // Head is funny, and needs special handling
         int temp = headPose.getSelectedIndex();
+        final int mood = this.mood.getSelectedIndex();
+        final boolean eyesClosed = eyesStatus.getSelectedIndex() > 0;
         if (variant.isOld()) {
             if (facingDirection >= 2) {
                 if (temp < 0) {
@@ -1725,7 +1812,7 @@ public class PoseEditor implements Disposable {
                     return ERROR_HEAD_POSE_C1E;
                 } else if (temp > 9) {
                     LOGGER.severe("Invalid head pose encountered for pose '" + temp + "' expected 0..10");
-                    return  ERROR_HEAD_POSE_C1E;
+                    return ERROR_HEAD_POSE_C1E;
                 }
                 if (temp < 4) {
                     temp = 3 - temp;
@@ -1735,10 +1822,14 @@ public class PoseEditor implements Disposable {
                 } else if (facingDirection == 3) {
                     temp = 9;
                 }
+            } else if (temp == 4) {
+                temp = 8;
+            } else if (temp == 5) {
+                temp = 9;
             } else if (facingDirection == 0) {
-                    temp = 3 - temp;
+                temp = 3 - temp;
             } else if (facingDirection == 1) {
-                temp = 4+ (3 - temp);
+                temp = 4 + (3 - temp);
             } else if (temp > 9) {
                 LOGGER.severe("Invalid head pose " + temp + " found. SelectedIndex: " + headPose.getSelectedIndex() + ";");
                 return ERROR_HEAD_POSE_C1E;
@@ -1771,9 +1862,45 @@ public class PoseEditor implements Disposable {
             temp += offsetBase;
         } else {
             LOGGER.severe("Head pose is set to a number less than 0. Perhaps no head pose index is selected");
-            temp =  ERROR_HEAD_POSE_C2E;
+            temp = ERROR_HEAD_POSE_C2E;
+        }
+        if (variant != CaosVariant.C1.INSTANCE) {
+            if (variant == CaosVariant.C2.INSTANCE) {
+                temp += (mood * 20) + (eyesClosed ? 10 : 0);
+            } else {
+                temp += (mood * 32) + (eyesClosed ? 16 : 0);
+            }
+        } else {
+            if (temp == 8) {
+                if (mood != 0) {
+                    temp += mood + 1;
+                }
+            }
+            if (eyesClosed) {
+                temp += 8;
+            }
         }
         return temp;
+    }
+
+    private int getEars(final int headPose) {
+        final int index = headPose % 16;
+        if (headPose >= 160) {
+            return index + 16;
+        }
+        if (headPose >= 128) {
+            return index + 48;
+        }
+        if (headPose >= 96) {
+            return index + 32;
+        }
+        if (headPose >= 64) {
+            return index + 16;
+        }
+        if (headPose >= 32) {
+            return index + 32;
+        }
+        return index;
     }
 
     /**
@@ -2276,7 +2403,7 @@ public class PoseEditor implements Disposable {
     }
 
     private void createUIComponents() {
-        imageHolder = new CenteredImagePanel();
+        imageHolder = new CenteredImagePanel(project.getProjectFilePath());
     }
 
     public void addPoseChangeListener(final boolean updateImmediately, final PoseChangeListener listener) {
@@ -2299,8 +2426,124 @@ public class PoseEditor implements Disposable {
      * Panel to draw the rendered pose with
      */
     private static class CenteredImagePanel extends JPanel {
+        private final String defaultDirectory;
         private BufferedImage image;
         private Dimension minSize;
+        private String lastDirectory;
+        private final PopUp popUp = new PopUp();
+
+        public CenteredImagePanel(final String startingDirectory) {
+            this.defaultDirectory = startingDirectory;
+            initHandlers();
+        }
+
+        private void initHandlers() {
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    showPopUp(e);
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    showPopUp(e);
+                }
+            });
+        }
+
+        private void showPopUp(MouseEvent e) {
+            if (e.isPopupTrigger() || (((e.getModifiers() | Event.CTRL_MASK) == Event.CTRL_MASK) && e.getButton() == 1)) {
+                popUp.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
+
+        public void saveImageAs() {
+            final BufferedImage image = this.image;
+            if (image == null) {
+                final DialogBuilder builder = new DialogBuilder();
+                builder.setTitle("Pose save error");
+                builder.setErrorText("Cannot save unrendered image");
+                builder.show();
+                return;
+            }
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Specify a file to save");
+            File targetDirectory = null;
+            if (lastDirectory != null && lastDirectory.length() > 3) {
+                targetDirectory = new File(lastDirectory);
+            }
+            if (targetDirectory == null || ! targetDirectory.exists()) {
+                targetDirectory = new File(defaultDirectory);
+            }
+
+            if (targetDirectory.exists()) {
+                fileChooser.setCurrentDirectory(targetDirectory);
+            }
+
+            int userSelection = fileChooser.showSaveDialog(this);
+            if (userSelection != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+
+            File outputFileTemp = fileChooser.getSelectedFile();
+            final String extension = FileNameUtils.getExtension(outputFileTemp.getName());
+            if (extension == null || !extension.equalsIgnoreCase("png")) {
+                outputFileTemp = new File(outputFileTemp.getPath() + ".png");
+            }
+            lastDirectory = outputFileTemp.getParent();
+            final File outputFile = outputFileTemp;
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                if (!outputFile.exists()) {
+                    boolean didCreate = false;
+                    try {
+                        didCreate = outputFile.createNewFile();
+                    } catch (IOException ignored) {
+                    }
+                    if (! didCreate) {
+                        final DialogBuilder builder = new DialogBuilder();
+                        builder.setTitle("Pose save error");
+                        builder.setErrorText("Failed to create pose file '" + outputFile.getName() + "' for writing");
+                        builder.show();
+                        return;
+                    }
+                }
+                try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+                    byte[] bytes = null;
+                    try {
+                        bytes = BufferedImageExtensionsKt.toPngByteArray(image);
+                    } catch (AssertionError e) {
+                        LOGGER.severe(e.getLocalizedMessage());
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (bytes == null || bytes.length < 20) {
+                        final DialogBuilder builder = new DialogBuilder();
+                        builder.setTitle("Pose save error");
+                        builder.setErrorText("Failed to prepare rendered pose for writing");
+                        builder.show();
+                        return;
+                    }
+                    outputStream.write(bytes);
+                } catch (IOException e) {
+                    final DialogBuilder builder = new DialogBuilder();
+                    builder.setTitle("Pose save error");
+                    builder.setErrorText("Failed to save pose image to '" + outputFile.getPath() + "'");
+                    builder.show();
+                }
+                final VirtualFile thisFile = VfsUtil.findFileByIoFile(outputFile.getParentFile(), true);
+                if (thisFile != null && thisFile.getParent() != null) {
+                    thisFile.getParent().refresh(false, true);
+                }
+            });
+        }
+
+        public void copyToClipboard() {
+            if (image == null) {
+                return;
+            }
+            BufferedImageExtensionsKt.copyToClipboard(image);
+        }
 
         public void clear() {
             image = null;
@@ -2308,7 +2551,9 @@ public class PoseEditor implements Disposable {
             repaint();
         }
 
-        public void updateImage(@NotNull BufferedImage image) {
+        public void updateImage(
+                @NotNull
+                        BufferedImage image) {
             this.image = image;
             if (minSize == null) {
                 minSize = getSize();
@@ -2331,6 +2576,18 @@ public class PoseEditor implements Disposable {
             g2d.translate(this.getWidth() / 2, this.getHeight() / 2);
             g2d.translate(- image.getWidth(null) / 2, - image.getHeight(null) / 2);
             g2d.drawImage(image, 0, 0, null);
+        }
+
+        class PopUp extends JPopupMenu {
+
+            public PopUp() {
+                JMenuItem item = new JMenuItem("Save image as..");
+                item.addActionListener(e -> saveImageAs());
+                add(item);
+                item = new JMenuItem("Copy image to clipboard");
+                item.addActionListener(e -> copyToClipboard());
+                add(item);
+            }
         }
     }
 
