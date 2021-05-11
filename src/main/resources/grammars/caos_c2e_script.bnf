@@ -21,7 +21,7 @@
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
-	name("space.*") = "space or comma"
+	name("space.*") = ""
 	name("c_.*") = "command"
 	name("cc_.*") = "command"
 	name("r_.*") = "value";
@@ -1479,7 +1479,7 @@ c_kw_assign_alter
 	}
 	;
 
-private c_assign_agent ::= c_kw_assign_agent space_like lvalue space_like rvalue
+private c_assign_agent ::= c_kw_assign_agent  args_l_r
 	{
 		pin = 1
 	}
@@ -1503,7 +1503,7 @@ c_kw_assign_agent ::= K_SETA
 		]
 	}
 
-private c_assign_string ::= c_kw_assign_string space_like lvalue space_like rvalue
+private c_assign_string ::= c_kw_assign_string <<pushParameter 'OTHER' 'STRING'>> args_l_r
 	{
 		pin = 1
 	}
@@ -1527,19 +1527,19 @@ c_kw_assign_string ::= K_SETS
 		]
 	}
 
-private c_all_assign_int ::= c_kw_assign_number <<pushParameter 'OTHER' 'NUMBER'>> space_like lvalue space_like rvalue
+private c_all_assign_int ::= c_kw_assign_number <<pushParameter 'OTHER' 'NUMBER'>> args_l_r
 	{
 		pin=1
 	}
 	;
 
-private c_setv ::= c_kw_setv <<pushParameter 'OTHER' 'NUMBER'>> space_like lvalue space_like rvalue
+private c_setv ::= c_kw_setv <<pushParameter 'OTHER' 'NUMBER'>> args_l_r
 	{
 		pin = 3
 	}
 	;
 
-private c_assign_net_unik ::= c_assign_kw_net_unik <<pushParameter 'STRING' 'OTHER'>> space_like rvalue space_like lvalue
+private c_assign_net_unik ::= c_assign_kw_net_unik <<pushParameter 'STRING' 'OTHER'>> args_r_l
 	{
 		pin=1
 	}
@@ -1566,7 +1566,7 @@ c_assign_kw_net_unik
 	;
 
 
-private c_assign_gene ::= c_kw_assign_gene <<pushParameter 'NUMBER' 'NUMBER' 'OTHER'>> space_like rvalue space_like rvalue space_like lvalue
+private c_assign_gene ::= c_kw_assign_gene <<pushParameter 'NUMBER' 'NUMBER' 'OTHER'>> args_r_r_l
 	{
 		pin=1
 	}
@@ -1592,7 +1592,7 @@ c_kw_assign_gene
 	}
 	;
 
-private c_assign_char ::= c_kw_assign_char <<pushParameter 'OTHER' 'NUMBER' 'NUMBER'>> space_like lvalue space_like rvalue space_like rvalue
+private c_assign_char ::= c_kw_assign_char <<pushParameter 'OTHER' 'NUMBER' 'NUMBER'>> args_l_r_r
 	{
 		pin=1
 	}
@@ -1618,7 +1618,7 @@ c_kw_assign_char
 	}
 	;
 c_ssfc
-	::= c_kw_ssfc <<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue space_like rvalue (<<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue)*
+	::= c_kw_ssfc <<pushParameter 'NUMBER' 'NUMBER'>> space_like rvalue space_like rvalue ssfc_rvalues_list?
 	{
 		pin = 1
 		implements = [
@@ -1634,6 +1634,14 @@ c_ssfc
 			getArgumentValues
 			getCommandDefinition
 		]
+	}
+	;
+
+private ssfc_rvalues_list
+	::= (<<pushParameter 'NUMBER' 'NUMBER'>>  space_like rvalue)+
+	{
+		pin(".*")=2
+		recoverWhile=command_recover
 	}
 	;
 
@@ -1699,7 +1707,7 @@ c_kw_assign_number
 	}
 	;
 
-private c_adds ::= c_kw_adds <<pushParameter 'OTHER' 'STRING'>>  space_like lvalue space_like rvalue
+private c_adds ::= c_kw_adds <<pushParameter 'OTHER' 'STRING'>>  args_l_r
 	{
 		pin=1
 	}
@@ -2003,6 +2011,10 @@ space_like
 	}
 	;
 
+private command_recover
+	::= !(<<eol>>|<<nextIsCommand>>)
+	;
+
 private space
 	::= SPACE_
 	;
@@ -2057,6 +2069,7 @@ private eq_op_with_expression
 	::= eq_op space_like <<pushParameter 'OTHER'>> rvalue
 	{
 		pin=1
+		recoverWhile=command_recover
 	}
 	;
 
@@ -2161,7 +2174,239 @@ out_of_command_literal
 	;
 
 error_rvalue
-	::= WORD
+	::= K_NEW_COL
+	|	K_CLS2
+	|	K_KILL
+	|	K_SLIM
+	|	K_ADDV
+	|	K_SUBV
+	|	K_MULV
+	|	K_DIVV
+	|	K_MODV
+	|	K_NEGV
+	|	K_ANDV
+	|	K_RNDV
+	|	K_SETV
+	|	K_BBLE
+	|	K_STOP
+	|	K_ENDM
+	|	K_SUBR
+	|	K_GSUB
+	|	K_RETN
+	|	K_REPS
+	|	K_REPE
+	|	K_LOOP
+	|	K_UNTL
+	|	K_ENUM
+	|	K_ESEE
+	|	K_ETCH
+	|	K_NEXT
+	|	K_ESCN
+	|	K_NSCN
+	|	K_RTAR
+	|	K_STAR
+	|	K_INST
+	|	K_SLOW
+	|	K_EVER
+	|	K_DOIF
+	|	K_ELSE
+	|	K_ENDI
+	|	K_WAIT
+	|	K_ANIM
+	|	K_OVER
+	|	K_PRLD
+	|	K_MVTO
+	|	K_MCRT
+	|	K_MVBY
+	|	K_MESG
+	|	K_STM_NUM
+	|	K_STIM
+	|	K_DELR
+	|	K_DELN
+	|	K_TECO
+	|	K_ASEA
+	|	K_SPOT
+	|	K_KNOB
+	|	K_KMSG
+	|	K_CABN
+	|	K_DPS2
+	|	K_DPAS
+	|	K_GPAS
+	|	K_SPAS
+	|	K_TELE
+	|	K_BBD_COL
+	|	K_BBTX
+	|	K_BBT2
+	|	K_BBFD
+	|	K_CBRG
+	|	K_CBRX
+	|	K_SYS_COL
+	|	K_RCLR
+	|	K_SNDE
+	|	K_SNDQ
+	|	K_SNDC
+	|	K_SNDL
+	|	K_PLDS
+	|	K_STPC
+	|	K_FADE
+	|	K_INJR
+	|	K_FIRE
+	|	K_TRIG
+	|	K_APPR
+	|	K_WALK
+	|	K_POIN
+	|	K_AIM_COL
+	|	K_SAY_NUM
+	|	K_SAY_DOL
+	|	K_SAYN
+	|	K_IMPT
+	|	K_DONE
+	|	K_LTCY
+	|	K_DROP
+	|	K_MATE
+	|	K_SNEZ
+	|	K_DDE_COL
+	|	K_DBUG
+	|	K_DBGV
+	|	K_DBGM
+	|	K_SCRX
+	|	K_LOCK
+	|	K_UNLK
+	|	K_EVNT
+	|	K_RMEV
+	|	K_ISCR
+	|	K_RSCR
+	|	K_ORRV
+	|	K_TOOL
+	|	K_SNDF
+	|	K_SNDV
+	|	K_ALPH
+	|	K_ANMS
+	|	K_ATTR
+	|	K_BMPS
+	|	K_FRAT
+	|	K_GAIT
+	|	K_IMGE
+	|	K_NOHH
+	|	K_SCLE
+	|	K_TTAR
+	|	K_BRMI
+	|	K_CMRA
+	|	K_CMRP
+	|	K_CMRT
+	|	K_FRSH
+	|	K_LINE
+	|	K_MIRR
+	|	K_PRNT
+	|	K_SCAM
+	|	K_SCRL
+	|	K_SNAP
+	|	K_TNTO
+	|	K_ZOOM
+	|	K_FCUS
+	|	K_FRMT
+	|	K_GRPL
+	|	K_GRPV
+	|	K_AGES
+	|	K_BORN
+	|	K_DYED
+	|	K_FORF
+	|	K_HAIR
+	|	K_LIKE
+	|	K_MVFT
+	|	K_NEWC
+	|	K_NORN
+	|	K_NUDE
+	|	K_RSET
+	|	K_SPNL
+	|	K_STRE
+	|	K_SWAP
+	|	K_TNTC
+	|	K_VOCB
+	|	K_APRO
+	|	K_HELP
+	|	K_MANN
+	|	K_MEMX
+	|	K_OUTS
+	|	K_OUTV
+	|	K_OUTX
+	|	K_ELIF
+	|	K_GOTO
+	|	K_MOUS
+	|	K_ADDB
+	|	K_ALTR
+	|	K_CACL
+	|	K_DELM
+	|	K_DMAP
+	|	K_DOCA
+	|	K_EMIT
+	|	K_MAPD
+	|	K_MAPK
+	|	K_FLTO
+	|	K_FREL
+	|	K_MVSF
+	|	K_VELO
+	|	K_ECON
+	|	K_STPT
+	|	K_MCLR
+	|	K_MIDI
+	|	K_SEZZ
+	|	K_STRK
+	|	K_VOIC
+	|	K_ABSV
+	|	K_ADDS
+	|	K_DELG
+	|	K_REAF
+	|	K_SETA
+	|	K_SETS
+	|	K_CABW
+	|	K_EPAS
+	|	K_RPAS
+	|	K_DELW
+	|	K_LOAD
+	|	K_QUIT
+	|	K_RGAM
+	|	K_SAVE
+	|	K_TNTW
+	|	K_WTNT
+	|	K_CALL
+	|	K_CATO
+	|	K_CORE
+	|	K_DCOR
+	|	K_DSEE
+	|	K_TINO
+	|	K_UCLN
+	|	K_ADIN
+	|	K_BRN_COL
+	|	K_DOIN
+	|	K_PAT_COL
+	|	K_BOOT
+	|	K_ORDR
+	|	K_PLMD
+	|	K_PLMU
+	|	K_STEP
+	|	K_SWAY
+	|	K_URGE
+	|	K_BANG
+	|	K_DBG_COL
+	|	K_FILE
+	|	K_WEBB
+	|	K_GENE
+	|	K_CALC
+	|	K_ROTN
+	|	K_GIDS
+	|	K_JECT
+	|	K_DELE
+	|	K_NAMN
+	|	K_NOTV
+	|	K_SCRP
+	|	K_F__K
+	|	K_APP_COL
+	|	K_SSFC
+	|	K_BLCK
+	|	K_OUTL
+	|	K_SHAD
+	|	K_STRC
 	;
 
 var_token
@@ -3219,6 +3464,8 @@ private command_call_by_args
 	|	command_prefix_incompletes (space_like rvalue)*
 	;
 
+
+
 private c_none
 	::=	c_kw_none
 	{
@@ -3237,7 +3484,7 @@ private args_r
 	::= space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3252,7 +3499,7 @@ private args_r_r
 	::= space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3268,6 +3515,39 @@ private args_l
 	::= space_like lvalue
 	{
 		pin=1
+		recoverWhile=command_recover
+	}
+	;
+
+private args_l_r
+	::= space_like lvalue space_like rvalue
+	{
+		pin=1
+		recoverWhile=command_recover
+	}
+	;
+
+private args_r_l
+	::= space_like rvalue space_like lvalue
+	{
+		pin=1;
+		recoverWhile=command_recover
+	}
+	;
+
+private args_r_r_l
+	::= space_like rvalue space_like rvalue space_like lvalue
+	{
+		pin=1;
+		recoverWhile=command_recover
+	}
+	;
+
+private args_l_r_r
+	::= space_like lvalue space_like rvalue space_like rvalue
+	{
+		pin=1;
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3282,7 +3562,7 @@ private args_r_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3297,7 +3577,7 @@ private args_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3312,7 +3592,6 @@ private args_cond
 	::= space_like equality_expression
 	{
 		pin=1
-		//recoverWhile=command_recover
 	}
 	;
 
@@ -3327,7 +3606,7 @@ private args_r_t
 	::= space_like rvalue space_like token_rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3342,7 +3621,7 @@ private args_r_r_r_r_r_r_r
 	::=space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3357,7 +3636,7 @@ private args_r_r_r_r_r_r_r_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 private c_t
@@ -3371,7 +3650,7 @@ private args_t
 	::= space_like token_rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3386,7 +3665,7 @@ private args_r_r_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3401,7 +3680,7 @@ private args_r_r_r_r_r_r_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3416,7 +3695,7 @@ private args_l_l_l_l
 	::=   space_like lvalue space_like lvalue space_like lvalue space_like lvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3431,7 +3710,7 @@ private args_t_r_r_r_r_r_r_r
 	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3446,7 +3725,7 @@ private args_t_r_r_r
 	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3461,7 +3740,7 @@ private args_t_r_r
 	::= space_like token_rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3476,7 +3755,7 @@ private args_t_r_r_r_r
 	::=  space_like token_rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3491,7 +3770,7 @@ private args_r_r_r_r_r_r
 	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3506,7 +3785,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r_r
 	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3521,7 +3800,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3536,7 +3815,7 @@ private args_r_r_r_r_r_r_r_r
 	::= space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3551,7 +3830,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r_r
 	::=  space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3566,7 +3845,7 @@ private args_t_r
 	::= space_like token_rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -3581,7 +3860,7 @@ private args_r_r_r_r_r_r_r_r_r_r_r_r
 	::=   space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue space_like rvalue
 	{
 		pin=1
-		//recoverWhile=command_recover
+		recoverWhile=command_recover
 	}
 	;
 
@@ -5397,7 +5676,7 @@ r_kw_r_r_r_r_r_r_r
 r_kw_r_r
 	::=	K_ANGL
 	|	K_AVAR
-	|	K_DOOR
+	|	K_DOOR<<isNewVariant 'true'>>
 	|	K_GAME<<isVariant 'C2.INSTANCE'>>
 	|	K_GMAP
 	|	K_GRAP
@@ -5490,7 +5769,7 @@ r_kw_r_r_r_r_r_r_r_l
 r_kw_r_r_r
 	::=	K_CATI
 	|	K_HIRP
-	|	K_DOOR
+	|	K_DOOR<<isOldVariant>>
     |	K_RMND
 	|	prefix_kw_hist space_like K_FIND
 	|	prefix_kw_hist space_like K_FINR
