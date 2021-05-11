@@ -92,7 +92,6 @@ fun BufferedImage.copyToClipboard() {
 private class CopyImageToClipBoard : ClipboardOwner {
 
     override fun lostOwnership(clip: Clipboard?, trans: Transferable?) {
-        println("Lost Clipboard Ownership")
     }
 
     class TransferableImage(val image: Image?) : Transferable {
