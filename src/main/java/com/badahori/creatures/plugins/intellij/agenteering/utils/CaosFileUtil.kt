@@ -66,10 +66,10 @@ object CaosFileUtil {
             val file = PLUGIN_HOME_FILE ?: return null
             val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
-            val jar = libFolder.children.filter {
+            val jar = libFolder.children.firstOrNull {
                 it.name.startsWith("CaosPlugin") && it.extension == "jar"
-            }.firstOrNull()
-                    ?: return DEBUG_PLUGIN_HOME_DIRECTORY
+            }
+                ?: return DEBUG_PLUGIN_HOME_DIRECTORY
             return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
         }
 

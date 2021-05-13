@@ -3,7 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser;
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.Pose;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.Pose;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditor;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
@@ -39,7 +40,7 @@ import static com.intellij.openapi.application.ApplicationManager.getApplication
 public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     private static Key<Pose> ATT_FILE_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.POSE_DATA");
-    static Key<Pose> REQUESTED_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.REQUESTED_POSE");
+    public static Key<Pose> REQUESTED_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.REQUESTED_POSE");
     final VirtualFile file;
     final VirtualFile spriteFile;
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);
@@ -64,6 +65,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     int numLines;
     int numPoints;
     private JPanel panel1;
+    JCheckBox poseViewCheckbox;
     private JPanel display;
     private AttFileData fileData;
     private CaosVariant variant;
@@ -76,6 +78,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private int cell = - 1;
     private boolean didLoadOnce = false;
     private boolean doNotCommitPose = false;
+    private boolean showPoseView = CaosScriptProjectSettings.getShowPoseView();
 
     AttEditorPanel(final Project project, final CaosVariant variantIn, final VirtualFile virtualFile, final VirtualFile spriteFile) {
         this.project = project;
@@ -159,6 +162,10 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
                 return;
             }
             file.putUserData(ATT_FILE_POSE_KEY, pose);
+        });
+
+        poseViewCheckbox.addItemListener((e) -> {
+            showPoseView(poseViewCheckbox.isSelected());
         });
     }
 
@@ -388,6 +395,9 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         //poseEditor.setPose(0, partChar, 0);
         update(variantIn, part);
 
+        poseViewCheckbox.setSelected(showPoseView);
+        showPoseView(showPoseView);
+
         // Set sprite scale
         setScale(CaosScriptProjectSettings.getAttScale());
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
@@ -470,6 +480,15 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         }
     }
 
+    private void showPoseView(final boolean show) {
+        this.showPoseView = show;
+        this.posePanel.setVisible(show);
+        CaosScriptProjectSettings.setShowPoseView(show);
+        if (show) {
+            this.poseEditor.redraw();
+        }
+    }
+
     private void setScale(final int index) {
         final String value = Objects.requireNonNull(scale.getItemAt(index));
         final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
@@ -490,7 +509,6 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         final int a = 'a';
         final int index = part.toLowerCase().charAt(0) - a;
         partChar = part.toLowerCase().charAt(0);
-        this.part.setSelectedIndex(index);
         update(variant, part);
         poseEditor.freeze(partChar, true);
         poseEditor.setVisibilityFocus(partChar);
@@ -709,7 +727,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
         final BreedPartKey key = BreedPartKey.fromFileName(file.getName(), variant);
         poseEditor = new PoseEditor(project, variant, Objects.requireNonNull(key));
-        posePanel = poseEditor.panel1;
+        posePanel = poseEditor.getMainPanel();
         poseEditor.showFacing(false);
     }
 
@@ -950,7 +968,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
             file.putUserData(REQUESTED_POSE_KEY, null);
         }
         poseEditor.setPose(requestedPose, true);
-        final Integer pose = requestedPose.get(file.getNameWithoutExtension().charAt(0));
+        final Integer pose = requestedPose.get(file.getName().charAt(0));
         if (pose != null) {
             setSelected(pose);
             final JComponent component = spriteCellList.get(pose);
@@ -971,7 +989,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     public void setSelected(final int index) {
         int direction;
         int pose;
-        boolean flip = true;
+        boolean flip = partChar != 'a';
         if (variant.isOld()) {
             if (index < 4) {
                 direction = 0;
@@ -991,27 +1009,22 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
                 throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
             }
         } else {
-            if (index < 4) {
-                direction = 0;
+            direction = (int)Math.floor((index % 16) / 4.0);
+            if (partChar == 'a') {
                 pose = index;
-            } else if (index < 8) {
-                direction = 1;
-                pose = index - 4;
-            } else if (index < 12) {
-                direction = 2;
-                pose = index - 8;
-            } else if (index < 16) {
-                direction = 3;
-                pose = index - 12;
             } else {
-                throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
+                pose = index % 4;
             }
         }
         if (flip) {
             pose = 3 - pose;
         }
         poseEditor.setPose(direction, partChar, pose);
-        cell = index;
+        if (variant.isNotOld())
+            cell = index % 16;
+        else {
+            cell = index % 10;
+        }
         spriteCellList.reload();
         redrawPose();
     }

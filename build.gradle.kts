@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2021.05.08"
+version = "2021.05.13"
 
 
 repositories {

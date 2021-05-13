@@ -9,12 +9,13 @@ object FileNameUtils {
         if (startIndex < 0)
             startIndex = 0
         else
-            startIndex +=1
+            startIndex += 1
         val lastIndex = fileName.lastIndexOf('.')
         return when {
             lastIndex < 0 -> fileName
             lastIndex == 0 -> null
-            else -> fileName.substring(startIndex, lastIndex)
+            lastIndex > startIndex -> fileName.substring(startIndex, lastIndex)
+            else -> null
         }
     }
 

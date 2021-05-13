@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.08</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.13</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -37,7 +37,7 @@
     <ul>
 
       <li>
-        <b>Versions: 2021.05.08</b>
+        <b>Versions: 2021.05.13</b>
         <b>#Improvements</b>
         <ul>
           <li>Added full creature pose view in ATT editor</li>

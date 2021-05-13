@@ -73,6 +73,16 @@ object CaosScriptProjectSettings {
             ATT_SCALE_SETTING.value = scale
         }
 
+    private const val SHOW_ATT_POSE_VIEW_KEY = "att.POSE_VIEW"
+    private const val DEFAULT_SHOW_ATT_POSE_VIEW = true
+    private val SHOW_ATT_POSE_VIEW_SETTING = CaosPluginSettingsUtil.BooleanSetting(SHOW_ATT_POSE_VIEW_KEY, DEFAULT_SHOW_ATT_POSE_VIEW)
+    @JvmStatic
+    var showPoseView:Boolean
+        get() = SHOW_ATT_POSE_VIEW_SETTING.value ?: DEFAULT_SHOW_ATT_POSE_VIEW
+        set(show) {
+            SHOW_ATT_POSE_VIEW_SETTING.value = show
+        }
+
     // === CAOS Injection URLS === //
     fun getInjectURL(project:Project) : String? {//Map<String,String>?  {
         //val invalidNameCharsRegex = "[<>]".toRegex() // Used when doing multiple injection urls
