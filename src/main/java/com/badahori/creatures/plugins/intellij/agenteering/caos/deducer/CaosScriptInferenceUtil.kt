@@ -89,7 +89,7 @@ object CaosScriptInferenceUtil {
                     ProgressIndicatorProvider.checkCanceled()
                     if (assignment.lvalue?.let { !isSimilar(element, it) }.orFalse())
                         return@map null
-                    getInferredType(assignment)?.let { type ->
+                    getInferredType(assignment, bias)?.let { type ->
                         if (type in skipTypes)
                             null
                         else
@@ -103,7 +103,7 @@ object CaosScriptInferenceUtil {
      * Helper function to find assigned expression type for an assignment command
      * ie. SETA/SETV/ADDV/NEGV
      */
-    private fun getInferredType(assignment: CaosScriptCAssignment): CaosExpressionValueType? {
+    private fun getInferredType(assignment: CaosScriptCAssignment, bias: CaosExpressionValueType?): CaosExpressionValueType? {
         // Quick return for commands that can only return int in old variants
         assignment.variant?.let {
             // On Old variants, we do not need to actually check types
@@ -135,7 +135,7 @@ object CaosScriptInferenceUtil {
             // Find last value of variable being altered
             // Mostly used to check if it was an int or a float
             // Infer type for this sub variable
-            return getInferredType(variable)?.let {
+            return getInferredType(variable, bias)?.let {
                 // TODO: Should we make assumptions about the value stored within
                 //  Only numbers can be alteredAssigned, so should we
                 //  Assume it cannot be anything else at this point
@@ -167,7 +167,7 @@ object CaosScriptInferenceUtil {
         // Get the inferred type of this rvalue
         // Should really only be numeric at this point
         // Or possibly agent, if variant is C1e
-        return getInferredType(rvalue)
+        return getInferredType(rvalue, bias)
     }
 
     /**

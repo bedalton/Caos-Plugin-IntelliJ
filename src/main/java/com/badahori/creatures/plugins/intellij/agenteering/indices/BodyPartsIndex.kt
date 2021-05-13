@@ -25,38 +25,10 @@ object BodyPartsIndex {
             CaosVariant.C3
         else
             gameVariant
-        val out = mutableListOf<BodyPartFiles>()
         val attFiles = AttFileByVariantIndex.findMatching(project, fudgedVariant)
-        if (attFiles.isEmpty()) {
-            return emptyList()
+        return matchAttsToSprite(project, attFiles) { attFile ->
+            BreedPartKey.fromFileName(attFile.nameWithoutExtension, variant = fudgedVariant)
         }
-
-        for (attFile in attFiles) {
-            val key = BreedPartKey.fromFileName(attFile.nameWithoutExtension, variant = fudgedVariant)
-                ?: continue
-            val matchingSprites = BreedSpriteIndex.findMatching(project, key).nullIfEmpty()
-            var parent: VirtualFile? = attFile.parent
-            var matchingSprite: VirtualFile? = null
-            while (matchingSprites.isNotNullOrEmpty() && parent != null) {
-                val pPath = parent.canonicalPath?.let { if (it.endsWith(File.separator)) it else it + File.separator }
-                    ?: break
-                matchingSprite = matchingSprites.firstOrNull check@{ spriteFile ->
-                    spriteFile.canonicalPath?.startsWith(pPath).orFalse()
-                }
-                if (matchingSprite != null)
-                    break
-                parent = parent.parent
-                    ?: break
-            }
-            if (matchingSprite != null) {
-                out.add(BodyPartFiles(spriteFile = matchingSprite, bodyDataFile = attFile))
-            } else {
-//                parent?.findChildInSelfOrParent(attFile.nameWithoutExtension, variantExtensions, true)?.let { sprite ->
-//                    out.add(BodyPartFiles(spriteFile = sprite, bodyDataFile = attFile))
-//                }
-            }
-        }
-        return out
     }
 
     @JvmStatic
@@ -71,10 +43,10 @@ object BodyPartsIndex {
             var parent: VirtualFile? = attFile.parent
             var matchingSprite: VirtualFile? = null
             while (parent != null) {
-                val pPath = parent.canonicalPath?.let { if (it.endsWith(File.separator)) it else it + File.separator }
-                    ?: break
+                val pPath = parent.path.let { if (it.endsWith(File.separator)) it else it + File.separator }
+                //    ?: break
                 matchingSprite = matchingSprites.firstOrNull check@{ spriteFile ->
-                    spriteFile.canonicalPath?.startsWith(pPath).orFalse()
+                    spriteFile.path.startsWith(pPath).orFalse()
                 }
                 if (matchingSprite != null)
                     break
@@ -86,5 +58,58 @@ object BodyPartsIndex {
             }
         }
         return out
+    }
+
+    private fun matchAttsToSprite(project:Project, attFiles:Collection<VirtualFile>, makeKey:(VirtualFile) -> BreedPartKey?) : List<BodyPartFiles> {
+        // If there are no att files, there is nothing to do
+        if (attFiles.isEmpty()) {
+            return emptyList()
+        }
+
+        val out = mutableListOf<BodyPartFiles>()
+
+        // Match atts to sprites
+        for (attFile in attFiles) {
+            // Get the sprite search key
+            val key = makeKey(attFile)
+                ?: continue
+
+            // Find matching sprites
+            val matchingSprites = BreedSpriteIndex.findMatching(project, key).nullIfEmpty()
+                ?: continue
+            var matchingSprite: VirtualFile? = null
+
+            // Find sprites under parent
+            // TODO, find nearest path to parent
+            var parent: VirtualFile? = attFile.parent
+            var offset = Int.MAX_VALUE
+            while (parent != null) {
+                // IN IntelliJ paths use '/' on both windows and linux in VFS
+                val pPath = (parent.canonicalPath?:parent.path).toLowerCase().let { if (it.endsWith('/')) it else "$it/" }
+                    //?: continue
+
+                // Finds nearest sprite to parent directory
+                for (spriteFile in matchingSprites) {
+                    val spritePath = (spriteFile.canonicalPath ?: spriteFile.path).toLowerCase()
+                        //?: continue
+                    if (!spritePath.startsWith(pPath).orFalse())
+                        continue
+                    if (spritePath.length < offset) {
+                        offset = spritePath.length
+                        matchingSprite = spriteFile
+                    }
+                }
+
+                if (matchingSprite != null) {
+                    break
+                }
+                parent = parent.parent
+                    ?: break
+            }
+            if (matchingSprite != null) {
+                out.add(BodyPartFiles(spriteFile = matchingSprite, bodyDataFile = attFile))
+            }
+        }
+        return out;
     }
 }

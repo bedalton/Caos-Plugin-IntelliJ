@@ -63,10 +63,10 @@ data class BreedPartKey(
         if (index !in 0..3)
             return null
         return when (index) {
-            0 -> part
+            0 -> part?.toLowerCase()
             1 -> if (genus == null || gender == null) null else '0' + (genus + (gender * 4))
             2 -> ageGroup?.let { '0' + it }
-            3 -> breed
+            3 -> breed?.toLowerCase()
             else -> null
         }
     }
@@ -92,7 +92,7 @@ data class BreedPartKey(
 
     fun copyWithBreed(breed: Char?): BreedPartKey {
         return copy(
-            breed = breed
+            breed = breed?.toLowerCase()
         )
     }
 
@@ -105,7 +105,7 @@ data class BreedPartKey(
 
     fun copyWithPart(part: Char?): BreedPartKey {
         return copy(
-            part = part
+            part = part?.toLowerCase()
         )
     }
 
@@ -113,19 +113,19 @@ data class BreedPartKey(
         get() {
             var result = genus ?: 0
             result = 31 * result + (gender ?: 0)
-            result = 31 * result + (breed?.hashCode() ?: 0)
+            result = 31 * result + (breed?.toLowerCase()?.hashCode() ?: 0)
             result = 31 * result + (ageGroup ?: 0)
-            result = 31 * result + (part?.hashCode() ?: 0)
+            result = 31 * result + (part?.toLowerCase()?.hashCode() ?: 0)
             return result
         }
 
 
     companion object {
-        const val VERSION: Int = 3
+        const val VERSION: Int = 5
 
         @JvmStatic
         fun fromFileName(fileName: String, variant: CaosVariant? = null): BreedPartKey? {
-            val chars = FileNameUtils.getBaseName(fileName)?.toCharArray()
+            val chars = FileNameUtils.getBaseName(fileName)?.toLowerCase()?.toCharArray()
                 ?: return null
             if (chars.size != 4) {
                 return null
@@ -172,7 +172,7 @@ data class BreedPartKey(
                 return false
 
             // Make sure if non-null breed are equal
-            if (val1.breed != null && val2.breed != null && val1.breed != val2.breed)
+            if (val1.breed != null && val2.breed != null && val1.breed.toLowerCase() != val2.breed.toLowerCase())
                 return false
 
             // Make sure if non-null age-group are equal
@@ -180,7 +180,7 @@ data class BreedPartKey(
                 return false
 
             // Make sure if non-null parts are equal
-            if (val1.part != null && val2.part != null && val1.part != val2.part)
+            if (val1.part != null && val2.part != null && val1.part.toLowerCase() != val2.part.toLowerCase())
                 return false
             return true
         }
@@ -205,9 +205,9 @@ object BreedPartDescriptor : KeyDescriptor<BreedPartKey> {
             IOUtil.writeUTF(storage, variant?.code ?: "")
             storage.writeInt(genus ?: -1)
             storage.writeInt(gender ?: -1)
-            storage.writeInt(breed?.toInt() ?: -1)
+            storage.writeInt(breed?.toLowerCase()?.toInt() ?: -1)
             storage.writeInt(ageGroup ?: -1)
-            storage.writeInt(part?.toInt() ?: -1)
+            storage.writeInt(part?.toLowerCase()?.toInt() ?: -1)
         }
     }
 
@@ -235,6 +235,7 @@ class BreedFileInputFilter(private val fileTypes: List<FileType>) : FileBasedInd
     override fun acceptInput(file: VirtualFile): Boolean {
         if (fileTypes.isNotEmpty() && file.fileType !in fileTypes && file.extension?.toLowerCase() !in fileExtensions)
             return false
+
         // Get breed sprite chars
         val nameChars = file.nameWithoutExtension.toLowerCase().toCharArray()
 
@@ -268,7 +269,7 @@ class BreedFileInputFilter(private val fileTypes: List<FileType>) : FileBasedInd
     )
 
     companion object {
-        const val VERSION = 2
+        const val VERSION = 3
     }
 
 }

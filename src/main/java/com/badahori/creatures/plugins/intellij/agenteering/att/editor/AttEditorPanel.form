@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel">
   <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="837" height="400"/>
+      <xy x="20" y="20" width="838" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -131,6 +131,15 @@
           <component id="2ff79" class="javax.swing.JComboBox" binding="scale" custom-create="true">
             <constraints/>
             <properties/>
+          </component>
+          <hspacer id="133a">
+            <constraints/>
+          </hspacer>
+          <component id="12f0f" class="javax.swing.JCheckBox" binding="poseViewCheckbox">
+            <constraints/>
+            <properties>
+              <text value="Pose View"/>
+            </properties>
           </component>
         </children>
       </grid>

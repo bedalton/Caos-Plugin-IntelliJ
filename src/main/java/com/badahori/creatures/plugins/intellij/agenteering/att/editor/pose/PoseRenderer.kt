@@ -1,10 +1,9 @@
-package com.badahori.creatures.plugins.intellij.agenteering.att.editor
+package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PoseRenderer.PartVisibility.*
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -275,10 +274,13 @@ object PoseRenderer {
         val parts = if (sprites.body.sprite.size == 10) {
             // OLD VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + bodyPart + tail + rightLeg + rightArm + headParts
-                in 4..7 -> rightArm + rightLeg + bodyPart + tail + leftLeg + leftArm + headParts
+                in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + bodyPart + tail  + headParts + leftLeg + leftArm
                 8 -> tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
-                9 -> headParts + leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail
+                9 -> if (variant == CaosVariant.C1)
+                    leftLeg + rightLeg + leftArm + rightArm + headParts + bodyPart + tail
+                else
+                    leftLeg + rightLeg + leftArm + rightArm + bodyPart + headParts + tail
                 else -> null
             }
         } else {
@@ -354,10 +356,10 @@ object PoseRenderer {
         var rightForearm: Int,
         var tailBase: Int,
         var tailTip: Int,
-        var ears: Int = head,
+        var ears: Int,
     ) {
         operator fun get(part: Char): Int? {
-            return when (part) {
+            return when (part.toLowerCase()) {
                 'a' -> head
                 'b' -> body
                 'c' -> leftThigh
@@ -376,6 +378,26 @@ object PoseRenderer {
                 'p' -> ears
                 'q' -> head
                 else -> return null
+            }
+        }
+        operator fun set(part: Char, value:Int?) {
+            when (part) {
+                'a' -> head = value!!
+                'b' -> body = value!!
+                'c' -> leftThigh = value!!
+                'd' -> leftShin = value!!
+                'e' -> leftFoot = value!!
+                'f' -> rightThigh = value!!
+                'g' -> rightShin = value!!
+                'h' -> rightFoot = value!!
+                'i' -> leftUpperArm = value!!
+                'j' -> leftForearm = value!!
+                'k' -> rightUpperArm = value!!
+                'l' -> rightForearm = value!!
+                'm' -> tailBase = value ?: 0
+                'n' -> tailTip = value ?: 0
+                'o' -> ears = value ?: 0
+                'p' -> ears = value ?: 0
             }
         }
     }
@@ -505,7 +527,7 @@ object PoseRenderer {
         }
 
         operator fun get(part: Char): SpriteBodyPart? {
-            return when (part) {
+            return when (part.toLowerCase()) {
                 'a' -> head
                 'b' -> body
                 'c' -> leftThigh
