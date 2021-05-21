@@ -278,7 +278,7 @@ object PoseRenderer {
                 in 4..7 -> rightArm + rightLeg + bodyPart + tail  + headParts + leftLeg + leftArm
                 8 -> tail + leftLeg + rightLeg +leftArm + rightArm +  bodyPart + headParts
                 9 -> if (variant == CaosVariant.C1)
-                    leftLeg + rightLeg + bodyPart + tail + leftArm + rightArm + headParts
+                    headParts + leftLeg + rightLeg + bodyPart + tail + leftArm + rightArm
                 else
                     headParts + leftArm + rightArm + leftLeg + rightLeg + bodyPart + tail
                 else -> null
