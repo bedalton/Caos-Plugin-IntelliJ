@@ -276,11 +276,11 @@ object PoseRenderer {
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
                 in 4..7 -> rightArm + rightLeg + bodyPart + tail  + headParts + leftLeg + leftArm
-                8 -> tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
+                8 -> tail + leftLeg + rightLeg +leftArm + rightArm +  bodyPart + headParts
                 9 -> if (variant == CaosVariant.C1)
-                    leftLeg + rightLeg + leftArm + rightArm + headParts + bodyPart + tail
+                    leftLeg + rightLeg + bodyPart + tail + leftArm + rightArm + headParts
                 else
-                    leftLeg + rightLeg + leftArm + rightArm + bodyPart + headParts + tail
+                    headParts + leftArm + rightArm + leftLeg + rightLeg + bodyPart + tail
                 else -> null
             }
         } else {
@@ -288,7 +288,7 @@ object PoseRenderer {
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
                 in 4..7 -> rightArm + rightLeg + bodyPart + tail + headParts + leftLeg + leftArm
-                in 8..11 -> tail + bodyPart + leftLeg + rightLeg + headParts + leftArm + rightArm
+                in 8..11 -> tail + leftLeg + rightLeg + bodyPart + headParts + leftArm + rightArm
                 in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
             }
