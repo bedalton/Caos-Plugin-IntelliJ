@@ -14,7 +14,7 @@ import javax.swing.DefaultListSelectionModel
 import javax.swing.TransferHandler
 
 
-internal class ImageListPanel<T:HasImage>(private val list: List<T>) : JBList<T>(),
+internal class ImageListPanel<T:HasImage>(private var list: List<T>) : JBList<T>(),
         DragSourceListener,
         DragGestureListener,
         KeyListener,
@@ -44,6 +44,7 @@ internal class ImageListPanel<T:HasImage>(private val list: List<T>) : JBList<T>
         actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), TransferHandler.getCopyAction())
         transferHandler = SpriteListTransferHandler
     }
+
     override fun dragEnter(dsde: DragSourceDragEvent?) {
 
     }
