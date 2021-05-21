@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -35,33 +36,28 @@ public class SprFileEditor {
 
     SprFileEditor(VirtualFile file) {
 
-        Exception parseException = null;
-        List<BufferedImage> rawImages;
         images = new ArrayList<>();
-        try {
-            rawImages = SpriteParser.parse(file).getImages();
-        } catch (Exception e) {
-            rawImages = Lists.newArrayList();
-            parseException = e;
-        }
-        final int padLength = (rawImages.size() + "").length();
-        final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
-        final String suffix = ".png";
-        for (int i = 0; i < rawImages.size(); i++) {
-            final String fileName = prefix + pad(i, padLength) + suffix;
-            images.add(new ImageTransferItem(fileName, rawImages.get(i)));
-        }
         $$$setupUI$$$();
-        if (parseException != null) {
-            main.removeAll();
-            main.setLayout(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            main.add(new JLabel("Failed to load sprite images with error: " + parseException.getLocalizedMessage()), gbc);
-            parseException.printStackTrace();
-            return;
-        }
+
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            List<BufferedImage> rawImages;
+            try {
+                rawImages = SpriteParser.parse(file).getImages();
+            } catch (Exception e) {
+                rawImages = Lists.newArrayList();
+                showException(e);
+            }
+            final int padLength = (rawImages.size() + "").length();
+            final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
+            final String suffix = ".png";
+            for (int i = 0; i < rawImages.size(); i++) {
+                final String fileName = prefix + pad(i, padLength) + suffix;
+                images.add(new ImageTransferItem(fileName, rawImages.get(i)));
+            }
+            ApplicationManager.getApplication().invokeLater(() -> {
+                imageList.setListData(images.toArray(new ImageTransferItem[0]));
+            });
+        });
         backgroundColor.addItemListener((itemEvent) -> {
             final String color = (String) itemEvent.getItem();
             switch (color) {
@@ -101,6 +97,17 @@ public class SprFileEditor {
             imageList.updateUI();
         });
 
+    }
+
+    private void showException(Exception exception) {
+        main.removeAll();
+        main.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        main.add(new JLabel("Failed to load sprite images with error: " + exception.getLocalizedMessage()), gbc);
+        exception.printStackTrace();
+        return;
     }
 
     /**
