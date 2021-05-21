@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -8,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import java.awt.image.BufferedImage
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -18,6 +21,7 @@ import javax.swing.JComponent
 internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     private var myFile: VirtualFile
     private var myProject: Project? = null
+    private lateinit var editor:SprFileEditor
 
     constructor(file: VirtualFile) {
         myFile = file
@@ -29,7 +33,11 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     }
 
     override fun getComponent(): JComponent {
-        return SprFileEditor(myFile).`$$$getRootComponent$$$`()
+        if (this::editor.isInitialized)
+            return editor.`$$$getRootComponent$$$`()
+        val editor = SprFileEditor(myFile)
+        this.editor = editor
+        return editor.`$$$getRootComponent$$$`()
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -74,10 +82,38 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     }
 
     override fun selectNotify() {
-
+        myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
+            if (cachedMD5 != myFile.md5())
+                return
+        }
+        if (this::editor.isInitialized)
+            editor.loadSprite()
     }
 
     companion object {
         private const val NAME = "SPREditor"
+        private val CACHE_MD5_KEY = Key<String>("com.bedalton.creatures.sprites.PARSED_IMAGES_MD5")
+        private val CACHE_KEY = Key<List<BufferedImage>>("com.bedalton.creatures.sprites.PARSED_IMAGES")
+
+        @JvmStatic
+        fun cache(virtualFile: VirtualFile, images:List<BufferedImage>) {
+            virtualFile.putUserData(CACHE_MD5_KEY, null)
+            virtualFile.putUserData(CACHE_KEY, null)
+            if (images.isEmpty())
+                return
+            val md5 = virtualFile.md5()
+                ?: return
+            virtualFile.putUserData(CACHE_KEY, images)
+            virtualFile.putUserData(CACHE_MD5_KEY, md5)
+        }
+
+        @JvmStatic
+        fun fromCache(virtualFile: VirtualFile) : List<BufferedImage>? {
+            val cachedMD5 = virtualFile.getUserData(CACHE_MD5_KEY)
+                ?: return null
+            if (cachedMD5 != virtualFile.md5())
+                return null
+            return virtualFile.getUserData(CACHE_KEY).nullIfEmpty()
+        }
     }
 }

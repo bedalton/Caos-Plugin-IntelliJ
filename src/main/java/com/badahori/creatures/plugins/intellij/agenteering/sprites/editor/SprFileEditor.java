@@ -6,7 +6,6 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.compress.utils.Lists;
 
 import javax.swing.*;
@@ -33,20 +32,45 @@ public class SprFileEditor {
     public static final String GREEN = "Green";
     private static final Color TRANSPARENT_COLOR = new Color(0, 0, 0, 0);
     private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
+    private final VirtualFile file;
 
+    /**
+     * Basic constructor
+     * @param file sprite file to construct panel for
+     */
     SprFileEditor(VirtualFile file) {
-
+        this.file = file;
         images = new ArrayList<>();
         $$$setupUI$$$();
+        // Load sprite images
+        // Executed on background thread
+        loadSprite();
+        // Initialize the UI controls
+        initUI();
 
+    }
+
+    /**
+     * Loads sprite images into view
+     * Executed on background thread
+     */
+    void loadSprite() {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             List<BufferedImage> rawImages;
+
+            // Initialize sprites
             try {
-                rawImages = SpriteParser.parse(file).getImages();
+                rawImages = SpriteEditorImpl.fromCache(file);
+                if (rawImages == null) {
+                    rawImages = SpriteParser.parse(file).getImages();
+                    SpriteEditorImpl.cache(file, rawImages);
+                }
             } catch (Exception e) {
                 rawImages = Lists.newArrayList();
                 showException(e);
             }
+
+            // Find number padding for image names for file copy
             final int padLength = (rawImages.size() + "").length();
             final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
             final String suffix = ".png";
@@ -58,6 +82,21 @@ public class SprFileEditor {
                 imageList.setListData(images.toArray(new ImageTransferItem[0]));
             });
         });
+    }
+
+
+    private void initUI() {
+        initBackgroundColors();
+        imageList.updateUI();
+        scale.addItemListener((e) -> {
+            final String value = (String) Objects.requireNonNull(scale.getSelectedItem());
+            final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
+            cellRenderer.setScale(newScale);
+            imageList.updateUI();
+        });
+    }
+
+    private void initBackgroundColors() {
         backgroundColor.addItemListener((itemEvent) -> {
             final String color = (String) itemEvent.getItem();
             switch (color) {
@@ -89,14 +128,6 @@ public class SprFileEditor {
             }
             imageList.updateUI();
         });
-        imageList.updateUI();
-        scale.addItemListener((e) -> {
-            final String value = (String) Objects.requireNonNull(scale.getSelectedItem());
-            final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
-            cellRenderer.setScale(newScale);
-            imageList.updateUI();
-        });
-
     }
 
     private void showException(Exception exception) {
