@@ -32,6 +32,8 @@ class C16SpriteFile(file: VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C
             val offsetForData = bytesBuffer.uInt32
             val width = bytesBuffer.uInt16
             val height = bytesBuffer.uInt16
+
+            // Read and discard line offsets ... not used here
             (0 until height - 1).forEach { _ ->
                 bytesBuffer.uInt32
             }
