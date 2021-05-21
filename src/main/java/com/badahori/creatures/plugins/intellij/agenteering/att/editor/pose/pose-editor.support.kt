@@ -97,8 +97,9 @@ object PoseEditorSupport {
 interface BreedPoseHolder {
     fun getPartPose(partChar:Char) : Int?
     fun getPartPose(part: Char, facingDirection: Int, offset:Int) : Int?
-    fun getHeadPoseActual(facing:Int) : Int
+    fun getHeadPoseActual() : Int
     fun getPartBreed(partChar:Char) : VirtualFile?
+    fun getBodyPoseActual(): Int
     val baseBreed:BreedPartKey
     val variant:CaosVariant
 }

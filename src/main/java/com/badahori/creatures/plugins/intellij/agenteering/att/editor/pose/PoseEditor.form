@@ -257,22 +257,10 @@
                 </constraints>
                 <properties>
                   <minimumSize width="80" height="25"/>
+                  <model/>
                   <nextFocusableComponent value="2bb23"/>
                   <preferredSize width="100" height="25"/>
                   <toolTipText value="Body Breed"/>
-                </properties>
-              </component>
-              <component id="2bb23" class="javax.swing.JComboBox" binding="bodyPose">
-                <constraints>
-                  <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                  <gridbag weightx="0.0" weighty="0.0"/>
-                </constraints>
-                <properties>
-                  <minimumSize width="84" height="25"/>
-                  <model/>
-                  <nextFocusableComponent value="aed8f"/>
-                  <preferredSize width="76" height="25"/>
-                  <toolTipText value="Body Pose"/>
                 </properties>
               </component>
               <component id="85c91" class="javax.swing.JComboBox" binding="earBreed">
@@ -675,6 +663,38 @@
                   </model>
                   <preferredSize width="76" height="25"/>
                   <toolTipText value="Eyes Status"/>
+                </properties>
+              </component>
+              <component id="2bb23" class="javax.swing.JComboBox" binding="bodyTilt">
+                <constraints>
+                  <grid row="7" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <minimumSize width="84" height="25"/>
+                  <model>
+                    <item value="Far Up"/>
+                    <item value="Up"/>
+                    <item value="Straight"/>
+                    <item value="Down"/>
+                  </model>
+                  <nextFocusableComponent value="aed8f"/>
+                  <preferredSize width="76" height="25"/>
+                  <toolTipText value="Body Pose"/>
+                </properties>
+              </component>
+              <component id="90dbb" class="javax.swing.JComboBox" binding="bodyDirection">
+                <constraints>
+                  <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <model>
+                    <item value="Left"/>
+                    <item value="Right"/>
+                    <item value="Forward"/>
+                    <item value="Backward"/>
+                  </model>
                 </properties>
               </component>
             </children>

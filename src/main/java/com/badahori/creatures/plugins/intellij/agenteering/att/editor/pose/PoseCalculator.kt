@@ -190,7 +190,7 @@ object PoseCalculator {
     ): Int {
         // Head is funny, and needs special handling
 
-        val calculated = if (variant.isOld)
+        return if (variant.isOld)
             calculateHeadPoseOldVariant(
                 variant,
                 facingDirection,
@@ -207,9 +207,12 @@ object PoseCalculator {
                 mood,
                 eyesClosed
             )
-        }
+        }.apply {
+            if (this < 0) {
+                LOGGER.severe("Failed to calculate head pose: Variant:$variant; FacingDirection:$facingDirection; HeadPose: $headPose; Tilt: $tilt; Mood: $mood; EyesClosed: $eyesClosed")
 
-        return calculated
+            }
+        }
     }
 
     private fun calculateHeadPoseOldVariant(
@@ -243,14 +246,14 @@ object PoseCalculator {
             }
             headPose == 4 -> 8
             headPose == 5 -> 9
+            headPose > 5 -> headPose
             facingDirection == 0 -> 3 - headPose
             facingDirection == 1 -> 4 + (3 - headPose)
-            headPose !in 0..9 -> {
+            else -> {
                 LOGGER.severe("Invalid head pose $headPose found. SelectedIndex: $headPose; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
                 Exception().printStackTrace()
                 return ERROR_HEAD_POSE_C1E
             }
-            else -> headPose
         }
         return if (variant == CaosVariant.C1) {
             val eyesMod = if (eyesClosed) {
@@ -272,30 +275,31 @@ object PoseCalculator {
     ): Int {
         var calculated = when {
             headPose >= 0 -> {
-                var temp: Int = headPose
                 // If first option (Can be left or right)
-                if (temp == 0) {
+                val headDirection = if (headPose == 0) {
                     // If facing is right, value is right (1)
-                    if (facingDirection == 1) {
-                        temp = 1
-                    } // Else: Value is truly left (0)
-                } else if (temp == 1) {
+                    if (facingDirection == 1)
+                        1
+                    else // Else: Value is truly left (0)
+                        headPose
+                } else if (headPose == 1) {
                     // Second slot can be right or forward
                     // If facing left or right
-                    if (facingDirection < 2) {
-                        // third slot is Forward
-                        temp = 2
-                    } // else slot is right
-                } else if (temp == 2) {
-                    // Can be Forward or back
-                    if (facingDirection == 3 || facingDirection < 2) {
-                        // If not expressly facing forward, then the last slot is back
-                        temp = 3
-                    }
+                    if (facingDirection < 2)
+                    //  slot is Forward
+                        2
+                    else // else slot is right
+                        headPose
+                } else if (headPose == 2) {
+                    // Head pose 2 can only be forward if facing backward
+                    facingDirection
+                } else {
+                    LOGGER.severe("Cannot find head pose: SelectedIndex: $headPose; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
+                    facingDirection
                 }
-                val offsetBase = temp * 4
-                temp = 3 - tilt
-                temp + offsetBase
+                val offsetBase = headDirection * 4
+                val tiltOffset = 3 - tilt
+                tiltOffset + offsetBase
             }
             else -> {
                 LOGGER.severe("Head pose is set to a number less than 0. Perhaps no head pose index is selected")
@@ -382,12 +386,24 @@ object PoseCalculator {
             if (part !in PoseEditorSupport.allParts)
                 continue
             when (part) {
-                'a' -> poseTemp.head = poseHolder.getHeadPoseActual(facingDirection)
+                'a' -> poseTemp.head = poseHolder.getHeadPoseActual().apply {
+                    if (this < 0)
+                        throw Exception("Invalid head pose calculated. FacingDirection:$facingDirection; Output: $this")
+                }
                 'o', 'p' -> {
-                    poseTemp.ears = getEars(poseHolder.getHeadPoseActual(facingDirection))
+                    poseTemp.ears = getEars(poseHolder.getHeadPoseActual()).apply {
+                        if (this < 0)
+                            throw Exception("Invalid ears pose. FacingDirection:$facingDirection; Output: $this")
+                    }
+                }
+                'b' -> {
+                    poseTemp.body = poseHolder.getBodyPoseActual()
                 }
                 else -> {
-                    poseTemp[part] = poseHolder.getPartPose(part, facingDirection, offset)
+                    poseTemp[part] = poseHolder.getPartPose(part, facingDirection, offset)?.apply {
+                        if (this < 0)
+                            throw Exception("Invalid pose calculated for part '$part'. FacingDirection:$facingDirection; Offset: $offset; Output: $this")
+                    }
                 }
             }
         }
@@ -418,8 +434,8 @@ private fun getHeadPoseOldVariant(variant: CaosVariant, facing: Int, pose: Int):
                 }
             }
         }
-        pose < 8 -> pose
-        else -> 8
+        facing == 3 -> 8
+        else -> pose
     }
 
     // Calculate the mood of the head when facing forwards
