@@ -13,6 +13,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.Key;
@@ -813,6 +814,12 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     }
 
     private void redrawPose() {
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).runWhenSmart(() -> {
+                redrawPose();
+            });
+            return;
+        }
         ApplicationManager.getApplication().invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> {
             final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
             if (psiFile == null) {
@@ -988,38 +995,22 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     @Override
     public void setSelected(final int index) {
         int direction;
-        int pose;
-        boolean flip = partChar != 'a';
         if (variant.isOld()) {
             if (index < 4) {
                 direction = 0;
-                pose = index;
             } else if (index < 8) {
                 direction = 1;
-                pose = index - 4;
             } else if (index == 8) {
-                flip = false;
                 direction = 2;
-                pose = 8;
             } else if (index == 9) {
-                flip = false;
                 direction = 3;
-                pose = 8;
             } else {
                 throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
             }
         } else {
             direction = (int)Math.floor((index % 16) / 4.0);
-            if (partChar == 'a') {
-                pose = index;
-            } else {
-                pose = index % 4;
-            }
         }
-        if (flip) {
-            pose = 3 - pose;
-        }
-        poseEditor.setPose(direction, partChar, pose);
+        poseEditor.setPose(direction, partChar, index);
         if (variant.isNotOld())
             cell = index % 16;
         else {

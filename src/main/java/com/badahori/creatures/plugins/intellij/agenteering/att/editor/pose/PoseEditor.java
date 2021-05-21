@@ -65,7 +65,8 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     JComboBox<String> rightUpperArmPose;
     JComboBox<String> leftUpperArmPose;
     JComboBox<String> headPose;
-    JComboBox<String> bodyPose;
+    JComboBox<String> bodyDirection;
+    JComboBox<String> bodyTilt;
     JComboBox<VirtualFile> armsBreed;
     JComboBox<String> leftForearmPose;
     JComboBox<String> rightForearmPose;
@@ -164,14 +165,34 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     }
 
     @Override
-    public int getHeadPoseActual(int facingDirection) {
-        return calculateHeadPose(variant,
-                facingDirection,
+    public int getBodyPoseActual() {
+        final int bodyDirection = this.bodyDirection.getSelectedIndex();
+        final int tilt = this.bodyTilt.getSelectedIndex();
+        if (variant.isOld() && bodyDirection >= 2) {
+            if (bodyDirection == 2)
+                return 8;
+            else
+                return 9;
+        }
+        return (bodyDirection * 4) + (3 - tilt);
+    }
+
+    @Override
+    public int getHeadPoseActual() {
+        final String item = (String)headPose.getSelectedItem();
+        final boolean faceIsBack = item != null && item.toLowerCase().startsWith("back");
+        final int pose = calculateHeadPose(variant,
+                headPose.getSelectedIndex() == 2 && faceIsBack ? 3 : facing.getSelectedIndex(),
                 headPose.getSelectedIndex(),
                 headDirection2.getSelectedIndex(),
                 mood.getSelectedIndex(),
                 eyesStatus.getSelectedIndex() > 0
         );
+        if (variant.isOld() && pose == 8) {
+            if (faceIsBack)
+                return pose + 1;
+        }
+        return pose;
     }
 
     @Override
@@ -299,10 +320,10 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         setFacing(0);
         if (variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
             reverse(directions);
-            assign(bodyPose, directions, 1);
+            assign(bodyTilt, directions, 1);
             reverse(directions);
         } else {
-            assign(bodyPose, directions, 1);
+            assign(bodyTilt, directions, 1);
         }
         assign(focusMode, FocusMode.toStringArray(), 0);
         assign(leftThighPose, directions, 2);
@@ -434,7 +455,29 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         addPartListener(headDirection2, 'a');
         addPartListener(mood, 'a');
         addPartListener(eyesStatus, 'a');
-        addPartListener(bodyPose, 'b');
+        addPartListener(bodyTilt, 'b');
+
+        bodyDirection.addItemListener((e) -> {
+            if (e.getStateChange() != ItemEvent.SELECTED) {
+                return;
+            }
+            final int facingDirection = facing.getSelectedIndex();
+            final int bodyDirectionIndex = bodyDirection.getSelectedIndex();
+            if (bodyDirectionIndex < 0)
+                return;
+            if (bodyDirectionIndex != facingDirection) {
+                if (facingDirection < 2 && bodyDirectionIndex < 2) {
+                    bodyDirection.setSelectedIndex(facingDirection);
+                } else if (facingDirection >= 2 && bodyDirectionIndex >= 2) {
+                    bodyDirection.setSelectedIndex(facingDirection);
+                }
+            }
+            if (didInitOnce && bodyDirection.getItemCount() > 0) {
+                if (drawImmediately) {
+                    redraw(ALL_PARTS);
+                }
+            }
+        });
         addPartListener(leftThighPose, 'c');
         addPartListener(leftShinPose, 'd');
         addPartListener(leftFootPose, 'e');
@@ -456,6 +499,8 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
                 return;
             }
             final Object fileObject = openRelated.getSelectedItem();
+            openRelated.setSelectedIndex(0);
+
             if (! (fileObject instanceof VirtualFile)) {
                 return;
             }
@@ -470,7 +515,6 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
                 return;
             }
             psiFile.navigate(true);
-            openRelated.setSelectedIndex(0);
         });
     }
 
@@ -616,7 +660,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         final Pose poseTemp = PoseCalculator.getUpdatedPose(
                 variant,
                 pose,
-                facing.getSelectedIndex(),
+                bodyDirection.getSelectedIndex(),
                 this,
                 parts
         );
@@ -693,6 +737,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (part == 'a') {
             freeze(headDirection2, freeze, null);
         }
+        if (part == 'b') {
+            freeze(bodyDirection, freeze, null);
+        }
     }
 
     /**
@@ -707,7 +754,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
             case 'a':
                 return headPose;
             case 'b':
-                return bodyPose;
+                return bodyTilt;
             case 'c':
                 return leftThighPose;
             case 'd':
@@ -904,6 +951,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     public void setFacing(int direction) {
         final int oldDirection = facing.getSelectedIndex();
         facing.setSelectedIndex(direction);
+        bodyDirection.setSelectedIndex(direction);
         initHeadComboBox(direction, oldDirection);
         try {
             resetIfNeeded();
@@ -931,7 +979,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (resetCount > (ALL_PARTS.length - 3) && defaultPoseAfterInit != null) {
             if (facing.getSelectedIndex() < 2) {
                 headPose.setSelectedIndex(3);
-                bodyPose.setSelectedIndex(1);
+                bodyTilt.setSelectedIndex(1);
             }
             leftThighPose.setSelectedIndex(2);
             leftShinPose.setSelectedIndex(2);
@@ -990,7 +1038,6 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (facing == null) {
             return;
         }
-        final int offset = getFacingOffset(facing);
         if (setFacing) {
             setFacing(facing);
         }
@@ -1002,7 +1049,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
             final Integer partPose = pose.get(part);
             if (partPose == null)
                 continue;
-            translateAndSetPart(part, facing, offset, partPose);
+            setPose(part, partPose);
         }
         drawImmediately = true;
         this.pose = pose;
@@ -1070,15 +1117,6 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         }
     }
 
-    private void translateAndSetPart(final char part, final int facing, final int offset, final int pose) {
-        final Integer translatedPose = getTranslatedPose(variant, facing, part, pose, offset);
-        if (translatedPose == null) {
-            return;
-        }
-        setPose(part, translatedPose);
-    }
-
-
     private void setHeadPose(final int facing, final int pose) {
         final HeadPoseData headPoseData = PoseCalculator.getHeadPose(variant, facing, pose);
         if (headPoseData == null) {
@@ -1125,21 +1163,41 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
             setHeadPose(facing.getSelectedIndex(), pose);
             return;
         }
+        if (charPart == 'b') {
+            if (variant.isOld()) {
+                if (pose < 0 || pose > 9) {
+                    LOGGER.severe("Cannot set body pose for " + variant + " to ");
+                    return;
+                }
+                if (pose < 4) {
+                    bodyDirection.setSelectedIndex(0);
+                } else if (pose < 8)
+                    bodyDirection.setSelectedIndex(1);
+                else if (pose == 8)
+                    bodyDirection.setSelectedIndex(2);
+                else
+                    bodyDirection.setSelectedIndex(3);
+            } else if (pose < 0 || pose > 15) {
+                LOGGER.severe("Cannot set body pose for " + variant + " to ");
+                return;
+            } else {
+                bodyDirection.setSelectedIndex((int)Math.floor(pose / 4.0));
+            }
+        }
         JComboBox<String> comboBox = getComboBoxForPart(charPart);
         if (comboBox == null) {
             return;
         }
         // If variant is old, any part facing front but face forces all other parts front
         if (variant.isOld()) {
-            // Face all parts front
-            if (pose == 4) {
-                pose = 0;
-            } else if (pose == 5) {
-                pose = 0;
-            } else if (comboBox.getItemCount() == 1) {
+           if (comboBox.getItemCount() == 1) {
                 // Pose is neither front nor back, so fill in directions if not already filled in
-                assign(bodyPose, directions, 1);
+                assign(bodyTilt, directions, 1);
             }
+            if (pose < 8)
+                pose = 3 - (pose % 4);
+        } else {
+            pose = 3 - (pose % 4);
         }
 
         if (comboBox.getItemCount() == 0) {
@@ -1147,8 +1205,11 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
             return;
         }
 
+
+
         // Select the pose in the dropdown box
         if (pose >= comboBox.getItemCount()) {
+            LOGGER.severe("Part " + charPart + " pose '"+pose+"' is greater than options ("+comboBox.getItemCount()+")");
             pose = 0;
         }
         comboBox.setSelectedIndex(pose);
@@ -1369,17 +1430,17 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(bodyBreed, gbc);
-        bodyPose = new JComboBox();
+        bodyTilt = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel5 = new DefaultComboBoxModel();
-        bodyPose.setModel(defaultComboBoxModel5);
-        bodyPose.setPreferredSize(new Dimension(76, 25));
-        bodyPose.setToolTipText("Body Pose");
+        bodyTilt.setModel(defaultComboBoxModel5);
+        bodyTilt.setPreferredSize(new Dimension(76, 25));
+        bodyTilt.setToolTipText("Body Pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(bodyPose, gbc);
+        panel2.add(bodyTilt, gbc);
         earBreed = new JComboBox();
         earBreed.setMinimumSize(new Dimension(81, 25));
         final DefaultComboBoxModel defaultComboBoxModel6 = new DefaultComboBoxModel();
@@ -1587,8 +1648,8 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         rightThighPose.setNextFocusableComponent(rightShinPose);
         rightShinPose.setNextFocusableComponent(rightFootPose);
         rightFootPose.setNextFocusableComponent(tailBreed);
-        bodyBreed.setNextFocusableComponent(bodyPose);
-        bodyPose.setNextFocusableComponent(armsBreed);
+        bodyBreed.setNextFocusableComponent(bodyTilt);
+        bodyTilt.setNextFocusableComponent(armsBreed);
         armsBreed.setNextFocusableComponent(armsBreed);
         tailBreed.setNextFocusableComponent(tailBasePose);
         tailTipPose.setNextFocusableComponent(headBreed);
