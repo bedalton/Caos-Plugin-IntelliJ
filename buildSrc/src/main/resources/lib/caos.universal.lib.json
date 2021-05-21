@@ -1,5 +1,5 @@
 {
-  "modDate": 1616424369,
+  "modDate": 1621617458,
   "commands": {
     "722": {
       "id": 722,
@@ -19482,7 +19482,11 @@
           "index": 0,
           "name": "roomType",
           "typeId": 1,
-          "valuesListIds": null
+          "valuesListIds": {
+            "CV": 278,
+            "C3": 278,
+            "DS": 278
+          }
         },
         {
           "index": 1,
@@ -19537,7 +19541,11 @@
           "index": 0,
           "name": "roomType",
           "typeId": 1,
-          "valuesListIds": null
+          "valuesListIds": {
+            "CV": 278,
+            "C3": 278,
+            "DS": 278
+          }
         },
         {
           "index": 1,
@@ -20577,7 +20585,9 @@
           "index": 4,
           "name": "bottom",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C2": 218
+          },
           "description": null
         },
         {
@@ -20586,8 +20596,7 @@
           "typeId": 1,
           "valuesListIds": {
             "C1": 72
-          },
-          "description": "0=INDOORS 1=SURFACE 2=UNDERSEA"
+          }
         }
       ],
       "description": "Set up a room on map. LEFT, TOP, RIGHT, BOTTOM are the room rectangle in world coords \nRoom Type is 0=INDOORS 1=SURFACE 2=UNDERSEA",
@@ -20942,6 +20951,10 @@
       ],
       "description": "Returns the type of a room, or -1 if not a valid room id.",
       "returnTypeId": 1,
+      "returnValuesListIds": {
+        "C3": 278,
+        "DS": 278
+      },
       "commandGroup": "Map",
       "rvalue": true,
       "lvalue": false,
@@ -20969,7 +20982,10 @@
           "index": 1,
           "name": "roomType",
           "typeId": 1,
-          "valuesListIds": null
+          "valuesListIds": {
+            "C3": 278,
+            "DS": 278
+          }
         }
       ],
       "description": "Sets the type of a room. The meaning of the types depends on the game. RATE also uses the room type.",
@@ -28420,8 +28436,7 @@
         185,
         158,
         159,
-        182,
-        228
+        182
       ]
     },
     "C2": {
@@ -29105,6 +29120,7 @@
         221,
         70,
         246,
+        218,
         123,
         249,
         119,
@@ -29114,7 +29130,6 @@
         125,
         124,
         253,
-        218,
         179,
         88,
         89,
@@ -29129,8 +29144,7 @@
         182,
         166,
         154,
-        232,
-        230
+        232
       ]
     },
     "CV": {
@@ -30344,6 +30358,7 @@
         251,
         203,
         244,
+        278,
         213,
         235,
         199,
@@ -30385,8 +30400,7 @@
         273,
         724,
         275,
-        276,
-        229
+        276
       ]
     },
     "C3": {
@@ -31736,6 +31750,7 @@
         251,
         203,
         183,
+        278,
         213,
         235,
         199,
@@ -31778,8 +31793,7 @@
         273,
         724,
         275,
-        276,
-        229
+        276
       ]
     },
     "DS": {
@@ -33174,6 +33188,7 @@
         251,
         203,
         183,
+        278,
         213,
         235,
         199,
@@ -33220,8 +33235,7 @@
         273,
         724,
         275,
-        276,
-        229
+        276
       ]
     },
     "SM": {
@@ -34629,8 +34643,7 @@
         273,
         724,
         275,
-        276,
-        229
+        276
       ]
     }
   },
@@ -46769,999 +46782,6 @@
         }
       ]
     },
-    "list_228": {
-      "id": 228,
-      "variant": "C1",
-      "name": "Genus",
-      "description": null,
-      "extensionType": null,
-      "base_values_list_id": 105,
-      "pattern": null,
-      "values": [
-        {
-          "id": 4575,
-          "valuesListId": 228,
-          "value": "2 1",
-          "name": "Hand",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4584,
-          "valuesListId": 228,
-          "value": "2 10",
-          "name": "Animal",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4589,
-          "valuesListId": 228,
-          "value": "2 15",
-          "name": "Weed",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4588,
-          "valuesListId": 228,
-          "value": "2 14",
-          "name": "Big Toy",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4576,
-          "valuesListId": 228,
-          "value": "2 2",
-          "name": "Call(lift call button)",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4586,
-          "valuesListId": 228,
-          "value": "2 12",
-          "name": "Shower\/clock",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4585,
-          "valuesListId": 228,
-          "value": "2 11",
-          "name": "Hot",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4587,
-          "valuesListId": 228,
-          "value": "2 13",
-          "name": "Toy",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4583,
-          "valuesListId": 228,
-          "value": "2 9",
-          "name": "Music(Instruments)",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4582,
-          "valuesListId": 228,
-          "value": "2 8",
-          "name": "Vendor",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4581,
-          "valuesListId": 228,
-          "value": "2 7",
-          "name": "Drink",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4580,
-          "valuesListId": 228,
-          "value": "2 6",
-          "name": "Food",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4579,
-          "valuesListId": 228,
-          "value": "2 5",
-          "name": "Egg",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4578,
-          "valuesListId": 228,
-          "value": "2 4",
-          "name": "Plant (or herb)",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4577,
-          "valuesListId": 228,
-          "value": "2 3",
-          "name": "Invisible",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4590,
-          "valuesListId": 228,
-          "value": "3 1",
-          "name": "Mover (Vehicle)",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4591,
-          "valuesListId": 228,
-          "value": "3 2",
-          "name": "Lift",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4592,
-          "valuesListId": 228,
-          "value": "3 3",
-          "name": "Computer",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4593,
-          "valuesListId": 228,
-          "value": "3 4",
-          "name": "Fun (Projector)",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4594,
-          "valuesListId": 228,
-          "value": "3 5",
-          "name": "Bang (Cannon)",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4595,
-          "valuesListId": 228,
-          "value": "4 1",
-          "name": "Norn",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4596,
-          "valuesListId": 228,
-          "value": "4 2",
-          "name": "Grendel",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4597,
-          "valuesListId": 228,
-          "value": "4 3",
-          "name": "Ettin",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4598,
-          "valuesListId": 228,
-          "value": "4 4",
-          "name": "Shee",
-          "description": null,
-          "sub_values": ""
-        }
-      ]
-    },
-    "list_229": {
-      "id": 229,
-      "variant": "AL",
-      "name": "Genus",
-      "description": null,
-      "extensionType": null,
-      "base_values_list_id": 105,
-      "pattern": null,
-      "values": [
-        {
-          "id": 4455,
-          "valuesListId": 229,
-          "value": "1 1",
-          "name": "Invisible",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4457,
-          "valuesListId": 229,
-          "value": "1 3",
-          "name": "Favorite Place Signposts",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4458,
-          "valuesListId": 229,
-          "value": "1 4",
-          "name": "Favorite Place Icons",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4456,
-          "valuesListId": 229,
-          "value": "1 2",
-          "name": "User Interface",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4472,
-          "valuesListId": 229,
-          "value": "2 14",
-          "name": "Bad Bug",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4483,
-          "valuesListId": 229,
-          "value": "2 25",
-          "name": "Potion",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4482,
-          "valuesListId": 229,
-          "value": "2 24",
-          "name": "Tool",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4481,
-          "valuesListId": 229,
-          "value": "2 23",
-          "name": "Vendor",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4480,
-          "valuesListId": 229,
-          "value": "2 22",
-          "name": "Incubator",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4479,
-          "valuesListId": 229,
-          "value": "2 21",
-          "name": "Toy",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4478,
-          "valuesListId": 229,
-          "value": "2 20",
-          "name": "Bad",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4477,
-          "valuesListId": 229,
-          "value": "2 19",
-          "name": "Weather",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4475,
-          "valuesListId": 229,
-          "value": "2 17",
-          "name": "Nest",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4474,
-          "valuesListId": 229,
-          "value": "2 16",
-          "name": "Bad Critter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4473,
-          "valuesListId": 229,
-          "value": "2 15",
-          "name": "Good Critter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4476,
-          "valuesListId": 229,
-          "value": "2 18",
-          "name": "Agent Egg",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4471,
-          "valuesListId": 229,
-          "value": "2 13",
-          "name": "Good Bug",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4462,
-          "valuesListId": 229,
-          "value": "2 4",
-          "name": "Good Plant",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4470,
-          "valuesListId": 229,
-          "value": "2 12",
-          "name": "Button",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4459,
-          "valuesListId": 229,
-          "value": "2 1",
-          "name": "Hand",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4460,
-          "valuesListId": 229,
-          "value": "2 2",
-          "name": "Door",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4461,
-          "valuesListId": 229,
-          "value": "2 3",
-          "name": "Seed",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4463,
-          "valuesListId": 229,
-          "value": "2 5",
-          "name": "Bad Plant",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4464,
-          "valuesListId": 229,
-          "value": "2 6",
-          "name": "Leaf",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4465,
-          "valuesListId": 229,
-          "value": "2 7",
-          "name": "Flower",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4466,
-          "valuesListId": 229,
-          "value": "2 8",
-          "name": "Good Fruit",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4467,
-          "valuesListId": 229,
-          "value": "2 9",
-          "name": "Bad Fruit",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4468,
-          "valuesListId": 229,
-          "value": "2 10",
-          "name": "Detritus",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4469,
-          "valuesListId": 229,
-          "value": "2 11",
-          "name": "Food",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4490,
-          "valuesListId": 229,
-          "value": "3 7",
-          "name": "Ettin Home",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4493,
-          "valuesListId": 229,
-          "value": "3 10",
-          "name": "Vehicles",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4492,
-          "valuesListId": 229,
-          "value": "3 9",
-          "name": "Portal",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4491,
-          "valuesListId": 229,
-          "value": "3 8",
-          "name": "Gadget",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4484,
-          "valuesListId": 229,
-          "value": "3 1",
-          "name": "Lift",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4489,
-          "valuesListId": 229,
-          "value": "3 6",
-          "name": "Grendel Home",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4488,
-          "valuesListId": 229,
-          "value": "3 5",
-          "name": "Norn Home",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4487,
-          "valuesListId": 229,
-          "value": "3 4",
-          "name": "Creature Egg",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4486,
-          "valuesListId": 229,
-          "value": "3 3",
-          "name": "Machinery",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4485,
-          "valuesListId": 229,
-          "value": "3 2",
-          "name": "Teleporter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4494,
-          "valuesListId": 229,
-          "value": "4 1",
-          "name": "Norn",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4495,
-          "valuesListId": 229,
-          "value": "4 2",
-          "name": "Grendel",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4496,
-          "valuesListId": 229,
-          "value": "4 3",
-          "name": "Ettin",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4497,
-          "valuesListId": 229,
-          "value": "4 4",
-          "name": "Geat?",
-          "description": null,
-          "sub_values": ""
-        }
-      ]
-    },
-    "list_230": {
-      "id": 230,
-      "variant": "C2",
-      "name": "Genus",
-      "description": null,
-      "extensionType": null,
-      "base_values_list_id": 105,
-      "pattern": null,
-      "values": [
-        {
-          "id": 4498,
-          "valuesListId": 230,
-          "value": "2 1",
-          "name": "System",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4541,
-          "valuesListId": 230,
-          "value": "2 30",
-          "name": "Message",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4521,
-          "valuesListId": 230,
-          "value": "2 24",
-          "name": "Flower",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4522,
-          "valuesListId": 230,
-          "value": "2 25",
-          "name": "Fruit",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4499,
-          "valuesListId": 230,
-          "value": "2 2",
-          "name": "Call Button",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4537,
-          "valuesListId": 230,
-          "value": "2 26",
-          "name": "Mover",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4538,
-          "valuesListId": 230,
-          "value": "2 27",
-          "name": "Lift",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4539,
-          "valuesListId": 230,
-          "value": "2 28",
-          "name": "Computer",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4540,
-          "valuesListId": 230,
-          "value": "2 29",
-          "name": "Mediabox",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4542,
-          "valuesListId": 230,
-          "value": "2 31",
-          "name": "Leftright",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4519,
-          "valuesListId": 230,
-          "value": "2 22",
-          "name": "Leaf",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4543,
-          "valuesListId": 230,
-          "value": "2 32",
-          "name": "Incubator",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4544,
-          "valuesListId": 230,
-          "value": "2 33",
-          "name": "Teleporter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4545,
-          "valuesListId": 230,
-          "value": "2 34",
-          "name": "&lt;Empty slot&gt;",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4546,
-          "valuesListId": 230,
-          "value": "2 35",
-          "name": "Machine",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4547,
-          "valuesListId": 230,
-          "value": "2 36",
-          "name": "Norn",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4548,
-          "valuesListId": 230,
-          "value": "2 37",
-          "name": "Grendel",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4549,
-          "valuesListId": 230,
-          "value": "2 38",
-          "name": "Ettin",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4520,
-          "valuesListId": 230,
-          "value": "2 23",
-          "name": "Root",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4550,
-          "valuesListId": 230,
-          "value": "2 39",
-          "name": "Shee",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4518,
-          "valuesListId": 230,
-          "value": "2 21",
-          "name": "Seed",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4504,
-          "valuesListId": 230,
-          "value": "2 7",
-          "name": "Drink",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4510,
-          "valuesListId": 230,
-          "value": "2 13",
-          "name": "Toy",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4517,
-          "valuesListId": 230,
-          "value": "2 20",
-          "name": "Critter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4509,
-          "valuesListId": 230,
-          "value": "2 12",
-          "name": "Medicine",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4508,
-          "valuesListId": 230,
-          "value": "2 11",
-          "name": "Detritus",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4507,
-          "valuesListId": 230,
-          "value": "2 10",
-          "name": "Cliff Edge",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4506,
-          "valuesListId": 230,
-          "value": "2 9",
-          "name": "Implements",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4505,
-          "valuesListId": 230,
-          "value": "2 8",
-          "name": "Dispenser",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4503,
-          "valuesListId": 230,
-          "value": "2 6",
-          "name": "Processed Food",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4512,
-          "valuesListId": 230,
-          "value": "2 15",
-          "name": "Bad Plant",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4502,
-          "valuesListId": 230,
-          "value": "2 5",
-          "name": "Creature Egg",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4501,
-          "valuesListId": 230,
-          "value": "2 4",
-          "name": "Good Plant",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4513,
-          "valuesListId": 230,
-          "value": "2 16",
-          "name": "Nest",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4500,
-          "valuesListId": 230,
-          "value": "2 3",
-          "name": "Nature",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4514,
-          "valuesListId": 230,
-          "value": "2 17",
-          "name": "Badbug",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4515,
-          "valuesListId": 230,
-          "value": "2 18",
-          "name": "Bug",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4516,
-          "valuesListId": 230,
-          "value": "2 19",
-          "name": "Bad Critter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4511,
-          "valuesListId": 230,
-          "value": "2 14",
-          "name": "Weather",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4524,
-          "valuesListId": 230,
-          "value": "3 2",
-          "name": "Lift",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4532,
-          "valuesListId": 230,
-          "value": "3 10",
-          "name": "Machine",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4531,
-          "valuesListId": 230,
-          "value": "3 9",
-          "name": "&lt;Empty slot&gt;",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4530,
-          "valuesListId": 230,
-          "value": "3 8",
-          "name": "Teleporter",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4529,
-          "valuesListId": 230,
-          "value": "3 7",
-          "name": "Incubator",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4528,
-          "valuesListId": 230,
-          "value": "3 6",
-          "name": "LeftRight",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4527,
-          "valuesListId": 230,
-          "value": "3 5",
-          "name": "Messages",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4526,
-          "valuesListId": 230,
-          "value": "3 4",
-          "name": "Fun",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4525,
-          "valuesListId": 230,
-          "value": "3 3",
-          "name": "Computer",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4523,
-          "valuesListId": 230,
-          "value": "3 1",
-          "name": "Mover",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4536,
-          "valuesListId": 230,
-          "value": "4 4",
-          "name": "Geat?",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4535,
-          "valuesListId": 230,
-          "value": "4 3",
-          "name": "Ettin",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4533,
-          "valuesListId": 230,
-          "value": "4 1",
-          "name": "Norn",
-          "description": null,
-          "sub_values": ""
-        },
-        {
-          "id": 4534,
-          "valuesListId": 230,
-          "value": "4 2",
-          "name": "Grendel",
-          "description": null,
-          "sub_values": ""
-        }
-      ]
-    },
     "list_196": {
       "id": 196,
       "variant": "AL",
@@ -51064,6 +50084,103 @@
         }
       ]
     },
+    "list_278": {
+      "id": 278,
+      "variant": "AL",
+      "name": "RoomType",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": null,
+      "pattern": null,
+      "values": [
+        {
+          "id": 7335,
+          "valuesListId": 278,
+          "value": "0",
+          "name": "Atmosphere",
+          "description": "Heat and light travel well, nutrients and water do not.",
+          "sub_values": ""
+        },
+        {
+          "id": 7336,
+          "valuesListId": 278,
+          "value": "1",
+          "name": "Wooden Walkway",
+          "description": "Insulates against heat, but permits water to drip through",
+          "sub_values": ""
+        },
+        {
+          "id": 7337,
+          "valuesListId": 278,
+          "value": "2",
+          "name": "Concrete Walkway",
+          "description": "Less permeable to more CA than a wooden walkway.",
+          "sub_values": ""
+        },
+        {
+          "id": 7338,
+          "valuesListId": 278,
+          "value": "3",
+          "name": "Indoor Concrete",
+          "sub_values": ""
+        },
+        {
+          "id": 7339,
+          "valuesListId": 278,
+          "value": "4",
+          "name": "Outdoor Concrete",
+          "sub_values": ""
+        },
+        {
+          "id": 7340,
+          "valuesListId": 278,
+          "value": "5",
+          "name": "Normal Soil",
+          "description": "Fairly permeable to most CA",
+          "sub_values": ""
+        },
+        {
+          "id": 7341,
+          "valuesListId": 278,
+          "value": "6",
+          "name": "Boggy Soil",
+          "description": "Retaims more moisture than normal soil",
+          "sub_values": ""
+        },
+        {
+          "id": 7342,
+          "valuesListId": 278,
+          "value": "7",
+          "name": "Drained Soil",
+          "description": "Loses more moister than normal soil",
+          "sub_values": ""
+        },
+        {
+          "id": 7343,
+          "valuesListId": 278,
+          "value": "8",
+          "name": "Fresh Water",
+          "description": "Restrictive to heat",
+          "sub_values": ""
+        },
+        {
+          "id": 7344,
+          "valuesListId": 278,
+          "value": "9",
+          "name": "Salt Water",
+          "description": "Restricted to heat",
+          "sub_values": ""
+        },
+        {
+          "id": 7345,
+          "valuesListId": 278,
+          "value": "10",
+          "name": "Ettin Home",
+          "description": "Loses the smell of machinery",
+          "sub_values": ""
+        }
+      ]
+    },
     "list_72": {
       "id": 72,
       "variant": "C1",
@@ -51972,7 +51089,7 @@
           "valuesListId": 113,
           "value": "28",
           "name": "Involuntary Action 0",
-          "description": null,
+          "description": "Flinch",
           "sub_values": ""
         },
         {
@@ -51980,7 +51097,7 @@
           "valuesListId": 113,
           "value": "29",
           "name": "Involuntary Action 1",
-          "description": null,
+          "description": "Lay Egg",
           "sub_values": ""
         },
         {
@@ -51988,47 +51105,47 @@
           "valuesListId": 113,
           "value": "30",
           "name": "Involuntary Action 2",
-          "description": null,
+          "description": "Sneeze",
           "sub_values": ""
         },
         {
           "id": 1918,
           "valuesListId": 113,
           "value": "31",
-          "name": "Invol3",
-          "description": null,
+          "name": "Involuntary Action 3",
+          "description": "Cough",
           "sub_values": ""
         },
         {
           "id": 1919,
           "valuesListId": 113,
           "value": "32",
-          "name": "Invol4",
-          "description": null,
+          "name": "Involuntary Action 4",
+          "description": "Shiver",
           "sub_values": ""
         },
         {
           "id": 1920,
           "valuesListId": 113,
           "value": "33",
-          "name": "Invol5",
-          "description": null,
+          "name": "Involuntary Action 5",
+          "description": "Sleep",
           "sub_values": ""
         },
         {
           "id": 1921,
           "valuesListId": 113,
           "value": "34",
-          "name": "Invol6",
-          "description": null,
+          "name": "Involuntary Action 6",
+          "description": "Falter",
           "sub_values": ""
         },
         {
           "id": 1922,
           "valuesListId": 113,
           "value": "35",
-          "name": "Invol7",
-          "description": null,
+          "name": "Involuntary Action 7",
+          "description": "Downing",
           "sub_values": ""
         },
         {
