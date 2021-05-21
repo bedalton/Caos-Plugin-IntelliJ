@@ -23,7 +23,8 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import java.security.DigestInputStream
+import java.security.MessageDigest
 
 
 val VirtualFile.contents: String
@@ -166,4 +167,20 @@ fun findFileBySharedModuleAndRelativePath(project: Project, baseFile: VirtualFil
 fun findFileByRelativePath(baseFile: VirtualFile, fileRelativePath: String): VirtualFile? {
     val relativePath = if (fileRelativePath.startsWith("/")) fileRelativePath.substring(1) else fileRelativePath
     return VfsUtilCore.findRelativeFile(relativePath, baseFile) ?: VfsUtilCore.findRelativeFile("/$relativePath", baseFile)
+}
+
+fun VirtualFile.md5(): String? {
+    val md = MessageDigest.getInstance("MD5")
+    inputStream.use { input ->
+        DigestInputStream(
+            input,
+            md
+        ).use {
+            @Suppress("ControlFlowWithEmptyBody")
+            while (input.read() > 0) {
+                // Do nothing, just need to read file
+            }
+        }
+    }
+    return md.digest()?.contentToString()
 }
