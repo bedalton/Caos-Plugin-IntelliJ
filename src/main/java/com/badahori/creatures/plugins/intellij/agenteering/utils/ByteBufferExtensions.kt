@@ -2,9 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.intellij.util.io.toByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.intellij.openapi.vfs.VirtualFile
 import java.io.ByteArrayOutputStream
-import java.io.UnsupportedEncodingException
+import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.zip.Deflater
@@ -77,7 +78,11 @@ val ByteBuffer.int32:Int get() = int
 
 val ByteBuffer.uInt32: Long
     get() {
-        return int.toLong() and 0xffffffffL
+        val currentEncoding = order()
+        order(ByteOrder.LITTLE_ENDIAN)
+        val value = int.toLong() and 0xffffffffL
+        order(currentEncoding)
+        return value
     }
 
 fun ByteBuffer.cString(length: Int) : String {
@@ -199,3 +204,31 @@ fun ByteArray.compressed() : ByteArray {
     compressor.end()
     return data.copyOfRange(0, bytesWritten.toInt())
 }
+
+fun VirtualFile.getAllBytes() : ByteArray {
+    return inputStream.getAllBytes()
+}
+
+fun InputStream.getAllBytes() : ByteArray {
+    val buffer = ByteArrayOutputStream()
+    var nRead: Int
+    val data = ByteArray(16384)
+
+    while (this.read(data, 0, data.size).also { nRead = it } != -1) {
+        buffer.write(data, 0, nRead)
+    }
+    return buffer.toByteArray()
+}
+
+val ByteArray.sizeString:String get() {
+    val size = size
+    return when {
+        size > 1_000_000_000_000 -> String.format("%.2f TB", size / 1_000_000_000_000.0)
+        size > 1_000_000_000 -> String.format("%.2f GB", size / 1_000_000_000.0)
+        size > 1_000_000 -> String.format("%.2f MB", size / 1_000_000.0)
+        size > 1_000 -> String.format("%.2f KB", size / 1_000.0)
+        else -> "${size} bytes"
+    }
+}
+
+
