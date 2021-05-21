@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.indices
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedFileInputFilter
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedKeyIndexer
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartDescriptor
@@ -73,13 +74,19 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             else
                 key
             //indexOnce(project, scope)
-            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
-                .filter { other ->
-                    BreedPartKey.isGenericMatch(fudgedKey, other)
-                }
-                .flatMap { aKey ->
-                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
-                }
+//            val old = FileBasedIndex.getInstance().getAllKeys(NAME, project)
+//                .filter { other ->
+//                    BreedPartKey.isGenericMatch(fudgedKey, other)
+//                }
+//                .flatMap { aKey ->
+//                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
+//                }
+            val new = FileBasedIndex.getInstance().getContainingFiles(NAME, key, scope)
+//            if (new.size < old.size) {
+//                LOGGER.severe("Failed to find the same number of new files as old. Expected: ${old.size}; Actual: ${new.size}")
+//                return old
+//            }
+            return new
         }
 
         @JvmStatic
@@ -100,7 +107,7 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
         fun findMatching(
             project: Project,
             fileName: String,
-            searchScope: GlobalSearchScope? = null
+            searchScope: GlobalSearchScope? = null,
         ): Collection<VirtualFile> {
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
@@ -108,9 +115,15 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             //indexOnce(project, scope)
             val key = BreedPartKey.fromFileName(fileName)
                 ?: return emptyList()
-            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
-                .filter { other -> BreedPartKey.isGenericMatch(key, other) }
-                .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
+//            val old = FileBasedIndex.getInstance().getAllKeys(NAME, project)
+//                .filter { other -> BreedPartKey.isGenericMatch(key, other) }
+//                .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
+            val new = FileBasedIndex.getInstance().getContainingFiles(NAME, key, scope)
+//            if (new.size < old.size) {
+//                LOGGER.severe("Failed to find the same number of new files as old. Expected: ${old.size}; Actual: ${new.size}")
+//                return old
+//            }
+            return new
         }
 
         fun indexOnce(project: Project, searchScope: GlobalSearchScope? = null) {
