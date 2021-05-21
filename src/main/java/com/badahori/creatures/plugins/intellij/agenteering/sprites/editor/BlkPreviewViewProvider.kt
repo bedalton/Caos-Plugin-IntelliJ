@@ -12,15 +12,15 @@ import com.intellij.openapi.vfs.VirtualFile
 /**
  * Editor provider for sprite files. Wires up Sprite files to the viewer
  */
-class SpriteFileEditorProvider : FileEditorProvider, DumbAware {
+class BlkPreviewViewProvider : FileEditorProvider, DumbAware {
 
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
-        return file.extension?.toLowerCase() in spriteFileTypes
+        return file.extension?.toLowerCase().let { it == "blk" || it == "back" }
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
-        return SpriteEditorImpl(project, file)
+        return BlkPreviewViewImpl(project, file)
     }
 
     override fun disposeEditor(editor: FileEditor) {
@@ -35,7 +35,6 @@ class SpriteFileEditorProvider : FileEditorProvider, DumbAware {
         return FileEditorPolicy.HIDE_DEFAULT_EDITOR
     }
     companion object {
-        private val spriteFileTypes = listOf("spr", "back",  "blk", "c16", "s16")
-        private const val EDITOR_TYPE_ID = "creature.spr"
+        private const val EDITOR_TYPE_ID = "creatures.blk.stitched"
     }
 }

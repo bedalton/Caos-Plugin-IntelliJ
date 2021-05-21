@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkSpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprSpriteFrame
@@ -11,7 +12,9 @@ abstract class SpriteFile<SpriteT:SpriteFrame<SpriteT>>(private val type:SpriteT
     protected var mFrames:List<SpriteT?> = listOf()
     val size: Int get() = mFrames.size
 
-    val images:List<BufferedImage?> get() = mFrames.map { it?.image }
+    open val images:List<BufferedImage?> get() = mFrames.mapIndexed { i, it ->
+        it?.image
+    }
 
     fun getFrame(frameNumber:Int) : SpriteT? = mFrames.getOrNull(frameNumber)
 
@@ -102,5 +105,14 @@ sealed class SpriteType<SpriteT:SpriteFrame<SpriteT>>(val fileExtension: String,
         sprite.image?.let {
             S16SpriteFrame(it)
         }
+    })
+
+    object BLK:SpriteType<BlkSpriteFrame>("blk", convert@{ sprite:SpriteFrame<*> ->
+        if (sprite is BlkSpriteFrame)
+            return@convert sprite.copy()
+        sprite.image?.let {
+            BlkSpriteFrame(it)
+        }
+
     })
 }

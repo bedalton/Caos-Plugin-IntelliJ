@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
@@ -153,7 +154,8 @@ class DumpSpriteAction : AnAction(
         private val spriteFileTypes = listOf(
             SprFileType,
             S16FileType,
-            C16FileType
+            C16FileType,
+            BlkFileType
         )
     }
 }
