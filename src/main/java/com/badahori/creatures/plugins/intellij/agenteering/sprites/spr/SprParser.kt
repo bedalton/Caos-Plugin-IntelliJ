@@ -35,7 +35,7 @@ object SprParser {
 /**
  * Parses Creatures 1 SPR sprite files
  * Based on python code by Shee's Lost Knowledge
- *
+ *a
  * @url http://sheeslostknowledge.blogspot.com/2014/11/parsing-creatures-1-spr-files.html
  */
 
@@ -108,7 +108,7 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
                 if (it < 0 || it > 256) {
                     throw SpriteParserException("Color value '$it' is invalid")
                 }
-                if (it == 245)
+                if (it in 243..245)
                     -1
                 else
                     SprParser.colors[it]
