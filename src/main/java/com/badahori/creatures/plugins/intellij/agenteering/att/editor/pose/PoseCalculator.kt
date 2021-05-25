@@ -358,11 +358,11 @@ object PoseCalculator {
     @JvmStatic
     fun getUpdatedPose(
         variant: CaosVariant,
-        pose: PoseRenderer.Pose?,
+        pose: Pose?,
         facingDirection: Int,
         poseHolder: BreedPoseHolder,
         vararg parts: Char
-    ): PoseRenderer.Pose {
+    ): Pose {
 
         // Get facing direction to calculate the sprite offset in the sprite file
         val offset: Int = when (facingDirection) {
@@ -376,9 +376,9 @@ object PoseCalculator {
             }
         }
         // Gets the pose object for editing
-        val poseTemp: PoseRenderer.Pose = pose?.copy() ?: (offset + 3).let { def ->
+        val poseTemp: Pose = pose?.copy() ?: (offset + 3).let { def ->
             // If the pose object is not yet initialized, initialize it
-            PoseRenderer.Pose(offset + 2, def, def, def, def, def, def, def, def, def, def, def, def, def, def)
+            Pose(offset + 2, def, def, def, def, def, def, def, def, def, def, def, def, def, def)
         }
 
         // Go through each part passed in for updating, and update it.

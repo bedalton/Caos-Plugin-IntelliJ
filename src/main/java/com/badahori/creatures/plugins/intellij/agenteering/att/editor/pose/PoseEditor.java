@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.CreatureSpriteSet;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility;
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.Pose;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex;
@@ -22,14 +22,21 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.ui.JBColor;
 import kotlin.Pair;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicBorders;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -101,6 +108,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     JLabel Eyes;
     JComboBox<String> eyesStatus;
     JScrollPane partsPanel;
+    JFormattedTextField poseStringField;
     List<BodyPartFiles> files;
     private CaosVariant variant;
     private CreatureSpriteSet spriteSet;
@@ -113,6 +121,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     private boolean drawImmediately = false;
     private Pose defaultPoseAfterInit;
     private boolean wasHidden = false;
+    private String lastPoseString = "";
 
     public PoseEditor(final Project project, final CaosVariant variant, final BreedPartKey breedKey) {
         this.project = project;
@@ -425,6 +434,55 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
                 redraw();
             }
         });
+
+        final Highlighter highlighter = new DefaultHighlighter();
+        final Color highlightColor = JBColor.RED;
+        final Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(highlightColor);
+        final Border errorBorder = new BasicBorders.FieldBorder(JBColor.red, JBColor.red, JBColor.red, JBColor.red);
+        final Border okayBorder = new BasicBorders.FieldBorder(JBColor.white, JBColor.white, JBColor.white, JBColor.white);
+        poseStringField.setHighlighter(highlighter);
+        poseStringField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                highlighter.removeAllHighlights();
+                final String newPoseRaw = poseStringField.getText();
+                final StringBuilder newPoseStringBuilder = new StringBuilder(newPoseRaw);
+                while (newPoseStringBuilder.length() < 15) {
+                    newPoseStringBuilder.append(" ");
+                }
+                final String newPoseString = newPoseStringBuilder.toString();
+                boolean hasError = false;
+                if (newPoseRaw.length() < 15) {
+                    hasError = true;
+                } else if (lastPoseString.equals(newPoseString)) {
+                    return;
+                }
+                final int facing = PoseEditor.this.facing.getSelectedIndex();
+                final Pose lastPose = PoseEditor.this.pose;
+                final Pair<Integer, Pose> result = Pose.fromString(variant, facing, lastPose, newPoseString);
+                final Pose newPose = result.getSecond();
+                for (int i = 0; i < 15; i++) {
+                    final char part = (char) ('a' + i);
+                    final Integer thisPose = newPose.get(part);
+                    if (thisPose == null || thisPose < - 1) {
+                        hasError = true;
+                        try {
+                            highlighter.addHighlight(i+1, i+2, painter);
+                        } catch (Exception exc) {
+                            LOGGER.severe("Invalid highlight position " + i);
+                        }
+                    }
+                }
+                if (hasError) {
+                    poseStringField.setBorder(errorBorder);
+                    return;
+                } else {
+                    poseStringField.setBorder(okayBorder);
+                }
+                setPose(newPose, true);
+            }
+        });
         focusMode.addItemListener((e) -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 if (visibilityFocus != null) {
@@ -669,6 +727,11 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
 
         if (poseTemp.hashCode() != lastPoseHash) {
             poseChangeListeners.forEach((it) -> it.onPoseChange(poseTemp));
+            final String newPoseString = poseTemp.poseString(variant, facing.getSelectedIndex());
+            if (newPoseString != null) {
+                lastPoseString = newPoseString;
+                poseStringField.setText(newPoseString);
+            }
         }
         return poseTemp;
     }
@@ -702,7 +765,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
      */
     public void showFacing(boolean show) {
         freeze(facing, show, ! show);
-        facingLabel.setVisible(! show);
+        facingLabel.setVisible(show);
     }
 
     /**
@@ -1122,6 +1185,8 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (headPoseData == null) {
             return;
         }
+        if (pose < 0)
+            return;
         headPose.setSelectedIndex(headPoseData.getDirection());
         if (headPoseData.getTilt() != null) {
             if (headPoseData.getTilt() >= 4) {
@@ -1159,6 +1224,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (! didInitOnce) {
             return;
         }
+
+        if (pose < 0)
+            return;
         if (charPart == 'a') {
             setHeadPose(facing.getSelectedIndex(), pose);
             return;
