@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.13</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.22</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,7 +35,20 @@
 
   <change-notes><![CDATA[
     <ul>
-
+      <li>
+        <b>Versions: 2021.05.22</b>
+        <b>#Improvements</b>
+        <ul>
+          <li>Increased loading speed of new ATT editor</li>
+          <li>Added BLK sprite viewer</li>
+          <li>Minor improvements to CAOS lib</li>
+        </ul>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix Z-Order of sprites in ATT editor for C1/C2 variants</li>
+          <li>Fix C1e strings indenting with newline inside square bracket</li>
+        </ul>
+      </li>
       <li>
         <b>Versions: 2021.05.13</b>
         <b>#Improvements</b>
@@ -863,6 +876,9 @@
     <fileEditorProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteFileEditorProvider" />
 
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.BlkPreviewViewProvider" />
+
     <fileType name="SPR file"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
               fieldName="INSTANCE"
@@ -880,6 +896,12 @@
               fieldName="INSTANCE"
               language="CreaturesC16"
               extensions="c16" />
+
+    <fileType name="BLK Sprite File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType"
+              fieldName="INSTANCE"
+              language="CreaturesBLK"
+              extensions="blk" />
 
 
     <fileBasedIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex"
