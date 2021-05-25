@@ -9,9 +9,13 @@ import javax.swing.*
 object SpriteDumpDialog {
     private val RECENTS_KEY = "com.badahori.creatures.plugins.intellij.agenteering.sprites.RECENT_DUMP_FOLDERS"
 
-    fun create(project:Project, initialLocation:String, multiFile:Boolean = false, folderChangeListener:(path:String?, useChildDirectories:Boolean) -> Unit) : DialogBuilder {
+    fun create(
+        initialLocation: String,
+        multiFile: Boolean = false,
+        folderChangeListener: (path: String?, useChildDirectories: Boolean) -> Unit
+    ) : DialogBuilder {
         return object : DialogBuilder(){
-            val textField = JTextField()?.apply {
+            val textField = JTextField().apply {
                 this.toolTipText = "Sprite dump image destination"
                 this.text = initialLocation
                 this.alignmentX = Component.LEFT_ALIGNMENT
