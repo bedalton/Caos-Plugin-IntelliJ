@@ -1,5 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import java.awt.*
 import java.awt.event.*
@@ -269,7 +274,15 @@ internal class AttSpriteCellList(
 
     fun scrollTo(pose: Int) {
         val item = get(pose)
+        invokeLater later@{
+            (parent as? JPanel)?.doLayout()
+            val bounds = item.bounds
+            if (visibleRect.contains(bounds).orTrue())
+                return@later
+            val offset = ((pose * 0.85) * item.height).toInt()
+            (parent?.parent as? JScrollPane)?.verticalScrollBar?.value = offset
 
+        }
     }
 }
 
