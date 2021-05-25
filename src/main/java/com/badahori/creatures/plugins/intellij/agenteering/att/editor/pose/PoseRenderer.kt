@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
@@ -275,8 +276,8 @@ object PoseRenderer {
             // OLD VARIANTS
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + bodyPart + tail  + headParts + leftLeg + leftArm
-                8 -> tail + leftLeg + rightLeg +leftArm + rightArm +  bodyPart + headParts
+                in 4..7 -> rightArm + rightLeg + bodyPart + tail + headParts + leftLeg + leftArm
+                8 -> tail + leftLeg + rightLeg + leftArm + rightArm + bodyPart + headParts
                 9 -> if (variant == CaosVariant.C1)
                     headParts + leftLeg + rightLeg + bodyPart + tail + leftArm + rightArm
                 else
@@ -309,6 +310,7 @@ object PoseRenderer {
         }
         return Pair(partsAtOrigin, size)
     }
+
     private fun getPart(
         partChar: Char,
         part: SpriteBodyPart,
@@ -318,11 +320,12 @@ object PoseRenderer {
     ): RenderPart? {
         return getPart(partChar, part, pose, pose, attachAt, visibility)
     }
+
     private fun getPart(
         partChar: Char,
         part: SpriteBodyPart,
         pose: Int,
-        spritePose:Int,
+        spritePose: Int,
         attachAt: Pair<Int, Int>,
         visibility: PartVisibility
     ): RenderPart? {
@@ -341,66 +344,6 @@ object PoseRenderer {
         val visibility: PartVisibility
     )
 
-    data class Pose(
-        var head: Int,
-        var body: Int,
-        var leftThigh: Int,
-        var leftShin: Int,
-        var leftFoot: Int,
-        var rightThigh: Int,
-        var rightShin: Int,
-        var rightFoot: Int,
-        var leftUpperArm: Int,
-        var leftForearm: Int,
-        var rightUpperArm: Int,
-        var rightForearm: Int,
-        var tailBase: Int,
-        var tailTip: Int,
-        var ears: Int,
-    ) {
-        operator fun get(part: Char): Int? {
-            return when (part.toLowerCase()) {
-                'a' -> head
-                'b' -> body
-                'c' -> leftThigh
-                'd' -> leftShin
-                'e' -> leftFoot
-                'f' -> rightThigh
-                'g' -> rightShin
-                'h' -> rightFoot
-                'i' -> leftUpperArm
-                'j' -> leftForearm
-                'k' -> rightUpperArm
-                'l' -> rightForearm
-                'm' -> tailBase
-                'n' -> tailTip
-                'o' -> ears
-                'p' -> ears
-                'q' -> head
-                else -> return null
-            }
-        }
-        operator fun set(part: Char, value:Int?) {
-            when (part) {
-                'a' -> head = value!!
-                'b' -> body = value!!
-                'c' -> leftThigh = value!!
-                'd' -> leftShin = value!!
-                'e' -> leftFoot = value!!
-                'f' -> rightThigh = value!!
-                'g' -> rightShin = value!!
-                'h' -> rightFoot = value!!
-                'i' -> leftUpperArm = value!!
-                'j' -> leftForearm = value!!
-                'k' -> rightUpperArm = value!!
-                'l' -> rightForearm = value!!
-                'm' -> tailBase = value ?: 0
-                'n' -> tailTip = value ?: 0
-                'o' -> ears = value ?: 0
-                'p' -> ears = value ?: 0
-            }
-        }
-    }
 
     data class CreatureSpriteSet(
         var head: SpriteBodyPart,
