@@ -50,6 +50,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         when (element) {
             is CaosScriptSpaceLike -> annotateExtraSpaces(variant, element, annotationWrapper)
             is CaosScriptSymbolComma -> annotateExtraSpaces(variant, element, annotationWrapper)
+            is CaosScriptEqOpOld -> annotateOldEqualityOps(variant, element, annotationWrapper)
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationWrapper)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationWrapper)
             is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
@@ -312,6 +313,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 .range(element)
                 .withFix(TransposeEqOp(element))
                 .create()
+    }
+
+    private fun annotateOldEqualityOps(variant: CaosVariant, element: CaosScriptEqOpOld, annotationWrapper: AnnotationHolderWrapper) {
+        if (variant.isOld || variant == UNKNOWN)
+            return
+        if (element.text.toLowerCase().let { it != "bt" && it != "bf"}) {
+            return
+        }
+        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid_old-eq_operator"))
+            .range(element)
+            .create()
     }
 
     private fun annotateRetnCommand(element: CaosScriptCRetn, annotationWrapper: AnnotationHolderWrapper) {
