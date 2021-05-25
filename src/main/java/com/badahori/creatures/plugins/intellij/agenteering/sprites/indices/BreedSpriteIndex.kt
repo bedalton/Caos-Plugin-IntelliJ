@@ -81,7 +81,7 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
 //                .flatMap { aKey ->
 //                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
 //                }
-            val new = FileBasedIndex.getInstance().getContainingFiles(NAME, key, scope)
+            val new = FileBasedIndex.getInstance().getContainingFiles(NAME, fudgedKey, scope)
 //            if (new.size < old.size) {
 //                LOGGER.severe("Failed to find the same number of new files as old. Expected: ${old.size}; Actual: ${new.size}")
 //                return old
