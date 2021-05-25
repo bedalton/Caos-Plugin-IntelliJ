@@ -50,7 +50,7 @@ class DumpSpriteAction : AnAction(
         } else {
             files[0].parent.path + File.separatorChar
         }
-        SpriteDumpDialog.create(project, initialPath, files.size > 1) run@{ parentPath, useChildDirectories ->
+        SpriteDumpDialog.create(initialPath, files.size > 1) run@{ parentPath, useChildDirectories ->
             if (parentPath == null)
                 return@run
             runWriteAction {
