@@ -177,8 +177,12 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     public int getBodyPoseActual() {
         final int bodyDirection = this.bodyDirection.getSelectedIndex();
         final int tilt = this.bodyTilt.getSelectedIndex();
-        if (variant.isOld() && bodyDirection >= 2) {
-            if (bodyDirection == 2)
+        if (variant.isOld()) {
+            if (bodyDirection == 0)
+                return (3 - tilt);
+            else if (bodyDirection == 1)
+                return 4 + (3 - tilt);
+            else if (bodyDirection == 2)
                 return 8;
             else
                 return 9;
