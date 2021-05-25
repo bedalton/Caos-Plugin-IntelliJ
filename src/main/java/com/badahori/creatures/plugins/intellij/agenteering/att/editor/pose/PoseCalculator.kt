@@ -376,7 +376,7 @@ object PoseCalculator {
             }
         }
         // Gets the pose object for editing
-        val poseTemp: Pose = pose?.copy() ?: (offset + 3).let { def ->
+        val poseTemp: Pose = pose?.copy() ?: (if (offset < 8) (offset + 3) else offset).let { def ->
             // If the pose object is not yet initialized, initialize it
             Pose(offset + 2, def, def, def, def, def, def, def, def, def, def, def, def, def, def)
         }
@@ -390,14 +390,14 @@ object PoseCalculator {
                     if (this < 0)
                         throw Exception("Invalid head pose calculated. FacingDirection:$facingDirection; Output: $this")
                 }
+                'b' -> {
+                    poseTemp.body = poseHolder.getBodyPoseActual()
+                }
                 'o', 'p' -> {
                     poseTemp.ears = getEars(poseHolder.getHeadPoseActual()).apply {
                         if (this < 0)
                             throw Exception("Invalid ears pose. FacingDirection:$facingDirection; Output: $this")
                     }
-                }
-                'b' -> {
-                    poseTemp.body = poseHolder.getBodyPoseActual()
                 }
                 else -> {
                     poseTemp[part] = poseHolder.getPartPose(part, facingDirection, offset)?.apply {

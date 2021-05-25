@@ -1018,5 +1018,6 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         }
         spriteCellList.reload();
         redrawPose();
+        spriteCellList.scrollTo(cell);
     }
 }
