@@ -240,10 +240,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
 
 
     fun copyToClipboard() {
-        if (mImage == null) {
-            return
-        }
-        mImage!!.copyToClipboard()
+        mImage.copyToClipboard()
     }
 
 
