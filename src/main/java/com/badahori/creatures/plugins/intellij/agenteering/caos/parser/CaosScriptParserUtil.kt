@@ -522,7 +522,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         while (next != null && next == CaosScript_SPACE_)
             next = builder_.lookAhead(lookAhead++)
 
-        if (next == CaosScript_NEW_LINE || next == CaosScript_NEWLINE || eof(builder_, level)) {
+        if (next == CaosScript_NEW_LINE || next == CaosScript_NEWLINE || next == CaosScript_COMMA || eof(builder_, level)) {
             builder_.putUserData(ENDED_ARGS_KEY, 0)
             builder_.putUserData(EXPECTED_R_L_VALUES_KEY, 0)
             return true
