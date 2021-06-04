@@ -39,7 +39,7 @@ interface CaosDefDocCommentHashtagStub: StubElement<CaosDefDocCommentHashtagImpl
 }
 
 interface CaosDefValuesListStub : StubElement<CaosDefValuesListElementImpl> {
-    val typeName:String
+    val listName:String
     val keys: List<CaosDefValuesListValueStruct>
     val typeNote:String?
     val isBitflags:Boolean

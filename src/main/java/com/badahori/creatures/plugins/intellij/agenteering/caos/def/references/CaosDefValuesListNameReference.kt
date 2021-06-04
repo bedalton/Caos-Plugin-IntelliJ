@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.variantsIntersect
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.containingCaosDefFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -27,7 +28,6 @@ class CaosDefValuesListNameReference(element: CaosDefValuesListName) : PsiRefere
         return element.name == myElement.name && element.variantsIntersect(variants)
     }
 
-
     override fun resolve(): PsiElement? {
         if (element.parent is CaosDefValuesListElement)
             return null
@@ -38,7 +38,7 @@ class CaosDefValuesListNameReference(element: CaosDefValuesListName) : PsiRefere
                 }
                 ?.valuesListName
                 ?: PsiTreeUtil.collectElementsOfType(element.containingFile, CaosDefValuesListElement::class.java)
-                        .firstOrNull { it.typeName.equalsIgnoreCase(elementName) }
+                        .firstOrNull { it.listName.equals(elementName, true) }
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {

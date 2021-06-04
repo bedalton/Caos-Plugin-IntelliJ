@@ -74,6 +74,7 @@ public class SprFileEditor {
             final int padLength = (rawImages.size() + "").length();
             final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
             final String suffix = ".png";
+            images.clear();
             for (int i = 0; i < rawImages.size(); i++) {
                 final String fileName = prefix + pad(i, padLength) + suffix;
                 images.add(new ImageTransferItem(fileName, rawImages.get(i)));

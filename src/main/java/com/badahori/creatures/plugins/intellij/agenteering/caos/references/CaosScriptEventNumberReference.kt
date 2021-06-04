@@ -8,12 +8,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
-import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptEventNumberReference(element: CaosScriptEventNumberElement) : PsiReferenceBase<CaosScriptEventNumberElement>(element, TextRange(0, element.textLength)) {
 
@@ -26,7 +24,7 @@ class CaosScriptEventNumberReference(element: CaosScriptEventNumberElement) : Ps
             return false
         val valuesListElement = element.getParentOfType(CaosDefValuesListElement::class.java)
                 ?: return false
-        if (valuesListElement.typeName != EVENT_NUMBER_VALUES_LIST_NAME) {
+        if (valuesListElement.listName != EVENT_NUMBER_VALUES_LIST_NAME) {
             return false
         }
         val variant = myElement.containingCaosFile?.variant

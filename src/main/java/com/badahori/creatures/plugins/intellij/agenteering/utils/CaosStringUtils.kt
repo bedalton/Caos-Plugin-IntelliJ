@@ -225,7 +225,7 @@ enum class Case {
 }
 
 infix fun String?.like(other: String?): Boolean {
-    return this != null && other != null && this.equalsIgnoreCase(other)
+    return this != null && other != null && this.equals(other, true)
 }
 
 infix fun String?.likeAny(others: Collection<String>): Boolean {
@@ -245,7 +245,7 @@ infix fun String?.likeNone(others: Array<String>): Boolean {
 }
 
 infix fun String?.notLike(other: String?): Boolean {
-    return this == null || other == null || !this.equalsIgnoreCase(other)
+    return this == null || other == null || !this.equals(other, true)
 }
 
 fun String.wrap(maxLength: Int, newLinePrefixIn: String = ""): String {

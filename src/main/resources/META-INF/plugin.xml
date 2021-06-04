@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.22</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.29</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,14 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Versions: 2021.05.29</b>
+        <b>#Fix</b>
+        <ul>
+          <li>Fix parsing failure on comma delimited files</li>
+          <li>Fix duplicated sprites in sprite image view</li>
+        </ul>
+      </li>
       <li>
         <b>Versions: 2021.05.22</b>
         <b>#Improvements</b>

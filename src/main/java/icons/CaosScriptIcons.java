@@ -22,6 +22,8 @@ public interface CaosScriptIcons {
     Icon COMMAND = IconLoader.getIcon("/icons/command-icon.png");
     Icon RVALUE = IconLoader.getIcon("/icons/right-value-icon.png");
     Icon LVALUE = IconLoader.getIcon("/icons/left-value-icon.png");
+    Icon VALUE_LIST_VALUE = IconLoader.getIcon("/icons/values-list-value-icon.png");
+    Icon VALUES_LIST = IconLoader.getIcon("/icons/values-list-icon.png");
     Icon HASHTAG = IconLoader.getIcon("/icons/hashtag-icon.png");
     Icon C1 = IconLoader.getIcon("/icons/C1.png");
     Icon C2 = IconLoader.getIcon("/icons/C2.png");

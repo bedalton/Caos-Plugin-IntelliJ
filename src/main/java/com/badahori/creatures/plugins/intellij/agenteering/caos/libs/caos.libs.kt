@@ -181,6 +181,15 @@ internal class CaosLib internal constructor(private val lib: CaosLibDefinitions,
     val isNewVariant: Boolean
         get() = variant.isNew
 
+    val allValuesListsOptions:List<Pair<CaosValuesListValue,String>> by lazy {
+        valuesLists.flatMap { valuesList ->
+            val name = valuesList.name
+            valuesList.values.map { value ->
+                Pair(value, name)
+            }
+        }
+    }
+
     internal operator fun get(type: CaosCommandType): CommandGetter {
         return when (type) {
             CaosCommandType.RVALUE -> rvalue
@@ -293,3 +302,4 @@ enum class EqOp(val commonName: String, vararg val values: String) {
         }
     }
 }
+

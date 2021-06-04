@@ -96,7 +96,7 @@ class CaosScriptExpressionReference(element: CaosScriptRvalue) : PsiPolyVariantR
             return false
         val parentDef = anElement.getParentOfType(CaosDefValuesListElement::class.java)
                 ?: return false
-        return parentDef.typeName == possibleValuesListName
+        return parentDef.listName == possibleValuesListName
     }
 
     override fun multiResolve(p0: Boolean): Array<ResolveResult> {
