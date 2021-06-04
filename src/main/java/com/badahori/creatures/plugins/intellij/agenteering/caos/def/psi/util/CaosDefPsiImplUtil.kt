@@ -17,6 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
@@ -80,7 +81,7 @@ object CaosDefPsiImplUtil {
             return it
         }
         return command.docComment?.rvalueList?.isNotEmpty()
-                ?: command.returnTypeString.let { it != "command" && it != UnknownReturn }
+            ?: command.returnTypeString.let { it != "command" && it != UnknownReturn }
     }
 
     @JvmStatic
@@ -104,7 +105,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getSimpleType(element: CaosDefVariableType): CaosExpressionValueType {
         val simpleName = (element.typeLiteral ?: element.bracketString)?.text
-                ?: return CaosExpressionValueType.UNKNOWN
+            ?: return CaosExpressionValueType.UNKNOWN
         return CaosExpressionValueType.fromSimpleName(simpleName)
     }
 
@@ -114,12 +115,17 @@ object CaosDefPsiImplUtil {
         if (stub != null)
             return stub.returnType.type.type
         return command.returnType?.variableType?.typeLiteral?.text
-                ?: command.returnType?.variableType?.bracketString?.text
-                ?: UnknownReturn
+            ?: command.returnType?.variableType?.bracketString?.text
+            ?: UnknownReturn
     }
 
     @JvmStatic
-    fun getNamespace(@Suppress("UNUSED_PARAMETER", "MemberVisibilityCanBePrivate") command: CaosDefCommandDefElement): String? {
+    fun getNamespace(
+        @Suppress(
+            "UNUSED_PARAMETER",
+            "MemberVisibilityCanBePrivate"
+        ) command: CaosDefCommandDefElement
+    ): String? {
         return null
     }
 
@@ -141,7 +147,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getParameterStructs(command: CaosDefCommandDefElement): List<CaosDefParameterStruct> {
         val comment = command.docComment
-                ?: return command.parameterList.map { it.toStruct() }
+            ?: return command.parameterList.map { it.toStruct() }
         return command.parameterList.map {
             comment.getParameterStruct(it.parameterName) ?: it.toStruct()
         }
@@ -156,7 +162,7 @@ object CaosDefPsiImplUtil {
     fun getIntRange(fromElement: CaosDefFromTo): Pair<Int, Int>? {
         val from = fromElement.fromInt.intValue
         val to = fromElement.toInt?.intValue
-                ?: return null
+            ?: return null
         return Pair(from, to)
     }
 
@@ -164,7 +170,7 @@ object CaosDefPsiImplUtil {
     fun getIntRange(fromElement: CaosDefFromUntil): Pair<Int, Int>? {
         val from = fromElement.fromInt.intValue
         val to = fromElement.untilInt?.intValue
-                ?: return null
+            ?: return null
         return Pair(from, to)
     }
 
@@ -173,16 +179,16 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getComment(command: CaosDefCommandDefElement): String? {
         return command.stub?.comment ?: command
-                .docComment
-                ?.docCommentFrontComment
-                ?.children
-                ?.flatMap {
-                    it.text.split("\n")
-                }
-                ?.joinToString("\n") {
-                    it.replace(STAR_FIRST_REGEX, "")
-                }
-                ?.replace("[ ]+".toRegex(), " ")
+            .docComment
+            ?.docCommentFrontComment
+            ?.children
+            ?.flatMap {
+                it.text.split("\n")
+            }
+            ?.joinToString("\n") {
+                it.replace(STAR_FIRST_REGEX, "")
+            }
+            ?.replace("[ ]+".toRegex(), " ")
     }
 
     @JvmStatic
@@ -195,7 +201,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getEnclosingDocComment(element: CaosDefCompositeElement): CaosDefDocComment? {
         val parentCommandDefinition = element.getParentOfType(CaosDefCommandDefElement::class.java)
-                ?: return null
+            ?: return null
         return parentCommandDefinition.docComment
     }
 
@@ -205,12 +211,12 @@ object CaosDefPsiImplUtil {
         val parameterName = stub?.parameterName ?: getParameterName(parameter)
         val type = stub?.type ?: CaosDefVariableTypeStruct(type = getParameterType(parameter))
         return CaosDefParameterStruct(
-                parameterNumber = (parameter.parent as? CaosDefCommandDefElement)?.parameterList?.indexOf(parameter)
-                        ?: -1,
-                name = parameterName,
-                type = type,
-                simpleType = CaosExpressionValueType.fromSimpleName(parameter.parameterType),
-                comment = null
+            parameterNumber = (parameter.parent as? CaosDefCommandDefElement)?.parameterList?.indexOf(parameter)
+                ?: -1,
+            name = parameterName,
+            type = type,
+            simpleType = CaosExpressionValueType.fromSimpleName(parameter.parameterType),
+            comment = null
         )
     }
 
@@ -221,7 +227,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun getParameterType(parameter: CaosDefParameter): String {
-        return parameter.variableType.let { it.typeLiteral?.text ?: it.bracketString?.text} ?: "???"
+        return parameter.variableType.let { it.typeLiteral?.text ?: it.bracketString?.text } ?: "???"
     }
 
     @JvmStatic
@@ -234,21 +240,21 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getParameterStruct(paramComment: CaosDefDocCommentParam): CaosDefParameterStruct? {
         val parameterNameLink = paramComment.variableLink
-                ?: return null
+            ?: return null
         val parameterName = getVariableName(parameterNameLink)
         val variableTypeElement = paramComment.docCommentVariableType
         val parameterTypeName = variableTypeElement?.toStruct()
         val comment = paramComment.docCommentParamText?.text
         val parameterList = paramComment
-                .getParentOfType(CaosDefCommandDefElement::class.java)
-                ?.parameterList
+            .getParentOfType(CaosDefCommandDefElement::class.java)
+            ?.parameterList
         val parameterNumber = parameterList
-                ?.firstOrNull {
-                    it.parameterName == parameterName
-                }?.let {
-                    parameterList.indexOf(it)
-                }
-                ?: -1
+            ?.firstOrNull {
+                it.parameterName == parameterName
+            }?.let {
+                parameterList.indexOf(it)
+            }
+            ?: -1
         val simpleName = variableTypeElement?.let { type -> (type.typeLiteral ?: type.bracketString)?.text }
         val simpleType = when {
             simpleName?.toLowerCase() == "int" -> CaosExpressionValueType.INT
@@ -256,11 +262,11 @@ object CaosDefPsiImplUtil {
             else -> CaosExpressionValueType.ANY
         }
         return CaosDefParameterStruct(
-                parameterNumber = parameterNumber,
-                name = parameterName,
-                type = parameterTypeName ?: AnyTypeType,
-                simpleType = simpleType,
-                comment = comment
+            parameterNumber = parameterNumber,
+            name = parameterName,
+            type = parameterTypeName ?: AnyTypeType,
+            simpleType = simpleType,
+            comment = comment
         )
     }
 
@@ -289,21 +295,21 @@ object CaosDefPsiImplUtil {
         if (stub?.returnType != null)
             return stub.returnType
         return element.docCommentReturnList
-                .mapNotNull { it.toStruct() }
-                .firstOrNull {
-                    it.type.type != AnyType
-                }
+            .mapNotNull { it.toStruct() }
+            .firstOrNull {
+                it.type.type != AnyType
+            }
     }
 
     @JvmStatic
     fun toStruct(returnElement: CaosDefDocCommentReturn): CaosDefReturnTypeStruct? {
         val type = returnElement.docCommentVariableType?.toStruct() ?: CaosDefVariableTypeStruct(
-                type = AnyType
+            type = AnyType
         )
         val comment = returnElement.docCommentParamText?.text
         return CaosDefReturnTypeStruct(
-                type = type,
-                comment = comment
+            type = type,
+            comment = comment
         )
     }
 
@@ -315,11 +321,11 @@ object CaosDefPsiImplUtil {
             return commentReturnItem
         }
         val typeString = commandDefElement.returnType?.text
-                ?: return null
+            ?: return null
 
         return CaosDefReturnTypeStruct(
-                type = CaosDefVariableTypeStruct(type = typeString),
-                comment = null
+            type = CaosDefVariableTypeStruct(type = typeString),
+            comment = null
         )
     }
 
@@ -329,15 +335,15 @@ object CaosDefPsiImplUtil {
             return it
         }
         val returnTypeText = commandDefElement.stub?.returnType?.type?.type
-                ?: commandDefElement.returnType?.variableType?.let { it.typeLiteral ?: it.bracketString }?.text
-                ?: return CaosExpressionValueType.UNKNOWN
+            ?: commandDefElement.returnType?.variableType?.let { it.typeLiteral ?: it.bracketString }?.text
+            ?: return CaosExpressionValueType.UNKNOWN
         return CaosExpressionValueType.fromSimpleName(returnTypeText)
     }
 
     @JvmStatic
     fun toStruct(element: CaosDefDocCommentVariableType): CaosDefVariableTypeStruct? {
         val type = element.typeLiteral?.text
-                ?: return null
+            ?: return null
         val typeDef = element.valuesListName?.text?.substring(1)
         val typeNote = element.typeNoteStatement?.typeNote?.text?.substring(1)
         var intRange: Pair<Int, Int>? = null
@@ -355,12 +361,12 @@ object CaosDefPsiImplUtil {
         }
         val fileTypes = element.variableFileType?.text?.substring(6)?.split("/")
         return CaosDefVariableTypeStruct(
-                type = type,
-                noteText = typeNote,
-                intRange = intRange,
-                length = length,
-                valuesList = typeDef,
-                fileTypes = fileTypes
+            type = type,
+            noteText = typeNote,
+            intRange = intRange,
+            length = length,
+            valuesList = typeDef,
+            fileTypes = fileTypes
         )
     }
 
@@ -384,8 +390,8 @@ object CaosDefPsiImplUtil {
 
 
     @JvmStatic
-    fun getTypeName(element: CaosDefValuesListElement): String {
-        return element.stub?.typeName ?: element.valuesListName.text.substring(1)
+    fun getListName(element: CaosDefValuesListElement): String {
+        return element.stub?.listName ?: element.valuesListName.text.substring(1)
     }
 
     @JvmStatic
@@ -429,10 +435,10 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun toStruct(element: CaosDefValuesListValue): CaosDefValuesListValueStruct {
         return CaosDefValuesListValueStruct(
-                key = element.stub?.key ?: element.key,
-                value = element.stub?.value ?: element.value,
-                equality = element.equality,
-                description = element.stub?.description ?: element.description
+            key = element.stub?.key ?: element.key,
+            value = element.stub?.value ?: element.value,
+            equality = element.equality,
+            description = element.stub?.description ?: element.description
         )
     }
 
@@ -469,7 +475,10 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getPresentation(element: CaosDefDocCommentHashtag): ItemPresentation? {
         val parentDeclaration = element.getParentOfType(CaosDefCommandDefElement::class.java)
-        val text = parentDeclaration?.fullCommandHeader ?: UsageViewUtil.createNodeText(element)
+        val text: String = parentDeclaration?.fullCommandHeader
+            ?: element.getParentOfType(CaosDefValuesListElement::class.java)?.listName?.let { "@$it" }
+            ?: UsageViewUtil.createNodeText(element)
+
         return object : ItemPresentation {
             override fun getPresentableText(): String {
                 return text
@@ -481,6 +490,66 @@ object CaosDefPsiImplUtil {
 
             override fun getIcon(b: Boolean): Icon? {
                 return CaosScriptIcons.HASHTAG
+            }
+        }
+    }
+
+    @JvmStatic
+    fun getPresentation(element: CaosDefValuesListName): ItemPresentation {
+        val parentDeclaration = element.getParentOfType(CaosDefCommandDefElement::class.java)
+        val parent = element.getParentOfType(CaosDefParameter::class.java)
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return parent?.text?.trim(' ', '\n', '\r', '*', '\t')
+                    ?: element.getParentOfType(CaosDefValuesListElement::class.java)
+                        ?.listName
+                    ?: element.text
+            }
+
+            override fun getLocationString(): String {
+                return parentDeclaration?.let { command ->
+                    command.commandName.toUpperCase() + " " + command.returnTypeString.let { returnType ->
+                        if (returnType.startsWith('['))
+                            returnType
+                        else
+                            "($returnType)"
+                    } + (if (command.parameterStructs.size > 0) "..." else "")
+                }
+                    ?: element.getParentOfType(CaosDefValuesListElement::class.java)?.listName?.let { "@$it" }
+                    //?: element.containingFile?.name
+                    ?: "..."
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return CaosScriptIcons.VALUES_LIST
+            }
+        }
+    }
+
+
+    @JvmStatic
+    fun getPresentation(element:CaosDefDocCommentParam) : ItemPresentation {
+        val parentDeclaration = element.getParentOfType(CaosDefCommandDefElement::class.java)
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return element.text.trim(' ', '\n', '\r', '*', '\t')
+            }
+
+            override fun getLocationString(): String {
+                return parentDeclaration?.let { command ->
+                    command.commandName.toUpperCase() + " " + command.returnTypeString.let { returnType ->
+                        if (returnType.startsWith('['))
+                            returnType
+                        else
+                            "($returnType)"
+                    } + (if (command.parameterStructs.size > 0) "..." else "")
+                }
+                 ?: element.containingFile?.name
+                 ?: "..."
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return CaosScriptIcons.CAOS_DEF_FILE_ICON
             }
         }
     }
@@ -514,7 +583,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun setName(variableName: CaosDefVariableName, newNameString: String): PsiElement {
         val newNameElement = CaosDefPsiElementFactory
-                .getVariableNameElement(variableName.project, newNameString)
+            .getVariableNameElement(variableName.project, newNameString)
         return variableName.replace(newNameElement)
     }
 
@@ -526,7 +595,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun setName(variableLink: CaosDefVariableLink, newNameString: String): PsiElement {
         val newNameElement = CaosDefPsiElementFactory
-                .getVariableLinkElement(variableLink.project, newNameString)
+            .getVariableLinkElement(variableLink.project, newNameString)
         return variableLink.replace(newNameElement)
     }
 
@@ -538,23 +607,23 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun setName(hashtag: CaosDefDocCommentHashtag, newNameString: String): PsiElement {
         val newNameElement = CaosDefPsiElementFactory
-                .createHashTag(hashtag.project, newNameString)
-                ?: return hashtag
+            .createHashTag(hashtag.project, newNameString)
+            ?: return hashtag
         return hashtag.replace(newNameElement)
     }
 
     @JvmStatic
-    fun setName(element:CaosDefValuesListValueKey, newNameString:String) : PsiElement {
+    fun setName(element: CaosDefValuesListValueKey, newNameString: String): PsiElement {
         if (newNameString.isEmpty())
             return element
         val newNameElement = CaosDefPsiElementFactory
-                .createNewValuesListValueKey(element.project, newNameString)
-                ?: return element
+            .createNewValuesListValueKey(element.project, newNameString)
+            ?: return element
         return element.replace(newNameElement)
     }
 
     @JvmStatic
-    fun getName(element:CaosDefValuesListValueKey) : String {
+    fun getName(element: CaosDefValuesListValueKey): String {
         return element.text.trim()
     }
 
@@ -567,7 +636,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun setName(element: CaosDefCommandWord, newNameString: String): PsiElement {
         val newNameElement = CaosDefPsiElementFactory
-                .getCommandWordElement(element.project, newNameString)
+            .getCommandWordElement(element.project, newNameString)
         return element.replace(newNameElement)
     }
 
@@ -579,31 +648,29 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun setName(element: CaosDefValuesListName, newNameString: String): PsiElement {
         val newNameElement = CaosDefPsiElementFactory
-                .getValuesListName(element.project, newNameString)
+            .getValuesListName(element.project, newNameString)
         return element.replace(newNameElement)
     }
 
     @JvmStatic
-    fun getPresentationText(element:CaosDefValuesListValueKey) : String {
+    fun getPresentationText(element: CaosDefValuesListValueKey): String {
         return (element.parent as? CaosDefValuesListValue)?.let {
             getPresentationText(it)
         } ?: "Value ${element.text}"
     }
 
     @JvmStatic
-    fun getPresentationText(element:CaosDefValuesListValue) : String {
-        val valueListValueName
-                = element.getParentOfType(CaosDefValuesListElement::class.java)
-                ?.valuesListName
-                ?.let {
-                    " : @$it"
-                }
-                ?: ""
+    fun getPresentationText(element: CaosDefValuesListValue): String {
+        val valueListValueName = element.getParentOfType(CaosDefValuesListElement::class.java)
+            ?.valuesListName
+            ?.let {
+                " : @$it"
+            }
+            ?: ""
         val key = element.stub?.key ?: element.valuesListValueKey.text
         val name = element.stub?.value ?: element.valuesListValueName?.text ?: return key
         return "$key = $name$valueListValueName)"
     }
-
 
 
     @JvmStatic
@@ -612,7 +679,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(element:CaosDefValuesListValueKey) : CaosDefValuesListValueKeyReference {
+    fun getReference(element: CaosDefValuesListValueKey): CaosDefValuesListValueKeyReference {
         return CaosDefValuesListValueKeyReference(element)
     }
 
@@ -624,7 +691,7 @@ object CaosDefPsiImplUtil {
     @JvmStatic
     fun getIndex(element: CaosDefCommandWord): Int {
         val parent = element.parent as? CaosDefCommand
-                ?: return 0
+            ?: return 0
         val index = parent.commandWordList.indexOf(element)
         return if (index >= 0)
             index
@@ -707,7 +774,7 @@ object CaosDefPsiImplUtil {
 
             override fun getLocationString(): String {
                 val location = (struct.description
-                        ?: "") + element.getParentOfType(CaosDefValuesListElement::class.java)?.typeName?.let {
+                    ?: "") + element.getParentOfType(CaosDefValuesListElement::class.java)?.listName?.let {
                     " @ $it"
                 }
                 return location.trim()
@@ -723,10 +790,10 @@ object CaosDefPsiImplUtil {
     fun isEquivalentTo(element: CaosDefCommandWord, another: PsiElement): Boolean {
         return element.text.equalsIgnoreCase(another.text) ||
                 (another as? CaosScriptVarToken)
-                        ?.varGroup
-                        ?.value
-                        ?.let { element.text.toUpperCase().equalsIgnoreCase(it) }
-                        .orFalse()
+                    ?.varGroup
+                    ?.value
+                    ?.let { element.text.toUpperCase().equalsIgnoreCase(it) }
+                    .orFalse()
     }
 
     private fun formatParameters(parameters: List<CaosDefParameterStruct>): String {
@@ -752,7 +819,7 @@ object CaosDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun toSimpleName(element:CaosDefVariableType) : CaosExpressionValueType {
+    fun toSimpleName(element: CaosDefVariableType): CaosExpressionValueType {
         val simpleName = (element.typeLiteral ?: element.bracketString)?.text
             ?: return CaosExpressionValueType.UNKNOWN
         return CaosExpressionValueType.fromSimpleName(simpleName)

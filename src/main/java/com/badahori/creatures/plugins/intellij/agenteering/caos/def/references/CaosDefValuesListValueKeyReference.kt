@@ -34,7 +34,7 @@ class CaosDefValuesListValueKeyReference(element:CaosDefValuesListValueKey)
 
         // Get value list value parent value list element
         val valuesList = myElement.getSelfOrParentOfType(CaosDefValuesListElement::class.java)
-                ?.typeName
+                ?.listName
                 ?: return false
 
         // If element is event number, return if this items list if EventNumbers

@@ -5,7 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
@@ -19,6 +18,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import icons.CaosScriptIcons
 
 /**
  * Adds completions for known value lists
@@ -33,7 +33,8 @@ object CaosScriptValuesListValuesCompletionProvider {
     fun addParameterTypeDefValueCompletions(
         resultSet: CompletionResultSet,
         variant: CaosVariant,
-        argument: CaosScriptArgument
+        argument: CaosScriptArgument,
+        isExtendedCompletion:Boolean
     ) {
         val containingCommand = (argument.parent as? CaosScriptCommandElement)
             ?: return
@@ -102,14 +103,22 @@ object CaosScriptValuesListValuesCompletionProvider {
             } else {
                 parameterStruct.valuesList
             })
-                ?: return
+
+
+        // Check if need to add space after insertion
+        val addSpace = numParameters - 1 > index
+
+        if (valuesListGetter == null) {
+            if (isExtendedCompletion) {
+                addAllListValues(resultSet, variant, case, addSpace)
+            }
+            return
+        }
 
         // Retrieve values list by variant
         val valuesList = valuesListGetter[variant]
             ?: return
 
-        // Check if need to add space after insertion
-        val addSpace = numParameters - 1 > index
 
         // If type definition contains values list annotation, add list values
         // If supertype == Files, should complete with known file names for type
@@ -184,10 +193,16 @@ object CaosScriptValuesListValuesCompletionProvider {
         resultSet: CompletionResultSet,
         case: Case,
         equalityExpression: CaosScriptEqualityExpressionPrime,
-        expression: CaosScriptRvalue
+        expression: CaosScriptRvalue,
+        isExtendedCompletion: Boolean
     ) {
         val valuesList = equalityExpression.getValuesList(variant, expression)
-            ?: return
+        if (valuesList == null) {
+            if (isExtendedCompletion) {
+                addAllListValues(resultSet, variant, case, addSpace = expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
+            }
+            return
+        }
         addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
     }
 
@@ -207,6 +222,7 @@ object CaosScriptValuesListValuesCompletionProvider {
             val lookupElement = PrioritizedLookupElement.withPriority(
                 LookupElementBuilder
                     .create("")
+                    .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
                     .withLookupString(builderLabel)
                     .withPresentableText(builderLabel)
                     .withInsertHandler(GenerateBitFlagIntegerAction(list.name, values)), 1000.0
@@ -219,6 +235,7 @@ object CaosScriptValuesListValuesCompletionProvider {
             var lookupElement = LookupElementBuilder
                 .create(value.value)
                 .withLookupString(name)
+                .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
                 .withPresentableText(value.value + "-" + name)
 
             if (value.description.nullIfEmpty() != null)
@@ -235,6 +252,45 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .withInsertHandler(SpaceAfterInsertHandler)
             }
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
+        }
+    }
+
+    /**
+     * Actually add list values from previously determined lists
+     */
+    private fun addAllListValues(resultSet: CompletionResultSet, variant:CaosVariant, case: Case, addSpace: Boolean) {
+        for (list in CaosLibs[variant].valuesLists) {
+            val listName = list.name
+            val values = list.values.let { values ->
+                if (values.all { it.intValue != null })
+                    values.sortedBy { it.intValue }
+                else
+                    values.sortedBy { it.name }
+            }
+            // Actually add lookup element completion values
+            for (value in values) {
+                val name = value.name.matchCase(case)
+                var lookupElement = LookupElementBuilder
+                    .create(value.value)
+                    .withLookupString(name)
+                    .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
+                    .withPresentableText(value.value + "-" + name)
+
+                if (value.description.nullIfEmpty() != null)
+                    lookupElement = lookupElement
+                        .withTailText(" @$listName")
+
+                // If value is disabled, strike it through
+                if (value.name.contains("(Disabled)")) {
+                    lookupElement = lookupElement.withStrikeoutness(true)
+                }
+                // Add space insert handler if needed
+                if (addSpace) {
+                    lookupElement = lookupElement
+                        .withInsertHandler(SpaceAfterInsertHandler)
+                }
+                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, -100.0))
+            }
         }
     }
 }

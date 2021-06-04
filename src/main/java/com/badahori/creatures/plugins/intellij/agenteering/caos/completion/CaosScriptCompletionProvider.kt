@@ -25,6 +25,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
     private val IS_NUMBER = "^[0-9]+".toRegex()
     private val WHITESPACE = "^\\s+$".toRegex()
     private val SKIP_VAR_NAMES = listOf("VARX", "OBVX", "MVXX", "OVXX", "VAXX")
+
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
@@ -37,7 +38,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             ?: return
 
         val text = element.textWithoutCompletionIdString
-        if (text.isNotEmpty() && IS_NUMBER.matches(text)) {
+        if (text.isNotEmpty() && IS_NUMBER.matches(text) && !parameters.isExtendedCompletion) {
             resultSet.stopHere()
             return
         }
@@ -62,9 +63,14 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     )
                 }
             }
-            val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text ?: ""
+            val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text?.trim() ?: ""
             val openChar = if (stringValue.startsWith("\"") || stringValue.startsWith("'")) "" else "\""
-            val closeChar = if (stringValue.endsWith("\"") && stringValue.startsWith("\"") && stringValue.length > 1)
+            val closeChar = if (stringValue.contains('\n') || stringValue.contains('\r'))
+                if (stringValue.startsWith('\''))
+                    "'"
+                else
+                    "\""
+            else if (stringValue.endsWith("\"") && stringValue.startsWith("\"") && stringValue.length > 1)
                 ""
             else if (stringValue.startsWith("'") && stringValue.endsWith("'") && stringValue.length > 1)
                 ""
@@ -95,14 +101,30 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         val case = text.case
+
         // Add equality expression completions for known types
         val argument = element.getSelfOrParentOfType(CaosScriptArgument::class.java)
         (argument as? CaosScriptRvalue)?.let { expression ->
+            val needsEverything = parameters.isExtendedCompletion ||
+                    text.length > 4 ||
+                    (element.parent?.getEnclosingCommandType()?.let { commandType ->
+                        when (commandType) {
+                            COMMAND -> CaosLibs[variant].commands
+                            RVALUE -> CaosLibs[variant].rvalues
+                            LVALUE -> CaosLibs[variant].lvalues
+                            else -> null
+                        }?.let { commands ->
+                            commands.filter { command ->
+                                command.command like text
+                            }.size < 3
+                        }
+                    } ?: false)
             // If has parent RValue, should continue with normal completion
             CaosScriptValuesListValuesCompletionProvider.addParameterTypeDefValueCompletions(
                 resultSet,
                 variant,
-                argument
+                argument,
+                needsEverything
             )
             // Else use special EQ expression completion
             (expression.parent as? CaosScriptEqualityExpressionPrime)?.let { equalityExpression ->
@@ -111,7 +133,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     resultSet,
                     case,
                     equalityExpression,
-                    argument
+                    argument,
+                    needsEverything
                 )
                 addCommandCompletions(resultSet, variant, RVALUE, argument)
                 resultSet.stopHere()

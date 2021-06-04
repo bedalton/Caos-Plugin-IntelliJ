@@ -131,7 +131,7 @@ values_list_element
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
-			getTypeName
+			getListName
 			getValuesListValues
 			getValueForKey
 			getAllKeys
@@ -280,12 +280,14 @@ values_list_name
 	{
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
+			"com.intellij.navigation.NavigationItem"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement"
 		]
 		methods = [
 			getName
 			setName
 			getReference
+			getPresentation
 		]
 	}
 	;
@@ -504,6 +506,7 @@ doc_comment_param
 		pin=1;
 		methods = [
 			getParameterStruct
+			getPresentation
 		]
 	}
 	;
