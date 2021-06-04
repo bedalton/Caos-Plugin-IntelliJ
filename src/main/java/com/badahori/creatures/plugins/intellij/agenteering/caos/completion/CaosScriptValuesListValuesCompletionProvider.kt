@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -275,7 +276,6 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .withLookupString(name)
                     .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
                     .withPresentableText(value.value + "-" + name)
-
                 if (value.description.nullIfEmpty() != null)
                     lookupElement = lookupElement
                         .withTailText(" @$listName")
@@ -289,7 +289,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                     lookupElement = lookupElement
                         .withInsertHandler(SpaceAfterInsertHandler)
                 }
-                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, -100.0))
+                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), -100.0))
             }
         }
     }
