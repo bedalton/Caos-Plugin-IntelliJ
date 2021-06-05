@@ -182,7 +182,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                 lookupElement = lookupElement
                     .withInsertHandler(AddSpaceInsertHandler(true))
             }
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 900.0))
         }
     }
 
@@ -226,7 +226,8 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
                     .withLookupString(builderLabel)
                     .withPresentableText(builderLabel)
-                    .withInsertHandler(GenerateBitFlagIntegerAction(list.name, values)), 1000.0
+                    .withInsertHandler(GenerateBitFlagIntegerAction(list.name, values))
+                    .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 1000.0
             )
             resultSet.addElement(lookupElement)
         }
@@ -252,7 +253,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                 lookupElement = lookupElement
                     .withInsertHandler(SpaceAfterInsertHandler)
             }
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, 900.0))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 900.0))
         }
     }
 
