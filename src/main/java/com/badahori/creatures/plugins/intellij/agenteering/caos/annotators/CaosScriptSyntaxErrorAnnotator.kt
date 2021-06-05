@@ -29,6 +29,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -98,16 +99,24 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 DeleteElementFix("Delete extraneous rvalue", element)
             )
             is CaosScriptSwiftEscapeLiteral -> {
-                val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
-                if (!"^\\*\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex().matches(firstChildText)) {
+                val hasSwiftSwitch = PsiTreeUtil
+                    .collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                    .any {
+                        IS_SWIFT_CHECK.matches(it.text.trim())
+                    }
+                if (!hasSwiftSwitch) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
                 } else if (element.textLength < 4) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), annotationWrapper)
                 }
             }
             is CaosScriptJsElement -> {
-                val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
-                if (!"^\\*\\s*FOR\\s*JS\\s*|^[*]{2}VARIANT[^\n]*".toRegex(RegexOption.IGNORE_CASE).matches(firstChildText)) {
+                val hasJSSwitch = PsiTreeUtil
+                    .collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                    .any {
+                        IS_JS_CHECK.matches(it.text.trim())
+                    }
+                if (!hasJSSwitch) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
                 } else if (element.textLength < 4) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.js-value-empty"), annotationWrapper)
@@ -497,6 +506,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     companion object {
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
         private val COMMA_NEW_LINE_REGEX = "([,]|\\s)+".toRegex()
+        private val IS_SWIFT_CHECK = "^\\*{2}\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex()
+        private val IS_JS_CHECK = "^\\*{2}\\s*FOR\\s*JS\\s*|^[*]{2}VARIANT[^\n]*".toRegex(RegexOption.IGNORE_CASE)
 
         internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
             // Colorize element as token
