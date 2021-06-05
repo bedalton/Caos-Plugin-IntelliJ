@@ -42,7 +42,7 @@
 	name("error_lvalue") = "variable"
 	tokens = [
 		NEWLINE = "regexp:\n";
-		VARIANT_HEADER_LITERAL = "Caos Variant Header"
+		AT_DIRECTIVE_COMMENT_LITERAL = "regexp:\*\s*@[^\n]*";
 		K_ENDM = "regexp:[eE][nN][dD][mM]"
 		K_SUBR = "regexp:[sS][uU][bB][rR]"
 		K_REPS = "regexp:[rR][eE][pP][sS]"
@@ -444,8 +444,6 @@ caos_2_comment_value
 	}
 	;
 
-
-
 cob_comment_directive
 	::= ID*
 	{
@@ -459,6 +457,16 @@ caos_2_comment_error_value
 	::= string_literal
 	|	INT
 	|	ID
+	;
+
+at_directive_comment
+	::= AT_DIRECTIVE_COMMENT_START  comment_body?
+	{
+		methods = [
+			getTag
+			getValue
+		]
+	}
 	;
 
 script_body_element
@@ -562,7 +570,12 @@ private caos_element
 	;
 
 comment_block
-	::= (comment space_like_or_newline)*
+	::=	(comment space_like_or_newline)*
+	;
+
+comment
+	::= line_comment
+	|	at_directive_comment
 	;
 
 event_script
@@ -2633,9 +2646,8 @@ named_game_var_kw
 	}
 	;
 
-comment
+private line_comment
 	::= COMMENT_START comment_body?
-	|	VARIANT_HEADER_LITERAL
 	;
 
 comment_body

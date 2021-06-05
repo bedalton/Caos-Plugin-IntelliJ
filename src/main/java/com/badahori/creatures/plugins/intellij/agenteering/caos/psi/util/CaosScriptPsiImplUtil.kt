@@ -2158,6 +2158,15 @@ object CaosScriptPsiImplUtil {
             .replace("\\\"", "\"")
             .replace("\\'", "'")
     }
+
+    @JvmStatic
+    fun getTag(element:CaosScriptAtDirectiveComment) : String? {
+        return element.text.substring(2).split('=', limit = 2).firstOrNull()?.trim().nullIfEmpty()
+    }
+    @JvmStatic
+    fun getValue(element:CaosScriptAtDirectiveComment) : String? {
+        return element.text.substring(2).split('=', limit = 2).getOrNull(1)?.trim().nullIfEmpty()
+    }
 }
 
 /**
