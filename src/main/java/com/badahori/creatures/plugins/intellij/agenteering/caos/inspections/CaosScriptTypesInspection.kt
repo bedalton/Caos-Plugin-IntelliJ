@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -91,6 +92,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         // If value is a var token, return as it can be anything
         if (argument.varToken != null)
             return
+
         // If named variable, return as it can be anything
         if (argument.namedGameVar != null)
             return
@@ -126,6 +128,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         }
         // Create error message
         val message = CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
+        LOGGER.info("TypesMismatch: Expected: <${expectedTypeSimple.simpleName}>; Actual: <${actualType.simpleName}>; Text: <${(argument as CaosScriptRvalue).text}>; ElementType: ${argument.firstChild.className}")
         // Annotate element with type error
         holder.registerProblem(argument, message)
     }

@@ -389,7 +389,7 @@ object CaosScriptPsiImplUtil {
         val commandType = element.getEnclosingCommandType()
 
         if (commandType == CaosCommandType.UNDEFINED) {
-            LOGGER.severe("Called get command definitions on an object not in command scope. Element: ${element.elementType}(${element.text})")
+            LOGGER.severe("Called get command definitions on an object not in command scope. Element: ${element.tokenType}(${element.text})")
             return null
         }
         val needsFilter = commandType == CaosCommandType.RVALUE
@@ -917,7 +917,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getInferredType(element: CaosScriptRvalue, bias:CaosExpressionValueType): CaosExpressionValueType {
-        return CaosScriptInferenceUtil.getInferredType(element, bias)
+        return CaosScriptInferenceUtil.getInferredType(element, bias, lastChecked = emptyList())
     }
 
     /**
@@ -953,7 +953,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isClosed(stringIn: CaosScriptQuoteStringLiteral): Boolean {
-        return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_DOUBLE_QUOTE
+        return stringIn.lastChild?.tokenType == CaosScriptTypes.CaosScript_DOUBLE_QUOTE
     }
 
     /**
@@ -961,7 +961,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isClosed(stringIn: CaosScriptCharacter): Boolean {
-        return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_SINGLE_QUOTE
+        return stringIn.lastChild?.tokenType == CaosScriptTypes.CaosScript_SINGLE_QUOTE
     }
 
     /**
@@ -969,7 +969,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isClosed(stringIn: CaosScriptC1String): Boolean {
-        return stringIn.lastChild?.elementType == CaosScriptTypes.CaosScript_CLOSE_BRACKET
+        return stringIn.lastChild?.tokenType == CaosScriptTypes.CaosScript_CLOSE_BRACKET
     }
 
 
@@ -1224,7 +1224,7 @@ object CaosScriptPsiImplUtil {
         val resolveVars = !DumbService.isDumb(arguments.first().project)
         return arguments.map { argument ->
             when (argument) {
-                is CaosScriptRvalue -> CaosScriptInferenceUtil.getInferredType(argument, null, resolveVars)
+                is CaosScriptRvalue -> CaosScriptInferenceUtil.getInferredType(argument, null, resolveVars, lastChecked = emptyList())
                 is CaosScriptTokenRvalue -> CaosExpressionValueType.TOKEN
                 is CaosScriptLvalue -> (argument.commandDefinition?.returnType) ?: CaosExpressionValueType.VARIABLE
                 is CaosScriptSubroutineName -> CaosExpressionValueType.TOKEN
@@ -1502,6 +1502,8 @@ object CaosScriptPsiImplUtil {
         return element.rvalue?.stringValue
     }
 
+    val NAMED_GAME_VAR_KEY_TYPE_KEY = Key<CaosExpressionValueType>("creatures.caos.named-game-var.KEY_TYPE")
+
     /**
      * Gets the key or text component for a named game variable
      */
@@ -1509,8 +1511,18 @@ object CaosScriptPsiImplUtil {
     fun getKeyType(element: CaosScriptNamedGameVar): CaosExpressionValueType? {
         if (DumbService.isDumb(element.project))
             return null
-        return element.stub?.keyType ?: element.rvalue?.let { rvalue ->
-            CaosScriptInferenceUtil.getInferredType(rvalue, null,false)
+        (element.stub?.keyType ?: element.getUserData(NAMED_GAME_VAR_KEY_TYPE_KEY))?.let { keyType ->
+            return keyType
+        }
+        // Set named game var type to a temp value of unknown.
+        // Fix it later if found
+        element.putUserData(NAMED_GAME_VAR_KEY_TYPE_KEY, CaosExpressionValueType.UNKNOWN)
+        // Try to find key type
+        return  element.rvalue?.let { rvalue ->
+            // If value type is found, put it into user data and then return it
+            CaosScriptInferenceUtil.getInferredType(rvalue, null,false, lastChecked = emptyList()).apply {
+                element.putUserData(NAMED_GAME_VAR_KEY_TYPE_KEY, this)
+            }
         }
     }
 
@@ -1529,7 +1541,9 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isInt(expression: CaosScriptRvalue): Boolean {
-        return expression.number?.int != null
+        return expression.number?.int != null &&
+                expression.number?.character != null &&
+                expression.number?.binaryLiteral != null
     }
 
     /**
@@ -2130,7 +2144,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getTagName(tag: CaosScriptCaos2Tag): String {
-        return tag.stub?.tagName ?: tag.cobCommentDirective.text.replace(WHITESPACE_OR_DASH, " ")
+        return tag.stub?.tagName ?: tag.cobCommentDirective.let { it.quoteStringLiteral?.stringValue ?: it.c1String?.stringValue ?: it.text}.replace(WHITESPACE_OR_DASH, " ")
     }
 
     /**

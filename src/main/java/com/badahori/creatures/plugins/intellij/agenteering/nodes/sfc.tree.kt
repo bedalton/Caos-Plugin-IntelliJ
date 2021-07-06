@@ -93,5 +93,5 @@ private fun getSfcAsFolder(virtualFile: VirtualFile): CaosVirtualFile {
     return CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory(folderName)
 }
 
-private val SFC_FOLDER_KEY = Key<String?>("caos.sfc.SFC_FILE_AS_DIRECTORY_NAME")
+private val SFC_FOLDER_KEY = Key<String?>("creatures.caos.sfc.SFC_FILE_AS_DIRECTORY_NAME")
 private val decompiledId = AtomicInteger(0)

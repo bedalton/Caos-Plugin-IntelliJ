@@ -24,6 +24,7 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.uiDesigner.core.Spacer;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -384,7 +385,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         if (pose != null && (variant.isNotOld() || pose.getBody() < 8)) {
             try {
                 poseEditor.setPose(pose, true);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 LOGGER.severe("Failed to set pose during init");
                 e.printStackTrace();
             }
@@ -933,11 +934,16 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         label4.setText("Scale");
         Toolbar.add(label4);
         Toolbar.add(scale);
+        final Spacer spacer1 = new Spacer();
+        Toolbar.add(spacer1);
+        poseViewCheckbox = new JCheckBox();
+        poseViewCheckbox.setText("Pose View");
+        Toolbar.add(poseViewCheckbox);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout(0, 0));
         panel1.add(panel2, BorderLayout.CENTER);
-        posePanel.setMinimumSize(new Dimension(250, 0));
-        posePanel.setPreferredSize(new Dimension(200, 0));
+        posePanel.setMinimumSize(new Dimension(300, 0));
+        posePanel.setPreferredSize(new Dimension(300, 0));
         panel2.add(posePanel, BorderLayout.WEST);
         panel2.add(scrollPane, BorderLayout.CENTER);
         ButtonGroup buttonGroup;
@@ -968,8 +974,9 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
 
     private void loadRequestedPose() {
         final Pose requestedPose = file.getUserData(REQUESTED_POSE_KEY);
-        if (requestedPose == null)
+        if (requestedPose == null) {
             return;
+        }
         doNotCommitPose = true;
         if (didLoadOnce) {
             file.putUserData(REQUESTED_POSE_KEY, null);
@@ -1008,12 +1015,12 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
                 throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
             }
         } else {
-            direction = (int)Math.floor((index % 16) / 4.0);
+            direction = (int) Math.floor((index % 16) / 4.0);
         }
         poseEditor.setPose(direction, partChar, index);
-        if (variant.isNotOld())
+        if (variant.isNotOld()) {
             cell = index % 16;
-        else {
+        } else {
             cell = index % 10;
         }
         spriteCellList.reload();

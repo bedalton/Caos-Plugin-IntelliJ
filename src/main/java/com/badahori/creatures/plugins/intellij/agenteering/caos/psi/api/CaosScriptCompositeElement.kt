@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.NavigationItem
 import com.intellij.psi.PsiElement
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import javax.swing.Icon
 
@@ -16,6 +17,8 @@ interface CaosScriptCompositeElement : PsiElement, NavigationItem {
     val locationString:String? get() = null
     @JvmDefault
     val icon:Icon? get() = null
+
+    val tokenType:IElementType
 }
 
 

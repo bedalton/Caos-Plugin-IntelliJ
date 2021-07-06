@@ -221,18 +221,6 @@ val PsiElement.lineNumber:Int? get() {
 
 private val isWhitespaceAtAll:List<IElementType> = listOf(
         TokenType.WHITE_SPACE,
-        CaosScriptTypes.CaosScript_SPACE_LIKE,
-        CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE,
-        CaosScriptTypes.CaosScript_SPACE_,
-        CaosScriptTypes.CaosScript_SPACE,
-        CaosScriptTypes.CaosScript_NEWLINE,
-        CaosScriptTypes.CaosScript_NEW_LINE,
-        CaosScriptTypes.CaosScript_NEW_LINE_LIKE
-)
-
-private val newLineElementType:List<IElementType> = listOf(
-        CaosScriptTypes.CaosScript_NEWLINE,
-        CaosScriptTypes.CaosScript_NEW_LINE
 )
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
@@ -241,11 +229,8 @@ fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
         val elementType = node.elementType
         if (elementType !in isWhitespaceAtAll)
             return false
-        if (elementType in newLineElementType) {
+        if (node.textContains('\n')) {
             return true
-        } else if (elementType == CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE) {
-            if (node.text.contains("\n"))
-                return true
         }
         node = node.previous
     }
@@ -324,15 +309,10 @@ internal fun isWhitespace(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean
     }
     val elementType = out.elementType
     return when {
-        elementType === CaosScriptTypes.CaosScript_NEWLINE -> ignoreLineTerminator
-        elementType == TokenType.WHITE_SPACE -> true
-        elementType in CaosScriptTokenSets.WHITESPACES -> true
-        else -> out.text.let {
-            if (it.contains("\n"))
-                ignoreLineTerminator
-            else
-                it.isBlank()
-        }
+        elementType == TokenType.WHITE_SPACE ->
+            return ignoreLineTerminator || out.textContains('\n')
+        elementType == CaosScriptTypes.CaosScript_COMMA -> ignoreLineTerminator
+        else -> out.text.isBlank()
     }
 }
 

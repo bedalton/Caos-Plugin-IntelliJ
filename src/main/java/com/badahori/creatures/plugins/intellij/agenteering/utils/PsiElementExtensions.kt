@@ -35,7 +35,7 @@ fun PsiElement.isNotEquivalentTo(otherElement: PsiElement): Boolean = this.isEqu
 /**
  * Helper val to get element type for PSIElement
  */
-val PsiElement.elementType: IElementType get() = node?.elementType ?: TokenType.DUMMY_HOLDER
+val PsiElement.tokenType: IElementType get() = node?.elementType ?: TokenType.DUMMY_HOLDER
 
 /**
  * Get this element or one of its parents if of a given type

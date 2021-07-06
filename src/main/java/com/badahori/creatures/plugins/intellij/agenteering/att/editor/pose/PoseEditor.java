@@ -153,23 +153,25 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     @Override
     public Integer getPartPose(char part) {
         final Integer facing = getTrueFacing(pose.getBody());
-        if (facing == null)
+        if (facing == null) {
             return null;
+        }
         return getPartPose(part, facing, getFacingOffset(facing));
     }
 
     /**
      * Gets the pose for a given combobox
      *
-     * @param part body part to get part pose for
+     * @param part            body part to get part pose for
      * @param facingDirection facing direction of creature
      * @param offset          offset into sprite set
      * @return pose index in sprite file
      */
     public Integer getPartPose(final char part, final int facingDirection, final int offset) {
         final JComboBox<String> box = getComboBoxForPart(part);
-        if (box == null)
+        if (box == null) {
             return null;
+        }
         return PoseCalculator.getBodyPartPose(variant, box.getSelectedIndex(), facingDirection, offset, true);
     }
 
@@ -178,21 +180,22 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         final int bodyDirection = this.bodyDirection.getSelectedIndex();
         final int tilt = this.bodyTilt.getSelectedIndex();
         if (variant.isOld()) {
-            if (bodyDirection == 0)
+            if (bodyDirection == 0) {
                 return (3 - tilt);
-            else if (bodyDirection == 1)
+            } else if (bodyDirection == 1) {
                 return 4 + (3 - tilt);
-            else if (bodyDirection == 2)
+            } else if (bodyDirection == 2) {
                 return 8;
-            else
+            } else {
                 return 9;
+            }
         }
         return (bodyDirection * 4) + (3 - tilt);
     }
 
     @Override
     public int getHeadPoseActual() {
-        final String item = (String)headPose.getSelectedItem();
+        final String item = (String) headPose.getSelectedItem();
         final boolean faceIsBack = item != null && item.toLowerCase().startsWith("back");
         final int pose = calculateHeadPose(variant,
                 headPose.getSelectedIndex() == 2 && faceIsBack ? 3 : facing.getSelectedIndex(),
@@ -202,8 +205,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
                 eyesStatus.getSelectedIndex() > 0
         );
         if (variant.isOld() && pose == 8) {
-            if (faceIsBack)
+            if (faceIsBack) {
                 return pose + 1;
+            }
         }
         return pose;
     }
@@ -322,8 +326,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
      */
     private void initComboBoxes() {
         zoom.setSelectedIndex(baseBreed.getAgeGroup() == null || baseBreed.getAgeGroup() >= 2 ? 1 : 2);
-        if (headPose.getItemCount() > 0)
+        if (headPose.getItemCount() > 0) {
             headPose.setSelectedIndex(0);
+        }
         if (variant.isNotOld()) {
             headDirection2.setSelectedIndex(2);
         }
@@ -356,9 +361,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         populate(bodyBreed, files, 'b');
         populate(legsBreed, files, 'c');
         populate(armsBreed, files, 'i');
-        populate(tailBreed, files, true,'m', 'n');
-        populate(earBreed, files,  true,'o', 'p');
-        populate(hairBreed, files,  true,'q');
+        populate(tailBreed, files, true, 'm', 'n');
+        populate(earBreed, files, true, 'o', 'p');
+        populate(hairBreed, files, true, 'q');
         if (earBreed.getItemCount() < 1) {
             setLabelVisibility('o', false);
             freeze(earBreed, true, true);
@@ -472,7 +477,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
                     if (thisPose == null || thisPose < - 1) {
                         hasError = true;
                         try {
-                            highlighter.addHighlight(i+1, i+2, painter);
+                            highlighter.addHighlight(i + 1, i + 2, painter);
                         } catch (Exception exc) {
                             LOGGER.severe("Invalid highlight position " + i);
                         }
@@ -525,8 +530,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
             }
             final int facingDirection = facing.getSelectedIndex();
             final int bodyDirectionIndex = bodyDirection.getSelectedIndex();
-            if (bodyDirectionIndex < 0)
+            if (bodyDirectionIndex < 0) {
                 return;
+            }
             if (bodyDirectionIndex != facingDirection) {
                 if (facingDirection < 2 && bodyDirectionIndex < 2) {
                     bodyDirection.setSelectedIndex(facingDirection);
@@ -596,8 +602,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
 
     private void addBreedListener(final JComboBox<VirtualFile> box, final char... parts) {
         box.addItemListener((e) -> {
-            if (box.getItemCount() < 1)
+            if (box.getItemCount() < 1) {
                 return;
+            }
 
             if (e.getStateChange() != ItemEvent.SELECTED && box.getSelectedIndex() > 0) {
                 return;
@@ -632,8 +639,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         drawImmediately = true;
         spriteSet = null;
         clear();
-        if (variant != null)
+        if (variant != null) {
             files = BodyPartsIndex.variantParts(project, variant);
+        }
         redraw(ALL_PARTS);
     }
 
@@ -674,7 +682,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
      * @return <b>True</b> if redraw was successful; <b>False</b> otherwise
      */
     private boolean redrawActual(char... parts) {
-        if (!panel1.isVisible()) {
+        if (! panel1.isVisible()) {
             wasHidden = true;
             return false;
         }
@@ -685,7 +693,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         drawImmediately = true;
         final CreatureSpriteSet updatedSprites;
         try {
-            if (files == null && project != null && !DumbService.isDumb(project)) {
+            if (files == null && project != null && ! DumbService.isDumb(project)) {
                 files = BodyPartsIndex.variantParts(project, variant);
             } else if (files == null) {
                 wasHidden = true;
@@ -718,7 +726,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     }
 
     private Pose getUpdatedPose(char... parts) {
-        final int lastPoseHash = pose != null ? pose.hashCode() : -1;
+        final int lastPoseHash = pose != null ? pose.hashCode() : - 1;
         final Pose poseTemp = PoseCalculator.getUpdatedPose(
                 variant,
                 pose,
@@ -932,10 +940,12 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         }
         if (menu.getItemCount() > selectedIndex) {
             menu.setSelectedIndex(selectedIndex);
-        } else if (items.length > 0)
+        } else if (items.length > 0) {
             menu.setSelectedIndex(0);
+        }
 
     }
+
     /**
      * Populates a breed combo box with available breed files
      *
@@ -945,7 +955,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
      */
     private void populate(JComboBox<VirtualFile> menu, final List<BodyPartFiles> files, Character... partChars) {
         boolean allowNull = false;
-        for(char part : partChars) {
+        for (char part : partChars) {
             if (part >= 'm') {
                 allowNull = true;
                 break;
@@ -1067,7 +1077,8 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
 
     /**
      * Initializes the head combo box according to variant and direction
-     * @param direction facing direction
+     *
+     * @param direction    facing direction
      * @param oldDirection the last direction that was being faced
      */
     public void initHeadComboBox(final int direction, final int oldDirection) {
@@ -1108,14 +1119,15 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (setFacing) {
             setFacing(facing);
         }
-        for(char part : ALL_PARTS) {
+        for (char part : ALL_PARTS) {
             if (part == 'a') {
                 setHeadPose(facing, pose.getHead());
                 continue;
             }
             final Integer partPose = pose.get(part);
-            if (partPose == null)
+            if (partPose == null) {
                 continue;
+            }
             setPose(part, partPose);
         }
         drawImmediately = true;
@@ -1129,6 +1141,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
     /**
      * Get the actual direction that is faced based on other drop downs
      * Direction is determined by a 3 direction combo box, but there are 4 directions
+     *
      * @param bodyPose pose of the body
      * @return true facing direction 0..4 from the pose 0..3
      */
@@ -1161,6 +1174,7 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
 
     /**
      * Gets Sprite offset for this facing direction
+     *
      * @param facing direction
      * @return sprite offset to first pose of direction
      */
@@ -1189,8 +1203,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         if (headPoseData == null) {
             return;
         }
-        if (pose < 0)
+        if (pose < 0) {
             return;
+        }
         headPose.setSelectedIndex(headPoseData.getDirection());
         if (headPoseData.getTilt() != null) {
             if (headPoseData.getTilt() >= 4) {
@@ -1229,8 +1244,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
             return;
         }
 
-        if (pose < 0)
+        if (pose < 0) {
             return;
+        }
         if (charPart == 'a') {
             setHeadPose(facing.getSelectedIndex(), pose);
             return;
@@ -1243,17 +1259,18 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
                 }
                 if (pose < 4) {
                     bodyDirection.setSelectedIndex(0);
-                } else if (pose < 8)
+                } else if (pose < 8) {
                     bodyDirection.setSelectedIndex(1);
-                else if (pose == 8)
+                } else if (pose == 8) {
                     bodyDirection.setSelectedIndex(2);
-                else
+                } else {
                     bodyDirection.setSelectedIndex(3);
+                }
             } else if (pose < 0 || pose > 15) {
                 LOGGER.severe("Cannot set body pose for " + variant + " to ");
                 return;
             } else {
-                bodyDirection.setSelectedIndex((int)Math.floor(pose / 4.0));
+                bodyDirection.setSelectedIndex((int) Math.floor(pose / 4.0));
             }
         }
         JComboBox<String> comboBox = getComboBoxForPart(charPart);
@@ -1262,12 +1279,13 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         }
         // If variant is old, any part facing front but face forces all other parts front
         if (variant.isOld()) {
-           if (comboBox.getItemCount() == 1) {
+            if (comboBox.getItemCount() == 1) {
                 // Pose is neither front nor back, so fill in directions if not already filled in
                 assign(bodyTilt, directions, 1);
             }
-            if (pose < 8)
+            if (pose < 8) {
                 pose = 3 - (pose % 4);
+            }
         } else {
             pose = 3 - (pose % 4);
         }
@@ -1278,10 +1296,9 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         }
 
 
-
         // Select the pose in the dropdown box
         if (pose >= comboBox.getItemCount()) {
-            LOGGER.severe("Part " + charPart + " pose '"+pose+"' is greater than options ("+comboBox.getItemCount()+")");
+            LOGGER.severe("Part " + charPart + " pose '" + pose + "' is greater than options (" + comboBox.getItemCount() + ")");
             pose = 0;
         }
         comboBox.setSelectedIndex(pose);
@@ -1302,28 +1319,30 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         createUIComponents();
         panel1 = new JPanel();
         panel1.setLayout(new BorderLayout(0, 0));
-        panel1.setPreferredSize(new Dimension(250, 600));
-        imageHolder.setMinimumSize(new Dimension(250, 250));
-        imageHolder.setPreferredSize(new Dimension(250, 250));
-        panel1.add(imageHolder, BorderLayout.NORTH);
-        final JScrollPane scrollPane1 = new JScrollPane();
-        panel1.add(scrollPane1, BorderLayout.CENTER);
+        panel1.setMinimumSize(new Dimension(320, 269));
+        panel1.setPreferredSize(new Dimension(320, 600));
+        partsPanel = new JScrollPane();
+        partsPanel.setMinimumSize(new Dimension(260, 19));
+        panel1.add(partsPanel, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridBagLayout());
-        scrollPane1.setViewportView(panel2);
+        panel2.setMinimumSize(new Dimension(260, 650));
+        panel2.setPreferredSize(new Dimension(260, 650));
+        partsPanel.setViewportView(panel2);
         final JPanel spacer1 = new JPanel();
         GridBagConstraints gbc;
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 13;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(spacer1, gbc);
         headBreed = new JComboBox();
-        headBreed.setPreferredSize(new Dimension(76, 25));
+        headBreed.setMinimumSize(new Dimension(100, 25));
+        headBreed.setPreferredSize(new Dimension(100, 25));
         headBreed.setToolTipText("Head Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 2;
+        gbc.gridy = 7;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(headBreed, gbc);
@@ -1331,26 +1350,28 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         label1.setText("Right Arm");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 8;
+        gbc.gridy = 17;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label1, gbc);
         leftUpperArmPose = new JComboBox();
+        leftUpperArmPose.setMinimumSize(new Dimension(84, 25));
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         leftUpperArmPose.setModel(defaultComboBoxModel1);
-        leftUpperArmPose.setPreferredSize(new Dimension(76, 25));
+        leftUpperArmPose.setPreferredSize(new Dimension(50, 25));
         leftUpperArmPose.setToolTipText("Left upper arm pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 9;
+        gbc.gridy = 18;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(leftUpperArmPose, gbc);
         rightUpperArmPose = new JComboBox();
+        rightUpperArmPose.setMinimumSize(new Dimension(84, 25));
         rightUpperArmPose.setPreferredSize(new Dimension(76, 25));
         rightUpperArmPose.setToolTipText("Right upper arm pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 9;
+        gbc.gridy = 18;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(rightUpperArmPose, gbc);
@@ -1358,24 +1379,26 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         label2.setText("Left Arm");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 8;
+        gbc.gridy = 17;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label2, gbc);
         leftForearmPose = new JComboBox();
+        leftForearmPose.setMinimumSize(new Dimension(84, 25));
         leftForearmPose.setPreferredSize(new Dimension(76, 25));
         leftForearmPose.setToolTipText("Left forearm and hand pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 10;
+        gbc.gridy = 19;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(leftForearmPose, gbc);
         rightForearmPose = new JComboBox();
+        rightForearmPose.setMinimumSize(new Dimension(84, 25));
         rightForearmPose.setPreferredSize(new Dimension(76, 25));
         rightForearmPose.setToolTipText("Right forearm and hand pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 10;
+        gbc.gridy = 19;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(rightForearmPose, gbc);
@@ -1383,18 +1406,18 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         label3.setText("Legs");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 12;
+        gbc.gridy = 21;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label3, gbc);
         legsBreed = new JComboBox();
+        legsBreed.setMinimumSize(new Dimension(84, 25));
         final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
-        defaultComboBoxModel2.addElement("H");
         legsBreed.setModel(defaultComboBoxModel2);
         legsBreed.setPreferredSize(new Dimension(76, 25));
         legsBreed.setToolTipText("Legs Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 12;
+        gbc.gridy = 21;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(legsBreed, gbc);
@@ -1404,54 +1427,59 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         leftThighPose.setToolTipText("Left thigh pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 14;
+        gbc.gridy = 23;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(leftThighPose, gbc);
         leftShinPose = new JComboBox();
+        leftShinPose.setMinimumSize(new Dimension(84, 25));
         leftShinPose.setPreferredSize(new Dimension(76, 25));
         leftShinPose.setToolTipText("left shin pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 15;
+        gbc.gridy = 24;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(leftShinPose, gbc);
         leftFootPose = new JComboBox();
+        leftFootPose.setMinimumSize(new Dimension(84, 25));
         final DefaultComboBoxModel defaultComboBoxModel3 = new DefaultComboBoxModel();
         leftFootPose.setModel(defaultComboBoxModel3);
         leftFootPose.setPreferredSize(new Dimension(76, 25));
         leftFootPose.setToolTipText("left foot pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 16;
+        gbc.gridy = 25;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(leftFootPose, gbc);
         rightThighPose = new JComboBox();
+        rightThighPose.setMinimumSize(new Dimension(84, 25));
         rightThighPose.setPreferredSize(new Dimension(76, 25));
         rightThighPose.setToolTipText("Right thigh pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 14;
+        gbc.gridy = 23;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(rightThighPose, gbc);
         rightShinPose = new JComboBox();
+        rightShinPose.setMinimumSize(new Dimension(84, 25));
         rightShinPose.setPreferredSize(new Dimension(76, 25));
         rightShinPose.setToolTipText("Right shin pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 15;
+        gbc.gridy = 24;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(rightShinPose, gbc);
         rightFootPose = new JComboBox();
+        rightFootPose.setMinimumSize(new Dimension(84, 25));
         rightFootPose.setPreferredSize(new Dimension(76, 25));
         rightFootPose.setToolTipText("Right foot pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 16;
+        gbc.gridy = 25;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(rightFootPose, gbc);
@@ -1459,29 +1487,30 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         label4.setText("Left Leg");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 13;
+        gbc.gridy = 22;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label4, gbc);
         final JLabel label5 = new JLabel();
         label5.setText("Head");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 1;
+        gbc.gridy = 6;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label5, gbc);
         final JLabel label6 = new JLabel();
         label6.setText("Body");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 1;
+        gbc.gridy = 6;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label6, gbc);
         headPose = new JComboBox();
+        headPose.setMinimumSize(new Dimension(84, 25));
         final DefaultComboBoxModel defaultComboBoxModel4 = new DefaultComboBoxModel();
-        defaultComboBoxModel4.addElement("Far Down");
-        defaultComboBoxModel4.addElement("Down");
-        defaultComboBoxModel4.addElement("Straight");
+        defaultComboBoxModel4.addElement("Far Up");
         defaultComboBoxModel4.addElement("Up");
+        defaultComboBoxModel4.addElement("Straight");
+        defaultComboBoxModel4.addElement("Down");
         defaultComboBoxModel4.addElement("Forward");
         defaultComboBoxModel4.addElement("Back");
         headPose.setModel(defaultComboBoxModel4);
@@ -1489,30 +1518,22 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         headPose.setToolTipText("Head Pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 3;
+        gbc.gridy = 8;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(headPose, gbc);
         bodyBreed = new JComboBox();
-        bodyBreed.setPreferredSize(new Dimension(76, 25));
+        bodyBreed.setMinimumSize(new Dimension(80, 25));
+        final DefaultComboBoxModel defaultComboBoxModel5 = new DefaultComboBoxModel();
+        bodyBreed.setModel(defaultComboBoxModel5);
+        bodyBreed.setPreferredSize(new Dimension(100, 25));
         bodyBreed.setToolTipText("Body Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 2;
+        gbc.gridy = 7;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(bodyBreed, gbc);
-        bodyTilt = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel5 = new DefaultComboBoxModel();
-        bodyTilt.setModel(defaultComboBoxModel5);
-        bodyTilt.setPreferredSize(new Dimension(76, 25));
-        bodyTilt.setToolTipText("Body Pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(bodyTilt, gbc);
         earBreed = new JComboBox();
         earBreed.setMinimumSize(new Dimension(81, 25));
         final DefaultComboBoxModel defaultComboBoxModel6 = new DefaultComboBoxModel();
@@ -1521,27 +1542,29 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         earBreed.setToolTipText("Hair Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 4;
+        gbc.gridy = 13;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(earBreed, gbc);
         hairBreed = new JComboBox();
+        hairBreed.setMinimumSize(new Dimension(84, 25));
         hairBreed.setPreferredSize(new Dimension(76, 25));
         hairBreed.setToolTipText("Ear Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 5;
+        gbc.gridy = 14;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(hairBreed, gbc);
         armsBreed = new JComboBox();
+        armsBreed.setMinimumSize(new Dimension(84, 25));
         final DefaultComboBoxModel defaultComboBoxModel7 = new DefaultComboBoxModel();
         armsBreed.setModel(defaultComboBoxModel7);
         armsBreed.setPreferredSize(new Dimension(76, 25));
         armsBreed.setToolTipText("Arms Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 7;
+        gbc.gridy = 16;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(armsBreed, gbc);
@@ -1549,153 +1572,160 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         label7.setText("Arms");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 16;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label7, gbc);
-        final JLabel label8 = new JLabel();
-        label8.setText("Tail");
+        tailLabel = new JLabel();
+        tailLabel.setText("Tail");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 18;
+        gbc.gridy = 27;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label8, gbc);
+        panel2.add(tailLabel, gbc);
         tailBreed = new JComboBox();
+        tailBreed.setMinimumSize(new Dimension(84, 25));
         tailBreed.setPreferredSize(new Dimension(76, 25));
+        tailBreed.setToolTipText("Tail Breed");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 18;
+        gbc.gridy = 27;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(tailBreed, gbc);
         tailBasePose = new JComboBox();
+        tailBasePose.setMinimumSize(new Dimension(84, 25));
         tailBasePose.setPreferredSize(new Dimension(76, 25));
         tailBasePose.setToolTipText("Tail base pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 19;
+        gbc.gridy = 28;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(tailBasePose, gbc);
         tailTipPose = new JComboBox();
+        tailTipPose.setMinimumSize(new Dimension(84, 25));
         tailTipPose.setPreferredSize(new Dimension(76, 25));
         tailTipPose.setToolTipText("Tail tip pose");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 20;
+        gbc.gridy = 29;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(tailTipPose, gbc);
         final JPanel spacer2 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 17;
+        gbc.gridy = 26;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel2.add(spacer2, gbc);
         final JPanel spacer3 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 11;
+        gbc.gridy = 20;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel2.add(spacer3, gbc);
         final JPanel spacer4 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 6;
+        gbc.gridy = 15;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel2.add(spacer4, gbc);
-        final JLabel label9 = new JLabel();
-        label9.setText("Right Leg");
+        final JLabel label8 = new JLabel();
+        label8.setText("Right Leg");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 13;
+        gbc.gridy = 22;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label8, gbc);
+        final JLabel label9 = new JLabel();
+        label9.setText("Breed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 7;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label9, gbc);
         final JLabel label10 = new JLabel();
-        label10.setText("Breed");
+        label10.setText("Direction");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 8;
         gbc.anchor = GridBagConstraints.WEST;
         panel2.add(label10, gbc);
-        final JLabel label11 = new JLabel();
-        label11.setText("Pose");
+        earLabel = new JLabel();
+        earLabel.setText("Ears");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 13;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label11, gbc);
-        final JLabel label12 = new JLabel();
-        label12.setText("Ears");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label12, gbc);
-        final JLabel label13 = new JLabel();
-        label13.setText("Hair");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label13, gbc);
-        final JLabel label14 = new JLabel();
-        label14.setText("Up. Arm");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 9;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label14, gbc);
-        final JLabel label15 = new JLabel();
-        label15.setText("Forearm");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 10;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label15, gbc);
-        final JLabel label16 = new JLabel();
-        label16.setText("Thigh");
+        panel2.add(earLabel, gbc);
+        hairLabel = new JLabel();
+        hairLabel.setText("Hair");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 14;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label16, gbc);
-        final JLabel label17 = new JLabel();
-        label17.setText("Shin");
+        panel2.add(hairLabel, gbc);
+        final JLabel label11 = new JLabel();
+        label11.setText("Up. Arm");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 15;
+        gbc.gridy = 18;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label17, gbc);
-        final JLabel label18 = new JLabel();
-        label18.setText("Foot");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 16;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label18, gbc);
-        final JLabel label19 = new JLabel();
-        label19.setText("Base");
+        panel2.add(label11, gbc);
+        final JLabel label12 = new JLabel();
+        label12.setText("Forearm");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 19;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label19, gbc);
-        final JLabel label20 = new JLabel();
-        label20.setText("Tip");
+        panel2.add(label12, gbc);
+        final JLabel label13 = new JLabel();
+        label13.setText("Thigh");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 20;
+        gbc.gridy = 23;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label20, gbc);
-        final JLabel label21 = new JLabel();
-        label21.setText("Facing");
+        panel2.add(label13, gbc);
+        final JLabel label14 = new JLabel();
+        label14.setText("Shin");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 24;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label21, gbc);
+        panel2.add(label14, gbc);
+        final JLabel label15 = new JLabel();
+        label15.setText("Foot");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 25;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label15, gbc);
+        tailBaseLabel = new JLabel();
+        tailBaseLabel.setText("Base");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 28;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(tailBaseLabel, gbc);
+        tailTipLabel = new JLabel();
+        tailTipLabel.setMaximumSize(new Dimension(100, 30));
+        tailTipLabel.setMinimumSize(new Dimension(40, 16));
+        tailTipLabel.setPreferredSize(new Dimension(40, 20));
+        tailTipLabel.setText("Tip");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 29;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(tailTipLabel, gbc);
+        facingLabel = new JLabel();
+        facingLabel.setText("Facing");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(facingLabel, gbc);
         facing = new JComboBox();
-        facing.setMinimumSize(new Dimension(81, 10));
+        facing.setMinimumSize(new Dimension(81, 25));
         final DefaultComboBoxModel defaultComboBoxModel8 = new DefaultComboBoxModel();
         defaultComboBoxModel8.addElement("Left");
         defaultComboBoxModel8.addElement("Right");
@@ -1705,11 +1735,208 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         facing.setPreferredSize(new Dimension(76, 25));
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
-        gbc.gridy = 0;
+        gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel2.add(facing, gbc);
+        final JLabel label16 = new JLabel();
+        label16.setText("Zoom");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label16, gbc);
+        zoom = new JComboBox();
+        zoom.setMinimumSize(new Dimension(84, 45));
+        final DefaultComboBoxModel defaultComboBoxModel9 = new DefaultComboBoxModel();
+        defaultComboBoxModel9.addElement("1x");
+        defaultComboBoxModel9.addElement("2x");
+        defaultComboBoxModel9.addElement("3x");
+        defaultComboBoxModel9.addElement("4x");
+        defaultComboBoxModel9.addElement("5x");
+        zoom.setModel(defaultComboBoxModel9);
+        zoom.setPreferredSize(new Dimension(78, 25));
+        zoom.setToolTipText("Zoom");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(zoom, gbc);
+        focusModeLabel = new JLabel();
+        focusModeLabel.setText("F.Mode");
+        focusModeLabel.setToolTipText("Focus Mode");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(focusModeLabel, gbc);
+        focusMode = new JComboBox();
+        focusMode.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel10 = new DefaultComboBoxModel();
+        defaultComboBoxModel10.addElement("Everything");
+        defaultComboBoxModel10.addElement("Ghost");
+        defaultComboBoxModel10.addElement("Ghost (Solo)");
+        defaultComboBoxModel10.addElement("Solo");
+        defaultComboBoxModel10.addElement("Solo (With Body)");
+        defaultComboBoxModel10.addElement("Solo (Ghost Body)");
+        focusMode.setModel(defaultComboBoxModel10);
+        focusMode.setPreferredSize(new Dimension(114, 25));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(focusMode, gbc);
+        openRelatedLabel = new JLabel();
+        openRelatedLabel.setText("Open");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(openRelatedLabel, gbc);
+        openRelated = new JComboBox();
+        openRelated.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel11 = new DefaultComboBoxModel();
+        openRelated.setModel(defaultComboBoxModel11);
+        openRelated.setPreferredSize(new Dimension(78, 25));
+        openRelated.setToolTipText("Open related file");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(openRelated, gbc);
+        mood = new JComboBox();
+        mood.setMinimumSize(new Dimension(81, 25));
+        mood.setPreferredSize(new Dimension(76, 25));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 10;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(mood, gbc);
+        headDirection2 = new JComboBox();
+        headDirection2.setMinimumSize(new Dimension(81, 25));
+        final DefaultComboBoxModel defaultComboBoxModel12 = new DefaultComboBoxModel();
+        defaultComboBoxModel12.addElement("Far Up");
+        defaultComboBoxModel12.addElement("Up");
+        defaultComboBoxModel12.addElement("Straight");
+        defaultComboBoxModel12.addElement("Down");
+        headDirection2.setModel(defaultComboBoxModel12);
+        headDirection2.setPreferredSize(new Dimension(76, 25));
+        headDirection2.setRequestFocusEnabled(false);
+        headDirection2.setToolTipText("Head Tilt");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 9;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(headDirection2, gbc);
+        final JLabel label17 = new JLabel();
+        label17.setText("Mood");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label17, gbc);
+        tiltLabel = new JLabel();
+        tiltLabel.setText("Tilt");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(tiltLabel, gbc);
+        final JPanel spacer5 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel2.add(spacer5, gbc);
+        Eyes = new JLabel();
+        Eyes.setText("Eyes");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(Eyes, gbc);
+        eyesStatus = new JComboBox();
+        eyesStatus.setMinimumSize(new Dimension(81, 25));
+        final DefaultComboBoxModel defaultComboBoxModel13 = new DefaultComboBoxModel();
+        defaultComboBoxModel13.addElement("Open");
+        defaultComboBoxModel13.addElement("Closed");
+        eyesStatus.setModel(defaultComboBoxModel13);
+        eyesStatus.setPreferredSize(new Dimension(76, 25));
+        eyesStatus.setToolTipText("Eyes Status");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 11;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(eyesStatus, gbc);
+        bodyTilt = new JComboBox();
+        bodyTilt.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel14 = new DefaultComboBoxModel();
+        defaultComboBoxModel14.addElement("Far Up");
+        defaultComboBoxModel14.addElement("Up");
+        defaultComboBoxModel14.addElement("Straight");
+        defaultComboBoxModel14.addElement("Down");
+        bodyTilt.setModel(defaultComboBoxModel14);
+        bodyTilt.setPreferredSize(new Dimension(76, 25));
+        bodyTilt.setToolTipText("Body Pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 9;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(bodyTilt, gbc);
+        bodyDirection = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel15 = new DefaultComboBoxModel();
+        defaultComboBoxModel15.addElement("Left");
+        defaultComboBoxModel15.addElement("Right");
+        defaultComboBoxModel15.addElement("Forward");
+        defaultComboBoxModel15.addElement("Backward");
+        bodyDirection.setModel(defaultComboBoxModel15);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 8;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(bodyDirection, gbc);
+        final JLabel label18 = new JLabel();
+        label18.setText("Pose");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel2.add(label18, gbc);
+        poseStringField = new JFormattedTextField();
+        poseStringField.setMinimumSize(new Dimension(49, 25));
+        poseStringField.setPreferredSize(new Dimension(49, 25));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel2.add(poseStringField, gbc);
+        final JPanel spacer6 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 5;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel2.add(spacer6, gbc);
+        final JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.setMinimumSize(new Dimension(250, 320));
+        scrollPane1.setPreferredSize(new Dimension(300, 320));
+        panel1.add(scrollPane1, BorderLayout.NORTH);
+        imageHolder.setMinimumSize(new Dimension(250, 320));
+        imageHolder.setPreferredSize(new Dimension(250, 320));
+        scrollPane1.setViewportView(imageHolder);
         headBreed.setNextFocusableComponent(headPose);
         leftUpperArmPose.setNextFocusableComponent(leftForearmPose);
         rightUpperArmPose.setNextFocusableComponent(rightForearmPose);
@@ -1721,10 +1948,17 @@ public class PoseEditor implements Disposable, BreedPoseHolder, DumbAware {
         rightShinPose.setNextFocusableComponent(rightFootPose);
         rightFootPose.setNextFocusableComponent(tailBreed);
         bodyBreed.setNextFocusableComponent(bodyTilt);
-        bodyTilt.setNextFocusableComponent(armsBreed);
         armsBreed.setNextFocusableComponent(armsBreed);
+        tailLabel.setLabelFor(tailBreed);
         tailBreed.setNextFocusableComponent(tailBasePose);
         tailTipPose.setNextFocusableComponent(headBreed);
+        tailBaseLabel.setLabelFor(tailBasePose);
+        tailTipLabel.setLabelFor(tailTipPose);
+        focusModeLabel.setLabelFor(focusMode);
+        openRelatedLabel.setLabelFor(openRelated);
+        label17.setLabelFor(mood);
+        tiltLabel.setLabelFor(headDirection2);
+        bodyTilt.setNextFocusableComponent(armsBreed);
     }
 
     /**

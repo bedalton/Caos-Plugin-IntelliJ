@@ -2,11 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.handlers
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
@@ -19,7 +16,6 @@ import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptEnterHandler : EnterHandlerDelegate {
     override fun preprocessEnter(
@@ -48,7 +44,7 @@ class CaosScriptEnterHandler : EnterHandlerDelegate {
         if (caretElement == null) {
             return Continue
         }
-        if (caretElement.elementType in CaosScriptTokenSets.WHITESPACES) {
+        if (caretElement.tokenType in CaosScriptTokenSets.WHITESPACES) {
             caretElement = caretElement.previous
         }
         if (caretElement is CaosScriptCaos2BlockComment || caretElement is CaosScriptCaos2Block) {

@@ -6,12 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
@@ -40,7 +38,7 @@ class CaosScriptBlock internal constructor(
         val blocks: MutableList<Block> = mutableListOf()
         var child: ASTNode? = myNode.firstChildNode
         while (child != null) {
-            if (child.elementType !in CaosScriptTokenSets.WHITESPACES && child.text.isNotBlank()) {
+            if (child.elementType !in CaosScriptTokenSets.WHITESPACES || child.text.isNotBlank()) {
                 val block: Block = CaosScriptBlock(
                     child,
                     NONE_WRAP,
@@ -94,7 +92,7 @@ class CaosScriptBlock internal constructor(
         // meaning the last line would never be indented
         if (psi is CaosScriptDoifStatement)
             return normalIndent
-        if (psi.parent?.elementType in listOf(
+        if (psi.parent?.tokenType in listOf(
                 CaosScriptTypes.CaosScript_DOIF_STATEMENT_STATEMENT,
                 CaosScriptTypes.CaosScript_ELSE_IF_STATEMENT,
                 CaosScriptTypes.CaosScript_ELSE_STATEMENT
@@ -103,7 +101,7 @@ class CaosScriptBlock internal constructor(
             return normalIndent
         if (psi is CaosScriptCodeBlockLine)
             return normalIndent
-        if (psi.elementType in CaosScriptTokenSets.WHITESPACES)
+        if (psi.tokenType in CaosScriptTokenSets.WHITESPACES)
             return normalIndent
         return noneIndent
     }

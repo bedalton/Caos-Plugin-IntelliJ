@@ -9,6 +9,8 @@ import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefStubBasedElement
+import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IElementType
 
 open class CaosDefStubBasedElementImpl<StubT : StubElement<out PsiElement>>: StubBasedPsiElementBase<StubT>, CaosDefStubBasedElement<StubT> {
 
@@ -19,4 +21,7 @@ open class CaosDefStubBasedElementImpl<StubT : StubElement<out PsiElement>>: Stu
     override fun <PsiT: PsiElement> getChildOfType(childType:Class<PsiT>):PsiT? = PsiTreeUtil.getChildOfType(this, childType)
     override fun <PsiT: PsiElement> getChildrenOfType(childType:Class<PsiT>):List<PsiT> = PsiTreeUtil.getChildrenOfTypeAsList(this, childType)
     override fun <PsiT: PsiElement> getParentOfType(parentClass:Class<PsiT>):PsiT? = PsiTreeUtil.getParentOfType(this, parentClass)
+
+    override val tokenType: IElementType
+        get() = node.elementType
 }

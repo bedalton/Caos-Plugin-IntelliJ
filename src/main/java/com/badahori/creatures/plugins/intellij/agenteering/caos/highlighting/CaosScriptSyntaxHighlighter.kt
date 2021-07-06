@@ -27,6 +27,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             in CaosScriptTokenSets.PREFIX_KEYWORDS -> PREFIX_TOKEN
             CaosScriptTypes.CaosScript_SUBROUTINE_NAME -> SUBROUTINE_NAME
             in CaosScriptTokenSets.COMMENTS -> COMMENT
+            CaosScriptTypes.CaosScript_AT_DIRECTIVE_COMMENT -> COMMENT
             in CaosScriptTokenSets.ANIMATION_STRING -> ANIMATION
             in CaosScriptTokenSets.STRING_LIKE -> STRING
             CaosScriptTypes.CaosScript_VA_XX, CaosScriptTypes.CaosScript_VAR_X -> VAR_TOKEN_VA

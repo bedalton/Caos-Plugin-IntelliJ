@@ -92,8 +92,8 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
 
     companion object {
         private const val NAME = "SPREditor"
-        private val CACHE_MD5_KEY = Key<String>("com.bedalton.creatures.sprites.PARSED_IMAGES_MD5")
-        private val CACHE_KEY = Key<List<BufferedImage>>("com.bedalton.creatures.sprites.PARSED_IMAGES")
+        private val CACHE_MD5_KEY = Key<String>("creatures.sprites.PARSED_IMAGES_MD5")
+        private val CACHE_KEY = Key<List<BufferedImage>>("creatures.sprites.PARSED_IMAGES")
 
         @JvmStatic
         fun cache(virtualFile: VirtualFile, images:List<BufferedImage>) {

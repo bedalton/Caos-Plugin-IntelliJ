@@ -5,7 +5,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.lexer.FlexLexer;
 import java.util.List;
 import java.lang.Exception;
-import java.util.ArrayList;
+import java.util.ArrayList;import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*;
@@ -95,12 +95,12 @@ VAxx=[Vv][Aa][0-9][0-9]
 OBVx=[Oo][Bb][Vv][0-9]
 OVxx=[Oo][Vv][0-9][0-9]
 MVxx=[Mm][Vv][0-9][0-9]
-COMMENT_TEXT=[^ \n\t\r\s]+
+COMMENT_TEXT=[^\n\r]+
 FLOAT=[-]?[0-9]*\.[0-9]+
 INT=[-]?[0-9]+
 TEXT=[^\]]+
 ID=[_a-zA-Z][_a-zA-Z0-9]*
-SPACE=[ \t]
+SPACE=[ \t]+
 EQ=[Ee][Qq]
 NE=[Nn][Ee]
 LT=[Ll][Tt]
@@ -132,9 +132,10 @@ SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
 CAOS_2_ID=[^\s\"']+
-COMMENT_AT_DIRECTIVE=\*{2}[^\n]*
+COMMENT_AT_DIRECTIVE=\*{2}((([^\n;]|[;][^;])*;;)|[^\n]*)
 JS_INSIDE_BRACES=[$]?\{[^}]*[}]
 JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
+DDE_PICT=[^\s]{3}
 %state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING IN_JS
 %%
 
@@ -142,7 +143,7 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 	{CAOS_2_COB} 			{ return CaosScript_CAOS_2_COB_HEADER; }
 	{CAOS_2_PRAY} 			{ return CaosScript_CAOS_2_PRAY_HEADER; }
 	\n						{ return CaosScript_NEWLINE; }
-	[\s\t]+					{ return WHITE_SPACE; }
+	[ \t]					{ return WHITE_SPACE; }
     "*#"					{ yybegin(DIRECTIVE_COMMENT); return CaosScript_CAOS_2_COMMENT_START; }
   	{COMMENT_AT_DIRECTIVE}	{ yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
@@ -151,7 +152,7 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 
 <IN_BYTE_STRING> {
 	{INT}				 	{ return CaosScript_INT; }
-	{SPACE}				 	{ return CaosScript_SPACE_; }
+	{SPACE}				 	{ return WHITE_SPACE; }
     "R"					 	{ return CaosScript_ANIM_R; }
     [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
 }
@@ -159,22 +160,21 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 <COMMENT_START> {
 	//{N_CONST}				{ yybegin(IN_CONST); return CaosScript_N_CONST; }
   	//{N_VAR}				{ yybegin(IN_VAR); return CaosScript_N_VAR; }
-    [ \t]					{ return WHITE_SPACE; }
+    //[ \t]					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
 <DIRECTIVE_COMMENT> {
     "="						{ return CaosScript_EQUAL_SIGN; }
 	\"						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
 	\'						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_SINGLE_QUOTE_STRING); return CaosScript_DOUBLE_QUOTE; }
-    " "						{ return WHITE_SPACE; }
-    \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+    [ \t]					{ return WHITE_SPACE; }
+    \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
 	{CAOS_2_ID}				{ return CaosScript_ID; }
   	{INT}					{ return CaosScript_INT; }
     [^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
 }
 <IN_COMMENT> {
-	{COMMENT_TEXT}			{ return CaosScript_COMMENT_TEXT; }
-    [ \t]					{ return WHITE_SPACE; }
+	{COMMENT_TEXT}			{ return CaosScript_COMMENT_BODY_LITERAL; }
     \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
     [^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
 }
@@ -191,7 +191,7 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 
 <IN_CONST> {
 	{CONST_EQ}			 	{ return CaosScript_EQUAL_SIGN; }
-	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
     {FLOAT}					{ return CaosScript_FLOAT; }
 	{INT}				 	{ return CaosScript_INT; }
 	" "+				 	{ return WHITE_SPACE; }
@@ -200,7 +200,7 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 
 <IN_VAR> {
 	{CONST_EQ}			 	{ return CaosScript_EQUAL_SIGN; }
-	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }
 	{MVxx}				 	{ return CaosScript_MV_XX; }
@@ -211,8 +211,8 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 }
 
 <IN_PICT> {
-	[^\s ,\n][^\s ,\n][^\s ,\n] { yybegin(IN_LINE); return CaosScript_PICT_DIMENSION; }
-	\s+				 	 	{ return CaosScript_SPACE_; }
+	{DDE_PICT}				{ yybegin(IN_LINE); return CaosScript_PICT_DIMENSION; }
+    \s						{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_LINE); yypushback(yylength()); }
 }
 
@@ -257,7 +257,7 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 	{EQ_NEW}			 	{ return CaosScript_EQ_OP_NEW_; }
 	{N_CONST}				{ return CaosScript_N_CONST; }
 	{N_VAR}				 	{ return CaosScript_N_VAR; }
-	{NEWLINE}              	{ yybegin(START_OF_LINE); if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE; }
+	{NEWLINE}              	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE;*/ }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }
 	{MVxx}				 	{ return CaosScript_MV_XX; }
@@ -266,6 +266,7 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
  	[%][01]+				{ return CaosScript_BINARY; }
 	{FLOAT}              	{ return CaosScript_FLOAT; }
 	{INT}                  	{ return CaosScript_INT; }
+	[ \t]+                	{ return WHITE_SPACE; }
 	[Nn][Ee][Ww][:]        	{ return CaosScript_K_NEW_COL; }
 	[Ss][Cc][Ee][Nn]       	{ return CaosScript_K_SCEN; }
 	[Ss][Ii][Mm][Pp]       	{ return CaosScript_K_SIMP; }
@@ -1008,7 +1009,6 @@ JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
   	{ERROR_WORD}			{ return CaosScript_ERROR_WORD; }
 	{WORD}                 	{ return CaosScript_WORD; }
 	{INCOMPLETE_WORD}      	{ return CaosScript_ERROR_WORD; }
-	{SPACE}                	{ return CaosScript_SPACE_; }
     [^]						{ return BAD_CHARACTER; }
 }
 

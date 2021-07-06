@@ -12,10 +12,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
 class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: CobCommand) : IntentionAction,
@@ -33,7 +30,7 @@ class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: Cob
     }
 
     override fun getText(): String =
-        CaosBundle.message("cob.caos2cob.fixes.move-file-to-command", fileName, command.keyString)
+        CaosBundle.message("cob.caos2cob.fixes.move-file-to-command", fileName, command.keyStrings.first())
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val element = pointer.element
@@ -87,7 +84,7 @@ class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: Cob
                 }
             }
             EditorUtil
-                .insertText(document, prefix + command.keyString.matchCase(case, element.variant) + " " + element.text, insertionPoint)
+                .insertText(document, prefix + command.keyStrings.first().matchCase(case, element.variant) + " " + element.text, insertionPoint)
         } else {
             val commandElement = commandPointer.element!!
             val commandRange = commandElement.textRange
@@ -106,7 +103,7 @@ class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: Cob
                 ?.let {
                     SmartPointerManager.createPointer(it)
                 } ?: return
-            val nextPointer = (parentPointer.element?.next as? CaosScriptSpaceLikeOrNewline)?.let {
+            val nextPointer = (parentPointer.element?.next as? PsiWhiteSpace)?.let {
                 SmartPointerManager.createPointer(it)
             }
             document = parentPointer.element?.document

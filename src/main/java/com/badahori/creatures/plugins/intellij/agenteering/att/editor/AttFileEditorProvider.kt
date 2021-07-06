@@ -62,4 +62,4 @@ class AttFileEditorProvider : FileEditorProvider, DumbAware {
     }
 }
 
-private val CACHED_SPRITE_KEY = Key<VirtualFile>("com.badahori.creatures.plugins.intellij.agenteering.att.CACHED_SPRITE")
+private val CACHED_SPRITE_KEY = Key<VirtualFile>("creatures.att.CACHED_SPRITE")

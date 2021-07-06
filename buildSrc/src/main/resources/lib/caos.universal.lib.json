@@ -1,5 +1,5 @@
 {
-  "modDate": 1621617458,
+  "modDate": 1625503002,
   "commands": {
     "722": {
       "id": 722,
@@ -8261,7 +8261,7 @@
       "command": "FROM",
       "parameters": [],
       "description": "If we're processing a message, this is the OWNR who sent the message. NULL if the message was sent from an injected script or an install script. If the message was sent over the network using NET: WRIT, then this contains the user id of the sender, as a string.",
-      "returnTypeId": 6,
+      "returnTypeId": 11,
       "commandGroup": "AgentVars",
       "rvalue": true,
       "lvalue": true,
@@ -21544,7 +21544,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {is} {1} {0:1}::%%",
+      "doifFormat": "{0:0} {1} {0:1}::%%",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -26687,7 +26687,7 @@
       "command": "VELX",
       "parameters": [],
       "description": "Horizontal velocity in pixels per tick - floating point.",
-      "returnTypeId": 6,
+      "returnTypeId": 1,
       "commandGroup": "Motion",
       "rvalue": true,
       "lvalue": true,
@@ -26722,7 +26722,7 @@
       "command": "VELY",
       "parameters": [],
       "description": "Vertical velocity in pixels per tick - floating point.",
-      "returnTypeId": 6,
+      "returnTypeId": 1,
       "commandGroup": "Motion",
       "rvalue": true,
       "lvalue": true,
@@ -29383,7 +29383,7 @@
           "1": 575
         },
         "FROM": {
-          "6": 704
+          "11": 704
         },
         "FTOI": {
           "1": 638
@@ -29939,10 +29939,10 @@
           "6": 663
         },
         "VELX": {
-          "6": 587
+          "1": 587
         },
         "VELY": {
-          "6": 588
+          "1": 588
         },
         "VISI": {
           "1": 383
@@ -31000,7 +31000,7 @@
           "1": 575
         },
         "FROM": {
-          "6": 704
+          "11": 704
         },
         "FTOI": {
           "1": 638
@@ -31627,10 +31627,10 @@
           "2": 849
         },
         "VELX": {
-          "6": 587
+          "1": 587
         },
         "VELY": {
-          "6": 588
+          "1": 588
         },
         "VISI": {
           "1": 383
@@ -32405,7 +32405,7 @@
           "1": 575
         },
         "FROM": {
-          "6": 704
+          "11": 704
         },
         "FTOI": {
           "1": 638
@@ -33065,10 +33065,10 @@
           "2": 849
         },
         "VELX": {
-          "6": 587
+          "1": 587
         },
         "VELY": {
-          "6": 588
+          "1": 588
         },
         "VISI": {
           "1": 383
@@ -33844,7 +33844,7 @@
           "1": 575
         },
         "FROM": {
-          "6": 704
+          "11": 704
         },
         "FTOI": {
           "1": 638
@@ -34474,10 +34474,10 @@
           "2": 849
         },
         "VELX": {
-          "6": 587
+          "1": 587
         },
         "VELY": {
-          "6": 588
+          "1": 588
         },
         "VISI": {
           "1": 383

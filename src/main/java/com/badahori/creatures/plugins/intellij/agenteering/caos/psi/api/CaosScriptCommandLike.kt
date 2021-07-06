@@ -14,3 +14,5 @@ interface CaosScriptCommandLike : CaosScriptCompositeElement {
         else -> this.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
 }
+
+interface CaosScriptCommandCallLike : CaosScriptCompositeElement

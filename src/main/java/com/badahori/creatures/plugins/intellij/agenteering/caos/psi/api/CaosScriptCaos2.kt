@@ -1,17 +1,11 @@
 // This is a generated file. Not intended for manual editing.
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE_OR_DASH
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.VirtualFile
 
 interface CaosScriptCaos2 : CaosScriptCompositeElement
 
@@ -87,15 +81,16 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
         }
     }
 }
-enum class CobCommand(val keyString: String, val cosFiles:Boolean, val variant: CaosVariant? = null) {
-    LINK("Link", true),
-    INSTALL_SCRIPTS("Iscr", true),
-    REMOVAL_SCRIPTS("Rscr", true),
-    ATTACH("Attach", false, variant = C2),
-    INLINE("Inline", false, variant = C2),
-    DEPEND("Depend", false, variant = C2)
+enum class CobCommand(val keyStrings: Array<String>, val cosFiles:Boolean, val variant: CaosVariant? = null) {
+    LINK(arrayOf("Link"), true),
+    COBFILE(arrayOf("Cob-File", "CobFile"), false),
+    INSTALL_SCRIPTS(arrayOf("Iscr", "InstallScript", "Install-Script"), true),
+    REMOVAL_SCRIPTS(arrayOf("Rscr", "Remove Script", "Remover Script", "Removal Script", "Remover"), true),
+    ATTACH(arrayOf("Attach"), false, variant = C2),
+    INLINE(arrayOf("Inline"), false, variant = C2),
+    DEPEND(arrayOf("Depend"), false, variant = C2)
     ;
-    val key = "^$keyString$".toRegex(RegexOption.IGNORE_CASE)
+    val key = "(${keyStrings.joinToString("|") { "(^$it$)" }})".toRegex(RegexOption.IGNORE_CASE)
 
     companion object {
         val C1_COMMANDS: List<CobCommand> by lazy {

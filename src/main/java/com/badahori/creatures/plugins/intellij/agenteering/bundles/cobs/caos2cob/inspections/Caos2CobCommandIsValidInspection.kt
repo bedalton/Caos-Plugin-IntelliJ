@@ -36,7 +36,7 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
 
     companion object {
 
-        val COB_NAME_COMMAND_REGEX = "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
+        val AGENT_NAME_COMMAND_REGEX = "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
 
         /**
          * Validates a COB comment directive, to ensure that it actually exists
@@ -45,7 +45,7 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
             if (!element.containingCaosFile?.isCaos2Cob.orFalse())
                 return
             val tagNameRaw = element.text
-            if (tagNameRaw.matches(COB_NAME_COMMAND_REGEX))
+            if (tagNameRaw.matches(AGENT_NAME_COMMAND_REGEX))
                 return
             val tagName = element.text.replace(WHITESPACE_OR_DASH, " ").nullIfEmpty()
                 ?: return
@@ -63,7 +63,7 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
         private fun getFixesForSimilar(variant:CaosVariant?, element:PsiElement, tagName:String) : List<CaosScriptReplaceElementFix> {
             return CobCommand.getCommands(variant)
                 .map { aTag ->
-                    aTag.keyString.let { key ->
+                    aTag.keyStrings.minBy { it.levenshteinDistance(tagName) }!!.let { key ->
                         Pair(key, key.levenshteinDistance(tagName))
                     }
                 }.filter {

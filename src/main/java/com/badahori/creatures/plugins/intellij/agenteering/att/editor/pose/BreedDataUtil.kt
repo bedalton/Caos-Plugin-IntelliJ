@@ -93,6 +93,7 @@ object BreedDataUtil {
     fun findBreeds(files: List<BodyPartFiles>, baseBreed: BreedPartKey, partChars: Array<Char>): MutableList<VirtualFile> {
         val key: BreedPartKey = baseBreed.copy(
             breed = null,
+            genus = null,
             part = null
         )
         return files.filter { part: BodyPartFiles ->

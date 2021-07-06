@@ -438,7 +438,7 @@ private enum class JectScriptType(val type: String) {
     INSTALL("Install Scripts")
 }
 
-private val JectSettingsKey = Key<JectSettings>("com.badahori.creature.plugins.intellij.injector.JECT_SETTINGS")
+private val JectSettingsKey = Key<JectSettings>("creatures.caos.injector.JECT_SETTINGS")
 
 /**
  * Holds settings for Ject dialog

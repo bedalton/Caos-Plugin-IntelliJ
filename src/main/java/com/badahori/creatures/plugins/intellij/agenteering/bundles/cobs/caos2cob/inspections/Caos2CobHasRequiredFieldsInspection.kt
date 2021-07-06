@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
@@ -48,7 +49,12 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
             }
             val variant = element.cobVariant
             val tagStrings = element.tags.keys
-            val foundTags = tagStrings.mapNotNull { key -> CobTag.fromString(key) }
+            val cobFile = if (element.commands.any { CobCommand.fromString(it.first, variant) == CobCommand.COBFILE })
+                listOf(CobTag.COB_NAME)
+            else
+                emptyList()
+
+            val foundTags = tagStrings.mapNotNull { key -> CobTag.fromString(key) } + cobFile
             val missingTags = mutableListOf<CobTag>()
             for (tag in CobTag.getTags(variant).filter { it.required }) {
                 if (tag !in foundTags)
