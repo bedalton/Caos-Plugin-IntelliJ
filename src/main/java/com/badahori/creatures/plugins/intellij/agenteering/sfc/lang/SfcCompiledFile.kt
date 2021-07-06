@@ -99,7 +99,7 @@ class SfcCompiledFile(provider: FileViewProvider)
     }
 }
 
-private val SFC_JSON_KEY = Key<String>("caos.sfc.decompiled.JSON")
+private val SFC_JSON_KEY = Key<String>("creatures.caos.sfc.decompiled.JSON")
 
 fun generateErrorJson(virtualFile: VirtualFile, errorMessageIn: String?, status: String = "DECOMPILE_FAILED"): String {
     val json = JsonObject()

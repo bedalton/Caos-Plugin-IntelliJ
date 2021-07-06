@@ -28,7 +28,7 @@ object CobVirtualFileUtil {
     /**
      * Key for storing the cob decompile virtual folder path
      */
-    private val VIRTUAL_FILE_PATH_KEY = Key<String>("caos.cob.decompiler.DIRECTORY")
+    private val VIRTUAL_FILE_PATH_KEY = Key<String>("creatures.cob.decompiler.DIRECTORY")
     fun cobVirtualFileDirectory(file:VirtualFile) : CaosVirtualFile {
         return file.getUserData(VIRTUAL_FILE_PATH_KEY)?.let { path ->
             CaosVirtualFileSystem.instance.getDirectory(path)

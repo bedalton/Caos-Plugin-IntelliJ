@@ -37,13 +37,13 @@ internal class PostConnection(urlString:String, variant: CaosVariant) : CaosConn
         }
         connection.doOutput = true
         connection.doInput = true
-        connection.connectTimeout = 4000
+        connection.connectTimeout = 7000
         connection.requestMethod = "POST"
         try {
-            connection.outputStream.let {
-                it.write(caos.toByteArray())
-                it.flush()
-                it.close()
+            connection.outputStream.apply {
+                write(caos.toByteArray())
+                flush()
+                close()
             }
         } catch (e:Exception) {
             return InjectionStatus.BadConnection("Failed to write caos code to stream. Error: ${e.message}")
@@ -67,7 +67,9 @@ internal class PostConnection(urlString:String, variant: CaosVariant) : CaosConn
             val message = try {
                 it.get("response").asString
             } catch (e:Exception) {
-                ""
+                LOGGER.severe("Invalid injection response. Response: <$response> not valid JSON; Error: " + e.message)
+                e.printStackTrace()
+                return InjectionStatus.Bad("Invalid injection response. Response: <$response> not valid JSON")
             }
             when (val status = it.get("status").asString) {
                 "!ERR" -> InjectionStatus.Bad(message)

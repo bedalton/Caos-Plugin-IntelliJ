@@ -48,6 +48,7 @@ object Injector {
         if (!isValidVariant(project, variant))
             return false
         //
+
         val response = injectPrivate(project, variant, rawCaosIn) { connection, formattedCaos ->
             connection.inject(formattedCaos)
         }
@@ -122,7 +123,7 @@ object Injector {
             CaosScriptsQuickCollapseToLine.collapse(variant, caosIn)
         // Comments and additional spaces are allowed in C2e CAOS
         else
-            caosIn
+            caosIn.replace("\r\n".toRegex(), "\r\n")
         if (!connection.isConnected() && !connection.connect(false)) {
             return null
         }

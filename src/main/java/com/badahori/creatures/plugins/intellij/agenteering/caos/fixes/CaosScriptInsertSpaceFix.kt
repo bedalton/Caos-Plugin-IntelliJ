@@ -16,7 +16,7 @@ class CaosScriptInsertSpaceFix(element:PsiElement) : IntentionAction {
 
     override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
 
-    override fun getText(): String = "insert space"
+    override fun getText(): String = "Insert space"
 
     override fun startInWriteAction(): Boolean = true
 

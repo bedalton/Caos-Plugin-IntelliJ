@@ -10,6 +10,8 @@ import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
+import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import javax.swing.Icon
 
@@ -22,6 +24,8 @@ open class CaosScriptCompositeElementImpl(node:ASTNode) : ASTWrapperPsiElement(n
     override val locationString:String? get() = null
     override val icon: Icon? get() = null
     override fun getPresentation():ItemPresentation = CaosPresentation(descriptiveText ?: node.text, locationString, icon)
+    override val tokenType: IElementType
+        get() = node.elementType
 }
 
 val CaosScriptCompositeElement.containingCaosFile : CaosScriptFile? get() = containingFile as? CaosScriptFile

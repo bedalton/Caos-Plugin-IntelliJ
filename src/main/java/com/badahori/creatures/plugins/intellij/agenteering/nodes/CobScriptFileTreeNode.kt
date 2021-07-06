@@ -185,6 +185,9 @@ internal class CobSpriteFileTreeNode(
     override fun getVirtualFile(): VirtualFile = myVirtualFile
 
     private val spritesVirtualFileContainer: CaosVirtualFile by lazy {
+        enclosingCob["${block.fileName}.sprites"]?.let {
+            enclosingCob.delete(it)
+        }
         enclosingCob.createChildDirectory(null, "${block.fileName}.sprites") as CaosVirtualFile
     }
 

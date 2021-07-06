@@ -7,10 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFileFactory
-import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.*
 import com.intellij.psi.impl.BlockSupportImpl
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -78,7 +75,7 @@ object CaosScriptPsiElementFactory {
 
     fun newLine(project: Project): PsiElement {
         val file = createFileFromText(project, "inst\nendm")
-        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first().apply{
+        return PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java).first().apply{
             assert(text == "\n") { "Newline factory method returned non-newline space. Text: '$text'" }
         }
     }
@@ -86,17 +83,17 @@ object CaosScriptPsiElementFactory {
     fun newLines(project: Project, numNewLines: Int): PsiElement {
         val lines = (0 until numNewLines).joinToString("") { "\n" }
         val file = createFileFromText(project, "inst${lines}endm")
-        return PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java).first().apply{
+        return PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java).first().apply{
             assert(text == lines) { "Newline factory method returned non-newline space. Actual: '$text'" }
         }
     }
 
     fun comma(project: Project): PsiElement {
-        return createAndGet(project, "slim,slim", CaosScriptSpaceLikeOrNewline::class.java)!!
+        return createAndGet(project, "slim,slim", PsiWhiteSpace::class.java)!!
     }
 
     fun spaceLikeOrNewlineSpace(project: Project): PsiElement {
-        return createAndGet(project, "slim slim", CaosScriptSpaceLikeOrNewline::class.java)!!
+        return createAndGet(project, "slim slim", PsiWhiteSpace::class.java)!!
     }
 
     fun <PsiT : PsiElement> createAndGet(project: Project, script: String, type: Class<PsiT>, variant: CaosVariant = CaosVariant.C1) : PsiT? {

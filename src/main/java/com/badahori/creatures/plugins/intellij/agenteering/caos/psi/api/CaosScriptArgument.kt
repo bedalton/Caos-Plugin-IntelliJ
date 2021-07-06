@@ -40,7 +40,7 @@ enum class CaosExpressionValueType(val value: Int, val simpleName: String) {
                 "any" -> ANY
                 "agent" -> AGENT
                 "[anim]" -> ANIMATION
-                "[byte_string]", "[byte string]", "byte string", "bytestring" -> BYTE_STRING
+                "[byte_string]", "[byte-string]", "[byte string]", "byte string", "bytestring" -> BYTE_STRING
                 "command" -> COMMAND
                 "condition" -> CONDITION
                 "decimal" -> DECIMAL

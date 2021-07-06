@@ -36,7 +36,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
 
         if (type1 == CaosScriptTypes.CaosScript_COMMENT_START)
             return Spacing.createSpacing(0, Int.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
-        if (commaTypes.intersect(types).isNotEmpty())
+        if (CaosScriptTypes.CaosScript_COMMA in types)
             return noneSpace
         if (myNode.next?.isDirectlyPrecededByNewline().orFalse())
             return Spacing.createSpacing(0, 0, 0, mySettings.KEEP_LINE_BREAKS, keepBlankLines)
@@ -83,7 +83,7 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
     }
 
     private fun spaceAfterIsCommandToken(node2: ASTNode, keepBlankLines:Int): Spacing? {
-        if (node2.elementType in commaTypes) {
+        if (node2.elementType == CaosScriptTypes.CaosScript_COMMA) {
             return Spacing.createSpacing(0, 0, 0, false, keepBlankLines)
         }
         if (node2.psi.let { it is CaosScriptRvalue || it is CaosScriptHasCodeBlock} ) {
@@ -93,16 +93,12 @@ class CaosScriptSpacingProcessor(private val myNode: ASTNode, private val mySett
     }
 
     private fun spaceAfterIsValueOfType(node2: ASTNode, keepBlankLines:Int): Spacing? {
-        if (node2.elementType in commaTypes || node2.isDirectlyPrecededByNewline()) {
+        if (node2.elementType == CaosScriptTypes.CaosScript_COMMA || node2.isDirectlyPrecededByNewline()) {
             return Spacing.createSpacing(0, 0, 0, false, keepBlankLines)
         }
         if (node2.psi is CaosScriptRvalue) {
             return Spacing.createSpacing(1, 1, 0, false, keepBlankLines)
         }
         return null
-    }
-
-    companion object {
-        val commaTypes = listOf(CaosScriptTypes.CaosScript_COMMA, CaosScriptTypes.CaosScript_SYMBOL_COMMA, CaosScriptTypes.CaosScript_SPACE_LIKE_OR_NEWLINE, CaosScriptTypes.CaosScript_SPACE_LIKE)
     }
 }

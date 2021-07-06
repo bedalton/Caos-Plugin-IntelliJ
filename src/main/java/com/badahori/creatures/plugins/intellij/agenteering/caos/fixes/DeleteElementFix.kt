@@ -2,8 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike
-import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
@@ -62,7 +63,7 @@ class DeleteElementFix(private val message:String, elementIn: PsiElement) : Inte
         val originalRange = element.textRange
         val previous = element.previous
             ?: return originalRange
-        return if (previous.elementType != TokenType.WHITE_SPACE && previous is CaosScriptWhiteSpaceLike)
+        return if (previous.tokenType != TokenType.WHITE_SPACE && previous.tokenType != CaosScriptTypes.CaosScript_NEWLINE && previous is CaosScriptWhiteSpaceLike)
             TextRange(previous.startOffset, originalRange.endOffset)
         else
             originalRange

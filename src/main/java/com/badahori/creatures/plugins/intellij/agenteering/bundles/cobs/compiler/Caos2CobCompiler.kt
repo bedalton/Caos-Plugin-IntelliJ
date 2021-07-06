@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.io.write
+import org.jetbrains.rpc.LOG
 import java.nio.file.Paths
 
 object Caos2CobCompiler {
@@ -185,7 +186,15 @@ object Caos2CobCompiler {
             }
         }.toMap().toMutableMap()
         val cobCommands = getCobCommands(variant, block)
-
+        cobCommands.firstOrNull { it.first == CobCommand.COBFILE }
+            ?.second
+            ?.nullIfEmpty()
+            ?.let { cobFileNames ->
+                if (cobTags.containsKey(CobTag.COB_NAME) || cobFileNames.size != 1) {
+                    throw Caos2CobException("Conflicting cob file name tags/commands. Only one tag or command for cob file is allowed")
+                }
+                cobTags[CobTag.COB_NAME] = cobFileNames.firstOrNull()
+        }
         val agentNameFromTags = cobTags[CobTag.AGENT_NAME]
         if (block.agentBlockNames.map { it.first }.size > 1) {
             throw Caos2CobException("CAOS2Cob allows only 1 Agent Name tag. Found ${block.agentBlockNames}")
@@ -277,16 +286,20 @@ object Caos2CobCompiler {
             val attachments: Set<String> =
                 cobCommands.filter { it.first == CobCommand.ATTACH }.flatMap { it.second }.toSet()
 
+            LOGGER.info("Caos2CobCompiler: Attachments: [${attachments.joinToString()}]")
+
             val dependencies: Set<String> = attachments + cobCommands
                 .filter { it.first == CobCommand.DEPEND }
                 .flatMap { it.second }
                 .toSet()
 
+            LOGGER.info("Caos2CobCompiler: Dependencies: [${dependencies.joinToString()}]")
             val inlineFileNames: Set<String> = attachments + cobCommands
                 .filter { it.first == CobCommand.INLINE }
                 .flatMap { it.second }
                 .toSet()
 
+            LOGGER.info("Caos2CobCompiler: Inline Files: [${inlineFileNames.joinToString()}]")
             val inlineFiles = inlineFileNames.map map@{ fileName ->
                 val virtualFile = directory.findChild(fileName)
                     ?: throw Caos2CobException("Failed to locate inline/attach file: '$fileName' for Caos2Cob script: '${mainFile.name}'")

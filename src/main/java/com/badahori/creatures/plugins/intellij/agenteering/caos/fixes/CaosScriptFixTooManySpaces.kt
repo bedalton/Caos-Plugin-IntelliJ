@@ -74,7 +74,7 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
     }
 
     companion object {
-        private val WHITE_SPACE_OR_COMMAS = "[ ,\t]+".toRegex()
+        private val WHITE_SPACE_OR_COMMAS = "[ ,\t\n]+".toRegex()
     }
 
 }

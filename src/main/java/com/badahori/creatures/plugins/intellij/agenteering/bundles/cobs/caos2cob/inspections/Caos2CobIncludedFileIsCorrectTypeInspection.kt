@@ -5,8 +5,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobMoveFileToCommandFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -29,6 +31,8 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
         return object : CaosScriptVisitor() {
             override fun visitCaos2Command(commandElement: CaosScriptCaos2Command) {
                 super.visitCaos2Command(commandElement)
+                if (!commandElement.containingCaosFile?.isCaos2Cob.orFalse())
+                    return
                 val commandType = CobCommand.fromString(commandElement.commandName)
                     ?: return
                 if (commandType !in HAS_FILES)
@@ -71,7 +75,7 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                         }
                         CaosBundle.message(
                             "cob.caos2cob.inspections.included-file-type-valid.expects-caos-file",
-                            commandType.keyString
+                            fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
                         )
                     } else {
                         if (extension == "cos" || extension == "caos") {
@@ -84,7 +88,7 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                         }
                         CaosBundle.message(
                             "cob.caos2cob.inspections.included-file-type-valid.expects-sprite-or-wav",
-                            commandType.keyString
+                            fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
                         )
                     }
                     holder.registerProblem(fileNameElement, error, *fixes.toTypedArray())

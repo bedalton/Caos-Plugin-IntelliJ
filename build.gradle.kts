@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2021.05.29"
+version = "2021.07.02"
 
 
 repositories {
@@ -33,8 +33,10 @@ java {
 kotlin {
 
     tasks.withType<KotlinCompile>().all {
+
         kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs += listOf(
+                "-Xmx4G",
                 "-Xjvm-default=enable",
                 "-Xopt-in=kotlin.RequiresOptIn",
                 "-Xopt-in=kotlin.OptIn",

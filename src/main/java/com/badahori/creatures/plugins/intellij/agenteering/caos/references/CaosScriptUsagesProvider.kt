@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isOrHasParentOfType
 import com.intellij.lang.cacheBuilder.DefaultWordsScanner
@@ -32,10 +32,10 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
         return when {
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
             element.isOrHasParentOfType(CaosScriptVarToken::class.java) -> "var ${element.text}"
-            element.elementType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
-            element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
-            element.elementType == CaosScriptTypes.CaosScript_FLOAT -> "number ${element.text}"
-            element.elementType == CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL -> when {
+            element.tokenType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
+            element.tokenType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
+            element.tokenType == CaosScriptTypes.CaosScript_FLOAT -> "number ${element.text}"
+            element.tokenType == CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL -> when {
                 element.parent?.parent is CaosScriptNamedGameVar -> (element.parent?.parent as CaosScriptNamedGameVar).let {variable ->
                     "variable ${variable.varType.token} \"${variable.key}\""
                 }
@@ -54,7 +54,7 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
         return when {
             element is CaosScriptIsCommandToken || element is CaosScriptIsLvalueKeywordToken || element is CaosScriptIsRvalueKeywordToken -> "Command"
             element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "Subroutine Label"
-            else -> when (element.elementType) {
+            else -> when (element.tokenType) {
                 in CaosScriptTokenSets.STRING_LIKE -> (element.parent?.parent as? CaosScriptNamedGameVar)
                         ?.varType
                         ?.token

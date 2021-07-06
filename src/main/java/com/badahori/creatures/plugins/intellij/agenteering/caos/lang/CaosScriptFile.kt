@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAtDirectiveComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
@@ -144,7 +145,7 @@ val PsiFile.module: Module?
         return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
     }
 
-val RUN_INSPECTIONS_KEY = Key<Boolean?>("com.badahori.creatures.plugins.intellij.agenteering.caos.RUN_INSPECTIONS")
+val RUN_INSPECTIONS_KEY = Key<Boolean?>("creatures.caos.RUN_INSPECTIONS")
 
 var PsiFile.runInspections: Boolean
     get() {
@@ -171,14 +172,12 @@ var VirtualFile.cachedVariant: CaosVariant?
 val maxDumpHeader = "* Scriptorium Dump".length + 4 // Arbitrary spaces pad
 
 val dumpRegex =
-    "\\*\\s*([Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]|[Dd][Uu][Mm][Pp]|[Ss][Cc][Rr][Ii][Pp][Tt][Oo][Rr][Ii][Uu][Mm]\\s*[Dd][Uu][Mm][Pp]).*".toRegex()
+    "\\*+\\s*(Scriptorium|Dump|Scriptorium\\s*Dump).*".toRegex(RegexOption.IGNORE_CASE)
 
 val PsiFile.isDump: Boolean
     get() {
-        return text.trim().let { text ->
-            val commentText: String = text.split("\n", ignoreCase = true, limit = 2)[0]
-            dumpRegex.matches(commentText)
-        }
+        return collectElementsOfType(this, CaosScriptAtDirectiveComment::class.java)
+            .any { dumpRegex.matches(it.text)}
     }
 
 val CaosScriptFile.isCaos2Pray: Boolean

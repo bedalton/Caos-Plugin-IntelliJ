@@ -377,7 +377,10 @@ data class FormatInfo(
 private val SIMPLE_FORMATTER: Formatter = { formatInfo: FormatInfo ->
     val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
     if (eqOpText == IS || eqOpText == IS_NOT) {
-        "$eqOpText ${formatInfo.otherValue}"
+        if (eqOpText == IS && formatInfo.otherValue.toLowerCase().startsWith("can"))
+            formatInfo.otherValue
+        else
+            "$eqOpText ${formatInfo.otherValue}"
     } else {
         DEFAULT_FORMATTER(formatInfo)
     }
@@ -407,7 +410,10 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
     // Return first and second to original order if needed
     val first = if (formatInfo.reversed) otherValue else thisValue
     val second = if (formatInfo.reversed) thisValue else otherValue
-    "$first $eqOpText $second"
+    if (eqOpText == IS && second.toLowerCase().startsWith("can"))
+        "$first $second"
+    else
+        "$first $eqOpText $second"
 }
 
 /**

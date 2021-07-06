@@ -55,7 +55,7 @@ class Caos2CobRequiredFileExistsInspection : LocalInspectionTool() {
                     val error = CaosBundle.message(
                         "cob.caos2cob.inspections.required-file-exists.error",
                         fileName,
-                        commandType.keyString
+                        fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
                     )
                     holder.registerProblem(fileNameElement, error, Caos2CobRemoveFileFix(fileNameElement))
                 }

@@ -8,7 +8,6 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.elementType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.psi.util.PsiTreeUtil
@@ -71,7 +70,7 @@ class CaosDefHighlighterAnnotator : Annotator {
                     // but should not be colored
                     return
                 }
-                when(element.elementType ) {
+                when(element.tokenType ) {
                     CaosDefTypes.CaosDef_COMMA -> addColor(element, annotationHolder, DefaultLanguageHighlighterColors.DOT)
                     CaosDefTypes.CaosDef_OPEN_PAREN -> addColor(element, annotationHolder, DefaultLanguageHighlighterColors.PARENTHESES)
                     CaosDefTypes.CaosDef_CLOSE_PAREN -> addColor(element, annotationHolder, DefaultLanguageHighlighterColors.PARENTHESES)

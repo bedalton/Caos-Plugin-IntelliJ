@@ -23,7 +23,7 @@ private fun consume(element:PsiElement?) : Boolean {
     }
     if (element == null)
         return false
-    return element.elementType in CaosScriptTokenSets.WHITESPACES || element is CaosScriptWhiteSpaceLike
+    return element.tokenType in CaosScriptTokenSets.WHITESPACES || element is CaosScriptWhiteSpaceLike
 }
 /**
  * Class for folding code blocks in a CaosScriptFile
@@ -89,7 +89,7 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
         while (previous != null) {
             ProgressIndicatorProvider.checkCanceled()
             val temp = previous.previous ?: break
-            if (temp.elementType in CaosScriptTokenSets.WHITESPACES || temp is CaosScriptWhiteSpaceLike)
+            if (temp.tokenType in CaosScriptTokenSets.WHITESPACES || temp is CaosScriptWhiteSpaceLike)
                 previous = temp
             else
                 break
@@ -112,12 +112,12 @@ class CaosScriptBlockFoldingBuilder : FoldingBuilderEx() {
         while (next != null) {
             ProgressIndicatorProvider.checkCanceled()
             val temp = next.next ?: break
-            if (temp.elementType in CaosScriptTokenSets.WHITESPACES || temp is CaosScriptWhiteSpaceLike)
+            if (temp.tokenType in CaosScriptTokenSets.WHITESPACES || temp is CaosScriptWhiteSpaceLike)
                 next = temp
             else
                 break
         }
-        return if (next != null && (next.elementType in CaosScriptTokenSets.WHITESPACES || next is CaosScriptWhiteSpaceLike))
+        return if (next != null && (next.tokenType in CaosScriptTokenSets.WHITESPACES || next is CaosScriptWhiteSpaceLike))
             next.endOffset
         else
             codeBlock.endOffset

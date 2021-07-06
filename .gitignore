@@ -99,3 +99,4 @@ gradle-app.setting
 .idea/libraries-with-intellij-classes.xml
 
 /working/*
+/src/main/gen

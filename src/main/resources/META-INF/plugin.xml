@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.05.29</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.07.02</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -35,6 +35,24 @@
 
   <change-notes><![CDATA[
     <ul>
+      <li>
+        <b>Versions: 2021.07.02</b>
+        <ul>
+          <li>Fixed CAOS2Cob compilation errors</li>
+        </ul>
+      </li>
+      <li>
+        <b>Versions: 2021.06.22</b>
+        <ul>
+          <li>Added ability to use non-matching genus in ATT editor</li>
+        </ul>
+      </li>
+      <li>
+        <b>Versions: 2021.05.29</b>
+        <ul>
+          <li>Add all named values to autocomplete on double ctrl+space</li>
+        </ul>
+      </li>
       <li>
         <b>Versions: 2021.05.29</b>
         <b>#Fix</b>
@@ -517,6 +535,8 @@
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
     <annotator language="CaosScript"
+               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSpaceAnnotator" />
+    <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptEnumAnnotator"
                order="first"
     />
@@ -779,6 +799,16 @@
                      shortName="Caos2CobTooManyAgentNames"
                      groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneAgentNameInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CAOS2Cob"
+                     enabledByDefault="true"
+                     displayName="Only one cob name"
+                     shortName="Caos2CobTooManyCobNames"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneCobNameInspection"
     />
 
     <!-- Documentation & Hints -->

@@ -2,14 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSpaceLikeOrNewline
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -17,10 +17,7 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -50,7 +47,7 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
      */
     override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
         val file = problemDescriptor.psiElement.containingFile
-                ?: return
+            ?: return
         invoke(project, file)
     }
 
@@ -63,14 +60,14 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
         if (CommandProcessor.getInstance().isUndoTransparentActionInProgress) {
             try {
                 runnable(project, fileIn)
-            } catch(e:Exception) {
+            } catch (e: Exception) {
                 LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in existing transparent action with error: ${e.message}")
             }
         } else {
             CommandProcessor.getInstance().runUndoTransparentAction {
                 try {
                     runnable(project, fileIn)
-                } catch(e:Exception) {
+                } catch (e: Exception) {
                     LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with error: ${e.message}")
                 }
             }
@@ -80,7 +77,7 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
     /**
      * Method to expand commas and spaces into newlines
      */
-    private fun runnable(project: Project, fileIn: PsiFile?) : Boolean {
+    private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
         val file = fileIn as? CaosScriptFile ?: return false
 
         // Check that there are more than two commands.
@@ -97,29 +94,58 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
         }
 
         // Get all possible newline elements
-        val newLines = PsiTreeUtil.collectElementsOfType(file, CaosScriptSpaceLikeOrNewline::class.java)
-            .map { SmartPointerManager.createPointer(it) }
-        // Replace newline like elements
-        for (newLinePointer in newLines) {
-            val newLine = newLinePointer.element
-                ?: continue
-            replaceIfBlankOrComma(newLine)
+        val newLines = PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
+            .filter { whiteSpace ->
+                if (whiteSpace.textContains('\n'))
+                    return@filter false
+                whiteSpace.next?.let { next ->
+                    next is CaosScriptCodeBlockLine || next is CaosScriptCommandCallLike || next is CaosScriptCodeBlock || next is CaosScriptHasCodeBlock || next is CaosScriptScriptBodyElement
+                } ?: false
+            }
+            .filterNot filter@{ whiteSpace ->
+                var prev = whiteSpace.previous
+                while (prev is PsiWhiteSpace && !prev.textContains('\n'))
+                    prev = prev.previous
+                if (prev != null && prev.textContains('\n'))
+                    return@filter true
+                var next = whiteSpace.next
+                while (next is PsiWhiteSpace && !next.textContains('\n'))
+                    next = next.previous
+                next == null || next.textContains('\n')
+            }
+            .map {
+                SmartPointerManager.createPointer(it)
+            }
+            .forEach { it.element?.replace(CaosScriptPsiElementFactory.newLine(project)) }
+
+
+        fileIn.document?.let { document ->
+            val manager = PsiDocumentManager.getInstance(project)
+            manager.doPostponedOperationsAndUnblockDocument(document)
+            manager.commitDocument(document)
         }
+
+        PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
+            .filter { it.textContains(',') }
+            .map { SmartPointerManager.createPointer(it) }
+            .forEach { it.element?.replace(CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(project)) }
+
         // Get the document again, and this time commit it
         file.document?.let {
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
+        CodeStyleManager.getInstance(project).reformat(file)
         // Return success only if there are enough newlines to cover the elements, ignoring enum blocks
         return true
     }
 
-    private fun shouldNotCollapse(file: PsiFile) : Boolean {
+    private fun shouldNotCollapse(file: PsiFile): Boolean {
         if (PsiTreeUtil.collectElementsOfType(file, CaosScriptCommandCall::class.java).size > 1)
             return false
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptHasCodeBlock::class.java)
-                .nullIfEmpty()
-                ?.none { it !is CaosScriptMacro }
-                .orTrue()
+            .nullIfEmpty()
+            ?.none { it !is CaosScriptMacro }
+            .orTrue()
     }
 
     /**

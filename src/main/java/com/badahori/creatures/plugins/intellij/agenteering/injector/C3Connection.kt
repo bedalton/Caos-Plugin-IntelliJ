@@ -12,13 +12,13 @@ import com.intellij.openapi.project.Project
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.concurrent.TimeUnit
 
 /**
  * Class for managing a connection to C3 for CAOS injection
  */
 internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
+    private var tempFileIndex = 1
     private var ranOnce = false
     private val exeName = "C3CaosInjector.exe"
     private val libName = "c2einjector"
@@ -34,11 +34,45 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
 
     override fun inject(caos:String) : InjectionStatus {
-        return inject("-c", caos)
+        return if (caos.length > 7590) {
+            writeCaosToFileAndInject(caos) {
+                inject("-c", caos)
+            }
+        } else {
+            return inject("-c", caos)
+        }
     }
 
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String) : InjectionStatus {
-        return inject("-s", "$family", "$genus", "$species", "$eventNumber", caos)
+        return if (caos.length > 7590) {
+            writeCaosToFileAndInject(caos) {
+                inject("-s", "$family", "$genus", "$species", "$eventNumber", caos)
+            }
+        } else {
+            inject("-s", "$family", "$genus", "$species", "$eventNumber", caos)
+        }
+    }
+
+    private fun writeCaosToFileAndInject(caos:String, inject:(caos:String) -> InjectionStatus) : InjectionStatus {
+        val tempFile = File.createTempFile("CAOS", "${tempFileIndex++}".padStart(3,'0'))
+        try {
+            tempFile.writeText(caos)
+        } catch (e:Exception) {
+            try {
+                if (tempFile.exists())
+                    tempFile.delete()
+            } catch (e2:Exception) {
+                LOGGER.severe("Failed to delete temp CAOS file")
+                e.printStackTrace()
+            }
+            return InjectionStatus.Bad("Failed to write CAOS to temp file for injecting; CAOS too long for direct injection")
+        }
+        return try {
+            inject(caos)
+        } finally {
+            if (tempFile.exists())
+                tempFile.delete()
+        }
     }
 
     /**
@@ -63,26 +97,30 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
         LOGGER.severe("RAW:\n${argsIn.last()}\nEscaped:\n$escaped")
         // Create cmd args for caos injector exe
-        val args = if  (isWindows) {
-            listOf(
-                "cmd",
-                "/c",
-                file.path,
-                variant.code,
-                *argsIn.dropLast(1).toTypedArray(),
-                escaped
-            ).toTypedArray()
-        } else if (OsUtil.isLinux) {
-            listOf(
-                "cmd",
-                "/c",
-                file.path,
-                variant.code,
-                *argsIn.dropLast(1).toTypedArray(),
-                escaped
-            ).toTypedArray()
-        } else {
-            return InjectionStatus.BadConnection("Only windows and Linux versions of Creatures is supported")
+        val args = when {
+            isWindows -> {
+                listOf(
+                    "cmd",
+                    "/c",
+                    file.path,
+                    variant.code,
+                    *argsIn.dropLast(1).toTypedArray(),
+                    escaped
+                ).toTypedArray()
+            }
+            OsUtil.isLinux -> {
+                listOf(
+                    "cmd",
+                    "/c",
+                    file.path,
+                    variant.code,
+                    *argsIn.dropLast(1).toTypedArray(),
+                    escaped
+                ).toTypedArray()
+            }
+            else -> {
+                return InjectionStatus.BadConnection("Only windows and Linux versions of Creatures is supported")
+            }
         }
         // Create injection process
         val proc: Process
@@ -116,7 +154,12 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "!CON" -> InjectionStatus.BadConnection(response.substring(4))
                 "!ERR" -> InjectionStatus.Bad(response.substring(4))
                 else -> {
-                    if (response.contains("{@}") && errorPrefix.none { response.startsWith(it) } && errorMessageRegex.none { it.matches(response) }) {
+                    val responseLower = response.toLowerCase()
+                    if (response.contains("{@}"))
+                        LOGGER.info("MIGHT be bad response: $response")
+                    else
+                        LOGGER.info("Is not bad response: $response")
+                    if (response.contains("{@}") && errorPrefix.any { responseLower.startsWith(it) }) {
                         InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
                     } else if (code == "!RES") {
                         if (response.last() == 0.toChar()) {
@@ -224,6 +267,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
 
     companion object {
 
+        private const val MAX_CONSOLE_LENGTH:Int = 7590
         private const val ESCAPED_QUOTE_PLACEHOLDER = "/;__ESCAPED_QUOTE__/;"
         private val NEED_ESCAPE = listOf(
                 "^",
@@ -235,137 +279,137 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         @Suppress("SpellCheckingInspection")
         private val errorPrefix = listOf(
 
-                "Invalid command",
-                "Invalid RValue",
-                "Invalid LValue",
-                "Invalid subcommand",
-                "Invalid string RValue",
-                "Invalid string LValue",
-                "Blocking command executed on a non-blockable script",
-                "Invalid TARG",
-                "Invalid OWNR",
-                "Invalid agent",
-                "Not a CompoundAgent",
-                "Not a SimpleAgent",
-                "Division by Zero",
-                "Invalid port ID",
-                "Value is not an integer",
-                "Value is not a float",
-                "Incompatible type: string expected",
-                "Incompatible type: agent expected",
-                "Path number out of range",
-                "Not a Vehicle",
-                "ATTR/PERM change caused invalid map position",
-                "Invalid map position", "Invalid agent ID",
-                "Invalid compare operator for agents",
-                "Incompatible type: decimal expected",
-                "Internal: Unexpected type when fetching value",
-                "Chemical numbers range from (0-255)",
-                "Not a Creature",
-                "Index number outside string",
-                "Value is not a character (integer 0-255)",
-                "Slice attempted outside string",
-                "Failed to delete room",
-                "Failed to delete meta room",
-                "Failed to add background",
-                "Failed to get meta room location",
-                "Failed to set background",
-                "Failed to set door permiability",
-                "Failed to set room type",
-                "Failed to set room property",
-                "Failed to set Cellular Automata rates",
-                "Failed to get room ID",
-                "Failed to increase CA property or CA is navigable - ALTR does not work on navigable CAs",
-                "Failed to get door permiability",
-                "Failed to add meta room",
-                "Failed to add room",
-                "Attempt to clear a photograph in the creature history which is currently in use by an agent.",
-                "Failed to get room property",
-                "Failed to get current background",
-                "Failed to find room with highest CA",
-                "Failed to find room with lowest CA",
-                "Could not set neuron value",
-                "Could not set dendrite value",
-                "Could not set lobe value",
-                "Could not set tract value",
-                "Could not dump lobe",
-                "Could not dump tract",
-                "Could not dump neuron",
-                "Could not dump dendrite",
-                "Invalid Creature TARG",
-                "Invalid parameter to DBG#/DBGA ",
-                "RECYCLE ME",
-                "Invalid pose for PUPT/PUHL",
-                "Invalid string for ANMS - not a number", "Number out of range in ANMS. Values must be from 0 to 255",
-                "Error parsing CAOS script-command string",
-                "Error orderising macro for CAOS script-command string",
-                "Error processing script for scriptorium in CAOS script-command string",
-                "Error installing script into scriptorium for CAOS script-command string",
-                "Failed to set link permiability",
-                "Mutation parameters must be in the range of 0 to 255",
-                "Failed to get room CA Rates",
-                "Failed to get room IDs",
-                "Failed to get room location",
-                "Failed to get metaroom backgrounds",
-                "Not a fixed or text entry part",
-                "Not a text entry part",
-                "Repeat count is less than one",
-                "Invalid locus",
-                "No such drive number",
-                "No such gait number",
-                "No such direction number",
-                "No such involuntary action id",
-                "Operation not allowed on Creature",
-                "Not a graph part",
-                "Request out of range in IntegerRV CLIK, Range is 0 to 3",
-                "Agent profiler not compiled in this engine",
-                "Invalid gene variable",
-                "Maximum creatures exceeded",
-                "Gene file not found or attempt to load into invalid slot",
-                "Attempt to use uninitialised output stream",
-                "Creature can't be born again",
-                "Life event doesn't exist for this moniker",
-                "Attempt to use uninitialised input stream",
-                "You can only clear history for totally dead or exported creatures, and unused genomes.\nThat means OOWW return values 0, 6, 4.or 7.",
-                "That part slot is already taken. You may only create a part if it has a unique number. Please change the number or else kill the old part first.",
-                "Failed to find one or more sprite files while creating a creature.",
-                "User aborted possibly frozen script",
-                "Assertion failed",
-                "Invalid range",
-                "Pray Builder error: .*",
-                "Base change failed - new base",
-                "Pose change failed - new pose",
-                "Anim change failed - on part",
-                "Frame rate %d out of range 1 to 255",
-                "Anim by string failed - string",
-                "Invalid emit - invalid smell index",
-                "Invalid cacl - wildcard classifier used or the classifier already has a smell allocated to it",
-                "Negative square root",
-                "MVSF only works on autonomous agents",
-                "Failed to find safe location",
-                "Tried to set BHVR %d when the agent doesn't have one of the appropriate scripts",
-                "Sound file missing",
-                "An agent script is possibly in an infinite loop.\nChoose Abort to throw an error, so you can see which agent it is and stop it\nChoose Retry to let it run for another 1,000,000 instructions\nChoose Ignore to let it carry on forever",
-                "Syntax error",
-                "Invalid command",
-                "Failed to close block",
-                "Expected a string",
-                "Expected a subcommand",
-                "Expected a variable",
-                "Expected numeric rvalue",
-                "Expected agent",
-                "Expected a comparison operator",
-                "Label expected",
-                "Already at top level",
-                "Mismatched block type",
-                "NEXT without matching ENUM/ESEE/ETCH/EPAS",
-                "UNTL or EVER without matching LOOP",
-                "REPE without matching REPS",
-                "Label already defined",
-                "Expected byte string '\\['",
-                "Value out of valid range (0..255)",
-                "Expected any rvalue",
-                "Expected byte or '\\]'"
+                "invalid command",
+                "invalid rvalue",
+                "invalid lvalue",
+                "invalid subcommand",
+                "invalid string rvalue",
+                "invalid string lvalue",
+                "blocking command executed on a non-blockable script",
+                "invalid targ",
+                "invalid ownr",
+                "invalid agent",
+                "not a compoundagent",
+                "not a simpleagent",
+                "division by zero",
+                "invalid port id",
+                "value is not an integer",
+                "value is not a float",
+                "incompatible type: string expected",
+                "incompatible type: agent expected",
+                "path number out of range",
+                "not a vehicle",
+                "attr/perm change caused invalid map position",
+                "invalid map position", "invalid agent id",
+                "invalid compare operator for agents",
+                "incompatible type: decimal expected",
+                "internal: unexpected type when fetching value",
+                "chemical numbers range from (0-255)",
+                "not a creature",
+                "index number outside string",
+                "value is not a character (integer 0-255)",
+                "slice attempted outside string",
+                "failed to delete room",
+                "failed to delete meta room",
+                "failed to add background",
+                "failed to get meta room location",
+                "failed to set background",
+                "failed to set door permiability",
+                "failed to set room type",
+                "failed to set room property",
+                "failed to set cellular automata rates",
+                "failed to get room id",
+                "failed to increase ca property or ca is navigable - altr does not work on navigable cas",
+                "failed to get door permiability",
+                "failed to add meta room",
+                "failed to add room",
+                "attempt to clear a photograph in the creature history which is currently in use by an agent.",
+                "failed to get room property",
+                "failed to get current background",
+                "failed to find room with highest ca",
+                "failed to find room with lowest ca",
+                "could not set neuron value",
+                "could not set dendrite value",
+                "could not set lobe value",
+                "could not set tract value",
+                "could not dump lobe",
+                "could not dump tract",
+                "could not dump neuron",
+                "could not dump dendrite",
+                "invalid creature targ",
+                "invalid parameter to dbg#/dbga ",
+                "recycle me",
+                "invalid pose for pupt/puhl",
+                "invalid string for anms - not a number", "number out of range in anms. values must be from 0 to 255",
+                "error parsing caos script-command string",
+                "error orderising macro for caos script-command string",
+                "error processing script for scriptorium in caos script-command string",
+                "error installing script into scriptorium for caos script-command string",
+                "failed to set link permiability",
+                "mutation parameters must be in the range of 0 to 255",
+                "failed to get room ca rates",
+                "failed to get room ids",
+                "failed to get room location",
+                "failed to get metaroom backgrounds",
+                "not a fixed or text entry part",
+                "not a text entry part",
+                "repeat count is less than one",
+                "invalid locus",
+                "no such drive number",
+                "no such gait number",
+                "no such direction number",
+                "no such involuntary action id",
+                "operation not allowed on creature",
+                "not a graph part",
+                "request out of range in integerrv clik, range is 0 to 3",
+                "agent profiler not compiled in this engine",
+                "invalid gene variable",
+                "maximum creatures exceeded",
+                "gene file not found or attempt to load into invalid slot",
+                "attempt to use uninitialised output stream",
+                "creature can't be born again",
+                "life event doesn't exist for this moniker",
+                "attempt to use uninitialised input stream",
+                "you can only clear history for totally dead or exported creatures, and unused genomes.\nthat means ooww return values 0, 6, 4.or 7.",
+                "that part slot is already taken. you may only create a part if it has a unique number. please change the number or else kill the old part first.",
+                "failed to find one or more sprite files while creating a creature.",
+                "user aborted possibly frozen script",
+                "assertion failed",
+                "invalid range",
+                "pray builder error: .*",
+                "base change failed - new base",
+                "pose change failed - new pose",
+                "anim change failed - on part",
+                "frame rate %d out of range 1 to 255",
+                "anim by string failed - string",
+                "invalid emit - invalid smell index",
+                "invalid cacl - wildcard classifier used or the classifier already has a smell allocated to it",
+                "negative square root",
+                "mvsf only works on autonomous agents",
+                "failed to find safe location",
+                "tried to set bhvr %d when the agent doesn't have one of the appropriate scripts",
+                "sound file missing",
+                "an agent script is possibly in an infinite loop.\nchoose abort to throw an error, so you can see which agent it is and stop it\nchoose retry to let it run for another 1,000,000 instructions\nchoose ignore to let it carry on forever",
+                "syntax error",
+                "invalid command",
+                "failed to close block",
+                "expected a string",
+                "expected a subcommand",
+                "expected a variable",
+                "expected numeric rvalue",
+                "expected agent",
+                "expected a comparison operator",
+                "label expected",
+                "already at top level",
+                "mismatched block type",
+                "next without matching enum/esee/etch/epas",
+                "untl or ever without matching loop",
+                "repe without matching reps",
+                "label already defined",
+                "expected byte string '\\['",
+                "value out of valid range (0..255)",
+                "expected any rvalue",
+                "expected byte or '\\]'"
         )
 
         /**
@@ -382,9 +426,10 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                     "(.*?) at token '([^']*?)'",
                     "Unresolved label \"([^\"]*)\""
             ).map {
-                (it.replace("%[df]".toRegex(), replacement) + "(.*)").toRegex()
+                (it.replace("%[df]".toRegex(RegexOption.IGNORE_CASE), replacement) + "(.*)").toRegex(RegexOption.IGNORE_CASE)
             }
         }
+
 
         private fun escape(caos: String): String {
             var escaped = caos.trim()

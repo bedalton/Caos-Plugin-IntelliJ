@@ -23,7 +23,7 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             elementType in CaosScriptTokenSets.BLOCK_STARTS_AND_ENDS -> {
                 Indent.getNoneIndent()
             }
-            elementType == CaosScriptTypes.CaosScript_COMMENT -> {
+            elementType == CaosScriptTypes.CaosScript_COMMENT || elementType == CaosScriptTypes.CaosScript_COMMENT_BLOCK -> {
                 val previousText = node.previous?.text
                     ?: return Indent.getAbsoluteNoneIndent()
                 when {
@@ -35,8 +35,6 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             // C1 String indents... which should be none on new line as it adds the spaces to the output
             elementType == CaosScriptTypes.CaosScript_CLOSE_BRACKET -> Indent.getAbsoluteNoneIndent()
             elementType == CaosScriptTypes.CaosScript_TEXT_LITERAL -> Indent.getAbsoluteNoneIndent()
-
-            elementType == CaosScriptTypes.CaosScript_COMMENT_BLOCK -> Indent.getAbsoluteNoneIndent()
 
             elementType in CaosScriptTokenSets.WHITESPACES -> Indent.getNormalIndent()
 

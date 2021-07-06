@@ -25,7 +25,7 @@ interface HasVariant {
 interface HasVariants {
     val variants:List<CaosVariant>
     companion object {
-        val VARIANTS_KEY = Key<List<CaosVariant>?>("caos.variants.VARIANTS")
+        val VARIANTS_KEY = Key<List<CaosVariant>?>("creatures.caos.variants.VARIANTS")
     }
 }
 

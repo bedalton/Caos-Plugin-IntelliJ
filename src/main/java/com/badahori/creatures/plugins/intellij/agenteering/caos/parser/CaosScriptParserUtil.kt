@@ -13,8 +13,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isStringType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.ScriptTerminators
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.Companion.WHITE_SPACE_LIKE_WITH_COMMENT
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.ScriptTerminators
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.WHITE_SPACE_LIKE_WITH_COMMENT
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.lang.PsiBuilder
@@ -23,6 +23,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.psi.PsiFile
+import com.intellij.psi.TokenType
 import com.intellij.psi.impl.source.resolve.FileContextUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
@@ -519,10 +520,25 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun eol(builder_: PsiBuilder, level: Int): Boolean {
         var lookAhead = 0
         var next = builder_.lookAhead(lookAhead++)
-        while (next != null && next == CaosScript_SPACE_)
+        val originalText = builder_.originalText
+        var char:Char = 0.toChar()
+        val textLength = originalText.length
+        while (next != null && next == TokenType.WHITE_SPACE) {
+            val startIndices = builder_.rawTokenTypeStart(lookAhead)
+            val endIndex = builder_.rawTokenTypeStart(lookAhead)
+            for (charIndex in startIndices until endIndex) {
+                if (charIndex < 0 || charIndex == textLength)
+                    break
+                char = originalText[charIndex]
+                if (char == '\n' || char == ',')
+                    break
+                if (char != ' ' && char != '\t')
+                    break
+            }
             next = builder_.lookAhead(lookAhead++)
+        }
 
-        if (next == CaosScript_NEW_LINE || next == CaosScript_NEWLINE || next == CaosScript_COMMA || eof(builder_, level)) {
+        if (char == '\n' || char == ',' || eof(builder_, level)) {
             builder_.putUserData(ENDED_ARGS_KEY, 0)
             builder_.putUserData(EXPECTED_R_L_VALUES_KEY, 0)
             return true

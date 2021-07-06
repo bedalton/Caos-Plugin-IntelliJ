@@ -58,7 +58,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 }
                 CobCommand.getCommands(variant).forEach {
                     resultSet.addElement(
-                        LookupElementBuilder.create(it.keyString.matchCase(case))
+                        LookupElementBuilder.create(it.keyStrings.first().matchCase(case))
                             .withInsertHandler(SpaceAfterInsertHandler)
                     )
                 }

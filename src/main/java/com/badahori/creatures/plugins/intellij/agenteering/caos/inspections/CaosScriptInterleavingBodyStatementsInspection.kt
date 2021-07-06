@@ -16,10 +16,7 @@ import com.intellij.codeInspection.*
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementVisitor
-import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -62,7 +59,7 @@ class CaosScriptInterleavingBodyStatements : LocalInspectionTool() {
             return
         }
         PsiTreeUtil.collectElementsOfType(thisScript, CaosScriptCodeBlockLine::class.java)
-            .filter { codeBlockLine -> codeBlockLine.firstChild !is CaosScriptComment }
+            .filter { codeBlockLine -> codeBlockLine.firstChild !is PsiComment }
             .forEach each@{ line ->
                 if (isCaos2Cob) {
                     problemsHolder.registerProblem(
@@ -205,7 +202,7 @@ private class CombineBodyScriptsToScript(private val tag: String, private val co
                 ?: return@action false
             // Removae all lead
             val previousSpace:PsiElement? = baseScript.previous?.previous
-            if (previousSpace?.elementType in CaosScriptTokenSets.WHITESPACES) {
+            if (previousSpace?.tokenType in CaosScriptTokenSets.WHITESPACES) {
                 previousSpace?.delete()
             }
             (file.document ?: file.originalFile.document)?.let { document ->

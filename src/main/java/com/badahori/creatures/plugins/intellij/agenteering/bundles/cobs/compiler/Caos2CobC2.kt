@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16Compiler
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -136,6 +137,9 @@ data class Caos2CobC2(
             outputStream.write(bytes)
         }
 
+        if (filesToInline.isNotEmpty()) {
+            LOGGER.info("Inlining ${filesToInline.size} Files")
+        }
         for (file in filesToInline) {
             buffer = ByteArrayOutputStream()
             val tag = when (file.extension?.toLowerCase()) {
@@ -143,6 +147,7 @@ data class Caos2CobC2(
                 "wav" -> 1
                 else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
             }
+            LOGGER.info("Inlining File: $file")
             buffer.writeUInt16(tag)
             buffer.writeUint32(0)
             val fileBytes = file.contentsToByteArray()
