@@ -23,7 +23,7 @@ class CaosScriptColorSettingsPage : ColorSettingsPage {
     override fun getDemoText(): String {
         return """* An example of an inst(ant) macro script
 <keyword>inst</keyword>
-<command>new: simp</command> <token>heli</token> 1 0 0 0
+<prefix>new:</prefix> <command>simp</command> <token>heli</token> 1 0 0 0
 <command>clas</command> 1234567
 <command>slim</command>
 doif var1 <eqOp>eq</eqOp> 10
