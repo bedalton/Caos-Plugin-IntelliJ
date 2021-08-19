@@ -33,15 +33,15 @@ import gnu.trove.TObjectLongHashMap
 @Suppress("UNUSED_PARAMETER", "unused")
 object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val MODES_KEY = Key.create<TObjectLongHashMap<String>>("MODES_KEY")
-    private val EXPECTATIONS_KEY = Key.create<MutableList<Int>>("com.badahori.caos.parser.EXPECTATIONS_KEY")
-    private val EXPECTED_R_L_VALUES_KEY = Key.create<Int>("com.badahori.caos.parser.EXPECTATED_RLVALUES_KEY")
-    private val ENDED_ARGS_KEY = Key.create<Int>("com.badahori.caos.parser.ENDED_ARGS_KEY")
-    private val BLOCKS_KEY = Key.create<Int>("com.badahori.caos.parser.BLOCKS")
+    private val EXPECTATIONS_KEY = Key.create<MutableList<Int>>("creatures.caos.parser.EXPECTATIONS_KEY")
+    private val EXPECTED_R_L_VALUES_KEY = Key.create<Int>("creatures.caos.parser.EXPECTATED_RLVALUES_KEY")
+    private val ENDED_ARGS_KEY = Key.create<Int>("creatures.caos.parser.ENDED_ARGS_KEY")
+    private val BLOCKS_KEY = Key.create<Int>("creatures.caos.parser.BLOCKS")
     private val CAOS_VARIANT = Key.create<CaosVariant>("CAOS_VARIANT")
     private val CAOS_VARIANT_HEADER = Key.create<String>("CAOS_VARIANT_HEADER")
     private val CAOS2_COB_VARIANT = Key.create<CaosVariant>("CAOS2_COB_VARIANT")
     private val CAOS_2_COB_REGEX = "^\\*\\*\\s*CAOS2COB\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
-    private val CAOS_VARIANT_REGEX = "^\\*\\*\\s*VARIANT\\s*([a-zA-Z0-9]{2}[+]?)".toRegex(RegexOption.IGNORE_CASE)
+    private val CAOS_VARIANT_REGEX = "^[*]{2}\\s*VARIANT\\s*([a-zA-Z0-9]{2}[+]?)".toRegex(RegexOption.IGNORE_CASE)
     private val lock = Object()
     const val NUMBER = 0
     const val STRING = 1
@@ -194,8 +194,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         val cachedText = builder_.getUserData(CAOS_VARIANT_HEADER)
         if (tokenText == null || tokenText == cachedText)
             return true
-        builder_.putUserData(CAOS_VARIANT_HEADER, tokenText)
         CAOS_VARIANT_REGEX.matchEntire(tokenText)?.groupValues?.getOrNull(1)?.let { variantCode ->
+            builder_.putUserData(CAOS_VARIANT_HEADER, tokenText)
             val variant = CaosVariant.fromVal(variantCode)
             if (variant == CaosVariant.UNKNOWN)
                 return false
@@ -279,14 +279,13 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         }
         (psiFile as? CaosScriptFile)?.variant?.let { variant ->
             return variant
-        }
-        val variant = psiFile.virtualFile?.cachedVariant
+        } ?: CaosVariant.DS
+        return (psiFile.virtualFile?.cachedVariant
             ?: psiFile.originalFile.virtualFile?.cachedVariant
             ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariant
-            ?: psiFile.module?.variant
-        if (variant == CaosVariant.UNKNOWN)
-            return null
-        return variant
+            ?: psiFile.module?.variant)
+            .nullIfUnknown()
+            ?: CaosVariant.DS
     }
 
     @JvmStatic
@@ -521,7 +520,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         var lookAhead = 0
         var next = builder_.lookAhead(lookAhead++)
         val originalText = builder_.originalText
-        var char:Char = 0.toChar()
+        var char: Char = 0.toChar()
         val textLength = originalText.length
         while (next != null && next == TokenType.WHITE_SPACE) {
             val startIndices = builder_.rawTokenTypeStart(lookAhead)

@@ -22,14 +22,37 @@ fun CaosScope?.sharesScope(otherScopeIn: CaosScope?) : Boolean {
     }
     val thisEnclosingScopes = enclosingScope
     val otherEnclosingScope = otherScopeIn.enclosingScope
+    val firstSharedScope:CaosScope = enclosingScope.lastOrNull { thisScope ->
+        otherEnclosingScope.any { otherScope ->
+            thisScope.startOffset == otherScope.startOffset && thisScope.endOffset == otherScope.endOffset && thisScope.blockType == otherScope.blockType
+        }
+    } ?: return false
+    val thisSharedScopesStartIndex = thisEnclosingScopes.indexOf(firstSharedScope)
+
+    if (thisSharedScopesStartIndex < 0)
+        return false
+
+    val thisSharedScopes = thisEnclosingScopes.subList(thisSharedScopesStartIndex, thisEnclosingScopes.lastIndex)
+
+    val otherSharedScope:CaosScope = otherEnclosingScope.firstOrNull { otherScope ->
+        firstSharedScope.startOffset == otherScope.startOffset && firstSharedScope.endOffset == otherScope.endOffset && firstSharedScope.blockType == otherScope.blockType
+    } ?: return false
+
+    val otherSharedScopesStartIndex = thisEnclosingScopes.indexOf(otherSharedScope)
+
+    if (otherSharedScopesStartIndex < 0)
+        return false
+
+    val otherSharedScopes = otherEnclosingScope.subList(otherSharedScopesStartIndex, otherEnclosingScope.lastIndex)
+
     val longestScope:List<CaosScope>
     val otherScope:List<CaosScope>
-    if (thisEnclosingScopes.size > otherEnclosingScope.size) {
-        longestScope = thisEnclosingScopes
-        otherScope = otherEnclosingScope
+    if (thisSharedScopes.size > otherSharedScopes.size) {
+        longestScope = thisSharedScopes
+        otherScope = otherSharedScopes
     } else {
-        longestScope = otherEnclosingScope
-        otherScope = thisEnclosingScopes
+        longestScope = otherSharedScopes
+        otherScope = thisSharedScopes
     }
     for(i in longestScope.indices) {
         val parentScope = longestScope[i]

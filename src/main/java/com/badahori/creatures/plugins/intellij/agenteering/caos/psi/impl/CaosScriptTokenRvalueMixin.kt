@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
 
@@ -28,7 +29,7 @@ abstract class CaosScriptTokenRvalueMixin : CaosScriptStubBasedElementImpl<CaosS
 
     override val argumentValues: List<CaosExpressionValueType> by lazy { emptyList<CaosExpressionValueType>() }
 
-    override val inferredType: CaosExpressionValueType get() = CaosExpressionValueType.TOKEN
+    override val inferredType: List<CaosExpressionValueType> get() = CaosExpressionValueType.TOKEN.toListOf()
 
     override val quoteStringLiteral:CaosScriptQuoteStringLiteral? get() = null
 

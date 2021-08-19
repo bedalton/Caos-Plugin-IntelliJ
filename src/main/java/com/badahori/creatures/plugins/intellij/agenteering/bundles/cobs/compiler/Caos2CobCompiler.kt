@@ -286,20 +286,16 @@ object Caos2CobCompiler {
             val attachments: Set<String> =
                 cobCommands.filter { it.first == CobCommand.ATTACH }.flatMap { it.second }.toSet()
 
-            LOGGER.info("Caos2CobCompiler: Attachments: [${attachments.joinToString()}]")
-
             val dependencies: Set<String> = attachments + cobCommands
                 .filter { it.first == CobCommand.DEPEND }
                 .flatMap { it.second }
                 .toSet()
 
-            LOGGER.info("Caos2CobCompiler: Dependencies: [${dependencies.joinToString()}]")
             val inlineFileNames: Set<String> = attachments + cobCommands
                 .filter { it.first == CobCommand.INLINE }
                 .flatMap { it.second }
                 .toSet()
 
-            LOGGER.info("Caos2CobCompiler: Inline Files: [${inlineFileNames.joinToString()}]")
             val inlineFiles = inlineFileNames.map map@{ fileName ->
                 val virtualFile = directory.findChild(fileName)
                     ?: throw Caos2CobException("Failed to locate inline/attach file: '$fileName' for Caos2Cob script: '${mainFile.name}'")

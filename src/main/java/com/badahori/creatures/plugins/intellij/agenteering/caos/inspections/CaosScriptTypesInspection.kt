@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -98,14 +98,15 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             return
 
         // Get actual type of this argument
-        val actualType = getActualType(argument) { argument.inferredType }
+        val actualType = getActualType(argument) { it.inferredType }.nullIfEmpty()
+            ?: return
 
         // Get simple type and convert it to analogous type if needed
         val expectedTypeSimple = parameter.type
 
         // compare Actual type to expected type
         // Fudge types when similar enough
-        if (actualType == expectedTypeSimple || fudge(variant, actualType, expectedTypeSimple)) {
+        if (expectedTypeSimple in actualType || fudge(variant, actualType, expectedTypeSimple)) {
             return
         }
 
@@ -122,13 +123,16 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
 
         // In old variants, agent return types are integers, and can be used as such
         // Check if expecting integer, and actual type is agent
-        if (variant.isOld && expectedTypeSimple == INT && actualType == AGENT) {
+        if (variant.isOld && expectedTypeSimple == INT && AGENT in actualType) {
             // This coercion will be handled by another inspection
             return
         }
         // Create error message
-        val message = CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
-        LOGGER.info("TypesMismatch: Expected: <${expectedTypeSimple.simpleName}>; Actual: <${actualType.simpleName}>; Text: <${(argument as CaosScriptRvalue).text}>; ElementType: ${argument.firstChild.className}")
+        val message = if (actualType.size == 1) {
+            CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType[0].simpleName)
+        } else {
+            CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.distinct().joinToString(" or ") { it.simpleName })
+        }
         // Annotate element with type error
         holder.registerProblem(argument, message)
     }
@@ -136,10 +140,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     /**
      * Gets the actual type for a variable
      */
-    private fun getActualType(element: CaosScriptRvalueLike, caosVar: () -> CaosExpressionValueType): CaosExpressionValueType {
+    private fun getActualType(element: CaosScriptRvalueLike, caosVar: (element:CaosScriptRvalueLike) -> List<CaosExpressionValueType>): List<CaosExpressionValueType> {
         return element.inferredType
                 .let {
-                    if (it == ANY || it == UNKNOWN)
+                    if (ANY in it || UNKNOWN in it)
                         null
                     else
                         it
@@ -147,10 +151,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 // Type inference returned non-concrete type
                 // Try for command definition
                 ?: (element.rvaluePrime)?.let {
-                    it.commandDefinition?.returnType
+                    it.commandDefinition?.returnType?.toListOf()
                 }
                 // element is not a rvalue command call, get simple type
-                ?: caosVar()
+                ?: caosVar(element)
     }
 
     companion object {
@@ -164,6 +168,26 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         private val AGENT_LIKE = listOf(AGENT, NULL)
         private val STRING_LIKE = listOf(STRING, C1_STRING, HEXADECIMAL)
 
+        /**
+         * Determine whether types are similar despite having actually different types
+         */
+        fun fudge(variant: CaosVariant, actualType: List<CaosExpressionValueType>, expectedType: CaosExpressionValueType): Boolean {
+            if (actualType likeAny ANY_TYPE || expectedType in ANY_TYPE)
+                return true
+            if (actualType likeAny BYTE_STRING_LIKE && expectedType in BYTE_STRING_LIKE)
+                return true
+            if (actualType likeAny INT_LIKE && expectedType in INT_LIKE)
+                return true
+            if (actualType likeAny FLOAT_LIKE && expectedType in FLOAT_LIKE)
+                return true
+            if (actualType likeAny AGENT_LIKE && expectedType in AGENT_LIKE)
+                return true
+            if (actualType likeAny STRING_LIKE && expectedType in STRING_LIKE)
+                return true
+            if (variant.isNotOld)
+                return actualType likeAny NUMERIC && expectedType in NUMERIC
+            return false
+        }
         /**
          * Determine whether types are similar despite having actually different types
          */

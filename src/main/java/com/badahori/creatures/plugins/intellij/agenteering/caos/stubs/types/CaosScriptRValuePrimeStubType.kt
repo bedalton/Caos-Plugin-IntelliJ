@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -31,7 +32,7 @@ class CaosScriptRValuePrimeStubType(debugName:String) : com.badahori.creatures.p
     }
 
     override fun createStub(element: CaosScriptRvaluePrimeImpl, parent: StubElement<*>?): CaosScriptRValuePrimeStub {
-        return CaosScriptRValuePrimeStubImpl(parent, element.commandString, element.inferredType, element.argumentValues)
+        return CaosScriptRValuePrimeStubImpl(parent, element.commandString, element.inferredType.firstOrNull() ?: CaosExpressionValueType.UNKNOWN, element.argumentValues)
     }
 
 }

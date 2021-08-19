@@ -15,15 +15,21 @@ class CaosScriptTargAssignmentStubType(debugName:String) : com.badahori.creature
 
     override fun serialize(stub: CaosScriptTargAssignmentStub, stream: StubOutputStream) {
         stream.writeScope(stub.scope)
-        stream.writeBoolean(stub.rvalue != null)
-        if (stub.rvalue != null)
-            stream.writeExpressionValueType(stub.rvalue!!)
+        val rvalue = stub.rvalue
+        stream.writeBoolean(rvalue != null)
+        if (rvalue != null) {
+            stream.writeList(rvalue) {
+                stream.writeExpressionValueType(it)
+            }
+        }
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptTargAssignmentStub {
         val scope = stream.readScope()
         val caos = if (stream.readBoolean())
-            stream.readExpressionValueType()
+            stream.readList {
+                stream.readExpressionValueType()
+            }
         else
             null
         return CaosScriptTargAssignmentStubImpl(parent, scope, caos)

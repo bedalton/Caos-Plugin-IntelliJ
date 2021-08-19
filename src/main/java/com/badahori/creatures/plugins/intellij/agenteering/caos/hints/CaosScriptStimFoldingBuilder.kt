@@ -257,7 +257,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx(), DumbAware {
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
         if (!shouldFold.matches(commandCall.commandString ?: ""))
             return false
-        if (commandCall.arguments.none { it.inferredType.isNumberType })
+        if (commandCall.arguments.none { types -> types.inferredType.any { type -> type.isNumberType } })
             return false
         val commandString = commandCall.commandStringUpper
                 ?: return false

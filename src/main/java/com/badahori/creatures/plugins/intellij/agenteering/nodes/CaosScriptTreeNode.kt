@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.count
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
@@ -240,7 +241,15 @@ internal class SubScriptLeafNode(
     }
 
     override fun getVirtualFile(): VirtualFile? {
-        return (script.containingFile ?: script.originalElement.containingFile).virtualFile
+        if (!script.isValid)
+            return null
+        return try {
+            (script.containingFile ?: script.originalElement.containingFile).virtualFile
+        } catch (e:Exception) {
+            LOGGER.severe("Error when getting virtual file in CaosScriptTreeNode")
+            e.printStackTrace()
+            null
+        }
     }
 
     override fun canNavigate(): Boolean = navigationNode.canNavigate()

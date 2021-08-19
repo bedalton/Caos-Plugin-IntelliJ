@@ -18,7 +18,6 @@ import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
@@ -135,7 +134,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
         else null) ?: -1
         // Check if any of the values has a value list
         return listOf(firstCommand, secondCommand).intersect(foldableChemicals).isNotEmpty()
-                || AGENT in listOf(getInferredType(first, false), getInferredType(second, false))
+                || AGENT in getInferredType(first, false).union(getInferredType(second, false).toSet())
                 || getValuesList(variant, first) != null
                 || getValuesList(variant, second) != null
                 || first.text like "null"
@@ -362,7 +361,7 @@ data class FormatInfo(
     val isBool: Boolean,
     val boolOnLessThan: Boolean,
     val thisValue: String,
-    val thisValueType: CaosExpressionValueType,
+    val thisValueType: List<CaosExpressionValueType>,
     val thisValuesArgs: List<String>,
     val otherValue: String,
     val otherValueInt: Int?,
@@ -392,7 +391,7 @@ private val SIMPLE_FORMATTER: Formatter = { formatInfo: FormatInfo ->
 private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
     val thisValue = formatInfo.thisValue
     val otherValueInt = formatInfo.otherValueInt
-    if (otherValueInt == 0 && formatInfo.thisValueType == AGENT) {
+    if (otherValueInt == 0 && formatInfo.thisValueType.any { it == AGENT }) {
         val eqOpText = formatEqOp(
             formatInfo.eqOp,
             isBool = true,

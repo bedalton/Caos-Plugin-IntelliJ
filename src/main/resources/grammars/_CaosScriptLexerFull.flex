@@ -34,6 +34,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	private boolean hadNumber = false;
 	private int beforeString = START_OF_LINE;
 	private int beforeJs = START_OF_LINE;
+	private boolean isStartOfFile = true;
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -145,9 +146,9 @@ DDE_PICT=[^\s]{3}
 	\n						{ return CaosScript_NEWLINE; }
 	[ \t]					{ return WHITE_SPACE; }
     "*#"					{ yybegin(DIRECTIVE_COMMENT); return CaosScript_CAOS_2_COMMENT_START; }
-  	{COMMENT_AT_DIRECTIVE}	{ yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; }
+  	{COMMENT_AT_DIRECTIVE}	{ if (isStartOfFile) { yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; } else { yypushback(yylength() - 1); return CaosScript_COMMENT_START; }  }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
-    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]					 	{ isStartOfFile = false; yybegin(IN_LINE); yypushback(yylength());}
 }
 
 <IN_BYTE_STRING> {

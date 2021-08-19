@@ -318,9 +318,9 @@ private fun addFileNameCompletions(
             val searchScope =
                 module?.let { GlobalSearchScope.moduleScope(it) }
                     ?: GlobalSearchScope.projectScope(project)
-            FilenameIndex.getAllFilesByExt(project, fileExtension, searchScope).toList()
+            FilenameIndex.getAllFilesByExt(project, fileExtension, searchScope).toListOf()
         }
-        .map { it.nameWithoutExtension }
+        .flatMap { files -> files.map { it.nameWithoutExtension } }
     // Loop through all files and format them as needed.
     for (file in allFiles) {
         val isToken = parameterType == CaosExpressionValueType.TOKEN

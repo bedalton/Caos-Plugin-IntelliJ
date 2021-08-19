@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -164,7 +165,8 @@ data class CaosParameter(
         val valuesListIds: Map<String, Int>? = null,
         val description: String? = null,
         val min: Int? = null,
-        val max: Int? = null
+        val max: Int? = null,
+        val variableSetToType:String? = null
 ) {
 
     constructor(
@@ -319,3 +321,6 @@ enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
         }
     }
 }
+
+val CaosScriptNamedGameVarType.isGameEngineVar:Boolean get() = this == GAME || this == EAME
+val CaosScriptNamedGameVarType.isObjectVar:Boolean get() = this == NAME || this == MAME

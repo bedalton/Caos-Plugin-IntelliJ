@@ -24,7 +24,6 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             return EMPTY_KEYS
         }
         val attrKey: TextAttributesKey? = when (tokenType) {
-            in CaosScriptTokenSets.PREFIX_KEYWORDS -> PREFIX_TOKEN
             CaosScriptTypes.CaosScript_SUBROUTINE_NAME -> SUBROUTINE_NAME
             in CaosScriptTokenSets.COMMENTS -> COMMENT
             CaosScriptTypes.CaosScript_AT_DIRECTIVE_COMMENT -> COMMENT
@@ -35,8 +34,10 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             CaosScriptTypes.CaosScript_MV_XX -> VAR_TOKEN_MV
             in CaosScriptTokenSets.NUMBER_LITERALS -> NUMBER
             in CaosScriptTokenSets.KEYWORDS -> KEYWORDS
-            CaosScriptTypes.CaosScript_WORD -> COMMAND_TOKEN
+            in CaosScriptTokenSets.PREFIX_KEYWORDS -> PREFIX_TOKEN
+            in CaosScriptTokenSets.SUFFIX_TOKENS -> SUFFIX_TOKEN
             in CaosScriptTokenSets.ALL_COMMANDS -> COMMAND_TOKEN
+            CaosScriptTypes.CaosScript_WORD -> COMMAND_TOKEN
             CaosScriptTypes.CaosScript_EQ_OP_OLD_ -> EQ_OP_KEYWORD
             CaosScriptTypes.CaosScript_EQ_OP_NEW_ -> SYMBOL
             CaosScriptTypes.CaosScript_PICT_DIMENSION -> NUMBER
@@ -62,17 +63,17 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val VAR_TOKEN_MV:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN_MV", VAR_TOKEN)
         @JvmStatic
-        val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_COMMAND_TOKEN", DefaultLanguageHighlighterColors.STATIC_METHOD)
         @JvmStatic
         val ERROR_COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_ERROR_COMMAND_TOKEN", DefaultLanguageHighlighterColors.IDENTIFIER)
         @JvmStatic
-        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", COMMAND_TOKEN)
+        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", DefaultLanguageHighlighterColors.CONSTANT)
         @JvmStatic
         val LVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_LVALUE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
         @JvmStatic
         val PREFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_PREFIX_TOKEN", COMMAND_TOKEN)
         @JvmStatic
-        val SUFFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_SUFFIX_TOKEN", RVALUE_TOKEN)
+        val SUFFIX_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_SUFFIX_TOKEN", COMMAND_TOKEN)
         @JvmStatic
         val NUMBER:TextAttributesKey = createTextAttributesKey("CaosScript_NUMBER_LITERAL", DefaultLanguageHighlighterColors.NUMBER)
         @JvmStatic
@@ -88,7 +89,7 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val SYMBOL:TextAttributesKey = createTextAttributesKey("CaosScript_SYMBOLS", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
        @JvmStatic
-        val SUBROUTINE_NAME: TextAttributesKey = createTextAttributesKey("CaosScript_SUBROUTINE_NAME", DefaultLanguageHighlighterColors.INSTANCE_METHOD)
+        val SUBROUTINE_NAME: TextAttributesKey = createTextAttributesKey("CaosScript_SUBROUTINE_NAME", DefaultLanguageHighlighterColors.LABEL)
     }
 }
 
@@ -101,4 +102,14 @@ private val TextAttributesKey.asErrorAttribute:TextAttributesKey get() {
     val name = this.externalName + "_ERROR"
     val temp = createTempTextAttributesKey(name, attributes)
     return createTextAttributesKey(name, temp)
+}
+
+private var copyNumber = 1
+
+private fun TextAttributesKey.copy(nameIn:String? = null) : TextAttributesKey {
+    val name = nameIn ?: this.externalName + "(${copyNumber++})"
+    val attributes = this.defaultAttributes.clone()
+    val temp = createTempTextAttributesKey(name, attributes)
+    return createTextAttributesKey(name, temp)
+
 }

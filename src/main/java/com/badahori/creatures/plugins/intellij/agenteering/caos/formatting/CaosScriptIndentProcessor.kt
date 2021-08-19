@@ -8,10 +8,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previou
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
+import com.intellij.psi.TokenType
 
 class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
-        if (!caosSettings.indentBlocks) {
+        if (caosSettings.indentNone()) {
             return Indent.getNoneIndent()
         }
         val element = node.psi
@@ -23,13 +24,21 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             elementType in CaosScriptTokenSets.BLOCK_STARTS_AND_ENDS -> {
                 Indent.getNoneIndent()
             }
-            elementType == CaosScriptTypes.CaosScript_COMMENT || elementType == CaosScriptTypes.CaosScript_COMMENT_BLOCK -> {
-                val previousText = node.previous?.text
-                    ?: return Indent.getAbsoluteNoneIndent()
-                when {
-                    previousText.endsWith("\n") -> Indent.getAbsoluteNoneIndent()
-                    else -> Indent.getNoneIndent()
+            elementType in CaosScriptTokenSets.COMMENTS -> {
+                while (true) {
+                    val previous = node.previous
+                        ?: return Indent.getAbsoluteNoneIndent()
+                    if (previous.elementType == TokenType.WHITE_SPACE ) {
+                        if (previous.text.contains('\n')) {
+                            return Indent.getAbsoluteNoneIndent()
+                        } else {
+                            continue
+                        }
+                    } else {
+                        break
+                    }
                 }
+                Indent.getNoneIndent()
             }
 
             // C1 String indents... which should be none on new line as it adds the spaces to the output
@@ -47,7 +56,7 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
 
             element is CaosScriptCodeBlockLine -> {
                 (element.parent?.parent as? CaosScriptScriptElement)?.let {
-                    getIndent(it)
+                    getIndent(it, caosSettings)
                 } ?: Indent.getNormalIndent()
             }
             element is CaosScriptCodeBlock -> {
@@ -70,11 +79,11 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
     }
 }
 
-private fun getIndent(parentBlock:CaosScriptScriptElement) : Indent {
+private fun getIndent(parentBlock:CaosScriptScriptElement, caosSettings: CaosScriptCodeStyleSettings) : Indent {
     val indent = when (parentBlock) {
-        is CaosScriptEventScript -> parentBlock.scriptTerminator != null
-        is CaosScriptInstallScript -> parentBlock.scriptTerminator != null
-        is CaosScriptRemovalScript -> parentBlock.scriptTerminator != null
+        is CaosScriptEventScript -> caosSettings.INDENT_SCRP && parentBlock.scriptTerminator != null
+        is CaosScriptInstallScript -> caosSettings.INDENT_ISCR && parentBlock.scriptTerminator != null
+        is CaosScriptRemovalScript -> caosSettings.INDENT_RSCR && parentBlock.scriptTerminator != null
         is CaosScriptMacro -> false
         else -> true
     }

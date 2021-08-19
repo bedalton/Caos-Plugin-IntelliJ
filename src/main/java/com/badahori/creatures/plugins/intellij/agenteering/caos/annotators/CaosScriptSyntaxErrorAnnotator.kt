@@ -30,6 +30,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -97,16 +98,23 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 DeleteElementFix("Delete extraneous rvalue", element)
             )
             is CaosScriptSwiftEscapeLiteral -> {
-                val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
-                if (!"^\\*\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex().matches(firstChildText)) {
+
+                val allowSwift = PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                    .any { comment ->
+                        swiftRegex.matches(comment.text.trim())
+                    }
+                if (!allowSwift) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
                 } else if (element.textLength < 4) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), annotationWrapper)
                 }
             }
             is CaosScriptJsElement -> {
-                val firstChildText = element.containingFile.text.split("\n".toRegex(), 2)[0]
-                if (!"^\\*\\s*FOR\\s*JS\\s*|^[*]{2}VARIANT[^\n]*".toRegex(RegexOption.IGNORE_CASE).matches(firstChildText)) {
+                val allowJs = PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                    .any { comment ->
+                        allowJsRegex.matches(comment.text.trim())
+                    }
+                if (!allowJs) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
                 } else if (element.textLength < 4) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.js-value-empty"), annotationWrapper)
@@ -281,7 +289,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         }
         if (!element.hasParentOfType(CaosScriptNoJump::class.java))
             return
-        annotationWrapper.newAnnotation(HighlightSeverity.ERROR, message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
+        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
                 .range(element.textRange)
                 .create()
     }
@@ -293,10 +301,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 // a string cannot be assigned to a string anyways,
                 // so a variable is guaranteed to have an int (either literal or agent id)
                 val type = if (DumbService.isDumb(element.project))
-                    CaosExpressionValueType.VARIABLE
+                    listOf(CaosExpressionValueType.VARIABLE)
                 else
                     CaosScriptInferenceUtil.getInferredType(element)
-                if (type == CaosExpressionValueType.C1_STRING || type == CaosExpressionValueType.BYTE_STRING || type == CaosExpressionValueType.ANIMATION || type == STRING) {
+                if (type != null && type.all { it.isStringType || !it.isByteStringLike }) {
                     annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.string-comparisons-not-allowed", variant))
                             .range(element)
                             .create()
@@ -383,6 +391,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
 
     companion object {
+
+        val swiftRegex = "^[*][*]+\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex(RegexOption.IGNORE_CASE)
+        val allowJsRegex = "^[*][*]+\\s*FOR\\s*JS\\s*|^[*]{2}VARIANT[^\n]*".toRegex(RegexOption.IGNORE_CASE)
         internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
             // Colorize element as token
             if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {

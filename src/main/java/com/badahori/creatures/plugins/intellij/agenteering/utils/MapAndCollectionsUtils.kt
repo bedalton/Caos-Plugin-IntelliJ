@@ -117,3 +117,25 @@ fun IntArray.equalIgnoringOrder(other:IntArray) : Boolean {
     }
     return true
 }
+
+
+fun <T> T.toListOf() : List<T> {
+    return listOf(this)
+}
+
+infix fun <T> Collection<T>.likeAny(other:Collection<T>): Boolean {
+    return this.intersect(other).isNotEmpty()
+}
+
+infix fun <T> Collection<T>.likeAny(other:Array<T>): Boolean {
+    return this.intersect(other.toList()).isNotEmpty()
+}
+
+
+infix fun <T> Array<T>.likeAny(other:Collection<T>): Boolean {
+    return this.intersect(other).isNotEmpty()
+}
+
+infix fun <T> Array<T>.likeAny(other:Array<T>): Boolean {
+    return this.intersect(other.toList()).isNotEmpty()
+}

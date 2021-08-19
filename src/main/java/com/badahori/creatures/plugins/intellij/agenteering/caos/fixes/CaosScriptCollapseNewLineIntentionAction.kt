@@ -219,9 +219,7 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 throw Exception("Failed to replace all new lines with commas")
             }
             val out = newElementPointer.element
-            if (out != null) {
-                LOGGER.info("Finished collapsing")
-            } else {
+            if (out == null) {
                 LOGGER.severe("Failed to reload document after collapsing")
             }
             return out

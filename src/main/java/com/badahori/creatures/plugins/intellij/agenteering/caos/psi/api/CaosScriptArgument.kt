@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
     val index: Int
-    val inferredType: CaosExpressionValueType
+    val inferredType: List<CaosExpressionValueType>
 }
 
 /**
@@ -109,6 +109,14 @@ val listOfAgentTypes = listOf(
         CaosExpressionValueType.AGENT,
         CaosExpressionValueType.NULL
 )
+
+
+val listOfByteStringTypes = listOf(
+    CaosExpressionValueType.C1_STRING,
+    CaosExpressionValueType.BYTE_STRING,
+    CaosExpressionValueType.ANIMATION
+)
+
 val CaosExpressionValueType.isAgentType: Boolean
     get()
     = this in listOfAgentTypes
@@ -116,6 +124,10 @@ val CaosExpressionValueType.isAgentType: Boolean
 val CaosExpressionValueType.isStringType: Boolean
     get()
     = this in listOfStringTypes
+
+val CaosExpressionValueType.isByteStringLike: Boolean
+    get()
+    = this in listOfByteStringTypes
 
 val listOfAnyTypes = listOf(
         CaosExpressionValueType.ANY,

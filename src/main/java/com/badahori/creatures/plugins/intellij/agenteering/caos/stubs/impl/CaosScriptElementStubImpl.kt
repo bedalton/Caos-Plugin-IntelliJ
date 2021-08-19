@@ -34,14 +34,14 @@ class CaosScriptCommandCallStubImpl(
 data class CaosScriptLValueStubImpl(
         val parent: StubElement<*>?,
         override val commandString: String?,
-        override val type: CaosExpressionValueType,
+        override val type: List<CaosExpressionValueType>,
         override val argumentValues: List<CaosExpressionValueType>
 ) : StubBase<CaosScriptLvalueImpl>(parent, CaosScriptStubTypes.LVALUE),  CaosScriptLValueStub
 
 data class CaosScriptRValueStubImpl(
         val parent: StubElement<*>?,
         override val commandString: String?,
-        override val type: CaosExpressionValueType,
+        override val type: List<CaosExpressionValueType>,
         override val argumentValues: List<CaosExpressionValueType>
 ) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
@@ -69,7 +69,7 @@ class CaosScriptNamedGameVarStubImpl(
         parent: StubElement<*>?,
         override val type: CaosScriptNamedGameVarType,
         override val key: String,
-        override val keyType: CaosExpressionValueType?
+        override val keyType: List<CaosExpressionValueType>?
 ) : StubBase<CaosScriptNamedGameVarImpl>(parent, CaosScriptStubTypes.NAMED_GAME_VAR), CaosScriptNamedGameVarStub
 
 
@@ -77,7 +77,7 @@ class CaosScriptAssignmentStubImpl(
         parent: StubElement<*>?,
         override val fileName:String,
         override val operation:CaosOp,
-        override val rvalue:CaosExpressionValueType?,
+        override val rvalue:List<CaosExpressionValueType>?,
         override val lvalue:CaosExpressionValueType?,
         override val enclosingScope:CaosScope,
         override val commandString: String
@@ -192,7 +192,7 @@ class CaosScriptVarTokenStubImpl(
 class CaosScriptTargAssignmentStubImpl(
         parent:StubElement<*>?,
         override val scope: CaosScope,
-        override val rvalue: CaosExpressionValueType?
+        override val rvalue: List<CaosExpressionValueType>?
 ) : StubBase<CaosScriptCTargImpl>(parent, CaosScriptStubTypes.TARG_ASSIGNMENT), CaosScriptTargAssignmentStub
 
 

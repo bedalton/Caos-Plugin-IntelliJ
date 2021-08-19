@@ -29,3 +29,18 @@ enum class CaosScriptVarTokenGroup(val value:String) {
 
     }
 }
+
+infix fun CaosScriptVarTokenGroup.like(other:CaosScriptVarTokenGroup) : Boolean {
+    if (this == other)
+        return true
+    if (isVAxxLike)
+        return other.isVAxxLike
+    if (isOVxxLike)
+        return other.isOVxxLike
+    // MVxx has not analogous type, so if they do not match at start, they do not match
+    return false
+}
+
+val CaosScriptVarTokenGroup.isVAxxLike:Boolean get() = this == CaosScriptVarTokenGroup.VARx || this == CaosScriptVarTokenGroup.VAxx
+val CaosScriptVarTokenGroup.isOVxxLike:Boolean get() = this == CaosScriptVarTokenGroup.OBVx || this == CaosScriptVarTokenGroup.OVxx
+val CaosScriptVarTokenGroup.isMVxxLike:Boolean get() = this == CaosScriptVarTokenGroup.MVxx

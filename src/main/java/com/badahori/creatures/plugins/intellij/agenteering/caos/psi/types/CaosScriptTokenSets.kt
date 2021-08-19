@@ -966,4 +966,32 @@ public object CaosScriptTokenSets {
             CaosScript_CAOS_2_COMMENT_START
         )
     }
+
+    val SUFFIX_TOKENS = create(
+        CaosScript_K_ROOT,
+        CaosScript_K_FMLY,
+        CaosScript_K_GNUS,
+        CaosScript_K_SPCS,
+        CaosScript_K_ALLR,
+        CaosScript_K_RPTY,
+        CaosScript_K_RRCT,
+        CaosScript_K_NEWV,
+        CaosScript_K_LVOB,
+        CaosScript_K_BIOC,
+        CaosScript_K_ORGN,
+        CaosScript_K_EMTR,
+        CaosScript_K_RCTN,
+        CaosScript_K_DATA,
+        CaosScript_K_CNAM,
+        CaosScript_K_CTIM,
+        CaosScript_K_MONK,
+        CaosScript_K_OVVD,
+        CaosScript_K_RCPR,
+        CaosScript_K_SSFC
+    )
+
+    val NON_PREFIX_SUFFIX_COMMANDS = create(*ALL_COMMANDS.types.filterNot {
+        it in PREFIX_KEYWORDS || it in SUFFIX_TOKENS
+    }.toTypedArray()
+    )
 }

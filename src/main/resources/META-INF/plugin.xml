@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.07.02</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.07.25</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -36,9 +36,12 @@
   <change-notes><![CDATA[
     <ul>
       <li>
-        <b>Versions: 2021.07.02</b>
+        <b>Versions: 2021.07.25</b>
         <ul>
           <li>Fixed CAOS2Cob compilation errors</li>
+          <li>Fix CAOS2Pray markup errors</li>
+          <li>Remove default CAOS colorization preventing natural overrides</li>
+          <li>Fix name/game/mame variable errors</li>
         </ul>
       </li>
       <li>
@@ -528,8 +531,6 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosScriptColorSchemeDefault.xml" />
-    <additionalTextAttributes scheme="Darcula" dark="true" file="colorSchemes/CaosScriptColorSchemeDarcula.xml" />
 
     <!-- Annotators -->
     <annotator language="CaosScript"
@@ -876,8 +877,6 @@
         language="CaosDef" />
     <annotator language="CaosDef"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefHighlighterAnnotator" />
-    <additionalTextAttributes scheme="Default" file="colorSchemes/CaosDefColorSchemeDefault.xml" />
-    <additionalTextAttributes scheme="Darcula" file="colorSchemes/CaosDefColorSchemeDarcula.xml" />
 
     <lang.elementManipulator
         forClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCodeBlockImpl"
