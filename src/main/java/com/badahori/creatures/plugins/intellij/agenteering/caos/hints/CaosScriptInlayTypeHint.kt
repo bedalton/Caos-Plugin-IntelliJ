@@ -193,7 +193,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             return previousParameter.name like "family"
         }
 
-        override fun getHintInfo(element: PsiElement): HintInfo? {
+        override fun getHintInfo(element: PsiElement): HintInfo {
             return HintInfo.MethodInfo("Genus", listOf("family", "genus"), CaosScriptLanguage)
         }
 
@@ -471,40 +471,61 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val commandString = element.commandStringUpper
                     ?: return EMPTY_INLAY_LIST
             element.getUserData(RETURN_VALUES_TYPE_KEY)?.let {
-                if (commandString like it.first)
-                    return listOf(InlayInfo("(${it.second})", commandToken.endOffset))
+                if (commandString like it.first && it.second != null && it.second?.isNotEmpty() == true)
+                    return listOf(InlayInfo("(${it.second!!.first()})", commandToken.endOffset))
             }
-            val type: CaosExpressionValueType = if (DumbService.isDumb(element.project))
+            val types: List<CaosExpressionValueType> = if (DumbService.isDumb(element.project))
                 return EMPTY_INLAY_LIST
             else
-                element.inferredType.let {
-                if (it == UNKNOWN || it == ANY)
+                element.inferredType.let { types ->
+                if (types.all { it == UNKNOWN || it == ANY })
                     null
                 else
-                    it
-            } ?: element.commandDefinition?.returnType
+                    types
+            } ?: element.commandDefinition?.returnType?.toListOf()
             ?: return EMPTY_INLAY_LIST
-            var typeName = type.simpleName
+            var typeNames = types.map { it.simpleName }
+            var typeName: String? = null
             // element.parent.parent = RvaluePrime -> Rvalue -> CommandElement
             (element.parent?.parent as? CaosScriptCommandElement)?.let { parent ->
                 val index = (element.parent as CaosScriptRvalue).index
                 val parameter = parent.commandDefinition?.parameters?.getOrNull(index)
-                if (parameter?.name == typeName)
+                    ?: return emptyList()
+                if (parameter.name in typeNames)
                     return EMPTY_INLAY_LIST
 
 
                 // In C1/C2 agent return values are integers
                 // and can be used anywhere integers are
                 val isIntToAgentCoercion = element.variant?.isOld.orFalse()
-                        && type == AGENT
-                        && parameter?.type == INT
+                        && types.all { it == AGENT }
+                        && parameter.type == INT
                 // When coercing an agent to an int
                 // change the return value hint to depict that
-                if (isIntToAgentCoercion)
-                    typeName = "Agent->ID"
+                typeName = if (isIntToAgentCoercion) {
+                    "Agent->ID".apply {
+                        typeNames = this.toListOf()
+                    }
+                } else when (types.size) {
+                    0 -> return EMPTY_INLAY_LIST
+                    1 -> types.first().simpleName
+                    else -> {
+                        if (parameter.type in types)
+                            parameter.type.simpleName
+                        else
+                            return EMPTY_INLAY_LIST
+                    }
+                }
             }
-            element.putUserData(RETURN_VALUES_TYPE_KEY, Pair(commandString, typeName))
-            return listOf(InlayInfo("($typeName)", commandToken.endOffset))
+            element.putUserData(RETURN_VALUES_TYPE_KEY, Pair(commandString, typeNames))
+            if (typeName == null)
+                typeName = if (typeNames.size == 1)
+                    typeNames[0]
+                else
+                    return EMPTY_INLAY_LIST
+            return listOf(InlayInfo("(${typeName})", commandToken.endOffset))
+
+
         }
 
         /**
@@ -606,7 +627,7 @@ private val BIT_FLAG_IN_EQUALITY_LIST_KEY: Key<Pair<String, Boolean>> = Key("com
 
 private val ARGUMENT_VALUES_LIST_KEY: Key<Pair<String, Int?>> = Key("com.badahori.creatures.ArgumentValueList")
 
-private val RETURN_VALUES_TYPE_KEY: Key<Pair<String, String?>> = Key("com.badahori.creatures.ReturnValueType")
+private val RETURN_VALUES_TYPE_KEY: Key<Pair<String, List<String>?>> = Key("com.badahori.creatures.ReturnValueType")
 
 private val EMPTY_INLAY_LIST: List<InlayInfo> = emptyList()
 

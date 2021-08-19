@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -801,8 +800,8 @@ object CaosScriptPsiImplUtil {
      * ie AGENT, INTEGER, FLOAT, STRING
      */
     @JvmStatic
-    fun getInferredType(element: CaosScriptRvaluePrime): CaosExpressionValueType {
-        return CaosScriptInferenceUtil.getInferredType(element) ?: CaosExpressionValueType.UNKNOWN
+    fun getInferredType(element: CaosScriptRvaluePrime): List<CaosExpressionValueType> {
+        return CaosScriptInferenceUtil.getInferredType(element) ?: emptyList()
     }
 
     /**
@@ -810,11 +809,20 @@ object CaosScriptPsiImplUtil {
      * ie AGENT, INTEGER, FLOAT, STRING
      */
     @JvmStatic
-    fun getInferredType(rvalue: CaosScriptRvalueLike): CaosExpressionValueType {
+    fun getInferredType(rvalue: CaosScriptRvalueLike): List<CaosExpressionValueType> {
+        return getInferredType(rvalue, null)
+    }
+
+    /**
+     * Gets inferred type for an rvalue-like element
+     * ie AGENT, INTEGER, FLOAT, STRING
+     */
+    @JvmStatic
+    fun getInferredType(rvalue: CaosScriptRvalueLike, resolveVars: Boolean?): List<CaosExpressionValueType> {
         if (rvalue !is CaosScriptRvalue) {
             // If not true rvalue, then can only be token_rvalue.
             // Simply return text as token
-            return CaosExpressionValueType.TOKEN
+            return listOf(CaosExpressionValueType.TOKEN)
         }
         // If is rvalue, and stub has type, return it
         (rvalue as? CaosScriptRvalue)?.stub?.type?.let {
@@ -827,64 +835,69 @@ object CaosScriptPsiImplUtil {
             val variable: CaosScriptIsVariable? = rvalue.varToken as? CaosScriptIsVariable
                 ?: rvalue.namedGameVar
             if (variable != null) {
-                CaosScriptInferenceUtil.getInferredType(variable)?.let {
-                    return it
-                }
+                if (resolveVars != null)
+                    CaosScriptInferenceUtil.getInferredType(variable, resolveVars = resolveVars)?.let {
+                        return it
+                    }
+                else
+                    CaosScriptInferenceUtil.getInferredType(variable)?.let {
+                        return it
+                    }
             }
         }
 
         // Index is dumb, so return generic VARIABLE type
         (rvalue.varToken)?.let {
-            return CaosExpressionValueType.VARIABLE
+            return LIST_OF_VARIABLE_VALUE_TYPE
         }
 
         // Named game vars are not resolved, so return VARIABLE type
         rvalue.namedGameVar?.let {
-            return CaosExpressionValueType.VARIABLE
+            return LIST_OF_VARIABLE_VALUE_TYPE
         }
 
         // Get rvalue command definition if needed
         rvalue.commandDefinition?.let {
-            return it.returnType
+            return listOf(it.returnType)
         }
 
         // Is Number
         rvalue.number?.let { number ->
             number.float?.let {
-                return CaosExpressionValueType.FLOAT
+                return listOf(CaosExpressionValueType.FLOAT)
             }
             number.int?.let {
-                return CaosExpressionValueType.INT
+                return listOf(CaosExpressionValueType.INT)
             }
         }
 
         // Is C1 String
         rvalue.c1String?.let {
-            return CaosExpressionValueType.C1_STRING
+            return listOf(CaosExpressionValueType.C1_STRING)
         }
 
         // Is Quote literal
         rvalue.quoteStringLiteral?.let {
-            return CaosExpressionValueType.STRING
+            return listOf(CaosExpressionValueType.STRING)
         }
 
         // Is Token
         rvalue.token?.text?.let {
-            return CaosExpressionValueType.TOKEN
+            return listOf(CaosExpressionValueType.TOKEN)
         }
 
         // Is Animation String
         rvalue.animationString?.let {
-            return CaosExpressionValueType.ANIMATION
+            return listOf(CaosExpressionValueType.ANIMATION)
         }
 
         // Is Byte String
         rvalue.byteString?.text?.let {
-            return CaosExpressionValueType.BYTE_STRING
+            return listOf(CaosExpressionValueType.BYTE_STRING)
         }
 
         // No type was inferred. Return
-        return CaosExpressionValueType.UNKNOWN
+        return emptyList()
     }
 
     /**
@@ -892,23 +905,31 @@ object CaosScriptPsiImplUtil {
      * @return TOKEN
      */
     @JvmStatic
-    fun getInferredType(subroutineName: CaosScriptSubroutineName): CaosExpressionValueType {
-        return CaosExpressionValueType.TOKEN
+    fun getInferredType(subroutineName: CaosScriptSubroutineName): List<CaosExpressionValueType> {
+        return listOf(CaosExpressionValueType.TOKEN)
     }
 
     /**
      * Gets inferred type for a variable
      */
     @JvmStatic
-    fun getInferredType(varToken: CaosScriptIsVariable): CaosExpressionValueType {
-        return CaosScriptInferenceUtil.getInferredType(varToken) ?: CaosExpressionValueType.VARIABLE
+    fun getInferredType(varToken: CaosScriptIsVariable): List<CaosExpressionValueType> {
+        return CaosScriptInferenceUtil.getInferredType(varToken) ?: LIST_OF_VARIABLE_VALUE_TYPE
+    }
+
+    /**
+     * Gets inferred type for a variable
+     */
+    @JvmStatic
+    fun getInferredType(varToken: CaosScriptIsVariable, resolveVars: Boolean): List<CaosExpressionValueType> {
+        return CaosScriptInferenceUtil.getInferredType(varToken, resolveVars = resolveVars) ?: LIST_OF_VARIABLE_VALUE_TYPE
     }
 
     /**
      * Gets inferred type for an rvalue
      */
     @JvmStatic
-    fun getInferredType(element: CaosScriptRvalue): CaosExpressionValueType {
+    fun getInferredType(element: CaosScriptRvalue): List<CaosExpressionValueType> {
         return CaosScriptInferenceUtil.getInferredType(element)
     }
 
@@ -916,23 +937,48 @@ object CaosScriptPsiImplUtil {
      * Gets inferred type for an rvalue
      */
     @JvmStatic
-    fun getInferredType(element: CaosScriptRvalue, bias:CaosExpressionValueType): CaosExpressionValueType {
-        return CaosScriptInferenceUtil.getInferredType(element, bias, lastChecked = emptyList())
+    fun getInferredType(element: CaosScriptRvalue, bias:CaosExpressionValueType): List<CaosExpressionValueType> {
+        return CaosScriptInferenceUtil.getInferredType(element, bias, lastChecked = mutableListOf())
+    }
+
+    /**
+     * Gets inferred type for an rvalue
+     */
+    @JvmStatic
+    fun getInferredType(element: CaosScriptRvalue, bias:CaosExpressionValueType, resolveVars: Boolean): List<CaosExpressionValueType> {
+        return CaosScriptInferenceUtil.getInferredType(element, bias, resolveVars, lastChecked = mutableListOf())
+    }
+
+
+    /**
+     * Gets an inferred type for an lvalue
+     */
+    @JvmStatic
+    fun getInferredType(element: CaosScriptLvalue): List<CaosExpressionValueType> {
+        element.varToken?.let {
+            return CaosScriptInferenceUtil.getInferredType(it) ?: LIST_OF_VARIABLE_VALUE_TYPE
+        }
+        element.namedGameVar?.let {
+            return CaosScriptInferenceUtil.getInferredType(it) ?:LIST_OF_VARIABLE_VALUE_TYPE
+        }
+        return element.commandDefinition?.returnType?.let { listOf(it) } ?: emptyList()
     }
 
     /**
      * Gets an inferred type for an lvalue
      */
     @JvmStatic
-    fun getInferredType(element: CaosScriptLvalue): CaosExpressionValueType {
+    fun getInferredType(element: CaosScriptLvalue, resolveVars: Boolean): List<CaosExpressionValueType> {
+        if (!resolveVars) {
+            return  listOf(element.commandDefinition?.returnType ?: CaosExpressionValueType.VARIABLE)
+        }
         element.varToken?.let {
-            return CaosScriptInferenceUtil.getInferredType(it) ?: CaosExpressionValueType.VARIABLE
+            return CaosScriptInferenceUtil.getInferredType(it) ?: listOf(CaosExpressionValueType.VARIABLE)
         }
         element.namedGameVar?.let {
-            return CaosExpressionValueType.VARIABLE
+            return CaosScriptInferenceUtil.getInferredType(it) ?: listOf(CaosExpressionValueType.VARIABLE)
         }
-        return element.commandDefinition?.returnType
-            ?: CaosExpressionValueType.UNKNOWN
+        return element.commandDefinition?.returnType?.let { listOf(it) } ?: emptyList()
     }
 
 
@@ -940,8 +986,8 @@ object CaosScriptPsiImplUtil {
      * Gets the inferred type for a token value
      */
     @JvmStatic
-    fun getInferredType(element: CaosScriptTokenRvalue): CaosExpressionValueType {
-        return CaosExpressionValueType.TOKEN
+    fun getInferredType(element: CaosScriptTokenRvalue): List<CaosExpressionValueType> {
+        return listOf(CaosExpressionValueType.TOKEN)
     }
 
     // ============================== //
@@ -1192,11 +1238,30 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets argument values for a command call
+     */
+    @JvmStatic
+    fun getArgumentValues(command: CaosScriptCommandCall, resolveVars: Boolean): List<CaosExpressionValueType> {
+        return command.stub?.argumentValues
+            ?: getArgumentValues(command.arguments, resolveVars).nullIfEmpty()
+            ?: getArgumentValues((command.firstChild as? CaosScriptCommandElement)?.arguments ?: emptyList(), resolveVars)
+    }
+
+
+    /**
      * Gets argument values for an rvalue command call
      */
     @JvmStatic
     fun getArgumentValues(rvalue: CaosScriptRvalue): List<CaosExpressionValueType> {
         return rvalue.stub?.argumentValues ?: getArgumentValues(rvalue.arguments)
+    }
+
+    /**
+     * Gets argument values for an rvalue command call
+     */
+    @JvmStatic
+    fun getArgumentValues(rvalue: CaosScriptRvalue, resolveVars: Boolean): List<CaosExpressionValueType> {
+        return rvalue.stub?.argumentValues ?: getArgumentValues(rvalue.arguments, resolveVars)
     }
 
     /**
@@ -1208,6 +1273,15 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets argument value for an lvalue
+     */
+    @JvmStatic
+    fun getArgumentValues(lvalue: CaosScriptLvalue, resolveVars: Boolean): List<CaosExpressionValueType> {
+        return lvalue.stub?.argumentValues ?: getArgumentValues(lvalue.arguments, resolveVars)
+    }
+
+
+    /**
      * Gets arguments values for a command element
      */
     @JvmStatic
@@ -1216,19 +1290,26 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets arguments values for a command element
+     */
+    @JvmStatic
+    fun getArgumentValues(element: CaosScriptCommandElement, resolveVars: Boolean): List<CaosExpressionValueType> {
+        return getArgumentValues(element.arguments, resolveVars)
+    }
+
+    /**
      * Generic getter for command argument types
      */
-    private fun getArgumentValues(arguments: List<CaosScriptArgument>): List<CaosExpressionValueType> {
+    private fun getArgumentValues(arguments: List<CaosScriptArgument>, resolveVars:Boolean? = null): List<CaosExpressionValueType> {
         if (arguments.isEmpty())
             return emptyList()
-        val resolveVars = !DumbService.isDumb(arguments.first().project)
-        return arguments.map { argument ->
+        return arguments.flatMap { argument ->
             when (argument) {
-                is CaosScriptRvalue -> CaosScriptInferenceUtil.getInferredType(argument, null, resolveVars, lastChecked = emptyList())
-                is CaosScriptTokenRvalue -> CaosExpressionValueType.TOKEN
-                is CaosScriptLvalue -> (argument.commandDefinition?.returnType) ?: CaosExpressionValueType.VARIABLE
-                is CaosScriptSubroutineName -> CaosExpressionValueType.TOKEN
-                else -> CaosExpressionValueType.UNKNOWN
+                is CaosScriptRvalue -> CaosScriptInferenceUtil.getInferredType(argument, null, resolveVars, lastChecked = mutableListOf())
+                is CaosScriptTokenRvalue -> listOf(CaosExpressionValueType.TOKEN)
+                is CaosScriptLvalue -> listOf(argument.commandDefinition?.returnType ?: CaosExpressionValueType.VARIABLE)
+                is CaosScriptSubroutineName -> listOf(CaosExpressionValueType.TOKEN)
+                else -> emptyList()
             }
         }
     }
@@ -1502,13 +1583,13 @@ object CaosScriptPsiImplUtil {
         return element.rvalue?.stringValue
     }
 
-    val NAMED_GAME_VAR_KEY_TYPE_KEY = Key<CaosExpressionValueType>("creatures.caos.named-game-var.KEY_TYPE")
+    val NAMED_GAME_VAR_KEY_TYPE_KEY = Key<List<CaosExpressionValueType>>("creatures.caos.named-game-var.KEY_TYPE")
 
     /**
      * Gets the key or text component for a named game variable
      */
     @JvmStatic
-    fun getKeyType(element: CaosScriptNamedGameVar): CaosExpressionValueType? {
+    fun getKeyType(element: CaosScriptNamedGameVar): List<CaosExpressionValueType>? {
         if (DumbService.isDumb(element.project))
             return null
         (element.stub?.keyType ?: element.getUserData(NAMED_GAME_VAR_KEY_TYPE_KEY))?.let { keyType ->
@@ -1516,14 +1597,14 @@ object CaosScriptPsiImplUtil {
         }
         // Set named game var type to a temp value of unknown.
         // Fix it later if found
-        element.putUserData(NAMED_GAME_VAR_KEY_TYPE_KEY, CaosExpressionValueType.UNKNOWN)
+        element.putUserData(NAMED_GAME_VAR_KEY_TYPE_KEY, emptyList())
         // Try to find key type
         return  element.rvalue?.let { rvalue ->
             // If value type is found, put it into user data and then return it
-            CaosScriptInferenceUtil.getInferredType(rvalue, null,false, lastChecked = emptyList()).apply {
+            CaosScriptInferenceUtil.getInferredType(rvalue, null, false, lastChecked = mutableListOf()).apply {
                 element.putUserData(NAMED_GAME_VAR_KEY_TYPE_KEY, this)
             }
-        }
+        } ?: emptyList()
     }
 
     /**
@@ -1792,7 +1873,7 @@ object CaosScriptPsiImplUtil {
     fun getPresentation(element: CaosScriptNamedGameVar): ItemPresentation {
         return object : ItemPresentation {
             override fun getPresentableText(): String {
-                return if (element.keyType == CaosExpressionValueType.STRING)
+                return if (element.keyType?.let { CaosExpressionValueType.STRING in it } == false)
                     "${element.varType.token} \"${element.key}\""
                 else
                     "\"${element.key}\""
@@ -1816,7 +1897,7 @@ object CaosScriptPsiImplUtil {
         return object : ItemPresentation {
             override fun getPresentableText(): String? {
                 return (element.parent?.parent as? CaosScriptNamedGameVar)?.let { namedVar ->
-                    return if (namedVar.keyType == CaosExpressionValueType.STRING)
+                    return if (namedVar.keyType?.let { CaosExpressionValueType.STRING in it } == true)
                         "${namedVar.varType.token} \"${namedVar.key}\""
                     else
                         "\"${namedVar.key}\""
@@ -1957,7 +2038,7 @@ object CaosScriptPsiImplUtil {
             "Attach",
             "Inline",
             "Depend"
-        ) + CobTag.values().filter { it != CobTag.AGENT_NAME }.flatMap { it.keys.toList() }
+        ) + CobTag.values().filter { cobTag -> cobTag != CobTag.AGENT_NAME }.flatMap { cobTag -> cobTag.keys.map { it } }
 
         return def.commands.flatMap map@{ (commandName, args) ->
             val agentBlockName: String = when {
@@ -2248,3 +2329,10 @@ val ASTNode.endOffset: Int get() = textRange.endOffset
 
 
 private val CAOS2CobVariantRegex = "^\\s*[*]{2}CAOS2Cob\\s*([C][12])|^\\s*[*][#]\\s*([C][12])[\\- ]?Name".toRegex(RegexOption.IGNORE_CASE)
+
+val CaosScriptVarToken.isVAxxLike:Boolean get() = varGroup == CaosScriptVarTokenGroup.VAxx || varGroup == CaosScriptVarTokenGroup.VARx
+val CaosScriptVarToken.isOVxxLike:Boolean get() = varGroup == CaosScriptVarTokenGroup.OVxx || varGroup == CaosScriptVarTokenGroup.OBVx
+val CaosScriptVarToken.isMVxxLike:Boolean get() = varGroup == CaosScriptVarTokenGroup.MVxx
+
+val CaosScriptNamedGameVar.isGameEngineVar:Boolean get() = varType == CaosScriptNamedGameVarType.GAME || varType == CaosScriptNamedGameVarType.EAME
+val CaosScriptNamedGameVar.isObjectVar:Boolean get() = varType  == CaosScriptNamedGameVarType.NAME || varType == CaosScriptNamedGameVarType.MAME

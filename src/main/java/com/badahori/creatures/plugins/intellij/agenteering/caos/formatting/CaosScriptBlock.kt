@@ -53,7 +53,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
-        if (!caosSettings.indentBlocks) {
+        if (caosSettings.indentNone()) {
             return noneIndent
         }
         val psi = myNode.psi
@@ -66,7 +66,7 @@ class CaosScriptBlock internal constructor(
             return ChildAttributes(Indent.getAbsoluteNoneIndent(), null)
 
         if (psi is CaosScriptHasCodeBlock)
-            return if (psi is CaosScriptScriptElement && psi.scriptTerminator == null)
+            return if (psi is CaosScriptScriptElement)
                 noneIndent
             else {
                 val cursorElement = psi.editor?.let { it.cursorElementInside(psi.textRange) ?: it.primaryCursorElement }
@@ -82,9 +82,15 @@ class CaosScriptBlock internal constructor(
                 }
             }
 
-        if (psi is CaosScriptCodeBlock && (psi.parent as? CaosScriptScriptElement)?.let { it !is CaosScriptMacro && it.scriptTerminator != null }
-                .orTrue()) {
-            return normalIndent
+        if (psi is CaosScriptCodeBlock && (psi.parent is CaosScriptScriptElement)) {
+            val parent = psi.parent
+            if (parent is CaosScriptEventScript && !caosSettings.INDENT_SCRP)
+                return absoluteNoneIndent
+            if (parent is CaosScriptRemovalScript && !caosSettings.INDENT_RSCR)
+                return absoluteNoneIndent
+            if (parent is CaosScriptInstallScript && !caosSettings.INDENT_ISCR)
+                return absoluteNoneIndent
+            normalIndent
         }
 
         // Needs to check if my node is a DoifStatement parent
@@ -107,7 +113,7 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getIndent(): Indent? {
-        if (!(CaosScriptProjectSettings.indent || caosSettings.indentBlocks))
+        if (!(CaosScriptProjectSettings.indent || caosSettings.INDENT_BLOCKS))
             return Indent.getNoneIndent()
         return indentProcessor.getChildIndent(node)
     }

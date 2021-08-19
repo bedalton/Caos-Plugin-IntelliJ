@@ -287,7 +287,7 @@
 	]
 }
 
-private def	::= (caos_variant_header <<updateVariantFromHeader>>)? (word_factory_element|expression_factory|file_body)?
+private def	::= (at_directive_comment <<updateVariantFromHeader>>)* (word_factory_element|expression_factory|file_body)?
 	;
 
 word_factory_element ::= K_XX_DEF a_word;
@@ -891,11 +891,13 @@ enum_next_statement
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			codeBlock="code_block"
 			getBlockType
 			isClosed
+			getTargClassifier
 		]
 	}
 	;
@@ -928,10 +930,12 @@ enum_scenery_statement
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptHasCodeBlock"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNoJump"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getBlockType
 			isClosed
+			getTargClassifier
 		]
    }
    ;
@@ -1375,6 +1379,7 @@ c_targ
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getCommandToken
@@ -1384,6 +1389,7 @@ c_targ
 			getArguments
 			getArgumentValues
 			getCommandDefinition
+			getTargClassifier
 		]
 	}
 	;
@@ -1418,6 +1424,7 @@ c_rtar
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getCommandToken
@@ -1427,17 +1434,21 @@ c_rtar
 			getArguments
 			getArgumentValues
 			getCommandDefinition
+			getTargClassifier
 		]
 	}
 	;
 
 c_kw_rtar
 	::= K_RTAR
+	|	K_TTAR
+	|	K_STAR
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
 			getReference
@@ -1447,6 +1458,7 @@ c_kw_rtar
 			isVariant
 			getName
 			setName
+			getTargClassifier
 		]
 	}
 	;
@@ -2697,6 +2709,7 @@ command_prefix_incompletes
 	::= all_command_prefixes (incomplete|error_word)?
 	{
 		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsPrefixToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
@@ -4270,6 +4283,11 @@ c_kw_r_r_r_r
 	}
 	;
 
+c_kw_random_targ
+	::= K_TTAR
+	|	K_STAR
+	;
+
 c_kw_r_r_r
 	::=	K_ALTR
 	|	prefix_kw_bbd_col K_VOCB
@@ -4306,12 +4324,10 @@ c_kw_r_r_r
 	|	K_PUPT <<isNewVariant 'true'>>
 	|	K_RMSC
 	|	K_SPNL
-	|	K_STAR
 	|	K_STRC
 	|	K_SWAP
 	|	K_TNTC
 	|	K_TRIG
-	|	K_TTAR
 	|	prefix_kw_urge K_SHOU
 	|	prefix_kw_urge K_SIGN
 	|	prefix_kw_urge K_TACT

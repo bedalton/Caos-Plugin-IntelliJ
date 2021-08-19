@@ -20,7 +20,7 @@ interface CaosScriptCommandCallStub : StubElement<CaosScriptCommandCallImpl> {
 
 interface CaosScriptTargAssignmentStub : StubElement<CaosScriptCTargImpl> {
     val scope:CaosScope
-    val rvalue:CaosExpressionValueType?
+    val rvalue: List<CaosExpressionValueType>?
 }
 
 interface CaosScriptRtarAssignmentStub : StubElement<CaosScriptCTargImpl> {
@@ -31,13 +31,13 @@ interface CaosScriptRtarAssignmentStub : StubElement<CaosScriptCTargImpl> {
 }
 
 interface CaosScriptLValueStub : StubElement<CaosScriptLvalueImpl> {
-    val type:CaosExpressionValueType
+    val type:List<CaosExpressionValueType>
     val argumentValues: List<CaosExpressionValueType>
     val commandString:String?
 }
 
 interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
-    val type:CaosExpressionValueType
+    val type: List<CaosExpressionValueType>
     val argumentValues: List<CaosExpressionValueType>
     val commandString:String?
 }
@@ -69,7 +69,7 @@ interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
     val fileName:String
     val operation: CaosOp
     val lvalue:CaosExpressionValueType?
-    val rvalue:CaosExpressionValueType?
+    val rvalue:List<CaosExpressionValueType>?
     val enclosingScope:CaosScope
     val commandString:String
 }
@@ -118,7 +118,7 @@ interface CaosScriptEventScriptStub : StubElement<CaosScriptEventScriptImpl> {
 interface CaosScriptNamedGameVarStub : StubElement<CaosScriptNamedGameVarImpl> {
     val type: CaosScriptNamedGameVarType
     val key:String
-    val keyType:CaosExpressionValueType?
+    val keyType:List<CaosExpressionValueType>?
 }
 
 interface CaosScriptRepsStub : StubElement<CaosScriptRepeatStatementImpl>, CaosScriptBlockStub {

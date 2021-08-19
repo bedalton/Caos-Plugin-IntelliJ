@@ -1,0 +1,110 @@
+# Define the line ending behavior of the different file extensions
+# Set default behavior, in case users don't have core.autocrlf set.
+* text=auto
+* text eol=lf
+
+
+# Explicitly declare text files we want to always be normalized and converted
+# to native line endings on checkout.
+# Creature Text Files
+*.[Cc][Oo][Ss] eol=crlf
+*.[Aa][Tt][Tt] eol=crlf
+*.[Cc][Aa][Tt][Aa][Ll][Oo][Gg][Uu][Ee] eol=crlf
+*.[Tt][Xx][Tt] eol=crlf
+*.[Pp][Ss] eol=crlf
+*.[Rr][Ee][Gg] eol=crlf
+
+# Other text files
+*.[Ii][Nn][Ii] text
+*.[Jj][Ss][Oo][Nn] text
+*.[Ll][Oo][Gg] text
+*.[Pp][Hh][Pp] text
+*.[Dd][Ee][Ff][Aa][Uu][Ll][Tt] text
+*.[Cc][Tt][Pp] text
+*.[Ss][Qq][Ll] text
+*.[Mm][Dd] text
+*.[Pp][Oo] text
+*.[Jj][Ss] text
+*.[Cc][Ss][Ss] text
+*.[Ii][Nn][Ii] text
+*.[Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] text
+*.[Xx][Mm][Ll] text
+*.[Ss][Vv][Gg] text
+*.[Yy][Mm][Ll] text
+.[Hh][Tt[Aa][Cc][Cc][Ee][Ss][Ss] text
+
+
+# Agent Bundles
+*.[Cc][Oo][Bb] binary
+*.[Rr][Cc][Bb] binary
+*.[Aa][Gg][Ee][Nn][Tt] binary
+*.[Aa][Gg][Ee][Nn][Tt][Ss] binary
+*.[Bb][Ll][Uu][Ee][Pp][Rr][Ii][Nn][Tt] binary
+
+# Creature Files
+*.[Cc][Rr][Ee][Aa][Tt][Uu][Rr][Ee][Ss] binary
+*.[Cc][Rr][Ee][Aa][Tt][Uu][Rr][Ee] binary
+*.[Ee][Xx][Pp] binary
+*.[Gg][Nn][Oo] binary
+*.[Gg][Ee][Nn] binary
+*.[Gg][Ii][Dd] binary
+*.[Ee][Gg][Gg] binary
+*.[Ff][Aa][Mm][Ii][Ll][Yy] binary
+
+# World data
+*.[Ss][Ff][Cc] binary
+
+# Misc
+
+# Audio
+*.[Ww][Aa][Vv] binary
+*.[Mm][Nn][Gg] binary
+
+# Sprites
+*.[Ss][Pp][Rr] binary
+*.[Ss]16 binary
+*.[Cc]16 binary
+*.[Bb][Ll][Kk] binary
+
+
+
+# Declare files that will always have CRLF line endings on checkout.
+*.[Bb][Aa][Tt] eol=crlf
+
+# Declare files that will always have LF line endings on checkout.
+*.[Pp][Ee][Mm] eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+# Images
+*.[Pp][Nn][Gg] binary
+*.[Jj][Pp][Gg] binary
+*.[Jj][Pp][Ee][Gg] binary
+*.[Gg][Ii][Ff] binary
+*.[Ww][Ee][Bb][Pp] binary
+*.[Ii][Cc][Oo] binary
+
+# Other
+*.[Ee][Xx][Ee] binary
+*.[Dd][Oo][Cc] binary
+*.[Dd][Oo][Cc][Xx] binary
+*.[Xx][Ll][Ss] binary
+*.[Xx][Ll][Ss][Xx] binary
+*.[Aa][Ff][Dd][Ee][Ss][Ii][Gg][Nn] binary
+*.[Aa][Ff][Pp][Oo][Tt][Oo] binary
+*.[Pp][Ss][Dd] binary
+*.[Jj][Aa][Rr] binary
+*.[Mm][Oo] binary
+*.[Pp][Dd][Ff] binary
+*.[Pp][Hh][Aa][Rr] binary
+*.[Ww][Oo][Ff][Ff] binary
+*.[Ww][Oo][Ff][Ff]2 binary
+*.[Tt][Tt][Ff] binary
+*.[Oo][Tt][Ff] binary
+*.[Ee][Oo][Tt] binary
+*.[Gg][Zz] binary
+*.[Bb][Zz]2 binary
+*.7[Zz] binary
+*.[Zz][Ii][Pp] binary
+*.[Ww][Ee][Bb][Mm] binary
+*.[Mm][Pp]4 binary
+*.[Oo][Gg][Vv] binary

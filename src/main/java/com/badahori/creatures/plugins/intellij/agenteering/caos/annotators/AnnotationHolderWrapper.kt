@@ -3,7 +3,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInsight.daemon.HighlightDisplayKey
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -52,11 +55,27 @@ class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
     }
 
     fun colorize(range: PsiElement, textAttributes: TextAttributesKey) {
-        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
-                .enforcedTextAttributes = TextAttributes.ERASE_MARKER
+//        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null).apply {
+//            enforcedTextAttributes = TextAttributes.ERASE_MARKER
+//        }
         val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
         annotation.textAttributes = textAttributes
-        annotation.enforcedTextAttributes = textAttributes.defaultAttributes
+    }
+
+    fun colorize(range: TextRange, textAttributes: TextAttributesKey) {
+        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range, null)
+            .enforcedTextAttributes = TextAttributes.ERASE_MARKER
+        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range, null)
+        annotation.textAttributes = textAttributes
+        //annotation.enforcedTextAttributes = textAttributes.defaultAttributes
+    }
+
+    fun colorize(range: ASTNode, textAttributes: TextAttributesKey) {
+        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+            .enforcedTextAttributes = TextAttributes.ERASE_MARKER
+        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+        annotation.textAttributes = textAttributes
+        //annotation.enforcedTextAttributes = textAttributes.defaultAttributes
     }
 }
 
@@ -151,7 +170,7 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
     fun create() {
         if (data.range == null)
             throw Exception("Cannot create annotation without range")
-        val annotation = if (data.severity == HighlightSeverity.INFORMATION && data.message.isNullOrEmpty())
+        val annotation = if (data.severity == HighlightSeverity.INFORMATION && data.message.isEmpty())
             annotationHolder.createInfoAnnotation(data.range, "")
         else
             annotationHolder.createAnnotation(data.severity, data.range, data.message)

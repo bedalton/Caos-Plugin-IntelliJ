@@ -16,7 +16,9 @@ class CaosScriptLValueStubType(debugName:String) : CaosScriptStubElementType<Cao
 
     override fun serialize(stub: CaosScriptLValueStub, stream: StubOutputStream) {
         stream.writeName(stub.commandString)
-        stream.writeExpressionValueType(stub.type)
+        stream.writeList(stub.type) {
+            stream.writeExpressionValueType(it)
+        }
         stream.writeList(stub.argumentValues) {
             writeExpressionValueType(it)
         }
@@ -24,7 +26,9 @@ class CaosScriptLValueStubType(debugName:String) : CaosScriptStubElementType<Cao
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptLValueStub {
         val commandString = stream.readNameAsString()
-        val caosVar = stream.readExpressionValueType()
+        val caosVar = stream.readList {
+            stream.readExpressionValueType()
+        }
         val arguments:List<CaosExpressionValueType> = stream.readList {
             readExpressionValueType()
         }

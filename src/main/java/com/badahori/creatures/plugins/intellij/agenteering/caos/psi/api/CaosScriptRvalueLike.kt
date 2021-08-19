@@ -37,7 +37,7 @@ interface CaosScriptRvalueLike : CaosScriptCompositeElement {
 
     val argumentValues: List<CaosExpressionValueType>
 
-    val inferredType: CaosExpressionValueType
+    val inferredType: List<CaosExpressionValueType>
 
     val index:Int
 

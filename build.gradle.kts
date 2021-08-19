@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2021.07.02"
+version = "2021.07.25"
 
 
 repositories {
@@ -55,7 +55,7 @@ intellij {
     updateSinceUntilBuild = false
     sameSinceUntilBuild = true
     sandboxDirectory = "/Users/daniel/Projects/Intellij Sandbox"
-    setPlugins("PsiViewer:191.4212")
+    setPlugins("PsiViewer:191.4212", "com.chrisrm.idea.MaterialThemeUI:3.10.0")
 }
 
 tasks.register<CaosDefGeneratorTask>("generateCaosDef") {

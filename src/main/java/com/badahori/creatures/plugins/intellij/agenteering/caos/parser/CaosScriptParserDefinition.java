@@ -24,7 +24,7 @@ import static com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.
 public class CaosScriptParserDefinition implements ParserDefinition {
 
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE, CaosScriptTypes.CaosScript_COMMA, CaosScriptTypes.CaosScript_NEWLINE);
-    private static final TokenSet COMMENTS = TokenSet.create(CaosScriptTypes.CaosScript_COMMENT_START, CaosScriptTypes.CaosScript_COMMENT_BODY_LITERAL);
+    private static final TokenSet COMMENTS = TokenSet.create(CaosScriptTypes.CaosScript_COMMENT_START, CaosScriptTypes.CaosScript_COMMENT_BODY_LITERAL);//, CaosScriptTypes.CaosScript_AT_DIRECTIVE_COMMENT, CaosScriptTypes.CaosScript_AT_DIRECTIVE_COMMENT_LITERAL, CaosScriptTypes.CaosScript_AT_DIRECTIVE_COMMENT_START);
     private static final TokenSet STRINGS = CaosScriptTokenSets.getSTRING_LIKE();
 
     @NotNull

@@ -41,8 +41,8 @@ import static com.intellij.openapi.application.ApplicationManager.getApplication
 
 public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
-    private static Key<Pose> ATT_FILE_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.POSE_DATA");
-    public static Key<Pose> REQUESTED_POSE_KEY = Key.create("com.badahori.creatures.plugins.intellij.agenteering.att.REQUESTED_POSE");
+    private static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
+    public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
     final VirtualFile file;
     final VirtualFile spriteFile;
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);

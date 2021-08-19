@@ -6,8 +6,6 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptNamedGameVarImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedGameVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptNamedGameVarStubImpl
@@ -24,13 +22,27 @@ class CaosScriptNamedGameVarStubType(debugName:String) : CaosScriptStubElementTy
     override fun serialize(stub: CaosScriptNamedGameVarStub, stream: StubOutputStream) {
         stream.writeInt(stub.type.value)
         stream.writeName(stub.key)
-        stream.writeCaosVarSafe(stub.keyType)
+        val keyType = stub.keyType
+        stream.writeBoolean(keyType != null)
+        if (keyType != null) {
+            stream.writeList(keyType) {
+                writeCaosVarSafe(it)
+            }
+        }
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptNamedGameVarStub {
         val type = CaosScriptNamedGameVarType.fromValue(stream.readInt())
         val name = stream.readNameAsString() ?: UNDEF
-        val keyType = stream.readCaosVarSafe()
+
+        val hasKeyType = stream.readBoolean()
+        val keyType = if (hasKeyType) {
+            stream.readList {
+                readCaosVarSafe()
+            }
+        } else {
+            null
+        }
         return CaosScriptNamedGameVarStubImpl(
                 parent = parent,
                 type = type,

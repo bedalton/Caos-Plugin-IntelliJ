@@ -114,7 +114,6 @@ class BlkSpriteFile(private val file: VirtualFile) : SpriteFile<BlkSpriteFrame>(
             val trueWidth = cellsWide * BLOCK_SIZE
             val trueHeight = cellsHigh * BLOCK_SIZE
 
-            LOGGER.info("Stitching BLK Cells($cellsWide x $cellsHigh); Size: ($trueWidth x $trueHeight)")
             // Create image for writing
             val temp = BufferedImage(trueWidth, trueHeight, BufferedImage.TYPE_INT_RGB)
             val graphics2d = temp.createGraphics()

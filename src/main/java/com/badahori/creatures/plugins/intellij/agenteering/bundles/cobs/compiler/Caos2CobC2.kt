@@ -147,7 +147,6 @@ data class Caos2CobC2(
                 "wav" -> 1
                 else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
             }
-            LOGGER.info("Inlining File: $file")
             buffer.writeUInt16(tag)
             buffer.writeUint32(0)
             val fileBytes = file.contentsToByteArray()
