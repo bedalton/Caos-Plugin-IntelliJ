@@ -108,14 +108,11 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
     return node
 }
 
-fun ASTNode?.getPreviousPossiblyEmptySibling(): ASTNode? {
-    return this?.treePrev ?: getPrevInTreeParent(this)
-}
-
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.previous ?: return null
     while (isWhitespace(out, ignoreLineTerminator)) {
-        out = out.previous ?: return null
+        out = out.previous
+            ?: return null
     }
     return out
 }
@@ -138,11 +135,13 @@ val PsiElement.next: PsiElement? get() {
 }
 
 private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
-    var temp:ASTNode? = out?.treeParent ?: return null
-    while (temp != null && temp.treePrev == null && temp.treeParent != null) {
+    var temp:ASTNode = out?.treeParent
+        ?: return null
+    while (temp.treePrev == null) {
         temp = temp.treeParent
+            ?: return null
     }
-    return temp?.treePrev
+    return temp.treePrev
 }
 
 
@@ -168,11 +167,13 @@ fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
 }
 
 private fun getNextInTreeParent(out:ASTNode?): ASTNode? {
-    var temp:ASTNode? = out?.treeParent ?: return null
-    while (temp != null && temp.treeNext == null && temp.treeParent != null) {
+    var temp:ASTNode = out?.treeParent
+        ?: return null
+    while (temp.treeNext == null) {
         temp = temp.treeParent
+            ?: return null
     }
-    return temp?.treeNext
+    return temp.treeNext
 }
 
 fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
@@ -307,12 +308,11 @@ internal fun isWhitespace(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean
     if (out == null) {
         return false
     }
-    val elementType = out.elementType
-    return when {
-        elementType == TokenType.WHITE_SPACE ->
-            return ignoreLineTerminator || out.textContains('\n')
-        elementType == CaosScriptTypes.CaosScript_COMMA -> ignoreLineTerminator
-        else -> out.text.isBlank()
+    return when (out.elementType) {
+        TokenType.WHITE_SPACE ->
+            return ignoreLineTerminator || !out.textContains('\n')
+        CaosScriptTypes.CaosScript_COMMA -> ignoreLineTerminator
+        else -> false
     }
 }
 
