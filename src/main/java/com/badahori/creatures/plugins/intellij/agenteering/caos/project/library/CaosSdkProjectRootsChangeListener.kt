@@ -10,7 +10,6 @@ object CaosSdkProjectRootsChangeListener : ModuleRootListener {
     val LOGGER: Logger = Logger.getLogger("#"+ CaosSdkProjectRootsChangeListener::class.java)
 
     override fun rootsChanged(event: ModuleRootEvent) {
-        super.rootsChanged(event)
         val project = event.source as? Project
         if (project == null) {
             LOGGER.severe("SdkRootsChangeListener: Failed to get project on roots change. Object is of type: ${event.source.javaClass.canonicalName}")

@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
 
 
 class CaosProjectStartupActivity : StartupActivity {
@@ -99,9 +98,9 @@ class CaosProjectStartupActivity : StartupActivity {
     }
 
     private fun indexAttAndSpriteFiles(project: Project) {
-        BreedSpriteIndex.indexOnce(project, GlobalSearchScope.projectScope(project))
-        AttFileByVariantIndex.indexOnce(project, GlobalSearchScope.projectScope(project))
-        AttFilesIndex.indexOnce(project, GlobalSearchScope.projectScope(project))
+        BreedSpriteIndex.indexOnce(project)
+        AttFileByVariantIndex.indexOnce(project)
+        AttFilesIndex.indexOnce(project)
     }
 
     companion object {

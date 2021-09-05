@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.module.ModuleConfigurationEditor
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationEditorProvider
@@ -15,7 +16,8 @@ class CaosModuleConfigurationEditorProvider : ModuleConfigurationEditorProvider 
             return ModuleConfigurationEditor.EMPTY
         return arrayOf(//ContentEntriesEditor(module.name, state),
                 CaosContentEntitiesEditor(module.name, state),
-                CaosModuleConfigurationEditor(state))
+                CaosModuleConfigurationEditor(state)
+        )
     }
 }
 
@@ -24,19 +26,51 @@ class CaosModuleConfigurationEditor(private val state: ModuleConfigurationState)
     private val panel by lazy { CaosProjectGeneratorPeerImpl() }
 
     override fun isModified(): Boolean {
-        return state.rootModel.module.variant != panel.selectedVariant
+        // Check if is modified
+        val settings = state.rootModel
+            ?.module
+            ?.settings
+            ?.getState()
+            ?: return true
+
+        // Check if variant has changed
+        if (settings.variant != panel.selectedVariant)
+            return true
+
+        // Check if any files have been added to or removed from ignored file names
+        if (settings.ignoredFiles != panel.ignoredFileNames) {
+            return true
+        }
+        return false
     }
 
     override fun getDisplayName(): String = "CAOS Script Settings"
 
     override fun apply() {
         state.rootModel.module.variant = panel.selectedVariant
+        state.rootModel.module.settings.ignoredFiles = panel.ignoredFileNames
+            .filter {
+                it.isNotBlank()
+            }
+            .map { it.trim() }
     }
 
     override fun createComponent(): JComponent? {
-        val variant = state.rootModel.module.variant
-        panel.selectedVariant = variant
-        return panel.`$$$getRootComponent$$$`()
+        val settings = state.rootModel.module.settings.getState()
+        panel.selectedVariant = settings.variant
+        panel.setIgnoredFileNames(settings.ignoredFiles)
+        return panel.component
+    }
+
+    companion object {
+        @JvmStatic
+        fun invalidLines(textAreaContents: String): List<Int> {
+            val lines = textAreaContents.split("\n")
+            return lines.indices.filterNot { i ->
+                val line = lines[i]
+                line.isBlank() || GameInterfaceName.fromString(line) != null
+            }
+        }
     }
 
 }

@@ -74,13 +74,13 @@ object CaosBundleSourcesRegistrationUtil {
             true
         } else if (!addLibrary(modifiableModel)) {
             // Check if library is added properly
-            modifiableModel.dispose()
             LOGGER.severe("Failed to add library to modifiable model")
             registeredOnce = true
             false
         } else {
            true
         }
+        modifiableModel.dispose()
         registeredOnce = true
         return didSucceedOnce
     }
