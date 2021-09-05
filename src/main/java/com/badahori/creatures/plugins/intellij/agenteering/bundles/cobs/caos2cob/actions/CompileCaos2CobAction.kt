@@ -1,12 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.*
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler.CompilationResults
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -16,15 +21,14 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
-import java.util.*
 
 /**
  * Creates a file
  * @todo implement multiple file types (ie. implementations or protocols)
  */
 class CompileCaos2CobAction : AnAction(
-    CaosBundle.message("cob.caos2cob.compile.title"),
-    CaosBundle.message("cob.caos2cob.compile.description"),
+    AgentMessages.message("cob.caos2cob.compile.title"),
+    AgentMessages.message("cob.caos2cob.compile.description"),
     CaosScriptIcons.C1_COB_FILE_ICON
 ), DumbAware {
 
@@ -35,72 +39,10 @@ class CompileCaos2CobAction : AnAction(
             .filter {
                 it.isCaos2Cob
             }
-        val numFiles = files.size
-        if (numFiles == 0) {
-            CaosNotifications.showWarning(
-                project,
-                "CAOS2Cob",
-                "No CAOS2Cob files passed to compiler."
-            )
-            return
-        }
-
-        val compilationResult = CompilationResults(numFiles)
-        // Run compile phase in background
-        // Requires read access though, so will have to move back onto ui thread I think
-        runBackgroundableTask("Compile $numFiles Caos2Cob files") { progressIndicator ->
-            files.forEach { file ->
-                // Run on pooled event dispatch thread
-                ApplicationManager.getApplication().invokeLater {
-                    progressIndicator.checkCanceled()
-                    // Ensure in read action
-                    runWriteAction action@{
-                        // Update progress indicator
-                        Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
-                        if (compilationResult.index == numFiles) {
-                            printResult(project, compilationResult)
-                        }
-                    }
-                }
-            }
-        }
+        compile(project, files)
     }
 
-    private fun printResult(project: Project, compilationResult: CompilationResults) {
-        val successes = compilationResult.success
-        val failures = compilationResult.failures
-        val warningText = if (compilationResult.warnings > 0)
-            " with ${compilationResult.warnings} warnings"
-        else
-            ""
-        val numFiles = compilationResult.caos2CobFiles
-        when {
-            failures == 0 && successes > 0 ->
-                CaosNotifications.showInfo(
-                    project,
-                    "CAOS2Cob Result",
-                    "Compiled $numFiles CAOS2Cob cobs successfully$warningText"
-                )
-            failures > 0 && successes == 0 ->
-                CaosNotifications.showError(
-                    project,
-                    "CAOS2Cob Result",
-                    "Failed to compile any of the $numFiles CAOS2Cob files successfully"
-                )
-            failures == 0 && successes == 0 ->
-                CaosNotifications.showError(
-                    project,
-                    "CAOS2Cob Result",
-                "Compiler failed to run without error"
-                )
-            else ->
-                CaosNotifications.showError(
-                    project,
-                    "CAOS2Cob Result",
-                    "Failed to compile $failures out of $numFiles CAOS2Cob files"
-                )
-        }
-    }
+
 
     override fun update(event: AnActionEvent) {
         val enabled = event.files.any { file ->
@@ -108,8 +50,8 @@ class CompileCaos2CobAction : AnAction(
         }
         val presentation = event.presentation
         presentation.isVisible = enabled
-        presentation.text = CaosBundle.message("cob.caos2cob.compile.title")
-        presentation.description = CaosBundle.message("cob.caos2cob.compile.description")
+        presentation.text = AgentMessages.message("cob.caos2cob.compile.title")
+        presentation.description = AgentMessages.message("cob.caos2cob.compile.description")
     }
 
     // Static Methods
@@ -124,6 +66,24 @@ class CompileCaos2CobAction : AnAction(
             return file.fileType == CaosScriptFileType.INSTANCE && isCaos2CobRegex.containsMatchIn(file.contents)
         }
 
+        internal fun compile(project: Project, file: CaosScriptFile) {
+
+            val compilationResult = CompilationResults(1)
+            // Run compile phase in background
+            // Requires read-access though, so will have to move back onto ui thread I think
+            runBackgroundableTask("Compile 1 Caos2Cob files") { progressIndicator ->
+                ApplicationManager.getApplication().invokeLater {
+                    progressIndicator.checkCanceled()
+                    // Ensure in read action
+                    runWriteAction action@{
+                        // Update progress indicator
+                        Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
+                        printResult(project, compilationResult)
+                    }
+                }
+            }
+        }
+
 
         private fun getCaosFiles(project: Project, file: VirtualFile): List<CaosScriptFile> {
             if (file.isDirectory) {
@@ -133,5 +93,75 @@ class CompileCaos2CobAction : AnAction(
                 listOf(script)
             } ?: emptyList()
         }
+
+        internal fun compile(project: Project, files: List<CaosScriptFile>) {
+            val numFiles = files.size
+            if (numFiles == 0) {
+                CaosNotifications.showWarning(
+                    project,
+                    "CAOS2Cob",
+                    "No CAOS2Cob files passed to compiler."
+                )
+                return
+            }
+
+            val compilationResult = CompilationResults(numFiles)
+            // Run compile phase in background
+            // Requires read-access though, so will have to move back onto ui thread I think
+            runBackgroundableTask("Compile $numFiles Caos2Cob files") { progressIndicator ->
+                files.forEach { file ->
+                    // Run on pooled event dispatch thread
+                    ApplicationManager.getApplication().invokeLater {
+                        progressIndicator.checkCanceled()
+                        // Ensure in read action
+                        runWriteAction action@{
+                            // Update progress indicator
+                            Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
+                            LOGGER.info("Compiled COAS2Cob: ${file.name}")
+                            if (compilationResult.index == numFiles) {
+                                printResult(project, compilationResult)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+private fun printResult(project: Project, compilationResult: CompilationResults) {
+    val successes = compilationResult.success
+    val failures = compilationResult.failures
+    val warningText = if (compilationResult.warnings > 0)
+        " with ${compilationResult.warnings} warnings"
+    else
+        ""
+    val numFiles = compilationResult.caos2CobFiles
+    when {
+        failures == 0 && successes > 0 ->
+            CaosNotifications.showInfo(
+                project,
+                "CAOS2Cob Result",
+                "Compiled $numFiles CAOS2Cob cobs successfully$warningText"
+            )
+        failures > 0 && successes == 0 ->
+            CaosNotifications.showError(
+                project,
+                "CAOS2Cob Result",
+                "Failed to compile any of the $numFiles CAOS2Cob files successfully"
+            )
+        failures == 0 && successes == 0 ->
+            CaosNotifications.showError(
+                project,
+                "CAOS2Cob Result",
+                "Compiler failed to run without error"
+            )
+        else ->
+            CaosNotifications.showError(
+                project,
+                "CAOS2Cob Result",
+                "Failed to compile $failures out of $numFiles CAOS2Cob files"
+            )
     }
 }

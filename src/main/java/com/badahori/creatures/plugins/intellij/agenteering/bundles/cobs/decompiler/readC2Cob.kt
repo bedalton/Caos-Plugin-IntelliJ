@@ -1,15 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import bedalton.creatures.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import java.nio.ByteBuffer
 import java.util.*
 
 
-internal fun ByteBuffer.readC2CobBlock() : CobBlock? {
+internal fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     val type = try {
         cString(4)
     } catch (e: Exception) {
@@ -24,7 +23,7 @@ internal fun ByteBuffer.readC2CobBlock() : CobBlock? {
     }
 }
 
-private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
+private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val quantityAvailable = uInt16.let { if (it == 0xffff) -1 else it }
     val lastUsageDate = uInt32
     val reuseInterval = uInt32
@@ -73,7 +72,7 @@ private fun ByteBuffer.readC2AgentBlock() : CobBlock.AgentBlock {
     )
 }
 
-private fun ByteBuffer.readC2AuthorBlock() : CobBlock.AuthorBlock {
+private fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock {
     val creationDay = uInt8
     val creationMonth = uInt8
     val creationYear = uInt16
@@ -97,7 +96,7 @@ private fun ByteBuffer.readC2AuthorBlock() : CobBlock.AuthorBlock {
     )
 }
 
-private fun ByteBuffer.readC2FileBlock() : CobBlock.FileBlock {
+private fun ByteStreamReader.readC2FileBlock() : CobBlock.FileBlock {
     val type = when (val typeInt = uInt16) {
         0 -> CobFileBlockType.SPRITE
         1 -> CobFileBlockType.SOUND

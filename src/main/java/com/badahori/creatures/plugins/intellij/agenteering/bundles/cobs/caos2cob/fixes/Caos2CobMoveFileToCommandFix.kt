@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -23,14 +23,14 @@ class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: Cob
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("cob.caos2cob.inspections.group")
+    override fun getFamilyName(): String = AgentMessages.message("cob.caos2cob.group")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return pointer.element != null && file is CaosScriptFile
     }
 
     override fun getText(): String =
-        CaosBundle.message("cob.caos2cob.fixes.move-file-to-command", fileName, command.keyStrings.first())
+        AgentMessages.message("cob.caos2cob.fixes.move-file-to-command", fileName, command.keyStrings.first())
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val element = pointer.element

@@ -2,10 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compile
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2CobVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
@@ -52,6 +49,7 @@ object Caos2CobCompiler {
         val type = if (compilerData is Caos2CobC1) "C1" else "C2"
         val i = compilationResult.failures + compilationResult.success
         val numFiles = compilationResult.caos2CobFiles
+        progressIndicator.isIndeterminate = false
         progressIndicator.fraction = i / numFiles.toDouble()
         progressIndicator.text = "Compile $i/$numFiles COBS"
         progressIndicator.text2 = "Compiling $type COB: ${compilerData.targetFile}"
@@ -101,7 +99,7 @@ object Caos2CobCompiler {
         * But I think now it should be assumed that the remover cob should be generated unless set to an empty string
 
         if (false && !didShowAutoRemoverCobWarning && compilerData.removerName.nullIfEmpty() == null) {
-            val error = CaosBundle.message(
+            val error = AgentMessages.message(
                 "cob.caos2cob.compile.auto-remover-name",
                 removerCob.targetFile
             )
@@ -514,7 +512,7 @@ object Caos2CobCompiler {
             CaosNotifications.showWarning(
                 project,
                 "Caos2COB",
-                CaosBundle.message("cob.caos2cob.compile.too-many-removal-scripts", mainFileName, base)
+                AgentMessages.message("cob.caos2cob.compile.too-many-removal-scripts", mainFileName, base)
             )
             return trueRemovalScript.map { stripRscr(it) }
         }
