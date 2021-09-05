@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER", "unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
@@ -35,6 +37,7 @@ object CaosScriptInferenceUtil {
     /**
      * Infers the type of an rvalue used in a CAOS script
      */
+    @Suppress("UNUSED_PARAMETER")
     fun getInferredType(
         element: CaosScriptRvalue,
         bias: CaosExpressionValueType? = null,
@@ -172,31 +175,31 @@ object CaosScriptInferenceUtil {
         bias: CaosExpressionValueType? = null,
         lastChecked: MutableList<CaosScriptIsVariable>
     ): List<CaosExpressionValueType> {
-        if (element.varGroup.isVAxxLike) {
-            val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
-                ?: return arrayListOf(VARIABLE)
-            val varIndex = element.varIndex
-            val otherAssignments: List<CaosScriptVarToken> = PsiTreeUtil
-                .collectElementsOfType(parentScript, CaosScriptVarToken::class.java)
-                .filter { otherVariable ->
-                    varIndex == otherVariable.varIndex &&
-                            otherVariable.isVAxxLike &&
-                            lastChecked.none { it.isEquivalentTo(element) } &&
-                            element.scope.sharesScope(otherVariable.scope)
-                }
-            lastChecked.addAll(otherAssignments)
-            return getInferredType(otherAssignments, bias)
-        }
-
-        if (element.varGroup.isOVxxLike) {
-            //TODO implement after learning to resolve targ
-            return arrayListOf(VARIABLE)
-        }
-
-        if (element.varGroup.isMVxxLike) {
-            //TODO implement after learning to resolve targ
-            return arrayListOf(VARIABLE)
-        }
+//        if (element.varGroup.isVAxxLike) {
+//            val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
+//                ?: return arrayListOf(VARIABLE)
+//            val varIndex = element.varIndex
+//            val otherAssignments: List<CaosScriptVarToken> = PsiTreeUtil
+//                .collectElementsOfType(parentScript, CaosScriptVarToken::class.java)
+//                .filter { otherVariable ->
+//                    varIndex == otherVariable.varIndex &&
+//                            otherVariable.isVAxxLike &&
+//                            lastChecked.none { it.isEquivalentTo(element) } &&
+//                            element.scope.sharesScope(otherVariable.scope)
+//                }
+//            lastChecked.addAll(otherAssignments)
+//            return getInferredType(otherAssignments, bias)
+//        }
+//
+//        if (element.varGroup.isOVxxLike) {
+//            //TODO implement after learning to resolve targ
+//            return arrayListOf(VARIABLE)
+//        }
+//
+//        if (element.varGroup.isMVxxLike) {
+//            //TODO implement after learning to resolve targ
+//            return arrayListOf(VARIABLE)
+//        }
 
         return arrayListOf(VARIABLE)
     }

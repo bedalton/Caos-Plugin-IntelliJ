@@ -35,7 +35,7 @@ class CaosScriptAssignmentStubType(debugName: String) :
                 writeCaosVarSafe(it)
             }
         }
-        stream.writeScope(stub.enclosingScope)
+//        stream.writeScope(stub.enclosingScope)
         stream.writeName(stub.commandString)
     }
 
@@ -48,7 +48,7 @@ class CaosScriptAssignmentStubType(debugName: String) :
                 readCaosVarSafe()
             }
         } else emptyList()
-        val enclosingScope = stream.readScope()
+//        val enclosingScope = stream.readScope()
         val commandString = stream.readNameAsString() ?: UNDEF
         return CaosScriptAssignmentStubImpl(
             parent = parent,
@@ -56,7 +56,7 @@ class CaosScriptAssignmentStubType(debugName: String) :
             operation = operation,
             lvalue = lvalue,
             rvalue = rvalue,
-            enclosingScope = enclosingScope,
+//            enclosingScope = enclosingScope,
             commandString = commandString
         )
     }
@@ -74,7 +74,7 @@ class CaosScriptAssignmentStubType(debugName: String) :
             operation = element.op,
             lvalue = CaosExpressionValueType.VARIABLE,
             rvalue = element.rvalue?.getInferredType(bias, false),
-            enclosingScope = CaosScriptPsiImplUtil.getScope(element),
+            //enclosingScope = CaosScriptPsiImplUtil.getScope(element),
             commandString = element.commandString
         )
     }
