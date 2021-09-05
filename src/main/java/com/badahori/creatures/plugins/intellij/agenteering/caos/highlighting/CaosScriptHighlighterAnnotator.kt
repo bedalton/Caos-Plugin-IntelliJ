@@ -1,92 +1,85 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
+import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.colorize
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.AnnotationHolderWrapper
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.psi.TokenType
 
 class CaosScriptHighlighterAnnotator : Annotator {
 
 
-    override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
-        val wrapper = AnnotationHolderWrapper(annotationHolder)
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when {
             element is CaosScriptIsRvalueKeywordToken && element.firstChild?.tokenType != CaosScriptTypes.CaosScript_TOKEN -> colorize(
                 element,
-                wrapper,
+                holder,
                 CaosScriptSyntaxHighlighter.RVALUE_TOKEN
             )
             element is CaosScriptIsLvalueKeywordToken -> {
                 if (element is CaosScriptVarToken)
                     return
-                colorize(element, wrapper, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
+                colorize(element, holder, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
             }
-            element is CaosScriptIsCommandKeywordToken -> colorizeCommand(element, wrapper)
-            element is CaosScriptAnimationString -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.ANIMATION)
+            element is CaosScriptIsCommandKeywordToken -> colorizeCommand(element, holder)
+            element is CaosScriptAnimationString -> colorize(element, holder, CaosScriptSyntaxHighlighter.ANIMATION)
             element is CaosScriptByteString && isAnimationByteString(element) -> colorize(
                 element,
-                wrapper,
+                holder,
                 CaosScriptSyntaxHighlighter.ANIMATION
             )
             element is CaosScriptByteString && !isAnimationByteString(element) -> colorize(
                 element,
-                wrapper,
+                holder,
                 CaosScriptSyntaxHighlighter.BYTE_STRING
             )
             element is CaosScriptSubroutineName || element.parent is CaosScriptSubroutineName -> colorize(
                 element,
-                wrapper,
+                holder,
                 CaosScriptSyntaxHighlighter.SUBROUTINE_NAME
             )
-            element is CaosScriptTokenRvalue -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
-            element is CaosScriptAtDirectiveComment -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.COMMENT)
+            element is CaosScriptTokenRvalue -> colorize(element, holder, CaosScriptSyntaxHighlighter.TOKEN)
+
+            // Annotate/colorize '@directive' or '**Directives'
+            element is CaosScriptAtDirectiveComment -> colorize(element, holder, CaosScriptSyntaxHighlighter.COMMENT)
+
+//             Colorizes all fallthrough word tokens
             element.tokenType == CaosScriptTypes.CaosScript_WORD -> when {
                 element.hasParentOfType(CaosScriptErrorCommand::class.java) -> colorize(
                     element,
-                    wrapper,
+                    holder,
                     CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN
                 )
                 element.parent is CaosScriptCGsub -> colorize(
                     element,
-                    wrapper,
+                    holder,
                     CaosScriptSyntaxHighlighter.SUBROUTINE_NAME
                 )
-                else -> colorize(element, wrapper, CaosScriptSyntaxHighlighter.TOKEN)
+                else -> colorize(element, holder, CaosScriptSyntaxHighlighter.TOKEN)
             }
+            element is CaosScriptCaos2TagName -> highlightCaos2PrayTag(element, holder)
         }
     }
 
-    private fun colorizeCommand(element: PsiElement, wrapper: AnnotationHolderWrapper) {
+    private fun colorizeCommand(element: PsiElement, holder: AnnotationHolder) {
         val tokens = element.node.getChildren(null).filter { it.elementType != TokenType.WHITE_SPACE }
         if (tokens.size == 1) {
-            //wrapper.colorize(tokens[0], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
+            holder.colorize(tokens[0], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             return
         }
-        //wrapper.colorize(tokens[1], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
-        wrapper.colorize(tokens[0], CaosScriptSyntaxHighlighter.PREFIX_TOKEN)
+        //holder.colorize(tokens[1], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
+        holder.colorize(tokens[0], CaosScriptSyntaxHighlighter.PREFIX_TOKEN)
         if (tokens.size > 2) {
-            wrapper.colorize(tokens[2], CaosScriptSyntaxHighlighter.SUFFIX_TOKEN)
+            holder.colorize(tokens[2], CaosScriptSyntaxHighlighter.SUFFIX_TOKEN)
         }
-    }
-
-    /**
-     * Strips info annotations from a given element
-     * Making it appear as regular text
-     */
-    private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolderWrapper) {
-        annotationHolder.newInfoAnnotation("")
-            .range(psiElement)
-            .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
-            .create()
     }
 
     /**
@@ -94,9 +87,8 @@ class CaosScriptHighlighterAnnotator : Annotator {
      */
     private fun colorize(
         psiElement: PsiElement,
-        annotationHolder: AnnotationHolderWrapper,
-        attribute: TextAttributesKey,
-        message: String? = null
+        annotationHolder: AnnotationHolder,
+        attribute: TextAttributesKey
     ) {
         annotationHolder.colorize(psiElement, attribute)
     }
@@ -112,5 +104,17 @@ class CaosScriptHighlighterAnnotator : Annotator {
             parameter?.type == CaosExpressionValueType.ANIMATION
         } ?: false
 
+    }
+
+}
+
+private fun highlightCaos2PrayTag(element: CaosScriptCaos2TagName, holder: AnnotationHolder) {
+    if (element.variant?.isOld == true)
+        return
+    val tag = element.quoteStringLiteral?.stringValue ?: element.c1String?.stringValue ?: element.text
+    if (PrayTags.isOfficialTag(tag)) {
+        holder.colorize(element, CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG)
+    } else {
+        holder.colorize(element, CaosScriptSyntaxHighlighter.PRAY_TAG)
     }
 }

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
@@ -13,11 +13,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
-class CaosScriptInsertAfterFix(private val fixText:String, private val wordText:String, element:PsiElement, val offsetInElement:Int = element.text.length) : LocalQuickFix, IntentionAction {
+class CaosScriptInsertAfterFix(private val fixText:String, private val elementText:String, element:PsiElement, private val offsetInElement:Int = element.text.length) : LocalQuickFix, IntentionAction {
 
     private val element = SmartPointerManager.createPointer(element)
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
 
     override fun getText(): String = fixText
@@ -43,6 +43,6 @@ class CaosScriptInsertAfterFix(private val fixText:String, private val wordText:
     private fun invoke(editor: Editor?, element:PsiElement) {
         if (editor == null)
             return
-        EditorUtil.insertText(editor, "$wordText ", element.startOffset + offsetInElement, true)
+        EditorUtil.insertText(editor, "$elementText ", element.startOffset + offsetInElement, true)
     }
 }

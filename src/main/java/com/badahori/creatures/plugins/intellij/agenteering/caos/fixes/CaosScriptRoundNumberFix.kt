@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScr
 import kotlin.math.ceil
 import kotlin.math.floor
 
-class CaosScriptRoundNumberFix(element: CaosScriptNumber, float:Float, val roundDown:Boolean) : IntentionAction {
+class CaosScriptRoundNumberFix(element: CaosScriptNumber, float:Float, private val roundDown:Boolean) : IntentionAction {
 
     private val pointer = SmartPointerManager.createPointer(element)
 

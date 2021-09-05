@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptC1ClasToCls2Fix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCls2ToClasFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceWordFix
@@ -16,7 +17,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptCAssignmentInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Assigned value is of expected type"
-    override fun getGroupDisplayName(): String = "CaosScript"
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = "ExpectedAssigmentType"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {

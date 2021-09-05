@@ -40,7 +40,7 @@ class CaosScriptCopyForBoBCobAction : CopyAction(), DumbAware {
         @Suppress("SpellCheckingInspection")
         // Randomish pattern that hopefully never exists in a users code
         private const val replacePattern = ";;;;__xZZZZx___&&&&___xZZZx__;;;"
-        private val stringRegex = "([ \t]*\\[[^\\]]+][ \t]*)".toRegex(RegexOption.MULTILINE)
+        private val stringRegex = "([ \t]*\\[[^]]+][ \t]*)".toRegex(RegexOption.MULTILINE)
         private val multiWhitespace = "[, \t\n][, \t\n]+".toRegex(RegexOption.MULTILINE)
         private val spacesAroundCommas = "(\\s+[,]\\s*|\\s*[,]\\s+)".toRegex(RegexOption.MULTILINE)
 

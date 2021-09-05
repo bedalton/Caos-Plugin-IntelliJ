@@ -1,25 +1,22 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.openapi.util.TextRange
 
 class CaosScriptReplaceElementFix(
     element: PsiElement,
     private val replacement: String,
-    private val fixText: String = "Replace '${element.text}' with '$replacement'",
+    private val fixText: String = "Replace with '$replacement'",
     private val trimSpaces: Boolean = false
 )  : IntentionAction, LocalQuickFix {
 
@@ -27,10 +24,10 @@ class CaosScriptReplaceElementFix(
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        return pointer.element != null && file is CaosScriptFile
+        return pointer.element != null
     }
 
     override fun getText(): String = fixText

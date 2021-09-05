@@ -1,36 +1,56 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
-import com.intellij.codeInsight.intention.IntentionAction
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.SmartPointerManager
 
-class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionAction {
+class CaosScriptFixTooManySpaces(spaces: PsiElement) : IntentionAction, LocalQuickFix {
+
+    private val spacesPointer = SmartPointerManager.createPointer(spaces)
+
     override fun startInWriteAction(): Boolean {
         return true
     }
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return file is CaosScriptFile
     }
 
     override fun getText(): String = CaosBundle.message("caos.fixes.remove-extra-spaces")
+
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+        val element = spacesPointer.element
+            ?: return
+        apply(file, element)
+    }
+
+    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        val element = descriptor.psiElement
+            ?: return
+        apply(element.containingFile, element)
+    }
+
+    fun apply(file: PsiFile?, space: PsiElement) {
         if (file == null)
             return
         var hasComma = false
         var hasNewline = false
-        val siblings = mutableListOf(spaces)
-        var sibling = spaces.previous
+        val siblings = mutableListOf(space)
+        var sibling = space.previous
         while (sibling != null && WHITE_SPACE_OR_COMMAS.matches(sibling.text)) {
             if (sibling.text.contains(","))
                 hasComma = true
@@ -41,7 +61,7 @@ class CaosScriptFixTooManySpaces(private val spaces: PsiElement) : IntentionActi
             siblings.add(0, sibling)
             sibling = sibling.previous
         }
-        val trueNext = spaces.next
+        val trueNext = space.next
         sibling = trueNext
         while (sibling != null && WHITE_SPACE_OR_COMMAS.matches(sibling.text)) {
             if (sibling.text.contains(","))

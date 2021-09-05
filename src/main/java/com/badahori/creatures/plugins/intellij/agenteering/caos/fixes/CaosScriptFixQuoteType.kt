@@ -1,5 +1,6 @@
     package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.intellij.codeInspection.IntentionAndQuickFixAction
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
@@ -18,7 +19,7 @@ class CaosScriptFixQuoteType(element:PsiElement, private val quoteStart:Char, pr
 
     override fun getName(): String = CaosBundle.message("caos.fixes.fix-quote-type")
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun applyFix(project: Project, element: PsiFile?, editor: Editor?) {
         pointer.element?.let {

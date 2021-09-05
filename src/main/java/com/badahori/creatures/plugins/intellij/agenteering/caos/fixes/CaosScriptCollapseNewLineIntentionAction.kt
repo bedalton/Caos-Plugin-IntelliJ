@@ -1,8 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
@@ -11,7 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
-import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
@@ -19,14 +22,26 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: CollapseChar) : IntentionAction,
-    LocalQuickFix {
+
+class CaosScriptCollapseNewLineWithCommasIntentionAction: CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA) {
+    override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        if (element.variant?.isOld != true)
+            return false
+        return super.isAvailable(project, editor, element)
+    }
+}
+class CaosScriptCollapseNewLineWithSpacesIntentionAction: CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE)
+
+abstract class CaosScriptCollapseNewLineIntentionAction(
+    private val collapseChar: CollapseChar
+): PsiElementBaseIntentionAction(), LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
-    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        if (file == null)
+    open override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        val file = element.containingFile
+        if (file !is CaosScriptFile)
             return false
 
         // Comma is not a valid collapse char in C2e
@@ -51,8 +66,9 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
         invoke(project, file)
     }
 
-    override fun invoke(project: Project, editor: Editor, fileIn: PsiFile?) {
-        val file = fileIn ?: return
+    override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+        val file = element.containingFile
+            ?: return
         invoke(project, file)
     }
 
@@ -76,8 +92,6 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
 
 
     companion object {
-        val COLLAPSE_WITH_COMMA = CaosScriptCollapseNewLineIntentionAction(CollapseChar.COMMA)
-        val COLLAPSE_WITH_SPACE = CaosScriptCollapseNewLineIntentionAction(CollapseChar.SPACE)
         private val QUOTE_STRING =
             "(\"([^\"\\\\\\n\\r]|\\\\[\"|\\\\])*\")|('([^\\r\\n'\\\\]|\\\\['\\\\])*')".toRegex(RegexOption.MULTILINE)
         private val BRACKET_STRING = "\\[[^\\\\]*?]".toRegex(RegexOption.MULTILINE)
@@ -98,18 +112,17 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 PsiDocumentManager.getInstance(project).commitDocument(document)
             }
             val element = elementIn.copy()
-            return collapseLines(element, collapseChar)
+            return collapseLines(element, collapseChar, elementIn.variant)
         }
 
 
-        fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar): PsiElement? {
+        fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
             val project = elementIn.project
             val document = elementIn.document
             val filePointer = SmartPointerManager.createPointer(elementIn.containingFile)
             val elementClass = elementIn.javaClass
             if (document == null) {
                 LOGGER.severe("Failed to get document for collapsing")
-                return null
             }
             val text = elementIn.text
             var formatted = text
@@ -157,6 +170,13 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
                 ?: return null
 
             val range = elementIn.textRange
+            if (document == null) {
+                return try {
+                    CaosScriptPsiElementFactory.createAndGet(project, formatted, elementIn::class.java, variant!!)
+                } catch (e: Exception) {
+                    null
+                }
+            }
             document.replaceString(range.startOffset, range.endOffset, formatted.trim())
 
             val file = filePointer.element
@@ -246,305 +266,6 @@ class CaosScriptCollapseNewLineIntentionAction(private val collapseChar: Collaps
             }
             return formatted
         }
-
-
-/*
-        private fun commitDocument(project: Project, pointer: SmartPsiElementPointer<PsiElement>) {
-            val element = pointer.element
-                ?: return
-            element.document?.let {
-                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                CodeStyleManager.getInstance(project).reformat(element, false)
-            }
-        }
-        fun collapseLinesPSI(elementIn: PsiElement, collapseChar: CollapseChar): PsiElement? {
-            val project = elementIn.project
-            val pointer = SmartPointerManager.createPointer(elementIn.copy())
-            val didDeleteComments = stripComments(elementIn)
-            if (!didDeleteComments) {
-                CaosNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "Failed to remove comments from document for flattening"
-                )
-                return null
-            }
-
-            commitDocument(project, pointer)
-            val didDeleteSecondaryWhiteSpace = PsiTreeUtil.collectElementsOfType(elementIn, PsiWhiteSpace::class.java)
-                .filterNot { element -> keepSpaces(element) }
-                .filter { it.next?.tokenType in CaosScriptTokenSets.WHITESPACES }
-                .map { SmartPointerManager.createPointer(it) }
-                .all {
-                    val element = it.element
-                        ?: return@all false
-                    if (element.isValid) {
-                        element.delete()
-                        true
-                    } else {
-                        false
-                    }
-                }
-            if (!didDeleteSecondaryWhiteSpace) {
-                CaosNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "Failed to delete duplicate whitespace elements"
-                )
-                return null
-            }
-            commitDocument(project, pointer)
-            val didReplacePrimaryWhitespace = PsiTreeUtil.collectElementsOfType(elementIn, PsiWhiteSpace::class.java)
-                .filterNot { element -> keepSpaces(element) }
-                .map { SmartPointerManager.createPointer(it) }
-                .all {
-                    val element = it.element
-                        ?: return@all false
-                    if (element.isValid) {
-                        if (element.text != collapseChar.text) {
-                            val charElement = if (collapseChar == CollapseChar.SPACE)
-                                CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(project)
-                            else
-                                CaosScriptPsiElementFactory.comma(project)
-                            element.replace(charElement) != null
-                        } else {
-                            true
-                        }
-                    } else {
-                        false
-                    }
-                }
-            if (!didReplacePrimaryWhitespace) {
-                CaosNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "Failed to delete duplicate whitespace elements"
-                )
-                return null
-            }
-            val element = pointer.element
-            if (element == null) {
-                CaosNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "Script invalidated unexpectedly"
-                )
-                return null
-            }
-            commitDocument(project, pointer)
-            val whiteSpaces = PsiTreeUtil.collectElementsOfType(elementIn, PsiWhiteSpace::class.java)
-                .map { whiteSpace -> SmartPointerManager.createPointer(whiteSpace) }
-            var trimmed = true
-            for (whiteSpacePointer in whiteSpaces) {
-                val whiteSpace = whiteSpacePointer.element
-                    ?: break
-                if (whiteSpace.previous != null)
-                    break
-                if (whiteSpace.isValid)
-                    whiteSpace.delete()
-                else {
-                    trimmed = false
-                    break
-                }
-            }
-            for (whiteSpacePointer in whiteSpaces.reversed()) {
-                val whiteSpace = whiteSpacePointer.element
-                    ?: break
-                if (whiteSpace.next != null)
-                    break
-                if (whiteSpace.isValid)
-                    whiteSpace.delete()
-                else {
-                    trimmed = false
-                    break
-                }
-            }
-            if (!trimmed) {
-                CaosNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "Failed to trim leading and trailing whitespace"
-                )
-                return null
-            }
-
-            return elementIn.replace(element)
-        }
-
-        private fun stripComments(element: PsiElement): Boolean {
-            PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2Block::class.java).firstOrNull()
-                ?.let { caos2Block ->
-                    val next = caos2Block.next
-                    val spacePointer = if (next != null && next.tokenType in CaosScriptTokenSets.WHITESPACES)
-                        SmartPointerManager.createPointer(next)
-                    else
-                        null
-                    caos2Block.delete()
-                    spacePointer?.element?.delete()
-                }
-
-            var didDeleteComments = PsiTreeUtil.collectElementsOfType(element, CaosScriptCommentBlock::class.java).map {
-                SmartPointerManager.createPointer(it)
-            }.all { commentBlockPointer ->
-                commentBlockPointer.element?.let {
-                    it.delete()
-                    true
-                } ?: false
-            }
-            val comments = PsiTreeUtil.collectElementsOfType(element, PsiComment::class.java).map {
-                SmartPointerManager.createPointer(it)
-            }
-            for (commentPointer in comments) {
-                val comment = commentPointer.element
-                didDeleteComments = if (comment != null && comment.isValid) {
-                    var next = comment.next?.next
-                        ?.let {
-                            SmartPointerManager.createPointer(it)
-                        }
-                    comment.delete()
-                    while (next != null) {
-                        val toDelete = next.element
-                            ?: break
-                        if (toDelete.text.isNotBlank())
-                            break
-                        val nextNext = toDelete.next
-                        next = if (nextNext != null && nextNext.text.trim().isBlank())
-                            SmartPointerManager.createPointer(nextNext)
-                        else
-                            null
-                        toDelete.delete()
-                    }
-                    didDeleteComments
-                } else {
-                    false
-                }
-            }
-            return didDeleteComments
-        }
-/*
-        fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar): PsiElement? {
-            val project = elementIn.project
-            val pointer = SmartPointerManager.createPointer(elementIn)
-            var element = pointer.element!!
-            PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2Block::class.java).firstOrNull()
-                ?.let { caos2Block ->
-                    val next = caos2Block.next
-                    val spacePointer = if (next != null && next.tokenType in CaosScriptTokenSets.WHITESPACES)
-                        SmartPointerManager.createPointer(next)
-                    else
-                        null
-                    caos2Block.delete()
-                    spacePointer?.element?.delete()
-                }
-
-            var didDeleteComments = PsiTreeUtil.collectElementsOfType(element, CaosScriptCommentBlock::class.java).map {
-                SmartPointerManager.createPointer(it)
-            }.all { commentBlockPointer ->
-                commentBlockPointer.element?.let {
-                    it.delete()
-                    true
-                } ?: false
-            }
-
-
-
-            pointer.element?.document?.let {
-                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                CodeStyleManager.getInstance(project).reformat(element, false)
-            }
-            element = pointer.element!!
-            val newLines = PsiTreeUtil.collectElementsOfType(element, PsiWhiteSpace::class.java)
-                .filter { it.textContains('\n') }
-                .map {
-                    SmartPointerManager.createPointer(it)
-                }
-
-            var didReplaceAll = true
-            for (newLinePointer in newLines) {
-                val newLine = newLinePointer.element
-                    ?: continue
-                if (newLine.isValid) {
-                    replaceWithSpaceOrComma(newLine, collapseChar)
-                } else {
-                    didReplaceAll = false
-                }
-            }
-            if (!didReplaceAll) {
-                CaosInjectorNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "Failed to replace new lines with ${if (collapseChar == CollapseChar.SPACE) "spaces" else "commas"}"
-                )
-                return null
-            }
-            element = pointer.element!!
-            if (PsiTreeUtil
-                    .collectElementsOfType(element, PsiWhiteSpace::class.java)
-                    .any { it.textContains('\n') }
-            ) {
-                CaosInjectorNotifications.showError(
-                    project,
-                    "CAOS Formatting Error",
-                    "New lines exists after deletion"
-                )
-                return null
-            }
-            element = pointer.element!!
-
-            while (trailingText.matches(element.firstChild?.text ?: "x;x;x"))
-                element.firstChild.delete()
-            while (trailingText.matches(element.lastChild?.text ?: "x;x;x"))
-                element.lastChild.delete()
-            runWriteAction {
-                element.document?.let {
-                    PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
-                    CodeStyleManager.getInstance(project).reformat(element, true)
-                }
-            }
-            return pointer.element!!
-        }
-
-        private fun replaceWithSpaceOrComma(nextIn: PsiElement?, collapseChar: CollapseChar) {
-            if (nextIn == null)
-                return
-            val pointer = SmartPointerManager.createPointer(nextIn)
-            var previous = nextIn.previous
-            while (previous != null && previous.isWhitespaceOrComma()) {
-                previous.delete()
-                previous = previous.previous
-            }
-            val next = pointer.element
-                ?: return
-            val previousIsNotCollapseChar = next.previous?.text != collapseChar.char
-            if (!next.text.contains('\n') || (next.text == collapseChar.char && previousIsNotCollapseChar))
-                return
-            var superNext = if (previousIsNotCollapseChar) {
-                val element = if (collapseChar == CollapseChar.SPACE)
-                    CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(next.project)
-                else
-                    CaosScriptPsiElementFactory.comma(next.project)
-                val replaced = next.replace(element)
-                replaced.next
-            } else {
-                next
-            } ?: return
-            var nextPointer: SmartPsiElementPointer<PsiElement>?
-            while (superNext.isWhitespaceOrComma()) {
-                val toDelete = superNext
-                nextPointer = superNext.next?.let {
-                    SmartPointerManager.createPointer(it)
-                }
-                toDelete.delete()
-                superNext = nextPointer?.element ?: return
-            }
-        }
-*/
-        /**
-         * Check if PSI element is blank or made up of whitespace and/or commas
-         */
-        private fun PsiElement.isWhitespaceOrComma(): Boolean {
-            return this is PsiWhiteSpace || WHITESPACE_OR_COMMA.matches(text) || text.isBlank()
-        }*/
     }
 }
 

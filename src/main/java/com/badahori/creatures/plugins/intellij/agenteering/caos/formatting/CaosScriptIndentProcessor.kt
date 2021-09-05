@@ -25,20 +25,11 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
                 Indent.getNoneIndent()
             }
             elementType in CaosScriptTokenSets.COMMENTS -> {
-                while (true) {
-                    val previous = node.previous
-                        ?: return Indent.getAbsoluteNoneIndent()
-                    if (previous.elementType == TokenType.WHITE_SPACE ) {
-                        if (previous.text.contains('\n')) {
-                            return Indent.getAbsoluteNoneIndent()
-                        } else {
-                            continue
-                        }
-                    } else {
-                        break
-                    }
-                }
-                Indent.getNoneIndent()
+                val previous: ASTNode = node.previous
+                    ?: return Indent.getAbsoluteNoneIndent()
+                if (previous.elementType == TokenType.WHITE_SPACE && previous.text == "\n")
+                    return Indent.getAbsoluteNoneIndent()
+                Indent.getNormalIndent()
             }
 
             // C1 String indents... which should be none on new line as it adds the spaces to the output
@@ -79,7 +70,7 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
     }
 }
 
-private fun getIndent(parentBlock:CaosScriptScriptElement, caosSettings: CaosScriptCodeStyleSettings) : Indent {
+private fun getIndent(parentBlock: CaosScriptScriptElement, caosSettings: CaosScriptCodeStyleSettings): Indent {
     val indent = when (parentBlock) {
         is CaosScriptEventScript -> caosSettings.INDENT_SCRP && parentBlock.scriptTerminator != null
         is CaosScriptInstallScript -> caosSettings.INDENT_ISCR && parentBlock.scriptTerminator != null

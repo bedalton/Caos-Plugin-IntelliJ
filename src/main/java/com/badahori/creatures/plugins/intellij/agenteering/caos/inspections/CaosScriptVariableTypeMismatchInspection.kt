@@ -27,6 +27,7 @@ class CaosScriptVariableTypeMismatchInspection : LocalInspectionTool() {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun checkIndexedVariableType(varToken: CaosScriptIsVariable) {
         TODO()
     }

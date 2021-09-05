@@ -1,20 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 
-class CaosScriptInsertSpaceFix(element:PsiElement) : IntentionAction {
+class CaosScriptInsertSpaceFix(element:PsiElement) : IntentionAction, LocalQuickFix {
 
     private val insertBeforeElement = SmartPointerManager.createPointer(element)
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun getText(): String = "Insert space"
 
@@ -24,11 +27,26 @@ class CaosScriptInsertSpaceFix(element:PsiElement) : IntentionAction {
         return insertBeforeElement.element != null
     }
 
+    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        val element = descriptor.psiElement
+            ?: return
+        val editor = element.editor
+            ?: return
+        invoke(editor, element)
+    }
+
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+
+        val element = insertBeforeElement.element
+            ?: return
+
         if (editor == null)
             return
-        val element = insertBeforeElement.element
-                ?: return
+
+        invoke(editor, element)
+    }
+
+    fun invoke(editor: Editor, element: PsiElement) {
         EditorUtil.insertText(editor, " ", element.startOffset, true)
     }
 }

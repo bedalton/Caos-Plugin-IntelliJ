@@ -12,7 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.C
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
-class CaosDefValuesListValueStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefValuesListValueStub, CaosDefValuesListValueImpl>(debugName) {
+class CaosDefValuesListValueStubType(debugName:String) : CaosDefStubElementType<CaosDefValuesListValueStub, CaosDefValuesListValueImpl>(debugName) {
 
     override fun createPsi(stub: CaosDefValuesListValueStub): CaosDefValuesListValueImpl {
         return CaosDefValuesListValueImpl(stub, this)

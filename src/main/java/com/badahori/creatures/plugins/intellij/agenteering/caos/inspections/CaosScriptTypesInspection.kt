@@ -84,7 +84,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         // As token place is hardcoded in grammar
         if (argument is CaosScriptTokenRvalue)
             return
-        // If this argument is not an rvalue,
+        // If this argument is not a rvalue,
         // then this command needs to be updated after grammar change
         if (argument !is CaosScriptRvalueLike)
             throw Exception("Unexpected argument type encountered")

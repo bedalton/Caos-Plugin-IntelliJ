@@ -5,11 +5,13 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
+import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
@@ -65,22 +67,36 @@ class CaosScriptBlock internal constructor(
         )
             return ChildAttributes(Indent.getAbsoluteNoneIndent(), null)
 
-        if (psi is CaosScriptHasCodeBlock)
-            return if (psi is CaosScriptScriptElement)
-                noneIndent
-            else {
-                val cursorElement = psi.editor?.let { it.cursorElementInside(psi.textRange) ?: it.primaryCursorElement }
-                    ?: return noneIndent
+        val cursorElement = psi.editor?.let { it.cursorElementInside(psi.textRange) ?: it.primaryCursorElement }
+            ?: return noneIndent
+        if (psi is CaosScriptHasCodeBlock) {
+            if (cursorElement.tokenType == TokenType.WHITE_SPACE) {
+                val previous = cursorElement.getPreviousNonEmptySibling(true)
+                if (previous is CaosScriptCodeBlockLine || previous is CaosScriptCodeBlock || previous?.parent is CaosScriptCodeBlock)
+                    return normalIndent
+                val next = cursorElement.getNextNonEmptySibling(true)
+                if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock)
+                    return normalIndent
+            }
+            return if (psi is CaosScriptScriptElement) {
+                if (cursorElement.parent == psi)
+                    noneIndent
+                else
+                    normalIndent
+            } else {
                 if (cursorElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java))
                     absoluteNoneIndent
                 else {
                     val previousElement = cursorElement.getPreviousNonEmptySibling(true)
-                    if (previousElement == null || previousElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java).orFalse())
+                    if (previousElement == null || previousElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java)
+                            .orFalse()
+                    )
                         absoluteNoneIndent
                     else
                         normalIndent
                 }
             }
+        }
 
         if (psi is CaosScriptCodeBlock && (psi.parent is CaosScriptScriptElement)) {
             val parent = psi.parent
@@ -109,6 +125,15 @@ class CaosScriptBlock internal constructor(
             return normalIndent
         if (psi.tokenType in CaosScriptTokenSets.WHITESPACES)
             return normalIndent
+
+        if (cursorElement.tokenType == TokenType.WHITE_SPACE) {
+            val previous = cursorElement.getPreviousNonEmptySibling(true)
+            if (previous is CaosScriptCodeBlockLine || previous is CaosScriptCodeBlock || previous?.parent is CaosScriptCodeBlock)
+                return normalIndent
+            val next = cursorElement.getNextNonEmptySibling(true)
+            if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock)
+                return normalIndent
+        }
         return noneIndent
     }
 

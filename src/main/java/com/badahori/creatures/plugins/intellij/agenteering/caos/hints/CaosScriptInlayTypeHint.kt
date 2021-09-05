@@ -4,14 +4,16 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.hints.HintInfo
@@ -22,7 +24,8 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 
 
-enum class CaosScriptInlayTypeHint(description: String, override val enabled: Boolean, override val priority: Int = 0) : CaosScriptHintsProvider {
+enum class CaosScriptInlayTypeHint(description: String, override val enabled: Boolean, override val priority: Int = 5) :
+    CaosScriptHintsProvider {
 
 
     /**
@@ -31,14 +34,16 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ATTRIBUTE_BITFLAGS_IN_EQUALITY_EXPRESSIONS("Show bit flag for equality expressions", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
+            return (element as? CaosScriptRvalue)?.isInt.orFalse() && element.parent is CaosScriptEqualityExpressionPrime && usesBitFlags(
+                element as CaosScriptRvalue
+            )
         }
 
         private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
             val commandString = getCommandString(element)
-                    ?: return false
+                ?: return false
             val variant = element.variant
-                    ?: return false
+                ?: return false
             // Check if value is cached for this list
             element.getUserData(BIT_FLAG_IN_EQUALITY_LIST_KEY)?.let {
                 if (it.first like commandString) {
@@ -69,26 +74,26 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             // Ensure element is RValue, though that should have been checked in isApplicable()
             val expression = element as? CaosScriptRvalue
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
 
             // Ensure and get a variant for file
             val variant = expression.variant
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
 
             // Ensure and get bitflag value
             val bitFlagValue = expression.intValue
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
 
             // Get the command string for this element in the equality expression
             val commandString = getCommandString(element)
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
 
             // Get command definition for enclosing command
             val commandDefinition = CaosLibs[variant].command[commandString]
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             // Get the variant type-list if any
             val typeList = commandDefinition.returnValuesList[variant]
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             // Generate bit-flag inlay hints
             return getBitFlagHintValues(typeList, bitFlagValue, element.endOffset)
         }
@@ -111,10 +116,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         private fun getCommandString(element: CaosScriptRvalue): String? {
             // Ensure parent is equality expression
             val parent = element.parent as? CaosScriptComparesEqualityElement
-                    ?: return null
+                ?: return null
             // Get command token for equality expression
             val commandToken = getCommandTokenFromEquality(parent, element)
-                    ?: return null
+                ?: return null
             return commandToken.commandString
         }
     },
@@ -125,7 +130,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptRvalue)?.isInt.orFalse() && usesBitFlags(element as CaosScriptRvalue)
+            return (element as? CaosScriptRvalue)?.isInt.orFalse() && element.parent !is CaosScriptEqualityExpressionPrime && usesBitFlags(
+                element as CaosScriptRvalue
+            )
         }
 
         private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
@@ -134,13 +141,13 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val expression = element as? CaosScriptRvalue
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             // Can only get bit-flag hint values from integer rvalue
             val bitFlagValue = expression.intValue
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             // Get values list
             val valuesList = getValuesList(expression)
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             return getBitFlagHintValues(valuesList, bitFlagValue, element.endOffset)
         }
 
@@ -149,7 +156,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val valuesList = getValuesList(element)
-                    ?: return null
+                ?: return null
             return HintInfo.MethodInfo(valuesList.name, listOf(), CaosScriptLanguage)
         }
     },
@@ -167,7 +174,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             }
             // Only need to show genus names for command arguments
             val parentCommand = element.parent as? CaosScriptCommandElement
-                    ?: return false
+                ?: return false
 
             // Get index for argument in command call
             val index = element.index
@@ -176,7 +183,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
             // Get command definition for command
             val commandDefinition = parentCommand.commandDefinition
-                    ?: return false
+                ?: return false
 
             // Find parameters in command
             val parameters = commandDefinition.parameters
@@ -189,7 +196,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             // Ensure previous parameter is labeled as family
             // Cannot suggest genus without family
             val previousParameter = parameters.getOrNull(index - 1)
-                    ?: return false
+                ?: return false
             return previousParameter.name like "family"
         }
 
@@ -199,27 +206,32 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val variant = (element.containingFile as? CaosScriptFile)?.variant
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val genus = element.text.toIntSafe()
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val family = element.getPreviousNonEmptySibling(true)?.text?.toIntSafe()
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             return getGenusInlayInfo(variant, element, family, genus)
         }
 
         /**
          * Gets the actual inlay information for this family genus combination
          */
-        private fun getGenusInlayInfo(variant: CaosVariant, element: PsiElement, family: Int, genus: Int): List<InlayInfo> {
+        private fun getGenusInlayInfo(
+            variant: CaosVariant,
+            element: PsiElement,
+            family: Int,
+            genus: Int
+        ): List<InlayInfo> {
             val valuesList: CaosValuesList = CaosLibs.valuesLists[variant]
-                    // Find list labeled Genus, There should be only one
-                    .firstOrNull {
-                        it.name like "Genus"
-                    }
+                // Find list labeled Genus, There should be only one
+                .firstOrNull {
+                    it.name like "Genus"
+                }
             // If not value found, return empty inlay hints array
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val valuesListValue = valuesList["$family $genus"]
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             // Format inlay hint for genus
             return listOf(InlayInfo("(${valuesListValue.name})", element.endOffset))
         }
@@ -235,7 +247,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                     // If argument contains a space, it is not a literal
                     // And all but genus values have no spaces, and genus is handled elsewhere
                     && element.isInt
-                    && element.parent is CaosScriptEqualityExpressionPrime
+                    && (element.parent is CaosScriptEqualityExpressionPrime)
         }
 
         /**
@@ -244,21 +256,22 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             if (element !is CaosScriptRvalue)
                 return EMPTY_INLAY_LIST
+
             val parent = element.parent as? CaosScriptEqualityExpressionPrime
-                    ?: return EMPTY_INLAY_LIST
-            if (element.commandStringUpper?.let { it == "CHEM" || it == "DRIV" }.orTrue())
-                return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
+
             val variant = element.variant
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
+
             val valuesList = parent.getValuesList(variant, element)
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val value = element.text
             if (value == "0" && valuesList.name.toUpperCase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
                 return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values
             val valuesListValue = valuesList[value]
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
 
             // Format hint and return
             return listOf(InlayInfo("(" + valuesListValue.name + ")", element.endOffset))
@@ -269,12 +282,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Might be used for blacklisting command hints
          */
         override fun getHintInfo(element: PsiElement): HintInfo? {
-            if (element !is CaosScriptRvalue) {
-                return null
-            }
-            val parentCommand = (element.parent as? CaosScriptCommandLike)?.commandStringUpper
-                    ?: return null
-            return HintInfo.MethodInfo(parentCommand, listOf(), CaosScriptLanguage)
+            val hint = provideHints(element).firstOrNull()
+                ?: return null
+            return HintInfo.MethodInfo("EQ Type Hint: " + hint.text, listOf(), CaosScriptLanguage)
         }
     },
 
@@ -305,13 +315,13 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
             // Get list for argument
             val valuesList = getValuesList(element)
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             if (value == "0" && valuesList.name.toUpperCase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
                 return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values
             val valuesListValue = valuesList.get(value)
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
 
             // Format hint and return
             return listOf(InlayInfo("(" + valuesListValue.name + ")", element.endOffset))
@@ -326,7 +336,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val parentCommand = (element.parent as? CaosScriptCommandLike)?.commandStringUpper
-                    ?: return null
+                ?: return null
             return HintInfo.MethodInfo(parentCommand, listOf(), CaosScriptLanguage)
         }
     },
@@ -345,19 +355,19 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val eventElement = element as? CaosScriptEventNumberElement
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             // Generate the 'event' prefix inlay value
             val items = listOf(
-                    InlayInfo("event", eventElement.startOffset)
+                InlayInfo("event", eventElement.startOffset)
             )
             // Ensure and get variant
             val variant = element.containingCaosFile?.variant
-                    ?: return items
+                ?: return items
 
             val typeList = CaosLibs[variant].valuesList("EventNumbers")
-                    ?: return items
+                ?: return items
             val value = typeList[eventElement.text]
-                    ?: return items
+                ?: return items
             return items + InlayInfo("(${value.name})", eventElement.endOffset)
         }
 
@@ -370,7 +380,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val variant = element.variant
-                    ?: return null
+                ?: return null
             return HintInfo.MethodInfo("${variant.code} EventNumber - ${element.text}", listOf(), CaosScriptLanguage)
         }
     },
@@ -392,7 +402,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val dimensions = element as? CaosScriptPictDimensionLiteral
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val text = dimensions.dimensions.let {
                 "${it.first}x${it.second}"
             }
@@ -422,7 +432,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvalue)
                 return false
             val parent = element.parent as? CaosScriptCAssignment
-                    ?: return false
+                ?: return false
             return setvClasRegexTest.matches(parent.text)
         }
 
@@ -431,11 +441,11 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val rvalue = element as? CaosScriptRvalue
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val clasValue = rvalue.intValue
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val agentClass = CaosAgentClassUtils.parseClas(clasValue)
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val formattedClas = "family:${agentClass.family} genus:${agentClass.genus} species:${agentClass.species}"
             return listOf(InlayInfo(formattedClas, rvalue.endOffset))
         }
@@ -467,9 +477,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvaluePrime)
                 return EMPTY_INLAY_LIST
             val commandToken = element.commandToken
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             val commandString = element.commandStringUpper
-                    ?: return EMPTY_INLAY_LIST
+                ?: return EMPTY_INLAY_LIST
             element.getUserData(RETURN_VALUES_TYPE_KEY)?.let {
                 if (commandString like it.first && it.second != null && it.second?.isNotEmpty() == true)
                     return listOf(InlayInfo("(${it.second!!.first()})", commandToken.endOffset))
@@ -478,12 +488,12 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return EMPTY_INLAY_LIST
             else
                 element.inferredType.let { types ->
-                if (types.all { it == UNKNOWN || it == ANY })
-                    null
-                else
-                    types
-            } ?: element.commandDefinition?.returnType?.toListOf()
-            ?: return EMPTY_INLAY_LIST
+                    if (types.all { it == UNKNOWN || it == ANY })
+                        null
+                    else
+                        types
+                } ?: element.commandDefinition?.returnType?.toListOf()
+                ?: return EMPTY_INLAY_LIST
             var typeNames = types.map { it.simpleName }
             var typeName: String? = null
             // element.parent.parent = RvaluePrime -> Rvalue -> CommandElement
@@ -537,7 +547,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return null
             }
             val commandString = element.commandStringUpper
-                    ?: return null
+                ?: return null
             return HintInfo.MethodInfo(commandString, listOf(), CaosScriptLanguage)
         }
     };
@@ -549,7 +559,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 /**
  * Gets the command token from the opposing side of a equality comparison
  */
-private fun getCommandTokenFromEquality(parent: CaosScriptComparesEqualityElement, expression: CaosScriptRvalue): CaosScriptIsCommandToken? {
+private fun getCommandTokenFromEquality(
+    parent: CaosScriptComparesEqualityElement,
+    expression: CaosScriptRvalue
+): CaosScriptIsCommandToken? {
     val other: CaosScriptRvalue? = if (parent.first == expression) parent.second else parent.first
     return other?.rvaluePrime?.commandToken //?: other?.varToken?.lastAssignment
 }
@@ -568,7 +581,7 @@ private fun getBitFlagHintValues(typeList: CaosValuesList, bitFlagValue: Int, of
     for (typeListValue in typeList.values) {
         try {
             val typeListValueValue = typeListValue.intValue
-                    ?: continue
+                ?: continue
             if (bitFlagValue and typeListValueValue > 0)
                 values.add(typeListValue.name)
         } catch (e: Exception) {
@@ -582,9 +595,9 @@ private fun getBitFlagHintValues(typeList: CaosValuesList, bitFlagValue: Int, of
  */
 private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
     val parent = element.parent as? CaosScriptCommandElement
-            ?: return null
+        ?: return null
     val variant = element.variant
-            ?: return null
+        ?: return null
     val index = element.index
     val key = "${parent.commandString}:$index"
     // If enclosing command and parameter index are the same
@@ -597,18 +610,18 @@ private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
 
     // Get values list for expression
     // If is SETV expression get values list for lvalue
-    val valuesList =  if (parent is CaosScriptCAssignment) {
+    val valuesList = if (parent is CaosScriptCAssignment) {
         parent.lvalue
-                ?.commandDefinition
-                ?.returnValuesList
-                ?.get(variant)
+            ?.commandDefinition
+            ?.returnValuesList
+            ?.get(variant)
     } else {
         // Load up command definition
         val definition = parent.commandDefinition
-                ?: return null
+            ?: return null
         // Get corresponding parameter information for argument
         val parameter = definition.parameters.getOrNull(index)
-                ?: return null
+            ?: return null
         // Get parameters value list if any
         parameter.valuesList[variant]
     }
@@ -623,7 +636,8 @@ private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
 /**
  * Used to cache bit flag list validity in equality
  */
-private val BIT_FLAG_IN_EQUALITY_LIST_KEY: Key<Pair<String, Boolean>> = Key("com.badahori.creatures.BitFlagsListIsValidInEqualityExpression")
+private val BIT_FLAG_IN_EQUALITY_LIST_KEY: Key<Pair<String, Boolean>> =
+    Key("com.badahori.creatures.BitFlagsListIsValidInEqualityExpression")
 
 private val ARGUMENT_VALUES_LIST_KEY: Key<Pair<String, Int?>> = Key("com.badahori.creatures.ArgumentValueList")
 

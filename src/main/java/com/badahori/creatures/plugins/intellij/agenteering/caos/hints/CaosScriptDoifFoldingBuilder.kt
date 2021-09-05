@@ -105,7 +105,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
     override fun isCollapsedByDefault(node: ASTNode): Boolean = true
 
     /**
-     * Determines whether or not to actually fold this command
+     * Determines whether to actually fold this command
      */
     private fun shouldFold(expression: CaosScriptEqualityExpressionPrime): Boolean {
         val variant = expression.variant
