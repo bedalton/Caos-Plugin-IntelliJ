@@ -6,13 +6,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
-import com.badahori.creatures.plugins.intellij.agenteering.utils.findChildInSelfOrParent
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.util.indexing.FileBasedIndex
 import java.io.File
 
@@ -74,8 +72,9 @@ object BodyPartsIndex {
             val key = makeKey(attFile)
                 ?: continue
 
+            val scope = attFile.getModule(project)?.moduleContentScope
             // Find matching sprites
-            val matchingSprites = BreedSpriteIndex.findMatching(project, key).nullIfEmpty()
+            val matchingSprites = BreedSpriteIndex.findMatching(project, key, scope).nullIfEmpty()
                 ?: continue
             var matchingSprite: VirtualFile? = null
 
