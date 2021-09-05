@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
@@ -21,13 +21,13 @@ class Caos2CobRemoveFileFix(element: PsiElement, private val fixText:String? = n
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("cob.caos2cob.inspections.group")
+    override fun getFamilyName(): String = AgentMessages.message("cob.caos2cob.group")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return pointer.element != null && file is CaosScriptFile
     }
 
-    override fun getText(): String = fixText ?: CaosBundle.message("cob.caos2cob.fixes.delete-error-file", fileName)
+    override fun getText(): String = fixText ?: AgentMessages.message("cob.caos2cob.fixes.delete-error-file", fileName)
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val element = pointer.element

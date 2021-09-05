@@ -1,16 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import bedalton.creatures.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprSpriteFrame
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import java.nio.ByteBuffer
+import com.badahori.creatures.plugins.intellij.agenteering.utils.flipVertical
 import java.util.*
 
 
-internal fun ByteBuffer.readC1Cob(fileName:String?): CobBlock.AgentBlock {
-    val quantityAvailable = int16
+internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
+    val quantityAvailable = uInt16
 
     val expiresMonth = int32
     val expiresDay = int32
@@ -58,7 +57,7 @@ internal fun ByteBuffer.readC1Cob(fileName:String?): CobBlock.AgentBlock {
     )
 }
 
-private fun ByteBuffer.readC1Script(): String {
+private fun ByteStreamReader.readC1Script(): String {
     val scriptSize = uInt8.let {
         if (it == 255)
             int16

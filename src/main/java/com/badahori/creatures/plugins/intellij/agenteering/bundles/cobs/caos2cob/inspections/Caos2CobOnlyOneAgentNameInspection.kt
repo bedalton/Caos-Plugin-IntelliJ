@@ -1,6 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
@@ -16,10 +19,8 @@ import com.intellij.psi.util.PsiTreeUtil
 class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Only one agent name"
-    override fun getGroupDisplayName(): String = CaosBundle.message("cob.caos2cob.inspections.group")
-    override fun getGroupPath(): Array<String> {
-        return arrayOf(CaosBundle.message("caos.intentions.family"))
-    }
+    override fun getGroupDisplayName(): String = CAOS2Cob
+    override fun getGroupPath() = CAOS2Path
     override fun getShortName(): String = "Caos2CobTooManyAgentNames"
 
     /**
@@ -30,6 +31,7 @@ class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool() {
 
             override fun visitCaos2Block(element: CaosScriptCaos2Block) {
                 super.visitCaos2Block(element)
+
                 validateAgentNames(element, holder)
             }
         }
@@ -60,11 +62,11 @@ class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool() {
                     it.startOffset
                 }
                 .drop(1)
-            val error = CaosBundle.message("cob.caos2cob.inspections.only-one-agent.extraneous-agent-name")
+            val error = AgentMessages.message("cob.caos2cob.inspections.only-one-agent.extraneous-agent-name")
             for(tag in tags) {
                 val parentTag = tag.getParentOfType(CaosScriptCaos2::class.java)
                 if (parentTag != null)
-                    holder.registerProblem(element, error, DeleteElementFix(CaosBundle.message("cob.caos2cob.inspections.only-one-agent.fix.delete-extraneous-tag", tag.text), parentTag))
+                    holder.registerProblem(element, error, DeleteElementFix(AgentMessages.message("cob.caos2cob.inspections.only-one-agent.fix.delete-extraneous-tag", tag.text), parentTag))
                 else
                     holder.registerProblem(element, error)
             }

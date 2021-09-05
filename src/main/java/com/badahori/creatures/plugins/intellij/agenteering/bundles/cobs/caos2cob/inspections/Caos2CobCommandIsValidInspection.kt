@@ -1,7 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -16,7 +19,7 @@ import com.intellij.psi.PsiElementVisitor
 class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Invalid CAOS2Cob command"
-    override fun getGroupDisplayName(): String = CaosBundle.message("cob.caos2cob.inspections.group")
+    override fun getGroupDisplayName(): String = CAOS2Cob
     override fun getGroupPath(): Array<String> {
         return arrayOf(CaosBundle.message("caos.intentions.family"))
     }
@@ -36,7 +39,7 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
 
     companion object {
 
-        val AGENT_NAME_COMMAND_REGEX = "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
+        private val AGENT_NAME_COMMAND_REGEX = "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
 
         /**
          * Validates a COB comment directive, to ensure that it actually exists
@@ -52,11 +55,23 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
             val command = CobCommand.fromString(tagName)
             val variant = element.variant
             if (command != null) {
+                if (variant == null || command.variant == null || command.variant == variant)
+                    return
+                val error = AgentMessages.message("errors.caos2properties.out-of-variant-property", tagNameRaw, command.variant)
+                val parent = element.getParentOfType(CaosScriptCaos2BlockComment::class.java)
+                val fix = if (parent != null) {
+                    DeleteElementFix(
+                        AgentMessages.message("errors.caos2properties.out-of-variant-property.delete-element"),
+                        parent
+                    ).toArrayOf()
+                } else emptyArray()
+                holder.registerProblem(element, error, *fix)
                 return
             }
+
             val similar = getFixesForSimilar(variant, element, tagName)
                 .toTypedArray()
-            val error = "'$tagNameRaw' is not a recognized COB command"
+            val error = AgentMessages.message("errors..caos2properties.property-invalid.property-not-recognized", tagNameRaw, CAOS2Cob )
             holder.registerProblem(element, error, *similar)
         }
 
@@ -72,7 +87,7 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
                     CaosScriptReplaceElementFix(
                         element,
                         it.first,
-                        CaosBundle.message("cob.caos2cob.fix.replace-cob-command", it.first)
+                        AgentMessages.message("caos2commands.fixes.replace-command", it.first)
                     )
                 }
         }

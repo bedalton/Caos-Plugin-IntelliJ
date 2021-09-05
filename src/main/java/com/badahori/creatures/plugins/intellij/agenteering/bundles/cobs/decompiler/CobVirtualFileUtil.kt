@@ -167,7 +167,6 @@ private fun tryQuickFormat(psiFile:CaosScriptFile, file:CaosVirtualFile) : CaosV
     } catch (e: Exception) {
         LOGGER.severe("Failed to quick format in createChildScript method in CobVirtualFileUtil. Error: ${e.message}")
         e.printStackTrace()
-    } finally {
-        return psiFile.virtualFile as? CaosVirtualFile ?: file
     }
+    return psiFile.virtualFile as? CaosVirtualFile ?: file
 }

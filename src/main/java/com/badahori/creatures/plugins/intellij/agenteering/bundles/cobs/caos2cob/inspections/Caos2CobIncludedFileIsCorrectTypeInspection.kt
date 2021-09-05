@@ -1,10 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil.ARRAY_ACCESS_BEFORE_EXTENSION_REGEX
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil.ARRAY_ACCESS_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobMoveFileToCommandFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.getFileNameWithArrayAccess
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand.*
@@ -13,17 +14,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
 class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
 
-    override fun getDisplayName(): String = "Included file is valid type"
-    override fun getGroupDisplayName(): String = CaosBundle.message("cob.caos2cob.inspections.group")
-    override fun getGroupPath(): Array<String> {
-        return arrayOf(CaosBundle.message("caos.intentions.family"))
-    }
+    override fun getDisplayName(): String =
+        AgentMessages.message("inspections.caos-to-compiler.file-type-check.display-name")
+
+    override fun getGroupDisplayName(): String = CAOS2Cob
+    override fun getGroupPath(): Array<String> = CAOS2Path
 
     override fun getShortName(): String = "Caos2CobIncludedFileIsValidType"
 
@@ -33,128 +33,83 @@ class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
                 super.visitCaos2Command(commandElement)
                 if (!commandElement.containingCaosFile?.isCaos2Cob.orFalse())
                     return
-                val commandType = CobCommand.fromString(commandElement.commandName)
-                    ?: return
-                if (commandType !in HAS_FILES)
-                    return
-
-                // Collect FileName and File element items
-                val fileNames = commandElement.commandArgs
-                val fileNameElements = commandElement.caos2CommentValueList
-
-                val expectedExtensions = when (commandType) {
-                    LINK, INSTALL_SCRIPTS, REMOVAL_SCRIPTS -> listOf("cos", "caos")
-                    else -> listOf("s16", "wav")
-                }
-
-                // Find bad file references and build Element data pairs
-                val badFileNameData = fileNames.indices.filter { i ->
-                    fileNames[i].let { FileNameUtils.getExtension(it) likeNone expectedExtensions }
-                }.mapNotNull { i ->
-                    fileNameElements.getOrNull(i)?.let { element -> Pair(element, fileNames[i]) }
-                }
-
-                // Add error messages to bad file references
-                for ((fileNameElement, fileName) in badFileNameData) {
-                    val fixes = mutableListOf<LocalQuickFix>(Caos2CobRemoveFileFix(fileNameElement, "Remove invalid file"))
-                    val extension = FileNameUtils.getExtension(fileName)?.toLowerCase()
-                    val error = if (commandType == LINK) {
-                        if (extension == "s16" || extension == "wav") {
-                            fixes.add(
-                                Caos2CobMoveFileToCommandFix(
-                                    fileNameElement,
-                                    ATTACH
-                                )
-                            )
-                            fixes.add(
-                                Caos2CobMoveFileToCommandFix(
-                                    fileNameElement,
-                                    INLINE
-                                )
-                            )
-                        }
-                        CaosBundle.message(
-                            "cob.caos2cob.inspections.included-file-type-valid.expects-caos-file",
-                            fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
-                        )
-                    } else {
-                        if (extension == "cos" || extension == "caos") {
-                            fixes.add(
-                                Caos2CobMoveFileToCommandFix(
-                                    fileNameElement,
-                                    LINK
-                                )
-                            )
-                        }
-                        CaosBundle.message(
-                            "cob.caos2cob.inspections.included-file-type-valid.expects-sprite-or-wav",
-                            fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
-                        )
-                    }
-                    holder.registerProblem(fileNameElement, error, *fixes.toTypedArray())
-                }
+                validateCommand(commandElement, holder)
             }
 
-            override fun visitCaos2Tag(tagElement: CaosScriptCaos2Tag) {
-                super.visitCaos2Tag(tagElement)
-                val tag = CobTag.fromString(tagElement.tagName)
-                    ?: return
-                val tagValueElement = tagElement.caos2CommentValue
-                    ?: return
-                if (tag != CobTag.THUMBNAIL)
-                    return
-                val fileName = getFileName(tagValueElement.value)
-                    ?: tagElement.value
-                    ?: return
-                val extension = FileNameUtils
-                    .getExtension(fileName)
-                    ?.toLowerCase()
-                val check = when (tag) {
-                    CobTag.THUMBNAIL -> extension in listOf("gif", "jpeg", "jpg", "png", "spr", "s16", "c16", "bmp")
-                    else -> true
-                }
-                if (check)
-                    return
-                val fixes = mutableListOf<LocalQuickFix>(Caos2CobRemoveFileFix(tagValueElement))
-                val error = if (tag == CobTag.THUMBNAIL) {
-                    CaosBundle.message(
-                        "cob.caos2cob.inspections.included-file-type-valid.expects-image",
-                        "${tag.keys.first()} property"
-                    )
-                } else {
-                    CaosBundle.message(
-                        "cob.caos2cob.inspections.included-file-type-valid.expects-caos-file",
-                        "${tag.keys.first()} property"
-                    )
-                }
-                holder.registerProblem(tagValueElement, error, *fixes.toTypedArray())
-            }
-        }
-    }
-
-    companion object {
-
-        private val HAS_FILES = listOf(
-            INLINE,
-            ATTACH,
-            LINK
-        )
-
-        private fun getFileName(path: String): String? {
-            if (!path.contains('['))
-                return path
-            ARRAY_ACCESS_REGEX.matchEntire(path)?.groupValues?.let { groupValues ->
-                return "${groupValues[1]}.${groupValues[2]}"
-            }
-            ARRAY_ACCESS_BEFORE_EXTENSION_REGEX.matchEntire(path)?.groupValues?.let { groupValues ->
-                return "${groupValues[1]}.${groupValues[3]}"
-            }
-            return null
         }
     }
 }
 
-private val PsiElement.directory: VirtualFile?
-    get() {
-        return (containingFile.virtualFile?.parent ?: containingFile.originalFile.virtualFile?.parent)
+
+private val RESOURCE_COMMANDS = listOf(INLINE, ATTACH, DEPEND)
+private val SCRIPT_COMMANDS = listOf(LINK, REMOVAL_SCRIPTS, INSTALL_SCRIPTS)
+private val EMPTY_COMMANDS = emptyList<CobCommand>()
+
+private val HAS_FILES = listOf(
+    INLINE,
+    ATTACH,
+    DEPEND,
+    LINK,
+    INSTALL_SCRIPTS,
+    REMOVAL_SCRIPTS
+)
+
+
+private fun validateCommand(commandElement: CaosScriptCaos2Command, holder: ProblemsHolder) {
+    val commandType = CobCommand.fromString(commandElement.commandName)
+        ?: return
+    if (commandType !in HAS_FILES)
+        return
+
+    // Collect FileName and File element items
+    val fileNames = commandElement.commandArgs
+    val fileNameElements = commandElement.caos2ValueList
+
+    val expectedExtensions = if (commandType.cosFiles)
+        listOf("cos", "caos")
+    else
+        listOf("s16", "wav")
+
+    // Find bad file references and build Element data pairs
+    val badFileNameData = fileNames.indices.filter { i ->
+        fileNames[i].let { FileNameUtils.getExtension(it)?.toLowerCase() !in expectedExtensions }
+    }.mapNotNull { i ->
+        fileNameElements.getOrNull(i)?.let { element -> Pair(element, fileNames[i]) }
     }
+
+    // Add error messages to bad file references
+    for ((fileNameElement, fileName) in badFileNameData) {
+        val extension = FileNameUtils.getExtension(fileName)?.toLowerCase()
+        val fixes = getFixes(fileNameElement, extension)
+        val parent = fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
+        val error = if (commandType in SCRIPT_COMMANDS) {
+            AgentMessages.message(
+                "cob.caos2cob.inspections.included-file-type-valid.expects-caos-file",
+                parent
+            )
+        } else {
+            AgentMessages.message(
+                "cob.caos2cob.inspections.included-file-type-valid.expects-sprite-or-wav",
+                parent
+            )
+        }
+        holder.registerProblem(fileNameElement, error, *fixes.toTypedArray())
+    }
+}
+
+private fun getFixes(fileNameElement: PsiElement, extension: String?): List<LocalQuickFix> {
+    val moveTo = when (extension) {
+        "s16", "wav" -> RESOURCE_COMMANDS
+        "cos", "caos" -> SCRIPT_COMMANDS
+        else -> EMPTY_COMMANDS
+    }
+    return moveTo.map { command ->
+        Caos2CobMoveFileToCommandFix(
+            fileNameElement,
+            command
+        )
+    } + Caos2CobRemoveFileFix(
+        fileNameElement,
+        AgentMessages.message("fixes.caos-to-compiler.delete-invalid-file")
+    )
+}

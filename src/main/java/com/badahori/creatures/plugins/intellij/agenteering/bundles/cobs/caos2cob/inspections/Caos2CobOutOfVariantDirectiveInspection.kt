@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -16,10 +18,8 @@ import com.intellij.psi.PsiElementVisitor
 class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Out of variant CAOS2Cob directive"
-    override fun getGroupDisplayName(): String = CaosBundle.message("cob.caos2cob.inspections.group")
-    override fun getGroupPath(): Array<String> {
-        return arrayOf(CaosBundle.message("caos.intentions.family"))
-    }
+    override fun getGroupDisplayName(): String = CAOS2Cob
+    override fun getGroupPath(): Array<String> = CAOS2Path
     override fun getShortName(): String = "Caos2CobOutOfVariantDirective"
 
     /**
@@ -27,8 +27,8 @@ class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool() {
      */
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
-            override fun visitCobCommentDirective(element: CaosScriptCobCommentDirective) {
-                super.visitCobCommentDirective(element)
+            override fun visitCaos2TagName(element: CaosScriptCaos2TagName) {
+                super.visitCaos2TagName(element)
                 validateCobCommentDirective(element, holder)
             }
 
@@ -43,7 +43,7 @@ class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool() {
         /**
          * Validates a COB comment directive to ensure that it is valid for this variant
          */
-        fun validateCobCommentDirective(element:CaosScriptCobCommentDirective, holder: ProblemsHolder) {
+        fun validateCobCommentDirective(element: CaosScriptCaos2TagName, holder: ProblemsHolder) {
             if (!element.containingCaosFile?.isCaos2Cob.orFalse())
                 return
             val tagNameRaw = element.text
@@ -58,7 +58,7 @@ class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool() {
             if (tag.variant != variant) {
                 holder.registerProblem(
                     element,
-                    CaosBundle.message(
+                    AgentMessages.message(
                         "cob.caos2cob.inspections.property-valid.variant-mismatch",
                         tagNameRaw,
                         tag.variant.code
@@ -84,7 +84,7 @@ class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool() {
             if (tag.variant != variant) {
                 holder.registerProblem(
                     element,
-                    CaosBundle.message(
+                    AgentMessages.message(
                         "cob.caos2cob.inspections.command-valid.variant-mismatch",
                         tagNameRaw,
                         tag.variant.code
