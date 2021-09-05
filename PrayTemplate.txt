@@ -1,0 +1,118 @@
+"en-GB"
+
+(- TYPE
+This specifies what type of PRAY resource this is.
+DSAG marks this as a Docking Station agent, and it will not be detected by
+Creatures 3
+-)
+
+group DSAG ""
+
+"Agent Type" 0
+
+"Agent Description" "credits, support URL etc. This is a limited size text field though so test
+before release to make sure it all appears!>"
+"Agent Description-fr" ""
+"Agent Description-de" ""
+(- you can add italian, spanish, or dutch descriptions too -)
+
+
+
+(- DEPENDENCIES
+Dependencies are all the external files that are packaged into this agent to make it work. This includes images, sounds, attachments etc.
+-)
+
+"Dependency Count"
+
+"Dependency 1" ""
+(- Repeat the 'Dependency X' field for each dependency counted -)
+
+
+"Dependency Category 1" install to>
+(- Repeat 'Dependency Category X' field for each dependency counted
+
+
+Useful information:
+Dependency information is required to contain the category for
+each dependency listed. Failure to comply will result in failed
+injection of the agent.
+
+CDN_Categories are as follows:
+0 = Main directory
+1 = Sounds directory
+2 = Images directory
+3 = Genetics Directory
+4 = Body Data Directory (ATT files)
+5 = Overlay Directory
+6 = Backgrounds Directory
+7 = Catalogue Directory
+8 = Bootstrap Directory (Denied)
+9 = Worlds Directory (Denied)
+10 = Creatures Directory
+11 = Pray Files Directory (Denied)
+-)
+
+
+(- SCRIPTS
+Script count should always be 1. If you want to inject multiple agents you
+can do this within one COS file.
+-)
+
+"Script Count" 1
+"Script 1" @ "extension>"
+
+
+(- DISPLAYING THE AGENT ON THE CREATOR or AGENT INJECTOR
+The following fields are used by the agent injector to display your agent to the player.
+-)
+
+"Agent Animation File" ""
+"Agent Animation Gallery" ""
+"Agent Sprite First Image"
+"Agent Animation String" ""
+
+
+(- MAKING THE WEB BUTTON LINK TO YOUR SITE -)
+"Web URL" ""
+(- the following fields are not needed to have your web URL work. A default
+image is used for all websites, but the fields below allow you to create
+your own icon and have it displayed -)
+
+(- THE ICON USED TO DISPLAY YOUR WEB LINK. Note: This can't animate - so
+the 'web icon animation string' is actually the pose to use -)
+"Web Icon" ""
+(- If you don't specify an icon then you don't need the following two lines -)
+"Web Icon Base" ""
+"Web Icon Animation String" ""
+
+"Web Label" "
+
+"Remove script" "this agent and its scripts from the world>"
+
+
+(- POSITIONING
+The creator machines in Docking Station (and C3 when Docked) use game
+variables called "CreatorX" and "CreatorY" to define the position to inject
+to for an object to appear near the creator.
+You should have code in your install script that uses this, if available, or a definite position in the world. Be aware though, that injection will fail if the definite position doesn't exist.
+-)
+
+(- CAMERA
+You can make the camera on the creator screen pan to your newly injected
+agent, this can help the player locate an agent that appears in an area they are not looking at. Alternatively you could make the whole game camera point at the agent injected by adding CMRT 0 to the install script for the agent.
+-)
+
+"Camera X"
+"Camera Y"
+
+
+
+(- FILES
+All files that you list in the dependency section above should be packaged
+into the agent file. You do this by specifying them here.
+Note that the source and destination names can be the same, and usually will be.
+-)
+
+
+inline FILE "" ""
+inline FILE "" ""
