@@ -126,17 +126,11 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             return new
         }
 
-        fun indexOnce(project: Project, searchScope: GlobalSearchScope? = null) {
+        fun indexOnce(project: Project) {
             val runnable = run@{
 //                if (didIndexOnce)
 //                    return@run
                 FileBasedIndex.getInstance().requestRebuild(NAME)
-                if (DumbService.isDumb(project)) {
-                    DumbService.getInstance(project).runWhenSmart {
-                        FileBasedIndex.getInstance().ensureUpToDate(NAME, project, searchScope)
-                    }
-                } else
-                    FileBasedIndex.getInstance().ensureUpToDate(NAME, project, searchScope)
                 didIndexOnce = true
             }
             if (DumbService.isDumb(project))

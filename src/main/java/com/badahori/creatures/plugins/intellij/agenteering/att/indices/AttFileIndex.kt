@@ -49,18 +49,18 @@ class AttFileByVariantIndex : ScalarIndexExtension<CaosVariant>() {
                 CaosVariant.C3
             else
                 key
-
             //indexOnce(project, searchScope)
-            return FileBasedIndex.getInstance().getContainingFiles(NAME, fudgedKey, scope)
+            return FileBasedIndex
+                .getInstance()
+                .getContainingFiles(NAME, fudgedKey, scope)
         }
 
-        fun indexOnce(project: Project, searchScope: GlobalSearchScope? = null) {
+        fun indexOnce(project: Project) {
             val runnable = Runnable@{
 //                if (didIndexOnce)
 //                    return@Runnable
 
                 FileBasedIndex.getInstance().requestRebuild(NAME)
-                FileBasedIndex.getInstance().ensureUpToDate(NAME, project, searchScope)
 //                didIndexOnce = true
             }
             if (DumbService.isDumb(project)) {
@@ -112,12 +112,11 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
                 .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
         }
 
-        fun indexOnce(project: Project, searchScope: GlobalSearchScope? = null) {
+        fun indexOnce(project: Project) {
             val runnable = runnable@{
 //                if (didIndexOnce)
 //                    return@runnable
                 FileBasedIndex.getInstance().requestRebuild(NAME)
-                FileBasedIndex.getInstance().ensureUpToDate(NAME, project, searchScope)
 //                didIndexOnce = true
             }
             if (DumbService.isDumb(project))

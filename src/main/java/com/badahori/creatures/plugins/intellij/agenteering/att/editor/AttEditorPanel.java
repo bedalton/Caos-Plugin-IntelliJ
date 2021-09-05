@@ -43,6 +43,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     private static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
     public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
+    @NotNull
     final VirtualFile file;
     final VirtualFile spriteFile;
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);
@@ -66,10 +67,11 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     char partChar;
     int numLines;
     int numPoints;
-    private JPanel panel1;
+    private JPanel mainPanel;
     JCheckBox poseViewCheckbox;
     private JPanel display;
     private AttFileData fileData;
+    @NotNull
     private CaosVariant variant;
     private int currentPoint = 0;
     private List<String> pointNames = Collections.emptyList();
@@ -81,18 +83,42 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
     private boolean didLoadOnce = false;
     private boolean doNotCommitPose = false;
     private boolean showPoseView = CaosScriptProjectSettings.getShowPoseView();
+    private boolean didInit = false;
 
-    AttEditorPanel(final Project project, final CaosVariant variantIn, final VirtualFile virtualFile, final VirtualFile spriteFile) {
+    AttEditorPanel(
+            @NotNull
+            final Project project,
+            @NotNull
+            final CaosVariant variantIn,
+            @NotNull
+            final VirtualFile virtualFile,
+            @NotNull
+            final VirtualFile spriteFile
+    ) {
         this.project = project;
         this.file = virtualFile;
         this.spriteFile = spriteFile;
         this.variant = variantIn == CaosVariant.DS.INSTANCE ? CaosVariant.C3.INSTANCE : variantIn;
         $$$setupUI$$$();
-        final PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+        init();
+    }
+
+    JComponent getComponent() {
+        init();
+        return mainPanel;
+    }
+
+    synchronized void init() {
+        if (didInit) {
+            return;
+        }
+        didInit = true;
+        final PsiFile psiFile = PsiManager.getInstance(project).findFile(this.file);
         initDocumentListeners(psiFile);
         initListeners();
         initPopupMenu();
-        initDisplay(variantIn, virtualFile);
+        initDisplay(this.variant, this.file);
+        poseEditor.init();
     }
 
     private void initListeners() {
@@ -282,7 +308,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
             });
             pointMenuItems[i] = pointMenuItem;
         }
-        panel1.setComponentPopupMenu(menu);
+        mainPanel.setComponentPopupMenu(menu);
         display.setInheritsPopupMenu(true);
         scrollPane.setInheritsPopupMenu(true);
         spriteCellList.setInheritsPopupMenu(true);
@@ -292,8 +318,8 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
      * Inits the key listeners to set the current point to edit
      */
     private void initKeyListeners() {
-        final InputMap inputMap = panel1.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        final ActionMap actionMap = panel1.getActionMap();
+        final InputMap inputMap = mainPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        final ActionMap actionMap = mainPanel.getActionMap();
         addNumberedPointKeyBinding(inputMap, actionMap, 0);
         addNumberedPointKeyBinding(inputMap, actionMap, 1);
         addNumberedPointKeyBinding(inputMap, actionMap, 2);
@@ -356,7 +382,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         scrollPane.setViewportView(spriteCellList);
 
         // Make panel focusable
-        panel1.setFocusable(true);
+        mainPanel.setFocusable(true);
         spriteCellList.setFocusable(true);
         spriteCellList.requestFocusInWindow();
 
@@ -727,8 +753,15 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
                 "7x"
         });
 
+        if (file == null) {
+            throw new RuntimeException("File is null in att editor in createUIComponents");
+        }
+        if (variant == null) {
+            throw new RuntimeException("Variant is null in att editor in createUIComponents");
+        }
         final BreedPartKey key = BreedPartKey.fromFileName(file.getName(), variant);
         poseEditor = new PoseEditor(project, variant, Objects.requireNonNull(key));
+        poseEditor.init();
         posePanel = poseEditor.getMainPanel();
         poseEditor.showFacing(false);
     }
@@ -848,6 +881,71 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         return list;
     }
 
+    void dispose() {
+        poseEditor.dispose();
+    }
+
+    void refresh() {
+        loadRequestedPose();
+        poseEditor.redrawAll();
+    }
+
+    private void loadRequestedPose() {
+        final Pose requestedPose = file.getUserData(REQUESTED_POSE_KEY);
+        if (requestedPose == null) {
+            return;
+        }
+        doNotCommitPose = true;
+        if (didLoadOnce) {
+            file.putUserData(REQUESTED_POSE_KEY, null);
+        }
+        poseEditor.setPose(requestedPose, true);
+        final Integer pose = requestedPose.get(file.getName().charAt(0));
+        if (pose != null) {
+            setSelected(pose);
+            final JComponent component = spriteCellList.get(pose);
+            scrollPane.scrollRectToVisible(component.getVisibleRect());
+        }
+    }
+
+    void clearPose() {
+        poseEditor.clear();
+    }
+
+    @Override
+    public int getSelectedCell() {
+        return cell;
+    }
+
+    @Override
+    public void setSelected(final int index) {
+        int direction;
+        if (variant.isOld()) {
+            if (index < 4) {
+                direction = 0;
+            } else if (index < 8) {
+                direction = 1;
+            } else if (index == 8) {
+                direction = 2;
+            } else if (index == 9) {
+                direction = 3;
+            } else {
+                throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
+            }
+        } else {
+            direction = (int) Math.floor((index % 16) / 4.0);
+        }
+        poseEditor.setPose(direction, partChar, index);
+        if (variant.isNotOld()) {
+            cell = index % 16;
+        } else {
+            cell = index % 10;
+        }
+        spriteCellList.reload();
+        redrawPose();
+        spriteCellList.scrollTo(cell);
+    }
+
     /**
      * Method generated by IntelliJ IDEA GUI Designer
      * >>> IMPORTANT!! <<<
@@ -857,11 +955,11 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
      */
     private void $$$setupUI$$$() {
         createUIComponents();
-        panel1 = new JPanel();
-        panel1.setLayout(new BorderLayout(0, 0));
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout(0, 0));
         Toolbar = new JPanel();
         Toolbar.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel1.add(Toolbar, BorderLayout.NORTH);
+        mainPanel.add(Toolbar, BorderLayout.NORTH);
         final JLabel label1 = new JLabel();
         label1.setText("Variant");
         Toolbar.add(label1);
@@ -939,13 +1037,13 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
         poseViewCheckbox = new JCheckBox();
         poseViewCheckbox.setText("Pose View");
         Toolbar.add(poseViewCheckbox);
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel2, BorderLayout.CENTER);
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new BorderLayout(0, 0));
+        mainPanel.add(panel1, BorderLayout.CENTER);
         posePanel.setMinimumSize(new Dimension(300, 0));
         posePanel.setPreferredSize(new Dimension(300, 0));
-        panel2.add(posePanel, BorderLayout.WEST);
-        panel2.add(scrollPane, BorderLayout.CENTER);
+        panel1.add(posePanel, BorderLayout.WEST);
+        panel1.add(scrollPane, BorderLayout.CENTER);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(point6);
@@ -960,71 +1058,7 @@ public class AttEditorPanel implements OnChangePoint, HasSelectedCell {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() {
-        return panel1;
+        return mainPanel;
     }
 
-    void dispose() {
-        poseEditor.dispose();
-    }
-
-    void refresh() {
-        loadRequestedPose();
-        poseEditor.redrawAll();
-    }
-
-    private void loadRequestedPose() {
-        final Pose requestedPose = file.getUserData(REQUESTED_POSE_KEY);
-        if (requestedPose == null) {
-            return;
-        }
-        doNotCommitPose = true;
-        if (didLoadOnce) {
-            file.putUserData(REQUESTED_POSE_KEY, null);
-        }
-        poseEditor.setPose(requestedPose, true);
-        final Integer pose = requestedPose.get(file.getName().charAt(0));
-        if (pose != null) {
-            setSelected(pose);
-            final JComponent component = spriteCellList.get(pose);
-            scrollPane.scrollRectToVisible(component.getVisibleRect());
-        }
-    }
-
-    void clearPose() {
-        poseEditor.clear();
-    }
-
-    @Override
-    public int getSelectedCell() {
-        return cell;
-    }
-
-    @Override
-    public void setSelected(final int index) {
-        int direction;
-        if (variant.isOld()) {
-            if (index < 4) {
-                direction = 0;
-            } else if (index < 8) {
-                direction = 1;
-            } else if (index == 8) {
-                direction = 2;
-            } else if (index == 9) {
-                direction = 3;
-            } else {
-                throw new IndexOutOfBoundsException("Failed to parse direction for part " + partChar + "; Index: " + index);
-            }
-        } else {
-            direction = (int) Math.floor((index % 16) / 4.0);
-        }
-        poseEditor.setPose(direction, partChar, index);
-        if (variant.isNotOld()) {
-            cell = index % 16;
-        } else {
-            cell = index % 10;
-        }
-        spriteCellList.reload();
-        redrawPose();
-        spriteCellList.scrollTo(cell);
-    }
 }

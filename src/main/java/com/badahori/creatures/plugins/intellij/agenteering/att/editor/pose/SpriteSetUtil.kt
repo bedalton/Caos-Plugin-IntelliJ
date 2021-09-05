@@ -25,7 +25,7 @@ object SpriteSetUtil {
         files: List<BodyPartFiles>,
         manualAtts: Map<Char, VirtualFile>,
         vararg parts: Char
-    ): PoseRenderer.CreatureSpriteSet {
+    ): PoseRenderer.CreatureSpriteSet? {
         var realParts = parts
         val spriteTemp: PoseRenderer.CreatureSpriteSet = spriteSet?.copy() ?: defaultSpriteSet(
             project,
@@ -33,6 +33,7 @@ object SpriteSetUtil {
             files,
             manualAtts
         )
+        ?: return null
         if (parts.isEmpty()) {
             realParts = PoseEditorSupport.allParts
         }
@@ -83,28 +84,57 @@ object SpriteSetUtil {
      */
     private fun defaultSpriteSet(
         project: Project,
-        holder:BreedPoseHolder,
+        holder: BreedPoseHolder,
         files: List<BodyPartFiles>,
         manualAtts: Map<Char, VirtualFile>
-    ): PoseRenderer.CreatureSpriteSet {
+    ): PoseRenderer.CreatureSpriteSet? {
+        val head = file(project, holder, files, manualAtts, 'a')
+            ?: return null
+        val body = file(project, holder, files, manualAtts, 'b')
+            ?: return null
+        val leftThigh = file(project, holder, files, manualAtts, 'c')
+            ?: return null
+        val leftShin = file(project, holder, files, manualAtts, 'd')
+            ?: return null
+        val leftFoot = file(project, holder, files, manualAtts, 'e')
+            ?: return null
+        val rightThigh = file(project, holder, files, manualAtts, 'f')
+            ?: return null
+        val rightShin = file(project, holder, files, manualAtts, 'g')
+            ?: return null
+        val rightFoot = file(project, holder, files, manualAtts, 'h')
+            ?: return null
+        val leftUpperArm = file(project, holder, files, manualAtts, 'i')
+            ?: return null
+        val leftForearm = file(project, holder, files, manualAtts, 'j')
+            ?: return null
+        val rightUpperArm = file(project, holder, files, manualAtts, 'k')
+            ?: return null
+        val rightForearm = file(project, holder, files, manualAtts, 'l')
+            ?: return null
+        val tailBase = file(project, holder, files, manualAtts, 'm')
+        val tailTip = file(project, holder, files, manualAtts, 'n')
+        val leftEar = file(project, holder, files, manualAtts, 'o')
+        val rightEar = file(project, holder, files, manualAtts, 'p')
+        val hair = file(project, holder, files, manualAtts, 'q')
         return PoseRenderer.CreatureSpriteSet(
-            head = file(project, holder, files, manualAtts, 'a')!!,
-            body = file(project, holder, files, manualAtts, 'b')!!,
-            leftThigh = file(project, holder, files, manualAtts, 'c')!!,
-            leftShin = file(project, holder, files, manualAtts, 'd')!!,
-            leftFoot = file(project, holder, files, manualAtts, 'e')!!,
-            rightThigh = file(project, holder, files, manualAtts, 'f')!!,
-            rightShin = file(project, holder, files, manualAtts, 'g')!!,
-            rightFoot = file(project, holder, files, manualAtts, 'h')!!,
-            leftUpperArm = file(project, holder, files, manualAtts, 'i')!!,
-            leftForearm = file(project, holder, files, manualAtts, 'j')!!,
-            rightUpperArm = file(project, holder, files, manualAtts, 'k')!!,
-            rightForearm = file(project, holder, files, manualAtts, 'l')!!,
-            tailBase = file(project, holder, files, manualAtts, 'm'),
-            tailTip = file(project, holder, files, manualAtts, 'n'),
-            leftEar = file(project, holder, files, manualAtts, 'o'),
-            rightEar = file(project, holder, files, manualAtts, 'p'),
-            hair = file(project, holder, files, manualAtts, 'q')
+            head = head,
+            body = body,
+            leftThigh = leftThigh,
+            leftShin = leftShin,
+            leftFoot = leftFoot,
+            rightThigh = rightThigh,
+            rightShin = rightShin,
+            rightFoot = rightFoot,
+            leftUpperArm = leftUpperArm,
+            leftForearm = leftForearm,
+            rightUpperArm = rightUpperArm,
+            rightForearm = rightForearm,
+            tailBase = tailBase,
+            tailTip = tailTip,
+            leftEar = leftEar,
+            rightEar = rightEar,
+            hair = hair
         )
     }
 

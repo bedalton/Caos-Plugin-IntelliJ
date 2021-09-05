@@ -18,27 +18,31 @@ import com.intellij.psi.search.GlobalSearchScopes
  */
 internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, spriteFileNameBase: String = attFile.nameWithoutExtension): VirtualFile? {
     var parent = attFile.parent
+    val module = attFile.getModule(project)
+    val searchScope = module?.moduleContentScope
     var spriteFile: VirtualFile? = null
     while (spriteFile == null && parent != null) {
-        spriteFile = searchParentRecursive(project, parent, spriteFileNameBase)
+        spriteFile = searchParentRecursive(project, parent, spriteFileNameBase, searchScope)
         parent = parent.parent
     }
     if (spriteFile != null)
         return spriteFile
-    val module = attFile.getModule(project)
-        ?: return null
-    val searchScope = GlobalSearchScope.moduleScope(module)
     return BreedSpriteIndex.findMatching(project, spriteFileNameBase, searchScope).firstOrNull()
 }
 
 /**
  * Searches parent directory for any matching children
  */
-private fun searchParentRecursive(project: Project, parent: VirtualFile, spriteFile: String): VirtualFile? {
+private fun searchParentRecursive(project: Project, parent: VirtualFile, spriteFile: String, scope: GlobalSearchScope? = null): VirtualFile? {
     getAnySpriteMatching(parent, spriteFile)?.let {
         return it
     }
-    val searchScope = GlobalSearchScopes.directoriesScope(project, true, parent)
+    val searchScope = GlobalSearchScopes.directoriesScope(project, true, parent).let {
+        if (scope != null)
+            it.intersectWith(scope)
+        else
+            it
+    }
     return getVirtualFilesByName(project, spriteFile, "spr", searchScope).firstOrNull()
         ?: getVirtualFilesByName(project, spriteFile, "c16", searchScope).firstOrNull()
         ?: getVirtualFilesByName(project, spriteFile, "s16", searchScope).firstOrNull()

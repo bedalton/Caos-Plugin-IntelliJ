@@ -93,9 +93,9 @@ class AttCopySpecialDialog(val project: Project, private val thisAtt: VirtualFil
         TODO()
     }
 
-    private fun doCopyOver(copyFrom: VirtualFile, copyTo:VirtualFile) {
-        TODO()
-    }
+//    private fun doCopyOver(copyFrom: VirtualFile, copyTo:VirtualFile) {
+//        TODO()
+//    }
 
     private fun doCopyThisOverOther() {
         other?.let { otherAtt ->

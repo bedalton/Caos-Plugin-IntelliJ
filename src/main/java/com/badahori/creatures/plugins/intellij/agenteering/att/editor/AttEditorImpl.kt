@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
@@ -25,24 +25,22 @@ import javax.swing.JComponent
  * Sprite viewer (eventually will be editor) for various Creatures file types
  */
 internal class AttEditorImpl(
-    project: Project?,
+    project: Project,
     file: VirtualFile,
     private val spriteFile: VirtualFile
 ) : UserDataHolderBase(), FileEditor {
     private val myFile: VirtualFile = file
-    private var myProject: Project? = project
-    private val variant: CaosVariant?
+    private var myProject: Project = project
+    private val variant: CaosVariant = getInitialVariant(project, file)
 
     private lateinit var panel: AttEditorPanel
 
-    init {
-        variant = getInitialVariant(project, file)
-    }
-
     override fun getComponent(): JComponent {
-        if (!this::panel.isInitialized)
+        if (!this::panel.isInitialized) {
             panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
-        return panel.`$$$getRootComponent$$$`()
+            panel.init()
+        }
+        return panel.component
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -70,7 +68,7 @@ internal class AttEditorImpl(
     }
 
     override fun deselectNotify() {
-        panel.clearPose();
+        panel.clearPose()
     }
 
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
