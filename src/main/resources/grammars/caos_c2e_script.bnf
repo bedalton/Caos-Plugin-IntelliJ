@@ -392,7 +392,7 @@ private caos_2_command_item
 	;
 
 caos_2_tag
-	::= cob_comment_directive <<updateVariantFromCaos2Cob>> '=' (caos_2_comment_value caos_2_comment_error_value*)?
+	::= caos_2_tag_name <<updateVariantFromCaos2Cob>> '=' (caos_2_value caos_2_comment_error_value*)?
 	{
 		pin=3
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2TagStub"
@@ -400,17 +400,21 @@ caos_2_tag
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag"
 		]
 		methods = [
 			getTagName
-			getValue
-			getIntValue
+			isNumberValue
+			isStringValue
+			getValueAsString
+			getValueAsInt
+			getValueRaw
 		]
 	}
 	;
 
 caos_2_command
-	::= caos_2_command_name  <<updateVariantFromCaos2Cob>> caos_2_comment_value*
+	::= caos_2_command_name  <<updateVariantFromCaos2Cob>> caos_2_value*
 	{
 		pin=3
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2CommandStub"
@@ -431,23 +435,30 @@ caos_2_command_name
 	::= ID
 	;
 
-caos_2_comment_value
+caos_2_value
 	::= string_literal
 	|	INT
 	|	ID
 	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue"
+		]
 		methods = [
-			getValue
+			isNumberValue
+			isStringValue
+			getValueAsString
+			getValueAsInt
 		]
 	}
 	;
 
-cob_comment_directive
+caos_2_tag_name
 	::= string_literal
 	|	ID+
 	{
 		methods = [
 			isValid
+			getStringValue
 		]
 	}
 	;
@@ -463,7 +474,7 @@ at_directive_comment
 	{
 		methods = [
 			getTag
-			getValue
+			getValueAsString
 		]
 	}
 	;
@@ -1888,7 +1899,7 @@ r_kw_char
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
 		]
 		methods = [
 			getReference
@@ -1918,7 +1929,7 @@ r_kw_tran
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandKeywordToken"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsRvalueKeywordToken"
 		]
 		methods = [
 			getReference
