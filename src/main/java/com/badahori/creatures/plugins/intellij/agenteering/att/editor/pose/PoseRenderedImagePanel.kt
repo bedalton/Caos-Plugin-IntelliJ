@@ -8,10 +8,9 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import java.awt.Dimension
-import java.awt.Event
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
@@ -23,12 +22,12 @@ import javax.swing.JFileChooser
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
+import kotlin.math.max
 
 /**
  * Panel to draw the rendered pose with
  */
 class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
-    private val LOGGER = Logger.getLogger("#PoseRenderedImagePanel")
     private val defaultDirectory: String? = (defaultDirectory ?: System.getProperty("user.home")).nullIfEmpty()?.let {
         if (File(it).exists())
             it
@@ -42,17 +41,19 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
     private fun initHandlers() {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                showPopUp(e)
+                if (e.button == MouseEvent.BUTTON3)
+                    showPopUp(e)
             }
 
             override fun mousePressed(e: MouseEvent) {
-                showPopUp(e)
+                if (e.button == MouseEvent.BUTTON3)
+                    showPopUp(e)
             }
         })
     }
 
     private fun showPopUp(e: MouseEvent) {
-        if (e.isPopupTrigger || e.modifiers or Event.CTRL_MASK == Event.CTRL_MASK && e.button == 1) {
+        if (e.isPopupTrigger || e.modifiersEx or KeyEvent.CTRL_DOWN_MASK == KeyEvent.CTRL_DOWN_MASK && e.button == 1) {
             popUp.show(e.component, e.x, e.y)
         }
     }
@@ -73,10 +74,11 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
         if (lastDirectory != null && lastDirectory.length > 3) {
             targetDirectory = File(lastDirectory)
         }
-        if (targetDirectory == null || !targetDirectory.exists() && defaultDirectory != null) {
+        val defaultDirectory = defaultDirectory
+        if ((targetDirectory == null || !targetDirectory.exists()) && defaultDirectory != null) {
             targetDirectory = File(defaultDirectory)
         }
-        if (targetDirectory.exists()) {
+        if (targetDirectory?.exists() == true) {
             fileChooser.currentDirectory = targetDirectory
         }
         val userSelection = fileChooser.showSaveDialog(this)
@@ -160,7 +162,7 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
             minSize = size
         }
         val size = Dimension(
-            Math.max(minSize!!.width, image.width), Math.max(
+            max(minSize!!.width, image.width), max(
                 minSize!!.width, image.height
             )
         )
@@ -195,5 +197,9 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
 
     init {
         initHandlers()
+    }
+
+    companion object {
+        private val LOGGER = Logger.getLogger("#PoseRenderedImagePanel")
     }
 }

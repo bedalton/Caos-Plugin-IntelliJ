@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVaria
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.VariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer

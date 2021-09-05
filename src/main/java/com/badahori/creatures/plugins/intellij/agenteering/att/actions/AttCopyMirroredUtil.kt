@@ -100,7 +100,6 @@ internal object AttCopyMirroredUtil {
     private fun getOffsets(image: BufferedImage): Offsets {
         val width = image.width
         val height = image.height
-        val data = IntArray(4)
         var startX: Int = width
         var startY: Int = height
         var endX = 0
