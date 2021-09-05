@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.canonicalName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.utils.now
 import com.intellij.openapi.vfs.*
 import java.io.File
 import java.io.IOException
@@ -52,7 +53,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
      * Add a file to the file system.
      * @param file the file to add
      */
-    fun addFile(file: CaosVirtualFile, overwrite:Boolean = false) {
+    fun addFile(file: CaosVirtualFile, overwrite: Boolean = false) {
         if (!overwrite && children.contains(file))
             throw IOException("Failed to add child file: ${file.name} to root. 'rootChildren': $children. 'root.childrenAsList':${root.childrenAsList()}")
         root.addChild(file)
@@ -64,10 +65,13 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
      * @param file newly created file
      */
     override fun fireFileCreated(requestor: Any?, file: VirtualFile) {
-        val e = VirtualFileEvent(this,
-                file,
-                file.name,
-                file.parent)
+        val e = VirtualFileEvent(
+            this,
+            file,
+            file.parent,
+            file.modificationStamp,
+            now()
+        )
         listeners.forEach { listener ->
             listener.fileCreated(e)
         }
@@ -88,8 +92,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
-    public override fun deleteFile(requestor: Any?,
-                                   virtualFile: VirtualFile) {
+    public override fun deleteFile(
+        requestor: Any?,
+        virtualFile: VirtualFile
+    ) {
         if (virtualFile !is CaosVirtualFile)
             throw IOException("Cannot delete non-CAOSVirtualFile from CAOS VFS")
         fireBeforeFileDeletion(requestor, virtualFile)
@@ -102,20 +108,26 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
      * @param file newly created file
      */
     override fun fireBeforeFileDeletion(requestor: Any?, file: VirtualFile) {
-        val e = VirtualFileEvent(this,
-                file,
-                file.name,
-                file.parent)
+        val e = VirtualFileEvent(
+            this,
+            file,
+            file.parent,
+            file.modificationStamp,
+            now()
+        )
         listeners.forEach { listener ->
             listener.beforeFileDeletion(e)
         }
     }
 
     override fun fireFileDeleted(requestor: Any?, file: VirtualFile, fileName: String, parent: VirtualFile?) {
-        val e = VirtualFileEvent(this,
-                file,
-                file.name,
-                parent)
+        val e = VirtualFileEvent(
+            this,
+            file,
+            file.parent,
+            file.modificationStamp,
+            now()
+        )
         listeners.forEach { listener ->
             listener.fileDeleted(e)
         }
@@ -123,9 +135,11 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
-    public override fun moveFile(requestor: Any?,
-                                 virtualFileIn: VirtualFile,
-                                 newParentIn: VirtualFile) {
+    public override fun moveFile(
+        requestor: Any?,
+        virtualFileIn: VirtualFile,
+        newParentIn: VirtualFile
+    ) {
         if (newParentIn !is CaosVirtualFile) {
             LOGGER.info("VirtualFileTypeMove. NewParentFileType: ${newParentIn.canonicalName}. FileSystem: ${newParentIn.fileSystem.canonicalName}")
             (newParentIn.fileSystem as? LocalFileSystem)?.let { vfs ->
@@ -153,20 +167,24 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     }
 
     override fun fireBeforeFileMovement(requestor: Any?, file: VirtualFile, newParent: VirtualFile) {
-        val e = VirtualFileMoveEvent(this,
-                file,
-                file.parent,
-                newParent)
+        val e = VirtualFileMoveEvent(
+            this,
+            file,
+            file.parent,
+            newParent
+        )
         listeners.forEach { listener ->
             listener.beforeFileMovement(e)
         }
     }
 
     override fun fireFileMoved(requestor: Any?, file: VirtualFile, oldParent: VirtualFile) {
-        val e = VirtualFileMoveEvent(this,
-                file,
-                oldParent,
-                file.parent)
+        val e = VirtualFileMoveEvent(
+            this,
+            file,
+            oldParent,
+            file.parent
+        )
         listeners.forEach { listener ->
             listener.fileMoved(e)
         }
@@ -174,9 +192,11 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
-    public override fun renameFile(requestor: Any?,
-                                   virtualFile: VirtualFile,
-                                   name: String) {
+    public override fun renameFile(
+        requestor: Any?,
+        virtualFile: VirtualFile,
+        name: String
+    ) {
         if (virtualFile !is CaosVirtualFile) {
             throw IOException("Cannot rename non-CaosVirtualFile")
         }
@@ -189,9 +209,11 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
-    override fun createChildFile(requestor: Any?,
-                                 parentIn: VirtualFile,
-                                 name: String): CaosVirtualFile {
+    override fun createChildFile(
+        requestor: Any?,
+        parentIn: VirtualFile,
+        name: String
+    ): CaosVirtualFile {
         val file = CaosVirtualFile(name, null)
         file.parent = parentIn as? CaosVirtualFile
         addFile(file)
@@ -202,9 +224,11 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
-    override fun createChildDirectory(requestor: Any?,
-                                      parent: VirtualFile,
-                                      name: String): CaosVirtualFile {
+    override fun createChildDirectory(
+        requestor: Any?,
+        parent: VirtualFile,
+        name: String
+    ): CaosVirtualFile {
         val file = CaosVirtualFile(name, null, true)
         if (!parent.isDirectory)
             throw IOException("Cannot add child directory to non-directory parent: ${parent.name}")
@@ -249,10 +273,10 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         while (names.isNotEmpty()) {
             val name = names.removeAt(0)
             currentFile = currentFile.findChild(name)
-                    ?: if (names.isNotEmpty() && createSubFolders)
-                        createChildDirectory(null, currentFile, name)
-                    else
-                        return null
+                ?: if (names.isNotEmpty() && createSubFolders)
+                    createChildDirectory(null, currentFile, name)
+                else
+                    return null
         }
         return currentFile
     }
@@ -267,17 +291,17 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         else
             filePathIn
         val names: MutableList<String> = pathWithoutSchema.split("/")
-                .filter { it.trim('/', ' ', '\t').isNotBlank() }
-                .toMutableList()
+            .filter { it.trim('/', ' ', '\t').isNotBlank() }
+            .toMutableList()
         val parentName = names.removeAt(0)
         var currentFile: CaosVirtualFile = getOrCreateRootChildDirectory(parentName)
         while (names.isNotEmpty()) {
             val name = names.removeAt(0)
             currentFile = currentFile.findChild(name)
-                    ?: if (createSubFolders)
-                        createChildDirectory(null, currentFile, name)
-                    else
-                        return null
+                ?: if (createSubFolders)
+                    createChildDirectory(null, currentFile, name)
+                else
+                    return null
         }
         return currentFile
     }
@@ -297,10 +321,12 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     /** {@inheritDoc}  */
     @Throws(IOException::class)
-    override fun copyFile(requestor: Any?,
-                          virtualFile: VirtualFile,
-                          newParent: VirtualFile,
-                          copyName: String): VirtualFile {
+    override fun copyFile(
+        requestor: Any?,
+        virtualFile: VirtualFile,
+        newParent: VirtualFile,
+        copyName: String
+    ): VirtualFile {
         if (newParent !is CaosVirtualFile) {
             (newParent.fileSystem as? LocalFileSystem)?.let { vfs ->
                 return vfs.copyFile(requestor, virtualFile, newParent, virtualFile.name)
@@ -315,9 +341,9 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     override fun fireFileCopied(requestor: Any?, originalFile: VirtualFile, createdFile: VirtualFile) {
         val event = VirtualFileCopyEvent(
-                requestor,
-                originalFile,
-                createdFile
+            requestor,
+            originalFile,
+            createdFile
         )
         listeners.forEach { listener ->
             listener.fileCopied(event)
@@ -337,10 +363,9 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
     fun fireOnSaveEvent(virtualFile: CaosVirtualFile) {
         val event = CaosVirtualFileEvent(
-                null,
-                virtualFile,
-                virtualFile.name,
-                virtualFile.parent
+            null,
+            virtualFile,
+            virtualFile.parent
         )
         saveListeners.forEach { listener ->
             listener(event)
@@ -377,6 +402,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     companion object {
         private const val TEMP_FOLDER_NAME = ".tmp"
         val index = AtomicInteger(0)
+
         @JvmStatic
         val instance: CaosVirtualFileSystem by lazy {
             if (index.getAndIncrement() > 0)
@@ -386,8 +412,14 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
     }
 }
 
-class CaosVirtualFileEvent(requester: Any?, file: CaosVirtualFile, fileName: String, parent: VirtualFile?)
-    : VirtualFileEvent(requester, file, fileName, parent)
+class CaosVirtualFileEvent(requester: Any?, file: CaosVirtualFile, parent: VirtualFile?) :
+    VirtualFileEvent(
+        requester,
+        file,
+        parent,
+        file.modificationStamp,
+        now()
+    )
 
 typealias CaosVirtualFileSaveListener = (e: CaosVirtualFileEvent) -> Unit
 

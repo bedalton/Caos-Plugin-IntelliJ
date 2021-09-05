@@ -100,3 +100,4 @@ gradle-app.setting
 
 /working/*
 /src/main/gen
+src/main/resources/c3engine/C3CaosInjector(0.01).exe
