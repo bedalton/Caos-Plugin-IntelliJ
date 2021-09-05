@@ -29,7 +29,7 @@ import java.security.MessageDigest
 
 val VirtualFile.contents: String
     get() {
-        return VfsUtilCore.loadText(this)
+        return this.inputStream.reader().readText()
     }
 
 fun VirtualFile.getModule(project: Project): Module? {
@@ -69,9 +69,9 @@ object CaosFileUtil {
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
             val jar = libFolder.children.firstOrNull {
                 it.name.startsWith("CaosPlugin") && it.extension == "jar"
-            }
-                ?: return DEBUG_PLUGIN_HOME_DIRECTORY
-            return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
+            } ?: return DEBUG_PLUGIN_HOME_DIRECTORY
+            return JarFileSystem.getInstance().getJarRootForLocalFile(jar)
+                ?: DEBUG_PLUGIN_HOME_DIRECTORY
         }
 
     private val DEBUG_PLUGIN_HOME_DIRECTORY: VirtualFile?
@@ -157,7 +157,7 @@ fun copyToClipboard(string: String) {
 fun findFileBySharedModuleAndRelativePath(project: Project, baseFile: VirtualFile, fileRelativePath: String): VirtualFile? {
     val module = ModuleUtil.findModuleForFile(baseFile, project)
             ?: return null
-    val file= module.moduleFile?.findFileByRelativePath(fileRelativePath)
+    val file = module.moduleFile?.findFileByRelativePath(fileRelativePath)
     if (file != null)
         return file
     val path = module.moduleFile?.path + fileRelativePath
