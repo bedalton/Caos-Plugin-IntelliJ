@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
@@ -12,13 +14,24 @@ import com.pretty_tools.dde.client.DDEClientEventListener
 /**
  * Class for managing a C1/C2 DDE CAOS connection
  */
-internal class DDEConnection(private val variant: CaosVariant) : CaosConnection {
+internal class DDEConnection(private val url: String, private val variant: CaosVariant, private val displayName: String) : CaosConnection {
+
+    override val supportsJect: Boolean
+        get() = false
+
+    override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
+        throw Exception("JECT not supported by POST connection")
+    }
 
     override fun inject(caos: String): InjectionStatus {
+        val processedCaos = CaosScriptsQuickCollapseToLine.collapse(variant, caos)
+        // Remove bad prefix for CAOS2Cob injection
+        if (processedCaos.startsWith("iscr") || processedCaos.startsWith("rscr"))
+            processedCaos.substring(5)
         val conn = getConnection()
                 ?: return InjectionStatus.BadConnection("Failed to fetch connection to Vivarium")
         try {
-            conn.poke("Macro", caos+0.toChar())
+            conn.poke("Macro", processedCaos+0.toChar())
         } catch(e:Exception) {
             return InjectionStatus.Bad("Poke macro failed with error: ${e.message}")
         }
@@ -40,6 +53,7 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
 
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
+        // removes possibly badly formatted script header
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
         val caosFormatted = if (!caos.trim().toLowerCase().startsWith(expectedHeader)) {
              if (removalRegex.matches(caos)) {
@@ -92,18 +106,17 @@ internal class DDEConnection(private val variant: CaosVariant) : CaosConnection 
             }
         }
         return try {
-            conn.connect(server, topic)
+            conn.connect(url, topic)
             connection = conn
             conn
         } catch (e: Exception) {
             e.printStackTrace()
-            LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running. Error: " + e.message)
+            LOGGER.severe("Connection to the vivarium failed. Ensure $displayName is running. Error: " + e.message)
             null
         }
     }
 
     companion object {
-        private const val server: String = "Vivarium"
         private const val topic: String = "IntelliJCaosInjector"
         private var connection: DDEClientConversation? = null
     }
