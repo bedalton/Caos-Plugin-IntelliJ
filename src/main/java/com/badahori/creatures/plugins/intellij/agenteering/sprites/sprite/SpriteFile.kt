@@ -12,7 +12,7 @@ abstract class SpriteFile<SpriteT:SpriteFrame<SpriteT>>(private val type:SpriteT
     protected var mFrames:List<SpriteT?> = listOf()
     val size: Int get() = mFrames.size
 
-    open val images:List<BufferedImage?> get() = mFrames.mapIndexed { i, it ->
+    open val images:List<BufferedImage?> get() = mFrames.mapIndexed { _, it ->
         it?.image
     }
 

@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import bedalton.creatures.bytes.ByteStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AuthorBlock
@@ -9,7 +10,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.ide.projectView.PresentationData
@@ -24,7 +24,6 @@ import com.intellij.psi.PsiManager
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 import java.awt.Color
-import java.nio.ByteBuffer
 
 
 internal class CobFileTreeNode(
@@ -37,7 +36,7 @@ internal class CobFileTreeNode(
     private val cobData by lazy {
         try {
             CobToDataObjectDecompiler.decompile(
-                ByteBuffer.wrap(file.contentsToByteArray()).littleEndian(),
+                ByteStreamReader(file.contentsToByteArray()),
                 file.nameWithoutExtension
             )
         } catch (e: Exception) {

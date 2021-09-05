@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import bedalton.creatures.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
@@ -13,13 +14,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.io.IOException
-import java.nio.ByteBuffer
 
 
 /**
  * A reader class for SFC Files.
  */
-internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFilePath: String? = null) {
+internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val sfcFilePath: String? = null) {
     lateinit var variant: CaosVariant
     // Ptr objects are required as objects are accessed by child creation calls
     // while still being constructed by decompiler.
@@ -134,7 +134,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
             val favoritePlacePosition = Vector2(uInt16, uInt16)
             favoritePlaces.add(SfcFavoritePlace(favoritePlaceName, favoritePlacePosition))
             // Peak if C1 as it is possible that the next one is part of Speech History
-            hasNext = (if (variant == C1) peakUInt8() else uInt8) != 0
+            hasNext = (if (variant == C1) (peakUInt8() ?: 0) else uInt8) != 0
         }
         val emptySlots = 6 - favoritePlaces.size
         val toSkip = (emptySlots * 5) + (if (variant == C2) 1 else 0)
@@ -163,7 +163,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
 
     // ==== Convenience methods ==== //
     val uInt8 get() = byteBuffer.uInt8
-    fun peakUInt8(): Int = byteBuffer.peakUInt8()
+    fun peakUInt8(): Int? = byteBuffer.peakUInt8()
     val uInt16 get() = byteBuffer.uInt16
     val uInt32 get() = byteBuffer.uInt32.toInt()
     fun skip(bytes: Int) = byteBuffer.skip(bytes)
@@ -248,7 +248,7 @@ internal class SfcReader(internal val byteBuffer: ByteBuffer, private val sfcFil
         }
 
         private fun readRaw(virtualFile: VirtualFile): SfcFileDataHolder {
-            val byteBuffer = ByteBuffer.wrap(virtualFile.contentsToByteArray()).littleEndian()
+            val byteBuffer = ByteStreamReader(virtualFile.contentsToByteArray())
             val dumper = SfcReader(byteBuffer, virtualFile.path)
             val data = dumper.readFile()
             return SfcFileDataHolder(data)
