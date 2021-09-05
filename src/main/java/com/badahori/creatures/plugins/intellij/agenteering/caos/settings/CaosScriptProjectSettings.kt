@@ -1,21 +1,30 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.components.State
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
+import com.intellij.util.messages.Topic
+import com.intellij.util.xmlb.annotations.Attribute
+import com.intellij.util.xmlb.annotations.Transient
+import java.util.*
 
 object CaosScriptProjectSettings {
-    // Allows persisting ignore setting.
-    // Disabled for now, as there would be no way to enable the check again in the future
-    /*private const val INJECTION_CHECK_DISABLED_DEFAULT = false
-    private const val INJECTION_CHECK_DISABLED_KEY = "INJECTION_CHECK_DISABLED"
-    private val INJECTION_CHECK_DISABLED_SETTING = CaosPluginSettingsUtil.BooleanSetting(INJECTION_CHECK_DISABLED_KEY, false)
-    var injectionCheckDisabled: Boolean
-        get() = INJECTION_CHECK_DISABLED_SETTING.value ?: INJECTION_CHECK_DISABLED_DEFAULT
-        set(value) { INJECTION_CHECK_DISABLED_SETTING.value = value }*/
 
+    // Transient property for disabling CAOS validation before inject
+    // Transient to allow it to be reset each application start
+    // Needs to reset as there is no way a user can control it
     var injectionCheckDisabled: Boolean = false
 
     // ==== VARIANT ===== //
@@ -83,6 +92,36 @@ object CaosScriptProjectSettings {
             SHOW_ATT_POSE_VIEW_SETTING.value = show
         }
 
+    private const val GAME_INTERFACE_NAMES_KEY = "caos.INJECTOR_INTERFACE_NAMES"
+    private val GAME_INTERFACE_NAMES = CaosPluginSettingsUtil.StringSetting(GAME_INTERFACE_NAMES_KEY, "")
+    @JvmStatic
+    var gameInterfaceNames: List<GameInterfaceName>
+        get() = GAME_INTERFACE_NAMES.value
+            ?.split("\n")
+            ?.filter { it.isNotBlank() }
+            ?.mapNotNull {
+                GameInterfaceName.fromString(it.trim())
+            }
+            ?: emptyList()
+        set(names) {
+            GAME_INTERFACE_NAMES.value = names.joinToString("\n")
+        }
+
+
+    private const val IGNORED_FILE_NAMES_KEY = "caos.IGNORED_FILE_NAMES"
+    private val IGNORED_FILE_NAMES = CaosPluginSettingsUtil.StringSetting(IGNORED_FILE_NAMES_KEY, "")
+    @JvmStatic
+    var ignoredFileNames: List<GameInterfaceName>
+        get() = IGNORED_FILE_NAMES.value
+            ?.split("\n")
+            ?.mapNotNull {
+                GameInterfaceName.fromString(it)
+            }
+            ?: emptyList()
+        set(names) {
+            IGNORED_FILE_NAMES.value = names.joinToString("\n")
+        }
+
     // === CAOS Injection URLS === //
     fun getInjectURL(project:Project) : String? {//Map<String,String>?  {
         //val invalidNameCharsRegex = "[<>]".toRegex() // Used when doing multiple injection urls
@@ -102,46 +141,15 @@ object CaosScriptProjectSettings {
                     }
                 }
                 .firstOrNull()
-    /*
-                .mapIndexedNotNull { i, text ->
-                    text.split("=")
-                            .map { it.trim() }
-                            .let mapper@{ parts ->
-                                if (parts.isEmpty()) {
-                                    return@mapper null
-                                }
-                                when {
-                                    parts.size > 2 -> {
-                                        CaosInjectorNotifications.createWarningNotification(
-                                                project = project,
-                                                title = "CAOS URL format error",
-                                                content = "The CAOS URL line with contents: $text is invalid. Format should be the 'name=url'\nWhere url begins with 'http' and name is an arbitrary reference key"
-                                        )
-                                        parts
-                                                .firstOrNull { part -> part.startsWith("http") }
-                                                ?.let { url ->
-                                                    parts.first() to url
-                                                }
-                                    }
-                                    parts.size == 2 -> {
-                                        if (parts[0].contains(invalidNameCharsRegex)) {
-                                            CaosInjectorNotifications.createWarningNotification(
-                                                    project = project,
-                                                    title = "CAOS URL format error",
-                                                    content = "CAOS URL name key '${parts[0]}' is invalid. Name keys cannot contain '<' or '>' characters.\nThey have been automatically stripped out"
-                                            )
-                                            parts[0].replace(invalidNameCharsRegex, "") to parts[1]
-                                        }
-                                        parts[0] to parts[1]
-                                    }
-                                    else -> {
-                                        "Injector $i - '${parts[0]}'" to parts[0]
-                                    }
-                                }
-                            }
-
-                }
-                .toMap()*/
-
     }
+    private const val DEFAULT_POSE_VIEW_KEY = "att.DEFAULT_POSE"
+    private const val DEFAULT_DEFAULT_POSE_VIEW = "313122122111111"
+    private val DEFAULT_POSE_VIEW_SETTING = CaosPluginSettingsUtil.StringSetting(DEFAULT_POSE_VIEW_KEY, DEFAULT_DEFAULT_POSE_VIEW)
+    @JvmStatic
+    var defaultPoseString:String
+        get() = DEFAULT_POSE_VIEW_SETTING.value ?: DEFAULT_DEFAULT_POSE_VIEW
+        set(show) {
+            DEFAULT_POSE_VIEW_SETTING.value = show
+        }
 }
+

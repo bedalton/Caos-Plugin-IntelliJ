@@ -2,13 +2,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_HASH_TAG
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.CaosDef_VALUES_LIST_VALUE_KEY_LITERAL
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
 
-public object CaosScriptTokenSets {
+object CaosScriptTokenSets {
 
     val BLOCK_STARTS_AND_ENDS = create(
         CaosScript_C_ENDM,
@@ -34,6 +33,7 @@ public object CaosScriptTokenSets {
      * Eq op tokens. Symbols are grouped by old ('eq'|'ne') and new style ('='|'!=')
      */
     @JvmStatic
+    @Suppress("unused")
     val EQ_OPS = create(
         CaosScript_EQ_OP,
         CaosScript_EQ_OP_OLD,
@@ -152,6 +152,7 @@ public object CaosScriptTokenSets {
         CaosScript_K_REPS,
         CaosScript_K_REPE,
         CaosScript_K_RETN,
+        CaosScript_K_CRETN,
         CaosScript_K_SCRP,
         CaosScript_K_SLOW,
         CaosScript_K_SUBR,
@@ -161,6 +162,7 @@ public object CaosScriptTokenSets {
         CaosScript_K_OR
     )
 
+    @Suppress("unused")
     @JvmStatic
     val Variables = create(
         CaosScript_VAR_X,
@@ -955,7 +957,7 @@ public object CaosScriptTokenSets {
         create(
             CaosScript_CAOS_2_BLOCK,
             CaosScript_CAOS_2_COMMENT_ERROR_VALUE,
-            CaosScript_CAOS_2_COMMENT_VALUE,
+            CaosScript_CAOS_2_VALUE,
             CaosScript_CAOS_2_BLOCK_COMMENT,
             CaosScript_CAOS_2_COB_HEADER,
             CaosScript_CAOS_2_PRAY_HEADER,
@@ -990,6 +992,7 @@ public object CaosScriptTokenSets {
         CaosScript_K_SSFC
     )
 
+    @Suppress("unused")
     val NON_PREFIX_SUFFIX_COMMANDS = create(*ALL_COMMANDS.types.filterNot {
         it in PREFIX_KEYWORDS || it in SUFFIX_TOKENS
     }.toTypedArray()

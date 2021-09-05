@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser;
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptLexerAdapter;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes;
@@ -18,8 +17,6 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
-
-import static com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptTreeUtilKt.getLOGGER;
 
 public class CaosScriptParserDefinition implements ParserDefinition {
 
@@ -72,9 +69,8 @@ public class CaosScriptParserDefinition implements ParserDefinition {
         return new CaosScriptFile(fileViewProvider, fileViewProvider.getVirtualFile());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
+    public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
         if (WHITE_SPACES.contains(astNode.getElementType()))
             return SpaceRequirements.MAY;
         return SpaceRequirements.MUST_NOT;

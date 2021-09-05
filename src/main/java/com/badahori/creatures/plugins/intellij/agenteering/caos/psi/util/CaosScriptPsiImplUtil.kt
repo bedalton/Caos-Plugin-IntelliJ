@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
@@ -23,6 +24,7 @@ import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import icons.CaosScriptIcons
+import stripSurroundingQuotes
 import javax.swing.Icon
 
 
@@ -1622,8 +1624,8 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isInt(expression: CaosScriptRvalue): Boolean {
-        return expression.number?.int != null &&
-                expression.number?.character != null &&
+        return expression.number?.int != null ||
+                expression.number?.character != null ||
                 expression.number?.binaryLiteral != null
     }
 
@@ -1997,9 +1999,13 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isCaos2Pray(def: CaosScriptCaos2Block): Boolean {
-        return def.stub?.isCaos2Pray
-                ?: def.stub?.agentBlockNames?.none { it.first == "C1" || it.first == "C2" }
-                ?: def.caos2BlockHeader?.caos2PrayHeader != null
+        def.stub?.isCaos2Pray?.let {
+            return it
+        }
+        val isPrayAgent = def.stub?.agentBlockNames?.nullIfEmpty()?.none { it.first == "C1" || it.first == "C2" }
+                ?: (getAgentBlockNames(def).nullIfEmpty()?.none {it.first == "C1" || it.first == "C2" })
+                ?: false
+        return isPrayAgent || (def.caos2BlockHeader?.caos2PrayHeader != null)
     }
 
     @JvmStatic
@@ -2065,7 +2071,10 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isCaos2Cob(def: CaosScriptCaos2Block): Boolean {
-        return def.stub?.isCaos2Cob ?: def.caos2BlockHeader?.caos2CobHeader != null || def.agentBlockNames.any { it.first == "C1" || it.first == "C2" }
+        return def.stub?.isCaos2Cob
+                ?: (def.caos2BlockHeader?.caos2CobHeader != null) ||
+                def.stub?.agentBlockNames?.any { it.first == "C1" || it.second == "C2" }.orFalse() ||
+                def.agentBlockNames.any { it.first == "C1" || it.first == "C2" }
     }
 
     /**
@@ -2189,7 +2198,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandArgs(tag: CaosScriptCaos2Command): List<String> {
-        return tag.stub?.args ?: tag.caos2CommentValueList.map {
+        return tag.stub?.args ?: tag.caos2ValueList.map {
             it.quoteStringLiteral?.stringValue ?: it.text
         }
     }
@@ -2214,7 +2223,7 @@ object CaosScriptPsiImplUtil {
             .collectElementsOfType(def, CaosScriptCaos2Tag::class.java)
             .mapNotNull map@{
                 val key = getTagName(it)
-                val value = getValue(it)
+                val value = getValueAsString(it)
                     ?: return@map null
                 key to value
             }.toMap()
@@ -2225,41 +2234,107 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getTagName(tag: CaosScriptCaos2Tag): String {
-        return tag.stub?.tagName ?: tag.cobCommentDirective.let { it.quoteStringLiteral?.stringValue ?: it.c1String?.stringValue ?: it.text}.replace(WHITESPACE_OR_DASH, " ")
+        return tag.stub?.tagName ?: tag.caos2TagName.let { it.quoteStringLiteral?.stringValue ?: it.c1String?.stringValue ?: it.text}.replace(WHITESPACE_OR_DASH, " ")
+    }
+
+    @JvmStatic
+    fun getTagString(tag: CaosScriptCaos2TagName): String {
+        return tag.quoteStringLiteral?.stringValue ?: tag.c1String?.stringValue ?: tag.text
     }
 
     /**
      * Gets tag value for a tag in a CAOS2Block
      */
     @JvmStatic
-    fun getValue(tag: CaosScriptCaos2Tag): String? {
-        return tag.stub?.value ?: tag.caos2CommentValue?.let { getValue(it) }
+    fun getValueAsString(tag: CaosScriptCaos2Tag): String? {
+        return tag.stub?.value ?: tag.caos2Value?.let { getValueAsString(it) }
+    }
+
+    /**
+     * Gets tag value for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun getValueRaw(tag: CaosScriptCaos2Tag): String {
+        return tag.stub?.rawValue ?: tag.caos2Value?.text ?: ""
+    }
+
+    /**
+     * Gets tag value for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun isNumberValue(tag: CaosScriptCaos2Tag): Boolean {
+        return (tag.stub?.isStringValue?.let { !it })
+            ?: tag.caos2Value?.isNumberValue
+            ?: false
+    }
+    /**
+     * Gets tag value for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun isStringValue(tag: CaosScriptCaos2Tag): Boolean {
+        return tag.stub?.isStringValue
+            ?: tag.caos2Value?.isStringValue
+            ?: false
     }
 
     /**
      * Gets tag value as int if possible for a tag in a CAOS2Block
      */
     @JvmStatic
-    fun getIntValue(tag: CaosScriptCaos2Tag): Int? {
-        return getValue(tag)?.toIntSafe()
+    fun getValueAsInt(tag: CaosScriptCaos2Tag): Int? {
+        return tag.stub?.value?.toIntOrNull() ?: tag.caos2Value?.text?.toIntOrNull()
+    }
+
+    /**
+     * Gets the char value of a char literal
+     */
+    @JvmStatic
+    fun getStringValue(element: CaosScriptCaos2TagName): String {
+        return element.text.stripSurroundingQuotes()
+    }
+
+    /**
+     * Gets tag value as string if possible for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun getValueAsString(value: CaosScriptCaos2Value): String? {
+        return if (value.int != null)
+            null
+        else
+            value.quoteStringLiteral?.stringValue ?: value.text.stripSurroundingQuotes()
     }
 
     /**
      * Gets tag value as int if possible for a tag in a CAOS2Block
      */
     @JvmStatic
-    fun getValue(value: CaosScriptCaos2CommentValue): String {
-        return (value.quoteStringLiteral?.stringValue ?: value.text)
-            .replace("\\\"", "\"")
-            .replace("\\'", "'")
+    fun getValueAsInt(value: CaosScriptCaos2Value): Int? {
+        return value.text.toIntOrNull()
+    }
+
+    /**
+     * Gets tag value as int if possible for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun isNumberValue(value: CaosScriptCaos2Value): Boolean {
+        return value.int != null || NUMBER_REGEX.matches(value.text)
+    }
+
+    /**
+     * Gets tag value as int if possible for a tag in a CAOS2Block
+     */
+    @JvmStatic
+    fun isStringValue(value: CaosScriptCaos2Value): Boolean {
+        return value.int == null && !NUMBER_REGEX.matches(value.text)
     }
 
     @JvmStatic
     fun getTag(element:CaosScriptAtDirectiveComment) : String? {
         return element.text.substring(2).split('=', limit = 2).firstOrNull()?.trim().nullIfEmpty()
     }
+
     @JvmStatic
-    fun getValue(element:CaosScriptAtDirectiveComment) : String? {
+    fun getValueAsString(element:CaosScriptAtDirectiveComment) : String? {
         return element.text.substring(2).split('=', limit = 2).getOrNull(1)?.trim().nullIfEmpty()
     }
 }

@@ -1,6 +1,7 @@
 package icons;
 
 import com.intellij.openapi.util.IconLoader;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -37,4 +38,7 @@ public interface CaosScriptIcons {
     Icon EVENT_SCRIPT = IconLoader.getIcon("/icons/event-script-icon.png");
     Icon SUBROUTINE = IconLoader.getIcon("/icons/subroutine-icon.png");
     Icon IMAGE = IconLoader.getIcon("/icons/ImagesFileType.svg");
+    Icon COMPILE = IconLoader.getIcon("/icons/compile.svg");
+    Icon BUILD = IconLoader.getIcon("/icons/compile.svg");
+    Icon RUN = IconLoader.getIcon("/icons/run.svg");
 }

@@ -19,16 +19,22 @@ class CaosScriptCaos2TagStubType(debugName: String) :
 
     override fun serialize(stub: CaosScriptCaos2TagStub, stream: StubOutputStream) {
         stream.writeName(stub.tagName)
+        stream.writeName(stub.rawValue)
         stream.writeName(stub.value)
+        stream.writeBoolean(stub.isStringValue)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosScriptCaos2TagStub {
         val tagName = stream.readNameAsString()!!
+        val rawValue = stream.readNameAsString()!!
         val value = stream.readNameAsString()
+        val isStringValue = stream.readBoolean()
         return CaosScriptCaos2TagStubImpl(
             parent,
             tagName = tagName,
-            value = value
+            rawValue = rawValue,
+            value = value,
+            isStringValue = isStringValue
         )
     }
 
@@ -36,7 +42,9 @@ class CaosScriptCaos2TagStubType(debugName: String) :
         return CaosScriptCaos2TagStubImpl(
             parent = parent,
             tagName = element.tagName,
-            value = element.value
+            rawValue = element.valueRaw,
+            value = element.valueAsString,
+            isStringValue = element.isStringValue
         )
     }
 

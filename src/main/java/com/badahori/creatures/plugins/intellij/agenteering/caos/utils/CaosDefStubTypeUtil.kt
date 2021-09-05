@@ -97,7 +97,7 @@ internal fun <T> StubOutputStream.writeList(list: List<T>, write:StubOutputStrea
     }
 }
 
-internal fun <T> StubInputStream.readList(readItem:StubInputStream.()->T?) : List<T?> {
+internal fun <T> StubInputStream.readList(readItem:StubInputStream.()->T) : List<T> {
     val size = readInt()
     return (0 until size).map {
         readItem()

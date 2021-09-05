@@ -1,8 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.readTag
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.writeTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptFileStubImpl
@@ -33,6 +36,9 @@ class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, Ca
         super.serialize(stub, stream)
         stream.writeName(stub.fileName)
         stream.writeName((stub.variant ?: CaosVariant.UNKNOWN).code)
+        stream.writeList(stub.prayTags) {
+            writeTag(it)
+        }
     }
 
     @Throws(IOException::class)
@@ -42,13 +48,12 @@ class CaosScriptFileStubType : IStubFileElementType<CaosScriptFileStub>(NAME, Ca
 
         // Read variant, but set to null if variant is read back in as unknown
         // If variant is unknown, the plugin could try to infer it.
-        val variant = stream.readNameAsString()?.let { CaosVariant.fromVal(it)}?.let {
-            if (it == CaosVariant.UNKNOWN)
-                null
-            else
-                it
+        val variant = stream.readNameAsString()
+            ?.let { CaosVariant.fromVal(it) }
+        val prayTags = stream.readList {
+            readTag()
         }
-        return CaosScriptFileStubImpl(null, fileName, variant)
+        return CaosScriptFileStubImpl(null, fileName, variant, prayTags)
     }
 
     override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {
@@ -65,8 +70,7 @@ private class CaosScriptFileStubBuilder : DefaultStubBuilder() {
         return if (file !is CaosScriptFile) {
             super.createStubForFile(file)
         } else {
-            val fileName = file.name
-            return CaosScriptFileStubImpl(file, fileName, file.variant)
+            return CaosScriptFileStubImpl(file, file.name, file.variant, file.prayTags)
         }
     }
 }

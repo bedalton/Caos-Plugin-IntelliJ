@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
@@ -116,6 +115,15 @@ object CaosScriptPsiElementFactory {
 
     fun createScriptElement(project: Project, tag: String): CaosScriptScriptElement? {
         return createAndGet(project, "$tag\nendm", CaosScriptScriptElement::class.java)
+    }
+
+    fun createCAOS2PrayTag(project: Project, correctedCase: String, startsWithQuote: Boolean): CaosScriptCaos2TagName? {
+        val tag = if (startsWithQuote)
+            "\"$correctedCase\""
+        else
+            correctedCase
+        val script = "*# $tag = \"\"\n"
+        return createAndGet(project, script, CaosScriptCaos2TagName::class.java, variant = CaosVariant.DS)
     }
 
 }

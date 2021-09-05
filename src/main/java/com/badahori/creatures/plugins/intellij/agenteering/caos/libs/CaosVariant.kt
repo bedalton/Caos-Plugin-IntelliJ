@@ -25,7 +25,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     }
     companion object {
         private val others:MutableList<CaosVariant> = mutableListOf()
-        fun fromVal(variant: String): CaosVariant {
+        fun fromVal(variant: String?): CaosVariant {
             return when (variant) {
                 "C1" -> C1
                 "C2" -> C2
@@ -121,3 +121,15 @@ fun CaosVariant?.orDefault(): CaosVariant? {
 val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
 
 typealias GameVariant = CaosVariant
+
+
+val CaosVariant.injectorInterfaceName: String? get() {
+    return when (this) {
+        CaosVariant.C1, CaosVariant.C2 -> "Vivarium"
+        CaosVariant.CV -> "Creatures Village"
+        CaosVariant.C3 -> "Creatures 3"
+        CaosVariant.DS -> "Docking Station"
+        CaosVariant.SM -> "Sea-Monkeys"
+        else -> null
+    }
+}

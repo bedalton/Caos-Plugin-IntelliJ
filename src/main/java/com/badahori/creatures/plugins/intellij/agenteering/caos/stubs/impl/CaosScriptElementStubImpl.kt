@@ -79,7 +79,7 @@ class CaosScriptAssignmentStubImpl(
         override val operation:CaosOp,
         override val rvalue:List<CaosExpressionValueType>?,
         override val lvalue:CaosExpressionValueType?,
-        override val enclosingScope:CaosScope,
+//        override val enclosingScope:CaosScope,
         override val commandString: String
 ) : StubBase<CaosScriptCAssignmentImpl>(parent, CaosScriptStubTypes.VAR_ASSIGNMENT), CaosScriptAssignmentStub
 
@@ -218,7 +218,9 @@ class CaosScriptCaos2BlockStubImpl(
 class CaosScriptCaos2TagStubImpl(
         parent: StubElement<*>?,
         override val tagName:String,
-        override val value:String?
+        override val rawValue: String,
+        override val value:String?,
+        override val isStringValue: Boolean
 ):StubBase<CaosScriptCaos2TagImpl>(parent, CaosScriptStubTypes.CAOS_2_TAG),CaosScriptCaos2TagStub
 
 class CaosScriptCaos2CommandStubImpl(
