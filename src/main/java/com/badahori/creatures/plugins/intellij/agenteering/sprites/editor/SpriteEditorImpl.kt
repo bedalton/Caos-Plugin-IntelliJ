@@ -34,10 +34,11 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
 
     override fun getComponent(): JComponent {
         if (this::editor.isInitialized)
-            return editor.`$$$getRootComponent$$$`()
+            return editor.component
         val editor = SprFileEditor(myFile)
+        editor.init()
         this.editor = editor
-        return editor.`$$$getRootComponent$$$`()
+        return editor.component
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -87,7 +88,7 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
                 return
         }
         if (this::editor.isInitialized)
-            editor.loadSprite()
+            editor.init()
     }
 
     companion object {

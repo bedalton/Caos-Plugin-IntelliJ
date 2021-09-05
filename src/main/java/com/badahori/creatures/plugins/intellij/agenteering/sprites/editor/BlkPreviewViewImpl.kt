@@ -19,7 +19,7 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.Dimension
-import java.awt.Event
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
@@ -158,7 +158,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
     }
 
     private fun showPopUp(e: MouseEvent) {
-        if (e.isPopupTrigger || e.modifiers or Event.CTRL_MASK == Event.CTRL_MASK && e.button == 1) {
+        if (e.isPopupTrigger || e.modifiersEx or KeyEvent.CTRL_DOWN_MASK == KeyEvent.CTRL_DOWN_MASK && e.button == 1) {
             popUp.show(e.component, e.x, e.y)
         }
     }
@@ -172,10 +172,11 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
         if (lastDirectory != null && lastDirectory.length > 3) {
             targetDirectory = File(lastDirectory)
         }
-        if (targetDirectory == null || !targetDirectory.exists() && defaultDirectory != null) {
+
+        if ((targetDirectory == null || !targetDirectory.exists()) && defaultDirectory != null) {
             targetDirectory = File(defaultDirectory)
         }
-        if (targetDirectory.exists()) {
+        if (targetDirectory?.exists() == true) {
             fileChooser.currentDirectory = targetDirectory
         }
         val userSelection = fileChooser.showSaveDialog(this)
@@ -244,7 +245,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
     }
 
 
-    internal inner class PopUp : JPopupMenu() {
+    inner class PopUp : JPopupMenu() {
         init {
             var item = JMenuItem("Save image as..")
             item.addActionListener { saveImageAs() }
