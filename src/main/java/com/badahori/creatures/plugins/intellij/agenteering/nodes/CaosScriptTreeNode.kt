@@ -10,36 +10,53 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
+import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 
 
 internal open class ProjectCaosScriptFileTreeNode(
-    protected val caosFile: CaosScriptFile,
+    file: CaosScriptFile,
     viewSettings: ViewSettings?
-) : VirtualFileBasedNode<VirtualFile>(caosFile.project, caosFile.virtualFile, viewSettings) {
+) : VirtualFileBasedNode<VirtualFile>(file.project, file.virtualFile, viewSettings) {
+
+    private val caosFileName = file.name
+
+    val pointer = SmartPointerManager.createPointer(file)
+
+    val caosFile: CaosScriptFile? get() = pointer.element
+
 
     private val scripts by lazy {
-        PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
+        val caosFile = caosFile
+            ?: return@lazy emptyList()
+        if (caosFile.isValid)
+            PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
+        else {
+            LOGGER.severe("Cannot get child scripts in ProjectCaosScriptFileTreeNode. CAOSFile invalid")
+            emptyList()
+        }
     }
 
     private val possibleScripts: Int by lazy {
         var count = 0
-        SCRIPT_HEADER_REGEX.findAll(caosFile.text).iterator().forEach { _ ->
+        SCRIPT_HEADER_REGEX.findAll(file.text).iterator().forEach { _ ->
             count++
         }
         count
     }
 
-    private val possibleSubroutines = caosFile.text.toLowerCase().count("subr ")
+    private val possibleSubroutines = file.text.toLowerCase().count("subr ")
 
 
     private val subroutines by lazy {
-       PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptSubroutine::class.java)
+        PsiTreeUtil.collectElementsOfType(file, CaosScriptSubroutine::class.java)
     }
 
     override fun isAlwaysLeaf(): Boolean {
@@ -52,19 +69,19 @@ internal open class ProjectCaosScriptFileTreeNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
-        caosFile.navigate(requestFocus)
+        caosFile?.navigate(requestFocus)
     }
 
     override fun canNavigate(): Boolean {
-        return caosFile.canNavigateToSource()
+        return caosFile?.canNavigateToSource() == true
     }
 
     override fun canNavigateToSource(): Boolean {
-        return caosFile.canNavigateToSource()
+        return caosFile?.canNavigateToSource() == true
     }
 
     private fun getPresentableText(): String {
-        return caosFile.name
+        return caosFileName
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
@@ -103,8 +120,11 @@ internal open class ProjectCaosScriptFileTreeNode(
                     )
                 }
             }
-        } else
-            getSubroutineNodes(caosFile.project, subroutines)
+        } else {
+            val project = myProject
+                ?: return emptyList()
+            getSubroutineNodes(project, subroutines)
+        }
     }
 
     override fun update(presentationData: PresentationData) {
@@ -138,6 +158,8 @@ internal class ChildCaosScriptFileTreeNode(
 ) {
 
     override fun navigate(requestFocus: Boolean) {
+        val caosFile = caosFile
+            ?: return
         if (ApplicationManager.getApplication().isDispatchThread) {
             caosFile.virtualFile?.isWritable = true
             runWriteAction {
@@ -241,11 +263,27 @@ internal class SubScriptLeafNode(
     }
 
     override fun getVirtualFile(): VirtualFile? {
+        ProgressIndicatorProvider.checkCanceled()
         if (!script.isValid)
             return null
         return try {
-            (script.containingFile ?: script.originalElement.containingFile).virtualFile
-        } catch (e:Exception) {
+            if (!script.isValid)
+                return null
+            script.containingFile?.let {
+                return if (it.isValid)
+                    it.virtualFile
+                else
+                    null
+            }
+            script.originalElement.containingFile?.let {
+                if (it.isValid)
+                    it.virtualFile
+                else
+                    null
+            }
+        } catch (e: Exception) {
+            if (e is ProcessCanceledException)
+                return null
             LOGGER.severe("Error when getting virtual file in CaosScriptTreeNode")
             e.printStackTrace()
             null
@@ -287,7 +325,10 @@ internal class SubScriptLeafNode(
 }
 
 
-private fun getSubroutineNodes(project:Project, subroutines: Collection<CaosScriptSubroutine>) : List<GenericPsiNode<CaosScriptSubroutine>> {
+private fun getSubroutineNodes(
+    project: Project,
+    subroutines: Collection<CaosScriptSubroutine>
+): List<GenericPsiNode<CaosScriptSubroutine>> {
     return subroutines.map { subroutine ->
         GenericPsiNode(
             project,
