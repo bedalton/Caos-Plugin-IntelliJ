@@ -1,12 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCRndv
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -22,7 +19,7 @@ class CaosScriptReorderRndvParameters(element: CaosScriptCRndv) : IntentionActio
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
         (problemDescriptor.psiElement as? CaosScriptCRndv)?.let {element->

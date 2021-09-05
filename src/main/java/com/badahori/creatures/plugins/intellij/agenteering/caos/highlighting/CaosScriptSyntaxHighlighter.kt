@@ -13,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import java.awt.Color
 
-class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
+class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
 
     override fun getHighlightingLexer(): Lexer {
         return CaosScriptLexerAdapter()
@@ -88,8 +88,14 @@ class CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         val EQ_OP_KEYWORD:TextAttributesKey = createTextAttributesKey("CaosScript_EQ_OP_KEYWORD", KEYWORDS)
         @JvmStatic
         val SYMBOL:TextAttributesKey = createTextAttributesKey("CaosScript_SYMBOLS", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
-       @JvmStatic
+        @JvmStatic
         val SUBROUTINE_NAME: TextAttributesKey = createTextAttributesKey("CaosScript_SUBROUTINE_NAME", DefaultLanguageHighlighterColors.LABEL)
+        @JvmStatic
+        val PRAY_TAG: TextAttributesKey = createTextAttributesKey("CaosScript_CAOS2PRAY_TAG", DefaultLanguageHighlighterColors.IDENTIFIER)
+        @JvmStatic
+        val INVALID_STRING_ESCAPE: TextAttributesKey = createTextAttributesKey("CaosScript_INVALID_STRING_ESCAPE", DefaultLanguageHighlighterColors.INVALID_STRING_ESCAPE)
+        @JvmStatic
+        val OFFICIAL_PRAY_TAG: TextAttributesKey = createTextAttributesKey("CaosScript_OFFICIAL_CAOS2PRAY_TAG", DefaultLanguageHighlighterColors.REASSIGNED_LOCAL_VARIABLE)
     }
 }
 

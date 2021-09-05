@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
@@ -15,7 +15,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptInvalidScriptHeaderValueInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.invalid-script-header-value.display-name")
-    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = CaosBundle.message("caos.inspection.invalid-script-header-value.short-name")
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {

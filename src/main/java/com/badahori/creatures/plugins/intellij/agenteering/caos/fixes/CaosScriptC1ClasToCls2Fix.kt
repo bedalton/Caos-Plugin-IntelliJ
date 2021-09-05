@@ -1,5 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -9,13 +18,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 
 class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionAction, LocalQuickFix {
 
@@ -23,7 +25,7 @@ class CaosScriptC1ClasToCls2Fix(element: CaosScriptCAssignment) : IntentionActio
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean
             = element.element?.lvalue?.commandStringUpper == "CLAS"

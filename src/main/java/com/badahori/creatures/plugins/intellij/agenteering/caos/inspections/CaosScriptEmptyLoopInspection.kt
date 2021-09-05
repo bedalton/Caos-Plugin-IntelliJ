@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCLoop
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptLoopStatement
@@ -20,7 +21,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 class CaosScriptEmptyLoopInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.empty-loop.display-name")
-    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = CaosBundle.message("caos.inspection.empty-loop.short-name")
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {

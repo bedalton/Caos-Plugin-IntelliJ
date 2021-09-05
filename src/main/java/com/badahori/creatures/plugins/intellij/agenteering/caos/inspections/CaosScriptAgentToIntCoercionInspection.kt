@@ -1,12 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
-import com.badahori.creatures.plugins.intellij.agenteering.utils.likeNone
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -14,8 +15,8 @@ import com.intellij.psi.PsiElementVisitor
 
 class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
 
-    override fun getDisplayName(): String = "Agent to Int Coercion"
-    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getDisplayName(): String = "Agent to int coercion"
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = "AgentToIntCoercion"
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
@@ -62,7 +63,7 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
                     ?: return
 
             // Assert has variant, as this is needed for command and parameter check
-            val variant = childCommand.variant
+            val variant = childCommand.variant.nullIfUnknown()
                     ?: return
 
             // Check that this command does indeed return an agent
@@ -77,10 +78,10 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
             val parentCommand = argument.parent as? CaosScriptCommandElement
                     ?: return
 
-            // Get this arguments parameter information
+            // Get this argument's parameter information
             val parameter = parentCommand.commandDefinition?.parameters?.getOrNull(argument.index)
                     ?: return
-            // Check first for if needs agent to prevent having to search for all number types
+            // Check first if type is agent to prevent having to search for all number types
             val expectedType = parameter.type
 
             // If expected parameter is not a number, it will be handled by another inspection

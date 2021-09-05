@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
@@ -13,7 +14,7 @@ import com.intellij.psi.PsiElementVisitor
 
 class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool() {
     override fun getDisplayName(): String = "Requires creature ownr object"
-    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = "RequiresCreatureOwnr"
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {

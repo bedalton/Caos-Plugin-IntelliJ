@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBinaryLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCharacter
@@ -19,7 +20,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptInvalidNumericExpressionInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.invalid-numeric-expression.display-name")
-    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = CaosBundle.message("caos.inspection.invalid-numeric-expression.short-name")
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {

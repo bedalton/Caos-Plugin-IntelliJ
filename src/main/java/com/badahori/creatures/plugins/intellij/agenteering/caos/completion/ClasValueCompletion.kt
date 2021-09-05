@@ -1,16 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -20,9 +23,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
-import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.psi.TokenType
+import com.intellij.psi.util.elementType
 import javax.swing.*
 
 
@@ -37,26 +42,86 @@ internal object GenerateClasIntegerInsertHandler : InsertHandler<LookupElement> 
     }
 }
 
-class GenerateClasIntegerAction(element:CaosScriptRvalue) : LocalQuickFix, IntentionAction {
-
-    private val pointer = SmartPointerManager.createPointer(element)
+class GenerateClasIntegerAction : PsiElementBaseIntentionAction(), IntentionAction, LocalQuickFix {
 
     override fun startInWriteAction(): Boolean = true
 
     override fun getText(): String = name
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
-
-    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean = true
-
-    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
-        invokeLater {
-            ClasForm(project, pointer).showAndGet()
-        }
-    }
+    override fun getFamilyName(): String = CAOSScript
 
     override fun getName(): String = "Generate CLAS value"
+
+    override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        return isSetvClas(element)
+    }
+
+    private fun isSetvClas(element: PsiElement): Boolean {
+        var assignment = element as? CaosScriptCAssignment
+        if (assignment == null && element.tokenType == TokenType.WHITE_SPACE) {
+            val previous = element.getPreviousNonEmptySibling(false) as? CaosScriptCodeBlockLine
+                ?: return false
+            assignment = previous.commandCall?.cAssignment
+                ?: return false
+        }
+        if (assignment != null) {
+            val arguments = assignment.arguments.nullIfEmpty()
+                ?: return false
+            if (arguments.isNotEmpty())
+                return arguments.first().text?.toUpperCase() == "CLAS"
+            return false
+        }
+
+        if (element !is CaosScriptRvalue)
+            return false
+        if (element.index != 1)
+            return false
+
+        val command = element.getParentOfType(CaosScriptCommandElement::class.java)
+            ?: return false
+        val token = command
+            .commandString
+            ?.toUpperCase()
+            ?: return false
+        if (token != "SETV")
+            return false
+
+        val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
+            ?: return false
+        return previousToken == "CLAS"
+    }
+
+    override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+        if (!isSetvClas(element))
+            return
+        applyFix(project, element)
+    }
+
+
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        val element = descriptor.psiElement
+        applyFix(project, element)
+    }
+
+    private fun applyFix(project: Project, element: PsiElement) {
+        val elementActual = when (element) {
+            is CaosScriptCAssignment -> {
+                val arguments = element.arguments.nullIfEmpty()
+                    ?: return
+                if (arguments.size != 1)
+                    return
+                if (arguments.first().text?.toUpperCase() != "CLAS")
+                    return
+                arguments.first().next
+                    ?: return
+            }
+            is CaosScriptRvalue -> element
+            else -> if (isSetvClas(element))
+                element
+            else
+                return
+        }
+        val pointer = SmartPointerManager.createPointer(elementActual)
         invokeLater {
             ClasForm(project, pointer).showAndGet()
         }
@@ -81,13 +146,19 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
         }
     }
 
-    constructor(project: Project, pointer:SmartPsiElementPointer<CaosScriptRvalue>) : this(project) {
+    constructor(project: Project, pointer:SmartPsiElementPointer<PsiElement>) : this(project) {
         insert = { clas: Int ->
             runUndoTransparentWriteAction action@{
                 try {
                     val element = pointer.element
                             ?: return@action
                     val newValue = CaosScriptPsiElementFactory.createNumber(project, clas)
+                    if (element.elementType == TokenType.WHITE_SPACE) {
+                        val editor = element.editor
+                            ?: return@action
+                        EditorUtil.replaceText(editor, element.textRange, " $clas ")
+                        return@action
+                    }
                     element.replace(newValue)
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -118,7 +189,7 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
         super.init()
     }
 
-    override fun createCenterPanel(): JComponent? {
+    override fun createCenterPanel(): JComponent {
         val fieldsPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         }

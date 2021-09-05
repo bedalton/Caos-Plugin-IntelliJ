@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
@@ -9,9 +10,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.command.CommandProcessor
@@ -24,13 +25,13 @@ import com.intellij.psi.util.PsiTreeUtil
 /**
  * Object class for expanding commas and newline-like spaces into newlines
  */
-object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
+object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), IntentionAction, LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
-    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        return file is CaosScriptFile
+    override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        return element.containingFile is CaosScriptFile
     }
 
     override fun getText(): String = CaosBundle.message("caos.intentions.commands-on-new-line")
@@ -38,8 +39,10 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
     /**
      * Invokes this fix, expanding newline-like elements into newlines
      */
-    override fun invoke(project: Project, editor: Editor?, fileIn: PsiFile?) {
-        invoke(project, fileIn)
+    override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+        val file = element.containingFile as? CaosScriptFile
+            ?: return
+        invoke(project, file)
     }
 
     /**
@@ -94,7 +97,7 @@ object CaosScriptExpandCommasIntentionAction : IntentionAction, LocalQuickFix {
         }
 
         // Get all possible newline elements
-        val newLines = PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
+        PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
             .filter { whiteSpace ->
                 if (whiteSpace.textContains('\n'))
                     return@filter false

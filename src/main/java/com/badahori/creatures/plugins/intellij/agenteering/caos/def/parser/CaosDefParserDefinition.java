@@ -68,9 +68,8 @@ public class CaosDefParserDefinition implements ParserDefinition {
         return new CaosDefFile(fileViewProvider);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
+    public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
         return SpaceRequirements.MAY;
     }
 }

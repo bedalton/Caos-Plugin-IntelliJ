@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -21,7 +22,7 @@ class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction,
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean
             = element.element?.lvalue?.commandStringUpper == "CLS2"

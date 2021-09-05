@@ -226,7 +226,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
                     .withLookupString(builderLabel)
                     .withPresentableText(builderLabel)
-                    .withInsertHandler(GenerateBitFlagIntegerAction(list.name, values))
+                    .withInsertHandler(GenerateBitFlagInsertHandler(list.name, values))
                     .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 1000.0
             )
             resultSet.addElement(lookupElement)

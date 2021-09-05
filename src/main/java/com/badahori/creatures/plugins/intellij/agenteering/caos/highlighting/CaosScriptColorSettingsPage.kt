@@ -21,7 +21,12 @@ class CaosScriptColorSettingsPage : ColorSettingsPage {
     }
 
     override fun getDemoText(): String {
-        return """* An example of an inst(ant) macro script
+        return """
+**CAOS2Pray
+*# <officialTag>Agent Description</officialTag> = "This is an official agent tag"
+*# <prayTag>User defined Tag</prayTag> = "Other tag value..."
+
+* An example of an inst(ant) macro script
 <keyword>inst</keyword>
 <prefix>new:</prefix> <command>simp</command> <token>heli</token> 1 0 0 0
 <command>clas</command> 1234567
@@ -73,46 +78,50 @@ endm
         return "Caos Script"
     }
 
-    override fun getAdditionalHighlightingTagToDescriptorMap(): Map<String, TextAttributesKey>? {
+    override fun getAdditionalHighlightingTagToDescriptorMap(): Map<String, TextAttributesKey> {
         return XMLDESCRIPTORS
     }
 
     companion object {
         private val DESCRIPTORS = arrayOf(
-                AttributesDescriptor("Animations", CaosScriptSyntaxHighlighter.ANIMATION),
-                AttributesDescriptor("Strings", CaosScriptSyntaxHighlighter.STRING),
-                AttributesDescriptor("Token Literals", CaosScriptSyntaxHighlighter.TOKEN),
-                AttributesDescriptor("Keywords", CaosScriptSyntaxHighlighter.KEYWORDS),
-                AttributesDescriptor("Line Comment", CaosScriptSyntaxHighlighter.COMMENT),
-                AttributesDescriptor("Variables", CaosScriptSyntaxHighlighter.VAR_TOKEN),
-                AttributesDescriptor("Variables: VARx|VAxx", CaosScriptSyntaxHighlighter.VAR_TOKEN_VA),
-                AttributesDescriptor("Variables: OBVx|OVxx", CaosScriptSyntaxHighlighter.VAR_TOKEN_OV),
-                AttributesDescriptor("Variables: MVxx", CaosScriptSyntaxHighlighter.VAR_TOKEN_MV),
-                AttributesDescriptor("Commands", CaosScriptSyntaxHighlighter.COMMAND_TOKEN),
-                AttributesDescriptor("Command Prefix", CaosScriptSyntaxHighlighter.PREFIX_TOKEN),
-                AttributesDescriptor("Command Suffix", CaosScriptSyntaxHighlighter.SUFFIX_TOKEN),
-                AttributesDescriptor("Right Value Keywords", CaosScriptSyntaxHighlighter.RVALUE_TOKEN),
-                AttributesDescriptor("Left Value Keywords", CaosScriptSyntaxHighlighter.LVALUE_TOKEN),
-                AttributesDescriptor("Numbers", CaosScriptSyntaxHighlighter.NUMBER),
-                AttributesDescriptor("Equals Keywords", CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD),
-                AttributesDescriptor("Equals Symbols", CaosScriptSyntaxHighlighter.SYMBOL),
-                AttributesDescriptor("Subroutine Name", CaosScriptSyntaxHighlighter.SUBROUTINE_NAME),
-                AttributesDescriptor("Unrecognized Command ", CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN)
+            AttributesDescriptor("Animations", CaosScriptSyntaxHighlighter.ANIMATION),
+            AttributesDescriptor("Strings", CaosScriptSyntaxHighlighter.STRING),
+            AttributesDescriptor("Token Literals", CaosScriptSyntaxHighlighter.TOKEN),
+            AttributesDescriptor("Keywords", CaosScriptSyntaxHighlighter.KEYWORDS),
+            AttributesDescriptor("Line Comment", CaosScriptSyntaxHighlighter.COMMENT),
+            AttributesDescriptor("Variables", CaosScriptSyntaxHighlighter.VAR_TOKEN),
+            AttributesDescriptor("Variables: VARx|VAxx", CaosScriptSyntaxHighlighter.VAR_TOKEN_VA),
+            AttributesDescriptor("Variables: OBVx|OVxx", CaosScriptSyntaxHighlighter.VAR_TOKEN_OV),
+            AttributesDescriptor("Variables: MVxx", CaosScriptSyntaxHighlighter.VAR_TOKEN_MV),
+            AttributesDescriptor("Commands", CaosScriptSyntaxHighlighter.COMMAND_TOKEN),
+            AttributesDescriptor("Command Prefix", CaosScriptSyntaxHighlighter.PREFIX_TOKEN),
+            AttributesDescriptor("Command Suffix", CaosScriptSyntaxHighlighter.SUFFIX_TOKEN),
+            AttributesDescriptor("Right Value Keywords", CaosScriptSyntaxHighlighter.RVALUE_TOKEN),
+            AttributesDescriptor("Left Value Keywords", CaosScriptSyntaxHighlighter.LVALUE_TOKEN),
+            AttributesDescriptor("Numbers", CaosScriptSyntaxHighlighter.NUMBER),
+            AttributesDescriptor("Equals Keywords", CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD),
+            AttributesDescriptor("Equals Symbols", CaosScriptSyntaxHighlighter.SYMBOL),
+            AttributesDescriptor("Subroutine Name", CaosScriptSyntaxHighlighter.SUBROUTINE_NAME),
+            AttributesDescriptor("Unrecognized Command ", CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN),
+            AttributesDescriptor("CAOS2Pray tag", CaosScriptSyntaxHighlighter.PRAY_TAG),
+            AttributesDescriptor("CAOS2Pray official tag", CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG)
         )
 
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
-                "keyword" to CaosScriptSyntaxHighlighter.KEYWORDS,
-                "token" to CaosScriptSyntaxHighlighter.TOKEN,
-                "anim" to CaosScriptSyntaxHighlighter.ANIMATION,
-                "rvalue" to CaosScriptSyntaxHighlighter.RVALUE_TOKEN,
-                "lvalue" to CaosScriptSyntaxHighlighter.LVALUE_TOKEN,
-                "command" to CaosScriptSyntaxHighlighter.COMMAND_TOKEN,
-                "symbol" to CaosScriptSyntaxHighlighter.SYMBOL,
-                "eqOp" to CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD,
-                "subroutine" to CaosScriptSyntaxHighlighter.SUBROUTINE_NAME,
-                "prefix" to CaosScriptSyntaxHighlighter.PREFIX_TOKEN,
-                "suffix" to CaosScriptSyntaxHighlighter.SUFFIX_TOKEN,
-                "invalid" to CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN
+            "keyword" to CaosScriptSyntaxHighlighter.KEYWORDS,
+            "token" to CaosScriptSyntaxHighlighter.TOKEN,
+            "anim" to CaosScriptSyntaxHighlighter.ANIMATION,
+            "rvalue" to CaosScriptSyntaxHighlighter.RVALUE_TOKEN,
+            "lvalue" to CaosScriptSyntaxHighlighter.LVALUE_TOKEN,
+            "command" to CaosScriptSyntaxHighlighter.COMMAND_TOKEN,
+            "symbol" to CaosScriptSyntaxHighlighter.SYMBOL,
+            "eqOp" to CaosScriptSyntaxHighlighter.EQ_OP_KEYWORD,
+            "subroutine" to CaosScriptSyntaxHighlighter.SUBROUTINE_NAME,
+            "prefix" to CaosScriptSyntaxHighlighter.PREFIX_TOKEN,
+            "suffix" to CaosScriptSyntaxHighlighter.SUFFIX_TOKEN,
+            "invalid" to CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN,
+            "officialTag" to CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG,
+            "prayTag" to CaosScriptSyntaxHighlighter.PRAY_TAG
 
         )
     }

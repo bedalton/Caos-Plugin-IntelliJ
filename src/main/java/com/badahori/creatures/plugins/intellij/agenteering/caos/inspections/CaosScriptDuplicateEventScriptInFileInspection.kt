@@ -39,7 +39,7 @@ class CaosScriptDuplicateEventScriptInFileInspection : LocalInspectionTool() {
                 }
         if (otherExists) {
             val endOffset = thisEventScript.eventNumberElement?.endOffsetInParent
-                    ?: thisEventScript.textLength - 1
+                    ?: (thisEventScript.textLength - 1)
             val textRangeInParent = TextRange(thisEventScript.cScrp.endOffsetInParent + 1, endOffset)
             problemsHolder.registerProblem(thisEventScript, textRangeInParent, CaosBundle.message("caos.inspection.duplicate-event-number-in-file.message", family, genus, species, eventNumber))
         }

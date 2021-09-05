@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEnumNextStatement
@@ -23,13 +24,13 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
- * Turns an ETCH..NEXT statement on C1 to ENUM..NEXT with DOIF TOUC
+ * Turns an ETCH...NEXT statement on C1 to ENUM...NEXT with DOIF TOUC
  * Experimental as it may overwrite a used variable or may not perform as expected
  */
 class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQuickFix, IntentionAction {
 
     private val pointer = SmartPointerManager.createPointer(element)
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {

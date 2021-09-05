@@ -119,8 +119,4 @@ class VariantsFilePropertyPusher private constructor() : FilePropertyPusher<List
         }
     }
 
-    override fun initExtra(project: Project, messageBus: MessageBus, engine: FilePropertyPusher.Engine) {
-
-    }
-
 }

@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.tags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
@@ -14,6 +13,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
 import icons.CaosScriptIcons
 
@@ -63,7 +63,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     )
                 }
             }
-            val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2CommentValue::class.java)?.text?.trim() ?: ""
+            val stringValue = caosElement.getSelfOrParentOfType(CaosScriptCaos2Value::class.java)?.text?.trim() ?: ""
             val openChar = if (stringValue.startsWith("\"") || stringValue.startsWith("'")) "" else "\""
             val closeChar = if (stringValue.contains('\n') || stringValue.contains('\r'))
                 if (stringValue.startsWith('\''))
@@ -146,6 +146,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         // Get previous token, in case a special completion is in order
         val previousToken = element.getPreviousNonEmptySibling(false)
         val previousTokenText = previousToken?.text?.toUpperCase()
+//        LOGGER.info("previousTokenText: <$previousTokenText>; TokenType: ${previousToken.elementType}")
 
         // Previous token is CLAS, add class generator
         if (previousTokenText == "CLAS") {
@@ -450,7 +451,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         textIn: String,
         previousText: String?
     ) {
-        val existingTags: List<CobTag> = caosFile.tags.keys.mapNotNull { tagString ->
+        val existingTags: List<CobTag> = caosFile.prayTags.map { it.tag }.mapNotNull { tagString ->
             CobTag.fromString(tagString)
         }
         var tagsRaw = CobTag.getTags(variant).filterNot { tag -> tag in existingTags }

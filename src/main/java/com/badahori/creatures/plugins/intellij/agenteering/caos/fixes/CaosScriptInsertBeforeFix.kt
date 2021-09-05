@@ -1,17 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
+import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
 
 class CaosScriptInsertBeforeFix(
     private val fixText: String,
@@ -22,7 +22,7 @@ class CaosScriptInsertBeforeFix(
 
     private val element = SmartPointerManager.createPointer(element)
 
-    override fun getFamilyName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getFamilyName(): String = CAOSScript
 
     override fun applyFix(p0: Project, descriptor: ProblemDescriptor) {
         val element = element.element

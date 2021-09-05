@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReorderRndvParameters
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -12,7 +13,7 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "RNDV values out of order"
-    override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
+    override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = "RNDVOutOfOrder"
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
