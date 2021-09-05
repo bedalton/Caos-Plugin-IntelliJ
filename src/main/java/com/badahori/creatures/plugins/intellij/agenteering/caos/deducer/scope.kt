@@ -6,9 +6,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.scope
 import com.intellij.openapi.util.TextRange
 
-data class CaosScope(val range: TextRange, val blockType:CaosScriptBlockType, val enclosingScope:List<CaosScope>) {
+data class CaosScope(val range: TextRange, val blockType:CaosScriptBlockType, val parentScope: CaosScope?) {
     val startOffset:Int get() = range.startOffset
     val endOffset:Int get() = range.endOffset
+    val enclosingScope:List<CaosScope> get() {
+        return if (parentScope != null)
+            parentScope.enclosingScope + parentScope
+        else
+            emptyList()
+    }
 }
 
 fun CaosScope?.sharesScope(otherScopeIn: CaosScope?) : Boolean {
@@ -71,7 +77,7 @@ fun CaosScope?.sharesScope(otherScopeIn: CaosScope?) : Boolean {
 }
 
 fun rootScope(file: CaosScriptFile) : CaosScope {
-    return CaosScope(file.textRange, CaosScriptBlockType.MACRO, emptyList())
+    return CaosScope(file.textRange, CaosScriptBlockType.MACRO, null)
 }
 
 

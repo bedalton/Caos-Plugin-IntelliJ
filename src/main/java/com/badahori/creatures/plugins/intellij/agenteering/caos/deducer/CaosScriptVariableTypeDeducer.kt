@@ -1,3 +1,5 @@
+@file:Suppress("unused", "UNUSED_PARAMETER")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
@@ -51,7 +53,6 @@ private object GameVariableTypeDeducer {
         else
             GlobalSearchScope.everythingScope(variable.project)
         val variableName = variable.name
-        val variableType = variable.varType
         val thisScriptParent = variable.getParentOfType(CaosScriptScriptElement::class.java)
         val thisPosition = variable.startOffset
         var variables = CaosScriptNamedGameVarIndex.instance[variableName, variable.project, scope]

@@ -52,7 +52,8 @@ private fun getValuesListId(
             else -> rvaluesList[0]
         }
     } ?: return null
-    
+
+    // Get corresponding command based on other expression element
     val commandDefinition: CaosCommand = other
             // Only rvalue primes have command types as they are command calls
             .rvaluePrime
@@ -64,6 +65,8 @@ private fun getValuesListId(
                 CaosLibs[variant][commandType][commandString]
             }
             ?: return null
+
+    // Using the command element, find its return value's values-list
     val listIds = commandDefinition
             // Command definitions hold return value list types as a map value per variant
             .returnValuesListIds

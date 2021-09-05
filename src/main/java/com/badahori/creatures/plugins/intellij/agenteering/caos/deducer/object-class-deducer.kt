@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER", "unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg

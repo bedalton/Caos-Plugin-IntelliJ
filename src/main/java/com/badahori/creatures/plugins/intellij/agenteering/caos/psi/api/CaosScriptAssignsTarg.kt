@@ -1,23 +1,22 @@
+@file:Suppress("unused", "UNUSED_PARAMETER", "UNUSED_VARIABLE")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.Classifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.variable
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 
-interface CaosScriptAssignsTarg : CaosScriptCompositeElement {
-
-}
+interface CaosScriptAssignsTarg : CaosScriptCompositeElement
 
 
 fun PsiElement.targClassifier(follow:Boolean):List<Classifier>? {
     val classifier = this.getUserData(TARG_CLASS_KEY)
     // TODO implement
-    return emptyList()
+    return null
 }
 
 
@@ -52,8 +51,7 @@ private fun getClassifierFromRvalue(value:CaosScriptRvalue, follow:Boolean, last
         return emptyList()
     lastChecked.add(value)
     (value.rvaluePrime)?.let { prime ->
-        val command = value.rvaluePrime?.commandStringUpper
-        return when (command) {
+        return when (value.rvaluePrime?.commandStringUpper) {
             "PNTR" ->  listOf(Classifier(2, 1, 1))
             "NORN", "MTOC","HHLD", "CREA"  -> listOf(Classifier(4, 0, 0))
             "TWIN" -> prime.arguments.firstOrNull()?.let { agentArg ->
@@ -98,12 +96,11 @@ private fun getInt(variant:CaosVariant, value:CaosScriptRvalue, follow:Boolean, 
 
 fun getVariableIntValue(variant: CaosVariant, variable:CaosScriptIsVariable, lastChecked:MutableList<PsiElement>) : List<Int>? {
     lastChecked.add(variable)
-    return if (variable is CaosScriptVarToken)
-        getVarTokenIntValues(variant, lastChecked)
-    else if (variable is CaosScriptNamedGameVar)
-        getNamedGameIntValues(variant, lastChecked)
-    else
-        return null
+    return when (variable) {
+        is CaosScriptVarToken -> getVarTokenIntValues(variant, lastChecked)
+        is CaosScriptNamedGameVar -> getNamedGameIntValues(variant, lastChecked)
+        else -> null
+    }
 }
 
 
