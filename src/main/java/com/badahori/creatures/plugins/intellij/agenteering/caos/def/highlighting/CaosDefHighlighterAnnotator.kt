@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.colorize
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -70,7 +71,7 @@ class CaosDefHighlighterAnnotator : Annotator {
                     // but should not be colored
                     return
                 }
-                when(element.tokenType ) {
+                when(element.tokenType) {
                     CaosDefTypes.CaosDef_COMMA -> addColor(element, annotationHolder, DefaultLanguageHighlighterColors.DOT)
                     CaosDefTypes.CaosDef_OPEN_PAREN -> addColor(element, annotationHolder, DefaultLanguageHighlighterColors.PARENTHESES)
                     CaosDefTypes.CaosDef_CLOSE_PAREN -> addColor(element, annotationHolder, DefaultLanguageHighlighterColors.PARENTHESES)
@@ -85,9 +86,7 @@ class CaosDefHighlighterAnnotator : Annotator {
     private fun addColor(element:PsiElement, annotationHolder: AnnotationHolder, color:TextAttributesKey, recursive:Boolean = false) {
         val elements = if (recursive) PsiTreeUtil.collectElementsOfType(element, PsiElement::class.java) + element else listOf(element)
         for(anElement in elements) {
-            val annotation = annotationHolder.createInfoAnnotation(anElement, null)
-            annotation.textAttributes = color
-            annotation.enforcedTextAttributes = color.defaultAttributes
+            annotationHolder.colorize(anElement, color)
         }
     }
 }

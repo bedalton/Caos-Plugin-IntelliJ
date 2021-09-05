@@ -13,19 +13,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.STRING
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isDirectlyPrecededByNewline
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
-import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -41,125 +35,168 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             return
         if (!element.isPhysical)
             return
-        // Make annotation wrapper to aid in creating annotation
-        val annotationWrapper = AnnotationHolderWrapper(holder)
 
         // Get variant for element's parent file
         val variant = (element.containingFile as? CaosScriptFile)?.variant
         // Cannot validate without a variant. Return early if null
-                ?: return
+            ?: return
         // Annotate element based on type
         if (element is PsiComment)
             return
         when (element) {
-            is CaosScriptEqOpOld -> annotateOldEqualityOps(variant, element, annotationWrapper)
-            is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, annotationWrapper)
-            is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, annotationWrapper)
-            is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, annotationWrapper)
-            is CaosScriptCRetn -> annotateRetnCommand(element, annotationWrapper)
-            is CaosScriptToken -> annotateToken(element, annotationWrapper)
-            is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, annotationWrapper)
-            is CaosScriptC1String -> annotateC1String(variant, element, annotationWrapper)
-            is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, annotationWrapper)
-            is CaosScriptVarToken -> annotateVarToken(variant, element, annotationWrapper)
-            is CaosScriptNumber -> annotateNumber(variant, element, annotationWrapper)
-            is CaosScriptErrorRvalue -> annotationWrapper
-                    .newErrorAnnotation("Unrecognized rvalue")
-                    .range(element)
-                    .create()
-            is CaosScriptErrorCommand -> annotateErrorCommand(variant, element, annotationWrapper)
+            is CaosScriptEqOpOld -> annotateOldEqualityOps(variant, element, holder)
+            is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, holder)
+            is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, holder)
+            is CaosScriptElseIfStatement -> annotateElseIfStatement(variant, element, holder)
+            is CaosScriptCRetn -> annotateRetnCommand(element, holder)
+            is CaosScriptToken -> annotateToken(element, holder)
+            is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, holder)
+            is CaosScriptC1String -> annotateC1String(variant, element, holder)
+            is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, holder)
+            is CaosScriptVarToken -> annotateVarToken(variant, element, holder)
+            is CaosScriptNumber -> annotateNumber(variant, element, holder)
+            is CaosScriptErrorRvalue -> holder
+                .newErrorAnnotation("Unrecognized rvalue")
+                .range(element)
+                .create()
+            is CaosScriptErrorCommand -> annotateErrorCommand(variant, element, holder)
             is CaosScriptCharacter -> {
-                if (element.charChar?.textLength.orElse(0) > 1 && element.charChar?.text != "\\\\") {
-                    simpleError(element.charChar ?: element, message("caos.annotator.syntax-error-annotator.char-value-too-long"), annotationWrapper)
+                val charChar = element.charChar?.text ?: ""
+                val charLength = charChar.length
+                val isEscapedChar = charChar.getOrNull(0) == '\\'
+                val validTextLength = if (isEscapedChar) 2 else 1
+                if (charLength == validTextLength) {
+                    if (isEscapedChar) {
+                        if (charChar[1] !in VALID_ESCAPE_CHARS) {
+                            val message = message("caos.annotator.syntax-error-annotator.char-escape-invalid")
+                            holder.newWeakWarningAnnotation(message)
+                                .range(element.charChar!!)
+                                .textAttributes(CaosScriptSyntaxHighlighter.INVALID_STRING_ESCAPE)
+                                .create()
+                        } else {
+                            holder.colorize(element.charChar!!, DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE)
+                        }
+                    }
+                    return
                 }
+                if (isEscapedChar && charLength == 1) {
+                    simpleError(
+                        element.charChar ?: element,
+                        message("caos.annotator.syntax-error-annotator.char-incomplete-escape"),
+                        holder
+                    )
+                }
+                simpleError(
+                    element.charChar ?: element,
+                    message("caos.annotator.syntax-error-annotator.char-value-too-long"),
+                    holder
+                )
             }
             is CaosScriptErrorLvalue -> {
                 val variableType = when {
                     element.number != null -> "number"
-                    element.quoteStringLiteral != null -> (element.parent?.parent as? CaosScriptNamedGameVar)?.varType?.token ?: "string"
+                    element.quoteStringLiteral != null -> (element.parent?.parent as? CaosScriptNamedGameVar)?.varType?.token
+                        ?: "string"
                     element.c1String != null -> "string"
                     element.animationString != null -> "animation"
                     element.byteString != null -> "byte-string"
                     else -> "literal"
                 }
-                simpleError(element, message("caos.annotator.syntax-error-annotator.variable-expected", variableType), annotationWrapper)
+                simpleError(
+                    element,
+                    message("caos.annotator.syntax-error-annotator.variable-expected", variableType),
+                    holder
+                )
             }
             is CaosScriptIncomplete -> {
                 if (element.hasParentOfType(CaosScriptSubroutineName::class.java)) {
                     return
                 }
-                simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
+                simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), holder)
             }
-            //is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, annotationWrapper)
+            //is CaosScriptCAssignment -> annotateSetvCompoundLvalue(variant, element, holder)
             is CaosScriptOutOfCommandLiteral -> simpleError(
                 element,
                 message("caos.annotator.syntax-error-annotator.out-of-command-literal"),
-                annotationWrapper,
+                holder,
                 DeleteElementFix("Delete extraneous rvalue", element)
             )
             is CaosScriptSwiftEscapeLiteral -> {
 
-                val allowSwift = PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
-                    .any { comment ->
-                        swiftRegex.matches(comment.text.trim())
-                    }
+                val allowSwift =
+                    PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                        .any { comment ->
+                            swiftRegex.matches(comment.text.trim())
+                        }
                 if (!allowSwift) {
-                    simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), holder)
                 } else if (element.textLength < 4) {
-                    simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), annotationWrapper)
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), holder)
                 }
             }
             is CaosScriptJsElement -> {
-                val allowJs = PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
-                    .any { comment ->
-                        allowJsRegex.matches(comment.text.trim())
-                    }
+                val allowJs =
+                    PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                        .any { comment ->
+                            allowJsRegex.matches(comment.text.trim())
+                        }
                 if (!allowJs) {
-                    simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), annotationWrapper)
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), holder)
                 } else if (element.textLength < 4) {
-                    simpleError(element, message("caos.annotator.syntax-error-annotator.js-value-empty"), annotationWrapper)
+                    simpleError(element, message("caos.annotator.syntax-error-annotator.js-value-empty"), holder)
                 }
             }
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
-                    annotateErrorElement(variant, element, annotationWrapper)
+                    annotateErrorElement(variant, element, holder)
             }
             is CaosScriptCaos2CommentErrorValue -> {
                 val isCaos2Cob = (element.containingFile as? CaosScriptFile)?.isCaos2Cob ?: false
-                val directiveType = if(isCaos2Cob)
+                val directiveType = if (isCaos2Cob)
                     "CAOS2Cob property"
                 else
                     "CAOS2Pray tag"
-                simpleError(element, message("caos.annotator.syntax-error-annotator.too-many-tag-values", directiveType), annotationWrapper)
+                simpleError(
+                    element,
+                    message("caos.annotator.syntax-error-annotator.too-many-tag-values", directiveType),
+                    holder
+                )
             }
         }
     }
 
     /**
-     * Further annotates an error element as it may possibly be an LValue used as a command
+     * Further annotates an error element as it can possibly be an LValue used as a command
      */
-    private fun annotateErrorElement(variant: CaosVariant, element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateErrorElement(variant: CaosVariant, element: PsiElement, holder: AnnotationHolder) {
         val command = element.text
         val commandUpperCase = element.text.toUpperCase()
-        val isLvalue = commandUpperCase == "CLAS" || commandUpperCase == "CLS2" || CaosLibs[variant][LVALUE][command] != null
+        val isLvalue =
+            commandUpperCase == "CLAS" || commandUpperCase == "CLS2" || CaosLibs[variant][LVALUE][command] != null
         if (isLvalue) {
             val setv = "SETV".matchCase(command)
-            annotationWrapper
-                    .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.clas-is-lvalue-and-requires-setv", commandUpperCase))
-                    .range(element)
-                    .withFix(CaosScriptInsertBeforeFix("Insert '$setv' before $command", setv, element))
-                    .create()
+            holder
+                .newErrorAnnotation(
+                    message(
+                        "caos.annotator.syntax-error-annotator.clas-is-lvalue-and-requires-setv",
+                        commandUpperCase
+                    )
+                )
+                .range(element)
+                .withFix(CaosScriptInsertBeforeFix("Insert '$setv' before $command", setv, element))
+                .create()
         }
     }
 
     /**
-     * Annotates a number if it is a float used outside of C2+
+     * Annotates a number if it is a float used outside C2+
      */
-    private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, holder: AnnotationHolder) {
         if (variant != CaosVariant.C1 || element.float == null)
             return
         val floatValue = element.text.toFloat()
-        var builder = annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.float-value-not-allowed-in-variant"))
+        var builder =
+            holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.float-value-not-allowed-in-variant"))
                 .range(element)
                 .withFix(CaosScriptRoundNumberFix(element, floatValue, true))
         if (abs(floatValue - floor(floatValue)) > 0.00001)
@@ -167,134 +204,160 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         builder.create()
     }
 
-    private fun annotateEqualityExpressionPlus(variant: CaosVariant, element: CaosScriptEqualityExpressionPlus, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateEqualityExpressionPlus(
+        variant: CaosVariant,
+        element: CaosScriptEqualityExpressionPlus,
+        holder: AnnotationHolder
+    ) {
         if (variant.isNotOld)
             return
-        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.compound-equality-operator-not-allowed"))
-                .range(element)
-                .create()
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.compound-equality-operator-not-allowed"))
+            .range(element)
+            .create()
     }
 
     /**
      * Annotates a token as unexpected if not found in proper Token parent
      */
-    private fun annotateToken(element: CaosScriptToken, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateToken(element: CaosScriptToken, holder: AnnotationHolder) {
         if (element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {
             if (element.variant?.isOld.orFalse() && element.textLength != 4) {
-                annotationWrapper.newErrorAnnotation("Tokens must be 4 characters long")
+                holder.newErrorAnnotation("Tokens must be 4 characters long")
                     .range(element)
                     .create()
             }
             return
         }
-        annotationWrapper.newErrorAnnotation("Unexpected token")
-                .range(element)
-                .create()
+        holder.newErrorAnnotation("Unexpected token")
+            .range(element)
+            .create()
     }
 
     /**
      * Annotates a string in double quotes as out of variant in C1/C2
      */
-    private fun annotateDoubleQuoteString(variant: CaosVariant, quoteStringLiteral: CaosScriptQuoteStringLiteral, wrapper: AnnotationHolderWrapper) {
-        if (variant.isNotOld || quoteStringLiteral.parent is CaosScriptCaos2CommentValue)
+    private fun annotateDoubleQuoteString(
+        variant: CaosVariant,
+        quoteStringLiteral: CaosScriptQuoteStringLiteral,
+        wrapper: AnnotationHolder
+    ) {
+        if (variant.isNotOld || quoteStringLiteral.parent is CaosScriptCaos2Value)
             return
         wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-quote-string"))
-                .range(quoteStringLiteral)
-                .withFix(CaosScriptFixQuoteType(quoteStringLiteral, '[', ']'))
-                .create()
+            .range(quoteStringLiteral)
+            .withFix(CaosScriptFixQuoteType(quoteStringLiteral, '[', ']'))
+            .create()
     }
 
     /**
      * Annotates a C1 string as invalid when assigned or used in CV+
      */
-    private fun annotateC1String(variant: CaosVariant, element: CaosScriptC1String, wrapper: AnnotationHolderWrapper) {
+    private fun annotateC1String(variant: CaosVariant, element: CaosScriptC1String, wrapper: AnnotationHolder) {
         if (variant.isOld) {
             if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
-                wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.string-comparisons-not-allowed", variant))
-                        .range(element)
-                        .create()
+                wrapper.newErrorAnnotation(
+                    message(
+                        "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
+                        variant
+                    )
+                )
+                    .range(element)
+                    .create()
             } else if (element.getParentOfType(CaosScriptArgument::class.java)?.parent is CaosScriptCAssignment) {
-                wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed", variant))
-                        .range(element)
-                        .create()
+                wrapper.newErrorAnnotation(
+                    message(
+                        "caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed",
+                        variant
+                    )
+                )
+                    .range(element)
+                    .create()
             }
             return
         }
         wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-c1-string"))
-                .range(element)
-                .withFix(CaosScriptFixQuoteType(element, '"'))
-                .create()
+            .range(element)
+            .withFix(CaosScriptFixQuoteType(element, '"'))
+            .create()
     }
 
 
     /**
      * Annotates ELIF as invalid in C1/C2
      */
-    private fun annotateElseIfStatement(variant: CaosVariant, element: CaosScriptElseIfStatement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateElseIfStatement(
+        variant: CaosVariant,
+        element: CaosScriptElseIfStatement,
+        holder: AnnotationHolder
+    ) {
         if (variant.isNotOld)
             return
-        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.elif-not-available"))
-                .range(element.cElif)
-                .create()
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.elif-not-available"))
+            .range(element.cElif)
+            .create()
     }
 
     /**
      * Annotates an error message on an element
      */
     @Suppress("SameParameterValue")
-    private fun simpleError(element: PsiElement, message: String, annotationWrapper: AnnotationHolderWrapper) {
-        annotationWrapper.newErrorAnnotation(message)
-                .range(element)
-                .create()
+    private fun simpleError(element: PsiElement, message: String, holder: AnnotationHolder) {
+        holder.newErrorAnnotation(message)
+            .range(element)
+            .create()
     }
 
     /**
      * Annotates an error message on an element
      */
     @Suppress("SameParameterValue")
-    private fun simpleError(element: PsiElement, message: String, annotationWrapper: AnnotationHolderWrapper, vararg fixes:IntentionAction) {
-        annotationWrapper.newErrorAnnotation(message)
+    private fun simpleError(
+        element: PsiElement,
+        message: String,
+        holder: AnnotationHolder,
+        vararg fixes: IntentionAction
+    ) {
+        holder.newErrorAnnotation(message)
             .withFixes(*fixes)
             .range(element)
             .create()
     }
 
 
-
-    private fun annotateNewEqualityOps(variant: CaosVariant, element: CaosScriptEqOpNew, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNewEqualityOps(variant: CaosVariant, element: CaosScriptEqOpNew, holder: AnnotationHolder) {
         if (variant.isNotOld || variant == UNKNOWN)
             return
-        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid_eq_operator"))
-                .range(element)
-                .withFix(TransposeEqOp(element))
-                .create()
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid_eq_operator"))
+            .range(element)
+            .withFix(TransposeEqOp(element))
+            .create()
     }
 
-    private fun annotateOldEqualityOps(variant: CaosVariant, element: CaosScriptEqOpOld, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateOldEqualityOps(variant: CaosVariant, element: CaosScriptEqOpOld, holder: AnnotationHolder) {
         if (variant.isOld || variant == UNKNOWN)
             return
-        if (element.text.toLowerCase().let { it != "bt" && it != "bf"}) {
+        if (element.text.toLowerCase().let { it != "bt" && it != "bf" }) {
             return
         }
-        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid_old-eq_operator"))
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid_old-eq_operator"))
             .range(element)
             .create()
     }
 
-    private fun annotateRetnCommand(element: CaosScriptCRetn, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateRetnCommand(element: CaosScriptCRetn, holder: AnnotationHolder) {
         if (!element.hasParentOfType(com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine::class.java)) {
-            annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.retn-used-outside-of-subr"))
-                    .range(element)
-                    .create()
+            holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.retn-used-outside-of-subr"))
+                .range(element)
+                .create()
         }
         if (!element.hasParentOfType(CaosScriptNoJump::class.java))
             return
-        annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
-                .range(element.textRange)
-                .create()
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
+            .range(element.textRange)
+            .create()
     }
 
-    private fun annotateVarToken(variant: CaosVariant, element: CaosScriptVarToken, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateVarToken(variant: CaosVariant, element: CaosScriptVarToken, holder: AnnotationHolder) {
         if (variant.isOld) {
             if (element.parent?.parent is CaosScriptEqualityExpression) {
                 // TODO: Is this check really necessary, in older variants
@@ -305,9 +368,14 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 else
                     CaosScriptInferenceUtil.getInferredType(element)
                 if (type != null && type.all { it.isStringType || !it.isByteStringLike }) {
-                    annotationWrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.string-comparisons-not-allowed", variant))
-                            .range(element)
-                            .create()
+                    holder.newErrorAnnotation(
+                        message(
+                            "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
+                            variant
+                        )
+                    )
+                        .range(element)
+                        .create()
                 }
             }
         }
@@ -354,30 +422,34 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         }
 
         val error = message("caos.annotator.syntax-error-annotator.invalid-var-type-for-variant", varName, variants)
-        annotationWrapper
-                .newErrorAnnotation(error)
-                .range(element)
-                .create()
+        holder
+            .newErrorAnnotation(error)
+            .range(element)
+            .create()
     }
 
-    private fun annotateErrorCommand(variant: CaosVariant, errorCommand: CaosScriptErrorCommand, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateErrorCommand(
+        variant: CaosVariant,
+        errorCommand: CaosScriptErrorCommand,
+        holder: AnnotationHolder
+    ) {
         val rawTokens = errorCommand
-                .text
-                .toUpperCase()
-                .split(WHITESPACE, 3)
+            .text
+            .toUpperCase()
+            .split(WHITESPACE, 3)
         // Get error as possible error annotation
         val errorAnnotation = rawTokens
-                .let { tokens ->
-                    if (tokens.size > 3)
-                        listOf("${tokens[0]} ${tokens[1]} ${tokens[2]}", "${tokens[0]} ${tokens[1]}", tokens[0])
-                    if (tokens.size > 2)
-                        listOf("${tokens[0]} ${tokens[1]}", tokens[0])
-                    else
-                        listOf(tokens[0])
-                }
-                .mapNotNull { commandToken ->
-                    getErrorCommandAnnotation(variant, errorCommand, commandToken, annotationWrapper)
-                }
+            .let { tokens ->
+                if (tokens.size > 3)
+                    listOf("${tokens[0]} ${tokens[1]} ${tokens[2]}", "${tokens[0]} ${tokens[1]}", tokens[0])
+                if (tokens.size > 2)
+                    listOf("${tokens[0]} ${tokens[1]}", tokens[0])
+                else
+                    listOf(tokens[0])
+            }
+            .mapNotNull { commandToken ->
+                getErrorCommandAnnotation(variant, errorCommand, commandToken, holder)
+            }
 /*
         // Check for length less than 2, meaning one matched.
         // If one matches, that means the command is in the definitions file
@@ -392,21 +464,29 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
     companion object {
 
+        val VALID_ESCAPE_CHARS = listOf('r', 'b', 'n', 't', 'f', '\\', '\'', '"', '/')
         val swiftRegex = "^[*][*]+\\s*([Ff][Oo][Rr]\\s*)?[Ss][Ww][Ii][Ff][Tt]\\s*".toRegex(RegexOption.IGNORE_CASE)
         val allowJsRegex = "^[*][*]+\\s*FOR\\s*JS\\s*|^[*]{2}VARIANT[^\n]*".toRegex(RegexOption.IGNORE_CASE)
-        internal fun annotateNotAvailable(variant: CaosVariant, element: CaosScriptIsCommandToken, annotationWrapper: AnnotationHolderWrapper) {
+        internal fun annotateNotAvailable(
+            variant: CaosVariant,
+            element: CaosScriptIsCommandToken,
+            holder: AnnotationHolder
+        ) {
             // Colorize element as token
-            if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {
-                annotationWrapper.colorize(element, CaosScriptSyntaxHighlighter.TOKEN)
+            if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(
+                    CaosScriptTokenRvalue::class.java
+                )
+            ) {
+                holder.colorize(element, CaosScriptSyntaxHighlighter.TOKEN)
                 return
             }
             val commandText = element.commandString.toUpperCase()
 
             if (element is CaosScriptCKwInvalidLoopTerminator) {
-                annotateInvalidLoopTerminator(element, annotationWrapper)
+                annotateInvalidLoopTerminator(element, holder)
             }
             // Get error annotation, run create if needed
-            getErrorCommandAnnotation(variant, element, commandText, annotationWrapper)?.create()
+            getErrorCommandAnnotation(variant, element, commandText, holder)?.create()
         }
     }
 

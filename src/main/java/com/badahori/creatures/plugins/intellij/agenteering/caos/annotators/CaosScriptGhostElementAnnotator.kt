@@ -18,9 +18,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 
 /**
- * Marks 'Ghost' elements which are required elements in CAOS, that are not required in BNF grammar
+ * Marks 'Ghost' elements which are required elements in CAOS, that are not required in BNF grammar.
  * Grammar allows incomplete control statements to keep from breaking AST tree
- * In grammar, ENUM..NEXT can be parsed without NEXT and DOIF..ENDI without ENDI
+ * In grammar, ENUM...NEXT can be parsed without NEXT and DOIF...ENDI without ENDI
  */
 class CaosScriptGhostElementAnnotator : Annotator {
     /**
@@ -28,35 +28,34 @@ class CaosScriptGhostElementAnnotator : Annotator {
      */
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         ProgressIndicatorProvider.checkCanceled()
-        val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         if (element !is CaosScriptCompositeElement || element.hasParentOfType(CaosDefCompositeElement::class.java))
             return
         // Get the expected terminator
         when (element) {
-            is CaosScriptDoifStatement -> annotate(element, "ENDI", annotationWrapper) {
+            is CaosScriptDoifStatement -> annotate(element, "ENDI", annotationHolder) {
                 it.cEndi != null
             }
-            is CaosScriptSubroutine -> annotate(element, "RETN", annotationWrapper) {
+            is CaosScriptSubroutine -> annotate(element, "RETN", annotationHolder) {
                 it.retnKw != null
             }
-            is CaosScriptEnumNextStatement -> annotate(element, "NEXT", annotationWrapper) {
+            is CaosScriptEnumNextStatement -> annotate(element, "NEXT", annotationHolder) {
                 it.cNext != null || it.cNscn != null
             }
-            is CaosScriptRepeatStatement -> annotate(element, "REPE", annotationWrapper) {
+            is CaosScriptRepeatStatement -> annotate(element, "REPE", annotationHolder) {
                 it.cRepe != null
             }
             is CaosScriptLoopStatement -> {
-                annotate(element, listOf("UNTL", "EVER"), annotationWrapper) { it ->
+                annotate(element, listOf("UNTL", "EVER"), annotationHolder) { it ->
                     it.loopTerminator?.let { it.cEver != null || it.cUntl != null}.orFalse()
                 }
             }
-            is CaosScriptEnumSceneryStatement -> annotate(element, "NSCN", annotationWrapper) {
+            is CaosScriptEnumSceneryStatement -> annotate(element, "NSCN", annotationHolder) {
                 it.cNext != null || it.cNscn != null
             }
             // Ghost element here is SETV which is optional in grammar for C1 and C2, but not optional in CAOS
             is CaosScriptCAssignment -> {
                 if (element.firstChild is CaosScriptLvalue) {
-                    annotationWrapper.newErrorAnnotation("${element.text.substring(0,4).toUpperCase()} is an LValue and must be used with an lvalue operator such as SETV ")
+                    annotationHolder.newErrorAnnotation("${element.text.substring(0,4).toUpperCase()} is an LValue and must be used with an lvalue operator such as SETV ")
                             .range(element.firstChild)
                             .withFix(CaosScriptInsertBeforeFix("Prepend SETV to statement", "SETV".matchCase(element.lastChild.text, element.variant ?: CaosVariant.C1), element))
                             .create()
@@ -68,7 +67,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
     /**
      * Actually annotate element when there is only one ghost element option
      */
-    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedToken:String, annotationWrapper: AnnotationHolderWrapper, check:(element:PsiT)->Boolean) {
+    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedToken:String, annotationHolder: AnnotationHolder, check:(element:PsiT)->Boolean) {
         // If block ends with expected command, not need to do more
         if (check(element))
             return
@@ -89,7 +88,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
             }
 
         // Add annotation
-        annotationWrapper.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
+        annotationHolder.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
                 .range(range)
                 .withFix(AppendStatementTerminator(element, expectedToken))
                 .create()
@@ -97,15 +96,15 @@ class CaosScriptGhostElementAnnotator : Annotator {
 
     /**
      * Annotate multiple options for ghost element.
-     * Only used for LOOP.. UNTL/EVER
+     * Only used for LOOP...UNTL/EVER
      */
-    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedTokens:List<String>, annotationWrapper: AnnotationHolderWrapper, check:(element:PsiT)->Boolean) {
+    private fun <PsiT:PsiElement> annotate(element:PsiT, expectedTokens:List<String>, annotationHolder: AnnotationHolder, check:(element:PsiT)->Boolean) {
         if (check(element)) {
             return
         }
         for(expectedToken in expectedTokens) {
             ProgressIndicatorProvider.checkCanceled()
-            annotationWrapper.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
+            annotationHolder.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
                     .range(TextRange(element.lastChild.endOffset - 1, element.lastChild.endOffset))
                     .withFix(AppendStatementTerminator(element, expectedToken))
                     .create()

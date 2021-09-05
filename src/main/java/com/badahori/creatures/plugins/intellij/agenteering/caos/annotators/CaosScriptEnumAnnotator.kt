@@ -17,21 +17,20 @@ class CaosScriptEnumAnnotator : Annotator {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val variant = (element.containingFile as? CaosScriptFile)?.variant
                 ?: return
-        val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         when (element) {
-            is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationWrapper)
-            is CaosScriptCNext -> annotateNext(variant, element, annotationWrapper)
-            is CaosScriptCNscn -> annotateNscn(variant, element, annotationWrapper)
-            is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationWrapper)
+            is CaosScriptEnumNextStatement -> annotateBadEnumStatement(variant, element, annotationHolder)
+            is CaosScriptCNext -> annotateNext(variant, element, annotationHolder)
+            is CaosScriptCNscn -> annotateNscn(variant, element, annotationHolder)
+            is CaosScriptEnumSceneryStatement -> annotateSceneryEnum(variant, element, annotationHolder)
         }
     }
 
     /**
      * Annotates NEXT if used in ESCN...NSCN
-     * ENUM..NSCN is allowed in grammar in case it is accidentally used by user
+     * ENUM...NSCN is allowed in grammar in case it is accidentally used by user
      * this annotation marks it as invalid as it should be
      */
-    private fun annotateNext(variant: CaosVariant, element: CaosScriptCNext, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNext(variant: CaosVariant, element: CaosScriptCNext, annotationWrapper: AnnotationHolder) {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
         if (parent == null) {
             annotationWrapper.newErrorAnnotation("NEXT should not be used outside of enum")
@@ -49,10 +48,10 @@ class CaosScriptEnumAnnotator : Annotator {
     }
 
     /**
-     * Annotate NSCN if used in ENUM..NEXT
+     * Annotate NSCN if used in ENUM...NEXT
      * Grammar allows construct on off chance it is used by accident. This marks it as an error
      */
-    private fun annotateNscn(variant: CaosVariant, element: CaosScriptCNscn, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateNscn(variant: CaosVariant, element: CaosScriptCNscn, annotationWrapper: AnnotationHolder) {
         val parent = element.getParentOfType(CaosScriptHasCodeBlock::class.java)
 
         if (parent == null) {
@@ -73,9 +72,9 @@ class CaosScriptEnumAnnotator : Annotator {
     }
 
     /**
-     * Annotates ESCN..NSCN on all variants other than C2
+     * Annotates ESCN...NSCN on all variants other than C2
      */
-    private fun annotateSceneryEnum(variant: CaosVariant, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateSceneryEnum(variant: CaosVariant, element: CaosScriptEnumSceneryStatement, annotationWrapper: AnnotationHolder) {
         if (variant == CaosVariant.C2)
             return
         annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.escn-only-on-c2-error-message"))
@@ -86,13 +85,13 @@ class CaosScriptEnumAnnotator : Annotator {
     /**
      * Annotates use of enum constructs on wrong variants
      */
-    private fun annotateBadEnumStatement(variant: CaosVariant, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateBadEnumStatement(variant: CaosVariant, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolder) {
         val enumToken = element.enumHeaderCommand.commandToken
         val enumText = enumToken.text?.toUpperCase() ?: return
-        // All variants support ENUM..NEXT
+        // All variants support ENUM...NEXT
         if (enumText == "ENUM")
             return
-        // Non-Old variants support all but ESCN..NSCN, but that is marked separately
+        // Non-Old variants support all but ESCN...NSCN, but that is marked separately
         if (variant.isNotOld)
             return
 
