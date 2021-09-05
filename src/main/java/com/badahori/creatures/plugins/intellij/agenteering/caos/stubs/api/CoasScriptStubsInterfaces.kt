@@ -70,7 +70,7 @@ interface CaosScriptAssignmentStub : StubElement<CaosScriptCAssignmentImpl> {
     val operation: CaosOp
     val lvalue:CaosExpressionValueType?
     val rvalue:List<CaosExpressionValueType>?
-    val enclosingScope:CaosScope
+//    val enclosingScope:CaosScope
     val commandString:String
 }
 
@@ -145,8 +145,10 @@ interface CaosScriptCaos2BlockStub:StubElement<CaosScriptCaos2BlockImpl> {
 }
 
 interface CaosScriptCaos2TagStub:StubElement<CaosScriptCaos2TagImpl> {
+    val rawValue: String
     val tagName:String
     val value:String?
+    val isStringValue: Boolean
 }
 
 interface CaosScriptCaos2CommandStub:StubElement<CaosScriptCaos2CommandImpl> {

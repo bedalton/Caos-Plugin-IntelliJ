@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilerOptions">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="679" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="2f7ce" layout-manager="FormLayout">
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:3dlu:noGrow"/>
+        <rowspec value="center:d:noGrow"/>
+        <rowspec value="top:3dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:3dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:3dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <colspec value="fill:d:grow"/>
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="482cd" class="javax.swing.JCheckBox" binding="mergeScriptsCheckBox" default-binding="true">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <selected value="false"/>
+              <text resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.merge-script"/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.merge-scripts.details"/>
+            </properties>
+          </component>
+          <component id="7af9c" class="javax.swing.JCheckBox" binding="mergeRSCRCheckBox" default-binding="true">
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.merger-rscr"/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.merge-rscr.details"/>
+            </properties>
+          </component>
+          <component id="bcdab" class="javax.swing.JCheckBox" binding="autogenerateEventScriptRemoversCheckBox" default-binding="true">
+            <constraints>
+              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.autogen-script-removers"/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.autogen-event-scripts-removers"/>
+            </properties>
+          </component>
+          <component id="52cc" class="javax.swing.JCheckBox" binding="autogenerateAgentRemoversCheckBox" default-binding="true">
+            <constraints>
+              <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.autogen-agent-removers"/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.autogen-agent-removers.details"/>
+            </properties>
+          </component>
+          <component id="dd122" class="javax.swing.JCheckBox" binding="validatePRAYFileCheckBox" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <selected value="true"/>
+              <text resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.validate"/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options.validate.description"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="1d1ba" class="javax.swing.JLabel">
+        <constraints border-constraint="North"/>
+        <properties>
+          <font size="18"/>
+          <text resource-bundle="com/badahori/creatures/plugins/intellij/agent-bundle" key="pray.compiler.options"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

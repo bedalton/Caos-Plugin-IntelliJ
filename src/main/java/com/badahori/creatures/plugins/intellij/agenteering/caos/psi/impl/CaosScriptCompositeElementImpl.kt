@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDef
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosPresentation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.intellij.extapi.psi.ASTWrapperPsiElement
@@ -31,7 +32,7 @@ open class CaosScriptCompositeElementImpl(node:ASTNode) : ASTWrapperPsiElement(n
 val CaosScriptCompositeElement.containingCaosFile : CaosScriptFile? get() = containingFile as? CaosScriptFile
 
 val PsiElement.variant: CaosVariant?
-    get() = (containingFile as? CaosScriptFile)?.variant
+    get() = ((containingFile as? CaosScriptFile)?.variant
         ?: (containingFile?.originalFile as? CaosScriptFile)?.variant
             ?: (containingFile as? CaosDefFile)?.variants?.firstOrNull()
-            ?: (containingFile?.originalFile as? CaosDefFile)?.variants?.firstOrNull()
+            ?: (containingFile?.originalFile as? CaosDefFile)?.variants?.firstOrNull())?.nullIfUnknown()

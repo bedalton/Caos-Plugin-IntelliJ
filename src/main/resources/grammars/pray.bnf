@@ -1,0 +1,220 @@
+{
+	parserClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.parser.PrayParser"
+	parserUtilClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.parser.PrayParserUtil"
+	implements="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+	extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCompositeElementImpl"
+	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lexer.PrayTypes"
+	elementTypePrefix="Pray_"
+	elementTypeClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.PrayElementType"
+	tokenTypeClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.PrayTokenType"
+	psiClassPrefix="Pray"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api"
+	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.impl"
+	elementTypeFactory("agent_block|pray_tag")="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.PrayElementTypeFactory.factory"
+	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.util.PrayPsiImplUtil"
+	generateTokenAccessors=true
+	tokens = [
+		BLOCK_COMMENT = "regexp:\(-([^-]|-[^)]?)*-\)"
+		LINE_COMMENT = "regexp://#[^\n]*";
+		GROUP = "regexp:[Gg][Rr][Oo][Uu][Pp]";
+		INLINE = "regexp:[Ii][Nn][Ll][Ii][Nn][Ee]";
+		FILE = "regexp:[Ff][Ii][Ll][Ee]";
+		BLOCK_TAG_LITERAL = "regexp:[a-zA-Z_][a-zA-Z0-9#!$_]{3}";
+		ID = "regexp:[_a-zA-Z][_a-zA-Z0-9]*";
+		INT = "regexp:[-+]?[0-9]+";
+		FLOAT = "regexp:[-+]?[0-9]*\.[0-9]+"
+		LANGUAGE_STRING = "regexp:\"[a-zA-Z]{2}-[a-zA-Z]{2}\""
+		SINGLE_QUO_STRING = "regexp:'([^\n']|\\[^\n])*'";
+		DOUBLE_QUO_STRING = 'regexp:"([^\n"]|\\[^\n])*"';
+		AT = "@"
+		space='regexp:\s+'
+	]
+}
+
+file
+	::= file_header? (!<<eof>> element)*
+
+element
+	::= agent_block
+	|	inline_file
+	|	comment
+	;
+
+file_header
+	::= LANGUAGE_STRING  //<<eos>>
+	;
+
+agent_block
+	::= block_header block_body?
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayAgentBlockStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		pin=1
+		methods = [
+			getBlockTagString
+			getBlockNameString
+			getTagStructs
+		]
+	}
+	;
+
+private block_body
+	::= block_element+
+	;
+
+block_element
+	::= pray_tag
+	|	inline_text
+	|	comment
+	;
+
+
+pray_tag
+	::= tag_tag_name tag_tag_value
+	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag"
+		]
+		pin=2
+		methods = [
+			getTagName
+			isNumberValue
+			isStringValue
+			getValueAsInt
+			getValueAsString
+		]
+	}
+	;
+
+inline_text
+	::= tag_tag_name AT input_file_name
+	{
+		pin=2
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag"
+		]
+		methods = [
+			getTagName
+			getInputFileNameAsString
+			getValueAsInt
+			getValueAsString
+			isNumberValue
+			isStringValue
+		]
+	}
+	;
+
+block_header
+	::= GROUP block_tag block_name
+	{
+		pin=1
+		methods = [
+			getBlockTagString
+			getBlockNameString
+		]
+	}
+	;
+
+inline_file
+	::= INLINE block_tag output_file_name input_file_name //<<eos>>
+	{
+		pin=1
+		methods = [
+			getOutputFileNameString
+			getInputFileNameString
+		]
+	}
+	;
+
+
+
+string
+	::= DOUBLE_QUO_STRING
+	|	SINGLE_QUO_STRING
+	|	LANGUAGE_STRING
+	{
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+number
+	::= INT
+	|	FLOAT
+	{
+		methods = [
+			isInt
+			isFloat
+		]
+	}
+	;
+
+
+block_tag
+	::= BLOCK_TAG_LITERAL
+	;
+
+block_name
+	::= string
+	{
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+tag_tag_name
+	::= string
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagName"
+		]
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+tag_tag_value
+	::= string
+	|	number
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue"
+		]
+		methods = [
+			isNumberValue
+			isStringValue
+			getValueAsString
+			getValueAsInt
+		]
+	}
+	;
+
+output_file_name
+	::= string
+	{
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+input_file_name
+	::= string
+	{
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+comment
+	::= LINE_COMMENT
+	|	BLOCK_COMMENT
+	;
+

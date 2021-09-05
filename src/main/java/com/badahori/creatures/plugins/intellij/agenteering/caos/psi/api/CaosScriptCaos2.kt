@@ -1,6 +1,7 @@
 // This is a generated file. Not intended for manual editing.
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CobTagFormat
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
@@ -9,29 +10,30 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE_OR_D
 
 interface CaosScriptCaos2 : CaosScriptCompositeElement
 
-enum class CobTag(vararg val keys: String, val required:Boolean = false, val variant: CaosVariant? = null) {
+
+enum class CobTag(vararg val keys: String, val required:Boolean = false, val variant: CaosVariant? = null, val format: CobTagFormat = CobTagFormat.STRING) {
     AGENT_NAME("Agent Name", "Agent", "C1Name", "C1 Name", "C2Name", "C2 Name", required = true),
     COB_NAME("COB File", "Cob File Name", "COB Name", "COB", required = true),
-    QUANTITY_AVAILABLE("Quantity Available", "Quantity", "Qty", "Qty Available"),
-    THUMBNAIL("Thumbnail", "Image", "Picture", "Preview"),
-    EXPIRY("Expiry Date", "Expiry", "Expires", "Expires Date", "Expires On"),
+    QUANTITY_AVAILABLE("Quantity Available", "Quantity", "Qty", "Qty Available", format = CobTagFormat.NUMBER),
+    THUMBNAIL("Thumbnail", "Image", "Picture", "Preview", format = CobTagFormat.SINGLE_IMAGE),
+    EXPIRY("Expiry Date", "Expiry", "Expires", "Expires Date", "Expires On", format = CobTagFormat.DATE),
 
     //C1
     REMOVER_NAME("Remover Name", "Remover", variant = C1),
-    QUANTITY_USED("Quantity Used", "Qty Used", "Used", variant = C1),
+    QUANTITY_USED("Quantity Used", "Qty Used", "Used", variant = C1, format = CobTagFormat.NUMBER),
 
     // C2
     DESCRIPTION("Agent Description", "Description", "Desc", "Agent Desc", variant = C2),
-    LAST_USAGE_DATE("Last Usage Date", "Last Usage", variant = C2),
-    REUSE_INTERVAL("Reuse Interval", "Interval", variant = C2),
+    LAST_USAGE_DATE("Last Usage Date", "Last Usage", variant = C2, format = CobTagFormat.DATE),
+    REUSE_INTERVAL("Reuse Interval", "Interval", variant = C2, format = CobTagFormat.NUMBER),
 
     // C2 Author
-    CREATION_DATE("Creation Date", "Created", "Created Date", variant = C2),
+    CREATION_DATE("Creation Date", "Created", "Created Date", variant = C2, format = CobTagFormat.DATE),
     AUTHOR_NAME("Author Name", "Author", "Creator", "Creator Name", variant = C2),
-    AUTHOR_EMAIL("Author Email", "Email", "Creator Email", variant = C2),
-    AUTHOR_URL("Author URL", "URL", "Website", "Site", "Author Site", "Author Website", variant = C2),
-    VERSION("Version", "V", "Ver", variant = C2),
-    REVISION("Revision", "Rev", variant = C2),
+    AUTHOR_EMAIL("Author Email", "Email", "Creator Email", variant = C2, format = CobTagFormat.EMAIL),
+    AUTHOR_URL("Author URL", "URL", "Website", "Site", "Author Site", "Author Website", variant = C2, format = CobTagFormat.URL),
+    VERSION("Version", "V", "Ver", variant = C2, format = CobTagFormat.NUMBER),
+    REVISION("Revision", "Rev", variant = C2, format = CobTagFormat.NUMBER),
     AUTHOR_COMMENTS("Comments", "Comment", "Author Comments", "Author Comment", variant = C2)
     ;
 
@@ -101,7 +103,7 @@ enum class CobCommand(val keyStrings: Array<String>, val cosFiles:Boolean, val v
             values().filter { it.variant == null || it.variant == C2 }
         }
 
-        fun getCommands(variant: CaosVariant? = null): List<CobCommand> {
+        fun getCommands(variant: CaosVariant?): List<CobCommand> {
             return when (variant) {
                 C1 -> C1_COMMANDS
                 C2 -> C2_COMMANDS
@@ -113,6 +115,31 @@ enum class CobCommand(val keyStrings: Array<String>, val cosFiles:Boolean, val v
         fun fromString(keyIn: String, variant: CaosVariant? = null): CobCommand? {
             val key = keyIn.trim()
             return getCommands(variant).firstOrNull {
+                it.key.matches(key)
+            }
+        }
+    }
+}
+enum class PrayCommand(val keyStrings: Array<String>, val cosFiles:Boolean) {
+    PRAY_FILE(arrayOf("Pray-File", "PrayFile", "Pray File"), false),
+    REMOVAL_SCRIPTS(arrayOf("Rscr", "Remove Script", "Remover Script", "Removal Script", "Remover"), true),
+    ATTACH(arrayOf("Attach"), false),
+    INLINE(arrayOf("Inline"), false),
+    DEPEND(arrayOf("Depend"), false),
+    LINK(arrayOf("Link"), true)
+    ;
+    val key = "(${keyStrings.joinToString("|") { "(^$it$)" }})".toRegex(RegexOption.IGNORE_CASE)
+    companion object {
+
+        fun getCommands(): List<PrayCommand> {
+            return values().toList()
+        }
+
+        fun fromString(keyIn: String, variant: CaosVariant? = null): PrayCommand? {
+            if (variant?.isOld == true)
+                return null
+            val key = keyIn.trim()
+            return getCommands().firstOrNull {
                 it.key.matches(key)
             }
         }

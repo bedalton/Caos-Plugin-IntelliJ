@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.parser
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile.Companion.VariantUserDataKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
@@ -15,10 +14,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumber
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isStringType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.ScriptTerminators
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.WHITE_SPACE_LIKE_WITH_COMMENT
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.VariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.defaultVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileWithId
@@ -161,8 +164,16 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             val psiFile = (psiFile(builder_) as? CaosScriptFile)
                 ?: return false
 
-            psiFile.variant = variant
-            if (psiFile.variant != variant) {
+            try {
+                if (ApplicationManager.getApplication().isWriteAccessAllowed) {
+                    psiFile.variant = variant
+                }
+                if (psiFile.variant != variant) {
+                    return false
+                }
+            } catch (e: Exception) {
+                return false
+            } catch (e: Error) {
                 return false
             }
 
@@ -199,12 +210,16 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             val variant = CaosVariant.fromVal(variantCode)
             if (variant == CaosVariant.UNKNOWN)
                 return false
+
             val psiFile = (psiFile(builder_) as? CaosScriptFile)
                 ?: return false
 
-            psiFile.variant = variant
-            if (psiFile.variant != variant) {
-                return false
+            if (ApplicationManager.getApplication().isWriteAccessAllowed) {
+                psiFile.variant = variant
+
+                if (psiFile.variant != variant) {
+                    return false
+                }
             }
 
             psiFile.virtualFile?.let { virtualFile ->
@@ -273,17 +288,15 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
-        if (psiFile == null) {
-            LOGGER.severe("CaosParser is parsing non-caos-script file")
-            return null
-        }
+            ?: return builder_.project.settings.defaultVariant
         (psiFile as? CaosScriptFile)?.variant?.let { variant ->
             return variant
-        } ?: CaosVariant.DS
+        }
         return (psiFile.virtualFile?.cachedVariant
             ?: psiFile.originalFile.virtualFile?.cachedVariant
             ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariant
-            ?: psiFile.module?.variant)
+            ?: psiFile.module?.variant
+            ?: psiFile.project.settings.defaultVariant)
             .nullIfUnknown()
             ?: CaosVariant.DS
     }
@@ -671,6 +684,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         CaosScript_K_SUBR,
         CaosScript_K_GSUB,
         CaosScript_K_RETN,
+        CaosScript_K_CRETN,
         CaosScript_K_REPS,
         CaosScript_K_REPE,
         CaosScript_K_LOOP,
@@ -909,6 +923,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         CaosScript_K_SUBR,
         CaosScript_K_GSUB,
         CaosScript_K_RETN,
+        CaosScript_K_CRETN,
         CaosScript_K_REPS,
         CaosScript_K_REPE,
         CaosScript_K_LOOP,
