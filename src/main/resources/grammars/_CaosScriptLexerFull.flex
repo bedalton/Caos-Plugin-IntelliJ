@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lexer;
 
 import com.intellij.psi.tree.IElementType;
 
-import com.intellij.lexer.FlexLexer;
 import java.util.List;
 import java.lang.Exception;
 import java.util.ArrayList;import java.util.logging.Logger;
@@ -14,27 +13,58 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 
 %{
 
-  	public _CaosScriptLexer(boolean plusPlus) {
-		this((java.io.Reader)null);
-		this.plusPlus = plusPlus;
-	}
+
 	//private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("CaosScriptLexer");
 	private boolean plusPlus;
 	private int braceDepth;
 	private static final List<Character> BYTE_STRING_CHARS = CaosScriptArrayUtils.toList("0123456789 R".toCharArray());
-	protected int blockDepth = 0;
-	private List<Integer> blockDepths = new ArrayList();
-	private int loopDepth = 0;
-	private int enumDepth = 0;
-	private int escnDepth = 0;
-	private int repsDepth = 0;
-	private int doifDepth = 0;
-	private int subrDepth = 0;
-	private int jsDepth = 0;
+	//protected int mBlockDepth = 0;
+	private List<Integer> mBlocks = new ArrayList();
+	//private Map<Integer,Integer> mBlockDepths = new HashMap();
+	private static final int LOOP = 0;
+	private static final int ENUM = 1;
+	private static final int ESCN = 2;
+	private static final int DOIF = 3;
+	private static final int REPS = 4;
+	private static final int SUBR = 5;
+	private static final int JS = 6;
 	private boolean hadNumber = false;
 	private int beforeString = START_OF_LINE;
 	private int beforeJs = START_OF_LINE;
 	private boolean isStartOfFile = true;
+	private List<Integer> stack = new ArrayList();
+	private static final Logger LOGGER = Logger.getLogger("#CaosScriptLexer");
+
+
+  	public _CaosScriptLexer(boolean plusPlus) {
+		this((java.io.Reader)null);
+		this.plusPlus = plusPlus;
+//		mBlocks.put(0, 0);
+//		mBlock.put(1, 0);
+//		mBlock.put(2, 0);
+//		mBlock.put(3, 0);
+//		mBlock.put(4, 0);
+//		mBlock.put(5, 0);
+//		mBlock.put(6, 0);
+
+	}
+
+	void yypush(final int state) {
+  	    stack.add(yystate());
+  	    yybegin(state);
+	}
+
+	void yypop() {
+  	    final int size = stack.size();
+  	    if (size > 0) {
+  	        final Integer poppedState = stack.remove(size - 1);
+  	        if (poppedState != null) {
+  	            yybegin(poppedState);
+  	            return;
+  	        }
+  	    }
+  	    yybegin(YYINITIAL);
+	}
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -57,8 +87,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	}
 
 	private boolean nextIsValid() {
-	    if (enumDepth > 0)
+	    if (inBlock(ENUM))
 	        return true;
+
 	    int i = -1;
 	    char previousChar = yycharat(i);
 	    while(previousChar == ' ' || previousChar == '\t' || previousChar == '\n') {
@@ -69,23 +100,99 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	        }
 	    }
 	    try {
-	        char[] chars = new char[] { yycharat(i-3), yycharat(i-2), yycharat(i-1), yycharat(i) };
-	        String token = new String(chars).toUpperCase();
-	        return token.equals("HIST") || token.equals("PRAY");
+            previousChar = yycharat(i-3);
+            // [P]RAY
+            if (previousChar == 'P' || previousChar == 'p') {
+
+                // P[R]AY
+                previousChar = yycharat(i-2);
+                if (previousChar != 'R' && previousChar != 'r') {
+                    return false;
+				}
+
+                // PR[A]Y
+                previousChar = yycharat(i-1);
+                if (previousChar != 'A' && previousChar != 'a') {
+				   	return false;
+				}
+                // PRA[Y]
+                previousChar = yycharat(i);
+                return previousChar == 'Y' || previousChar == 'y';
+
+			// [H]IST
+            } else if (previousChar == 'H' || previousChar == 'h') {
+
+                // H[I]ST
+				previousChar = yycharat(i-2);
+				if (previousChar != 'I' && previousChar != 'i') {
+					return false;
+				}
+
+                // HI[S]T
+				previousChar = yycharat(i-1);
+				if (previousChar != 'S' && previousChar != 's'){
+					return false;
+                }
+
+                // HIST[T]
+				previousChar = yycharat(i);
+				return previousChar == 'T' || previousChar == 't';
+            }
+
+            // NOT PRAY or HIST
+	        return false;
 	    } catch (Exception e) {
+            // NOT ENOUGH CHARS
 	        return false;
 	    }
 	}
 
-	private int currentBlockDepth() {
-	    return blockDepths.size() > 0 ? blockDepths.get(0) : 0;
+	private void enter(final int type) {
+//		mBlockDepth++;
+		//mBlockDepths.put(type, mBlockDepths.get(type) + 1);
+		mBlocks.add(type);
+	}
+
+	private boolean exit(final int type) {
+//	    if (mBlockDepth > 0) {
+//	        mBlockDepth--;
+//		}
+//	    final int depth = mBlockDepths.get(type);
+//	    // If depth is less than one, then exit called without container;
+//	    if (depth < 1)
+//	        return false;
+	    final int lastIndex = mBlocks.size() - 1;
+        if (lastIndex < 0)
+            return false;
+	    if (mBlocks.get(lastIndex) != type) {
+	        // Exit called for non-nearest control statement
+	        return false;
+	    }
+	    mBlocks.remove(lastIndex);
+//		mBlockDepths.put(type, depth - 1);
+		return true;
+	}
+
+	private boolean inBlock() {
+//	    if (mBlockDepth != mBlocks.size()) {
+//	        LOGGER.warning("Block depth and block size are out of sync");
+//	    }
+//	    return mBlockDepth > 0;
+		return mBlocks.size() > 0;
+	}
+
+	private boolean inBlock(final int type) {
+  	    final int size = mBlocks.size();
+  	    if (size < 1)
+  	        return false;
+  	    return mBlocks.get(size - 1) == type;
 	}
 
 %}
 
 %public
 %class _CaosScriptLexer
-%implements FlexLexer
+%implements com.intellij.lexer.FlexLexer
 %function advance
 %type IElementType
 %unicode
@@ -132,12 +239,12 @@ CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
 SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
-CAOS_2_ID=[^\s\"']+
+CAOS_2_ID=[^\s\"'=]+
 COMMENT_AT_DIRECTIVE=\*{2}((([^\n;]|[;][^;])*;;)|[^\n]*)
 JS_INSIDE_BRACES=[$]?\{[^}]*[}]
 JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 DDE_PICT=[^\s]{3}
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME DIRECTIVE_COMMENT IN_SINGLE_QUOTE_STRING IN_JS
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME IN_CAOS_2 IN_SINGLE_QUOTE_STRING IN_JS HAS_NEXT_NEXT
 %%
 
 <START_OF_LINE> {
@@ -145,17 +252,17 @@ DDE_PICT=[^\s]{3}
 	{CAOS_2_PRAY} 			{ return CaosScript_CAOS_2_PRAY_HEADER; }
 	\n						{ return CaosScript_NEWLINE; }
 	[ \t]					{ return WHITE_SPACE; }
-    "*#"					{ yybegin(DIRECTIVE_COMMENT); return CaosScript_CAOS_2_COMMENT_START; }
+    "*#"					{ yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; }
   	{COMMENT_AT_DIRECTIVE}	{ if (isStartOfFile) { yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; } else { yypushback(yylength() - 1); return CaosScript_COMMENT_START; }  }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
-    [^]					 	{ isStartOfFile = false; yybegin(IN_LINE); yypushback(yylength());}
+    [^]					 	{ isStartOfFile = false; yypop(); yypushback(yylength());}
 }
 
 <IN_BYTE_STRING> {
 	{INT}				 	{ return CaosScript_INT; }
 	{SPACE}				 	{ return WHITE_SPACE; }
     "R"					 	{ return CaosScript_ANIM_R; }
-    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]					 	{ yypop(); yypushback(yylength());}
 }
 
 <COMMENT_START> {
@@ -164,101 +271,101 @@ DDE_PICT=[^\s]{3}
     //[ \t]					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
 }
-<DIRECTIVE_COMMENT> {
+<IN_CAOS_2> {
     "="						{ return CaosScript_EQUAL_SIGN; }
-	\"						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
-	\'						{ beforeString = DIRECTIVE_COMMENT; yybegin(IN_SINGLE_QUOTE_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\"						{ yypush(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\'						{ yypush(IN_SINGLE_QUOTE_STRING); return CaosScript_DOUBLE_QUOTE; }
     [ \t]					{ return WHITE_SPACE; }
-    \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
+    \n						{ yypop(); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
 	{CAOS_2_ID}				{ return CaosScript_ID; }
   	{INT}					{ return CaosScript_INT; }
-    [^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
+    [^]					 	{ yypop(); yypushback(yylength());}
 }
 <IN_COMMENT> {
 	{COMMENT_TEXT}			{ return CaosScript_COMMENT_BODY_LITERAL; }
-    \n						{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
-    [^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
+    \n						{ yypop(); return CaosScript_NEWLINE; }
+    [^]					 	{ yypop(); yypushback(yylength());}
 }
 
 <IN_TEXT> {
 	{TEXT}					{ return CaosScript_TEXT_LITERAL; }
-    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]					 	{ yypop(); yypushback(yylength());}
 }
 
 <IN_BYTE_STRING, IN_TEXT> {
-    ']'					 	{ yybegin(IN_LINE); return CaosScript_CLOSE_BRACKET; }
-    [^]					 	{ yybegin(IN_LINE); yypushback(yylength());}
+    ']'					 	{ yypop(); return CaosScript_CLOSE_BRACKET; }
+    [^]					 	{ yypop(); yypushback(yylength());}
 }
 
 <IN_CONST> {
 	{CONST_EQ}			 	{ return CaosScript_EQUAL_SIGN; }
-	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
+	{NEWLINE}			 	{ yypop(); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
     {FLOAT}					{ return CaosScript_FLOAT; }
 	{INT}				 	{ return CaosScript_INT; }
 	" "+				 	{ return WHITE_SPACE; }
-	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
+	[^]					 	{ yypop(); yypushback(yylength()); }
 }
 
 <IN_VAR> {
 	{CONST_EQ}			 	{ return CaosScript_EQUAL_SIGN; }
-	{NEWLINE}			 	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
+	{NEWLINE}			 	{ yypop(); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }
 	{MVxx}				 	{ return CaosScript_MV_XX; }
 	{VARx}				 	{ return CaosScript_VAR_X; }
 	{VAxx}				 	{ return CaosScript_VA_XX; }
 	" "+				 	{ return WHITE_SPACE; }
-	[^]					 	{ yybegin(IN_LINE); yypushback(yylength()); }
+	[^]					 	{ yypop(); yypushback(yylength()); }
 }
 
 <IN_PICT> {
-	{DDE_PICT}				{ yybegin(IN_LINE); return CaosScript_PICT_DIMENSION; }
+	{DDE_PICT}				{ yypop(); return CaosScript_PICT_DIMENSION; }
     \s						{ return WHITE_SPACE; }
-    [^]						{ yybegin(IN_LINE); yypushback(yylength()); }
+    [^]						{ yypop(); yypushback(yylength()); }
 }
 
 <IN_STRING> {
-	\"						{ yybegin(beforeString); return CaosScript_DOUBLE_QUOTE;}
+	\"						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
-  	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
+  	\n+						{ yypop(); return BAD_CHARACTER; }
 	[ \t]+					{ return WHITE_SPACE; }
-    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]						{ yypop(); yypushback(yylength());}
 }
 
 <IN_SINGLE_QUOTE_STRING> {
-	\'						{ yybegin(beforeString); return CaosScript_DOUBLE_QUOTE;}
-	{SINGLE_QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
-  	\n+						{ yybegin(IN_LINE); return BAD_CHARACTER; }
+	\'						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
+	{SINGLE_QUOTE_CHARS}    { return CaosScript_STRING_CHAR; }
+  	\n+						{ yypop(); return BAD_CHARACTER; }
 	[ \t]+					{ return WHITE_SPACE; }
-    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+    [^]						{ yypop(); yypushback(yylength());}
 }
 
 <IN_CHAR> {
 	{CHAR_CHARS}			{ return CaosScript_CHAR_CHAR; }
- 	"'"						{ yybegin(IN_LINE); return CaosScript_SINGLE_QUOTE; }
-    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+ 	"'"						{ yypop(); return CaosScript_SINGLE_QUOTE; }
+    [^]						{ yypop(); yypushback(yylength());}
 }
 
 <IN_SUBROUTINE_NAME> {
-	{ID}					{ yybegin(IN_LINE); return CaosScript_ID; }
-    [^]						{ yybegin(IN_LINE); yypushback(yylength());}
+	{ID}					{ yypop(); return CaosScript_ID; }
+    [^]						{ yypop(); yypushback(yylength());}
 }
 
 <IN_LINE> {
-	\"         				{ beforeString = IN_LINE; yybegin(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\"         				{ yypush(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
 	":"                    	{ return CaosScript_COLON; }
 	"+"                    	{ return CaosScript_PLUS; }
-	"["                    	{ braceDepth++; yybegin(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }
-	"]"                    	{ braceDepth--; return CaosScript_CLOSE_BRACKET; }
+	"["                    	{ braceDepth++; yypush(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }
+	"]"                    	{ if (braceDepth > 0) braceDepth--; return CaosScript_CLOSE_BRACKET; }
 	","                    	{ return CaosScript_COMMA; }
-    "'"						{ yybegin(IN_CHAR); return CaosScript_SINGLE_QUOTE; }
+    "'"						{ yypush(IN_CHAR); return CaosScript_SINGLE_QUOTE; }
 	{JS_BODY}				{ return CaosScript_JS_BODY_LITERAL; }
  	{SWIFT_ESCAPE}			{ return CaosScript_SWIFT_ESCAPE; }
 	{EQ_C1}				 	{ return CaosScript_EQ_OP_OLD_; }
 	{EQ_NEW}			 	{ return CaosScript_EQ_OP_NEW_; }
 	{N_CONST}				{ return CaosScript_N_CONST; }
 	{N_VAR}				 	{ return CaosScript_N_VAR; }
-	{NEWLINE}              	{ yybegin(START_OF_LINE); return CaosScript_NEWLINE; /*if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE;*/ }
+	{NEWLINE}              	{ yypop(); return CaosScript_NEWLINE; /*if(yycharat(-1) == ',') return WHITE_SPACE; return CaosScript_NEWLINE;*/ }
 	{OVxx}				 	{ return CaosScript_OV_XX; }
 	{OBVx}				 	{ return CaosScript_OBV_X; }
 	{MVxx}				 	{ return CaosScript_MV_XX; }
@@ -344,37 +451,42 @@ DDE_PICT=[^\s]{3}
 	[Bb][Bb][Ll][Ee]       	{ return CaosScript_K_BBLE; }
 	[Ss][Tt][Oo][Pp]       	{ return CaosScript_K_STOP; }
 	[Ee][Nn][Dd][Mm]       	{ return CaosScript_K_ENDM; }
-	[Ss][Uu][Bb][Rr]       	{ subrDepth++; yybegin(IN_SUBROUTINE_NAME); if (blockDepths.size() > 0) blockDepths.add(0, blockDepth); else blockDepths.add(blockDepth); return CaosScript_K_SUBR; }
-	[Gg][Ss][Uu][Bb]       	{ yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_GSUB; }
+	[Gg][Ss][Uu][Bb]       	{ yypush(IN_SUBROUTINE_NAME); return CaosScript_K_GSUB; }
+	[Ss][Uu][Bb][Rr]       	{ enter(SUBR); yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_SUBR; }
 	[Rr][Ee][Tt][Nn]       	{
-          if (blockDepths.size() < 1) {
-              return CaosScript_K_BAD_LOOP_TERMINATOR;
-		  }
-          if (blockDepth > currentBlockDepth())
-              return CaosScript_K_CRETN;
-          if (blockDepths.size() > 0)
-          	blockDepths.remove(0);
-          subrDepth--;
-          return CaosScript_K_RETN;
-      }
-	[Rr][Ee][Pp][Ss]       	{ repsDepth++; blockDepth++; return CaosScript_K_REPS; }
-	[Rr][Ee][Pp][Ee]       	{ if (repsDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else repsDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_REPE; }
-	[Ll][Oo][Oo][Pp]       	{ loopDepth++; blockDepth++; return CaosScript_K_LOOP; }
-	[Uu][Nn][Tt][Ll]       	{ if (loopDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else loopDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_UNTL; }
-	[Ee][Nn][Uu][Mm]       	{ enumDepth++; blockDepth++; return CaosScript_K_ENUM; }
-	[Ee][Ss][Ee][Ee]       	{ enumDepth++; blockDepth++; return CaosScript_K_ESEE; }
-	[Ee][Tt][Cc][Hh]       	{ enumDepth++; blockDepth++; return CaosScript_K_ETCH; }
-	[Nn][Ee][Xx][Tt]       	{ if (enumDepth < 1) { if (nextIsValid()) return CaosScript_K_NEXT; else return CaosScript_K_BAD_LOOP_TERMINATOR; } else enumDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_NEXT; }
-	[Ee][Ss][Cc][Nn]       	{ escnDepth++; blockDepth++; return CaosScript_K_ESCN; }
-	[Nn][Ss][Cc][Nn]       	{ if (escnDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else escnDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_NSCN; }
+		if (mBlocks.size() > 1)
+			return CaosScript_K_CRETN;
+		if (exit(SUBR))
+			return CaosScript_K_RETN;
+	  	return CaosScript_K_BAD_LOOP_TERMINATOR;
+	}
+	[Rr][Ee][Pp][Ss]       	{ enter(REPS); return CaosScript_K_REPS; }
+	[Rr][Ee][Pp][Ee]       	{ if (exit(REPS)) return CaosScript_K_REPE; return CaosScript_K_BAD_LOOP_TERMINATOR; }
+	[Ll][Oo][Oo][Pp]       	{ enter(LOOP); return CaosScript_K_LOOP; }
+	[Uu][Nn][Tt][Ll]       	{ if (exit(LOOP)) return CaosScript_K_UNTL; return CaosScript_K_BAD_LOOP_TERMINATOR;}
+	[Ee][Vv][Ee][Rr]       	{ if (exit(LOOP)) return CaosScript_K_EVER; return CaosScript_K_BAD_LOOP_TERMINATOR;}
+	[Ee][Nn][Uu][Mm]       	{ enter(ENUM); return CaosScript_K_ENUM; }
+	[Ee][Ss][Ee][Ee]       	{ enter(ENUM); return CaosScript_K_ESEE; }
+	[Ee][Tt][Cc][Hh]       	{ enter(ENUM); return CaosScript_K_ETCH; }
+	[Ee][Pp][Aa][Ss]       	{ enter(ENUM); return CaosScript_K_EPAS; }
+	[Ee][Cc][Oo][Nn]       	{ enter(ENUM); return CaosScript_K_ECON; }
+	[Nn][Ee][Xx][Tt]       	{
+          if (exit(ENUM))
+              return CaosScript_K_NEXT;
+          else if (nextIsValid())
+              return CaosScript_K_NEXT;
+		  return CaosScript_K_BAD_LOOP_TERMINATOR;
+  	}
+	[Ee][Ss][Cc][Nn]       	{ enter(ESCN); return CaosScript_K_ESCN; }
+	[Nn][Ss][Cc][Nn]       	{ if (exit(ESCN)) return CaosScript_K_NSCN; return CaosScript_K_BAD_LOOP_TERMINATOR;}
+	[Dd][Oo][Ii][Ff]       	{ enter(DOIF); return CaosScript_K_DOIF; }
+  	[Ee][Ll][Ii][Ff]       	{ if (inBlock(DOIF)) return CaosScript_K_ELIF; return CaosScript_K_BAD_LOOP_TERMINATOR; }
+	[Ee][Ll][Ss][Ee]       	{ if (inBlock(DOIF)) return CaosScript_K_ELSE; return CaosScript_K_BAD_LOOP_TERMINATOR; }
+	[Ee][Nn][Dd][Ii]       	{ if (exit(DOIF)) return CaosScript_K_ENDI; return CaosScript_K_BAD_LOOP_TERMINATOR; }
 	[Rr][Tt][Aa][Rr]       	{ return CaosScript_K_RTAR; }
 	[Ss][Tt][Aa][Rr]       	{ return CaosScript_K_STAR; }
 	[Ii][Nn][Ss][Tt]       	{ return CaosScript_K_INST; }
 	[Ss][Ll][Oo][Ww]       	{ return CaosScript_K_SLOW; }
-	[Ee][Vv][Ee][Rr]       	{ if (loopDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else loopDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_EVER; }
-	[Dd][Oo][Ii][Ff]       	{ doifDepth++; blockDepth++; return CaosScript_K_DOIF; }
-	[Ee][Ll][Ss][Ee]       	{ if (doifDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; return CaosScript_K_ELSE; }
-	[Ee][Nn][Dd][Ii]       	{ if (doifDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; else doifDepth--; if (blockDepth > 0) blockDepth--; return CaosScript_K_ENDI; }
 	[Ww][Aa][Ii][Tt]       	{ return CaosScript_K_WAIT; }
 	[Aa][Nn][Ii][Mm]       	{ return CaosScript_K_ANIM; }
 	[Oo][Vv][Ee][Rr]       	{ return CaosScript_K_OVER; }
@@ -697,7 +809,6 @@ DDE_PICT=[^\s]{3}
 	[Oo][Uu][Tt][Ss]       	{ return CaosScript_K_OUTS; }
 	[Oo][Uu][Tt][Vv]       	{ return CaosScript_K_OUTV; }
 	[Oo][Uu][Tt][Xx]       	{ return CaosScript_K_OUTX; }
-	[Ee][Ll][Ii][Ff]       	{ if (doifDepth < 1) return CaosScript_K_BAD_LOOP_TERMINATOR; return CaosScript_K_ELIF; }
 	[Gg][Oo][Tt][Oo]       	{ return CaosScript_K_GOTO; }
 	[Gg][Tt][Oo][Ss]       	{ return CaosScript_K_GTOS; }
 	[Mm][Tt][Oo][Aa]       	{ return CaosScript_K_MTOA; }
@@ -752,7 +863,6 @@ DDE_PICT=[^\s]{3}
 	[Tt][Mm][Vv][Ff]       	{ return CaosScript_K_TMVF; }
 	[Tt][Mm][Vv][Tt]       	{ return CaosScript_K_TMVT; }
 	[Vv][Ee][Ll][Oo]       	{ return CaosScript_K_VELO; }
-	[Ee][Cc][Oo][Nn]       	{ enumDepth++; return CaosScript_K_ECON; }
 	[Cc][Aa][Oo][Ss]       	{ return CaosScript_K_CAOS; }
 	[Ss][Oo][Rr][Cc]       	{ return CaosScript_K_SORC; }
 	[Ss][Oo][Rr][Qq]       	{ return CaosScript_K_SORQ; }
@@ -818,7 +928,6 @@ DDE_PICT=[^\s]{3}
 	[Cc][Aa][Bb][Tt]       	{ return CaosScript_K_CABT; }
 	[Cc][Aa][Bb][Vv]       	{ return CaosScript_K_CABV; }
 	[Cc][Aa][Bb][Ww]       	{ return CaosScript_K_CABW; }
-	[Ee][Pp][Aa][Ss]       	{ enumDepth++; return CaosScript_K_EPAS; }
 	[Rr][Pp][Aa][Ss]       	{ return CaosScript_K_RPAS; }
 	[Dd][Ee][Ll][Ww]       	{ return CaosScript_K_DELW; }
 	[Ll][Oo][Aa][Dd]       	{ return CaosScript_K_LOAD; }
@@ -902,7 +1011,7 @@ DDE_PICT=[^\s]{3}
 	[Ww][Ee][Bb][Bb]       	{ return CaosScript_K_WEBB; }
 	[Cc][Ll][Oo][Nn]       	{ return CaosScript_K_CLON; }
 	[Cc][Rr][Oo][Ss]       	{ return CaosScript_K_CROS; }
-	[Hh][Ii][Ss][Tt]       	{ return CaosScript_K_HIST; }
+	[Hh][Ii][Ss][Tt]       	{ yybegin(HAS_NEXT_NEXT); return CaosScript_K_HIST; }
 	[Cc][Oo][Uu][Nn]       	{ return CaosScript_K_COUN; }
 	[Ff][Ii][Nn][Dd]       	{ return CaosScript_K_FIND; }
 	[Ff][Ii][Nn][Rr]       	{ return CaosScript_K_FINR; }
@@ -959,7 +1068,7 @@ DDE_PICT=[^\s]{3}
 	[Oo][Zz][Aa][Pp]       	{ return CaosScript_K_OZAP; }
 	[Ss][Ee][Nn][Dd]       	{ return CaosScript_K_SEND; }
 	[Mm][Aa][Kk][Ee]       	{ return CaosScript_K_MAKE; }
-	[Pp][Rr][Aa][Yy]       	{ return CaosScript_K_PRAY; }
+	[Pp][Rr][Aa][Yy]       	{ yybegin(HAS_NEXT_NEXT); return CaosScript_K_PRAY; }
 	[Aa][Gg][Tt][Ii]       	{ return CaosScript_K_AGTI; }
 	[Aa][Gg][Tt][Ss]       	{ return CaosScript_K_AGTS; }
 	[Bb][Aa][Cc][Kk]       	{ return CaosScript_K_BACK; }
@@ -1013,7 +1122,12 @@ DDE_PICT=[^\s]{3}
     [^]						{ return BAD_CHARACTER; }
 }
 
+<HAS_NEXT_NEXT> {
+	[Nn][Ee][Xx][Tt]		{ yypop(); return CaosScript_K_NEXT; }
+    [^] 					{ yypop(); yypushback(yylength()); }
+}
+
 <YYINITIAL> 	{
-	[^]					 	{ yybegin(START_OF_LINE); yypushback(yylength());}
+	[^]					 	{ yypush(START_OF_LINE); yypushback(yylength());}
 }
 [^] { return BAD_CHARACTER; }
