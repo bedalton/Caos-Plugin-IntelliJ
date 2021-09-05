@@ -28,7 +28,7 @@ operator fun CaosScriptFile.plus(list:List<CaosScriptFile>) : List<CaosScriptFil
     return mutableListOf(this).apply { addAll(list) }
 }
 
-fun Int.hasFlag(flag:Int) : Boolean = this and flag == flag
+infix fun Int.hasFlag(flag:Int) : Boolean = this and flag == flag
 
 fun Int.removeFlag(flag:Int) : Int = this and flag.inv()
 fun Int.addFlag(flag:Int) : Int = this or flag
