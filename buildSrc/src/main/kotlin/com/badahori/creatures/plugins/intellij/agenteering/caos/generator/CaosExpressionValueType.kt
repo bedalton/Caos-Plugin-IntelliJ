@@ -48,6 +48,7 @@ internal enum class CaosExpressionValueType(val value: Int, val simpleName: Stri
                 "variable" -> VARIABLE
                 "null" -> NULL
                 else -> {
+                    LOGGER.severe("UNKNOWN CAOSExpressionValueType: $typeToLower")
                     UNKNOWN
                 }
             }
