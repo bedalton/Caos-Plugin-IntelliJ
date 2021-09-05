@@ -29,14 +29,13 @@ class CaosScriptCommandCaseAnnotator : Annotator {
         // If variant is not C1 or C2, return
         if (variant.isNotOld || elementIn.hasParentOfType(CaosDefCompositeElement::class.java))
             return
-        val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
-        annotateC1Token(variant, token, annotationWrapper)
+        annotateC1Token(variant, token, annotationHolder)
     }
 
     /**
      * Actually annotate the token
      */
-    private fun annotateC1Token(variant: CaosVariant, token:CaosScriptShouldBeLowerCase, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateC1Token(variant: CaosVariant, token:CaosScriptShouldBeLowerCase, annotationWrapper: AnnotationHolder) {
         val commandString = token.text
         if (commandString.toLowerCase() == commandString) {
             return

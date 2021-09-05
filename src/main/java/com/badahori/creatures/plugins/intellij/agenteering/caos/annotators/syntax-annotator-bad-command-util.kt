@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 
 
@@ -21,10 +22,12 @@ import com.intellij.psi.PsiElement
  * Tests command token validity and generates an annotation if needed
  * Checks for:
  *  - Command existence
- *  - Proper context(ie. Command, RValue, LValue)
+ *  - Proper context(i.e. Command, RValue, LValue)
  *  - Variant
  */
-internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement, commandToken: String, annotationWrapper: AnnotationHolderWrapper): AnnotationBuilder? {
+internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement, commandToken: String, annotationHolder: AnnotationHolder): AnnotationBuilder? {
+    if (variant == CaosVariant.UNKNOWN)
+        return null
     // Get command as upper case
     val commandToUpperCase = commandToken.toUpperCase()
 
@@ -37,7 +40,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
         commandToUpperCase == "OBVX" ||
         commandToUpperCase == "MVXX"
     ) {
-        return annotationWrapper
+        return annotationHolder
             .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command", commandToUpperCase))
             .range(element)
     }
@@ -47,7 +50,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
 
     // If command type cannot be determined, exit This means it was used as out of command expression
     if (commandType == CaosCommandType.UNDEFINED)
-        return annotationWrapper
+        return annotationHolder
                 .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command", commandToUpperCase))
                 .range(element)
 
@@ -61,7 +64,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
     // If commands do exist, they will be formatted differently
     // Based on type and variants involved
     if (commands.isEmpty()) {
-        return annotationWrapper
+        return annotationHolder
                 .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-command", commandToUpperCase))
                 .range(element)
     }
@@ -74,7 +77,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
             }
 
     // Command exists in variant, but is not the right type
-    // ie. Used as command but is rvalue
+    // i.e. Used as command but is rvalue
     if (commandsInVariant.isNotEmpty()) {
         return annotationInvalidCommandTypeInVariant(
                 variant = variant,
@@ -82,7 +85,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
                 commandToken = commandToken,
                 commandType = commandType,
                 commandsInVariant = commandsInVariant,
-                annotationWrapper = annotationWrapper
+                annotationHolder = annotationHolder
         )
     }
     // == if command does not exist in variant, it exists outside of variant
@@ -107,7 +110,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
                 commandType,
                 commandToken,
                 commandsOutOfVariant,
-                annotationWrapper
+                annotationHolder
         )
     }
 
@@ -125,14 +128,14 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
     )
 
     // Create and return annotation
-    return annotationWrapper
+    return annotationHolder
             .newErrorAnnotation(message)
             .range(element)
 }
 
 /**
  * Annotates a command error when used as incorrect type
- * ie. RValue used as Command or LValue
+ * i.e. RValue used as Command or LValue
  */
 private fun annotationInvalidCommandTypeInVariant(
         variant: CaosVariant,
@@ -140,7 +143,7 @@ private fun annotationInvalidCommandTypeInVariant(
         commandToken: String,
         commandType: CaosCommandType,
         commandsInVariant: List<CaosCommand>,
-        annotationWrapper: AnnotationHolderWrapper
+        annotationHolder: AnnotationHolder
 ): AnnotationBuilder {
     // Format command to upper case
     val commandToUpperCase: String = commandToken.toUpperCase()
@@ -155,7 +158,7 @@ private fun annotationInvalidCommandTypeInVariant(
             variant.code,
     )
     // Build annotation
-    var builder = annotationWrapper
+    var builder = annotationHolder
             .newErrorAnnotation(message)
             .range(element)
 
@@ -200,14 +203,14 @@ private fun addSetvLikeFixes(variant: CaosVariant, element:PsiElement, commandTo
 
 /**
  * Error annotation when command exists as type, but not in this variant
- * ie. ATTR used as command in C1 when it is only command in CV+ as opposed to an L/Rvalue in C1
+ * i.e. ATTR used as command in C1 when it is only command in CV+ as opposed to an L/Rvalue in C1
  */
 private fun validTypeInOtherVariantsAnnotation(
         element: PsiElement,
         commandType:CaosCommandType,
         commandToken:String,
         commandsOutOfVariant:List<CaosCommand>,
-        annotationWrapper: AnnotationHolderWrapper
+        annotationHolder: AnnotationHolder
 ) : AnnotationBuilder {
 
     // Format all variants matching commands as a simplified string
@@ -223,7 +226,7 @@ private fun validTypeInOtherVariantsAnnotation(
     )
 
     // Create and return annotation
-    return annotationWrapper
+    return annotationHolder
             .newErrorAnnotation(message)
             .range(element)
 }
@@ -242,7 +245,7 @@ private fun nextRvalues(element: PsiElement): List<CaosCommand> {
                 ?.let { commands -> return commands }
     }
 
-    // Get text for next next, in case of a two word command
+    // Get text for next->next, in case of a two word command
     val nextText = nextElement?.text?.toUpperCase()
     val nextNextText = nextElement?.getNextNonEmptySibling(false)?.text?.toUpperCase()
 
@@ -318,7 +321,7 @@ private fun getVariantString(variantsIn: List<CaosVariant>): String {
     }
 }
 
-internal fun annotateInvalidLoopTerminator(element:CaosScriptCKwInvalidLoopTerminator, wrapper: AnnotationHolderWrapper) {
+internal fun annotateInvalidLoopTerminator(element:CaosScriptCKwInvalidLoopTerminator, holder: AnnotationHolder) {
     val commandStringUpper = element.commandStringUpper
     val expectedLoop = when (commandStringUpper) {
         "ELSE", "ELIF" -> "DOIF statement"
@@ -330,7 +333,7 @@ internal fun annotateInvalidLoopTerminator(element:CaosScriptCKwInvalidLoopTermi
         else -> "Control Statement"
     }
     val error = message("caos.annotator.syntax-error-annotator.invalid-loop-terminator", commandStringUpper, expectedLoop)
-    wrapper.newErrorAnnotation(error)
+    holder.newErrorAnnotation(error)
             .range(element)
             .create()
 

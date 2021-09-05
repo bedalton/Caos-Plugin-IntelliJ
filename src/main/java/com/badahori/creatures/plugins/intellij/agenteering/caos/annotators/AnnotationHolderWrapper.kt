@@ -3,10 +3,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInsight.daemon.HighlightDisplayKey
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -24,78 +22,81 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.jetbrains.annotations.Contract
 
-/**
- * Annotation wrapper to try to unify calls in Intellij 191 and 201, where some annotation commands were deprecated
- */
-class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
-
-    @Contract(pure = true)
-    fun newAnnotation(severity: HighlightSeverity, message: String): AnnotationBuilder {
-        return AnnotationBuilder(annotationHolder, severity, message)
-    }
-
-    @Contract(pure = true)
-    fun newErrorAnnotation(message: String): AnnotationBuilder {
-        return AnnotationBuilder(annotationHolder, HighlightSeverity.ERROR, message)
-    }
-
-    @Contract(pure = true)
-    fun newWarningAnnotation(message: String): AnnotationBuilder {
-        return AnnotationBuilder(annotationHolder, HighlightSeverity.WARNING, message)
-    }
-
-    @Contract(pure = true)
-    fun newWeakWarningAnnotation(message: String): AnnotationBuilder {
-        return AnnotationBuilder(annotationHolder, HighlightSeverity.WEAK_WARNING, message)
-    }
-
-    @Contract(pure = true)
-    fun newInfoAnnotation(message: String?): AnnotationBuilder {
-        return AnnotationBuilder(annotationHolder, HighlightSeverity.INFORMATION, message)
-    }
-
-    fun colorize(range: PsiElement, textAttributes: TextAttributesKey) {
-//        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null).apply {
-//            enforcedTextAttributes = TextAttributes.ERASE_MARKER
-//        }
-        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
-        annotation.textAttributes = textAttributes
-    }
-
-    fun colorize(range: TextRange, textAttributes: TextAttributesKey) {
-        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range, null)
-            .enforcedTextAttributes = TextAttributes.ERASE_MARKER
-        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range, null)
-        annotation.textAttributes = textAttributes
-        //annotation.enforcedTextAttributes = textAttributes.defaultAttributes
-    }
-
-    fun colorize(range: ASTNode, textAttributes: TextAttributesKey) {
-        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
-            .enforcedTextAttributes = TextAttributes.ERASE_MARKER
-        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
-        annotation.textAttributes = textAttributes
-        //annotation.enforcedTextAttributes = textAttributes.defaultAttributes
-    }
-}
+///**
+// * Annotation wrapper to try to unify calls in Intellij 191 and 201, where some annotation commands were deprecated
+// */
+//class AnnotationHolder(private val annotationHolder: AnnotationHolder) {
+//
+//    @Contract(pure = true)
+//    fun newAnnotation(severity: HighlightSeverity, message: String): AnnotationBuilder {
+//        return AnnotationBuilder(annotationHolder, severity, message)
+//    }
+//
+//    @Contract(pure = true)
+//    fun newErrorAnnotation(message: String): AnnotationBuilder {
+//        return AnnotationBuilder(annotationHolder, HighlightSeverity.ERROR, message)
+//    }
+//
+//    @Contract(pure = true)
+//    fun newWarningAnnotation(message: String): AnnotationBuilder {
+//        return AnnotationBuilder(annotationHolder, HighlightSeverity.WARNING, message)
+//    }
+//
+//    @Contract(pure = true)
+//    fun newWeakWarningAnnotation(message: String): AnnotationBuilder {
+//        return AnnotationBuilder(annotationHolder, HighlightSeverity.WEAK_WARNING, message)
+//    }
+//
+//    @Contract(pure = true)
+//    fun newInfoAnnotation(message: String?): AnnotationBuilder {
+//        return AnnotationBuilder(annotationHolder, HighlightSeverity.INFORMATION, message)
+//    }
+//
+//    fun colorize(range: PsiElement, textAttributes: TextAttributesKey) {
+////        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null).apply {
+////            enforcedTextAttributes = TextAttributes.ERASE_MARKER
+////        }
+//        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+//        annotation.textAttributes = textAttributes
+//    }
+//
+//    fun colorize(range: TextRange, textAttributes: TextAttributesKey) {
+//        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range, null)
+//            .enforcedTextAttributes = TextAttributes.ERASE_MARKER
+//        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range, null)
+//        annotation.textAttributes = textAttributes
+//        //annotation.enforcedTextAttributes = textAttributes.defaultAttributes
+//    }
+//
+//    fun colorize(range: ASTNode, textAttributes: TextAttributesKey) {
+//        annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+//            .enforcedTextAttributes = TextAttributes.ERASE_MARKER
+//        val annotation = annotationHolder.createAnnotation(HighlightSeverity.INFORMATION, range.textRange, null)
+//        annotation.textAttributes = textAttributes
+//        //annotation.enforcedTextAttributes = textAttributes.defaultAttributes
+//    }
+//}
 
 internal data class AnnotationBuilderData(
-        internal val message: String,
-        internal val severity: HighlightSeverity,
-        internal val range: TextRange? = null,
-        internal val fixBuilderData: List<FixBuilderData> = listOf(),
-        internal val fixes: List<IntentionAction> = listOf(),
-        internal val enforcedTextAttributes: TextAttributes? = null,
-        internal val textAttributes: TextAttributesKey? = null,
-        internal val needsUpdateOnTyping: Boolean? = null,
-        internal val highlightType: ProblemHighlightType? = null,
-        internal val tooltip: String? = null
+    internal val message: String,
+    internal val severity: HighlightSeverity,
+    internal val range: TextRange? = null,
+    internal val fixBuilderData: List<FixBuilderData> = listOf(),
+    internal val fixes: List<IntentionAction> = listOf(),
+    internal val enforcedTextAttributes: TextAttributes? = null,
+    internal val textAttributes: TextAttributesKey? = null,
+    internal val needsUpdateOnTyping: Boolean? = null,
+    internal val highlightType: ProblemHighlightType? = null,
+    internal val tooltip: String? = null
 )
 
-class AnnotationBuilder private constructor(private val annotationHolder: AnnotationHolder, internal val data: AnnotationBuilderData) {
+class AnnotationBuilder private constructor(
+    private val annotationHolder: AnnotationHolder,
+    internal val data: AnnotationBuilderData
+) {
 
     constructor(annotationHolder: AnnotationHolder, severity: HighlightSeverity, message: String?)
-            : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message?: ""))
+            : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message ?: ""))
 
     @Contract(pure = true)
     fun range(range: TextRange): AnnotationBuilder {
@@ -158,22 +159,25 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
 
     @Contract(pure = true)
     fun newFix(intentionAction: IntentionAction): FixBuilder {
-        return FixBuilder._createFixBuilder(this, FixBuilderData(intentionAction = intentionAction, universal = intentionAction is LocalQuickFix))
+        return FixBuilder._createFixBuilder(
+            this,
+            FixBuilderData(intentionAction = intentionAction, universal = intentionAction is LocalQuickFix)
+        )
     }
 
     @Contract(pure = true)
     fun newLocalQuickFix(quickFix: LocalQuickFix, problemDescriptor: ProblemDescriptor): FixBuilder {
-        return FixBuilder._createFixBuilder(this, FixBuilderData(quickFix = quickFix, problemDescriptor = problemDescriptor))
+        return FixBuilder._createFixBuilder(
+            this,
+            FixBuilderData(quickFix = quickFix, problemDescriptor = problemDescriptor)
+        )
     }
 
     @Contract(pure = true)
     fun create() {
         if (data.range == null)
             throw Exception("Cannot create annotation without range")
-        val annotation = if (data.severity == HighlightSeverity.INFORMATION && data.message.isEmpty())
-            annotationHolder.createInfoAnnotation(data.range, "")
-        else
-            annotationHolder.createAnnotation(data.severity, data.range, data.message)
+        var annotation = annotationHolder.createAnnotation(data.severity, data.range, data.message.nullIfEmpty())
         data.fixBuilderData.forEach {
             val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
@@ -231,7 +235,10 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
     }
 
 
-    class FixBuilder private constructor(private val annotationBuilder: AnnotationBuilder, private val fixBuilderData: FixBuilderData) {
+    class FixBuilder private constructor(
+        private val annotationBuilder: AnnotationBuilder,
+        private val fixBuilderData: FixBuilderData
+    ) {
 
         @Contract(pure = true)
         fun range(range: TextRange): FixBuilder {
@@ -255,7 +262,10 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
 
         companion object {
             @Suppress("FunctionName")
-            internal fun _createFixBuilder(annotationBuilder: AnnotationBuilder, fixBuilderData: FixBuilderData): FixBuilder {
+            internal fun _createFixBuilder(
+                annotationBuilder: AnnotationBuilder,
+                fixBuilderData: FixBuilderData
+            ): FixBuilder {
                 return FixBuilder(annotationBuilder, fixBuilderData)
             }
         }
@@ -263,17 +273,18 @@ class AnnotationBuilder private constructor(private val annotationHolder: Annota
 }
 
 internal data class FixBuilderData(
-        internal val quickFix: LocalQuickFix? = null,
-        internal val intentionAction: IntentionAction? = null,
-        internal val range: TextRange? = null,
-        internal val key: HighlightDisplayKey? = null,
-        internal val universal: Boolean? = null,
-        internal val batch: Boolean? = null,
-        internal val problemDescriptor: ProblemDescriptor? = null
+    internal val quickFix: LocalQuickFix? = null,
+    internal val intentionAction: IntentionAction? = null,
+    internal val range: TextRange? = null,
+    internal val key: HighlightDisplayKey? = null,
+    internal val universal: Boolean? = null,
+    internal val batch: Boolean? = null,
+    internal val problemDescriptor: ProblemDescriptor? = null
 
 )
 
-class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction) : IntentionAction by intentionAction, LocalQuickFix by quickFix {
+class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction) : IntentionAction by intentionAction,
+    LocalQuickFix by quickFix {
 
     override fun getText(): String = intentionAction.text
 
@@ -281,11 +292,82 @@ class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction
 
     override fun startInWriteAction(): Boolean = intentionAction.startInWriteAction()
 
-    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean = intentionAction.isAvailable(project, editor, file)
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean =
+        intentionAction.isAvailable(project, editor, file)
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) = quickFix.applyFix(project, descriptor)
 
-    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) = intentionAction.invoke(project, editor, file)
+    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) =
+        intentionAction.invoke(project, editor, file)
 
 
+}
+
+/**
+ * Clears formatting in a given range
+ */
+fun AnnotationHolder.clearTextAttributes(range: TextRange) {
+    newInfoAnnotation(null)
+        .range(range)
+        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
+        .create()
+}
+
+/**
+ * Colorizes/Styles a AST node
+ */
+fun AnnotationHolder.colorize(node: ASTNode, textAttributes: TextAttributesKey) {
+    colorize(node.textRange, textAttributes)
+}
+
+/**
+ * Colorizes/Styles a psi element
+ */
+fun AnnotationHolder.colorize(element: PsiElement, textAttributes: TextAttributesKey) {
+    colorize(element.textRange, textAttributes)
+}
+
+/**
+ * Colorizes/Styles a text range within a file
+ */
+fun AnnotationHolder.colorize(range: TextRange, textAttributes: TextAttributesKey) {
+    // Remove prior formatting
+    clearTextAttributes(range)
+
+    // Actually colorize
+    newInfoAnnotation(null)
+        .range(range)
+        .textAttributes(textAttributes)
+        .create()
+}
+
+
+@Contract(pure = true)
+fun AnnotationHolder.newAnnotation(severity: HighlightSeverity, message: String): AnnotationBuilder {
+    return AnnotationBuilder(this, severity, message)
+}
+
+@Contract(pure = true)
+fun AnnotationHolder.newErrorAnnotation(message: String): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.ERROR, message)
+}
+
+@Contract(pure = true)
+fun AnnotationHolder.newWarningAnnotation(message: String): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.WARNING, message)
+}
+
+@Contract(pure = true)
+fun AnnotationHolder.newWeakWarningAnnotation(message: String): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.WEAK_WARNING, message)
+}
+
+@Contract(pure = true)
+fun AnnotationHolder.newInfoAnnotation(message: String?): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.INFORMATION, message)
+}
+
+@Contract(pure = true)
+fun AnnotationHolder.newInfoAnnotation(): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.INFORMATION, null)
 }

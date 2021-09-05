@@ -32,23 +32,22 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
             return
         val variant = element.variant.nullIfUnknown()
             ?: return
-        val annotationWrapper = AnnotationHolderWrapper(holder)
         if (element.textContains(',')) {
             if (variant.isNotOld)
                 annotateC2eCommaError(element, holder)
             else
-                annotateExtraSpaces(element, annotationWrapper = annotationWrapper)
+                annotateExtraSpaces(element, annotationHolder = holder)
         } else {
             // Spacing does not matter in CV+, so return
             if (variant.isOld)
-                annotateExtraSpaces(element, annotationWrapper = annotationWrapper)
+                annotateExtraSpaces(element, annotationHolder = holder)
             else
                 return
         }
     }
 
     private fun annotateC2eCommaError(element: PsiElement, holder: AnnotationHolder) {
-        AnnotationHolderWrapper(holder).newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-command-in-c2e"))
+        holder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-command-in-c2e"))
             .range(element)
             .create()
     }
@@ -56,7 +55,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
     /**
      * Annotates spacing errors, mostly multiple whitespaces within a command
      */
-    private fun annotateExtraSpaces(element: PsiElement, annotationWrapper: AnnotationHolderWrapper) {
+    private fun annotateExtraSpaces(element: PsiElement, annotationHolder: AnnotationHolder) {
         if (element is PsiComment)
             return
         // Get this elements text
@@ -67,7 +66,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         if (text.contains(',')) {
             element.getPreviousNonEmptySibling(false)?.let { previous ->
                 if ((previous as? CaosScriptCodeBlockLine)?.commandCall == null) {
-                    annotationWrapper.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.unexpected-comma"))
+                    annotationHolder.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.unexpected-comma"))
                         .range(element)
                         .withFix(CaosScriptReplaceElementFix(element, " ", "Replace comma with space", true))
                         .create()
@@ -94,8 +93,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
             else
                 break
         }
-        if (next == null || prev == null || !prev.textContains('\n')) {
-            annotateTrailingWhiteSpace(element, annotationWrapper)
+        if (next == null || prev == null) {
             return
         }
 
@@ -103,7 +101,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         // Psi element is empty, denoting a missing space, possible after quote or byte-string or number
         if (text.isEmpty()) {
             val toMark = TextRange(element.startOffset - 1, next.startOffset + 1)
-            annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.missing-space"))
+            annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.missing-space"))
                 .range(toMark)
                 .withFix(CaosScriptInsertSpaceFix(next))
                 .create()
@@ -120,7 +118,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
             else
                 it
         }
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
+        annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
             .range(errorTextRange)
             .withFix(CaosScriptFixTooManySpaces(element))
             .newFix(CaosScriptTrimErrorSpaceBatchFix())
@@ -131,20 +129,19 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         return
     }
 
-
-    private fun annotateTrailingWhiteSpace(
-        element: PsiElement,
-        annotationWrapper: AnnotationHolderWrapper
-    ) {
-        annotationWrapper.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace"))
-            .range(element)
-            .withFix(CaosScriptFixTooManySpaces(element))
-            .create()
-    }
+//
+//    private fun annotateTrailingWhiteSpace(
+//        element: PsiElement,
+//        annotationHolder: AnnotationHolder
+//    ) {
+//        annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace"))
+//            .range(element)
+//            .withFix(CaosScriptFixTooManySpaces(element))
+//            .create()
+//    }
 
     companion object {
         private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
-        private val TRAILING_WHITESPACE = "[ \t,](\n|$)".toRegex()
         private val COMMA_NEW_LINE_REGEX = "([,]|\n)+".toRegex()
 
     }
