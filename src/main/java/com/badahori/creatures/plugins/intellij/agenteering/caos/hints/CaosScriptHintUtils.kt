@@ -15,7 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValu
 
 
 fun CaosScriptRvalue.getValuesListValue(): CaosValuesListValue? {
-    // Lists values can only be for expressions of string or int
+    // List values can only be for expressions of string or int
     if (!(isString || isInt || isFloat)) {
         return null
     }

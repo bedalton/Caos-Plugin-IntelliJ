@@ -114,14 +114,13 @@ val PsiElement.isNotFolded: Boolean
     get() {
         val editor = editor
             ?: return false
-        val startOffset = startOffset
         return try {
             (editor.foldingModel)
                 .let {
                     (it as? FoldingModelEx)?.fetchTopLevel() ?: it.allFoldRegions
                 }
                 .none {
-                    !it.isExpanded && startOffset in it.startOffset..it.endOffset
+                    !it.isExpanded && (startOffset in it.startOffset..it.endOffset || endOffset in it.startOffset..it.endOffset)
                 }
         } catch(e:Exception) {
             return false

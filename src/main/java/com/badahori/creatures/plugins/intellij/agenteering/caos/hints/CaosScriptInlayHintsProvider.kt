@@ -32,5 +32,4 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
     override fun getHintInfo(element: PsiElement): HintInfo? {
         return CaosScriptHintsProvider.resolve(element)?.getHintInfo(element)
     }
-
 }
