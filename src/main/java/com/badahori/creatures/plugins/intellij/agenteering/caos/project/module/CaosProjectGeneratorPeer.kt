@@ -27,7 +27,7 @@ class CaosProjectGeneratorPeer:ProjectGeneratorPeer<CaosProjectGeneratorInfo>  {
     private val settings:CaosProjectGeneratorInfo = CaosProjectGeneratorInfo()
 
     override fun getComponent(): JComponent {
-        return panel.`$$$getRootComponent$$$`()
+        return panel.component
     }
 
     override fun getSettings(): CaosProjectGeneratorInfo = settings

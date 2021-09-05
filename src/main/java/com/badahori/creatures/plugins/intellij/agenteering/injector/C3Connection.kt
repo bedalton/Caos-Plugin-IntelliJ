@@ -1,5 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
+import bedalton.creatures.pray.compiler.NEWLINE_REGEX
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
@@ -16,12 +19,15 @@ import java.io.InputStream
 /**
  * Class for managing a connection to C3 for CAOS injection
  */
-internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
+internal class C3Connection(private val gameName: String) : CaosConnection {
 
+    constructor(gameInterfaceName: GameInterfaceName): this("@${gameInterfaceName.url}")
+
+    override val supportsJect: Boolean
+        get() = false
     private var tempFileIndex = 1
     private var ranOnce = false
     private val exeName = "C3CaosInjector.exe"
-    private val libName = "c2einjector"
     private val file: File by lazy {
         val file = if (isWindows) {
              ensureExe(!ranOnce)
@@ -32,31 +38,84 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         file
     }
 
+    override fun injectWithJect(caos:CaosScriptFile, flags: Int) : InjectionStatus {
+        return inject(caos.text, CLIInjectFlag.JECT, flags)
+    }
 
     override fun inject(caos:String) : InjectionStatus {
-        return if (caos.length > 7590) {
-            writeCaosToFileAndInject(caos) {
-                inject("-c", caos)
+
+        val length = caos.length
+        val cliFlag: CLIInjectFlag = when {
+            length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.CAOS_TEXT
+            length < MAX_CAOS_FILE_LENGTH -> CLIInjectFlag.CAOS_FILE
+            else -> return InjectionStatus.BadConnection(
+                "Script is too long. Plugin max length for injection is $MAX_CAOS_FILE_LENGTH; Actual: $length"
+            )
+        }
+        return inject(caos, cliFlag, 7)
+    }
+
+    /**
+     * Injects raw CAOS using the Windows CLI injector
+     * @param cliTypeFlag CLI Flag for injection type values: "-f" for file "-j" for ject style inject
+     */
+    private fun inject(caos:String, cliTypeFlag: CLIInjectFlag, flags: Int = 7) : InjectionStatus {
+        try {
+            assertExeWasCopied()
+        } catch (e: Exception) {
+            return InjectionStatus.BadConnection(e.message ?: "Failed to copy injector executable")
+        }
+        val preparedCaos = prepareCaos(caos, cliTypeFlag)
+        // Create cmd args for caos injector exe
+        val args = when {
+            isWindows -> {
+                listOf(
+                    "cmd",
+                    "/c",
+                    file.path,
+                    gameName,
+                    cliTypeFlag.shortFlag,
+                    preparedCaos,
+                    ""+flags
+                ).toTypedArray()
             }
-        } else {
-            return inject("-c", caos)
+            else -> {
+                return InjectionStatus.BadConnection("Only windows versions of Creatures are supported")
+            }
+        }
+
+        return try {
+            process(args)
+        } catch(e: Exception) {
+            throw e
+        } finally {
+            try {
+                val tempFile = File(preparedCaos)
+                if (tempFile.exists())
+                    tempFile.delete()
+            } catch (e: Exception) {
+
+            }
         }
     }
 
-    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String) : InjectionStatus {
-        return if (caos.length > 7590) {
-            writeCaosToFileAndInject(caos) {
-                inject("-s", "$family", "$genus", "$species", "$eventNumber", caos)
-            }
-        } else {
-            inject("-s", "$family", "$genus", "$species", "$eventNumber", caos)
+    private fun assertExeWasCopied() {
+        // Ensure that the exe has been extracted and placed in accessible folder
+        val file = try {
+            this.file
+        } catch (e: Exception) {
+            throw Exception("Failed to copy injector EXE to run directory. Error: ${e.message}.")
+        }
+        if (!file.exists()) {
+            throw Exception("Failed to initialize communication executable")
         }
     }
 
-    private fun writeCaosToFileAndInject(caos:String, inject:(caos:String) -> InjectionStatus) : InjectionStatus {
-        val tempFile = File.createTempFile("CAOS", "${tempFileIndex++}".padStart(3,'0'))
+    private fun writeTempFile(caos: String): File {
+        val tempFile = File.createTempFile("CAOS", "${tempFileIndex++}".padStart(4,'0'))
         try {
             tempFile.writeText(caos)
+            return tempFile
         } catch (e:Exception) {
             try {
                 if (tempFile.exists())
@@ -65,37 +124,33 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 LOGGER.severe("Failed to delete temp CAOS file")
                 e.printStackTrace()
             }
-            return InjectionStatus.Bad("Failed to write CAOS to temp file for injecting; CAOS too long for direct injection")
-        }
-        return try {
-            inject(caos)
-        } finally {
-            if (tempFile.exists())
-                tempFile.delete()
+            throw Exception("Failed to write CAOS to temp file for injecting; CAOS too long for direct injection")
         }
     }
 
     /**
      * Inject caos code into CV+ games
      */
-    private fun inject(vararg argsIn:String): InjectionStatus {
+    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus {
         // Ensure that the exe has been extracted and placed in accessible folder
-        val file = try {
-            this.file
+        val length = caos.length
+        val cliFlag: CLIInjectFlag = when {
+            length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.EVENT_TEXT
+            length < MAX_CAOS_FILE_LENGTH -> CLIInjectFlag.EVENT_FILE
+            else -> return InjectionStatus.BadConnection(
+                "Script is too long. Plugin max length for injection is $MAX_CAOS_FILE_LENGTH; Actual: $length"
+            )
+        }
+        try {
+            assertExeWasCopied()
         } catch (e: Exception) {
-            return InjectionStatus.BadConnection("Failed to copy injector EXE to run directory. Error: ${e.message}.")
+            return InjectionStatus.BadConnection(e.message ?: "Failed to copy injector executable")
         }
-        if (!file.exists()) {
-            return InjectionStatus.BadConnection("Failed to initialize communication executable")
+        val caosOrFile = try {
+            prepareCaos(caos, cliFlag)
+        } catch (e: Exception) {
+            return InjectionStatus.BadConnection(e.message ?: "Failed to prepare event script for injection")
         }
-
-        // Escape string
-        val escaped = escape(argsIn.last())
-        if (escaped.isEmpty()) {
-            return InjectionStatus.Ok("")
-        }
-
-        LOGGER.severe("RAW:\n${argsIn.last()}\nEscaped:\n$escaped")
         // Create cmd args for caos injector exe
         val args = when {
             isWindows -> {
@@ -103,25 +158,38 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                     "cmd",
                     "/c",
                     file.path,
-                    variant.code,
-                    *argsIn.dropLast(1).toTypedArray(),
-                    escaped
-                ).toTypedArray()
-            }
-            OsUtil.isLinux -> {
-                listOf(
-                    "cmd",
-                    "/c",
-                    file.path,
-                    variant.code,
-                    *argsIn.dropLast(1).toTypedArray(),
-                    escaped
+                    gameName,
+                    cliFlag.shortFlag,
+                    "$family",
+                    "$genus",
+                    "$species",
+                    "$eventNumber",
+                    caosOrFile,
+                    "4"
                 ).toTypedArray()
             }
             else -> {
-                return InjectionStatus.BadConnection("Only windows and Linux versions of Creatures is supported")
+                return InjectionStatus.BadConnection("Only windows versions of Creatures are supported")
             }
         }
+
+        return process(args)
+    }
+
+    private fun prepareCaos(caos: String, cliFlag: CLIInjectFlag): String {
+        if (cliFlag == CLIInjectFlag.CAOS_TEXT) {
+            return escape(caos)
+        }
+        val tempFile = try {
+            writeTempFile(caos)
+        } catch (e: Exception) {
+            throw Exception(e.message ?: "Failed to write CAOS to temp file for inject")
+        }
+        return tempFile.path
+    }
+
+    private fun process(args: Array<String>): InjectionStatus {
+        LOGGER.info("Inject Args: ${args.joinToString("\n") { "\"$it\""}}")
         // Create injection process
         val proc: Process
         try {
@@ -138,13 +206,12 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
             e.printStackTrace()
             InjectionStatus.Bad("Injection process interrupted.")
         }
-
         // Parse result
         return try {
             proc.waitFor()
             var response = proc.inputStream.bufferedReader().readText().substringFromEnd(0, 1).trim().nullIfEmpty()
-                    ?: proc.errorStream.bufferedReader().readText().nullIfEmpty()
-                    ?: "!ERRInjector returned un-formatted empty response"
+                ?: proc.errorStream.bufferedReader().readText().nullIfEmpty()
+                ?: "!ERRInjector returned un-formatted empty response"
             val code = if (response.length >= 4) {
                 response.substring(0, 4)
             } else
@@ -155,11 +222,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "!ERR" -> InjectionStatus.Bad(response.substring(4))
                 else -> {
                     val responseLower = response.toLowerCase()
-                    if (response.contains("{@}"))
-                        LOGGER.info("MIGHT be bad response: $response")
-                    else
-                        LOGGER.info("Is not bad response: $response")
-                    if (response.contains("{@}") && errorPrefix.any { responseLower.startsWith(it) }) {
+                    if (response.contains("{@}") || errorPrefix.any { responseLower.startsWith(it) } || errorMessageRegex.any{ it.matches(response) }) {
                         InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
                     } else if (code == "!RES") {
                         if (response.last() == 0.toChar()) {
@@ -169,7 +232,8 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                         }
                         InjectionStatus.Ok(response)
                     } else {
-                        InjectionStatus.Bad("INJECTOR Exception: "+response.substringFromEnd(0, 1))
+                        // Allow for injectors other than mine. Return OK and response just in case
+                        InjectionStatus.Ok(response)
                     }
                 }
             }
@@ -268,6 +332,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
     companion object {
 
         private const val MAX_CONSOLE_LENGTH:Int = 7590
+        private const val MAX_CAOS_FILE_LENGTH = 14100
         private const val ESCAPED_QUOTE_PLACEHOLDER = "/;__ESCAPED_QUOTE__/;"
         private val NEED_ESCAPE = listOf(
                 "^",
@@ -380,7 +445,6 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "base change failed - new base",
                 "pose change failed - new pose",
                 "anim change failed - on part",
-                "frame rate %d out of range 1 to 255",
                 "anim by string failed - string",
                 "invalid emit - invalid smell index",
                 "invalid cacl - wildcard classifier used or the classifier already has a smell allocated to it",
@@ -412,21 +476,34 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 "expected byte or '\\]'"
         )
 
+        private const val NUMBER_REGEX = "[+-]?\\d+|[+-]?\\d*\\.\\d+"
+
         /**
          * Creates error regex expressions to test for error injections
          * May be annoying if false positives
          */
         private val errorMessageRegex by lazy {
-            val replacement = "(\\\\d+(\\\\.\\\\d+)?|\\\\d*\\\\.\\\\d+)"
             listOf(
-                    "SCRX failed - script (%d/%d/%d/%d) is in use",
-                    "Script (%d %d %d %d) not in scriptorium",
-                    "Part identifier %d is invalid",
-                    "Position (%f, %f) is not valid inside carrying vehicle's cabin",
-                    "(.*?) at token '([^']*?)'",
-                    "Unresolved label \"([^\"]*)\""
-            ).map {
-                (it.replace("%[df]".toRegex(RegexOption.IGNORE_CASE), replacement) + "(.*)").toRegex(RegexOption.IGNORE_CASE)
+                "SCRX failed - script \\(%d/%d/%d/%d\\) is in use",
+                "Script \\(%d %d %d %d\\) not in scriptorium",
+                "Part identifier %d is invalid",
+                "Position \\(%f, %f\\) is not valid inside carrying vehicle's cabin",
+                "%s at token '%s'",
+                "Unresolved label \"%s\"",
+                "ATTR/PERM change caused invalid map position \\(%f\\)",
+                "Invalid map position \\(%f, %f\\)",
+                "Invalid string for ANMS - not a number\n\"%s\"",
+                "Pray Builder error: %s",
+                "Base change failed - new base %d on part %d",
+                "Pose change failed - new pose %d on part %d which has base %d",
+                "Anim change failed - on part %d which has base %d",
+                "Frame rate %d out of range 1 to 255",
+                "Anim by string failed - string \"%s\" on part %d which has base %d",
+                "Failed to find safe location \\(%f, %f\\)",
+                "Tried to set BHVR %d when the agent doesn't have one of the appropriate scripts",
+                "Sound file missing\n%s"
+            ).map { errorMessage ->
+                errorMessage.replace("%[df]", NUMBER_REGEX).replace("%s", "(.+?)").toRegex(RegexOption.IGNORE_CASE)
             }
         }
 
@@ -452,9 +529,7 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
                 for(char in NEED_ESCAPE) {
                     escaped = escaped.replace(char, "^$char")
                 }
-                escaped = escaped.replace("\r\n", ";\\;n")
-                    .replace("\n", ";\\;n")
-                    .replace("\r", ";\\;n")
+                escaped = escaped.replace(NEWLINE_REGEX, ";\\\\;n")
             } else {
                 // Unix escaping
                 escaped = escaped.replace("\n", "\\n")
@@ -464,5 +539,15 @@ internal class C3Connection(private val variant: CaosVariant) : CaosConnection {
         }
     }
 
+
+}
+
+
+private enum class CLIInjectFlag(val shortFlag: String) {
+    CAOS_TEXT("-c"),
+    CAOS_FILE("-f"),
+    EVENT_TEXT("-s"),
+    EVENT_FILE("-z"),
+    JECT("-j");
 
 }
