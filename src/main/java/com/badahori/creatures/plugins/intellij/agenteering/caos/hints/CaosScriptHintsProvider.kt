@@ -2,7 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotFolded
+import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
@@ -22,7 +25,7 @@ interface CaosScriptHintsProvider {
         // When resolving hint providers, ensure element is not folded first
         fun resolve(element: PsiElement): CaosScriptHintsProvider? = if (element.isNotFolded)
             values.sortedByDescending { it.priority }
-                    .find { it.enabled && it.isApplicable(element) }
+                    .firstOrNull { it.enabled && it.isApplicable(element) }
         else
             null
 
