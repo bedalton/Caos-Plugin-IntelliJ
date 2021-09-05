@@ -1,5 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
+import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.uInt16
+import bedalton.creatures.bytes.uInt32
+import bedalton.creatures.bytes.uInt8
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
@@ -9,7 +13,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 
 
 object SprParser {
@@ -44,7 +47,7 @@ class SprSpriteFile @Throws constructor(file: VirtualFile) : SpriteFile<SprSprit
     init {
         val rawBytes = file.contentsToByteArray()
         val numRawBytes = rawBytes.size
-        val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
+        val bytesBuffer = ByteStreamReader(rawBytes)
         val numImages = bytesBuffer.uInt16
         mFrames =  (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32
@@ -76,7 +79,7 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
     private val lock:Any = Object()
     private lateinit var getImage:()->BufferedImage?
 
-    constructor(bytes: ByteBuffer, offset: Long, width: Int, height: Int) : this(width, height){
+    constructor(bytes: ByteStreamReader, offset: Long, width: Int, height: Int) : this(width, height){
         getImage = {
             decode(bytes, offset)
         }
@@ -100,7 +103,7 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
         return image
     }
 
-    private fun decode(bytes: ByteBuffer, offset: Long) : BufferedImage {
+    private fun decode(bytes: ByteStreamReader, offset: Long) : BufferedImage {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
         val pixels = (0 until (width * height)).map pixels@{ _ ->

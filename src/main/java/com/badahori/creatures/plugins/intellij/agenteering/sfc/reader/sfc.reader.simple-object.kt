@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import bedalton.creatures.bytes.skip
+import bedalton.creatures.bytes.uInt8
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.skip
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt8
 
 /**
  * Reads a simple object from a byte buffer of an SFC File

@@ -1,14 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.blk
 
+import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.uInt16
+import bedalton.creatures.bytes.uInt32
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 import java.math.BigInteger
-import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
@@ -59,7 +61,7 @@ class BlkSpriteFile(private val file: VirtualFile) : SpriteFile<BlkSpriteFrame>(
 
     private fun readDelayed(bytes: ByteArray) {
         val totalBytes = bytes.size
-        val bytesBuffer = ByteBuffer.wrap(bytes).littleEndian()
+        val bytesBuffer = ByteStreamReader(bytes)
         val flags = bytesBuffer.uInt32
         encoding = if (flags and 1L == 1L) ColorEncoding.X_565 else ColorEncoding.X_555
 
@@ -163,7 +165,7 @@ class BlkSpriteFrame private constructor(width: Int, height: Int, private val en
 
     private lateinit var getImage: () -> BufferedImage?
 
-    constructor(bytes: ByteBuffer, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(
+    constructor(bytes: ByteStreamReader, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(
         width,
         height,
         encoding
@@ -187,7 +189,7 @@ class BlkSpriteFrame private constructor(width: Int, height: Int, private val en
         return null
     }
 
-    private fun decode(bytes: ByteBuffer, offset: Long): BufferedImage {
+    private fun decode(bytes: ByteStreamReader, offset: Long): BufferedImage {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)

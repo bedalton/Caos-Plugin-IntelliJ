@@ -1,13 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.c16
 
+import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.uInt16
+import bedalton.creatures.bytes.uInt32
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 
 
 /**
@@ -19,7 +18,7 @@ class C16SpriteFile(file: VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C
 
     init {
         val rawBytes = file.contentsToByteArray()
-        val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
+        val bytesBuffer = ByteStreamReader(rawBytes)
         val buffer = bytesBuffer.uInt32
         val encoding = if (buffer and 1L == 1L) ColorEncoding.X_565 else ColorEncoding.X_555
         if (buffer and 2L == 0L) {
@@ -57,7 +56,7 @@ class C16SpriteFrame private constructor(width: Int, height: Int, private val en
 
     private lateinit var getImage: () -> BufferedImage?
 
-    constructor(bytes: ByteBuffer, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(
+    constructor(bytes: ByteStreamReader, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(
         width,
         height,
         encoding
@@ -81,9 +80,9 @@ class C16SpriteFrame private constructor(width: Int, height: Int, private val en
         return null
     }
 
-    private fun decode(bytes: ByteBuffer, offset: Long): BufferedImage? {
+    private fun decode(bytes: ByteStreamReader, offset: Long): BufferedImage? {
         val bytesBuffer = bytes.duplicate()
-        if (bytesBuffer.limit() < offset.toInt()) {
+        if (bytesBuffer.lastIndex < offset.toInt()) {
             throw Exception("Not enough bytes for next C16 image. Position ${"%,d".format(offset)} is invalid")
         }
         bytesBuffer.position(offset.toInt())

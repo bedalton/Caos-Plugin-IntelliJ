@@ -1,15 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.c16
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import bedalton.creatures.bytes.ByteStreamWriter
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
-import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
-import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt32
 import com.intellij.util.io.toByteArray
 import java.awt.image.BufferedImage
 import java.awt.image.Raster
-import java.io.OutputStream
-import java.nio.ByteBuffer
 import kotlin.math.ceil
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -29,7 +24,7 @@ object BlkCompiler {
         val numBlocks = blocksWide * blocksHigh
         var imageOffset = SPRITE_HEADER_SIZE + (numBlocks * IMAGE_HEADER_SIZE)
         val bufferSize =  imageOffset + imagesBytes
-        val buffer = ByteBuffer.allocate(bufferSize)
+        val buffer = ByteStreamWriter(bufferSize)
         buffer.writeUInt32(1 - colorEncoding.marker)
         buffer.writeUInt16(blocksWide)
         buffer.writeUInt16(blocksHigh)
@@ -48,7 +43,7 @@ object BlkCompiler {
                 writeCompiledSprite(image.raster, trueWidth, trueHeight, x, y, buffer, colorEncoding)
             }
         }
-        return buffer.toByteArray()
+        return buffer.byteArray
     }
 
     private fun writeCompiledSprite(
@@ -57,13 +52,13 @@ object BlkCompiler {
         trueHeight:Int,
         cellX:Int,
         cellY:Int,
-        buffer: ByteBuffer,
+        buffer: ByteStreamWriter,
         colorEncoding: ColorEncoding
     ) : Int {
         val offsetY = cellY * 128
         val offsetX = cellX * 128
         val rgbToInt = colorEncoding.toInt
-        val base = buffer.position()
+        val base = buffer.position
         val rgb = IntArray(3)
         for (y in offsetY .. offsetY + 128) {
             for (x in offsetX .. offsetX + 128) {
@@ -89,8 +84,8 @@ object BlkCompiler {
                 }
             }
         }
-        val written = buffer.position() - base
-        assert (written == 128 * 128 * 2) { "Bytes written is incorrect. Expected: ${128 * 128 * 2}; Actual: $written" }
+        val written = buffer.position - base
+        assert (written == (128 * 128 * 2)) { "Bytes written is incorrect. Expected: ${128 * 128 * 2}; Actual: $written" }
         return written
     }
 

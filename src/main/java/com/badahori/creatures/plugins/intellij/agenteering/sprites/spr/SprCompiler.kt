@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
+import bedalton.creatures.bytes.ByteStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ditherCopy
@@ -9,7 +10,6 @@ import org.apache.commons.imaging.palette.SimplePalette
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.nio.ByteBuffer
 import kotlin.math.abs
 
 
@@ -136,7 +136,7 @@ object SprCompiler : SpriteCompiler {
         val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
         return SprSpriteFrame(
-            bytes = ByteBuffer.wrap(bytes.toByteArray()),
+            bytes = ByteStreamReader(bytes.toByteArray()),
             offset = 0L,
             width = imageIn.width,
             height = imageIn.height

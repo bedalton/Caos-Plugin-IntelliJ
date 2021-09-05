@@ -1,14 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
+import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.uInt16
+import bedalton.creatures.bytes.uInt32
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.solid
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteColorUtil.transparent
-import com.badahori.creatures.plugins.intellij.agenteering.utils.littleEndian
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt16
-import com.badahori.creatures.plugins.intellij.agenteering.utils.uInt32
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 
 /**
  * Parses Creatures S16 sprite file
@@ -20,7 +22,7 @@ class S16SpriteFile(rawBytes:ByteArray) : SpriteFile<S16SpriteFrame>(SpriteType.
     constructor(file: VirtualFile) : this(file.contentsToByteArray())
 
     init {
-        val bytesBuffer = ByteBuffer.wrap(rawBytes).littleEndian()
+        val bytesBuffer = ByteStreamReader(rawBytes)
         val encoding = when (val buffer = bytesBuffer.uInt32) {
             1L -> ColorEncoding.X_565
             0L -> ColorEncoding.X_555
@@ -50,7 +52,7 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
 
     private lateinit var getImage: () -> BufferedImage?
 
-    constructor(bytes: ByteBuffer, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(width, height, encoding) {
+    constructor(bytes: ByteStreamReader, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(width, height, encoding) {
         getImage = {
             decode(bytes, offset)
         }
@@ -66,7 +68,7 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         return null
     }
 
-    private fun decode(bytes: ByteBuffer, offset: Long): BufferedImage? {
+    private fun decode(bytes: ByteStreamReader, offset: Long): BufferedImage {
         val bytesBuffer = bytes.duplicate()
         bytesBuffer.position(offset.toInt())
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
@@ -86,7 +88,7 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
         return image
     }
 
-    /*private fun decode(bytesBuffer: ByteBuffer, position:Int, encoding: ColorEncoding, width:Int, height:Int) : BufferedImage? {
+    /*private fun decode(bytesBuffer: ByteStreamReader, position:Int, encoding: ColorEncoding, width:Int, height:Int) : BufferedImage? {
         bytesBuffer.position(position)
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         for (y in 0 until height) {

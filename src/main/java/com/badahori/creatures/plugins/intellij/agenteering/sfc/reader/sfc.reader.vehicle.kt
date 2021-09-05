@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
+import bedalton.creatures.bytes.bytes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
-import com.badahori.creatures.plugins.intellij.agenteering.utils.bytes
 
 
 internal fun SfcReader.readVehicle() : PointerSfcVehicle<*> {
