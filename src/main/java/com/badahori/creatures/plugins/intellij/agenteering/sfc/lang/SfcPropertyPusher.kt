@@ -106,8 +106,4 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
         }
     }
 
-    override fun initExtra(project: Project, messageBus: MessageBus, engine: FilePropertyPusher.Engine) {
-
-    }
-
 }
