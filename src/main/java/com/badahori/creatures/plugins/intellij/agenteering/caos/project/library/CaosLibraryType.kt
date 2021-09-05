@@ -1,18 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.library
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.roots.libraries.*
 import com.intellij.openapi.roots.libraries.ui.LibraryEditorComponent
 import com.intellij.openapi.roots.libraries.ui.LibraryPropertiesEditor
 import com.intellij.openapi.roots.libraries.ui.LibraryRootsComponentDescriptor
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
-import org.jetbrains.annotations.ApiStatus
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -35,7 +30,7 @@ class CaosLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
         return CaosLibraryRootComponentDescriptor()
     }
 
-    override fun getCreateActionName(): String? {
+    override fun getCreateActionName(): String {
         return CaosBundle.message("caos.sources.library.action-name")
     }
 
