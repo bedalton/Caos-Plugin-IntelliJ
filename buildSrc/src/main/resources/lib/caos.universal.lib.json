@@ -1,5 +1,5 @@
 {
-  "modDate": 1626369989,
+  "modDate": 1630884343,
   "commands": {
     "722": {
       "id": 722,
@@ -23566,14 +23566,22 @@
           "index": 0,
           "name": "facultyId",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 282,
+            "DS": 282,
+            "SM": 282
+          },
           "variableSetToType": null
         },
         {
           "index": 1,
           "name": "on",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 181,
+            "DS": 181,
+            "SM": 181
+          },
           "variableSetToType": null
         }
       ],
@@ -23599,12 +23607,21 @@
           "index": 0,
           "name": "facultyId",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 282,
+            "DS": 282,
+            "SM": 282
+          },
           "variableSetToType": null
         }
       ],
       "description": "Returns whether the creature faculty of the type specified is being processed or not.",
       "returnTypeId": 1,
+      "returnValuesListIds": {
+        "C3": 181,
+        "DS": 181,
+        "SM": 181
+      },
       "commandGroup": "Creatures",
       "rvalue": true,
       "lvalue": false,
@@ -33145,6 +33162,8 @@
         143,
         214,
         71,
+        282,
+        181,
         113,
         211,
         212,
@@ -34583,6 +34602,8 @@
         143,
         214,
         71,
+        282,
+        181,
         113,
         211,
         212,
@@ -35991,6 +36012,8 @@
         143,
         214,
         71,
+        282,
+        181,
         113,
         211,
         212,
@@ -55530,6 +55553,107 @@
           "value": "CONS",
           "name": "Play Constantly",
           "description": "Sound plays all the time",
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_282": {
+      "id": 282,
+      "variant": "AL",
+      "name": "Soul",
+      "description": "Traits to enable\/disable on a creature",
+      "extensionType": null,
+      "base_values_list_id": null,
+      "pattern": null,
+      "values": [
+        {
+          "id": 8236,
+          "valuesListId": 282,
+          "value": "0",
+          "name": "Sensory Faculty",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8237,
+          "valuesListId": 282,
+          "value": "1",
+          "name": "Brain",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8238,
+          "valuesListId": 282,
+          "value": "2",
+          "name": "Motor Faculty",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8239,
+          "valuesListId": 282,
+          "value": "3",
+          "name": "Linguistic Faculty",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8240,
+          "valuesListId": 282,
+          "value": "4",
+          "name": "Biochemistry",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8241,
+          "valuesListId": 282,
+          "value": "5",
+          "name": "Reproductive Faculty",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8242,
+          "valuesListId": 282,
+          "value": "6",
+          "name": "Expressive Faculty",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8243,
+          "valuesListId": 282,
+          "value": "7",
+          "name": "Music Faculty",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 8244,
+          "valuesListId": 282,
+          "value": "8",
+          "name": "Life Faculty",
+          "description": null,
           "sub_values": "",
           "ignore_non_specific": false,
           "require_prev": null
