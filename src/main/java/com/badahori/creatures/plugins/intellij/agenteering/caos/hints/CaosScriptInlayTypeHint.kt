@@ -12,7 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -34,7 +34,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ATTRIBUTE_BITFLAGS_IN_EQUALITY_EXPRESSIONS("Show bit flag for equality expressions", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptRvalue)?.isInt.orFalse() && element.parent is CaosScriptEqualityExpressionPrime && usesBitFlags(
+            return (element as? CaosScriptRvalue)?.intValue.orElse(0) > 0 && element.parent is CaosScriptEqualityExpressionPrime && usesBitFlags(
                 element as CaosScriptRvalue
             )
         }
@@ -44,6 +44,8 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 ?: return false
             val variant = element.variant
                 ?: return false
+            if (element.intValue.orElse(0) < 1)
+                return false
             // Check if value is cached for this list
             element.getUserData(BIT_FLAG_IN_EQUALITY_LIST_KEY)?.let {
                 if (it.first like commandString) {
@@ -72,9 +74,14 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
+
             // Ensure element is RValue, though that should have been checked in isApplicable()
             val expression = element as? CaosScriptRvalue
                 ?: return EMPTY_INLAY_LIST
+
+            // If value is not greater than 0, then it does not matter if it is bitflags or not
+            if (element.intValue.orElse(0) < 1)
+                return EMPTY_INLAY_LIST
 
             // Ensure and get a variant for file
             val variant = expression.variant
@@ -105,6 +112,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvalue) {
                 return null
             }
+            // If value is not greater than 0, then it does not matter if it is bitflags or not
+            if (element.intValue.orElse(0) < 1)
+                return null
+
             val parent = element.parent as? CaosScriptEqualityExpression ?: element
             return HintInfo.MethodInfo(parent.text, listOf(), CaosScriptLanguage)
         }
@@ -130,7 +141,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      */
     ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
         override fun isApplicable(element: PsiElement): Boolean {
-            return (element as? CaosScriptRvalue)?.isInt.orFalse() && element.parent !is CaosScriptEqualityExpressionPrime && usesBitFlags(
+            return (element as? CaosScriptRvalue)?.intValue.orElse(0) > 0 && element.parent !is CaosScriptEqualityExpressionPrime && usesBitFlags(
                 element as CaosScriptRvalue
             )
         }
@@ -142,6 +153,11 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val expression = element as? CaosScriptRvalue
                 ?: return EMPTY_INLAY_LIST
+
+            // If value is not greater than 0, then it does not matter if it is bitflags or not
+            if (element.intValue.orElse(0) < 1)
+                return EMPTY_INLAY_LIST
+
             // Can only get bit-flag hint values from integer rvalue
             val bitFlagValue = expression.intValue
                 ?: return EMPTY_INLAY_LIST
@@ -155,6 +171,11 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             if (element !is CaosScriptRvalue) {
                 return null
             }
+
+            // If value is not greater than 0, then it does not matter if it is bitflags or not
+            if (element.intValue.orElse(0) < 1)
+                return null
+
             val valuesList = getValuesList(element)
                 ?: return null
             return HintInfo.MethodInfo(valuesList.name, listOf(), CaosScriptLanguage)
