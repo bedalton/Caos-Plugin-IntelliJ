@@ -1,16 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayPrayTag
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newErrorAnnotation
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Tag
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagName
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.lang.annotation.AnnotationHolder
 
 

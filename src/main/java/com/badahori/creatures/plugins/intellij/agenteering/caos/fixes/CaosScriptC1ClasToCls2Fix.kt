@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document

@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix

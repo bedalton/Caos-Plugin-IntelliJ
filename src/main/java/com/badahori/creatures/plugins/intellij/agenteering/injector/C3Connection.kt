@@ -4,7 +4,7 @@ import bedalton.creatures.pray.compiler.NEWLINE_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil.isWindows
@@ -189,7 +189,6 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
     }
 
     private fun process(args: Array<String>): InjectionStatus {
-        LOGGER.info("Inject Args: ${args.joinToString("\n") { "\"$it\""}}")
         // Create injection process
         val proc: Process
         try {

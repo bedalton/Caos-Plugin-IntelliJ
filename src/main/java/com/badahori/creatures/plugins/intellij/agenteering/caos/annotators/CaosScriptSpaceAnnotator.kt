@@ -9,11 +9,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_COMMA
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_NEWLINE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isDirectlyPrecededByNewline
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getNextNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isDirectlyPrecededByNewline
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.lang.annotation.AnnotationHolder
@@ -64,12 +64,18 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         val nextText = element.next?.text ?: ""
         val prevText = element.previous?.text ?: ""
         if (text.contains(',')) {
-            element.getPreviousNonEmptySibling(false)?.let { previous ->
-                if ((previous as? CaosScriptCodeBlockLine)?.commandCall == null) {
-                    annotationHolder.newWeakWarningAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.unexpected-comma"))
-                        .range(element)
-                        .withFix(CaosScriptReplaceElementFix(element, " ", "Replace comma with space", true))
-                        .create()
+            element.getNextNonEmptySibling(false)?.let { next ->
+                if (!canFollowComma(next)) {
+                    var annotation =
+                        annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.unexpected-comma"))
+                            .range(element)
+
+                    if (prevText.isNotBlank()) {
+                        annotation = annotation
+                            .withFix(CaosScriptReplaceElementFix(element, " ", "Replace comma with space", true))
+                    }
+
+                    annotation.create()
                     return
                 }
             }
@@ -84,8 +90,8 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
         val next = element.next
 
-        var prev:PsiElement? = element.previous
-        while(prev != null) {
+        var prev: PsiElement? = element.previous
+        while (prev != null) {
             if (prev.tokenType != WHITE_SPACE && prev.tokenType != CaosScript_NEWLINE)
                 break
             if (!prev.textContains('\n'))
@@ -146,4 +152,37 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
     }
 
+}
+
+private fun canFollowComma(element: PsiElement?): Boolean {
+    if (element == null)
+        return false
+    return element !is CaosScriptArgument
+//    if (element is CaosScriptArgument)
+//        return false
+////    if (element is CaosScriptEqualityExpression)
+////        return true
+//    return element is CaosScriptCodeBlockLine ||
+//            element is CaosScriptCommandLike ||
+//            element is CaosScriptHasCodeBlock ||
+//            element is CaosScriptCommandElement ||
+//            element is CaosScriptCodeBlock ||
+//            element is CaosScriptHasCodeBlock ||
+//            element.parent.let {
+//                it is CaosScriptCommandLike ||
+//                        it is CaosScriptIsCommandKeywordToken ||
+//                        it is CaosScriptIsRvalueKeywordToken ||
+//                        it is CaosScriptIsLvalueKeywordToken
+//            }
+////    return element is CaosScriptCRepe ||
+////            element is CaosScriptCEndi ||
+////            element is CaosScriptCEndm ||
+////            element is CaosScriptCNext ||
+////            element is CaosScriptCNscn ||
+////            element is CaosScriptRetnKw ||
+////            element is CaosScriptCRetn ||
+////            element is CaosScriptEnumHeaderCommand ||
+////            element is CaosScriptRepsHeader ||
+////            element is CaosScriptSubroutineHeader ||
+////            element is CaosScriptEscnHeader
 }

@@ -5,7 +5,7 @@ import bedalton.creatures.util.PathUtil
 import bedalton.creatures.util.pathSeparator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType

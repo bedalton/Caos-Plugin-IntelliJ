@@ -9,6 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getNextNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptyNode
 import com.intellij.navigation.ItemPresentation
 import icons.CaosScriptIcons
 import javax.swing.Icon

@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParamet
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder

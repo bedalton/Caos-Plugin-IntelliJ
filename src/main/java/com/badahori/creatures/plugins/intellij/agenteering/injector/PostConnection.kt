@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.project.Project
 import java.io.BufferedReader
 import java.io.IOException

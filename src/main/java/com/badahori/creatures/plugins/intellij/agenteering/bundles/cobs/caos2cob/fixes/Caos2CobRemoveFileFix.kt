@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2co
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix

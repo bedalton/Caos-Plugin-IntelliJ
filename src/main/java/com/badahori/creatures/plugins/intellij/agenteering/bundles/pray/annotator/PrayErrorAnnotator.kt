@@ -11,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty

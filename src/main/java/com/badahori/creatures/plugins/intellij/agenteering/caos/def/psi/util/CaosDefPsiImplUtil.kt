@@ -17,7 +17,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation

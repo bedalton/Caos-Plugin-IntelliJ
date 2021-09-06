@@ -7,9 +7,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext

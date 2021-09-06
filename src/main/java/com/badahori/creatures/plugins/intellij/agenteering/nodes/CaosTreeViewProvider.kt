@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings

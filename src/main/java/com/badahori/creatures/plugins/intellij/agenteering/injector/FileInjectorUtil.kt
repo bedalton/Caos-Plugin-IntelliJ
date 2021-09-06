@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.escapeHTML
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasFlag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater

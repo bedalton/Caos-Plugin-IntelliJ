@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException

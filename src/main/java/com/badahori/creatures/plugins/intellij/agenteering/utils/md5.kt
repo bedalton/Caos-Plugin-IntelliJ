@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest

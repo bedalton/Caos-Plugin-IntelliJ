@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
 

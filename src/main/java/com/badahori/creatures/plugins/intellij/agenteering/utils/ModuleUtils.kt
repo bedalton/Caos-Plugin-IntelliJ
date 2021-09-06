@@ -1,27 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceForKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
-import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleServiceManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.impl.FilePropertyPusher
-import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileWithId
-import com.intellij.openapi.vfs.newvfs.FileAttribute
 
 private const val NOTIFICATION_ERROR_TAG = "CAOS Project: Error"
 private const val NOTIFICATION_WARN_TAG = "CAOS Project: Warning"

@@ -1,18 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer;
 
-import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
 import java.lang.Exception;
-import java.util.regex.Pattern;
-import java.util.List;
 import java.util.logging.Logger;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes.*;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScriptArrayUtils;
-import static com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptTreeUtilKt.getLOGGER;
 
 %%
 
@@ -58,7 +53,7 @@ import static com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.
 
 %public
 %class _CaosDefLexer
-%implements FlexLexer
+%implements com.intellij.lexer.FlexLexer
 %function advance
 %type IElementType
 %unicode

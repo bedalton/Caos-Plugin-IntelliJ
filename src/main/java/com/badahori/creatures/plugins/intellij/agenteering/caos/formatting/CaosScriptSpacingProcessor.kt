@@ -7,8 +7,8 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isDirectlyPrecededByNewline
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isDirectlyPrecededByNewline
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import java.util.logging.Logger
 

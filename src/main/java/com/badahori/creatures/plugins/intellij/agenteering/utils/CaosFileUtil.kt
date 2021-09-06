@@ -2,7 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.editor.Document

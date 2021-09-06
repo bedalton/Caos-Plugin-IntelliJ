@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile

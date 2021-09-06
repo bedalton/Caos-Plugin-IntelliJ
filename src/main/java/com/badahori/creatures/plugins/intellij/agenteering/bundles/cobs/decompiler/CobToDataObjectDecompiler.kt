@@ -4,7 +4,7 @@ import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.bytes
 import bedalton.creatures.bytes.cString
 import bedalton.creatures.bytes.uInt16
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.ByteArrayOutputStream
 import java.util.zip.InflaterOutputStream

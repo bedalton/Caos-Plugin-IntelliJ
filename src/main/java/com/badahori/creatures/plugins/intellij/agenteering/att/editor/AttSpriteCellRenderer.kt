@@ -1,9 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import java.awt.*

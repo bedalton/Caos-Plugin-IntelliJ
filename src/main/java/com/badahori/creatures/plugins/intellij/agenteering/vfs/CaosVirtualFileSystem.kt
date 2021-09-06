@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.canonicalName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents

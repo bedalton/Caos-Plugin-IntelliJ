@@ -2,10 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.library
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.mutableListOfNotNull
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile

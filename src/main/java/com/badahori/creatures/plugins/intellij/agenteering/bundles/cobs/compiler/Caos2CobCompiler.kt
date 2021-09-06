@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseCh
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -17,7 +17,6 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.io.write
-import org.jetbrains.rpc.LOG
 import java.nio.file.Paths
 
 object Caos2CobCompiler {

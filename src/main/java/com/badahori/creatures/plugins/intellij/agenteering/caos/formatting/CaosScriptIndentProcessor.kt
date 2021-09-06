@@ -3,8 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptyNode
+import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode

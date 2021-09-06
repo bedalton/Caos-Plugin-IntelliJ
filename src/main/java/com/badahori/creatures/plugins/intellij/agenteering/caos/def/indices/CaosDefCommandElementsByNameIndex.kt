@@ -4,9 +4,6 @@ import com.intellij.psi.stubs.StubIndexKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 

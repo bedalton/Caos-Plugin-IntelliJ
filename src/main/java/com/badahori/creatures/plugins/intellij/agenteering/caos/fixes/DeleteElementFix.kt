@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document

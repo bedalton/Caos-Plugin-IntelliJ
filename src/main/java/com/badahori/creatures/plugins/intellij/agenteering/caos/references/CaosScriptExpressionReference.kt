@@ -10,8 +10,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.openapi.project.Project

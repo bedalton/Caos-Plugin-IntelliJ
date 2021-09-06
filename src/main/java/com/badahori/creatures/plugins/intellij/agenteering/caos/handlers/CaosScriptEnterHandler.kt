@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate

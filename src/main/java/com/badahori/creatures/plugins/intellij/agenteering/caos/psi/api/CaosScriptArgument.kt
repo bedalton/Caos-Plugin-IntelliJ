@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 
 interface CaosScriptArgument : CaosScriptCompositeElement {
     val index: Int

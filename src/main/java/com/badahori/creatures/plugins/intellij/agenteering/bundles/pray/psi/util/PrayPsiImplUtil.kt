@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import stripSurroundingQuotes
 

@@ -4,7 +4,7 @@ import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.uInt16
 import bedalton.creatures.bytes.uInt32
 import bedalton.creatures.bytes.uInt8
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParserException

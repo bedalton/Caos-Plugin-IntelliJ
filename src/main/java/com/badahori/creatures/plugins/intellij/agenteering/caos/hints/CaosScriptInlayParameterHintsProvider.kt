@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDef
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like

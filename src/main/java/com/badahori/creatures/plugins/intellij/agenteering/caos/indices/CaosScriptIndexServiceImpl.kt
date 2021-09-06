@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.intellij.psi.stubs.IndexSink
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.*
 

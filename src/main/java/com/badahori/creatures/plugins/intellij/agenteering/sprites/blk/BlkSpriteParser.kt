@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.blk
 import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.uInt16
 import bedalton.creatures.bytes.uInt32
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes
 import com.intellij.openapi.application.ApplicationManager

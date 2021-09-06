@@ -7,12 +7,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isMVxxLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isOVxxLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isVAxxLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isObjectVar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isVAxxLike
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile

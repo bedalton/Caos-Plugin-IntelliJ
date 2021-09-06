@@ -7,9 +7,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset

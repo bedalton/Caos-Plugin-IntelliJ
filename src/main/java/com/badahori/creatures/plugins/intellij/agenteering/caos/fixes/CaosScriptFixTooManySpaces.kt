@@ -3,8 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+import com.badahori.creatures.plugins.intellij.agenteering.utils.next
+import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.intention.IntentionAction

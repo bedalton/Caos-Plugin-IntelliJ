@@ -10,7 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWe
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
