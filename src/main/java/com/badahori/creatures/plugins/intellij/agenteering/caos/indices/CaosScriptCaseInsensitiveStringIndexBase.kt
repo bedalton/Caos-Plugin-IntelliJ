@@ -1,13 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startsAndEndsWith
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startsAndEndsWith
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
@@ -15,7 +15,7 @@ abstract class CaosScriptCaseInsensitiveStringIndexBase<PsiT : PsiElement>
 
 /**
  * Const
- * @param indexedElementClass the psi element class for this elements in this index
+ * @param indexedElementClass the psi element class for the elements in this index
  */
 internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubIndexExtension<PsiT>() {
 
@@ -27,17 +27,15 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         return getVersion() + version
     }
 
-    open operator fun get(keyIn: String, project: Project): List<PsiT> {
-        val key = keyIn.toLowerCase()
-        return getAllKeys(project).filter { it.toLowerCase() == key }.flatMap {
+    open operator fun get(key: String, project: Project): List<PsiT> {
+        return getAllKeys(project).filter { it.equals(key, true) }.flatMap {
             ProgressIndicatorProvider.checkCanceled()
             get(it, project, GlobalSearchScope.allScope(project))
         }
     }
 
-    override operator fun get(keyIn: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
-        val key = keyIn.toLowerCase()
-        return getAllKeys(project).filter { it.toLowerCase() == key }.flatMap {
+    override operator fun get(key: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
+        return getAllKeys(project).filter { it.equals(key, true) }.flatMap {
             ProgressIndicatorProvider.checkCanceled()
             StubIndex.getElements(this.key, it, project, scope, indexedElementClass).toList()
         }
@@ -112,7 +110,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
 
     }
 
-    protected fun getAllForKeysFlat(keys: List<String>, project: Project, globalSearchScope: GlobalSearchScope?): List<PsiT> {
+    private fun getAllForKeysFlat(keys: List<String>, project: Project, globalSearchScope: GlobalSearchScope?): List<PsiT> {
         val out = ArrayList<PsiT>()
         val done = ArrayList<String>()
         for (key in keys) {
@@ -162,7 +160,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         return out
     }
 
-    internal fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
+    private fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
         return scope ?: GlobalSearchScope.allScope(project)
     }
 
