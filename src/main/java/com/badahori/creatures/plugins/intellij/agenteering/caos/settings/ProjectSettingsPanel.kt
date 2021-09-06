@@ -1,16 +1,20 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditor.Companion.invalidLines
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent.State
+import com.badahori.creatures.plugins.intellij.agenteering.utils.TextPrompt
 import com.badahori.creatures.plugins.intellij.agenteering.utils.addChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.FormBuilder
+import java.awt.Color
+import java.awt.Dimension
 import javax.swing.*
 import javax.swing.text.BadLocationException
 import javax.swing.text.DefaultHighlighter
@@ -35,7 +39,7 @@ class CaosProjectSettingsConfigurable(private val project: Project): Configurabl
     }
 
     private val settings: State? by lazy {
-        service?.getState()
+        service?.state
     }
 
     override fun createComponent(): JComponent? {
@@ -94,29 +98,35 @@ private class ProjectSettingsPanel(private val settings: State) {
     }
 
     private val ignoredFileNames by lazy {
-        val placeholder = JLabel("New line delimited list of file names to ignore")
         JTextArea().apply {
-            this.add(placeholder)
-            this.addChangeListener {
-                placeholder.isVisible = this.text.isEmpty()
-            }
+            TextPrompt(CaosBundle.message("caos.settings.ignored-files.placeholder"), this)
+                .apply {
+                    this.foreground = hintColor
+                }
+            this.preferredSize = preferredTextBoxSize
+            this.border = BorderFactory.createLineBorder(Color.WHITE)
         }
     }
 
+    private val preferredTextBoxSize by lazy {
+        Dimension(800, 200)
+    }
+
+    private val hintColor get() = JBColor(Color(150,170,170), Color(150,160,170))
+
     private val gameInterfaceNames by lazy {
-        val placeholder = JLabel(
-            "Format: {VARIANT}:{machine.cfg game name}[{Display name:Optional}]\n" +
-                "examples: \n" +
-                "\tDS:Other-DS-Instance[Other DS Display Name]\n" +
-                "\tC3:AnotherInstance\n" +
-                "\t*:AnyVariantInterface[Name for Anything injector]"
-        )
+
         JTextArea().apply {
-            this.add(placeholder)
+            this.preferredSize = preferredTextBoxSize
+            this.border = BorderFactory.createLineBorder(Color.WHITE)
             val errorHighlighter = DefaultHighlighter.DefaultHighlightPainter(JBColor.RED)
+            TextPrompt(CaosBundle.message("caos.settings.injector-names.placeholder"), this)
+                .apply {
+                    this.foreground = hintColor
+                }
+
             this.addChangeListener {
                 val text = this.text
-                placeholder.isVisible = text.isEmpty()
                 val invalidLines = invalidLines(text)
                 this.highlighter.removeAllHighlights()
                 mInterfaceNamesAreValid = invalidLines.isEmpty()
@@ -139,6 +149,9 @@ private class ProjectSettingsPanel(private val settings: State) {
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
             .panel
+            .apply {
+                this.alignmentY = 0f
+            }
     }
 
     fun getPreferredFocusComponent(): JComponent {
