@@ -10,7 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
@@ -475,7 +475,6 @@ private fun populate(
             injectorModel.removeAllElements()
             injectorModel.addAll(newActions.toList())
             injectors.updateUI()
-            LOGGER.info("GOT last injector: $initialLastInterfaceName; ${virtualFile.name}")
             lastInjector = initialLastInterfaceName
                 ?.let { interfaceName ->
                     newActions.filterIsInstance<CaosInjectorAction>()
@@ -531,7 +530,6 @@ private fun interruptedInitializer(
     var timer: Timer? = null
 
     val reschedule = {
-        LOGGER.info("Rescheduling")
         timer?.cancel()
         timer = Timer().apply {
             this.schedule(object : TimerTask() {
@@ -665,7 +663,6 @@ private class RunInjectorAction(
             LOGGER.severe("RunInjector action is not CAOS injector")
             return
         }
-        LOGGER.info("Run injector changed to $action")
         this.mAction = action
     }
 
