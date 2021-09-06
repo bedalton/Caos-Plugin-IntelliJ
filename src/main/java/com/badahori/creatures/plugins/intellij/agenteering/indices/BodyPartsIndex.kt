@@ -4,14 +4,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFileBy
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.GlobalSearchScopes
-import com.intellij.util.indexing.FileBasedIndex
 import java.io.File
 
 

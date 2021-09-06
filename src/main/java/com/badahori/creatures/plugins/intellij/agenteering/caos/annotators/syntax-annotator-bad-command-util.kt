@@ -12,7 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCKwInvalidLoopTerminator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getNextNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement

@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.Pra
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.lineNumber
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.codeInspection.LocalInspectionTool

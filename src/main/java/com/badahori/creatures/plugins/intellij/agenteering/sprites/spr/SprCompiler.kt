@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import bedalton.creatures.bytes.ByteStreamReader
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ditherCopy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler

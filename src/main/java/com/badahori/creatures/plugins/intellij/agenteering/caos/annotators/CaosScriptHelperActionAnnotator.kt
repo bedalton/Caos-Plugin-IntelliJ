@@ -7,10 +7,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 //import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 //import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 //import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-//import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNextNonEmptySibling
-//import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
-//import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.next
-//import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.previous
+//import com.badahori.creatures.plugins.intellij.agenteering.utils.getNextNonEmptySibling
+//import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptyNode
+//import com.badahori.creatures.plugins.intellij.agenteering.utils.getNext
+//import com.badahori.creatures.plugins.intellij.agenteering.utils.getPrevious
 //import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 //import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 //import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType

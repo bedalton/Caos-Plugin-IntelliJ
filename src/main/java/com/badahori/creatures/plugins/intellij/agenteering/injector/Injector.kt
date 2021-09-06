@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -59,7 +58,6 @@ object Injector {
         jectFlags: Int,
         tryJect: Boolean =  project.settings.useJectByDefault
     ): Boolean {
-        LOGGER.info("GameInterfaceURL for ${gameInterfaceName.name} is <${gameInterfaceName.url}>")
         val variant = gameInterfaceName.variant ?: fallbackVariant
         if (!isValidVariant(project, variant, gameInterfaceName))
             return false

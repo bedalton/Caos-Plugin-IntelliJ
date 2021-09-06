@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.hasSharedContextOfTypeStrict
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasSharedContextOfTypeStrict
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement

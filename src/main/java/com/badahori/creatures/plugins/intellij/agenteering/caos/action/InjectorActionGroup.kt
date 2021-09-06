@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.addGameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.removeGameInterfaceName

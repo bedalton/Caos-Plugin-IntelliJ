@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -85,7 +85,6 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             ?: module?.settings?.lastGameInterface(project)
             ?: project.settings.lastInterface(variant)
         set(gameInterface) {
-            LOGGER.info("Setting CAOS injector to ${gameInterface?.name}")
             if (gameInterface == null)
                 return
             putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterface)

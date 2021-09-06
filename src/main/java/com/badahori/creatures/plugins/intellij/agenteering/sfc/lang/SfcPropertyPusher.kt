@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.google.gson.Gson
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -14,7 +13,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.openapi.vfs.newvfs.FileAttribute
-import com.intellij.util.messages.MessageBus
 
 class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher<SfcFileDataHolder?> {
 
