@@ -29,7 +29,7 @@ endm
 ```
 
 
-##Usage
+## Usage
 CAOS2Cob comments begin with ```*#```, followed by either a property or a command.
 - Properties are formatted with the property name followed by an equal sign, and finally the value
 - Commands are formatted with a command word, followed by a list or space delimited values or arguments
