@@ -129,7 +129,7 @@ internal object PrayCompilerToolbarActions {
                     CaosNotifications.showInfo(
                         project,
                         "PRAY Compiler",
-                        "Compiled PRAY file '${file.name}' to '${FileNameUtils.getBaseName(output)}'"
+                        "Compiled PRAY file '${file.name}' to '${FileNameUtils.getNameWithoutExtension(output)}'"
                     )
                 }
             }

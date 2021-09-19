@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.FileType
@@ -32,11 +33,17 @@ class PrayFileOverrider : FileTypeOverrider {
         if (extension != "txt" && extension != "ps")
             return null
 
+        val contents = try {
+            virtualFile.contents
+        } catch (e: Exception) {
+            return null
+        }
         // If file passes pray validation, return pray file type
-        return if (PrayFileDetector.isPrayFile(virtualFile.contents)) {
+        return if (PrayFileDetector.isPrayFile(contents)) {
             PrayFileType
-        } else
+        } else {
             null
+        }
     }
 }
 
@@ -71,8 +78,10 @@ class PrayFileDetector : FileTypeRegistry.FileTypeDetector {
         private val LOADER_ASSIGN_REGEX = "$STRING\\s+[@]\\s+$STRING".toRegex()
         private val INLINE_FILE = "inline\\s+FILE\\s+$STRING\\s+$STRING".toRegex(RegexOption.IGNORE_CASE)
         private val INLINE_BLOCK = "inline\\s+[A-Za-z0-9_]{4}\\s+$STRING\\s+$STRING".toRegex(RegexOption.IGNORE_CASE)
+        private val STRING_REGEX = "${STRING}[ ]+$".toRegex()
 
         private const val MIN_HIT_POINTS = 16
+        private const val MAX_SKIPPED_INCOMPLETE = 3
         private const val MIN_LINES = 3
         /**
          * Checks a text string for its adherence to PRAY file format
@@ -115,6 +124,8 @@ class PrayFileDetector : FileTypeRegistry.FileTypeDetector {
             // Boolean to show if a line can be a language header.
             // Language header must come first, after any initial comments
             var lineCanBeLanguage = true
+
+            var skippedIncomplete = 0
 
             // Loop though lines and check each one for statement validity
             for (i in lines.indices) {
@@ -176,6 +187,13 @@ class PrayFileDetector : FileTypeRegistry.FileTypeDetector {
                     // Line may be incomplete, so we should exit here
                     i == lines.lastIndex -> break
 
+                    line.matches(STRING_REGEX) -> {
+                        if (++skippedIncomplete > MAX_SKIPPED_INCOMPLETE)
+                            return false
+                        else
+                            0
+                    }
+
                     // If line matches no known format, return false
                     // We do not want to be too eager to set file to PRAY
                     else -> {
@@ -210,7 +228,7 @@ class PrayFileDetector : FileTypeRegistry.FileTypeDetector {
             // If this file ends in a comment, then that means the comment was not exited
             // This could be due to incomplete fragment,
             // or because the comment start token '(-' was used in a non-pray file
-            return !inComment || hits > min(8, lines.size)
+            return (!inComment && hits > min(8, lines.size))
         }
 
         private fun isTag(line: String): Boolean {

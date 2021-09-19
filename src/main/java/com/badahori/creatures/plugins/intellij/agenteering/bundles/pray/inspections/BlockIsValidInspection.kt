@@ -46,7 +46,7 @@ open class PrayBlockIsValidInspection : LocalInspectionTool() {
         if (blockText.isNullOrBlank())
             return
         val errors = try {
-            PrayDataValidator.validate(containingFile.virtualFile.path, blockText)
+            PrayDataValidator.validate(containingFile.virtualFile.path, blockText, false)
                 .ifEmpty { null }
         } catch (e: Exception) {
             holder.registerProblem(

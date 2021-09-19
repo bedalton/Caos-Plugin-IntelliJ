@@ -35,9 +35,10 @@ BLOCK_TAG_LITERAL=[a-zA-Z_][a-zA-Z0-9#!$_]{3}
 INT=[-+]?[0-9]+
 FLOAT=[-+]?[0-9]*\.[0-9]+
 SINGLE_QUO_STRING='([^\n']|\\[^\n])*'
+INCOMPLETE_QUOTE_STRING=(\"([^\n\"]|\\[^\n])*)|('([^\n\']|\\[^\n])*)
 DOUBLE_QUO_STRING=\"([^\n\"]|\\[^\n])*\"
 LANGUAGE=\"[a-zA-Z]{2}-[a-zA-Z]{2}\"
-
+ID = [a-zA-Z_$][a-zA-Z_$0-9]+
 %%
 <YYINITIAL> {
   {WHITE_SPACE}            { return WHITE_SPACE; }
@@ -59,6 +60,7 @@ LANGUAGE=\"[a-zA-Z]{2}-[a-zA-Z]{2}\"
   }
   {SINGLE_QUO_STRING}      { doLanguage = false; return Pray_SINGLE_QUO_STRING; }
   {DOUBLE_QUO_STRING}      { doLanguage = false; return Pray_DOUBLE_QUO_STRING; }
+  {INCOMPLETE_QUOTE_STRING} { doLanguage = false; return Pray_INCOMPLETE_STRING_LITERAL; }
 
 }
 

@@ -58,7 +58,7 @@ class CompileCAOS2Action: AnAction(
                 PrayFileDetector.isPrayFile(it.contents)
             }
         try {
-            val allPrayFiles: List<VirtualFile> = caos2Pray.map { it.virtualFile } + prayFiles
+            val allPrayFiles: List<VirtualFile> = caos2Pray.map { it.virtualFile!! } + prayFiles
             if (allPrayFiles.isNotEmpty()) {
                 CompilePrayFileAction.compile(project, allPrayFiles.toTypedArray())
             }

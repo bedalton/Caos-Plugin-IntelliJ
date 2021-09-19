@@ -1,8 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler
 
-import bedalton.creatures.pray.compiler.PrayCompiler
 import bedalton.creatures.pray.compiler.cli.PrayCliOptions
-import bedalton.creatures.pray.compiler.cli.compile
+import bedalton.creatures.pray.compiler.cli.compilePrayAndWrite
 import bedalton.creatures.pray.compiler.pray.PrayParseValidationFailException
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
@@ -10,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -105,7 +105,7 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
                 inputFile = ioFile.path
             )
             try {
-                return PrayCompiler.compile(fileOpts, ioFile.parent)
+                return compilePrayAndWrite(fileOpts, ioFile.parent, false)
             } catch (e: Exception) {
                 invokeLater {
                     if (e is PrayParseValidationFailException) {
@@ -118,7 +118,7 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
                         CaosNotifications.showError(
                             project,
                             "Pray Compile Error",
-                            "Compilation failed with error: ${e.message}"
+                            "Compilation failed with error: ${e.className}(${e.message})"
                         )
                     }
                 }
