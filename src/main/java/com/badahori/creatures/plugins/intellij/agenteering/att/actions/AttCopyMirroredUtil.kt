@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
+import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
@@ -11,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTranspar
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
+import java.nio.charset.Charset
 
 internal object AttCopyMirroredUtil {
 
@@ -30,7 +32,7 @@ internal object AttCopyMirroredUtil {
 
         //Write changes on the writeAction thread
         runUndoTransparentWriteAction {
-            copyTo.setBinaryContent(newText.toByteArray(Charsets.UTF_8))
+            copyTo.setBinaryContent(newText.toByteArray(CREATURES_CHARACTER_ENCODING))
         }
     }
     internal fun mirrorAtt(project: Project, copyFrom: VirtualFile, copyTo: VirtualFile): AttCopyResult {
