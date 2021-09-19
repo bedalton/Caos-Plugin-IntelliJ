@@ -1,5 +1,5 @@
 {
-  "modDate": 1630884343,
+  "modDate": 1632074156,
   "commands": {
     "722": {
       "id": 722,
@@ -414,7 +414,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "status",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "%TARG_IS",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -438,10 +438,10 @@
           "name": "backgroundFile",
           "typeId": 4,
           "valuesListIds": {
-            "CV": 238,
-            "DS": 238,
-            "C3": 238,
-            "SM": 238
+            "CV": 283,
+            "DS": 283,
+            "C3": 283,
+            "SM": 283
           },
           "variableSetToType": null
         }
@@ -497,7 +497,12 @@
           "index": 4,
           "name": "background",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "CV": 283,
+            "C3": 283,
+            "DS": 283,
+            "SM": 283
+          },
           "variableSetToType": null
         }
       ],
@@ -1323,7 +1328,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "Creature {is} {1}::&&::%%",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -2800,7 +2805,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Bumped {1}::Did not bump {1}::%%",
+      "doifFormat": "Bumped {1}::Did not bump {1}::Bump {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -3307,7 +3312,11 @@
           "index": 0,
           "name": "eventNo",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 146,
+            "DS": 149,
+            "SM": 266
+          },
           "variableSetToType": null
         },
         {
@@ -4188,7 +4197,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "TARG {is} Running '{1}' Script::TARG Running Script {is} {1}}",
+      "doifFormat": "TARG {is} Running '{1}' Script::TARG Running Script {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -5924,7 +5933,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "Creature {is} {1}::&&::%%",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -6258,7 +6267,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{is} Facing {1}::%%",
+      "doifFormat": "Creature {is} Facing {1}::&&::Creature {is} Facing {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -8649,7 +8658,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "value",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "%TARG_IS",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -8846,7 +8855,10 @@
           "index": 0,
           "name": "variableName",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 281,
+            "DS": 281
+          },
           "variableSetToType": null
         }
       ],
@@ -8895,7 +8907,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "state",
-      "doifFormat": "{1} {is} {0}",
+      "doifFormat": "{0} {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -9580,7 +9592,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "on",
-      "doifFormat": "Gravity {is} {1}::%%",
+      "doifFormat": "Gravity {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -10437,7 +10449,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Creature {0:0} was {1}::Creature {0:0} was not {1}::%%",
+      "doifFormat": "Creature {0:0}  was {1}::Creature {0:0} was not {1}::Creature {0:0} {=} was {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -10471,7 +10483,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Creature {0:0} was {1}::Creature {0:0} was not {1}::%%",
+      "doifFormat": "Creature {0:0}  was {1}::Creature {0:0} was not {1}::Creature {0:0} {=} was {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -11478,7 +11490,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "StreamStatus {is} {1}",
+      "doifFormat": "StreamStatus {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -11567,7 +11579,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Room {0:0} {1}::Room {0:0} != {1}::%%",
+      "doifFormat": "Room {0:0} {1}::Room {0:0} != {1}::Room {0:0} {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -11628,7 +11640,12 @@
           "index": 0,
           "name": "cosFile",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 284,
+            "DS": 284,
+            "SM": 284,
+            "CV": 284
+          },
           "variableSetToType": null
         },
         {
@@ -11822,7 +11839,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "align",
-      "doifFormat": "{1}::AlignLift != {1}::%%",
+      "doifFormat": "{1}::!({1})::%%",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -13619,7 +13636,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "status",
-      "doifFormat": "Movement Status {is} {1}",
+      "doifFormat": "Movement Status {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -13643,7 +13660,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Movement Status {is} {1}",
+      "doifFormat": "Movement Status {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -13958,7 +13975,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{1}::%%::%%",
+      "doifFormat": "{1}::Game {=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -14513,7 +14530,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "NET: LINE is {1}::NET: LINE != {1}::%%",
+      "doifFormat": "NET: LINE {is} {1}::NET: LINE {=} {1}::%%",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -14528,7 +14545,9 @@
           "index": 0,
           "name": "whichJournalSpot",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "DS": 206
+          },
           "variableSetToType": null
         },
         {
@@ -14719,7 +14738,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "User {0:0} {is} {1}",
+      "doifFormat": "User {0:0} {is} {1}::User {0:0} {=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -15344,7 +15363,12 @@
           "index": 6,
           "name": "imageCount",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238,
+            "CV": 238
+          },
           "variableSetToType": null
         },
         {
@@ -16462,7 +16486,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Moniker Status {is} {1}",
+      "doifFormat": "{1}::{=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -17172,7 +17196,12 @@
           "index": 1,
           "name": "overlaySprite",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "SM": 238,
+            "DS": 238,
+            "C3": 238,
+            "CV": 238
+          },
           "variableSetToType": null
         },
         {
@@ -17263,7 +17292,11 @@
           "index": 1,
           "name": "spriteFile",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238
+          },
           "description": null,
           "variableSetToType": null
         },
@@ -17402,7 +17435,12 @@
           "index": 1,
           "name": "spriteFile",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238,
+            "CV": 238
+          },
           "description": null,
           "variableSetToType": null
         },
@@ -17442,7 +17480,12 @@
           "index": 6,
           "name": "fontSprite",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238,
+            "CV": 238
+          },
           "description": null,
           "variableSetToType": null
         },
@@ -17562,7 +17605,12 @@
           "index": 6,
           "name": "fontSprite",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "SM": 238,
+            "DS": 238,
+            "C3": 238,
+            "CV": 238
+          },
           "variableSetToType": null
         }
       ],
@@ -17595,7 +17643,12 @@
           "index": 1,
           "name": "overlaySprite",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238,
+            "CV": 238
+          },
           "variableSetToType": null
         },
         {
@@ -17732,7 +17785,12 @@
           "index": 1,
           "name": "spriteFile",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238,
+            "CV": 238
+          },
           "description": null,
           "variableSetToType": null
         },
@@ -17780,7 +17838,12 @@
           "index": 7,
           "name": "fontSprite",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238,
+            "CV": 238
+          },
           "description": null,
           "variableSetToType": null
         },
@@ -17907,7 +17970,11 @@
           "index": 7,
           "name": "fontSprite",
           "typeId": 4,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 238,
+            "DS": 238,
+            "SM": 238
+          },
           "variableSetToType": null
         }
       ],
@@ -17941,7 +18008,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "%TARG_IS",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -17992,7 +18059,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "paused",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "Game {is} {1}::&&::%%",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -19048,7 +19115,10 @@
           "index": 2,
           "name": "whichPraySpot",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 208,
+            "DS": 208
+          },
           "variableSetToType": null
         },
         {
@@ -19216,7 +19286,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "PRAY TEST {0:0} {is} {1}::%%",
+      "doifFormat": "PRAY TEST {0:0} {is} {1}::PRAY TEST {0:0} {=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -20255,7 +20325,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Pointer {is} {1}::%%",
+      "doifFormat": "Pointer {is} {1}::Pointer {=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -21243,7 +21313,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Render Format {is} {1}::%%",
+      "doifFormat": "Render Format {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -21951,7 +22021,7 @@
       "rvalue": true,
       "lvalue": true,
       "lvalueName": "roomType",
-      "doifFormat": "Room {0:0} {is} {1}",
+      "doifFormat": "Room {0:0} type {is} {1}::Room {0:0} type != {1}::Room {0:0} type {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -22593,7 +22663,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {1} {0:1}::%%",
+      "doifFormat": "{0:0} {1} {0:1}::{0:0} {=} {0:1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -23090,7 +23160,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Image \"{0:0}\" {1}::Image \"{0:0}\" != {1}::Image \"{0:0}\" {is} {1}",
+      "doifFormat": "Image \"{0:0}\" {1}::Image \"{0:0}\" {=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -26676,7 +26746,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "TMVB {1}::%%::%%",
+      "doifFormat": "Test Move By {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -26717,7 +26787,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "TMVB {1}::%%::%%",
+      "doifFormat": "Test Move Foot {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -26758,7 +26828,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "TMVB {1}::%%::%%",
+      "doifFormat": "Test Move To {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -27089,7 +27159,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {1} {0:1}::{0:0} != {1} {0:1}::%%",
+      "doifFormat": "{0:0} {1} {0:1}::{0:0} {=} {1} {0:1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -27446,7 +27516,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {is} {1}::%%",
+      "doifFormat": "<{0:0}> is a {1}::<{0:0}> is not a {1}::{0:0} {is} a {1}::{0:0} {=} a {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -28561,7 +28631,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Window in {1}::Window not in {1}::>>",
+      "doifFormat": "Window in {1}::Window not in {1}::Window {=} in {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -29107,7 +29177,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "%IS_SIMPLE",
+      "doifFormat": "World Ticks {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -29293,7 +29363,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {1}::{0:0} != {1}::{0:0} {eq} {1}",
+      "doifFormat": "{0:0} {1}::{0:0} {=} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -31761,6 +31831,7 @@
         272,
         251,
         203,
+        283,
         244,
         278,
         213,
@@ -31774,6 +31845,7 @@
         211,
         212,
         206,
+        284,
         165,
         253,
         88,
@@ -33153,12 +33225,14 @@
         272,
         251,
         203,
+        283,
         183,
         278,
         213,
         235,
         199,
         201,
+        281,
         143,
         214,
         71,
@@ -33168,6 +33242,8 @@
         211,
         212,
         206,
+        208,
+        284,
         198,
         165,
         253,
@@ -34593,12 +34669,14 @@
         272,
         251,
         203,
+        283,
         183,
         278,
         213,
         235,
         199,
         201,
+        281,
         143,
         214,
         71,
@@ -34608,6 +34686,8 @@
         211,
         212,
         206,
+        208,
+        284,
         198,
         165,
         253,
@@ -36004,6 +36084,7 @@
         272,
         251,
         203,
+        283,
         183,
         213,
         235,
@@ -36018,6 +36099,7 @@
         211,
         212,
         206,
+        284,
         198,
         165,
         253,
@@ -50819,6 +50901,16 @@
         }
       ]
     },
+    "list_283": {
+      "id": 283,
+      "variant": "AL",
+      "name": "File.BLK",
+      "description": null,
+      "extensionType": "File",
+      "base_values_list_id": 111,
+      "pattern": null,
+      "values": []
+    },
     "list_238": {
       "id": 238,
       "variant": "AL",
@@ -50826,6 +50918,16 @@
       "description": null,
       "extensionType": "File",
       "base_values_list_id": 111,
+      "pattern": null,
+      "values": []
+    },
+    "list_284": {
+      "id": 284,
+      "variant": "AL",
+      "name": "File.COS",
+      "description": null,
+      "extensionType": "File",
+      "base_values_list_id": 108,
       "pattern": null,
       "values": []
     },
@@ -50958,6 +51060,342 @@
           "description": null,
           "sub_values": "",
           "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_281": {
+      "id": 281,
+      "variant": "AL",
+      "name": "GameVariables",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": null,
+      "pattern": null,
+      "values": [
+        {
+          "id": 8204,
+          "valuesListId": 281,
+          "value": "engine_debug_keys",
+          "name": "Debug Keys::Integer",
+          "description": "This determines if the debug keys are operative. If the value is 1 then the keys described in the Debug Keys table are functional. For non-numeric keypad keys, you must hold Shift down with the key",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8205,
+          "valuesListId": 281,
+          "value": "engine_full_screen_toggle",
+          "name": "Full Screen Toggle::Integer",
+          "description": "Alt+Enter usually toggles full screen mode. Set to 0 to disable this",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8206,
+          "valuesListId": 281,
+          "value": "engine_SkeletonUpdateDoubleSpeed",
+          "name": "SkeletonUpdateDoubleSpeed::Integer",
+          "description": "If non-zero, skeleton updates happen each tick. If Zero, they happen every other tick (default, NULL)",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8207,
+          "valuesListId": 281,
+          "value": "engine_creature_pickup_status",
+          "name": "CreaturePickupStatus::Integer",
+          "description": "If zero, right click on a creature is pickup. If one, right click is holding hands. If two, hold shift to pickup, don't hold shift to hold hands. If three, as two but creature must be a selectable one as according to the Grettin game variable",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8208,
+          "valuesListId": 281,
+          "value": "engine_dumb_creatures",
+          "name": "DumbCreatures::Integer",
+          "description": "If non-zero, creatures do not burble",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8209,
+          "valuesListId": 281,
+          "value": "engine_pointerCanCarryObjectsBetweenMetaRooms",
+          "name": "PointerCanCarryObjectsBetweenMetaRooms::Integer",
+          "description": "If zero, the pointer drops objects when a metaroom change occurs. If non-zero, then it continues to carry them allowing objects to be moved between metarooms by the pointer",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8210,
+          "valuesListId": 281,
+          "value": "engine_password",
+          "name": "Password::String",
+          "description": "If set, this allows the determining of the password for the world. This does not set anything other than the pswd returned - enabling world-switchers to correctly deal with the passwords",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8211,
+          "valuesListId": 281,
+          "value": "engine_creature_template_size_in_mb",
+          "name": "CreatureTemplateSizeInMb::Integer",
+          "description": "This is the amount of data space allocated to the creature gallery sprite files. If a single life stage image set exceeds this value - problems will ensue",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8212,
+          "valuesListId": 281,
+          "value": "engine_near_death_track_name",
+          "name": "NearDeathTrackName::String",
+          "description": "This sets the track (and optionally MNG file, NULL) for the track which the engine will play when a creature gets near death within the game",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8213,
+          "valuesListId": 281,
+          "value": "engine_plane_for_lines",
+          "name": "PlaneForLines::Integer",
+          "description": "This sets the plane for lines drawn on entity images. This includes Connective agent lines and the debug cabins",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8214,
+          "valuesListId": 281,
+          "value": "engine_synchronous_learning",
+          "name": "SynchronousLearning::Integer",
+          "description": "By default learning is asynchronous, so the creature learns from all STIMs. Set to 1 to make the creatures learn only from STIMs caused by the action they are thinking about carried out by the agent their attention is on",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8215,
+          "valuesListId": 281,
+          "value": "engine_zlib_compression",
+          "name": "ZlibCompression::Integer",
+          "description": "Saved worlds and other archives are compressed using zlib. This sets the compression level. The value ranges between: 0 - No compression, 1 - Best speed, 9 - Best compression",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8216,
+          "valuesListId": 281,
+          "value": "engine_other_world",
+          "name": "OtherWorld::String",
+          "description": "Used by FILE OOPE to allow saving to other world's journal directories",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8217,
+          "valuesListId": 281,
+          "value": "engine_netbabel_save_passwords",
+          "name": "NetBabel Save Passwords::Integer",
+          "description": "Set to 1 to tell the netbabel module to save passwords in user.cfg, 0 for it to forget them",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8218,
+          "valuesListId": 281,
+          "value": "engine_multiple_birth_first_chance",
+          "name": "Multiple Birth First Chance::Float",
+          "description": "This sets the chance (from 0 to 1, NULL) that a mate event will result in multiple pregnancies",
+          "beforeRegion": "Multiple Births",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8219,
+          "valuesListId": 281,
+          "value": "engine_multiple_birth_subsequent_chance",
+          "name": "Multiple Birth Subsequent Chance::Float",
+          "description": "This sets the subsequent chance (from 0 to 1, NULL) that more than two children are conceived",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8220,
+          "valuesListId": 281,
+          "value": "engine_multiple_birth_maximum",
+          "name": "Multiple Birth Maximum::Integer",
+          "description": "This sets the maximum number of births allowed by the engine",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8221,
+          "valuesListId": 281,
+          "value": "engine_multiple_birth_identical_chance",
+          "name": "Multiple Birth Identical Chance::Float",
+          "description": "This sets the chance that the children will be genetically identical",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8222,
+          "valuesListId": 281,
+          "value": "engine_LengthOfDayInMinutes",
+          "name": "LengthOfDayInMinutes::Integer",
+          "description": "This sets the number of minutes in a day. (Game time, NULL)",
+          "beforeRegion": "Days and Seasons",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8223,
+          "valuesListId": 281,
+          "value": "engine_LengthOfSeasonInDays",
+          "name": "LengthOfSeasonInDays::Integer",
+          "description": "This sets the number of days in a season. (Game time, NULL)",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8224,
+          "valuesListId": 281,
+          "value": "engine_NumberOfSeasons",
+          "name": "NumberOfSeasons::Integer",
+          "description": "This sets the number of seasons in a year. (Game Time, NULL)",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8225,
+          "valuesListId": 281,
+          "value": "engine_mute",
+          "name": "Mute::Integer",
+          "description": "This sets whether (non zero, NULL) or not (zero, NULL) to mute the MIDI player",
+          "beforeRegion": "Sounds and Music",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8226,
+          "valuesListId": 281,
+          "value": "engine_playAllSoundsAtMaximumLevel",
+          "name": "Play All Sounds At Maximum Level::Integer",
+          "description": "If non-zero, all sounds played by agents are set to full volume and center pan",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8227,
+          "valuesListId": 281,
+          "value": "engine_usemidimusicsystem",
+          "name": "Use Midi Music System::Integer",
+          "description": "If non-zero, this tells the engine to use MIDI music instead of the MUNGED data usually used",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8228,
+          "valuesListId": 281,
+          "value": "cav_birthdate",
+          "name": "Birthdate::String",
+          "description": "If set, the engine uses this to inform the birthday agent when it is the player's birthday",
+          "beforeRegion": "Countdown and Birthdays",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8229,
+          "valuesListId": 281,
+          "value": "cav_quittime",
+          "name": "Quit Time::String",
+          "description": "If set, the engine uses this to inform the countdown clock agent to show its countdown, and also to quit the game at the specified time",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8230,
+          "valuesListId": 281,
+          "value": "cav_gamelengthIsPerDay",
+          "name": "Game Length is Per Day::String",
+          "description": "If set, the engine uses this to inform the countdown clock agent when the maximum play time for the day is up",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8231,
+          "valuesListId": 281,
+          "value": "cav_useparentmenu::Integer",
+          "name": "Use Parent Menu::Integer",
+          "description": "If non-zero, this causes the engine to deal with extra information such as the countdown clock and birthday agents. These are activated by registry settings",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8232,
+          "valuesListId": 281,
+          "value": "cav_CountdownClockAgent",
+          "name": "Countdown Clock Agent::Agent",
+          "description": "If not null, countdown messages are sent to this agent",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8233,
+          "valuesListId": 281,
+          "value": "cav_BirthdayBannerAgent",
+          "name": "Birthday Banner Agent::Agent",
+          "description": "If not null, birthday messages are sent to this agent",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8234,
+          "valuesListId": 281,
+          "value": "engine_distance_before_port_line_warns",
+          "name": "Distance Before Port Line Warns::Float",
+          "description": "At this distance, port lines will pulse red not blue to indicate that they are nearning their maximum length before they snap",
+          "beforeRegion": "Ports",
+          "sub_values": "",
+          "ignore_non_specific": true,
+          "require_prev": null
+        },
+        {
+          "id": 8235,
+          "valuesListId": 281,
+          "value": "engine_distance_before_port_line_snaps",
+          "name": "Distance Before Port Line Snaps::Float",
+          "description": "At this distance, port lines will simply snap",
+          "sub_values": "",
+          "ignore_non_specific": true,
           "require_prev": null
         }
       ]
@@ -54462,6 +54900,37 @@
       "base_values_list_id": 85,
       "pattern": null,
       "values": []
+    },
+    "list_208": {
+      "id": 208,
+      "variant": "AL",
+      "name": "PraySpot",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": 87,
+      "pattern": null,
+      "values": [
+        {
+          "id": 4320,
+          "valuesListId": 208,
+          "value": "0",
+          "name": "My Agents",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4321,
+          "valuesListId": 208,
+          "value": "1",
+          "name": "My Creatures",
+          "description": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
     },
     "list_197": {
       "id": 197,
