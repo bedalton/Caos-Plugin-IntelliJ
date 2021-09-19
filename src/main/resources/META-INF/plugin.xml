@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.08.31</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.09.19</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -24,11 +24,12 @@
       <li>Known value completion from list. (i.e. Drives or Chemicals by name)</li>
       <li>Sprite viewers</li>
       <li>ATT file editor</li>
+      <li>Pray File editing</li>
+      <li>COB compiler(CAOS2Cob)/decompiler</li>
     </ul>
     <b>Todo:</b>
     <ul>
-      <li>COB compiler/decompiler</li>
-      <li>Pray File editing</li>
+      <li>PRAY decompiler</li>
       <li>Sprite compilers</li>
     </ul>
     ]]></description>
@@ -36,11 +37,22 @@
   <change-notes><![CDATA[
     <ul>
       <li>
-        <b>Versions: 2021.08.27</b>
+        <b>Versions: 2021.09.19</b>
+        <b>Improvements</b>
+        <ul>
+          <li>Added PRAY and CAOS2Pray compiling</li>
+          <li>Added code navigation from script number in `MESG WRIT`, `MESG WRT+` and `CALL` commands</li>
+          <li>Added support for arbitrary game names in injector</li>
+          <li>Added file name completion in file parameter contexts</li>
+        </ul>
+        <b>Fixed</b>
         <ul>
           <li>Fixed false trailing whitespace error</li>
-          <li>Added PRAY and CAOS2Pray compiling</li>
+          <li>Fixed commas showing as invalid on C1/C2</li>
           <li>Fixed random sprites in ATT editor</li>
+          <li>Fixed erroneous comma errors in C1/C2</li>
+          <li>Fixed Bit-flag type hints</li>
+          <li>Fix subroutine name to gsub navigation</li>
         </ul>
       </li>
       <li>
@@ -463,19 +475,24 @@
     <!-- LANG -->
     <postStartupActivity
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectStartupActivity" />
+
     <fileTypeFactory
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
+
     <lang.parserDefinition
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
         language="CaosScript"
     />
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
+
     <lang.findUsagesProvider language="CaosScript"
                              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider" />
+
     <moduleType id="CAOS_MODULE"
                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                 classpathProvider="true" />
+
     <moduleService
         serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService"
         serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent" />
@@ -525,6 +542,10 @@
         serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService"
         serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent"
     />
+
+    <filePropertyPusher implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher" />
+    <filePropertyPusher implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher" />
+    <filePropertyPusher implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.InjectorInterfacePropertyPusher" />
 
 
     <!-- Formatting -->
@@ -1090,21 +1111,6 @@
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
     /-->
 
-    <!-- =========================== -->
-    <!-- ======== COB Files ======== -->
-    <!-- =========================== -->
-    <!--filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" /-->
-
-    <fileTypeOverrider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileOverrider"
-        order="first"
-    />
-
-    <!--fileType.fileViewProviderFactory
-        filetype="COBFile"
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
-    /-->
-
 
     <!-- =========================== -->
     <!-- ====== ATT Files ======= -->
@@ -1141,6 +1147,12 @@
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.parser.PrayParserDefinition"
         language="CreaturesPRAY"
     />
+
+    <fileTypeOverrider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileOverrider"
+        order="first"
+    />
+
     <fileType name="PRAYFile"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType"
               fieldName="INSTANCE"
@@ -1171,6 +1183,11 @@
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor.PrayEditorToolbar" />
 
+    <!-- Completion -->
+    <completion.contributor language="CreaturesPRAY"
+                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCompletionContributor" />
+
+
     <!-- INSPECTIONS -->
 
     <annotator language="CreaturesPRAY"
@@ -1187,7 +1204,7 @@
     />
 
     <localInspection language="CreaturesPRAY"
-                     level="ERROR"
+                     level="WARNING"
                      groupName="PRAY"
                      enabledByDefault="true"
                      displayName="PRAY dependency category is valid for file type"
@@ -1215,7 +1232,9 @@
                      groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayTagCaseInspection"
     />
-
+    <lang.findUsagesProvider
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayFindUsagesProvider"
+        language="CreaturesPRAY" />
     <!--localInspection language="CreaturesPRAY"
                      level="ERROR"
                      groupName="PRAY"
