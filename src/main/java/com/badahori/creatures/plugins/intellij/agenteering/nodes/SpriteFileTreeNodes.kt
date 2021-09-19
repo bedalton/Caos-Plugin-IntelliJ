@@ -41,7 +41,7 @@ internal class SpriteFileTreeNode(
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
-        val fileNameBase = FileNameUtils.getBaseName(value.name).orElse("_") + "."
+        val fileNameBase = FileNameUtils.getNameWithoutExtension(value.name).orElse("_") + "."
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
