@@ -29,6 +29,8 @@ object CobVirtualFileUtil {
      * Key for storing the cob decompile virtual folder path
      */
     private val VIRTUAL_FILE_PATH_KEY = Key<String>("creatures.cob.decompiler.DIRECTORY")
+
+    @Suppress("MemberVisibilityCanBePrivate")
     fun cobVirtualFileDirectory(file:VirtualFile) : CaosVirtualFile {
         return file.getUserData(VIRTUAL_FILE_PATH_KEY)?.let { path ->
             CaosVirtualFileSystem.instance.getDirectory(path)
@@ -102,7 +104,7 @@ object CobVirtualFileUtil {
                     agentDirectory.createChildWithContent("Thumbnail.png", it.toPngByteArray())
                 })
                 previews + scripts.map { file ->
-                    file.apply { this.variant = variant }
+                    file.apply { this.setVariant(variant, true) }
                 }
             }
             is CobBlock.UnknownCobBlock -> emptyList()
@@ -116,8 +118,8 @@ object CobVirtualFileUtil {
     fun createChildCaosScript(project: Project, parent:CaosVirtualFile, variant: CaosVariant, fileName: String, code: String): CaosVirtualFile {
         parent.findChild(fileName)?.let { return it }
         // Initialize file with contents
-        val virtualFile = try {
-            parent.createChildWithContent(fileName, code, false).apply { this.variant = variant }
+        @Suppress( "MemberVisibilityCanBePrivate") val virtualFile = try {
+            parent.createChildWithContent(fileName, code, false).apply { this.setVariant(variant, true) }
         } catch(e:Exception) {
             LOGGER.severe("Failed to create virtual file. Error: ${e.message}")
             e.printStackTrace()
@@ -134,7 +136,7 @@ object CobVirtualFileUtil {
                 // Try quick format if file is found
                 tryQuickFormat(psiFile, virtualFile)
             } catch(e:Exception) {
-                LOGGER.severe("Failed to quickformat after creating virtual file")
+                LOGGER.severe("Failed to quick-format after creating virtual file")
                 e.printStackTrace()
                 virtualFile
             }

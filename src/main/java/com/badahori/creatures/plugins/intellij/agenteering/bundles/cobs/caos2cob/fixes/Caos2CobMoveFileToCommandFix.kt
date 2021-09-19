@@ -65,7 +65,7 @@ class Caos2CobMoveFileToCommandFix(element: PsiElement, private val command: Cob
         document = containingCommandPointer.element?.document!!
         if (commandPointer == null) {
             val lastCommand = PsiTreeUtil
-                .collectElementsOfType(block, CaosScriptCaos2::class.java)
+                .collectElementsOfType(block, CaosScriptCaos2Statement::class.java)
                 .lastOrNull()
             val case = lastCommand
                 ?.text

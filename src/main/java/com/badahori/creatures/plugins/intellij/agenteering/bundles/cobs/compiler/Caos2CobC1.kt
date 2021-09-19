@@ -85,7 +85,7 @@ data class Caos2CobC1(
             ?: return@lazy null
         Caos2CobC1(
             agentName = "$agentName Remover",
-            targetFile = removerName ?: (targetFile.split(File.separatorChar).dropLast(1).joinToString(File.separatorChar + "") + File.separatorChar + FileNameUtils.getBaseName(targetFile).orEmpty()) + ".rcb",
+            targetFile = removerName ?: (targetFile.split(File.separatorChar).dropLast(1).joinToString(File.separatorChar + "") + File.separatorChar + FileNameUtils.getNameWithoutExtension(targetFile).orEmpty()) + ".rcb",
             installScripts = listOf(removalScript),
             quantityUsed = 0,
             quantityAvailable = 255

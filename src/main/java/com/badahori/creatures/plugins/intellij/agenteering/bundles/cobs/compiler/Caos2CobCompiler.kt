@@ -15,6 +15,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.io.write
 import java.nio.file.Paths
@@ -109,7 +110,7 @@ object Caos2CobCompiler {
                 error
             )
         }*/
-        if (FileNameUtils.getBaseName(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
+        if (FileNameUtils.getNameWithoutExtension(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
             val removerData = compile(project, file, removerCob)
             if (removerData == null) {
                 ++compilationResult.failures
@@ -161,7 +162,7 @@ object Caos2CobCompiler {
         mainFile: CaosScriptFile
     ): Caos2Cob {
         // Get parent directory for all read and write operations
-        val directory = mainFile.virtualFile.parent
+        val directory = mainFile.virtualFile!!.parent
 
         // Get variant
         val variant = mainFile.caos2CobVariant
@@ -562,19 +563,19 @@ object Caos2CobCompiler {
      */
     private fun getFileScripts(fileIn: CaosScriptFile) : List<CaosScriptScriptElement> {
         val scripts = mutableListOf<CaosScriptScriptElement>()
+        val pointer = SmartPointerManager.createPointer(fileIn)
         WriteCommandAction.writeCommandAction(fileIn.project)
             .shouldRecordActionForActiveDocument(false)
             .withGroupId("CAOS2Cob")
             .withName("Collapse CAOS2Cob script with commas")
             .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
             .run<Exception> {
-                /*
-                val document = file.document!!
-                EditorUtil.replaceText(document, file.textRange, CaosScriptsQuickCollapseToLine.collapse(variant,file.text))
-                PsiDocumentManager.getInstance(file.project).commitDocument(document)*/
-                val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(fileIn, CollapseChar.COMMA)
+                val file = pointer.element
+                    ?: throw Exception("Failed to get file in runner for collapse")
+                val collapsed = CaosScriptCollapseNewLineIntentionAction.collapseLinesInCopy(file, CollapseChar.COMMA)
                     ?: throw Exception("Failed to collapse script")
-                scripts.addAll(PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java))
+                val scriptsInFile = PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java)
+                scripts.addAll(scriptsInFile)
             }
         return scripts
     }

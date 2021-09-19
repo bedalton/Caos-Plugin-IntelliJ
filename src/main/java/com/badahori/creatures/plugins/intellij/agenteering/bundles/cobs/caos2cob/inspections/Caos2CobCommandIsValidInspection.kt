@@ -50,7 +50,7 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
             val tagNameRaw = element.text
             if (tagNameRaw.matches(AGENT_NAME_COMMAND_REGEX))
                 return
-            val tagName = element.text.replace(WHITESPACE_OR_DASH, " ").nullIfEmpty()
+            val tagName = element.text.replace(WHITESPACE, " ").nullIfEmpty()
                 ?: return
             val command = CobCommand.fromString(tagName)
             val variant = element.variant

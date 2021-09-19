@@ -71,7 +71,7 @@ class CompileCaos2CobAction : AnAction(
             val compilationResult = CompilationResults(1)
             // Run compile phase in background
             // Requires read-access though, so will have to move back onto ui thread I think
-            runBackgroundableTask("Compile 1 Caos2Cob files") { progressIndicator ->
+            runBackgroundableTask("Compile 1 Caos2Cob Files") { progressIndicator ->
                 ApplicationManager.getApplication().invokeLater {
                     progressIndicator.checkCanceled()
                     // Ensure in read action
