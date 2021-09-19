@@ -11,13 +11,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import kotlin.math.min
 
 
 // Regex Is strict
@@ -36,6 +35,10 @@ class PrayErrorAnnotator : Annotator {
             is PrayString -> annotateStringError(element, holder)
             is PrayTagTagName -> annotateTagNameError(element, holder)
             is PrayTagTagValue -> annotatePrayTagValue(element, holder)
+            is PrayIncompleteString -> holder
+                .newErrorAnnotation("String is missing closing quote")
+                .range(element)
+                .create()
             is PrayElement -> {
                 element.agentBlock?.let { agentBlock ->
                     annotatePrayAgent(agentBlock, holder)
@@ -99,6 +102,18 @@ private fun annotateTagNameError(element: PrayTagTagName, holder: AnnotationHold
         .nullIfEmpty()
         ?: return
 
+    if (element.parent is PrayBlockElement) {
+        val end = element.endOffset
+        val start = element.startOffset.let { start ->
+            if (start < end - 2)
+                start
+            else
+                end - 2
+        }
+        holder.newErrorAnnotation(AgentMessages.message("error.tags.missing-value"))
+            .range(TextRange(start, end))
+            .create()
+    }
     annotateDuplicateTag(element, tagName, holder)
     if (annotateNumberedTag(element, tagName, holder))
         return

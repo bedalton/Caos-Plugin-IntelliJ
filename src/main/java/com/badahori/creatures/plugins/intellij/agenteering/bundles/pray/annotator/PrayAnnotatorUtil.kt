@@ -142,7 +142,7 @@ private fun annotateStringValue(tag: String, tagValueElement: PrayTagValue, stri
         "Egg Gallery male",
         "Egg Gallery female" -> if (FileNameUtils.getExtension(string).nullIfEmpty() != null) {
             val error = AgentMessages.message("pray.annotator.tag-values.gallery-should-not-have-extension", tag)
-            val fixes = FileNameUtils.getBaseName(string)?.let { fileNameWithoutExtension ->
+            val fixes = FileNameUtils.getNameWithoutExtension(string)?.let { fileNameWithoutExtension ->
                 CaosScriptReplaceElementFix(
                     tagValueElement,
                     "\"${fileNameWithoutExtension}\"",

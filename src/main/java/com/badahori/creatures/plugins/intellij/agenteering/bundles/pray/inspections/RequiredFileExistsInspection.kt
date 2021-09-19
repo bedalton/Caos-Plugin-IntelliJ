@@ -40,18 +40,10 @@ class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
                 if (!commandElement.containingCaosFile?.isCaos2Pray.orFalse())
                     return
                 val tagRaw = commandElement.commandName.trim()
-                val tag = PrayTags.normalize(tagRaw)
-                    ?: tagRaw
 
                 PrayCommand.fromString(tagRaw)?.let {
                     annotateCaos2PrayCommand(it, commandElement.caos2ValueList, holder)
                     return
-                }
-
-                if (!requiresFile(tag))
-                    return
-                for (tagValue in commandElement.caos2ValueList) {
-                    annotateFileError(tagValue, tag, tagValue.valueAsString?.trim(), "command", holder)
                 }
             }
 
@@ -64,12 +56,11 @@ class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
                     ?: tagRaw
                 val tagValue = tagElement.caos2Value
                     ?: return
-                annotateFileError(tagValue, tag, tagValue.valueAsString?.trim(), "property", holder)
+                annotateFileError(tagValue, tag, tagValue.valueAsString?.trim(), "property", false, holder)
             }
         }
     }
 }
-
 
 class PrayRequiredFileExistsInspection : LocalInspectionTool() {
 
@@ -87,7 +78,7 @@ class PrayRequiredFileExistsInspection : LocalInspectionTool() {
                 val tagName = o.tagName.trim().nullIfEmpty()
                     ?: return
                 val tagValue = o.tagTagValue
-                annotateFileError(tagValue, tagName, tagValue.valueAsString, "property", holder)
+                annotateFileError(tagValue, tagName, tagValue.valueAsString, "property", false, holder)
             }
 
             override fun visitInlineFile(o: PrayInlineFile) {
@@ -115,16 +106,16 @@ private val requiresFiles = listOf(
     "Dependency\\s+\\d+",
     "Agent\\s+Animation\\s+File",
     "Egg\\s+Glyph\\s+File",
-    "Egg\\s+Glyph\\s+File\\s2"
+    "Egg\\s+Glyph\\s+File\\s2",
+    "Web\\s+Icon"
 ).joinToString("|") { "($it)" }.toRegex(RegexOption.IGNORE_CASE)
 
-private val requiresScript = "(Link)".toRegex(RegexOption.IGNORE_CASE)
 
+private val requiresScript = "(Link)|(Script\\s+\\d+)|(RSCR)".toRegex(RegexOption.IGNORE_CASE)
 
 private fun requiresFile(tagName: String): Boolean {
     return requiresFiles.matches(tagName) ||
-            requiresFileWithoutExtension.matches(tagName) ||
-            requiresScript.matches(tagName)
+            requiresFileWithoutExtension.matches(tagName)
 }
 
 private fun requiresFileWithoutExtension(tagName: String): Boolean {
@@ -154,7 +145,7 @@ private val usesExisting = listOf(
 private val requiresSpriteRegex = requiresSprite.joinToString("|") { "(" + it.replace(" ", "\\s+") + ")"}
     .toRegex(RegexOption.IGNORE_CASE)
 
-private fun getRequiredExtension(tagName: String): List<String>? {
+internal fun getPrayTagRequiredExtension(tagName: String): List<String>? {
     return if (requiresSpriteRegex.matches(tagName))
         listOf("c16")
     else if (requiresScript.matches(tagName))
@@ -166,35 +157,44 @@ private fun getRequiredExtension(tagName: String): List<String>? {
 private fun annotateCaos2PrayCommand(command: PrayCommand, values: List<CaosScriptCaos2Value>, holder: ProblemsHolder) {
     if (command == PrayCommand.DEPEND)
         return
+
     if (command == PrayCommand.LINK) {
         for (value in values) {
-            annotateFileError(value, "Link", value.valueAsString, "command", holder)
+            annotateFileError(value, "@Link", value.valueAsString, "command", true, holder)
         }
         return
     }
 
     if (command == PrayCommand.ATTACH) {
-        val input = values.getOrNull(1)
+        val input = values.getOrNull(1) ?: values.getOrNull(0)
             ?: return
 
-        annotateFileError(input, "Link", input.valueAsString, "command", holder)
+        annotateFileError(input, "@Attach", input.valueAsString, "command", true, holder)
     }
 
     if (command == PrayCommand.INLINE) {
         for (value in values) {
-            annotateFileError(value, "Inline", value.valueAsString, "command", holder)
+            annotateFileError(value, "@Inline", value.valueAsString, "command", true, holder)
         }
         return
     }
-}
 
-private fun annotateFileError(element: PsiElement, tagName: String, fileName: String?, type: String, holder: ProblemsHolder) {
-    annotateFileError(element, tagName, fileName, type, false, holder)
+    if (command == PrayCommand.REMOVAL_SCRIPTS) {
+        val script = values.firstOrNull()?.text?.nullIfEmpty()
+        if (script != null && isRawScriptNotFile(script)) {
+            return
+        }
+    }
 }
 
 private fun annotateFileError(element: PsiElement, tagName: String, fileName: String?, type: String, force: Boolean, holder: ProblemsHolder) {
 
-    if (!requiresFile(tagName) && !force)
+    // Make sure tag has length.
+    if (tagName.isEmpty())
+        return
+
+    // Make sure tag needs file
+    if (!requiresFile(tagName) && tagName[0] != '@' && !force)
         return
 
     if (fileName.isNullOrBlank()) {
@@ -203,13 +203,14 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     }
 
     val stripExtension = requiresFileWithoutExtension(tagName)
+    val requiredExtensions = getPrayTagRequiredExtension(tagName)
 
     // If replacement files is null, then the file matches, so return
     val fixes: MutableList<LocalQuickFix> = (getFilenameSuggestions(
         element,
         stripExtension,
         fileName,
-        getRequiredExtension(tagName)
+        requiredExtensions
     ) ?: return).toMutableList()
 
     fixes += listOfNotNull(
@@ -251,4 +252,38 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
 
         holder.registerProblem(element, error, *fixes.toTypedArray())
     }
+//
+//    if (stripExtension && requiredExtensions.isNotNullOrEmpty()) {
+//        if (requiredExtensions.any { extension -> fileName.endsWith(extension)}) {
+//            val error = AgentMessages.message("errors.files.no-extension", tagName)
+//            holder.registerProblem(element, error, *fixes.toTypedArray())
+//        }
+//    }
+}
+
+
+/**
+ * Returns a nullable pair of extension types and a boolean representing whether to drop extension
+ * #Second <b>TRUE</b> Drop extension, <b>FALSE</b> require extension
+ */
+internal fun tagRequiresFileOfType(tagName: String): Pair<List<String>?, Boolean>? {
+    val normalized = PrayTags.normalize(tagName)
+        ?: return null
+    if (!requiresFile(normalized))
+        return null
+    val extensions = getPrayTagRequiredExtension(normalized)
+    val noExtension = requiresFileWithoutExtension.matches(normalized)
+    return Pair(extensions, noExtension)
+}
+
+// Check that RSCR is a script not a file path
+private const val FILE_NAME_CHAR = "[a-zA-Z0-9_'\" \\-#$&@()]"
+private val PATH_REGEX by lazy { "(^[a-zA-Z]:\\\\[a-zA-Z0-9_'\" \\-#$&@()]+(\\.[^\"\\\\\n]+)?)|(^([a-zA-Z0-9_'\" \\-#\$&@()]*[/\\\\])*[a-zA-Z0-9_'\" \\-#\$&@()]+\\.[^\$\n]+\$)".toRegex() }
+private val PRIMITIVE_CAOS_REGEX by lazy { "^((\\\\n)|(\\\\t)|( )|\\t|([+-]?[0-9]+)|\"([^\"\\\\]|\\\\.)*\"|\\[[^]]*]|([-+]?[0-9]*\\.[0-9]+)|((subr|gsub)\\s+[^\\\\\\s]+)|([a-zA-Z_][a-zA-Z_\$*#:]{3})|(\\*([^\\n\\\\]|\\\\[^\\n])*))+\$".toRegex() }
+internal fun isRawScriptNotFile(text: String): Boolean {
+    if (text.isEmpty())
+        return true
+    if (PRIMITIVE_CAOS_REGEX.matches(text))
+        return true
+    return !PATH_REGEX.matches(text)
 }

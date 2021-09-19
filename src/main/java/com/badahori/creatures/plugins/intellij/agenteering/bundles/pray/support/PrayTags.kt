@@ -1,14 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support
 
 import bedalton.creatures.pray.compiler.caos2pray.Caos2PrayShortTags
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.levenshteinDistance
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.upperCaseFirstLetter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.util.TextRange
 
 object PrayTags {
-    val tagLiterals = mapOf(
+    val tagLiterals: Map<String, Boolean> = mapOf(
         "Agent Type" to false,
         "Agent Animation File" to true,
         "Agent Sprite First Image" to false,
@@ -18,6 +15,7 @@ object PrayTags {
         "Agent Type" to false,
         "Web Label" to true,
         "Web URL" to true,
+        "Web Icon" to true,
         "Web Icon Base" to true,
         "Web Icon Animation String" to true,
         "Camera X" to false,
@@ -32,6 +30,14 @@ object PrayTags {
         "Remove script" to true,
         "Script Count" to false
     )
+
+    val shortTagLiterals: Map<String, Boolean> by lazy {
+        Caos2PrayShortTags.SHORT_TAGS.map {
+            it.key to tagLiterals[normalize(it.key)].orTrue()
+        }.toMap()
+    }
+
+    val allLiterals by lazy { shortTagLiterals + tagLiterals }
 
     val eggTagLiterals = mapOf(
         "Genetics File" to true,
@@ -57,6 +63,13 @@ object PrayTags {
         "Agent\\s+Type"
     ).joinToString("|") { "($it)" }.toRegex(RegexOption.IGNORE_CASE)
 
+
+
+    private val SHORT_TAGS_REVERSED:Map<String,String> by lazy {
+        Caos2PrayShortTags.SHORT_TAGS.map { (key, value) ->
+            value to key
+        }.toMap()
+    }
 
     internal const val DEPENDENCY = 0
     internal const val DEPENDENCY_CATEGORY = 1
@@ -136,10 +149,22 @@ object PrayTags {
 
 
     internal fun normalize(tag: String): String? {
-        if (tag in tagLiterals)
+        if (tag in tagLiterals || strictNumberedTagRegex.matches(tag) || tag in eggTagLiterals)
             return tag
         val shortened = tag.toLowerCase().replace(WHITESPACE, "").trim()
         return Caos2PrayShortTags.SHORT_TAGS[shortened]
+    }
+
+    internal fun getShortTagReversed(tag: String, ignoreCase: Boolean): String? {
+        SHORT_TAGS_REVERSED[tag]?.let {
+            return it
+        }
+        if (ignoreCase) {
+            SHORT_TAGS_REVERSED.keys.firstOrNull{ it.equals(tag, true) }?.let {
+                return SHORT_TAGS_REVERSED[it]
+            }
+        }
+        return null
     }
 
     fun getSimilarTags(tag: String, isEggs: Boolean = false, orb: Int = 5): List<String>? {
