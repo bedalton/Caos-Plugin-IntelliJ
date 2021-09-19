@@ -56,7 +56,7 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         val COMMENT: TextAttributesKey = createTextAttributesKey("CaosScript_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         @JvmStatic
         val VAR_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
-                @JvmStatic
+        @JvmStatic
         val VAR_TOKEN_VA:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN_VA", VAR_TOKEN)
         @JvmStatic
         val VAR_TOKEN_OV:TextAttributesKey = createTextAttributesKey("CaosScript_VAR_TOKEN_OV", VAR_TOKEN)
@@ -67,7 +67,7 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val ERROR_COMMAND_TOKEN:TextAttributesKey = createTextAttributesKey("CaosScript_ERROR_COMMAND_TOKEN", DefaultLanguageHighlighterColors.IDENTIFIER)
         @JvmStatic
-        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", DefaultLanguageHighlighterColors.CONSTANT)
+        val RVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_RVALUE", DefaultLanguageHighlighterColors.STATIC_FIELD)
         @JvmStatic
         val LVALUE_TOKEN: TextAttributesKey = createTextAttributesKey("CaosScript_LVALUE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
         @JvmStatic
@@ -79,7 +79,7 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val ANIMATION:TextAttributesKey = createTextAttributesKey("CaosScript_ANIMATION", DefaultLanguageHighlighterColors.CONSTANT)
         @JvmStatic
-        val BYTE_STRING:TextAttributesKey = ANIMATION
+        val BYTE_STRING:TextAttributesKey = createTextAttributesKey("CaosScript_BYTE_STRING", ANIMATION)
         @JvmStatic
         val STRING:TextAttributesKey = createTextAttributesKey("CaosScript_STRING_LITERAL", DefaultLanguageHighlighterColors.STRING)
         @JvmStatic
@@ -91,7 +91,7 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         @JvmStatic
         val SUBROUTINE_NAME: TextAttributesKey = createTextAttributesKey("CaosScript_SUBROUTINE_NAME", DefaultLanguageHighlighterColors.LABEL)
         @JvmStatic
-        val PRAY_TAG: TextAttributesKey = createTextAttributesKey("CaosScript_CAOS2PRAY_TAG", DefaultLanguageHighlighterColors.IDENTIFIER)
+        val PRAY_TAG: TextAttributesKey = createTextAttributesKey("CaosScript_CAOS2PRAY_TAG", DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
         @JvmStatic
         val INVALID_STRING_ESCAPE: TextAttributesKey = createTextAttributesKey("CaosScript_INVALID_STRING_ESCAPE", DefaultLanguageHighlighterColors.INVALID_STRING_ESCAPE)
         @JvmStatic

@@ -65,6 +65,9 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 )
                 else -> colorize(element, holder, CaosScriptSyntaxHighlighter.TOKEN)
             }
+            element is CaosScriptCaos2Value -> if (element.quoteStringLiteral == null && element.c1String == null) {
+                colorize(element, holder, CaosScriptSyntaxHighlighter.STRING)
+            }
             element is CaosScriptCaos2TagName -> highlightCaos2PrayTag(element, holder)
         }
     }
