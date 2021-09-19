@@ -11,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -26,13 +25,11 @@ import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
-import com.intellij.util.FileContentUtilCore
 import java.util.concurrent.atomic.AtomicBoolean
 
 class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myFile: VirtualFile) :
@@ -40,58 +37,74 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
 
 
     private val didFormatInitial = AtomicBoolean(false)
-    override var variant: CaosVariant?
+    override val variant: CaosVariant?
         get() {
-            return (variantOverride
-                ?: getUserData(VariantUserDataKey)
-                ?: myFile.cachedVariant ?: (this.originalFile as? CaosScriptFile)?.myFile?.cachedVariant
-                ?: (module ?: originalFile.module)?.variant
-                ?: project.settings.defaultVariant)
-                .nullIfUnknown()
+            return explicitVariant.nullIfUnknown()
+                ?: getUserData(ExplicitVariantUserDataKey).nullIfUnknown()
+                ?: ExplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown()
+                ?: implicitVariant.nullIfUnknown()
+                ?: getUserData(ImplicitVariantUserDataKey).nullIfUnknown()
+                ?: ImplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown()
+                ?: myFile.cachedVariantExplicitOrImplicit.nullIfUnknown()
+                ?: (this.originalFile as? CaosScriptFile)
+                    ?.myFile
+                    ?.cachedVariantExplicitOrImplicit
+                    .nullIfUnknown()
+                ?: (module ?: originalFile.module)?.variant.nullIfUnknown()
+                ?: project.settings.defaultVariant.nullIfUnknown()
         }
-        set(newVariant) {
-            variantOverride = newVariant
-            putUserData(VariantUserDataKey, newVariant)
-            this.myFile.let { virtualFile ->
-                (virtualFile as? CaosVirtualFile)?.variant = newVariant
-                if (virtualFile is VirtualFileWithId) {
-                    VariantFilePropertyPusher.writeToStorage(virtualFile, newVariant ?: CaosVariant.UNKNOWN)
-                }
-                virtualFile.putUserData(VariantUserDataKey, newVariant)
-                if (ApplicationManager.getApplication().isDispatchThread) {
-                    runWriteAction {
-                        try {
-                            if (virtualFile.parent != null)
-                                FileContentUtilCore.reparseFiles(virtualFile)
-                        } catch (e: Exception) {
-                            LOGGER.severe("Failed to reparse file. Error: ${e.className}(${e.message})")
-                        }
-                    }
-                }
+
+    override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
+        setVariantBase(virtualFile, newVariant = variant, explicit)
+        setVariantBase(myFile, variant, explicit)
+        if (explicit) {
+            explicitVariant = variant
+            if (variant != this.variant)
+                LOGGER.severe("Failed to set variant on PSI file. Expected: ${variant?.code}; Found: ${this.variant?.code}")
+            ExplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
+                if (it != variant)
+                    LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
             }
-            if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
-                runWriteAction {
-                    DaemonCodeAnalyzer.getInstance(project).restart(this)
-                }
+        } else {
+            implicitVariant = variant
+            ImplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
+                if (it != variant)
+                    LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
             }
         }
 
-    private var variantOverride: CaosVariant? = null
+        if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
+            runWriteAction {
+                DaemonCodeAnalyzer.getInstance(project).restart(this)
+            }
+        }
+    }
+
+
+    private var explicitVariant: CaosVariant? = null
+
+    private var implicitVariant: CaosVariant? = null
 
     internal var lastInjector: GameInterfaceName?
-        get() = getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)
-            ?: InjectorInterfacePropertyPusher
-                .readFromStorage(project, myFile)
-            ?: module?.settings?.lastGameInterface(project)
-            ?: project.settings.lastInterface(variant)
+        get() {
+            val variant = variant
+            return getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)
+                ?: InjectorInterfacePropertyPusher
+                    .readFromStorage(project, myFile, variant)
+                ?: InjectorInterfacePropertyPusher
+                    .readFromStorage(project, virtualFile ?: myFile, variant)
+                ?: module?.settings?.lastGameInterface(project)
+                ?: project.settings.lastInterface(variant)
+        }
         set(gameInterface) {
-            if (gameInterface == null)
-                return
             putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterface)
+            InjectorInterfacePropertyPusher.writeToStorage(virtualFile ?: myFile, gameInterface)
             InjectorInterfacePropertyPusher.writeToStorage(myFile, gameInterface)
-            module?.settings?.lastGameInterface(gameInterface)
-            variant.nullIfUnknown()?.let { variant ->
-                project.settings.lastInterface(variant, gameInterface)
+            if (gameInterface != null) {
+                module?.settings?.lastGameInterface(gameInterface)
+                variant.nullIfUnknown()?.let { variant ->
+                    project.settings.lastInterface(variant, gameInterface)
+                }
             }
         }
 
@@ -101,12 +114,14 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
         set(value) {
             mCliOptions = value
             putUserData(PRAY_COMPILER_SETTINGS_KEY, value)
-            PraySettingsPropertyPusher.writeToStorage(virtualFile, value)
-            virtualFile.putUserData(PRAY_COMPILER_SETTINGS_KEY, value)
+            PraySettingsPropertyPusher.writeToStorage(virtualFile ?: myFile, value)
+            (virtualFile ?: myFile).putUserData(PRAY_COMPILER_SETTINGS_KEY, value)
         }
 
     val prayTags: List<PrayTagStruct<*>>
         get() {
+            if (!this.isValid || !this.isContentsLoaded)
+                return emptyList()
             return stub?.prayTags ?: collectElementsOfType(
                 this,
                 CaosScriptCaos2Tag::class.java
@@ -158,8 +173,12 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
 
     companion object {
         @JvmStatic
-        val VariantUserDataKey =
-            Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.SCRIPT_VARIANT_KEY")
+        val ExplicitVariantUserDataKey =
+            Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.EXPLICIT_SCRIPT_VARIANT_KEY")
+
+        @JvmStatic
+        val ImplicitVariantUserDataKey =
+            Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.IMPLICIT_SCRIPT_VARIANT_KEY")
 
         fun quickFormat(caosFile: CaosScriptFile) {
             if (caosFile.didFormatInitial.getAndSet(true))
@@ -211,10 +230,16 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
     }
 }
 
-val PsiFile.module: Module?
+val PsiFile.mModule: Module?
     get() {
         return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
     }
+
+val PsiFile.module : Module? get()
+    =  this.mModule ?: containingFile?.originalFile?.mModule
+
+val PsiElement.module: Module?
+    get() = containingFile?.module ?: originalElement?.containingFile?.module
 
 val RUN_INSPECTIONS_KEY = Key<Boolean?>("creatures.caos.RUN_INSPECTIONS")
 
@@ -226,20 +251,22 @@ var PsiFile.runInspections: Boolean
         putUserData(RUN_INSPECTIONS_KEY, value)
     }
 
-@Suppress("unused")
-val VirtualFile.cachedVariantStrict
+val VirtualFile.cachedVariantExplicitOrImplicit: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
-        ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
+        ?: ExplicitVariantFilePropertyPusher.readFromStorage(this)
+        ?: ImplicitVariantFilePropertyPusher.readFromStorage(this)
 
-var VirtualFile.cachedVariant: CaosVariant?
-    get() = (this as? CaosVirtualFile)?.variant
-        ?: this.getUserData(CaosScriptFile.VariantUserDataKey)
-        ?: VariantFilePropertyPusher.readFromStorage(this)
-    set(variant) {
-        (this as? CaosVirtualFile)?.variant = variant
-        this.putUserData(CaosScriptFile.VariantUserDataKey, variant)
-        VariantFilePropertyPusher.writeToStorage(this, variant ?: CaosVariant.UNKNOWN)
+fun VirtualFile.setCachedVariant(variant: CaosVariant?, explicit: Boolean) {
+    (this as? CaosVirtualFile)?.setVariantBase(this, variant, explicit)
+    if (explicit) {
+        this.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
+        ExplicitVariantFilePropertyPusher.writeToStorage(this, variant ?: CaosVariant.UNKNOWN)
+    } else {
+        this.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
+        ImplicitVariantFilePropertyPusher.writeToStorage(this, variant ?: CaosVariant.UNKNOWN)
     }
+}
+
 
 val dumpRegex =
     "\\*+\\s*(Scriptorium|Dump|Scriptorium\\s*Dump).*".toRegex(RegexOption.IGNORE_CASE)

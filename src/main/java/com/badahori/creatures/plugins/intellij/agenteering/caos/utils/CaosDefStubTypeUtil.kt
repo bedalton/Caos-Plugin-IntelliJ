@@ -70,7 +70,7 @@ internal fun StubInputStream.readVariableType() : CaosDefVariableTypeStruct? {
     if (type == null)
         return null
     val fileTypes = readStringList().ifEmpty { null }
-    return CaosDefVariableTypeStruct(
+    return CaosDefVariableTypeStruct.get(
             type = type,
             valuesList = valuesList,
             noteText = typeNote,

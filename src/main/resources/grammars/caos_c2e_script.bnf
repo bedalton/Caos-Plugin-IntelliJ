@@ -17,7 +17,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|subroutine_name|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -399,7 +399,7 @@ caos_2_tag
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Statement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag"
 		]
 		methods = [
@@ -421,7 +421,7 @@ caos_2_command
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Statement"
 		]
 
 		methods = [
@@ -433,21 +433,47 @@ caos_2_command
 
 caos_2_command_name
 	::= ID
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayChildElement"
+		]
+	}
 	;
 
 caos_2_value
 	::= string_literal
 	|	INT
-	|	ID
+	|	caos_2_value_token
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue"
+			"com.intellij.psi.PsiNamedElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayChildElement"
 		]
 		methods = [
 			isNumberValue
 			isStringValue
 			getValueAsString
 			getValueAsInt
+			getName
+			setName
+		]
+	}
+	;
+
+caos_2_value_token
+	::= ID
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+			"com.intellij.psi.PsiNamedElement"
+		]
+		methods = [
+			getStringValue
+			getReference
+			getName
+			setName
+			isClosed
 		]
 	}
 	;
@@ -456,6 +482,10 @@ caos_2_tag_name
 	::= string_literal
 	|	ID+
 	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagName"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayChildElement"
+		]
 		methods = [
 			isValid
 			getStringValue
@@ -691,7 +721,7 @@ c_endm ::= K_ENDM
 	methods = [
 		getReference
 		getCommandString
-			getCommandStringUpper
+		getCommandStringUpper
 		getPresentation
 		isVariant
 		getName
@@ -716,6 +746,7 @@ subroutine
 			setName
 			getUseScope
 			getNameIdentifier
+			getTextOffset
 		]
 	}
 	;
@@ -908,7 +939,7 @@ enum_next_statement
 			codeBlock="code_block"
 			getBlockType
 			isClosed
-			getTargClassifier
+			// getTargClassifier
 		]
 	}
 	;
@@ -946,7 +977,7 @@ enum_scenery_statement
 		methods = [
 			getBlockType
 			isClosed
-			getTargClassifier
+			// getTargClassifier
 		]
    }
    ;
@@ -1400,7 +1431,7 @@ c_targ
 			getArguments
 			getArgumentValues
 			getCommandDefinition
-			getTargClassifier
+			// getTargClassifier
 		]
 	}
 	;
@@ -1445,7 +1476,7 @@ c_rtar
 			getArguments
 			getArgumentValues
 			getCommandDefinition
-			getTargClassifier
+			// getTargClassifier
 		]
 	}
 	;
@@ -1469,7 +1500,7 @@ c_kw_rtar
 			isVariant
 			getName
 			setName
-			getTargClassifier
+			// getTargClassifier
 		]
 	}
 	;
@@ -2118,7 +2149,7 @@ rvalue
 	//|	command_soup
 	|	rvalue_prefix_incompletes <<popParameter>>
 	|	incomplete <<popParameter>>
-	|	error_rvalue <<popParameter>>
+//	|	error_rvalue <<popParameter>>
 	|	swift_escape_literal
 	|	js_element
 	{
@@ -2152,7 +2183,6 @@ rvalue
 			getIntValue
 			getStringValue
 			getByteStringArray
-			getReference
 			getName
 			setName
 			getParameterValuesListValue
@@ -2442,7 +2472,9 @@ number
 	|	binary_literal
 	|	character
 	{
-
+		methods = [
+			getReference
+		]
 	}
 	;
 
@@ -2516,15 +2548,18 @@ string_text
 	;
 
 subroutine_name
-	::= all_tokens
+	::= all_tokens_private
 	|	ID
 	|	WORD
-	|	incomplete
+	|	ERROR_WORD
 	{
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineNameStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueLikeMixin<com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineNameStub>"
 		implements = [
 			"com.intellij.psi.PsiNamedElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
 		]
 		methods = [
 			getName
@@ -2535,11 +2570,12 @@ subroutine_name
 			getUseScope
 		]
 	};
+
 token_rvalue
 	::= token
 	{
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub"
-		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueMixin"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueLikeMixin<com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
@@ -2552,17 +2588,21 @@ token_rvalue
 	;
 
 token
-	::= all_tokens
+	::= all_tokens_private
 	|	WORD
 	|	ERROR_WORD
-	|	number
-	|	incomplete
+	|	ID
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCallLike"
+			"com.intellij.psi.PsiNamedElement"
 		]
 		methods = [
 			isVariant
+			getName
+			setName
+			getStringValue
 		]
 	}
 	;
@@ -2678,7 +2718,12 @@ event_number_element
 swift_escape_literal
 	::= SWIFT_ESCAPE
 	;
-incomplete ::= ID |	ERROR_WORD;
+
+incomplete
+	::= ID | ERROR_WORD
+	{
+
+	}
 
 command_call
 	::= command_call_by_args // I think private values all have equal priority
@@ -3459,6 +3504,9 @@ private command_call_by_args
 	|	c_retn
 	|	c_invalid_loop_terminator
 	|	command_prefix_incompletes rvalue*
+	{
+		recoverWhile=command_recover
+	}
 	;
 
 
@@ -3670,6 +3718,7 @@ rvalue_prime
 			getInferredType
 			getCommandDefinition
 		]
+//		recoverWhile=command_recover
 	}
 	;
 
@@ -3775,6 +3824,7 @@ lvalue
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
 		]
+//		recoverWhile=command_recover
 		methods = [
 			getCommandToken
 			getCommandString
@@ -5817,9 +5867,11 @@ l_kw_r
 	}
 	;
 
-
-
 all_tokens
+	::= all_tokens_private
+	;
+
+private all_tokens_private
 	::=	K_NEW_COL
 	|	K_SCEN
 	|	K_SIMP
@@ -6546,6 +6598,9 @@ all_tokens
 	|	OBVX
 	|	OVXX
 	|	MVXX
+	{
+
+	}
 	;
 
 private args_r

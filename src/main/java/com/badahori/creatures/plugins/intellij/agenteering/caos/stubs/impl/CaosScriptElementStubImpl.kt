@@ -50,6 +50,11 @@ data class CaosScriptTokenRValueStubImpl(
         override val tokenText: String?
 ) : StubBase<CaosScriptTokenRvalueImpl>(parent, CaosScriptStubTypes.TOKEN_RVALUE),  CaosScriptTokenRValueStub
 
+data class CaosScriptSubroutineNameStubImpl(
+        val parent: StubElement<*>?,
+        override val tokenText: String?
+) : StubBase<CaosScriptSubroutineNameImpl>(parent, CaosScriptStubTypes.SUBROUTINE_NAME),  CaosScriptSubroutineNameStub
+
 data class CaosScriptRValuePrimeStubImpl(
         val parent: StubElement<*>?,
         override val commandString: String?,

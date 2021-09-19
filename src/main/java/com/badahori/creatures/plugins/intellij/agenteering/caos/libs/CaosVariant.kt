@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import icons.CaosScriptIcons
 import javax.swing.Icon
@@ -15,18 +16,20 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 
 
     data class OTHER internal constructor(
-            override val code: String,
-            override val fullName: String,
-            override val icon: Icon = CaosScriptIcons.MODULE_ICON
+        val base: CaosVariant,
+        override val code: String,
+        override val fullName: String,
+        override val icon: Icon = CaosScriptIcons.MODULE_ICON
     ) : CaosVariant(code, fullName, -1, icon) {
         init {
             others.add(this)
         }
     }
+
     companion object {
-        private val others:MutableList<CaosVariant> = mutableListOf()
+        private val others: MutableList<CaosVariant> = mutableListOf()
         fun fromVal(variant: String?): CaosVariant {
-            return when (variant) {
+            return when (variant?.toUpperCase()) {
                 "C1" -> C1
                 "C2" -> C2
                 "CV" -> CV
@@ -38,24 +41,25 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
         }
 
         val baseVariants = listOf(
-                C1,
-                C2,
-                CV,
-                C3,
-                DS,
-                DS
+            C1,
+            C2,
+            CV,
+            C3,
+            DS,
+            DS
         )
 
         @Suppress("unused")
         fun registerVariant(
-                code: String,
-                fullName: String,
-                icon: Icon = CaosScriptIcons.MODULE_ICON
-        ) : CaosVariant {
+            base: CaosVariant,
+            code: String,
+            fullName: String,
+            icon: Icon = CaosScriptIcons.MODULE_ICON
+        ): CaosVariant {
             val existing = fromVal(code)
             if (existing != UNKNOWN)
                 return existing
-            return OTHER(code, fullName, icon)
+            return OTHER(base, code, fullName, icon)
         }
     }
 
@@ -98,17 +102,18 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     }
 }
 
-fun CaosVariant?.nullIfUnknown() : CaosVariant? {
+fun CaosVariant?.nullIfUnknown(): CaosVariant? {
     return if (this == null || this == CaosVariant.UNKNOWN)
         null
     else
         this
 }
 
-fun <T> CaosVariant.ifOld(callback:CaosVariant.()->T) : T {
+fun <T> CaosVariant.ifOld(callback: CaosVariant.() -> T): T {
     return callback()
 }
-fun <T> CaosVariant.ifNew(callback:CaosVariant.()->T) : T {
+
+fun <T> CaosVariant.ifNew(callback: CaosVariant.() -> T): T {
     return callback()
 }
 
@@ -123,13 +128,93 @@ val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
 typealias GameVariant = CaosVariant
 
 
-val CaosVariant.injectorInterfaceName: String? get() {
-    return when (this) {
-        CaosVariant.C1, CaosVariant.C2 -> "Vivarium"
-        CaosVariant.CV -> "Creatures Village"
-        CaosVariant.C3 -> "Creatures 3"
-        CaosVariant.DS -> "Docking Station"
-        CaosVariant.SM -> "Sea-Monkeys"
-        else -> null
+val CaosVariant.injectorInterfaceName: String?
+    get() {
+        return when (this) {
+            CaosVariant.C1, CaosVariant.C2 -> "Vivarium"
+            CaosVariant.CV -> "Creatures Village"
+            CaosVariant.C3 -> "Creatures 3"
+            CaosVariant.DS -> "Docking Station"
+            CaosVariant.SM -> "Sea-Monkeys"
+            else -> null
+        }
     }
+
+infix fun CaosVariant?.like(other: CaosVariant?): Boolean {
+    val variant = if (this is CaosVariant.OTHER)
+        this.base
+    else
+        this
+    val otherVariant = if (other is CaosVariant.OTHER)
+        other.base
+    else
+        other
+
+    if (variant == null && otherVariant == null) {
+        return true
+    }
+    if (variant == null || otherVariant == null)
+        return false
+
+    if (variant == otherVariant)
+        return true
+
+    return variant.isC3DS && otherVariant.isC3DS
+}
+
+infix fun CaosVariant?.likeOrNull(other: CaosVariant?): Boolean {
+    val variant = if (this is CaosVariant.OTHER)
+        this.base
+    else
+        this
+    val otherVariant = if (other is CaosVariant.OTHER)
+        other.base
+    else
+        other
+
+    if (variant == null || otherVariant == null)
+        return true
+    if (variant == otherVariant)
+        return true
+    return variant.isC3DS && otherVariant.isC3DS
+}
+
+
+infix fun CaosVariant?.notLike(other: CaosVariant?): Boolean {
+    val variant = if (this is CaosVariant.OTHER)
+        this.base
+    else
+        this
+    val otherVariant = if (other is CaosVariant.OTHER)
+        other.base
+    else
+        other
+
+    if (variant == null && otherVariant == null) {
+        return false
+    }
+    if (variant == null || otherVariant == null)
+        return true
+
+    if (variant == otherVariant)
+        return false
+
+    return !(variant.isC3DS && otherVariant.isC3DS)
+}
+
+infix fun CaosVariant?.notLikeOrNull(other: CaosVariant?): Boolean {
+    val variant = if (this is CaosVariant.OTHER)
+        this.base
+    else
+        this
+    val otherVariant = if (other is CaosVariant.OTHER)
+        other.base
+    else
+        other
+
+    if (variant == null || otherVariant == null)
+        return false
+    if (variant == otherVariant)
+        return false
+    return !(variant.isC3DS && otherVariant.isC3DS)
 }

@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer;
 
+
+import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 

@@ -30,7 +30,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
         if (file == null)
             return null
         return file.getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)
-            ?: readFromStorage(project, file)
+            ?: readFromStorage(project, file, null)
     }
 
     override fun getImmediateValue(module: Module): GameInterfaceName? {
@@ -52,7 +52,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
     companion object {
         private val INJECTOR_ATTRIBUTE = FileAttribute("caos.CAOS_FILE_INJECTOR", 0, true)
 
-        internal fun readFromStorage(project: Project, file: VirtualFile): GameInterfaceName? {
+        internal fun readFromStorage(project: Project, file: VirtualFile, variant: CaosVariant?): GameInterfaceName? {
             file.getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)?.let {
                 return it
             }
@@ -77,7 +77,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
             stream.close()
             val key = out.toString().nullIfEmpty()
                 ?: return null
-            return project.settings.gameInterfaceForKey(null, key)
+            return project.settings.gameInterfaceForKey(variant, key)
         }
 
         internal fun writeToStorage(file: VirtualFile, gameInterfaceName: GameInterfaceName?) {
@@ -85,9 +85,9 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
                 return
             file.putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterfaceName)
             val stream = INJECTOR_ATTRIBUTE.writeAttribute(file)
-            val variant = gameInterfaceName?.storageKey ?: ""
-            stream.writeInt(variant.length)
-            stream.writeChars(variant)
+            val name = gameInterfaceName?.storageKey ?: ""
+            stream.writeInt(name.length)
+            stream.writeChars(name)
             stream.close()
         }
     }

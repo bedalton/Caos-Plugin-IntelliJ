@@ -46,7 +46,7 @@ class CaosDefParameterStubType(debugName:String) : com.badahori.creatures.plugin
         return CaosDefParameterStubImpl (
                 parent = parent,
                 parameterName = element.parameterName,
-                type = CaosDefVariableTypeStruct(type = element.parameterType),
+                type = CaosDefVariableTypeStruct.get(type = element.parameterType),
                 comment = null,
                 simpleType = element.simpleType
         )

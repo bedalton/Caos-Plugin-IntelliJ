@@ -46,6 +46,10 @@ interface CaosScriptTokenRValueStub : StubElement<CaosScriptTokenRvalueImpl> {
     val tokenText:String?
 }
 
+interface CaosScriptSubroutineNameStub : StubElement<CaosScriptSubroutineNameImpl> {
+    val tokenText:String?
+}
+
 interface CaosScriptRValuePrimeStub : StubElement<CaosScriptRvaluePrimeImpl> {
     val caosVar:CaosExpressionValueType
     val argumentValues: List<CaosExpressionValueType>

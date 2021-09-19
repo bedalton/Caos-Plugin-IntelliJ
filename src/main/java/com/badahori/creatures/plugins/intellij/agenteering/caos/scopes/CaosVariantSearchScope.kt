@@ -6,30 +6,46 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 
 
 /**
  * Search Scope to filter files by variant
  */
-class CaosVariantSearchScope constructor(private val myVariant: CaosVariant?, private val project:Project, private val strict:Boolean = true) : SearchScope() {
+class CaosVariantSearchScope constructor(
+    private val myVariant: CaosVariant?,
+    private val myProject: Project,
+    private val strict: Boolean = true
+) : SearchScope() {
+
+    private val isC3DS by lazy {
+        myVariant?.isC3DS == true
+    }
 
     override fun intersectWith(otherScope: SearchScope): SearchScope {
-        return IntersectSearchScope(this, otherScope)
+        return MySearchScope { file ->
+            this.contains(file) && otherScope.contains(file)
+        }
     }
 
     override fun union(otherScope: SearchScope): SearchScope {
-        return UnionSearchScope(this, otherScope)
+        return MySearchScope { file ->
+            this.contains(file) || otherScope.contains(file)
+        }
     }
 
     override fun contains(file: VirtualFile): Boolean {
         val variant = (file as? CaosVirtualFile)?.variant
-                ?: file.getPsiFile(project)?.variant
-                ?: file.getModule(project)?.variant
+            ?: file.getPsiFile(myProject)?.variant
+            ?: file.getModule(myProject)?.variant
         if (strict)
             return variant == myVariant
+        if (isC3DS && variant?.isC3DS != false)
+            return true
         return variant == myVariant || listOfNotNull(variant, myVariant).let { it.size < 2 || CaosVariant.UNKNOWN in it }
     }
 
@@ -39,37 +55,127 @@ class CaosVariantSearchScope constructor(private val myVariant: CaosVariant?, pr
 }
 
 /**
- * Simple class to combine to search scopes by Union
+ * Search Scope to filter files by variant
  */
-private class UnionSearchScope(private val searchScope1:SearchScope, private val searchScope2:SearchScope) : SearchScope() {
-    override fun intersectWith(otherScope: SearchScope): SearchScope {
-        return IntersectSearchScope(this, otherScope)
+class CaosVariantGlobalSearchScope constructor(
+    private val myProject: Project,
+    private val myVariant: CaosVariant?,
+    private val strict: Boolean = false,
+    private val searchLibraries: Boolean = true
+) : GlobalSearchScope(myProject) {
+
+    private val isC3DS by lazy {
+        myVariant?.isC3DS == true
     }
 
-    override fun union(otherScope: SearchScope): SearchScope {
-        return UnionSearchScope(this, otherScope)
+    override fun intersectWith(otherScope: SearchScope): GlobalSearchScope {
+        return MyGlobalSearchScope { file ->
+            this.contains(file) && otherScope.contains(file)
+        }
+    }
+
+    override fun union(otherScope: SearchScope): GlobalSearchScope {
+        return MyGlobalSearchScope { file ->
+            this.contains(file) || otherScope.contains(file)
+        }
     }
 
     override fun contains(file: VirtualFile): Boolean {
-        return searchScope1.contains(file) || searchScope2.contains(file)
+        val variant = (file as? CaosVirtualFile)?.variant
+            ?: file.getPsiFile(myProject)?.variant
+            ?: file.getModule(myProject)?.variant
+        if (strict)
+            return variant == myVariant
+        if (isC3DS && variant?.isC3DS != false)
+            return true
+        return variant == myVariant || listOfNotNull(variant, myVariant).let { it.size < 2 || CaosVariant.UNKNOWN in it }
     }
 
+    override fun isSearchInModuleContent(aModule: Module): Boolean {
+        return true
+    }
+
+    override fun isSearchInLibraries(): Boolean {
+        return searchLibraries
+    }
+
+    override fun getDisplayName(): String {
+        return "CAOS Variant Search Scope"
+    }
+}
+
+private class MySearchScope(private val callback: (file: VirtualFile) -> Boolean): SearchScope() {
+    override fun intersectWith(otherScope: SearchScope): SearchScope {
+        return MySearchScope { file ->
+            callback(file) || otherScope.contains(file)
+        }
+    }
+
+    fun intersectWith(otherScope: GlobalSearchScope): SearchScope {
+        return MySearchScope { file ->
+            callback(file) || otherScope.contains(file)
+        }
+    }
+
+    override fun union(otherScope: SearchScope): SearchScope {
+        return MySearchScope { file ->
+            callback(file) && otherScope.contains(file)
+        }
+    }
+
+    fun union(otherScope: GlobalSearchScope): SearchScope {
+        return MySearchScope { file ->
+            callback(file) && otherScope.contains(file)
+        }
+    }
+
+    override fun contains(file: VirtualFile): Boolean {
+        return callback(file)
+    }
 }
 
 /**
- * Simple class to combine to search scopes by intersection
+ * Simple class to combine to GlobalSearchScopes
  */
-internal class IntersectSearchScope(private val searchScope1:SearchScope, private val searchScope2:SearchScope) : SearchScope() {
-    override fun intersectWith(otherScope: SearchScope): SearchScope {
-        return IntersectSearchScope(this, otherScope)
+private class MyGlobalSearchScope(
+    private val searchModule: (Module) -> Boolean = { true },
+    private val searchLibraries: Boolean = true,
+    private val callback: (file: VirtualFile) -> Boolean
+): GlobalSearchScope() {
+
+    override fun intersectWith(otherScope: SearchScope): GlobalSearchScope {
+        return MyGlobalSearchScope { file ->
+            callback(file) || otherScope.contains(file)
+        }
     }
 
-    override fun union(otherScope: SearchScope): SearchScope {
-        return UnionSearchScope(this, otherScope)
+    override fun intersectWith(otherScope: GlobalSearchScope): GlobalSearchScope {
+        return MyGlobalSearchScope { file ->
+            callback(file) || otherScope.contains(file)
+        }
+    }
+
+    override fun union(otherScope: SearchScope): GlobalSearchScope {
+        return MyGlobalSearchScope { file ->
+            callback(file) && otherScope.contains(file)
+        }
+    }
+
+    fun union(otherScope: GlobalSearchScope): GlobalSearchScope {
+        return MyGlobalSearchScope { file ->
+            callback(file) && otherScope.contains(file)
+        }
     }
 
     override fun contains(file: VirtualFile): Boolean {
-        return searchScope1.contains(file) && searchScope2.contains(file)
+        return callback(file)
     }
 
+    override fun isSearchInModuleContent(aModule: Module): Boolean {
+        return searchModule(aModule)
+    }
+
+    override fun isSearchInLibraries(): Boolean {
+        return searchLibraries
+    }
 }

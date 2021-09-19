@@ -27,6 +27,7 @@ class CaosScriptElementTypeFactory {
                 "CaosScript_CAOS_2_TAG" -> CaosScriptStubTypes.CAOS_2_TAG
                 "CaosScript_CAOS_2_COMMAND" -> CaosScriptStubTypes.CAOS_2_COMMAND
                 "CaosScript_CAOS_2_BLOCK" -> CaosScriptStubTypes.CAOS_2_BLOCK
+                "CaosScript_SUBROUTINE_NAME" -> CaosScriptStubTypes.SUBROUTINE_NAME
                 else -> throw IndexOutOfBoundsException("Caos token '$debugName' is not recognized")
             }
         }

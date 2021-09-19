@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptNamedGameVar
 import com.intellij.openapi.project.Project
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndexKey
 
 class CaosScriptNamedGameVarIndex : CaosStringIndexBase<CaosScriptNamedGameVar>(CaosScriptNamedGameVar::class.java) {
@@ -13,6 +14,11 @@ class CaosScriptNamedGameVarIndex : CaosStringIndexBase<CaosScriptNamedGameVar>(
     operator fun get(type:CaosScriptNamedGameVarType, key:String, project:Project) : List<CaosScriptNamedGameVar> {
         val indexKey = getKey(type, key)
         return get(indexKey, project)
+    }
+
+    operator fun get(type:CaosScriptNamedGameVarType, key:String, project:Project, globalSearchScope: GlobalSearchScope) : List<CaosScriptNamedGameVar> {
+        val indexKey = getKey(type, key)
+        return get(indexKey, project, globalSearchScope)
     }
 
     companion object {

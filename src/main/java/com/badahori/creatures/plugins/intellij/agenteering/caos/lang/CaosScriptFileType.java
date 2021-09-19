@@ -1,12 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang;
 
+import bedalton.creatures.bytes.Bytes_util_jvmKt;
 import com.intellij.openapi.fileTypes.LanguageFileType;
+import com.intellij.openapi.vfs.VirtualFile;
 import icons.CaosScriptIcons;
+import kotlin.text.Charsets;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.nio.charset.Charset;
 
 public class CaosScriptFileType extends LanguageFileType {
 
@@ -48,6 +52,5 @@ public class CaosScriptFileType extends LanguageFileType {
     public String toString() {
         return super.toString();
     }
-
 
 }
