@@ -77,7 +77,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
             val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
             val variant = (variantComboBox.selectedItem as? CaosVariant) ?: CaosScriptProjectSettings.variant
             variant?.let {
-                module.putUserData(CaosScriptFile.VariantUserDataKey, variant)
+                module.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
                 module.variant = variant
             }
             module.rootManager.modifiableModel.apply {

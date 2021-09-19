@@ -1,5 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
+import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.openapi.vfs.VirtualFile
+
 
 interface PrayTag: CaosScriptCompositeElement {
     val tagName: String
@@ -9,15 +14,35 @@ interface PrayTag: CaosScriptCompositeElement {
     val valueAsString: String?
 }
 
-interface PrayTagName : CaosScriptCompositeElement {
+interface PrayChildElement: CaosScriptCompositeElement
+
+interface PrayTagName : PrayChildElement {
     val stringValue: String
 }
 
-interface PrayTagValue: CaosScriptCompositeElement {
+interface PrayTagValue: PrayChildElement {
     // If value is int or float, though float is invalid
     val isNumberValue: Boolean
     // If is number and number is float, number value will be null
     val valueAsInt: Int?
     val isStringValue: Boolean
     val valueAsString: String?
+}
+
+
+
+
+internal fun CaosScriptStringLike.resolveToFile(ignoreExtension: Boolean): VirtualFile? {
+    val relativePath = stringValue
+        .nullIfEmpty()
+        ?: return null
+    val directory = this.directory
+        ?: return null
+    return VirtualFileUtil
+        .findChildIgnoreCase(
+            parent = directory,
+            ignoreExtension = ignoreExtension,
+            directory = false,
+            relativePath
+        )
 }

@@ -6,11 +6,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
+import com.intellij.psi.stubs.StubElement
 
-abstract class CaosScriptTokenRvalueMixin : CaosScriptStubBasedElementImpl<CaosScriptTokenRValueStub>, CaosScriptRvalueLike {
-    constructor(stub: CaosScriptTokenRValueStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+abstract class CaosScriptRvalueLikeMixin<StubT : StubElement<out PsiElement>> : CaosScriptStubBasedElementImpl<StubT>, CaosScriptRvalueLike {
+    constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
     constructor(node: ASTNode) : super(node)
+
+    override val token: CaosScriptToken? get() =  null
 
     override val namedGameVar: CaosScriptNamedGameVar? get() = null
 

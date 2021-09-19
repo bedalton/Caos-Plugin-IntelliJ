@@ -136,3 +136,22 @@ val listOfAnyTypes = listOf(
 val CaosExpressionValueType.isAnyType: Boolean
     get()
     = this in listOfAnyTypes
+
+
+internal infix fun CaosExpressionValueType.like(other:CaosExpressionValueType) : Boolean {
+    if (this == other)
+        return true
+    if (this == CaosExpressionValueType.VARIABLE || other == CaosExpressionValueType.VARIABLE)
+        return true
+    if (this.isAnyType || other.isAnyType)
+        return true
+    if (isNumberType && other.isNumberType)
+        return true
+    if (isStringType && other.isStringType)
+        return true
+    if (isByteStringLike && other.isByteStringLike)
+        return true
+    if (isAgentType && other.isAgentType)
+        return true
+    return false
+}

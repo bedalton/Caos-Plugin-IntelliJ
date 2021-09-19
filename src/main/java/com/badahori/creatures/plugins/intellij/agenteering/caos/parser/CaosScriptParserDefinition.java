@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosScriptTreeUtilKt;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
@@ -14,9 +15,12 @@ import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
+
+import static com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*;
 
 public class CaosScriptParserDefinition implements ParserDefinition {
 
@@ -70,9 +74,42 @@ public class CaosScriptParserDefinition implements ParserDefinition {
     }
 
     @Override
+    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
+        return spaceExistenceTypeBetweenTokens(left, right);
+    }
+
+    @Override
     public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
         if (WHITE_SPACES.contains(astNode.getElementType()))
             return SpaceRequirements.MAY;
-        return SpaceRequirements.MUST_NOT;
+        final IElementType t1 = astNode.getElementType();
+        final IElementType t2 = astNode1.getElementType();
+        if (astNode.getTextLength() == 1) {
+            if (t1 == CaosScriptTypes.CaosScript_COMMENT_START)
+                return SpaceRequirements.MAY;
+            if (t1 == CaosScript_DOUBLE_QUOTE || t1 == CaosScript_SINGLE_QUOTE) {
+                if (t2 == CaosScript_CHAR_CHAR || t2 == CaosScript_STRING_TEXT || t2 == CaosScript_STRING_CHAR || t2 == CaosScript_STRING_ESCAPE_CHAR) {
+                    return SpaceRequirements.MAY;
+                }
+            }
+        }
+        if (astNode1.getTextLength() == 1) {
+            if (t2 == CaosScript_DOUBLE_QUOTE || t2 == CaosScript_SINGLE_QUOTE) {
+                if (t1 == CaosScript_CHAR_CHAR || t1 == CaosScript_STRING_TEXT || t1 == CaosScript_STRING_CHAR || t1 == CaosScript_STRING_ESCAPE_CHAR) {
+                    return SpaceRequirements.MAY;
+                }
+            }
+        }
+        CaosScriptTreeUtilKt.getLOGGER().info("Add Space: " + astNode.getElementType() + "<>" + astNode1.getElementType() );
+        return SpaceRequirements.MUST;
+    }
+
+    private boolean is(final ASTNode node) {
+        if (node.getTextLength() != 1)
+            return false;
+        final char first = node.getText().charAt(0);
+        return first == '\'' ||
+                first == '"' ||
+                first == '*';
     }
 }

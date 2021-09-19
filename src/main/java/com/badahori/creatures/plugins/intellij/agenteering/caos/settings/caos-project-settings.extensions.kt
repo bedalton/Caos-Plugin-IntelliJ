@@ -6,6 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.project.Project
 import java.util.*
 
@@ -20,12 +23,14 @@ fun CaosProjectSettingsService.setDefaultVariant(variant: CaosVariant?) {
     val state = state
     if (state.defaultVariant == variant)
         return
-    loadState(state.copy(
-        defaultVariant = variant
-    ))
+    loadState(
+        state.copy(
+            defaultVariant = variant
+        )
+    )
 }
-val CaosProjectSettingsService.defaultVariant: CaosVariant? get() = state.defaultVariant
 
+val CaosProjectSettingsService.defaultVariant: CaosVariant? get() = state.defaultVariant
 
 
 fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
@@ -34,9 +39,11 @@ fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
     val state = state
     if (state.ignoredFilenames.contains(fileName))
         return
-    loadState(state.copy(
-        ignoredFilenames = (state.ignoredFilenames + fileName).distinct()
-    ))
+    loadState(
+        state.copy(
+            ignoredFilenames = (state.ignoredFilenames + fileName).distinct()
+        )
+    )
 }
 
 fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
@@ -52,9 +59,11 @@ fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
 
 fun CaosProjectSettingsService.addGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
-    loadState(state.copy(
-        gameInterfaceNames = (state.gameInterfaceNames + interfaceName).distinct()
-    ))
+    loadState(
+        state.copy(
+            gameInterfaceNames = (state.gameInterfaceNames + interfaceName).distinct()
+        )
+    )
 }
 
 fun CaosProjectSettingsService.removeGameInterfaceName(interfaceName: GameInterfaceName) {
@@ -64,9 +73,23 @@ fun CaosProjectSettingsService.removeGameInterfaceName(interfaceName: GameInterf
     ))
 }
 
-val CaosProjectSettingsService.gameInterfaceNames: List<GameInterfaceName> get() {
-    return state.gameInterfaceNames
-}
+val CaosProjectSettingsService.gameInterfaceNames: List<GameInterfaceName>
+    get() {
+        return state.gameInterfaceNames
+            .flatMap { gameInterfaceName ->
+                if (gameInterfaceName.code != "*")
+                    listOf(gameInterfaceName)
+                else
+                    CaosConstants
+                        .VARIANTS
+                        .map { variant ->
+                            gameInterfaceName.copy(
+                                code = variant.code,
+                                variant = variant
+                            )
+                        }
+            }
+    }
 
 fun CaosProjectSettingsService.gameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
     val interfaces = gameInterfaceNames
@@ -102,21 +125,17 @@ fun CaosProjectSettingsService.lastInterface(variant: CaosVariant?): GameInterfa
     if (variant == null)
         return null
     val prefix = variant.lastInterfacePrefix
-    val interfaces = state.gameInterfaceNames
-        .filter { it.isVariant(variant) }
     return state.lastGameInterfaceNames
         .mapNotNull map@{ entry ->
             if (!entry.startsWith(prefix))
                 return@map null
             val key = entry.substring(prefix.length)
-            interfaces.firstOrNull { gameInterface ->
-                gameInterface.keyMatches(key)
-            }
+            state.gameInterfaceNames.forKey(variant, key)
         }
         .firstOrNull()
 }
 
-interface CaosProjectSettingsChangeListener: EventListener {
+interface CaosProjectSettingsChangeListener : EventListener {
     fun onChange(settings: CaosProjectSettingsComponent.State)
 }
 
@@ -134,7 +153,13 @@ var CaosProjectSettingsService.injectionCheckDisabled: Boolean
 
 
 var CaosProjectSettingsService.useJectByDefault: Boolean
-    get() = state.useJectByDefault
+    get() = state.useJectByDefault.apply {
+        if (this) {
+            LOGGER.severe("JECT should not be enabled as it is not implemented")
+            useJectByDefault = false
+            // TODO("Set up JECT file settings")
+        }
+    }
     set(value) {
         if (value == state.useJectByDefault)
             return

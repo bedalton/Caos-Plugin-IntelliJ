@@ -37,6 +37,8 @@ interface CaosScriptStubTypes {
         @JvmStatic
         val REMOVAL_SCRIPT = CaosScriptRemovalScriptStubType("CaosScript_REMOVAL_SCRIPT")
         @JvmStatic
+        val SUBROUTINE_NAME = CaosScriptSubroutineNameStubType("CaosScript_SUBROUTINE_NAME")
+        @JvmStatic
         val FILE = CaosScriptFileStubType()
         @JvmStatic
         val RVALUE_PRIME = CaosScriptRValuePrimeStubType("CaosScript_RVALUE_PRIME")

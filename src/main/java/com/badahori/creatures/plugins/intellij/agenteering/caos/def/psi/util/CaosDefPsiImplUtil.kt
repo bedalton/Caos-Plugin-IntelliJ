@@ -35,8 +35,8 @@ object CaosDefPsiImplUtil {
     @Suppress("MemberVisibilityCanBePrivate")
     const val AnyType: String = "value"
     const val UnknownReturn: String = "???"
-    val UnknownReturnType = CaosDefReturnTypeStruct(type = CaosDefVariableTypeStruct(type = UnknownReturn))
-    val AnyTypeType: CaosDefVariableTypeStruct = CaosDefVariableTypeStruct(type = AnyType)
+    val UnknownReturnType = CaosDefReturnTypeStruct(type = CaosDefVariableTypeStruct.get(type = UnknownReturn))
+    val AnyTypeType: CaosDefVariableTypeStruct = CaosDefVariableTypeStruct.get(type = AnyType)
 
     @JvmStatic
     fun isVariant(header: CaosDefHeader, variant: CaosVariant): Boolean {
@@ -208,7 +208,7 @@ object CaosDefPsiImplUtil {
     fun toStruct(parameter: CaosDefParameter): CaosDefParameterStruct {
         val stub = parameter.stub
         val parameterName = stub?.parameterName ?: getParameterName(parameter)
-        val type = stub?.type ?: CaosDefVariableTypeStruct(type = getParameterType(parameter))
+        val type = stub?.type ?: CaosDefVariableTypeStruct.get(type = getParameterType(parameter))
         return CaosDefParameterStruct(
             parameterNumber = (parameter.parent as? CaosDefCommandDefElement)?.parameterList?.indexOf(parameter)
                 ?: -1,
@@ -302,7 +302,7 @@ object CaosDefPsiImplUtil {
 
     @JvmStatic
     fun toStruct(returnElement: CaosDefDocCommentReturn): CaosDefReturnTypeStruct? {
-        val type = returnElement.docCommentVariableType?.toStruct() ?: CaosDefVariableTypeStruct(
+        val type = returnElement.docCommentVariableType?.toStruct() ?: CaosDefVariableTypeStruct.get(
             type = AnyType
         )
         val comment = returnElement.docCommentParamText?.text
@@ -323,7 +323,7 @@ object CaosDefPsiImplUtil {
             ?: return null
 
         return CaosDefReturnTypeStruct(
-            type = CaosDefVariableTypeStruct(type = typeString),
+            type = CaosDefVariableTypeStruct.get(type = typeString),
             comment = null
         )
     }
@@ -359,7 +359,7 @@ object CaosDefPsiImplUtil {
             }
         }
         val fileTypes = element.variableFileType?.text?.substring(6)?.split("/")
-        return CaosDefVariableTypeStruct(
+        return CaosDefVariableTypeStruct.get(
             type = type,
             noteText = typeNote,
             intRange = intRange,

@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileTy
 import com.intellij.openapi.fileTypes.FileTypeConsumer
 import com.intellij.openapi.fileTypes.FileTypeFactory
 
+@Suppress("DEPRECATION")
 class CaosScriptFileTypeFactory : FileTypeFactory() {
     override fun createFileTypes(
             fileTypeConsumer: FileTypeConsumer) {

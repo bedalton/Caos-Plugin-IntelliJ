@@ -4,20 +4,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
@@ -44,20 +41,42 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         }
     }
 
-    private val check:(element:PsiElement) -> Boolean by lazy {
-        val innerCheck:(commandString:String) -> Boolean
-        when (myElement.parent) {
+
+    /**
+     * Checks whether this element points to the element passed in
+     */
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        if (element !is CaosDefCompositeElement)
+            return false
+        val command: CaosDefCommand = element as? CaosDefCommand
+            ?: element.parent as? CaosDefCommand
+            ?: return false
+        val commandString = command.text.replace(EXTRA_SPACE_REGEX, " ")
+        if (myElement is CaosScriptVarToken && myElement.varGroup.value.equals(commandString, ignoreCase = true)) {
+            return true
+        }
+        // If is command def element, it is not reference to anything else
+        if (myElement.parent.isEquivalentTo(command))
+            return true
+
+
+        // Uses cached check method
+        return command.variants.intersect(variants).isNotEmpty() && check(command)
+    }
+
+    private val check:(commandDef:CaosDefCommand) -> Boolean by lazy {
+        val innerCheck:(commandString:String) -> Boolean = when (myElement.parent) {
             // Check for code block parent, as these are unstructured,
             // and combinations need to be checked manually
             is CaosDefCodeBlock -> {
-                innerCheck = { commandString:String ->
+                { commandString:String ->
                     names.any { it like commandString }
                 }
             }
             // Should be only two other uses CaosDefCommandWord in CaosDefCommand parent
             // Or CaosScriptIsCommandToken with command parent
             else -> {
-                innerCheck = { commandString:String ->
+                { commandString:String ->
                     name like commandString
                 }
             }
@@ -85,23 +104,20 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 {_ -> true}
             else
                 // Else if not CAOSDef composite element,
-                // Then this element's type could not be determined, and should not resolve
+                // Then this element's type could not be determined, and should not be resolved
                 { _ -> false }
         }
 
         // Creates and caches a checking method to check whether
         // this element references passed in element
-        check@{ element:PsiElement ->
+        check@{ commandDef: CaosDefCommand ->
             // Only declarations can be pointed to
             // Return the passed in element is not
-            if (!isDeclaration(element))
+            if (!isDeclaration(commandDef))
                 return@check false
 
-            // Get CaosDefCommand
-            val commandDef = (element.parent as CaosDefCommand)
-
             // Get and format passed in elements text
-            val elementText = (element.parent as CaosDefCommand).text.commandFormatted
+            val elementText = commandDef.text.commandFormatted
                     ?: return@check false
 
             // Runs check for names match
@@ -113,23 +129,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                     ?: return@check false
 
             // Check that referencing element and this element have matching command types
-            // ie. LValue,Rvalue or Command
+            // i.e. lvalue, rvalue or command
             checkCommandType(commandElement)
         }
-    }
-
-    /**
-     * Checks whether this element points to the element passed in
-     */
-    override fun isReferenceTo(element: PsiElement): Boolean {
-        if (element is CaosScriptVarToken && element.varGroup.value.toUpperCase() == name.toUpperCase()) {
-            return true
-        }
-        // If is command def element, it is not reference to anything else
-        if (myElement.parent?.parent is CaosDefCommandDefElement)
-            return element.isEquivalentTo(myElement)
-        // Uses cached check method
-        return check(element)
     }
 
     /**
@@ -146,8 +148,9 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      */
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         // Cannot resolve on dumb index, return
-        if (DumbService.isDumb(myElement.project))
+        if (DumbService.isDumb(myElement.project)) {
             return PsiElementResolveResult.EMPTY_ARRAY
+        }
         // If parent.parent is CommandDefElement
         // this element would be pointing to itself
         // Return without self referencing result
@@ -322,7 +325,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 // Get next sibling for check in comment code block
                 val nextSibling = myElement.getNextNonEmptySibling(false)
 
-                // Get next and next next sibling for check in code block
+                // Get next and next's next sibling for check in code block
                 val nextNextSibling = nextSibling?.getNextNonEmptySibling(false)?.let {
                     it.text + " " + nextSibling.text + " " + name
                 }.commandFormatted
@@ -390,7 +393,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     }
 
     /**
-     * Do not allow rename of base commands
+     * Do not allow re-name of base commands
      */
     override fun handleElementRename(newElementName: String): PsiElement {
         //if (renameRegex.matches(newElementName))
