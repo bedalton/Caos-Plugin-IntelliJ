@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceForKey
@@ -44,11 +45,12 @@ val Module.settings: CaosModuleSettingsService
 
 var Module.variant: CaosVariant?
     get() {
-        return settings.getState().variant
+        return settings.getState().variant ?: getUserData(CaosScriptFile.ExplicitVariantUserDataKey)
     }
     set(newVariant) {
         val settings = settings
         val state = settings.getState()
+        putUserData(CaosScriptFile.ExplicitVariantUserDataKey, newVariant)
         settings.loadState(
             state.copy(
                 variant = newVariant,

@@ -33,7 +33,7 @@ class C16SpriteFile(file: VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C
             val height = bytesBuffer.uInt16
 
             // Read and discard line offsets ... not used here
-            (0 until height - 1).forEach { _ ->
+            val lineOffsets = (0 until height - 1).map { _ ->
                 bytesBuffer.uInt32
             }
             C16SpriteFrame(
@@ -41,7 +41,8 @@ class C16SpriteFile(file: VirtualFile) : SpriteFile<C16SpriteFrame>(SpriteType.C
                 offset = offsetForData,
                 width = width,
                 height = height,
-                encoding = encoding
+                encoding = encoding,
+                lineOffsets = lineOffsets
             )
         }
     }
@@ -56,13 +57,13 @@ class C16SpriteFrame private constructor(width: Int, height: Int, private val en
 
     private lateinit var getImage: () -> BufferedImage?
 
-    constructor(bytes: ByteStreamReader, offset: Long, width: Int, height: Int, encoding: ColorEncoding) : this(
+    constructor(bytes: ByteStreamReader, offset: Long, width: Int, height: Int, encoding: ColorEncoding, lineOffsets: List<Long>) : this(
         width,
         height,
-        encoding
+        encoding,
     ) {
         getImage = {
-            decode(bytes, offset)
+            decode(bytes, offset, lineOffsets)
         }
     }
 
@@ -80,7 +81,7 @@ class C16SpriteFrame private constructor(width: Int, height: Int, private val en
         return null
     }
 
-    private fun decode(bytes: ByteStreamReader, offset: Long): BufferedImage? {
+    private fun decode(bytes: ByteStreamReader, offset: Long, lineOffsets: List<Long>): BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         if (bytesBuffer.lastIndex < offset.toInt()) {
             throw Exception("Not enough bytes for next C16 image. Position ${"%,d".format(offset)} is invalid")
@@ -117,6 +118,7 @@ class C16SpriteFrame private constructor(width: Int, height: Int, private val en
                 bytesBuffer.uInt16
             }
         }
+        bytesBuffer.uInt16
         return image
     }
 

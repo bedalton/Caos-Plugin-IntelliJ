@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariants
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.VariantsFilePropertyPusher
@@ -54,7 +55,15 @@ open class CaosVirtualFile private constructor(
     //override fun getId():Int = myId
 
     /** Allows Quick access to CAOS Variant */
-    override var variant: CaosVariant? = null
+    private var mVariant: CaosVariant? = null
+
+    override val variant: CaosVariant? get() = mVariant ?: VariantsFilePropertyPusher.readFromStorageCatching(this).firstOrNull().nullIfUnknown()
+
+    override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
+        mVariant = variant
+        VariantsFilePropertyPusher.writeToStorage(this, listOfNotNull(variant))
+    }
+
     private var _variants: List<CaosVariant>? = null
     override var variants: List<CaosVariant>
         get() = _variants
@@ -220,7 +229,8 @@ open class CaosVirtualFile private constructor(
 
     /** {@inheritDoc}  */
     override fun getModificationCount(): Long {
-        return children.values.map { it.modificationCount }.sum()
+        @Suppress("SimplifiableCallChain")
+        return children.values.map { file: VirtualFile -> file.modificationCount }.sum()
     }
 
     fun createChildCaosScript(
@@ -234,14 +244,14 @@ open class CaosVirtualFile private constructor(
         }
         val file = CaosVirtualFile("$fileName.cos", code, false).apply {
             this@CaosVirtualFile.addChild(this)
-            this.variant = caosVariant
+            this.setVariant(caosVariant, true)
             isWritable = true
         }
         val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
             ?: PsiFileFactory.getInstance(project)
                 .createFileFromText("$fileName.cos", CaosScriptLanguage, code) as CaosScriptFile
 
-        psiFile.variant = caosVariant
+        psiFile.setVariant(caosVariant, true)
         return psiFile
     }
 

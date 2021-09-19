@@ -1,6 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.FileViewProvider
+import com.intellij.psi.NavigatablePsiElement
+import com.intellij.psi.PsiManager
+import com.intellij.psi.impl.PsiManagerEx
+import com.intellij.psi.impl.PsiManagerImpl
+import com.intellij.psi.impl.file.PsiBinaryFileImpl
+import com.intellij.psi.impl.file.impl.FileManagerImpl
+import javax.swing.Icon
+
 
 object VirtualFileUtil {
 
@@ -42,8 +54,9 @@ object VirtualFileUtil {
     }
 
     fun findChildIgnoreCase(
-        virtualFile: VirtualFile?,
+        parent: VirtualFile?,
         ignoreExtension: Boolean = false,
+        directory: Boolean?,
         vararg path: String
     ): VirtualFile? {
 
@@ -52,27 +65,30 @@ object VirtualFileUtil {
         else
             path.flatMap { it.split("/") }).filter { it.isNotNullOrBlank() }
 
-        var file = virtualFile
+        if (components.isEmpty())
+            return null
+
+        var file = parent
             ?: return null
 
         for (component in components.dropLast(1)) {
             if (component == ".")
                 continue
-            if (component == "..")
+            if (component == "..") {
                 file = file.parent
                     ?: return null
-            file = if (ignoreExtension) {
-                file.children?.firstOrNull { it.nameWithoutExtension.equals(component, true) }
-            } else {
-                file.children?.firstOrNull { it.name.equals(component, true) }
-            } ?: return null
+                continue
+            }
+            file = file.children?.firstOrNull { it.name.equals(component, true) && it.isDirectory }
+                ?: return null
         }
 
         return if (ignoreExtension) {
-            val last = components.last()
-            file.children?.firstOrNull { it.nameWithoutExtension.equals(FileNameUtils.getBaseName(last), true) }
+            val last = FileNameUtils.getNameWithoutExtension(components.last())
+            file.children?.firstOrNull { it.nameWithoutExtension.equals(last, true) && (directory == null || it.isDirectory == directory)}
         } else {
-            file.children?.firstOrNull { it.name.equals(components.last(), true) }
+            val last = components.last()
+            file.children?.firstOrNull { it.name.equals(last, true) && (directory == null || it.isDirectory == directory) }
         }
     }
 
@@ -130,4 +146,68 @@ object VirtualFileUtil {
         }.filter { !it.isDirectory }
     }
 
+}
+
+private class VirtualFileNavigationElement(
+    private val myProject: Project,
+    private val myVirtualFile: VirtualFile,
+    viewProvider: FileViewProvider
+): PsiBinaryFileImpl(PsiManagerImpl.getInstance(myProject) as PsiManagerImpl, viewProvider), NavigatablePsiElement {
+
+    override fun getPresentation(): ItemPresentation {
+        return object: ItemPresentation {
+            override fun getPresentableText(): String {
+                return virtualFile.name
+            }
+
+            override fun getLocationString(): String {
+                return virtualFile.parent?.path ?: ""
+            }
+
+            override fun getIcon(unused: Boolean): Icon? {
+                return fileType.icon
+            }
+        }
+    }
+
+    override fun getProject(): Project {
+        return myProject
+    }
+
+    override fun canNavigate(): Boolean {
+        return myVirtualFile.isValid
+    }
+
+    override fun navigate(requestFocus: Boolean) {
+        val manager = FileEditorManager.getInstance(project)
+        manager.openFile(myVirtualFile, true, true)
+    }
+
+
+    companion object {
+        fun create(project: Project, virtualFile: VirtualFile): NavigatablePsiElement? {
+            val viewProvider = getFileViewProvider(project, virtualFile)
+                ?: return null
+           return VirtualFileNavigationElement(
+                project,
+                virtualFile,
+                viewProvider
+            )
+        }
+    }
+}
+
+
+private fun getFileViewProvider(project: Project, virtualFile: VirtualFile): FileViewProvider? {
+    val fileManager = PsiManagerEx.getInstanceEx(project).fileManager as FileManagerImpl
+    return try {
+        fileManager.findViewProvider(virtualFile)
+    } catch (e: Exception) {
+        LOGGER.severe("Failed to get view provider for artificial navigation item: ${virtualFile.path}")
+        null
+    }
+}
+
+internal fun VirtualFile.toNavigableElement(project: Project): NavigatablePsiElement? {
+    return PsiManager.getInstance(project).findFile(this) ?: VirtualFileNavigationElement.create(project, this)
 }

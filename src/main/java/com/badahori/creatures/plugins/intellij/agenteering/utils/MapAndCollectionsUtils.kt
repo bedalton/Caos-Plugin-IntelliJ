@@ -144,3 +144,17 @@ infix fun <T> Array<T>.likeAny(other:Collection<T>): Boolean {
 infix fun <T> Array<T>.likeAny(other:Array<T>): Boolean {
     return this.intersect(other.toList()).isNotEmpty()
 }
+
+internal val <T> Collection<T>.firstIfOnlyOne: T? get() {
+    return if (this.size == 1)
+        first()
+    else
+        null
+}
+
+internal val <T> Array<T>.firstIfOnlyOne: T? get() {
+    return if (this.size == 1)
+        first()
+    else
+        null
+}
