@@ -111,12 +111,19 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             if (document != null) {
                 PsiDocumentManager.getInstance(project).commitDocument(document)
             }
-            val element = elementIn.copy()
-            return collapseLines(element, collapseChar, elementIn.variant)
+            if (elementIn is CaosScriptFile) {
+                val file = CaosScriptPsiElementFactory.createFileFromText(project, elementIn.text)
+                file.setVariant(elementIn.variant, true)
+                return collapseLines(file, collapseChar, elementIn.variant)
+            } else {
+                val element = elementIn.copy()
+                return collapseLines(element, collapseChar, elementIn.variant)
+            }
         }
 
 
         fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
+            val before = elementIn.text.replace(COLLAPSE_TEST_REGEX, "")
             val project = elementIn.project
             val document = elementIn.document
             val filePointer = SmartPointerManager.createPointer(elementIn.containingFile)
@@ -173,8 +180,15 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             if (document == null) {
                 return try {
                     CaosScriptPsiElementFactory.createAndGet(project, formatted, elementIn::class.java, variant!!)
+                        ?.apply {
+                            if (!this.isValid) {
+                                LOGGER.severe("Document was null. Attempted to create new item with factory, but element was invalid")
+                            }
+                        }
                 } catch (e: Exception) {
                     null
+                }.apply {
+                    LOGGER.severe("Document was null. Attempting to create new item: ${this?.text}")
                 }
             }
             document.replaceString(range.startOffset, range.endOffset, formatted.trim())
@@ -241,6 +255,13 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             val out = newElementPointer.element
             if (out == null) {
                 LOGGER.severe("Failed to reload document after collapsing")
+                return null
+            }
+            val after = out.text.replace(COLLAPSE_TEST_REGEX, "")
+            if (before != after) {
+                val error = "Collapsed scripts does not match original script contents. Before(noSpace)<$before>; After(noSpace)<$after>"
+                LOGGER.severe(error)
+                throw Exception(error)
             }
             return out
         }
@@ -273,3 +294,5 @@ enum class CollapseChar(internal val text: String, internal val char: String) {
     SPACE(CaosBundle.message("caos.intentions.collapse-lines-with", "spaces"), " "),
     COMMA(CaosBundle.message("caos.intentions.collapse-lines-with", "commas"), ",")
 }
+
+private val COLLAPSE_TEST_REGEX = "(\\*[^\n]*\\s*)|([\\s,]+)".toRegex()

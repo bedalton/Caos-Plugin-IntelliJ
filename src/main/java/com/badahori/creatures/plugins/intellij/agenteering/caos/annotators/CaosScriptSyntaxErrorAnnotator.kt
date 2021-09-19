@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
@@ -56,7 +58,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             is CaosScriptVarToken -> annotateVarToken(variant, element, holder)
             is CaosScriptNumber -> annotateNumber(variant, element, holder)
             is CaosScriptErrorRvalue -> holder
-                .newErrorAnnotation("Unrecognized rvalue")
+                .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-rvalue"))
                 .range(element)
                 .create()
             is CaosScriptErrorCommand -> annotateErrorCommand(variant, element, holder)
@@ -119,16 +121,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 element,
                 message("caos.annotator.syntax-error-annotator.out-of-command-literal"),
                 holder,
-                DeleteElementFix("Delete extraneous rvalue", element)
+                DeleteElementFix(message("caos.fixes.delete-extra-rvalue"), element)
             )
             is CaosScriptSwiftEscapeLiteral -> {
-
-                val allowSwift =
-                    PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
-                        .any { comment ->
-                            swiftRegex.matches(comment.text.trim())
-                        }
-                if (!allowSwift) {
+                if (!allowSwift(element.containingFile)) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), holder)
                 } else if (element.textLength < 4) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), holder)
@@ -153,15 +149,18 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             is CaosScriptCaos2CommentErrorValue -> {
                 val isCaos2Cob = (element.containingFile as? CaosScriptFile)?.isCaos2Cob ?: false
                 val directiveType = if (isCaos2Cob)
-                    "CAOS2Cob property"
+                    message("caos.general.property-type", CAOS2Cob)
                 else
-                    "CAOS2Pray tag"
+                    message("caos.general.tag-type", CAOS2Pray)
                 simpleError(
                     element,
                     message("caos.annotator.syntax-error-annotator.too-many-tag-values", directiveType),
                     holder
                 )
             }
+            is CaosScriptFamily -> annotateClassifierArgument(element.rvalue, "Family", holder)
+            is CaosScriptGenus -> annotateClassifierArgument(element.rvalue, "Genus", holder)
+            is CaosScriptSpecies -> annotateClassifierArgument(element.rvalue, "Species", holder)
         }
     }
 
@@ -183,7 +182,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     )
                 )
                 .range(element)
-                .withFix(CaosScriptInsertBeforeFix("Insert '$setv' before $command", setv, element))
+                .withFix(CaosScriptInsertBeforeFix(message("caos.fixes.insert-before", setv, command), setv, element))
                 .create()
         }
     }
@@ -222,7 +221,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateToken(element: CaosScriptToken, holder: AnnotationHolder) {
         if (element.hasParentOfType(CaosScriptTokenRvalue::class.java)) {
             if (element.variant?.isOld.orFalse() && element.textLength != 4) {
-                holder.newErrorAnnotation("Tokens must be 4 characters long")
+                holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-c1e-token"))
                     .range(element)
                     .create()
             }
@@ -488,6 +487,40 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             // Get error annotation, run create if needed
             getErrorCommandAnnotation(variant, element, commandText, holder)?.create()
         }
+    }
+
+    private fun annotateClassifierArgument(element: CaosScriptRvalue?, partName: String, holder: AnnotationHolder) {
+        if (element == null) {
+            return
+        }
+
+        if (element.parent?.parent?.parent is CaosScriptEventScript) {
+            annotateEventScriptArgument(element, partName, holder)
+            return
+        }
+
+
+    }
+
+    private fun annotateEventScriptArgument(element: CaosScriptRvalue, partName: String, holder: AnnotationHolder) {
+        if (element.isInt) {
+            return
+        }
+
+        if (element is CaosScriptSwiftEscapeLiteral && allowSwift(element)) {
+            return
+        }
+
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.classifier-expects-integer-literal", partName.toLowerCase()))
+            .range(element)
+            .create()
+    }
+
+    private fun allowSwift(element: PsiElement): Boolean {
+       return PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+                .any { comment ->
+                    swiftRegex.matches(comment.text.trim())
+                }
     }
 
 }

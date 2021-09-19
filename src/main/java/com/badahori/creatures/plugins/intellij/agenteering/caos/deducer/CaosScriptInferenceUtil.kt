@@ -6,13 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isObjectVar
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -27,7 +24,8 @@ object CaosScriptInferenceUtil {
      * Infers the type of an rvalue used in a CAOS script
      */
     fun getInferredType(element: CaosScriptRvalue, resolveVars: Boolean = true): List<CaosExpressionValueType> {
-        return getRvalueTypeWithoutInference(element, ANY)?.toListOf() ?: emptyList() //getInferredType(element, null, resolveVars, mutableListOf())
+        return getRvalueTypeWithoutInference(element, ANY, true)?.toListOf()
+            ?: emptyList() //getInferredType(element, null, resolveVars, mutableListOf())
     }
 
     /**
@@ -67,7 +65,7 @@ object CaosScriptInferenceUtil {
 //                lastChecked = lastChecked
 //            ) ?: listOf(VARIABLE) else listOf(VARIABLE)
 //        }
-        val type = getRvalueTypeWithoutInference(element, bias ?: ANY)?.let { listOf(it) }
+        val type = getRvalueTypeWithoutInference(element, bias ?: ANY, false)?.let { listOf(it) }
             ?: getInferredType(element.rvaluePrime, bias)
             ?: emptyList()
         // Return inferred types for simple values
@@ -263,11 +261,21 @@ private fun anyNotNull(vararg elements: PsiElement?): Boolean {
 
 
 internal fun getRvalueTypeWithoutInference(
-    rvalue: CaosScriptRvalue?,
-    bias: CaosExpressionValueType
+    rvalue: CaosScriptRvalueLike?,
+    bias: CaosExpressionValueType,
+    fuzzy: Boolean = true
 ): CaosExpressionValueType? {
     if (rvalue == null)
         return null
+
+    // If is not actual rvalue, then it is a token or subroutine name
+    if (rvalue !is CaosScriptRvalue) {
+        if (rvalue !is CaosScriptTokenRvalue && rvalue !is CaosScriptSubroutineName) {
+            throw Exception("Unexpected rvalue like type: ${rvalue.className}")
+        }
+        return TOKEN
+    }
+
     return when {
         rvalue.isInt -> INT
         rvalue.isFloat -> FLOAT
@@ -291,12 +299,16 @@ internal fun getRvalueTypeWithoutInference(
         else -> rvalue.variant?.let { variant ->
             val commandString = rvalue.commandStringUpper?.replace(WHITESPACE, " ")
                 ?: return null
-            CaosLibs[variant].rvalues.filter { command -> command.command == commandString }.let { commands ->
-                if (commands.any { command -> command.returnType == bias }) {
-                    bias
-                } else
-                    commands.firstOrNull()?.returnType
-            }
+            CaosLibs[variant].rvalues.filter { command -> command.command == commandString }
+                .nullIfEmpty()
+                ?.let { commands ->
+                    if (fuzzy && commands.any { command -> command.returnType like bias })
+                        bias
+                    else if (!fuzzy && commands.any { command -> command.returnType == bias })
+                        bias
+                    else
+                        commands.firstOrNull()?.returnType
+                }
         }
     }
 }

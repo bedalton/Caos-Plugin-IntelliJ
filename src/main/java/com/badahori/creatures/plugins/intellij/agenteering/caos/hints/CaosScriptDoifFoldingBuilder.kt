@@ -314,12 +314,13 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 return createCompoundFormatter(format)
             return when (format.toUpperCase()) {
                 // Though %ATTRIBUTES is simple, it is registered here for consistency between the two versions of the command
-                "%ATTRIBUTES" -> createCompoundFormatter("Has Attributes: {1}::Attributes Not {1}::%%")
+                "%ATTRIBUTES" -> createCompoundFormatter("Targ Attributes {=} {1}")
                 "%CAGE" -> CAGE
                 "%HIST_CAGE" -> HIST_CAGE
                 "%IS_SIMPLE" -> SIMPLE_FORMATTER
                 "%TIME" -> TIME
                 "%KEYD" -> KEYD
+                "%TARG_IS" -> createCompoundFormatter("Targ {is} {1}::Targ {=} {1}::&&")
                 else -> {
                     LOGGER.severe("Failed to understand %pattern: $format")
                     DEFAULT_FORMATTER
@@ -327,8 +328,8 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             }
         }
 
-        internal const val IS = "is"
-        internal const val IS_NOT = "is not"
+        internal const val IS = "="
+        internal const val IS_NOT = "!="
         private val CACHE_KEY =
             Key<Pair<String, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.DOIF_FOLDING_STRING")
     }
@@ -349,7 +350,10 @@ private fun getValuesList(variant: CaosVariant, expression: CaosScriptRvalue): C
 
 
 // Ensures replacement of possibly two eq value expressions
-private val EQ_IS_REGEX = "\\{(is|eq)}".toRegex()
+private val EQ_IS_REGEX = "\\{(is|eq|=)}".toRegex()
+private val A_BEFORE_0 = " a \\{0}".toRegex()
+private val A_BEFORE_1 = " a \\{1}".toRegex()
+private val VOWELS = charArrayOf('a', 'e', 'i', 'o', 'u')
 
 /**
  * Holds information that might be necessary to format a doif comparison expression
@@ -374,7 +378,13 @@ data class FormatInfo(
  * ie "is Frozen" "is not Inactive"
  */
 private val SIMPLE_FORMATTER: Formatter = { formatInfo: FormatInfo ->
-    val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
+    val eqOpText = formatEqOp(
+        formatInfo.eqOp,
+        equalSign = true,
+        formatInfo.isBool,
+        formatInfo.boolOnLessThan,
+        formatInfo.otherValueInt
+    )
     if (eqOpText == IS || eqOpText == IS_NOT) {
         if (eqOpText == IS && formatInfo.otherValue.toLowerCase().startsWith("can"))
             formatInfo.otherValue
@@ -385,6 +395,8 @@ private val SIMPLE_FORMATTER: Formatter = { formatInfo: FormatInfo ->
     }
 }
 
+private const val USE_EQ_SYMBOL_DEFAULT = true
+
 /**
  * Default format is  "{0} {is} {1}"
  */
@@ -394,6 +406,7 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
     if (otherValueInt == 0 && formatInfo.thisValueType.any { it == AGENT }) {
         val eqOpText = formatEqOp(
             formatInfo.eqOp,
+            USE_EQ_SYMBOL_DEFAULT,
             isBool = true,
             boolOnLessThan = false,
             otherValueInt = otherValueInt
@@ -402,7 +415,8 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
             return@formatter "$thisValue $eqOpText ${formatPrimary("NULL")}"
     }
     // Get Eq op text, converting "=" -> "is", "!=" -> "is not" and if bool and 0  ">" -> "is not"
-    val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
+    val eqOpText =
+        formatEqOp(formatInfo.eqOp, true, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
 
     // Get other value to simplify code reading
     val otherValue = formatInfo.otherValue
@@ -420,13 +434,44 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
  */
 private fun createCompoundFormatter(formatIn: String): Formatter = func@{ formatInfo: FormatInfo ->
     // Get "is" or "is not" text
-    val eqOpText = formatEqOp(formatInfo.eqOp, formatInfo.isBool, formatInfo.boolOnLessThan, formatInfo.otherValueInt)
+    val eqOpText = formatEqOp(
+        formatInfo.eqOp,
+        formatIn.contains("{=}"),
+        formatInfo.isBool,
+        formatInfo.boolOnLessThan,
+        formatInfo.otherValueInt
+    )
     // Test for "is" or "is not" and return appropriate sub format
     var out = formatIn.split("::").let { patterns ->
         when {
             eqOpText == IS -> patterns.first()
-            eqOpText != IS_NOT -> patterns.last()
-            patterns.size > 2 -> patterns[1]
+            eqOpText != IS_NOT -> {
+                if (patterns.size > 1) {
+                    patterns[1].let {
+                        if (it == "&&")
+                            patterns.first()
+                        else
+                            it
+                    }
+                } else
+                    patterns.first()
+            }
+            patterns.size > 2 -> patterns[1].let { eqPattern ->
+                if (eqPattern == "&&") {
+                    if (patterns.size > 1) {
+                        patterns[1].let {
+                            if (it == "&&")
+                                patterns.first()
+                            else
+                                it
+                        }
+                    } else
+                        patterns.first()
+                } else {
+                    eqPattern
+                }
+
+            }
             else -> patterns.first()
         }.trim()
     }
@@ -437,6 +482,16 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
     // Replace eq/is in format
     out = out.replace(EQ_IS_REGEX, eqOpText)
 
+    out = if (formatInfo.thisValue[0].toLowerCase() in VOWELS)
+        out.replace(A_BEFORE_0, " an ${formatInfo.thisValue}")
+    else
+        out.replace("{0}", formatInfo.thisValue)
+
+    out = if (formatInfo.thisValue[0].toLowerCase() in VOWELS)
+        out.replace(A_BEFORE_1, " an ${formatInfo.otherValue}")
+    else
+        out.replace("{1}", formatInfo.otherValue)
+
     // Get left side rvalues arguments
     val thisValuesArgs = formatInfo.thisValuesArgs
 
@@ -444,12 +499,17 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
     if (out.contains("{0:")) {
         // Insert all requested arguments. In format they are {0:i}
         for (i in thisValuesArgs.indices) {
-            out = out.replace("{0:$i}", thisValuesArgs[i])
+            out = if (thisValuesArgs[i].isNotEmpty() && thisValuesArgs[i][0] in VOWELS) {
+                out.replace(" a {0:i}", " an ${thisValuesArgs[i]}")
+            } else {
+                out.replace("{0:$i}", thisValuesArgs[i])
+            }
         }
+        out
+    } else {
+        // No argument replacement needed, just return it
+        out
     }
-
-    // Replace left and right side values and return
-    out.replace("{0}", formatInfo.thisValue).replace("{1}", formatInfo.otherValue)
 }
 
 /**
@@ -534,7 +594,8 @@ private fun onP1P2(
         valuesList[key]?.name
     } ?: otherValue.text
     // Get formatted eq op value
-    val eqOpString = formatEqOp(eqOp, isBool = true, boolOnLessThan = false, otherValueInt = otherValue.intValue)
+    val eqOpString =
+        formatEqOp(eqOp, equalSign = true, isBool = true, boolOnLessThan = false, otherValueInt = otherValue.intValue)
     // Get formatted string
     return "$paramName $eqOpString $otherValueName"
 }
@@ -551,7 +612,13 @@ private val KEYD = formatter@{ formatInfo: FormatInfo ->
         ?.get(formatInfo.thisValuesArgs.getOrNull(0) ?: "")
         ?.name
     val key = keycodeAsString?.let { "'$it' Key" } ?: ("Key #" + (formatInfo.thisValuesArgs.getOrNull(0) ?: "??"))
-    val equals = formatEqOp(formatInfo.eqOp, true, boolOnLessThan = false, otherValueInt = formatInfo.otherValueInt)
+    val equals = formatEqOp(
+        formatInfo.eqOp,
+        equalSign = true,
+        true,
+        boolOnLessThan = false,
+        otherValueInt = formatInfo.otherValueInt
+    )
     val other = formatInfo.otherValue
     "$key $equals $other"
 }
@@ -559,12 +626,18 @@ private val KEYD = formatter@{ formatInfo: FormatInfo ->
 /**
  * Gets a proper "is", "is not" or raw eq value
  */
-private fun formatEqOp(eqOp: EqOp, isBool: Boolean, boolOnLessThan: Boolean, otherValueInt: Int?): String {
+private fun formatEqOp(
+    eqOp: EqOp,
+    equalSign: Boolean,
+    isBool: Boolean,
+    boolOnLessThan: Boolean,
+    otherValueInt: Int?
+): String {
     return when (eqOp) {
-        EQUAL -> if (isBool) IS else null
-        NOT_EQUAL -> if (isBool) IS_NOT else null
-        GREATER_THAN -> if (isBool && otherValueInt == 0) IS_NOT else null
-        LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) IS_NOT else null
+        EQUAL -> if (isBool) if (equalSign) "=" else IS else null
+        NOT_EQUAL -> if (isBool) if (equalSign) "!=" else IS_NOT else null
+        GREATER_THAN -> if (isBool && otherValueInt == 0) if (equalSign) "!=" else IS_NOT else null
+        LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) if (equalSign) "!=" else IS_NOT else null
         else -> null
     } ?: eqOp.values.getOrNull(1) ?: eqOp.values.first()
 }
