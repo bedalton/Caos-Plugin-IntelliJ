@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
@@ -24,9 +25,6 @@ internal object FileInjectorUtil {
         if (useJect && connection.supportsJect) {
             return connection.injectWithJect(caosFile, flags)
         }
-        val responses = mutableListOf<String>()
-        var oks = 0
-        var error: InjectionStatus? = null
         val fileScripts = caosFile.getScripts()
 
         val scriptBlocks = mutableListOf<List<CaosScriptScriptElement>>()
@@ -59,7 +57,35 @@ internal object FileInjectorUtil {
             }
             scriptBlocks.add(scripts)
         }
+        return injectScriptBlocks(project, connection, scriptBlocks)
+    }
 
+    internal fun inject(
+        project: Project,
+        connection: CaosConnection,
+        scripts: Map<JectScriptType, List<CaosScriptScriptElement>>
+    ): InjectionStatus {
+       val scriptBlocks = mutableListOf<List<CaosScriptScriptElement>>()
+       scripts[JectScriptType.REMOVAL]?.apply {
+           scriptBlocks.add(this)
+       }
+        scripts[JectScriptType.EVENT]?.apply {
+            scriptBlocks.add(this)
+        }
+        scripts[JectScriptType.INSTALL]?.apply {
+            scriptBlocks.add(this)
+        }
+        return injectScriptBlocks(project, connection, scriptBlocks)
+    }
+
+    private fun injectScriptBlocks(
+        project: Project,
+        connection: CaosConnection,
+        scriptBlocks: List<List<CaosScriptScriptElement>>
+    ): InjectionStatus  {
+        val responses = mutableListOf<String>()
+        var oks = 0
+        var error: InjectionStatus? = null
         for (scripts in scriptBlocks) {
             if (scripts.isEmpty())
                 continue
@@ -200,10 +226,10 @@ internal fun postWarning(project: Project, title: String, message: String) {
 
 private fun CaosScriptScriptElement.getDescriptor(): String {
     return when (this) {
-        is CaosScriptRemovalScript -> "Removal script, line: $lineNumber"
-        is CaosScriptEventScript -> "Event Script: $family $genus $species $eventNumber, line: $lineNumber"
-        is CaosScriptInstallScript -> "Install script, line: $lineNumber"
-        is CaosScriptMacro -> "Body script, line: $lineNumber"
-        else -> "Code block, line: $lineNumber"
+        is CaosScriptRemovalScript -> "Removal script"
+        is CaosScriptEventScript -> "Event Script: $family $genus $species $eventNumber"
+        is CaosScriptInstallScript -> "Install script"
+        is CaosScriptMacro -> "Body script"
+        else -> "Code block"
     }
 }

@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.useJectByDefault
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
@@ -80,6 +82,35 @@ object Injector {
         onCaosResponse(project, response)
         return response is InjectionStatus.Ok
     }
+    /**
+     * Checks version info before injection
+     */
+    internal fun inject(
+        project: Project,
+        fallbackVariant: CaosVariant,
+        gameInterfaceName: GameInterfaceName,
+        scripts: Map<JectScriptType, List<CaosScriptScriptElement>>
+    ): Boolean {
+        val variant = gameInterfaceName.variant ?: fallbackVariant
+        if (!isValidVariant(project, variant, gameInterfaceName))
+            return false
+        val response = injectPrivate(project, fallbackVariant, gameInterfaceName) { connection ->
+            try {
+                FileInjectorUtil.inject(
+                    project,
+                    connection,
+                    scripts
+                )
+            } catch (e: CaosInjectorExceptionWithStatus) {
+                e.injectionStatus
+            } catch (e: Exception) {
+                InjectionStatus.Bad("Injection failed with plugin based error: ${e.message}")
+                null
+            }
+        }
+        onCaosResponse(project, response)
+        return response is InjectionStatus.Ok
+    }
 
     /**
      * Ensures that variant is supported, and if C1e, that the correct game is running
@@ -144,6 +175,7 @@ object Injector {
         return conn
     }
 
+    @Suppress("unused")
     fun canJect(variant: CaosVariant, gameInterfaceName: GameInterfaceName): Boolean {
         // TODO support C2e if it supports JECT in all variants
         if (!variant.isNotOld)

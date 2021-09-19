@@ -1,20 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import bedalton.creatures.pray.compiler.NEWLINE_REGEX
+import bedalton.creatures.bytes.toBase64
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil.isWindows
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
+import kotlin.io.use
+
 
 /**
  * Class for managing a connection to C3 for CAOS injection
@@ -45,8 +41,9 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
     override fun inject(caos:String) : InjectionStatus {
 
         val length = caos.length
+        val base64Length = length * 1.4
         val cliFlag: CLIInjectFlag = when {
-            length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.CAOS_TEXT
+            base64Length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.CAOS_TEXT
             length < MAX_CAOS_FILE_LENGTH -> CLIInjectFlag.CAOS_FILE
             else -> return InjectionStatus.BadConnection(
                 "Script is too long. Plugin max length for injection is $MAX_CAOS_FILE_LENGTH; Actual: $length"
@@ -114,7 +111,7 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
     private fun writeTempFile(caos: String): File {
         val tempFile = File.createTempFile("CAOS", "${tempFileIndex++}".padStart(4,'0'))
         try {
-            tempFile.writeText(caos)
+            tempFile.writeText(caos, Charsets.UTF_8)
             return tempFile
         } catch (e:Exception) {
             try {
@@ -134,8 +131,9 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus {
         // Ensure that the exe has been extracted and placed in accessible folder
         val length = caos.length
+        val base64Length = length * 1.4
         val cliFlag: CLIInjectFlag = when {
-            length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.EVENT_TEXT
+            base64Length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.EVENT_TEXT
             length < MAX_CAOS_FILE_LENGTH -> CLIInjectFlag.EVENT_FILE
             else -> return InjectionStatus.BadConnection(
                 "Script is too long. Plugin max length for injection is $MAX_CAOS_FILE_LENGTH; Actual: $length"
@@ -208,9 +206,23 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
         // Parse result
         return try {
             proc.waitFor()
-            var response = proc.inputStream.bufferedReader().readText().substringFromEnd(0, 1).trim().nullIfEmpty()
-                ?: proc.errorStream.bufferedReader().readText().nullIfEmpty()
-                ?: "!ERRInjector returned un-formatted empty response"
+            if (proc.exitValue() != 0) {
+                try {
+                    val error = proc.errorStream?.bufferedReader()?.readText()?.nullIfEmpty()
+                    InjectionStatus.Bad(error ?: "CAOS injector crashed or failed.")
+                } catch (e: Exception) {
+
+                }
+            }
+            var response = proc.inputStream
+                ?.bufferedReader(Charsets.UTF_8)
+                ?.readText()
+                .nullIfEmpty()
+                ?: proc.errorStream?.bufferedReader()?.readText()?.nullIfEmpty()?.apply {
+                    return InjectionStatus.Bad(this)
+                }
+                ?: return InjectionStatus.Bad("Injector returned no response")
+            //var response = responseBase64
             val code = if (response.length >= 4) {
                 response.substring(0, 4)
             } else
@@ -301,7 +313,6 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
             if (!success) {
                 throw IOException("Failed to copy Injector EXE by stream to run directory")
             }
-            LOGGER.info("Saved Injector EXE to '${fileOut.absolutePath}'")
         }
         return fileOut
     }
@@ -519,22 +530,12 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
                 escaped += " endm"
             }
 
-            // Escape escaped chars
-            escaped = escaped.replace("\\\"", ESCAPED_QUOTE_PLACEHOLDER)
-                    .replace("\"", "\\\"")
-
-            // Windows specific escaping
-            if (isWindows) {
-                for(char in NEED_ESCAPE) {
-                    escaped = escaped.replace(char, "^$char")
+            return ByteArrayOutputStream().use { osByteArray ->
+                OutputStreamWriter(osByteArray, Charsets.UTF_8).use { w ->
+                    w.write(escaped)
                 }
-                escaped = escaped.replace(NEWLINE_REGEX, ";\\\\;n")
-            } else {
-                // Unix escaping
-                escaped = escaped.replace("\n", "\\n")
+                osByteArray.toByteArray().toBase64()
             }
-            // Return
-            return escaped
         }
     }
 

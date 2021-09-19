@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.injectorInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 
@@ -24,7 +25,7 @@ data class GameInterfaceName constructor(
     constructor(variant: CaosVariant) : this(
         variant.code,
         variant,
-        variant.injectorInterfaceName!!,
+        variant.injectorInterfaceName ?: UNDEF,
         variant.fullName
     )
 
@@ -48,25 +49,32 @@ data class GameInterfaceName constructor(
         return builder.toString()
     }
 
-    val storageKey get() = name + delimiter + url
+    val storageKey get() = code.orEmpty() + delimiter + name + delimiter + url
 
-    fun keyMatches(key: String): Boolean {
-        return key.startsWith(name + delimiter) || key.endsWith(delimiter + url)
-    }
-
-    fun keyMatches(first: String, second: String): Boolean {
-        return first == name || second == url
+    fun keyMatches(code: String, name: String, url: String): Int {
+        var out = 0
+        if (code == this.code)
+            out += 1
+        if (name == this.name)
+            out += 2
+        if (url == this.url) {
+            out += 2
+        }
+        return out
     }
 
     companion object {
         private val BASIC_REGEX = "([^:]+\\s*:)?\\s*([^\\[]+)(?:\\[\\s*([^]]+)]\\s*)?".toRegex()
         private const val delimiter = "x;;|||;;x"
 
-        internal fun keyParts(key: String): Pair<String, String>? {
-            val parts = key.split(delimiter, limit = 2)
-            if (parts.size != 2)
+        internal fun keyParts(key: String): Triple<String, String, String>? {
+            val parts = key.split(delimiter, limit = 3)
+            if (parts.size < 2) {
                 return null
-            return Pair(parts[0], parts[1])
+            }
+            if (parts.size == 2)
+                return Triple("", parts[0], parts[1])
+            return Triple(parts[0], parts[1], parts[2])
         }
 
         fun fromString(text: String): GameInterfaceName? {
@@ -94,19 +102,25 @@ data class GameInterfaceName constructor(
 }
 
 
-
 internal fun List<GameInterfaceName>.forKey(variant: CaosVariant?, key: String): GameInterfaceName? {
-    val (name, url) = GameInterfaceName.keyParts(key)
+    val (code, name, url) = GameInterfaceName.keyParts(key)
         ?: return null
-    val interfaces = this
-        .filter { it.isVariant(variant) }
-    return interfaces
-        .firstOrNull {
-            it.name == name && it.url == url
-        } ?: interfaces.firstOrNull {
-        it.name == name
-    } ?: interfaces
-        .firstOrNull {
-            it.url == url
+    return this
+        .map { gameInterface ->
+            Pair(gameInterface.keyMatches(code, name, url), gameInterface)
+        }
+        .filter { it.first > 1 }
+        .nullIfEmpty()
+        ?.sortedByDescending { it.first }
+        ?.let { interfaces ->
+            if (variant == null)
+                return interfaces.first().second
+            interfaces.firstOrNull()?.second?.apply {
+                if (variant == this.variant || (this.variant?.isC3DS == true && variant.isC3DS))
+                    return this
+            }
+            interfaces.firstOrNull { it.second.variant == variant }?.second
+                ?: interfaces.firstOrNull { it.second.variant?.isC3DS == true && variant.isC3DS}?.second
+                ?: interfaces.first().second
         }
 }
