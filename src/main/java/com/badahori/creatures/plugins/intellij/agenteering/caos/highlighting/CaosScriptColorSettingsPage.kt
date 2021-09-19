@@ -40,12 +40,24 @@ doif var1 <eqOp>eq</eqOp> 10
     <prefix>dde:</prefix> <command>getb</command> <suffix>cnam</suffix>
     enum 4 1 0
         <command>chem</command> 57 10
-        <command>gsub</command> <subroutine>sbrt</subroutine> 
+        <command>gsub</command> <subroutine>outb</subroutine> 
     next
 else
     <command>addv</command> obv1 1
     <command>setv</command> <lvalue>baby</lvalue> <rvalue>tokn</rvalue> <token>mum1</token>
 endi
+
+*   Count number of pregnant creatures
+    subr <subroutine>baby</subroutine>
+        setv va00 0
+        enum 4 0 2
+            doif baby ne 0
+                addv va00 1
+            endi
+        next
+        <prefix>dde:</prefix> <command>outs</command> [Pregnant Creatures Count: ]
+        <prefix>dde:</prefix> <command>outv</command> va00
+    <keyword>retn</keyword>
 endm
 * An example of a event script
 scrp 2 3 6 9
@@ -59,6 +71,7 @@ scrp 2 3 6 9
         <command>anim</command> <anim>[10 11 12 13]</anim>
     endi
     <command>tick</command> mv00
+    
 endm
 
 * Invalid command token
