@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2021.08.31"
+version = "2021.09.19"
 
 
 repositories {
@@ -71,7 +71,7 @@ intellij {
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
-//    plugins.set(listOf("PsiViewer:193-SNAPSHOT", "com.mallowigi.idea:8.0"))
+    plugins.set(listOf("PsiViewer:193-SNAPSHOT", "com.mallowigi.idea:8.0"))
 }
 
 tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
@@ -79,6 +79,7 @@ tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
     this.createFolder = true
     this.generateCaosDef()
 }
+
 tasks.getByName<org.jetbrains.intellij.tasks.RunIdeTask>("runIde") {
     dependsOn("generateCaosDef")
 }
