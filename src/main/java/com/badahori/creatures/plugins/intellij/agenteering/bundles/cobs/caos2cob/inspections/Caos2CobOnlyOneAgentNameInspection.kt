@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
@@ -48,7 +47,7 @@ class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool() {
             if (agentNameTuples.size == 1)
                 return
             val agentNameTags = agentNameTuples.map { it.first }.toSet()
-            val tags = PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2::class.java)
+            val tags = PsiTreeUtil.collectElementsOfType(element, CaosScriptCaos2Statement::class.java)
                 .filter { item ->
                     if (item is CaosScriptCaos2Tag)
                         item.tagName in agentNameTags
@@ -64,7 +63,7 @@ class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool() {
                 .drop(1)
             val error = AgentMessages.message("cob.caos2cob.inspections.only-one-agent.extraneous-agent-name")
             for(tag in tags) {
-                val parentTag = tag.getParentOfType(CaosScriptCaos2::class.java)
+                val parentTag = tag.getParentOfType(CaosScriptCaos2Statement::class.java)
                 if (parentTag != null)
                     holder.registerProblem(element, error, DeleteElementFix(AgentMessages.message("cob.caos2cob.inspections.only-one-agent.fix.delete-extraneous-tag", tag.text), parentTag))
                 else

@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil.ARRAY_ACCESS_BEFORE_EXTENSION_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil.ARRAY_ACCESS_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.*
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.isRawScriptNotFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
@@ -30,8 +31,9 @@ class Caos2CobRequiredFileExistsInspection : LocalInspectionTool() {
         return object : CaosScriptVisitor() {
             override fun visitCaos2Command(commandElement: CaosScriptCaos2Command) {
                 super.visitCaos2Command(commandElement)
-                if (!commandElement.containingCaosFile?.isCaos2Cob.orFalse())
+                if (!commandElement.containingCaosFile?.isCaos2Cob.orFalse()) {
                     return
+                }
                 annotateCommand(commandElement, holder)
             }
 
@@ -79,7 +81,7 @@ private val HAS_FILES = listOf(
     CobCommand.INLINE,
     CobCommand.ATTACH,
     CobCommand.DEPEND,
-    CobCommand.LINK
+    CobCommand.LINK,
 )
 
 private fun getFileName(path: String): String? {
@@ -111,8 +113,11 @@ private fun annotateSpriteReference(element: PsiElement, path: String, problemsH
 private fun annotateCommand(commandElement: CaosScriptCaos2Command, holder: ProblemsHolder) {
     val commandType = CobCommand.fromString(commandElement.commandName)
         ?: return
-    if (commandType !in HAS_FILES)
+
+    if (commandType !in HAS_FILES && (commandType != CobCommand.REMOVAL_SCRIPTS || isRawScriptNotFile(commandElement.commandArgs.firstOrNull().orEmpty()))) {
         return
+    }
+
     val directory = commandElement.directory
         ?: return
 
@@ -124,7 +129,7 @@ private fun annotateCommand(commandElement: CaosScriptCaos2Command, holder: Prob
     val badFileNameData = fileNames.indices.filter { i ->
         fileNames[i].let { it.isBlank() || directory.findChild(it) == null }
     }.mapNotNull { i ->
-        fileNameElements.getOrNull(i)?.let { element -> Pair(element, fileNames[i]) }
+        fileNameElements.getOrNull(i)?.let { element -> Pair(element, getFileName(fileNames[i]) ?: fileNames[i]) }
     }
 
     // Add error messages to bad file references
@@ -139,18 +144,20 @@ private fun annotateCommand(commandElement: CaosScriptCaos2Command, holder: Prob
             fileName,
             fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
         )
-        val fixes = getFilenameSuggestions(
+        val filenameFixes = getFilenameSuggestions(
             fileNameElement,
             false,
             fileName
-        ).orEmpty() + Caos2CobRemoveFileFix(elementToRemove)
+        )
+            ?: continue
+        val fixes = filenameFixes + Caos2CobRemoveFileFix(elementToRemove)
         holder.registerProblem(fileNameElement, error, *fixes.toTypedArray())
     }
 }
 
 private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) {
 
-    var fileNameRaw: String = tagElement.valueAsString.nullIfEmpty()
+    var trueFileName: String = tagElement.valueAsString.nullIfEmpty()
         ?: return
 
     // Find corresponding CobTag enum value from tag name
@@ -163,13 +170,13 @@ private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) 
     // Create thumbnail index either null or [n] with this value's selected sprite index
     var thumbnailIndex: String? = null
     if (tag.format == CobTagFormat.SINGLE_IMAGE) {
-        val index = "[^\\[]+\\[(\\d+).*".toRegex().matchEntire(fileNameRaw)
+        val index = "[^\\[]+\\[(\\d+).*".toRegex().matchEntire(trueFileName)
             ?.groupValues
             ?.getOrNull(1)
         if (index != null) {
             thumbnailIndex = "[$index]"
         }
-        val thumbnailFileName = getFileName(fileNameRaw)
+        val thumbnailFileName = getFileName(trueFileName)
         if (thumbnailFileName == null) {
             holder.registerProblem(
                 tagElement,
@@ -177,8 +184,8 @@ private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) 
             )
             return
         }
-        annotateSpriteReference(tagValueElement, fileNameRaw, holder)
-        fileNameRaw = thumbnailFileName
+        annotateSpriteReference(tagValueElement, trueFileName, holder)
+        trueFileName = thumbnailFileName
     }
 
     // Make sure this tag needs filename validation
@@ -190,14 +197,14 @@ private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) 
         ?: return
 
     // Directory.findChild may resolve incorrect case file as correct
-    val trueChild = directory.findChild(fileNameRaw)
+    val trueChild = VirtualFileUtil.findChildIgnoreCase(directory, ignoreExtension = false, directory = false, trueFileName)
     // If name matches exactly or is on Windows case-insensitive file system
-    if (trueChild != null && (trueChild.name == fileNameRaw) || OsUtil.isWindows)
+    if (trueChild != null && (trueChild.name == FileNameUtils.lastPathComponent(trueFileName)) || OsUtil.isWindows)
         return
 
     val error = AgentMessages.message(
         "errors.files.required-file-does-not-exist",
-        fileNameRaw,
+        trueFileName,
         "'${tagElement.tagName}' property"
     )
     val extension = if (tag.format == CobTagFormat.SINGLE_IMAGE) {
@@ -209,7 +216,7 @@ private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) 
     val similarFileNames = getSimilarFileNames(
         element = tagValueElement,
         removeExtension = false,
-        baseFileName = fileNameRaw,
+        baseFileName = trueFileName,
         extensions = extension,
         orb = 3
     )

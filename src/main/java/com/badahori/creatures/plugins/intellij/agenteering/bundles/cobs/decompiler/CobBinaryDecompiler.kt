@@ -33,17 +33,17 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             if (byteBuffer.cString(4) == "****") {
                 return byteArray.contentToString()
             }
-            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtils.getBaseName(fileName))
+            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtils.getNameWithoutExtension(fileName))
             return presentCobData(fileName, cobData)
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
-            val cobData = CobToDataObjectDecompiler.decompile(ByteStreamReader(byteArray), FileNameUtils.getBaseName(fileName))
+            val cobData = CobToDataObjectDecompiler.decompile(ByteStreamReader(byteArray), FileNameUtils.getNameWithoutExtension(fileName))
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
-            psiFile.variant = variant
+            psiFile.setVariant(variant, true)
             psiFile.runInspections = false
             GlobalScope.launch {
                 CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
@@ -56,7 +56,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             val psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
-            psiFile.variant = variant
+            psiFile.setVariant(variant, true)
             psiFile.runInspections = false
             GlobalScope.launch {
                 CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)

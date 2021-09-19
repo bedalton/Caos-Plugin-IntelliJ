@@ -50,7 +50,7 @@ class Caos2CobOnlyOneCobNameInspection : LocalInspectionTool() {
             val first = valuesRaw.first()
             val error = AgentMessages.message("cob.caos2cob.inspections.only-one-cob-file-name.extraneous-cob-name")
             for(tag in valuesRaw.drop(0)) {
-                val elementToDelete = tag.getParentOfType(CaosScriptCaos2::class.java) ?: tag.getParentOfType(CaosScriptCaos2Command::class.java)?.let {
+                val elementToDelete = tag.getParentOfType(CaosScriptCaos2Statement::class.java) ?: tag.getParentOfType(CaosScriptCaos2Command::class.java)?.let {
                     if (first in it.caos2ValueList) {
                         tag
                     } else

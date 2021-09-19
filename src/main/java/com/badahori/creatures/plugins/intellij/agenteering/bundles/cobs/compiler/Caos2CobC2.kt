@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
+import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16Compiler
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -78,23 +78,35 @@ data class Caos2CobC2(
     }
 
     override fun compile(): ByteArray {
+        // Initialize Output
         val outputStream = ByteArrayOutputStream()
-        var buffer = ByteArrayOutputStream()
+        outputStream.write(COB2_HEADER)
+
+        // Write Blocks
+        writeAgent(outputStream)
+        writeAuthor(outputStream)
+        writeFiles(outputStream)
+
+        return outputStream.toByteArray()
+    }
+
+    private fun writeAgent(outputStream: ByteArrayOutputStream) {
+        val buffer = ByteArrayOutputStream()
         buffer.writeUInt16(quantityAvailable ?: -1)
         buffer.writeUint32(0)
         buffer.writeUint32(reuseInterval ?: 0)
-        buffer.writeUInt8(expiresDay ?: 31)
-        buffer.writeUInt8(expiresMonth ?: 12)
-        buffer.writeUInt16(expiresYear ?: 9999)
+        buffer.writeUInt8(expiresDay ?: 0)
+        buffer.writeUInt8(expiresMonth ?: 0)
+        buffer.writeUInt16(expiresYear ?: 0)
         buffer.writeUint32(0) // Reserved 1
         buffer.writeUint32(0) // Reserved 2
         buffer.writeUint32(0) // Reserved 3
         buffer.writeNullTerminatedString(agentName)
-        buffer.writeNullTerminatedString(description ?: "")
-        buffer.writeNullTerminatedString(installScript ?: "")
-        buffer.writeNullTerminatedString(removalScript ?: "")
+        buffer.writeNullTerminatedString(description ?: "", CREATURES_CHARACTER_ENCODING)
+        buffer.writeNullTerminatedString(installScript ?: "", CREATURES_CHARACTER_ENCODING)
+        buffer.writeNullTerminatedString(removalScript ?: "", CREATURES_CHARACTER_ENCODING)
         buffer.writeUInt16(objectScripts.size)
-        objectScripts.forEach { script -> buffer.writeNullTerminatedString(script) }
+        objectScripts.forEach { script -> buffer.writeNullTerminatedString(script, CREATURES_CHARACTER_ENCODING) }
         buffer.writeUInt16(dependencies.size)
         dependencies.forEach { fileName ->
             val tag = when (FileNameUtils.getExtension(fileName)?.toLowerCase()) {
@@ -103,43 +115,50 @@ data class Caos2CobC2(
                 else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
             }
             buffer.writeUInt16(tag)
-            buffer.writeNullTerminatedString(fileName)
+            buffer.writeNullTerminatedString(fileName, CREATURES_CHARACTER_ENCODING)
         }
 
         val thumbnail = thumbnail
+
         buffer.writeUInt16(thumbnail?.width ?: 0)
         buffer.writeUInt16(thumbnail?.height ?: 0)
-        if (thumbnail != null)
+        if (thumbnail != null) {
+            LOGGER.info("Writing Thumbnail")
             S16Compiler.writeCompiledSprite(thumbnail, buffer, ColorEncoding.X_565)
-        var bytes = buffer.toByteArray()
-        val headerBytes = byteArrayOf(*COB2_HEADER, *AGNT_HEADER)
-        outputStream.write(headerBytes)
-        outputStream.writeUint32(bytes.size)
-        outputStream.write(bytes)
-        if (hasAuthProperties) {
-            buffer = ByteArrayOutputStream()
-            val creationTime = (creationTime?.trim() ?: DATE_FORMAT.format(Date())).split("-").mapNotNull { it.toIntSafe() }
-            if (creationTime.size != 3) {
-                throw Caos2CobException("Invalid creation date format. Expected YYYY-MM-DD. Found '${creationTime}'")
-            }
-            buffer.writeUInt8(creationTime[2])
-            buffer.writeUInt8(creationTime[1])
-            buffer.writeUInt16(creationTime[0])
-            buffer.writeUInt8(version ?: 1)
-            buffer.writeUInt8(revision ?: 0)
-            buffer.writeNullTerminatedString(authorName ?: "")
-            buffer.writeNullTerminatedString(authorEmail ?: "")
-            buffer.writeNullTerminatedString(authorURL ?: "")
-            buffer.writeNullTerminatedString(authorComments ?: "")
-            bytes = buffer.toByteArray()
-            outputStream.write(AUTH_HEADER)
-            outputStream.writeUint32(bytes.size)
-            outputStream.write(bytes)
         }
 
-        if (filesToInline.isNotEmpty()) {
-            LOGGER.info("Inlining ${filesToInline.size} Files")
+        // Actually write chunk
+        writeChunk(outputStream, AGNT_HEADER, buffer.toByteArray())
+
+    }
+
+    private fun writeAuthor(outputStream: ByteArrayOutputStream) {
+        if (!hasAuthProperties)
+            return
+        val buffer = ByteArrayOutputStream()
+        val creationTime = (creationTime?.trim() ?: DATE_FORMAT.format(Date())).split("-").mapNotNull { it.toIntSafe() }
+        if (creationTime.size != 3) {
+            throw Caos2CobException("Invalid creation date format. Expected YYYY-MM-DD. Found '${creationTime}'")
         }
+        buffer.writeUInt8(creationTime[2])
+        buffer.writeUInt8(creationTime[1])
+        buffer.writeUInt16(creationTime[0])
+        buffer.writeUInt8(version ?: 1)
+        buffer.writeUInt8(revision ?: 0)
+        buffer.writeNullTerminatedString(authorName ?: "", CREATURES_CHARACTER_ENCODING)
+        buffer.writeNullTerminatedString(authorEmail ?: "", CREATURES_CHARACTER_ENCODING)
+        buffer.writeNullTerminatedString(authorURL ?: "", CREATURES_CHARACTER_ENCODING)
+        buffer.writeNullTerminatedString(authorComments ?: "", CREATURES_CHARACTER_ENCODING)
+
+        // Actually write chunk
+        writeChunk(outputStream, AUTH_HEADER, buffer.toByteArray())
+    }
+
+    private fun writeFiles(outputStream: ByteArrayOutputStream) {
+        if (filesToInline.isEmpty())
+            return
+        LOGGER.info("Inlining ${filesToInline.size} Files")
+        var buffer: ByteArrayOutputStream
         for (file in filesToInline) {
             buffer = ByteArrayOutputStream()
             val tag = when (file.extension?.toLowerCase()) {
@@ -151,14 +170,23 @@ data class Caos2CobC2(
             buffer.writeUint32(0)
             val fileBytes = file.contentsToByteArray()
             buffer.writeUint32(fileBytes.size)
-            buffer.writeNullTerminatedString(file.name)
+            buffer.writeNullTerminatedString(file.name, CREATURES_CHARACTER_ENCODING)
             buffer.write(fileBytes)
-            outputStream.write(FILE_HEADER)
-            bytes = buffer.toByteArray()
-            outputStream.writeUint32(bytes.size)
-            outputStream.write(bytes)
+
+            // Actually write chunk
+            writeChunk(outputStream, FILE_HEADER, buffer)
         }
-        return outputStream.toByteArray()
+    }
+    private fun writeChunk(outputStream: ByteArrayOutputStream, blockType: ByteArray, data: ByteArrayOutputStream) {
+        outputStream.write(blockType)
+        outputStream.writeUint32(data.size())
+        outputStream.writeTo(data)
+    }
+
+    private fun writeChunk(outputStream: ByteArrayOutputStream, blockType: ByteArray, data: ByteArray) {
+        outputStream.write(blockType)
+        outputStream.writeUint32(data.size)
+        outputStream.write(data)
     }
 
     private val hasAuthProperties: Boolean by lazy {
@@ -175,9 +203,9 @@ data class Caos2CobC2(
 
         private val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd")
 
-        private val COB2_HEADER = "cob2".toByteArray(Charsets.US_ASCII)
-        private val AGNT_HEADER = "agnt".toByteArray(Charsets.US_ASCII)
-        private val FILE_HEADER = "file".toByteArray(Charsets.US_ASCII)
-        private val AUTH_HEADER = "auth".toByteArray(Charsets.US_ASCII)
+        private val COB2_HEADER = "cob2".toByteArray(CREATURES_CHARACTER_ENCODING)
+        private val AGNT_HEADER = "agnt".toByteArray(CREATURES_CHARACTER_ENCODING)
+        private val FILE_HEADER = "file".toByteArray(CREATURES_CHARACTER_ENCODING)
+        private val AUTH_HEADER = "auth".toByteArray(CREATURES_CHARACTER_ENCODING)
     }
 }
