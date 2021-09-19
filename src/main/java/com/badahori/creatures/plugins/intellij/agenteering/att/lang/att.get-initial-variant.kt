@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
@@ -15,7 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile
 internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVariant {
 
     // Get cached variant if any
-    file.cachedVariant.nullIfUnknown()?.let {
+    file.cachedVariantExplicitOrImplicit.nullIfUnknown()?.let {
         //return it
     }
 
@@ -35,7 +36,7 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
             else -> CaosVariant.UNKNOWN
         }
         // Cache whatever is returned
-        file.cachedVariant = variant.nullIfUnknown()
+        file.setCachedVariant(variant.nullIfUnknown(), false)
 
         // Return result
         return variant
@@ -59,7 +60,7 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
     if (project != null) {
         // Get module variant first
         file.getModule(project)?.variant?.nullIfUnknown()?.let {
-            file.cachedVariant = it
+            file.setCachedVariant(it, false)
             return it
         }
     }
@@ -95,7 +96,7 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
         }
         else -> getVariantByAttLengths(file, part)
     }
-    file.cachedVariant = variant
+    file.setCachedVariant(variant, false)
     return variant
 }
 

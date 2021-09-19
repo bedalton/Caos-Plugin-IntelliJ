@@ -4,9 +4,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.VariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
@@ -140,8 +141,10 @@ internal class AttEditorImpl(
 
         @JvmStatic
         fun cacheVariant(virtualFile: VirtualFile, variant: CaosVariant) {
-            virtualFile.putUserData(CaosScriptFile.VariantUserDataKey, variant)
-            VariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+            ExplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+            ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+            virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
+            virtualFile.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
         }
     }
 }
