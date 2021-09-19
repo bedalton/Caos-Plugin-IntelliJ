@@ -24,7 +24,7 @@ import icons.CaosScriptIcons
 internal open class ProjectCaosScriptFileTreeNode(
     file: CaosScriptFile,
     viewSettings: ViewSettings?
-) : VirtualFileBasedNode<VirtualFile>(file.project, file.virtualFile, viewSettings) {
+) : VirtualFileBasedNode<VirtualFile>(file.project, file.virtualFile!!, viewSettings) {
 
     private val caosFileName = file.name
 

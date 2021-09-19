@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeChild
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.CommandProcessor
@@ -23,7 +24,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.testFramework.writeChild
 import icons.CaosScriptIcons
 import java.io.File
 import java.io.IOException
@@ -221,7 +221,7 @@ class DumpSpriteAction : AnAction(
                 val existing = parentVirtualFile.findChild(spriteFileName)
                 existing?.delete(this@DumpSpriteAction)
                 val imageBytes = image.toPngByteArray()
-                // Write the sprite image to the file as PNG\
+                // Write the sprite image to the file as PNG
                 val child = parentVirtualFile.writeChild(spriteFileName, imageBytes)
                 createdFiles.add(parentVirtualFile to child)
             }

@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
@@ -42,7 +43,7 @@ fun intToUInt32Bytes(valueIn: Int) : ByteArray {
 }
 
 
-fun OutputStream.writeNullTerminatedString(text:String, encoding:Charset = Charsets.UTF_8) {
+fun OutputStream.writeNullTerminatedString(text:String, encoding:Charset = CREATURES_CHARACTER_ENCODING) {
     write(text.toByteArray(encoding))
     write(NULL_BYTE)
 }
@@ -91,7 +92,7 @@ fun OutputStream.writeSfcString(string:String) {
             writeUInt8(length.toByte())
         }
     }
-    write(string.toByteArray(Charsets.UTF_8))
+    write(string.toByteArray(CREATURES_CHARACTER_ENCODING))
 }
 
 fun OutputStream.writeNullByte() {
