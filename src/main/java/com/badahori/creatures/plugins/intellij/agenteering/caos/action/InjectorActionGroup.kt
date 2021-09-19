@@ -289,5 +289,5 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
 private typealias MakeName = (gameInterfaceName: GameInterfaceName) -> String
 
 internal fun GameInterfaceName.defaultDisplayName(): String {
-    return code?.let { "$it: " }.orEmpty() + name
+    return code?.let { if (it != "*") "$it: " else "" }.orEmpty() + name
 }

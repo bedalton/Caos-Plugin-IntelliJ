@@ -1,24 +1,20 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
+import bedalton.creatures.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacroLike
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRemovalScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.injectionCheckDisabled
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.useJectByDefault
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
 import com.badahori.creatures.plugins.intellij.agenteering.injector.postInfo
-import com.badahori.creatures.plugins.intellij.agenteering.utils.executeOnPooledThread
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.icons.AllIcons
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.AnAction
@@ -29,14 +25,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.ui.components.CheckBox
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
+import kotlin.math.min
 
-@Suppress("ComponentNotRegistered")
-internal class InjectCaosAction: AnAction(
+@Suppress("ComponentNotRegistered", "unused")
+internal class InjectCaosAction : AnAction(
     "Inject CAOS",
     "Inject CAOS into game",
     AllIcons.Toolwindows.ToolWindowRun
@@ -112,8 +111,12 @@ private fun injectActual(
     caosFile: CaosScriptFile
 ) {
     // If variant is CV+ ask which parts of the file to inject
-    if (caosFile.variant?.isNotOld != false || caosFile.isCaos2Cob) {
-        injectC3WithDialog(caosFile, gameInterfaceName)
+    if (variant.isNotOld || caosFile.isCaos2Cob) {
+        val scripts = caosFile.getScripts()
+        if (scripts.isNotEmpty() && scripts.all { it is CaosScriptMacro })
+            Injector.inject(project, variant, gameInterfaceName, caosFile, 7, project.settings.useJectByDefault)
+        else
+            injectC3WithDialog(caosFile, gameInterfaceName)
         return
     }
 
@@ -130,7 +133,7 @@ private fun injectActual(
             }
             // Add inject command to thread pool
             executeOnPooledThread {
-                @Suppress("ComponentNotRegistered")
+                (@Suppress("ComponentNotRegistered")
                 Injector.inject(
                     project = project,
                     fallbackVariant = variant,
@@ -138,13 +141,25 @@ private fun injectActual(
                     caosFile = caosFile,
                     jectFlags = 7,
                     tryJect = false
-                )
+                ))
             }
         }
 
 }
 
-internal data class ScriptBundle(val type: JectScriptType, val scripts: Collection<CaosScriptScriptElement>)
+internal data class ScriptBundle(
+    val scripts: Collection<CaosScriptScriptElement>
+) {
+    val eventScripts by lazy {
+        scripts.filterIsInstance<CaosScriptEventScript>()
+    }
+    val removalScripts by lazy {
+        scripts.filterIsInstance<CaosScriptRemovalScript>()
+    }
+    val installScripts by lazy {
+        scripts.filter { it is CaosScriptInstallScript || it is CaosScriptMacro }
+    }
+}
 
 internal enum class JectScriptType(val type: String) {
     REMOVAL("Removal Scripts"),
@@ -160,7 +175,8 @@ internal val JectSettingsKey = Key<JectSettings>("creatures.caos.injector.JECT_S
 internal data class JectSettings(
     var injectRemovalScriptsSelected: Boolean = true,
     var injectEventScriptsSelected: Boolean = true,
-    var injectInstallScriptsSelected: Boolean = true
+    var injectInstallScriptsSelected: Boolean = true,
+    var injectLinkedFiles: Boolean = false
 )
 
 /**
@@ -168,21 +184,76 @@ internal data class JectSettings(
  */
 private fun injectC3WithDialog(file: CaosScriptFile, gameInterfaceName: GameInterfaceName) {
     val project = file.project
-    val removalScripts = PsiTreeUtil.collectElementsOfType(file, CaosScriptRemovalScript::class.java)
-    val eventScripts = PsiTreeUtil.collectElementsOfType(file, CaosScriptEventScript::class.java)
-    val installScripts = PsiTreeUtil.collectElementsOfType(file, CaosScriptMacroLike::class.java)
-    val options = mutableListOf<ScriptBundle>()
-    if (removalScripts.isNotEmpty())
-        options.add(ScriptBundle(JectScriptType.REMOVAL, removalScripts))
-    if (eventScripts.isNotEmpty())
-        options.add(ScriptBundle(JectScriptType.EVENT, eventScripts))
-    if (installScripts.isNotEmpty())
-        options.add(ScriptBundle(JectScriptType.INSTALL, installScripts))
-    if (options.size < 0 && file.text.trim().isNotBlank()) {
+    val linkedScripts = try {
+        val linkedScripts = getLinkedScripts(project, file).apply {
+            LOGGER.info("Found: ${this.size} linked scripts")
+        }
+        ScriptBundle(linkedScripts)
+    } catch (e: Exception) {
+        val message = "<html>${(e.message ?: "Failed parsing linked files")}.<br />Continue without linked files</html>"
+
+        val shouldContinue = DialogBuilder()
+            .title("Injector Failure")
+            .centerPanel(JLabel(message))
+            .apply {
+                val me = this
+                addOkAction().apply {
+                    this.setText("Continue")
+                }
+                addCancelAction()
+                setCancelOperation {
+                    me.dialogWrapper
+                }
+            }
+            .showAndGet()
+        LOGGER.info("Error Getting linked scripts: ${e.className}(${e.message})")
+        if (!shouldContinue)
+            return
+        null
+    }
+    val scripts = PsiTreeUtil.collectElementsOfType(file, CaosScriptScriptElement::class.java)
+    val fileScripts = ScriptBundle(scripts)
+    if (scripts.isEmpty() && linkedScripts?.scripts.isNullOrEmpty() && file.text.trim().isNotBlank()) {
         LOGGER.severe("Script is not blank, but no script elements found within")
         return
     }
-    showC3InjectPanel(project, gameInterfaceName, file, options)
+    showC3InjectPanel(project, gameInterfaceName, file, fileScripts, linkedScripts)
+}
+
+
+private fun getLinkedScripts(project: Project, file: CaosScriptFile): List<CaosScriptScriptElement> {
+    val commands = PsiTreeUtil.collectElementsOfType(file, CaosScriptCaos2Command::class.java)
+    val parentDirectory = file.virtualFile?.parent
+        ?: throw Exception("Failed to get reference to root CAOS file")
+    val linkCommands = commands.filter {
+        it.commandName.equals("Link", ignoreCase = true)
+    }
+    return linkCommands.flatMap { linkCommand ->
+        linkCommand.caos2ValueList.flatMap { fileNameElement ->
+            val fileName = fileNameElement.valueAsString
+                ?: throw Exception("Invalid link value. Value is not a string")
+            collectScriptsAtPath(project, parentDirectory, fileName)
+        }
+    }
+}
+
+private fun collectScriptsAtPath(
+    project: Project,
+    parentDirectory: VirtualFile,
+    childPath: String
+): Collection<CaosScriptScriptElement> {
+    val linkedVirtualFile = parentDirectory.findChildRecursive(childPath, true)
+        ?: throw Exception(
+            "Failed to find linked script: '$childPath'; File at absolutePath: '${
+                PathUtil.combine(
+                    parentDirectory.path,
+                    childPath
+                )
+            }' does not exist"
+        )
+    val linkedFile = linkedVirtualFile.getPsiFile(project) as? CaosScriptFile
+        ?: throw Exception("Failed parse linked file. '$childPath' is not a CAOS file")
+    return PsiTreeUtil.collectElementsOfType(linkedFile, CaosScriptScriptElement::class.java)
 }
 
 
@@ -193,7 +264,8 @@ internal fun showC3InjectPanel(
     project: Project,
     gameInterfaceName: GameInterfaceName,
     file: CaosScriptFile,
-    scriptsIn: List<ScriptBundle>
+    scriptsIn: ScriptBundle,
+    linked: ScriptBundle?
 ) {
 
     val variant = gameInterfaceName.variant ?: file.variant
@@ -211,16 +283,15 @@ internal fun showC3InjectPanel(
     panel.add(JLabel("Select scripts to install"))
     val jectSettings = file.getUserData(JectSettingsKey) ?: JectSettings()
     // Filter for removal scripts and create checkbox if needed
-    val removalScripts = scriptsIn.firstOrNull { it.type == JectScriptType.REMOVAL }?.scripts
-    val removalScriptsCheckBox = if (removalScripts.isNotNullOrEmpty())
-        JCheckBox(JectScriptType.REMOVAL.type).apply {
-            this.isSelected = jectSettings.injectRemovalScriptsSelected
-        }
-    else
-        null
+    val removalScriptsCheckBox =
+        if (scriptsIn.removalScripts.isNotNullOrEmpty() || linked?.eventScripts.isNotNullOrEmpty())
+            JCheckBox(JectScriptType.REMOVAL.type).apply {
+                this.isSelected = jectSettings.injectRemovalScriptsSelected
+            }
+        else
+            null
     // Filter for event scripts and created checkbox if needed
-    val eventScripts = scriptsIn.firstOrNull { it.type == JectScriptType.EVENT }?.scripts
-    val eventScriptsCheckBox = if (eventScripts.isNotNullOrEmpty())
+    val eventScriptsCheckBox = if (scriptsIn.eventScripts.isNotNullOrEmpty() || linked?.eventScripts.isNotNullOrEmpty())
         JCheckBox(JectScriptType.EVENT.type).apply {
             this.isSelected = jectSettings.injectEventScriptsSelected
         }
@@ -228,19 +299,26 @@ internal fun showC3InjectPanel(
         null
 
     // Filter for install/macro scripts and create checkbox if needed
-    val installScripts = scriptsIn.firstOrNull { it.type == JectScriptType.INSTALL }?.scripts
-    val installScriptsCheckBox = if (installScripts.isNotNullOrEmpty())
-        JCheckBox(JectScriptType.INSTALL.type).apply {
-            this.isSelected = jectSettings.injectInstallScriptsSelected
-        }
-    else
-        null
+    val installScriptsCheckBox =
+        if (scriptsIn.installScripts.isNotNullOrEmpty() || linked?.installScripts.isNotNullOrEmpty())
+            JCheckBox(JectScriptType.INSTALL.type).apply {
+                this.isSelected = jectSettings.injectInstallScriptsSelected
+            }
+        else
+            null
 
     // Add checkboxes and count script types
     var scriptTypes = 0
     removalScriptsCheckBox?.let { scriptTypes++; panel.add(it) }
     eventScriptsCheckBox?.let { scriptTypes++; panel.add(it) }
     installScriptsCheckBox?.let { scriptTypes++; panel.add(it) }
+    val injectLinkedCheckbox: JCheckBox? = if (linked != null && linked.scripts.isNotEmpty()) {
+        CheckBox("Inject linked files", jectSettings.injectLinkedFiles).apply {
+            panel.add(this)
+        }
+    } else
+        null
+
 
 //    val injectionMethod = JComboBox<String>(arrayOf("", INJECTION_METHOD_USE_JECT, INJECTION_METHOD_EACH_SCRIPT)).apply {
 //        this.toolTipText = "Method to inject scripts into the game"
@@ -263,15 +341,20 @@ internal fun showC3InjectPanel(
             okActionEnabled(true)
             setOkOperation {
                 this.dialogWrapper.close(0)
-                removalScriptsCheckBox?.isSelected?.let {
-                    jectSettings.injectRemovalScriptsSelected = it
+                removalScriptsCheckBox?.isSelected?.apply {
+                    jectSettings.injectRemovalScriptsSelected = this
                 }
-                eventScriptsCheckBox?.isSelected?.let {
-                    jectSettings.injectEventScriptsSelected = it
+                eventScriptsCheckBox?.isSelected?.apply {
+                    jectSettings.injectEventScriptsSelected = this
                 }
-                installScriptsCheckBox?.isSelected?.let {
-                    jectSettings.injectInstallScriptsSelected = it
+                installScriptsCheckBox?.isSelected?.apply {
+                    jectSettings.injectInstallScriptsSelected = this
                 }
+
+                injectLinkedCheckbox?.apply {
+                    jectSettings.injectLinkedFiles = this.isSelected
+                }
+
                 file.putUserData(JectSettingsKey, jectSettings)
 
                 var flags = 0
@@ -300,11 +383,23 @@ internal fun showC3InjectPanel(
                 // TODO figure out how to get directories from Registry
                 val useJect: Boolean? = null
                 // Inject CAOS
-                Injector.inject(project, variant, gameInterfaceName, file, flags, useJect == true)
+                if (injectLinkedCheckbox?.isSelected != true)
+                    Injector.inject(project, variant, gameInterfaceName, file, flags, useJect == true)
+                else {
+                    val out = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
+                    if (flags hasFlag Injector.REMOVAL_SCRIPT_FLAG)
+                        out[JectScriptType.REMOVAL] = scriptsIn.removalScripts + linked?.removalScripts.orEmpty()
+                    if (flags hasFlag Injector.EVENT_SCRIPT_FLAG)
+                        out[JectScriptType.EVENT] = scriptsIn.eventScripts + linked?.eventScripts.orEmpty()
+                    if (flags hasFlag Injector.INSTALL_SCRIPT_FLAG)
+                        out[JectScriptType.INSTALL] = scriptsIn.installScripts + linked?.installScripts.orEmpty()
+
+                    Injector.inject(project, variant, gameInterfaceName, out)
+                }
             }
         }.showModal(true)
 }
 
 
-private const val INJECTION_METHOD_USE_JECT = "File with JECT"
-private const val INJECTION_METHOD_EACH_SCRIPT = "Each script individually"
+//private const val INJECTION_METHOD_USE_JECT = "File with JECT"
+//private const val INJECTION_METHOD_EACH_SCRIPT = "Each script individually"

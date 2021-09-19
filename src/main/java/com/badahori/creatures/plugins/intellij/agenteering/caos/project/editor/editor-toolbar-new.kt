@@ -1,22 +1,20 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
+import bedalton.creatures.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectorActionGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.addVariantChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
@@ -194,8 +192,10 @@ internal fun createCaosScriptHeaderComponent(
             }
         }
     } else {
-        runReadAction {
-            populate(project, fileEditor, virtualFile, pointer, toolbar)
+        invokeLater {
+            runReadAction {
+                populate(project, fileEditor, virtualFile, pointer, toolbar)
+            }
         }
     }
     return toolbar
@@ -230,6 +230,7 @@ private fun populate(
         )
     )
 
+    val naturalInjectorSelect = Pointer(false)
     variantSelect.updateUI()
     variantPanel.add(JLabel("Variant:"))
     variantPanel.add(variantSelect)
@@ -247,7 +248,7 @@ private fun populate(
     val initialInjectorsList = injectorActionGroup.getChildren(null)
     val injectorModel = DefaultComboBoxModel(initialInjectorsList)
     injectors.model = injectorModel
-    var lastInjector: AnAction? = null
+    var lastInjector: AnAction?
 
 
     // Action to run whatever injector is currently selected
@@ -258,44 +259,7 @@ private fun populate(
         injectors
     )
 
-    injectors.addItemListener { e ->
-        if (e.stateChange == ItemEvent.SELECTED) {
-            val selected = injectors.selectedItem as? AnAction
-                ?: return@addItemListener
-            if (selected is AddGameInterfaceAction) {
-                val created = selected.create(virtualFile)
-                    ?: return@addItemListener
-                pointer.element?.lastInjector = created
-                invokeLater {
-                    injectorActionGroup.getChildren(null).let { action ->
-                        injectorModel.removeAllElements()
-                        injectorModel.addAll(action.toList())
-                        val thisAction = action
-                            .filterIsInstance<CaosInjectorAction>()
-                            .firstOrNull { it.gameInterfaceName == created }
-                            ?: lastInjector
-                        lastInjector = thisAction
-                        runInjectorAction.setAction(thisAction)
-                        injectorModel.selectedItem = thisAction
-                    }
-                }
-                return@addItemListener
-            } else if (selected is CaosInjectorAction) {
-                val file: CaosScriptFile = pointer.element
-                    ?: return@addItemListener
-                val gameInterface = selected.gameInterfaceName
-                val lastInterface = (lastInjector as? CaosInjectorAction)?.gameInterfaceName
-                if (gameInterface != lastInterface) {
-                    lastInjector = selected
-                    if (file.lastInjector != gameInterface) {
-                        file.lastInjector = selected.gameInterfaceName
-                    }
-                    runInjectorAction.setAction(selected)
-                }
-            }
 
-        }
-    }
     // Actual injection button
     val runInjectorButton = ActionButton(
         runInjectorAction,
@@ -305,6 +269,7 @@ private fun populate(
     )
     var injectorList: List<GameInterfaceName> = project.settings.gameInterfaceNames
     val updateInjectors: (variant: CaosVariant?, GameInterfaceName?) -> Unit = update@{ variant, newGameInterface ->
+
         val newActions: List<AnAction> = InjectorActionGroup
             .getActions(pointer)
             .filter {
@@ -314,29 +279,19 @@ private fun populate(
         val injectorNames = injectorActions.map { it.gameInterfaceName }
         if ((injectorNames + injectorList).distinct().isEmpty())
             return@update
-        val forcedSelectedInjector = newGameInterface?.let { gameInterface ->
-            newActions.filterIsInstance<CaosInjectorAction>()
-                .firstOrNull { injector ->
-                    injector.gameInterfaceName == gameInterface
-                }
-        }
-        val selectedInjector =  forcedSelectedInjector?: injectors.selectedItem as? CaosInjectorAction
+
+        val targetInterface = newGameInterface ?: (injectors.selectedItem as? CaosInjectorAction)?.gameInterfaceName
         injectorModel.removeAllElements()
         injectorModel.addAll(newActions.toList())
-        val newSelection = forcedSelectedInjector ?:
-            injectorActions.firstOrNull { it.gameInterfaceName == selectedInjector?.gameInterfaceName }
+        val newSelection = injectorActions.firstOrNull { it.gameInterfaceName == targetInterface }
+                ?: injectorActions.firstOrNull { it.gameInterfaceName.variant == variant }
                 ?: injectorActions.firstOrNull { it.gameInterfaceName.isVariant(variant) }
         lastInjector = newSelection
+
+        naturalInjectorSelect.value = false
         injectors.selectedItem = newSelection
+        naturalInjectorSelect.value = true
         runInjectorAction.setAction(newSelection)
-        injectors.updateUI()
-        val hasPost = newActions
-            .filterIsInstance<CaosInjectorAction>()
-            .any {
-                it.gameInterfaceName.url.startsWith("http")
-            }
-        // If HAS Post method, allow injector to be visible
-        injectorsContainer.isVisible = OsUtil.isWindows || hasPost == true
         injectors.updateUI()
 
     }
@@ -376,21 +331,28 @@ private fun populate(
     }
 
     // Callback for when variant is assigned
-    val assignVariant = select@{ selected: CaosVariant? ->
+    val assignVariant = select@{ selected: CaosVariant?, explicit: Boolean ->
         // If script can be injected, enable injection button
         val canInject = selected != null && Injector.canConnectToVariant(selected)
+
         injectorsContainer.isVisible = canInject
+
         invokeLater {
+            naturalInjectorSelect.value = false
             updateInjectors(pointer.element?.variant, null)
         }
 
         // Set default variant in settings
-        if (selected != null)
+        if (selected != null && explicit)
             CaosScriptProjectSettings.setVariant(selected)
+
         var file = pointer.element
             ?: return@select
+        if (selected == file.variant) {
+            return@select
+        }
         // Set selected variant in file
-        file.variant = selected
+        file.setVariant(selected, explicit)
 
         // Re-parse file with new variant
         com.intellij.openapi.application.runWriteAction run@{
@@ -406,15 +368,34 @@ private fun populate(
         DaemonCodeAnalyzer.getInstance(project).restart(file)
     }
 
-    // Listener for when variant changes in CAOS due to code markup
-    pointer.element?.let { caosFile ->
-        val listener = caosFile.addVariantChangeListener { variant ->
-            assignVariant(variant)
-            variantSelect.selectedItem = (variant?.code ?: "")
-            compilePanel.isVisible = compilePanel.isVisible && variant != null
-        }
-        PsiManager.getInstance(project).addPsiTreeChangeListener(listener)
-    } ?: return
+//    // Listener for when variant changes in CAOS due to code markup
+//    pointer.element?.let { caosFile ->
+//        val listener = caosFile.addVariantChangeListener { variant ->
+//            assignVariant(variant)
+//            variantSelect.selectedItem = (variant?.code ?: "")
+//            compilePanel.isVisible = compilePanel.isVisible && variant != null
+//        }
+//        PsiManager.getInstance(project).addPsiTreeChangeListener(listener)
+//    } ?: return
+
+
+
+    val moduleVariant = pointer.element?.module?.variant
+    val showVariantSelect = try {
+            (moduleVariant == null ||
+            moduleVariant == CaosVariant.UNKNOWN ||
+            moduleVariant.isC3DS) &&
+            pointer.element?.virtualFile !is CaosVirtualFile
+    } catch (e: Exception) {
+        false
+    }
+
+    if (showVariantSelect)
+    if (moduleVariant?.isC3DS == true) {
+        variantSelect.removeAllItems()
+        variantSelect.addItem("C3")
+        variantSelect.addItem("DS")
+    }
 
 
     // Listener for when CAOS2Compiler directive changes variants
@@ -422,20 +403,13 @@ private fun populate(
         pointer.element?.let { caosFile ->
             val caos2Listener = caosFile.addCaos2ChangeListener { isCaos2 ->
                 compilePanel.isVisible = isCaos2 != null
+                if (showVariantSelect)
+                    variantPanel.isVisible = isCaos2 == null
             } ?: return@run
             PsiManager.getInstance(project).addPsiTreeChangeListener(caos2Listener)
-            compilePanel.isVisible = caosFile.caos2 != null
         }
     }
 
-
-    val showVariantSelect = try {
-        pointer.element?.let { caosFile ->
-            caosFile.module?.variant.let { it == null || it == CaosVariant.UNKNOWN } && caosFile.virtualFile !is CaosVirtualFile
-        } ?: false
-    } catch (e: Exception) {
-        false
-    }
 
     // Add variant change listener
     variantSelect.addItemListener variant@{ e ->
@@ -446,9 +420,10 @@ private fun populate(
         val selected = CaosVariant.fromVal(variantSelect.selectedItem as String)
             .nullIfUnknown()
         val oldVariant = pointer.element?.variant
-        if (oldVariant == selected)
+        if (oldVariant == selected) {
             return@variant
-        assignVariant(selected)
+        }
+        assignVariant(selected, true)
     }
 
     // If variant is unknown, allow for variant selection
@@ -461,7 +436,9 @@ private fun populate(
         if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
             return@addSettingsChangedListener
         injectorList = settings.gameInterfaceNames
+        naturalInjectorSelect.value = false
         updateInjectors(pointer.element?.variant, null)
+        naturalInjectorSelect.value = true
     }
 
     val setInitialInjector: (initialVariant: CaosVariant?, initialLastInterfaceName: GameInterfaceName?) -> Unit =
@@ -475,19 +452,64 @@ private fun populate(
             injectorModel.removeAllElements()
             injectorModel.addAll(newActions.toList())
             injectors.updateUI()
-            lastInjector = initialLastInterfaceName
-                ?.let { interfaceName ->
-                    newActions.filterIsInstance<CaosInjectorAction>()
-                        .firstOrNull { anInterface ->
-                            anInterface.gameInterfaceName == interfaceName
-                        }
+            lastInjector = newActions.filterIsInstance<CaosInjectorAction>()
+                .firstOrNull { anInterface ->
+                    anInterface.gameInterfaceName == initialLastInterfaceName
+                }
+                ?: newActions.firstOrNull {
+                    (it as? CaosInjectorAction)?.gameInterfaceName?.variant == initialVariant
                 }
                 ?: newActions.firstOrNull {
                     (it as? CaosInjectorAction)?.gameInterfaceName?.isVariant(initialVariant) == true
                 }
+            naturalInjectorSelect.value = false
             injectors.selectedItem = lastInjector
+            naturalInjectorSelect.value = true
             injectors.updateUI()
             updateInjectors(initialVariant, initialLastInterfaceName)
+            injectors.addItemListener { e ->
+                if (e.stateChange == ItemEvent.SELECTED) {
+                    val selected = injectors.selectedItem as? AnAction
+                        ?: return@addItemListener
+                    if (selected is AddGameInterfaceAction) {
+                        val created = selected.create(virtualFile)
+                        if (created == null) {
+                            naturalInjectorSelect.value = false
+                            injectors.selectedItem = lastInjector
+                            return@addItemListener
+                        }
+                        pointer.element?.lastInjector = created
+                        invokeLater {
+                            injectorActionGroup.getChildren(null).let { action ->
+                                injectorModel.removeAllElements()
+                                injectorModel.addAll(action.toList())
+                                val thisAction = action
+                                    .filterIsInstance<CaosInjectorAction>()
+                                    .firstOrNull { it.gameInterfaceName == created }
+                                    ?: lastInjector
+                                lastInjector = thisAction
+                                runInjectorAction.setAction(thisAction)
+                                naturalInjectorSelect.value = true
+                                injectorModel.selectedItem = thisAction
+                            }
+                        }
+                        return@addItemListener
+                    } else if (selected is CaosInjectorAction) {
+                        val file: CaosScriptFile = pointer.element
+                            ?: return@addItemListener
+                        val gameInterface = selected.gameInterfaceName
+                        val lastInterface = (lastInjector as? CaosInjectorAction)?.gameInterfaceName
+                        if (gameInterface != lastInterface) {
+                            lastInjector = selected
+                            if (naturalInjectorSelect.value) {
+                                file.lastInjector = selected.gameInterfaceName
+                            }
+                            runInjectorAction.setAction(selected)
+                        }
+                    }
+                    naturalInjectorSelect.value = true
+                }
+            }
         }
 
     val setInitialVariant: (CaosVariant?) -> Unit = { initialVariant ->
@@ -593,7 +615,7 @@ private fun interruptedInitializer(
             }
             val eventFile = event.file
                 ?: return
-            if (eventFile.virtualFile.path != file.virtualFile.path && eventFile.virtualFile != file.virtualFile) {
+            if (eventFile.virtualFile.path != file.virtualFile?.path && eventFile.virtualFile != file.virtualFile) {
                 return
             }
             if (event.propertyName != "propUnloadedPsi")
