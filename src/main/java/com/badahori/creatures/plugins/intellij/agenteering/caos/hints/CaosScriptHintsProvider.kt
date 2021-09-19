@@ -20,13 +20,16 @@ interface CaosScriptHintsProvider {
 
     companion object {
         // When resolving hint providers, ensure element is not folded first
-        fun resolve(element: PsiElement): CaosScriptHintsProvider? = if (element.isNotFolded)
-            values.sortedByDescending { it.priority }
-                    .firstOrNull { it.enabled && it.isApplicable(element) }
-        else
-            null
+        fun resolve(element: PsiElement): CaosScriptHintsProvider? {
+            return if (element.isNotFolded)
+                values.firstOrNull { it.enabled && it.isApplicable(element) }
+            else
+                null
+        }
 
-        val values: Array<CaosScriptHintsProvider> =
-                arrayOf(*CaosScriptInlayTypeHint.values(), *CaosScriptInlayParameterHintsProvider.values())
+        val values: List<CaosScriptHintsProvider> by lazy {
+            arrayOf(*CaosScriptInlayTypeHint.values(), *CaosScriptInlayParameterHintsProvider.values())
+                .sortedByDescending { it.priority }
+        }
     }
 }

@@ -338,7 +338,8 @@ private fun rangeFromCommand(
         if (previousSibling is CaosScriptArgument) {
             argument = previousSibling
             // Get argument parent as command element
-            argument.parent as CaosScriptCommandElement
+            argument.parent as? CaosScriptCommandElement
+                ?: return null
         } else {
             // Try to get previous as CAOS command
             val temp = previousSibling as? CaosScriptCommandElement

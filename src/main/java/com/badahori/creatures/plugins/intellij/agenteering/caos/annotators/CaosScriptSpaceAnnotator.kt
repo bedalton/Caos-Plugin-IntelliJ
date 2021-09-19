@@ -1,21 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptFixTooManySpaces
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertSpaceFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptTrimErrorSpaceBatchFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_COMMA
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_NEWLINE
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getNextNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isDirectlyPrecededByNewline
-import com.badahori.creatures.plugins.intellij.agenteering.utils.next
-import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbAware
@@ -23,13 +14,32 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType.WHITE_SPACE
+import com.intellij.psi.tree.IElementType
+import com.intellij.psi.util.elementType
 
 class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val type = element.tokenType
-        if (type != WHITE_SPACE && type != CaosScript_COMMA && type != CaosScript_NEWLINE)
+        if (type != WHITE_SPACE && type != CaosScript_COMMA && type != CaosScript_NEWLINE) {
+            val previous = element.previous
+                ?: return
+            val previousType = previous.elementType
+                ?: return
+
+            // If is comment prefix, delete it
+            if (previousType == CaosScript_CAOS_2_COMMENT_START || previousType == CaosScript_COMMENT_START)
+                return
+            if (isBracket(previousType, type) || isQuoted(previousType, type) || isQuoted(type, previousType))
+                return
+            if (previousType != WHITE_SPACE && previousType != CaosScript_COMMA && previousType != CaosScript_NEWLINE) {
+                holder.newErrorAnnotation("missing whitespace character")
+                    .range(TextRange.create(element.startOffset, element.startOffset + 1))
+                    .withFix(CaosScriptInsertBeforeFix("Insert space", "", element, ' '))
+                    .create()
+            }
             return
+        }
         val variant = element.variant.nullIfUnknown()
             ?: return
         if (element.textContains(',')) {
@@ -185,4 +195,38 @@ private fun canFollowComma(element: PsiElement?): Boolean {
 ////            element is CaosScriptRepsHeader ||
 ////            element is CaosScriptSubroutineHeader ||
 ////            element is CaosScriptEscnHeader
+}
+
+
+private fun isBracket(t1: IElementType, t2: IElementType): Boolean {
+    if (t1 == CaosScript_BYTE_STRING_R || t2 == CaosScript_BYTE_STRING_R || t1 == CaosScript_ANIM_R || t2 == CaosScript_ANIM_R)
+        return true
+    if (t1 == CaosScript_OPEN_BRACKET) {
+        return t2 == CaosScript_INT ||
+                t2 == CaosScript_BYTE_STRING_POSE_ELEMENT ||
+                t2 == CaosScript_TEXT_LITERAL ||
+                t2 == CaosScript_ANIM_R ||
+                t2 == CaosScript_CLOSE_BRACKET
+    }
+    if (t2 == CaosScript_CLOSE_BRACKET) {
+        return t1 == CaosScript_INT ||
+                t1 == CaosScript_BYTE_STRING_POSE_ELEMENT ||
+                t1 == CaosScript_TEXT_LITERAL ||
+                t1 == CaosScript_ANIM_R ||
+                t1 == CaosScript_ANIMATION_STRING ||
+                t1 == CaosScript_OPEN_BRACKET
+    }
+    return false
+}
+
+private fun isQuoted(t1: IElementType, t2: IElementType): Boolean {
+
+    if (t1 === CaosScript_DOUBLE_QUOTE || t1 === CaosScript_SINGLE_QUOTE) {
+        if (t1 == t2)
+            return true
+        if (t2 === CaosScript_CHAR_CHAR || t2 === CaosScript_STRING_TEXT || t2 === CaosScript_STRING_CHAR || t2 === CaosScript_STRING_ESCAPE_CHAR) {
+            return true
+        }
+    }
+    return false
 }

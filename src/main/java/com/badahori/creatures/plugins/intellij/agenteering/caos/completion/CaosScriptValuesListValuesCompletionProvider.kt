@@ -5,8 +5,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptyNode
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getPreviousNonEmptySibling
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptyNode
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
@@ -52,7 +52,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                 ?.get(variant)
                 ?.let { valuesList ->
                     // Finally, add basic completion for list values
-                    addListValues(resultSet, valuesList, case, false)
+                    addListValues(resultSet, valuesList, case, false, argument !is CaosScriptRvalue)
                     return
                 }
         }
@@ -106,7 +106,7 @@ object CaosScriptValuesListValuesCompletionProvider {
             })
 
 
-        // Check if need to add space after insertion
+        // Does a space need to be added insertion
         val addSpace = numParameters - 1 > index
 
         if (valuesListGetter == null) {
@@ -136,7 +136,7 @@ object CaosScriptValuesListValuesCompletionProvider {
         }
 
         // Finally, add basic completion for list values
-        addListValues(resultSet, valuesList, case, addSpace)
+        addListValues(resultSet, valuesList, case, addSpace, argument !is CaosScriptRvalue)
     }
 
     /**
@@ -204,13 +204,13 @@ object CaosScriptValuesListValuesCompletionProvider {
             }
             return
         }
-        addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
+        addListValues(resultSet, valuesList, case, expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp, false)
     }
 
     /**
      * Actually add list values from previously determined lists
      */
-    private fun addListValues(resultSet: CompletionResultSet, list: CaosValuesList, case: Case, addSpace: Boolean) {
+    private fun addListValues(resultSet: CompletionResultSet, list: CaosValuesList, case: Case, addSpace: Boolean, prefixValueWithSpace: Boolean) {
         val values = list.values.let { values ->
             if (values.all { it.intValue != null })
                 values.sortedBy { it.intValue }
@@ -226,7 +226,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                     .withIcon(CaosScriptIcons.VALUE_LIST_VALUE)
                     .withLookupString(builderLabel)
                     .withPresentableText(builderLabel)
-                    .withInsertHandler(GenerateBitFlagInsertHandler(list.name, values))
+                    .withInsertHandler(GenerateBitFlagInsertHandler(list.name, values, prefixValueWithSpace))
                     .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 1000.0
             )
             resultSet.addElement(lookupElement)
@@ -297,7 +297,7 @@ object CaosScriptValuesListValuesCompletionProvider {
 }
 
 /**
- * Add completions for file names based on the lists name. (ie. 'File.SPR', 'File.S16/C16')
+ * Add completions for file names based on the lists name. (i.e. 'File.SPR', 'File.S16/C16')
  */
 private fun addFileNameCompletions(
     resultSet: CompletionResultSet,
@@ -349,6 +349,9 @@ private fun addFileNameCompletions(
             lookupElement = lookupElement
                 .withInsertHandler(CloseQuoteInsertHandler(closeQuote))
         }
-        resultSet.addElement(lookupElement)
+        resultSet.addElement(
+            lookupElement
+            .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
+        )
     }
 }

@@ -14,10 +14,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
 class CaosScriptInsertBeforeFix(
-    private val fixText: String,
-    private val wordText: String,
+    private val fixDescription: String,
+    private val textToInsert: String,
     element: PsiElement,
-    private val appendChar: Char = ' '
+    private val appendChar: Char? = ' '
 ) : IntentionAction, LocalQuickFix {
 
     private val element = SmartPointerManager.createPointer(element)
@@ -32,7 +32,7 @@ class CaosScriptInsertBeforeFix(
         invoke(editor, element)
     }
 
-    override fun getText(): String = fixText
+    override fun getText(): String = fixDescription
 
     override fun startInWriteAction(): Boolean = true
 
@@ -49,6 +49,10 @@ class CaosScriptInsertBeforeFix(
     private fun invoke(editor: Editor?, element:PsiElement) {
         if (editor == null)
             return
-        EditorUtil.insertText(editor, "$wordText$appendChar", element.startOffset, false)
+        val appendText = if (appendChar == null)
+            ""
+        else
+            "$appendChar"
+        EditorUtil.insertText(editor, "$textToInsert$appendText", element.startOffset, false)
     }
 }

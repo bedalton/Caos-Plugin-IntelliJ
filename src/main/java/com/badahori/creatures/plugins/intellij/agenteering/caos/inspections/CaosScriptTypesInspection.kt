@@ -1,16 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.getRvalueTypeWithoutInference
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueLikeMixin
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.util.elementType
 
 /**
  * Inspection for validating expected parameter types with actual argument types
@@ -37,8 +40,10 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             }
 
             override fun visitCommandCall(o: CaosScriptCommandCall) {
-                annotateArgument(o, holder)
                 super.visitCommandCall(o)
+                val command = o.firstChild as? CaosScriptCommandElement
+                    ?: return
+                annotateArgument(command, holder)
             }
         }
     }
@@ -56,7 +61,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         // Get parameters for this command call
         val parameters = commandDefinition.parameters
         // Get arguments for this command call
-        val arguments = element.getChildrenOfType(CaosScriptArgument::class.java)
+        val arguments = element.arguments
         // If there are less parameters than arguments
         // Grammar does not align with lib json
         // Needs to be checked
@@ -65,6 +70,13 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
             LOGGER.severe("BNF grammar definitions mismatched. BNF parse of ${commandDefinition.command} allowed ${arguments.size} arguments when expecting: ${parameters.size}")
             return
         }
+        if (parameters.isEmpty())
+            return
+
+        if (arguments.isEmpty()) {
+            return
+        }
+
         // Iterate over the arguments and annotate as necessary
         for (i in arguments.indices) {
             val argument = arguments[i]
@@ -76,18 +88,20 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     /**
      * Annotate argument for expected type vs. actual type
      */
+    @Suppress("unused")
     private fun annotateArgument(variant: CaosVariant, parameter: CaosParameter, argument: CaosScriptArgument, holder: ProblemsHolder) {
         // If is LValue, simply return as grammar forces lvalues where they need to be
         if (argument is CaosScriptLvalue)
             return
         // If token rvalue, return, no type checking needs to be made
         // As token place is hardcoded in grammar
-        if (argument is CaosScriptTokenRvalue)
+        if (argument is CaosScriptRvalueLikeMixin<*>)
             return
         // If this argument is not a rvalue,
         // then this command needs to be updated after grammar change
         if (argument !is CaosScriptRvalueLike)
-            throw Exception("Unexpected argument type encountered")
+            throw Exception("Unexpected argument type encountered. Type: ${argument.elementType}(${argument.text})")
+
 
         // If value is a var token, return as it can be anything
         if (argument.varToken != null)
@@ -97,16 +111,17 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
         if (argument.namedGameVar != null)
             return
 
-        // Get actual type of this argument
-        val actualType = getActualType(argument) { it.inferredType }.nullIfEmpty()
-            ?: return
-
         // Get simple type and convert it to analogous type if needed
         val expectedTypeSimple = parameter.type
 
+        // Get actual type of this argument
+        val actualType = getRvalueTypeWithoutInference(argument, expectedTypeSimple)
+            ?: return
+
+
         // compare Actual type to expected type
         // Fudge types when similar enough
-        if (expectedTypeSimple in actualType || fudge(variant, actualType, expectedTypeSimple)) {
+        if (expectedTypeSimple like actualType) {
             return
         }
 
@@ -123,16 +138,18 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
 
         // In old variants, agent return types are integers, and can be used as such
         // Check if expecting integer, and actual type is agent
-        if (variant.isOld && expectedTypeSimple == INT && AGENT in actualType) {
+        if (variant.isOld && expectedTypeSimple == INT && actualType like AGENT) {
             // This coercion will be handled by another inspection
             return
         }
+
         // Create error message
-        val message = if (actualType.size == 1) {
-            CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType[0].simpleName)
-        } else {
-            CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.distinct().joinToString(" or ") { it.simpleName })
-        }
+//        val message = if (actualType.size == 1) {
+//            CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType[0].simpleName)
+//        } else {
+//            CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.distinct().joinToString(" or ") { it.simpleName })
+//        }
+        val message = CaosBundle.message("caos.annotator.syntax-error-annotator.incorrect-parameter-type-without-name-message", expectedTypeSimple.simpleName, actualType.simpleName)
         // Annotate element with type error
         holder.registerProblem(argument, message)
     }
@@ -140,6 +157,7 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
     /**
      * Gets the actual type for a variable
      */
+    @Suppress("unused")
     private fun getActualType(element: CaosScriptRvalueLike, caosVar: (element:CaosScriptRvalueLike) -> List<CaosExpressionValueType>): List<CaosExpressionValueType> {
         return element.inferredType
                 .let {
@@ -155,58 +173,5 @@ class CaosScriptTypesInspection : LocalInspectionTool() {
                 }
                 // element is not a rvalue command call, get simple type
                 ?: caosVar(element)
-    }
-
-    companion object {
-
-        // Similar var types
-        private val BYTE_STRING_LIKE = listOf(BYTE_STRING, C1_STRING, ANIMATION)
-        private val INT_LIKE = listOf(INT, DECIMAL)
-        private val FLOAT_LIKE = listOf(FLOAT, DECIMAL, INT)
-        private val ANY_TYPE = listOf(ANY, VARIABLE, UNKNOWN)
-        private val NUMERIC = listOf(FLOAT, DECIMAL, INT)
-        private val AGENT_LIKE = listOf(AGENT, NULL)
-        private val STRING_LIKE = listOf(STRING, C1_STRING, HEXADECIMAL)
-
-        /**
-         * Determine whether types are similar despite having actually different types
-         */
-        fun fudge(variant: CaosVariant, actualType: List<CaosExpressionValueType>, expectedType: CaosExpressionValueType): Boolean {
-            if (actualType likeAny ANY_TYPE || expectedType in ANY_TYPE)
-                return true
-            if (actualType likeAny BYTE_STRING_LIKE && expectedType in BYTE_STRING_LIKE)
-                return true
-            if (actualType likeAny INT_LIKE && expectedType in INT_LIKE)
-                return true
-            if (actualType likeAny FLOAT_LIKE && expectedType in FLOAT_LIKE)
-                return true
-            if (actualType likeAny AGENT_LIKE && expectedType in AGENT_LIKE)
-                return true
-            if (actualType likeAny STRING_LIKE && expectedType in STRING_LIKE)
-                return true
-            if (variant.isNotOld)
-                return actualType likeAny NUMERIC && expectedType in NUMERIC
-            return false
-        }
-        /**
-         * Determine whether types are similar despite having actually different types
-         */
-        fun fudge(variant: CaosVariant, actualType: CaosExpressionValueType, expectedType: CaosExpressionValueType): Boolean {
-            if (actualType in ANY_TYPE || expectedType in ANY_TYPE)
-                return true
-            if (actualType in BYTE_STRING_LIKE && expectedType in BYTE_STRING_LIKE)
-                return true
-            if (actualType in INT_LIKE && expectedType in INT_LIKE)
-                return true
-            if (actualType in FLOAT_LIKE && expectedType in FLOAT_LIKE)
-                return true
-            if (actualType in AGENT_LIKE && expectedType in AGENT_LIKE)
-                return true
-            if (actualType in STRING_LIKE && expectedType in STRING_LIKE)
-                return true
-            if (variant.isNotOld)
-                return actualType in NUMERIC && expectedType in NUMERIC
-            return false
-        }
     }
 }

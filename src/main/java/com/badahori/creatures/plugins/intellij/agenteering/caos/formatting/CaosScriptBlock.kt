@@ -15,6 +15,7 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
+import com.intellij.psi.util.elementType
 
 
 class CaosScriptBlock internal constructor(
@@ -77,6 +78,12 @@ class CaosScriptBlock internal constructor(
                 val next = cursorElement.getNextNonEmptySibling(true)
                 if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock)
                     return normalIndent
+                if (cursorElement.parent is CaosScriptScriptElement) {
+                    return if ((cursorElement.parent as CaosScriptScriptElement).scriptTerminator != null)
+                        normalIndent
+                    else
+                        noneIndent
+                }
             }
             return if (psi is CaosScriptScriptElement) {
                 if (cursorElement.parent == psi)
@@ -98,15 +105,13 @@ class CaosScriptBlock internal constructor(
             }
         }
 
-        if (psi is CaosScriptCodeBlock && (psi.parent is CaosScriptScriptElement)) {
-            val parent = psi.parent
-            if (parent is CaosScriptEventScript && !caosSettings.INDENT_SCRP)
+        if (psi.parent is CaosScriptScriptElement) {
+            val parent = psi.parent as CaosScriptScriptElement
+            if (parent.scriptTerminator == null || parent is CaosScriptMacro)
+                return noneIndent
+            if (!caosSettings.INDENT_SCRP)
                 return absoluteNoneIndent
-            if (parent is CaosScriptRemovalScript && !caosSettings.INDENT_RSCR)
-                return absoluteNoneIndent
-            if (parent is CaosScriptInstallScript && !caosSettings.INDENT_ISCR)
-                return absoluteNoneIndent
-            normalIndent
+            return normalIndent
         }
 
         // Needs to check if my node is a DoifStatement parent

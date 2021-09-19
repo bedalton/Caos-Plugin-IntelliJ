@@ -24,6 +24,7 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
+
             (element as? CaosScriptClassifier)?.let { classifier ->
                 if (classifier.getPreviousNonEmptySibling(false)?.text?.equalsIgnoreCase("scrp").orFalse()) {
                     return listOfNotNull(
@@ -34,16 +35,23 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
                 }
             }
             val commandElement = element as? CaosScriptCommandElement
-                    ?: return mutableListOf()
-            if (commandElement is CaosScriptCAssignment && commandElement.commandString like "SETV" )
-                return inlayHintsForCAssignment(commandElement)
+                    ?: return EMPTY_INLAY_LIST
+
+            if (element is CaosScriptCommandCall && element.firstChild is CaosScriptCommandElement)
+                return EMPTY_INLAY_LIST
+
+            if (commandElement is CaosScriptCAssignment) {
+                if (commandElement.commandString like "SETV")
+                    return inlayHintsForCAssignment(commandElement)
+            }
+
 
             // If direct parent is assignment, its parameters have been modified set c_assignment element pass
             if (commandElement.parent.let { it is CaosScriptCAssignment && it.commandString like "SETV" })
                 return emptyList()
 
             val referencedCommand = getCommand(commandElement)
-                    ?: return mutableListOf()
+                    ?: return EMPTY_INLAY_LIST
             val skipLast = skipLast(commandElement)
             val parameterStructs = referencedCommand.parameters
             val parameters = getParametersAsStrings(parameterStructs, skipLast)
@@ -56,7 +64,7 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
         private fun inlayHintsForCAssignment(assignment:CaosScriptCAssignment) : List<InlayInfo> {
             val arguments = assignment.arguments
             val lvalueElement = (arguments.firstOrNull() as? CaosScriptLvalue)
-                    ?: return emptyList()
+                    ?: return EMPTY_INLAY_LIST
             val command = lvalueElement.commandDefinition
             if (command == null) {
                 val parameters = assignment.commandDefinition?.parameters?.map { it.name.nullIfEmpty() }
@@ -132,3 +140,5 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
         }
     }
 }
+
+private val EMPTY_INLAY_LIST: List<InlayInfo> = emptyList()
