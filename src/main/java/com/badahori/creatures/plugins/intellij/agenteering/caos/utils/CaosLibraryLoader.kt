@@ -16,7 +16,7 @@ object CaosLibraryLoader{
             pathIn
         else
             "$pathIn.dll"
-        val myFile: String = FileNameUtils.getBaseName(pathIn)!!
+        val myFile: String = FileNameUtils.getNameWithoutExtension(pathIn)!!
         try {
             // have to use a stream
             val dllInputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)

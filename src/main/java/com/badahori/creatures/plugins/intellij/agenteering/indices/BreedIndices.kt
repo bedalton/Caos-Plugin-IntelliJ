@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.indices
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
@@ -125,7 +124,7 @@ data class BreedPartKey(
 
         @JvmStatic
         fun fromFileName(fileName: String, variant: CaosVariant? = null): BreedPartKey? {
-            val chars = FileNameUtils.getBaseName(fileName)?.toLowerCase()?.toCharArray()
+            val chars = FileNameUtils.getNameWithoutExtension(fileName)?.toLowerCase()?.toCharArray()
                 ?: return null
             if (chars.size != 4) {
                 return null

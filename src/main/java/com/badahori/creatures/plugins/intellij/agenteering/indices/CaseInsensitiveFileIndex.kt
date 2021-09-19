@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -39,15 +39,15 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
             return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(null, null, extension), scope)
         }
 
-        fun findWithBaseName(
+        fun findWithoutExtension(
             project:Project,
-            baseName:String,
+            nameWithoutExtension:String,
             searchScope: GlobalSearchScope? = null
         ) : Collection<VirtualFile> {
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
-            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(null, baseName, null), scope)
+            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(null, nameWithoutExtension, null), scope)
         }
 
 
@@ -59,12 +59,12 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
-            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(null, fileName, null), scope)
+            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(fileName, null, null), scope)
         }
     }
 }
 
-data class FileNameInfo(val fileName:String?, val baseName:String?, val extension:String?)
+data class FileNameInfo(val fileName:String?, val nameWithoutExtension:String?, val extension:String?)
 
 private object Indexer : DataIndexer<FileNameInfo, Void, FileContent> {
     override fun map(fileInfo: FileContent): Map<FileNameInfo, Void?> {
@@ -90,7 +90,7 @@ private object Descriptor : KeyDescriptor<FileNameInfo> {
             return false
         if (info1.fileName != null && info2.fileName != null && info1.fileName.toLowerCase() != info2.fileName.toLowerCase())
             return false
-        if (info1.baseName != null && info2.baseName != null && info1.baseName.toLowerCase() != info2.baseName.toLowerCase())
+        if (info1.nameWithoutExtension != null && info2.nameWithoutExtension != null && info1.nameWithoutExtension.toLowerCase() != info2.nameWithoutExtension.toLowerCase())
             return false
         if (info1.extension != null && info2.extension != null && info1.extension.toLowerCase() != info2.extension.toLowerCase())
             return false
@@ -99,7 +99,7 @@ private object Descriptor : KeyDescriptor<FileNameInfo> {
 
     override fun save(output: DataOutput, info: FileNameInfo) {
         IOUtil.writeUTF(output, info.fileName ?: NULL_KEY)
-        IOUtil.writeUTF(output, info.baseName ?: NULL_KEY)
+        IOUtil.writeUTF(output, info.nameWithoutExtension ?: NULL_KEY)
         IOUtil.writeUTF(output, info.extension ?: NULL_KEY)
     }
 
