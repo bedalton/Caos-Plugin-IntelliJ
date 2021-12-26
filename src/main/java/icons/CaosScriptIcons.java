@@ -41,4 +41,5 @@ public interface CaosScriptIcons {
     Icon COMPILE = IconLoader.getIcon("/icons/compile.svg");
     Icon BUILD = IconLoader.getIcon("/icons/compile.svg");
     Icon RUN = IconLoader.getIcon("/icons/run.svg");
+    Icon ATT_GROUP = IconLoader.getIcon("/icons/att-group-icon.png");
 }
