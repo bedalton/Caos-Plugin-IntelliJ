@@ -81,6 +81,7 @@ class C16SpriteFrame private constructor(width: Int, height: Int, private val en
         return null
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun decode(bytes: ByteStreamReader, offset: Long, lineOffsets: List<Long>): BufferedImage? {
         val bytesBuffer = bytes.duplicate()
         if (bytesBuffer.lastIndex < offset.toInt()) {

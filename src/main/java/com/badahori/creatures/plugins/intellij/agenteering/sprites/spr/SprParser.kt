@@ -49,7 +49,7 @@ class SprSpriteFile @Throws constructor(file: VirtualFile) : SpriteFile<SprSprit
         val numRawBytes = rawBytes.size
         val bytesBuffer = ByteStreamReader(rawBytes)
         val numImages = bytesBuffer.uInt16
-        mFrames =  (0 until numImages).map {
+        mFrames =  (0 until numImages).mapNotNull map@{ frameNumber ->
             val offsetForData = bytesBuffer.uInt32
             if (offsetForData < 0) {
                 throw SpriteParserException("OffsetForData returned negative number. $offsetForData")
@@ -57,7 +57,11 @@ class SprSpriteFile @Throws constructor(file: VirtualFile) : SpriteFile<SprSprit
             val width = bytesBuffer.uInt16
             val height = bytesBuffer.uInt16
             if (width < 1 || height < 1) {
-                throw SpriteParserException("OffsetForData Width Height invalid for frame $it. Found size: <${width}x${height}>")
+                if (numImages == 27 && frameNumber == 26) {
+                    LOGGER.severe("OffsetForData Width Height invalid for frame $frameNumber/$numImages. Found size: <${width}x${height}> in file: <${file.path}>")
+                    return@map null
+                }
+                throw SpriteParserException("OffsetForData Width Height invalid for frame $frameNumber/$numImages. Found size: <${width}x${height}> in file: <${file.path}>")
             }
             val numBytes = width * height
             val endByte = (offsetForData + numBytes)

@@ -92,6 +92,10 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
         return NAME
     }
 
+    override fun getFile(): VirtualFile {
+        return myFile
+    }
+
     override fun setState(state: FileEditorState) {}
     override fun isModified(): Boolean {
         return false

@@ -94,7 +94,7 @@ object C16Compiler : SpriteCompiler {
                                 runs.add(this)
                             }
                         }
-                        val subFrom: Int = arrayOf(255 - alpha, red - 2, green - 2, blue - 2).min()!!
+                        val subFrom: Int = arrayOf(255 - alpha, red - 2, green - 2, blue - 2).minOrNull()!!
                         val color = rgbToInt(red - subFrom, green - subFrom, blue - subFrom)
                         run.colors.add(color)
                     }
