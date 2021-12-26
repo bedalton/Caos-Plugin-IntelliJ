@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
@@ -405,8 +407,9 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
 
         @JvmStatic
         val instance: CaosVirtualFileSystem by lazy {
-            if (index.getAndIncrement() > 0)
-                throw IOException("Too many CAOS virtual file systems created")
+            if (index.getAndIncrement() > 0) {
+                LOGGER.severe("Too many CAOS virtual file systems created")
+            }
             VirtualFileManager.getInstance().getFileSystem(CAOS_VFS_PROTOCOL) as CaosVirtualFileSystem
         }
     }
