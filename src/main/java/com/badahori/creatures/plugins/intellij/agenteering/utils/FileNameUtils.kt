@@ -7,38 +7,45 @@ object FileNameUtils {
 
     private val anyPathSeparatorRegex = "[\\\\/]".toRegex()
 
-    private val pathRegex = "([\\\\/][^[\\\\/])[\\\\/]"
+    private const val pathRegex = "([\\\\/][^[\\\\/])[\\\\/]"
 
     @JvmStatic
     fun getNameWithoutExtension(fileName: String): String? {
-        var startIndex = fileName.lastIndexOf(File.separatorChar);
-        if (startIndex < 0)
-            startIndex = 0
-        else
-            startIndex += 1
-        val lastIndex = fileName.lastIndexOf('.')
+        val lastComponent = lastPathComponent(fileName)
+        // Handle if directory in hierarchy has a dot in its name
+        val lastIndex = lastComponent.lastIndexOf('.')
         return when {
-            lastIndex < 0 -> fileName
-            lastIndex == 0 -> null
-            lastIndex > startIndex -> fileName.substring(startIndex, lastIndex)
-            else -> null
+            lastIndex == 0 -> null // dot starts last component
+            lastIndex > 0 -> fileName.substring(0, lastIndex)
+            else -> fileName
         }
     }
 
     @JvmStatic
     fun getExtension(fileName: String): String? {
-        val lastIndex = fileName.lastIndexOf('.')
-        return when {
-            lastIndex < 0 -> null
-            lastIndex == 0 -> return ""
-            lastIndex < fileName.length - 1 -> fileName.substring(lastIndex + 1)
-            else -> null
+        val lastComponent = lastPathComponent(fileName)
+        // Handle if directory in hierarchy has a dot in its name
+        val lastIndex = lastComponent.lastIndexOf('.')
+        return if (lastIndex < 0) {
+            // Has no dot
+            null
+        } else if (lastIndex == lastComponent.lastIndex) {
+            // File ends with dot
+            ""
+        } else {
+            lastComponent.substring(lastIndex)
         }
     }
 
     @JvmStatic
-    fun lastPathComponent(path: String): String {
-        return path.split(anyPathSeparatorRegex).last()
+    fun lastPathComponent(path: String, keepLastSlash: Boolean = false): String {
+        // Remove trailing slash if any
+        val refined = if (keepLastSlash) path else path.trimEnd(pathSeparatorChar)
+        val lastSlash = refined.lastIndexOf(File.separatorChar)
+        return if (lastSlash <= 0)
+            refined
+        else
+            refined.substring(lastSlash)
     }
 
     @JvmStatic
@@ -51,10 +58,13 @@ object FileNameUtils {
         } else {
             '\\'
         }
-        val components = path.split(separator)
-        if (components.size < 2)
+
+        val refined = path.trimEnd(separator)
+        val lastIndex = refined.lastIndexOf(separator)
+        if (lastIndex < 0) {
             return null
-        return components.dropLast(1).joinToString(separator.toString())
+        }
+        return refined.substring(0, lastIndex + 1)
     }
 
 
