@@ -17,16 +17,18 @@ import java.awt.image.BufferedImage
  * Based on c2ephp by telyn
  * @url https://github.com/telyn/c2ephp
  */
-class S16SpriteFile(rawBytes:ByteArray) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
+class S16SpriteFile(rawBytes:ByteArray, val filePath: String? = null) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
 
-    constructor(file: VirtualFile) : this(file.contentsToByteArray())
+
+
+    constructor(file: VirtualFile) : this(file.contentsToByteArray(), file.path)
 
     init {
         val bytesBuffer = ByteStreamReader(rawBytes)
         val encoding = when (val buffer = bytesBuffer.uInt32) {
             1L -> ColorEncoding.X_565
             0L -> ColorEncoding.X_555
-            else -> throw Exception("File encoding not recognized. ('$buffer')")
+            else -> throw Exception("File encoding not recognized. ('$buffer') for file: $filePath")
         }
         val numImages = bytesBuffer.uInt16
         mFrames = (0 until numImages).map {

@@ -120,7 +120,7 @@ object SprCompiler : SpriteCompiler {
                     val color = if (red + green + blue == 0)
                         black
                     else {
-                        val subFrom: Int = arrayOf(255 - alpha, red - 2, green - 2, blue - 2).min()!!
+                        val subFrom: Int = arrayOf(255 - alpha, red - 2, green - 2, blue - 2).minOrNull()!!
                         getColorIndex(red - subFrom, green - subFrom, blue - subFrom, false)
                     }
                     buffer.writeUInt8(color)
