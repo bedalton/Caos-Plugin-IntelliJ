@@ -1,9 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileWithId
+import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiManager
@@ -11,6 +15,8 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
 import com.intellij.psi.impl.file.impl.FileManagerImpl
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import javax.swing.Icon
 
 
@@ -19,7 +25,7 @@ object VirtualFileUtil {
     fun childrenWithExtensions(
         virtualFile: VirtualFile,
         recursive: Boolean,
-        vararg extensionsIn: String
+        vararg extensionsIn: String,
     ): List<VirtualFile> {
         val extensions = extensionsIn.toList()
         if (!recursive) {
@@ -57,7 +63,7 @@ object VirtualFileUtil {
         parent: VirtualFile?,
         ignoreExtension: Boolean = false,
         directory: Boolean?,
-        vararg path: String
+        vararg path: String,
     ): VirtualFile? {
 
         val components = (if (path.any { it.contains("\\") })
@@ -85,10 +91,16 @@ object VirtualFileUtil {
 
         return if (ignoreExtension) {
             val last = FileNameUtils.getNameWithoutExtension(components.last())
-            file.children?.firstOrNull { it.nameWithoutExtension.equals(last, true) && (directory == null || it.isDirectory == directory)}
+            file.children?.firstOrNull {
+                it.nameWithoutExtension.equals(last,
+                    true) && (directory == null || it.isDirectory == directory)
+            }
         } else {
             val last = components.last()
-            file.children?.firstOrNull { it.name.equals(last, true) && (directory == null || it.isDirectory == directory) }
+            file.children?.firstOrNull {
+                it.name.equals(last,
+                    true) && (directory == null || it.isDirectory == directory)
+            }
         }
     }
 
@@ -118,7 +130,7 @@ object VirtualFileUtil {
 
         }
 
-        var file:VirtualFile = virtualFile
+        var file: VirtualFile = virtualFile
         for (component in components.dropLast(1)) {
 
             if (component == ".")
@@ -151,11 +163,11 @@ object VirtualFileUtil {
 private class VirtualFileNavigationElement(
     private val myProject: Project,
     private val myVirtualFile: VirtualFile,
-    viewProvider: FileViewProvider
-): PsiBinaryFileImpl(PsiManagerImpl.getInstance(myProject) as PsiManagerImpl, viewProvider), NavigatablePsiElement {
+    viewProvider: FileViewProvider,
+) : PsiBinaryFileImpl(PsiManagerImpl.getInstance(myProject) as PsiManagerImpl, viewProvider), NavigatablePsiElement {
 
     override fun getPresentation(): ItemPresentation {
-        return object: ItemPresentation {
+        return object : ItemPresentation {
             override fun getPresentableText(): String {
                 return virtualFile.name
             }
@@ -188,7 +200,7 @@ private class VirtualFileNavigationElement(
         fun create(project: Project, virtualFile: VirtualFile): NavigatablePsiElement? {
             val viewProvider = getFileViewProvider(project, virtualFile)
                 ?: return null
-           return VirtualFileNavigationElement(
+            return VirtualFileNavigationElement(
                 project,
                 virtualFile,
                 viewProvider
@@ -210,4 +222,183 @@ private fun getFileViewProvider(project: Project, virtualFile: VirtualFile): Fil
 
 internal fun VirtualFile.toNavigableElement(project: Project): NavigatablePsiElement? {
     return PsiManager.getInstance(project).findFile(this) ?: VirtualFileNavigationElement.create(project, this)
+}
+
+data class FileAttributeWithKey<T>(
+    val key: Key<T>,
+    val attribute: FileAttribute = FileAttribute(key.toString()),
+    val version: Int = 1,
+) {
+    constructor(key: String, version: Int = 1) : this(
+        Key.create(key),
+        FileAttribute(key),
+        version
+    )
+}
+
+
+val NULL_PLACEHOLDER_FILE by lazy { CaosVirtualFile("NULL.null", "__NULL FILE PLACEHOLDER__") }
+
+internal inline fun <T> readFromStorage(
+    file: VirtualFile,
+    key: FileAttributeWithKey<T>,
+    convert: (String?) -> T?,
+) {
+    readFromStorage(
+        file,
+        key.attribute,
+        key.key,
+        convert
+    )
+}
+
+internal inline fun <T> readFromStorage(
+    file: VirtualFile,
+    attribute: FileAttribute,
+    key: Key<T>,
+    convert: (String?) -> T?,
+): T? {
+
+    file.getUserData(key)?.let {
+        return it
+    }
+
+    if (file !is VirtualFileWithId) {
+        LOGGER.info("${file.className} !is VirtualFileWithId")
+        return null
+    }
+
+    val attributeStream = attribute.readAttribute(file)
+        ?: return null
+    val out = attributeStream.use { stream ->
+        stream.readString()
+    }
+    return convert(out.toString())
+}
+
+internal inline fun <T> readFromStorageStream(
+    file: VirtualFile,
+    attribute: FileAttribute,
+    key: Key<T>,
+    safe: Boolean = false,
+    convert: DataInputStream.() -> T?,
+): T? {
+    return if (safe) {
+        try {
+            readFromStorageActual(file, attribute, key, convert)
+        } catch (e: Exception) {
+            null
+        }
+    } else {
+        readFromStorageActual(file, attribute, key, convert)
+    }
+}
+
+private inline fun <T> readFromStorageActual(
+    file: VirtualFile,
+    attribute: FileAttribute,
+    key: Key<T>,
+    convert: DataInputStream.() -> T?,
+): T? {
+    file.getUserData(key)?.let {
+        return it
+    }
+
+    if (file !is VirtualFileWithId) {
+        LOGGER.info("${file.className} !is VirtualFileWithId")
+        return null
+    }
+
+    val stream = attribute.readAttribute(file)
+        ?: return null
+    return try {
+        convert(stream)
+    } catch (e: Exception) {
+        throw e
+    } finally {
+        stream.close()
+    }
+}
+
+
+internal inline fun <T> writeToStorage(
+    file: VirtualFile,
+    key: FileAttributeWithKey<T>,
+    value: T?,
+    convert: (T) -> String?,
+) {
+    writeToStorage(
+        file,
+        key.attribute,
+        key.key,
+        value,
+        convert
+    )
+}
+
+internal inline fun <T> writeToStorage(
+    file: VirtualFile,
+    attribute: FileAttribute,
+    key: Key<T>,
+    value: T?,
+    convert: (T) -> String?,
+): Boolean {
+    file.putUserData(key, value)
+    if (file !is VirtualFileWithId) {
+        return false
+    }
+    val attributeStream = attribute.writeAttribute(file)
+    return attributeStream.use { stream ->
+        val string = if (value != null) convert(value) else null
+        if (string == null) {
+            stream.writeInt(-1)
+        } else {
+            stream.writeInt(string.length)
+            stream.writeChars(string)
+        }
+        true
+    }
+}
+
+
+internal inline fun <T> writeToStorageStream(
+    file: VirtualFile,
+    attribute: FileAttribute,
+    key: Key<T>,
+    value: T?,
+    convert: DataOutputStream.(T?) -> Unit?,
+): Boolean {
+    file.putUserData(key, value)
+    if (file !is VirtualFileWithId) {
+        return false
+    }
+    val attributeStream = attribute.writeAttribute(file)
+    return attributeStream.use { stream ->
+        stream.convert(value)
+        stream.close()
+        true
+    }
+}
+
+
+internal fun DataOutputStream.writeString(string: String?) {
+    if (string == null) {
+        this.writeInt(-1)
+    } else {
+        this.writeInt(string.length)
+        this.writeChars(string)
+    }
+}
+
+
+internal fun DataInputStream.readString(): String? {
+    val length = this.readInt()
+    if (length < 0) {
+        return null
+    }
+    val out = StringBuilder()
+    (0 until length).forEach { _ ->
+        out.append(this.readChar())
+    }
+    return out.toString()
 }
