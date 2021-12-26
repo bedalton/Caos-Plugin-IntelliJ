@@ -80,9 +80,4 @@
       <path value="$PROJECT_DIR$/Web/vendor/cakephp/migrations" />
     </include_path>
   </component>
-  <component name="PhpUnit">
-    <phpunit_settings>
-      <PhpUnitSettings custom_loader_path="$PROJECT_DIR$/Web/vendor/autoload.php" />
-    </phpunit_settings>
-  </component>
 </project>
