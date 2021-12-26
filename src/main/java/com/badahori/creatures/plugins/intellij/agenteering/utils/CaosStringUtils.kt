@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.GameVariant
 import kotlin.contracts.contract
@@ -25,7 +26,7 @@ object CaosStringUtil {
     }
 
     fun substringFromEnd(string: String, start: Int, fromEnd: Int): String =
-            string.substring(start, max(string.length - fromEnd, start))
+        string.substring(start, max(string.length - fromEnd, start))
 
 
     private val MULTI_SPACE_REGEX = "\\s+".toRegex()
@@ -33,23 +34,23 @@ object CaosStringUtil {
 
     fun sanitizeCaosString(text: String): String {
         return text.split("\n")
-                .joinToString("\n") {
-                    val lineStartIndex = it.indexOfFirstNonWhitespaceCharacter()
-                    val prefix: String
-                    var thisText: String
-                    if (lineStartIndex > 0) {
-                        prefix = it.substring(0, lineStartIndex)
-                        thisText = it.substring(lineStartIndex)
-                    } else {
-                        prefix = ""
-                        thisText = it
-                    }
-                    thisText = thisText
-                            .replace(MULTI_SPACE_REGEX, " ")
-                            .replace(SPACES_AROUND_COMMAS, ",")
-                    prefix + thisText.trim()
+            .joinToString("\n") {
+                val lineStartIndex = it.indexOfFirstNonWhitespaceCharacter()
+                val prefix: String
+                var thisText: String
+                if (lineStartIndex > 0) {
+                    prefix = it.substring(0, lineStartIndex)
+                    thisText = it.substring(lineStartIndex)
+                } else {
+                    prefix = ""
+                    thisText = it
                 }
-                .trim()
+                thisText = thisText
+                    .replace(MULTI_SPACE_REGEX, " ")
+                    .replace(SPACES_AROUND_COMMAS, ",")
+                prefix + thisText.trim()
+            }
+            .trim()
     }
 }
 
@@ -60,14 +61,14 @@ fun String?.nullIfEmpty(): String? {
         this
 }
 
-fun String?.isNotNullOrEmpty() : Boolean {
+fun String?.isNotNullOrEmpty(): Boolean {
     contract {
         returns(true) implies (this@isNotNullOrEmpty != null)
     }
     return this != null && this.isNotEmpty()
 }
 
-fun String?.isNotNullOrBlank() : Boolean {
+fun String?.isNotNullOrBlank(): Boolean {
     contract {
         returns(true) implies (this@isNotNullOrBlank != null)
     }
@@ -82,7 +83,7 @@ fun String.upperCaseFirstLetter(): String {
 
 @Suppress("unused")
 fun String.substringFromEnd(start: Int, subtractFromEnd: Int): String =
-        CaosStringUtil.substringFromEnd(this, start, subtractFromEnd)
+    CaosStringUtil.substringFromEnd(this, start, subtractFromEnd)
 
 fun String.repeat(times: Int): String {
     val stringBuilder = StringBuilder()
@@ -163,7 +164,7 @@ fun String.indexOfFirstNonWhitespaceCharacter(): Int {
     return -1
 }
 
-fun String.matchCase(stringToMatch: String, variant:CaosVariant? = null): String {
+fun String.matchCase(stringToMatch: String, variant: CaosVariant? = null): String {
     if (variant != null && variant < 3)
         return toLowerCase()
     return when (stringToMatch.case) {
@@ -173,7 +174,7 @@ fun String.matchCase(stringToMatch: String, variant:CaosVariant? = null): String
     }
 }
 
-fun String.matchCase(case:Case, variant:CaosVariant? = null): String {
+fun String.matchCase(case: Case, variant: CaosVariant? = null): String {
     if (variant != null && variant < 3)
         return toLowerCase()
     return when (case) {
@@ -210,6 +211,7 @@ fun String.toIntSafe(): Int? {
         null
     }
 }
+
 fun String.toFloatSafe(): Float? {
     return try {
         this.toFloat()
@@ -316,7 +318,7 @@ fun CharSequence.levenshteinDistance(b: CharSequence): Int {
     }
     val mapCharAToIndex = hashMapOf<Char, Int>()
 
-    for (iA in 1 .. this.length) {
+    for (iA in 1..this.length) {
         var prevMatchingBIndex = 0
         for (iB in 1..b.length) {
             val doesPreviousMatch = (this[iA - 1] == b[iB - 1])
@@ -341,7 +343,7 @@ fun CharSequence.levenshteinDistance(b: CharSequence): Int {
                         + (iA - bCharIndexInA - 1) + 1 + (iB - prevMatchingBIndex - 1))
             }
 
-            cost[iA][iB] = possibleCosts.min()!!
+            cost[iA][iB] = possibleCosts.minOrNull()!!
 
             if (doesPreviousMatch) prevMatchingBIndex = iB
         }
@@ -363,4 +365,8 @@ fun String.count(element: String): Int {
     }
 
     return count
+}
+
+fun String.count(char: Char): Int {
+    return this.count { it == char }
 }
