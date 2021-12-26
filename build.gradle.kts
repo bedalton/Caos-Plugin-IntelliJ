@@ -3,13 +3,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDe
 import org.jetbrains.intellij.releaseType
 
 plugins {
-    id("org.jetbrains.intellij") version "1.1.5"
-    kotlin("plugin.serialization") version "1.5.30"
-    kotlin("jvm") version "1.5.30"
+    id("org.jetbrains.intellij") version "1.3.0"
+    kotlin("plugin.serialization") version "1.5.31"
+    kotlin("jvm") version "1.5.31"
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2021.09.19"
+version = "2021.12.01"
 
 
 repositories {
@@ -20,10 +20,10 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
     implementation("org.apache.commons:commons-imaging:1.0-alpha2")
     testImplementation("junit", "junit", "4.12")
-    implementation("bedalton.creatures:PrayCompiler:0.01.0")
+    implementation("bedalton.creatures:PrayUtil:0.01.0")
     implementation("bedalton.creatures:CommonCore:0.01")
 
 }
@@ -51,7 +51,8 @@ kotlin {
             "-Xopt-in=kotlin.ExperimentalMultiplatform",
             "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
             "-Xopt-in=kotlin.contracts.ExperimentalContracts",
-            "-Xopt-in=ExperimentalJsExport"
+            "-Xopt-in=ExperimentalJsExport",
+            "-Xopt-in=org.jetbrains.annotations.ApiStatus.Experimental"
         )
     }
 

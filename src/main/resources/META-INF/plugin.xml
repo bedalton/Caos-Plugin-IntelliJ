@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.09.19</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2021.12.01</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -37,6 +37,24 @@
   <change-notes><![CDATA[
     <ul>
       <li>
+        <b>Version: 2021.11.01</b>
+        <b>#Fixes</b>
+        <ul>
+          <li>Fix body part z-order in Att/Pose editor</li>
+          <li>ATT/Sprite indexing lock-up</li>
+        </ul>
+        <b>#Improvements</b>
+        <ul>
+          <li>Speed up Att/Sprite pair indexing</li>
+        </ul>
+      </li>
+      <li>
+      <b>Versions: 2021.12.20</b>
+        <b>Fixes</b>
+        <ul>
+          <li>C1 and C2 injection failure</li>
+          <li>Error in sprite viewer</li>
+        </ul>
         <b>Versions: 2021.09.19</b>
         <b>Improvements</b>
         <ul>
@@ -528,6 +546,9 @@
     <moduleConfigurationEditorProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider" />
 
+
+    <treeStructureProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider" />
     <treeStructureProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider" />
 
@@ -543,9 +564,12 @@
         serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent"
     />
 
-    <filePropertyPusher implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher" />
-    <filePropertyPusher implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher" />
-    <filePropertyPusher implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.InjectorInterfacePropertyPusher" />
+    <filePropertyPusher
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher" />
+    <filePropertyPusher
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher" />
+    <filePropertyPusher
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.InjectorInterfacePropertyPusher" />
 
 
     <!-- Formatting -->
@@ -972,27 +996,35 @@
 
     <!-- INTENTION ACTIONS -->
     <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction</className>
+      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+      </className>
       <category>CAOS</category>
     </intentionAction>
 
     <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithCommasIntentionAction</className>
+      <className>
+        com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithCommasIntentionAction
+      </className>
       <category>CAOS</category>
     </intentionAction>
 
     <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithSpacesIntentionAction</className>
+      <className>
+        com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithSpacesIntentionAction
+      </className>
       <category>CAOS</category>
     </intentionAction>
 
     <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction</className>
+      <className>
+        com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
+      </className>
       <category>CAOS</category>
     </intentionAction>
 
     <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateClasIntegerAction</className>
+      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateClasIntegerAction
+      </className>
       <category>CAOS</category>
     </intentionAction>
 
@@ -1005,9 +1037,10 @@
         language="CaosDef" />
     <completion.contributor language="CaosDef"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.contributor.CaosDefCompletionContributor" />
-    <lang.findUsagesProvider
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefUsagesProvider"
-        language="CaosDef" />
+
+    <!--    <lang.findUsagesProvider-->
+    <!--        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefUsagesProvider"-->
+    <!--        language="CaosDef" />-->
 
     <!-- Bundled Definitions -->
     <library.type
@@ -1296,13 +1329,20 @@
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
     </action>
 
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
+            class="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
+            text="Generate Breed Previews" description="Generates breed preview images"
+    >
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
+    </action>
+
     <!--suppress PluginXmlCapitalization -->
     <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
             class="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
             text="Compile PRAY agent"
             description="Compiles a PRAY or CAOS2Pray file into a C3/DS agent"
     >
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"  anchor="before" />
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
     </action>
   </actions>
 </idea-plugin>
