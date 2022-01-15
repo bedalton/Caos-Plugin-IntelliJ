@@ -185,9 +185,7 @@ internal data class JectSettings(
 private fun injectC3WithDialog(file: CaosScriptFile, gameInterfaceName: GameInterfaceName) {
     val project = file.project
     val linkedScripts = try {
-        val linkedScripts = getLinkedScripts(project, file).apply {
-            LOGGER.info("Found: ${this.size} linked scripts")
-        }
+        val linkedScripts = getLinkedScripts(project, file)
         ScriptBundle(linkedScripts)
     } catch (e: Exception) {
         val message = "<html>${(e.message ?: "Failed parsing linked files")}.<br />Continue without linked files</html>"
@@ -206,7 +204,7 @@ private fun injectC3WithDialog(file: CaosScriptFile, gameInterfaceName: GameInte
                 }
             }
             .showAndGet()
-        LOGGER.info("Error Getting linked scripts: ${e.className}(${e.message})")
+        LOGGER.severe("Error Getting linked scripts: ${e.className}(${e.message})")
         if (!shouldContinue)
             return
         null

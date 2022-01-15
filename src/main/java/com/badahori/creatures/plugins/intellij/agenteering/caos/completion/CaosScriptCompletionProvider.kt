@@ -677,7 +677,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         var elements = tags.map { tag ->
             val parts = tag.split(' ')
             val text = parts.drop(skip).joinToString(" ")
-            LOGGER.info("TextSoFar: <$tagTextRaw>;InsertionText: $text; PreviousComponents = ${skip}; Tag: $tag; Parts: $parts")
             (if (hasTagElement) {
                 LookupElementBuilder.createWithSmartPointer(text, tagElement!!)
             } else {
@@ -951,18 +950,8 @@ private fun addStringCompletions(
     element: PsiElement
 ) {
     val parentRvalue = element.parent.getParentOfType(CaosScriptRvalue::class.java)
-        .apply {
-            if (this == null) {
-                LOGGER.info("String completion failed. String<<Parent is not an rvalue. Parent: ${element.parent?.tokenType};")
-            }
-        }
         ?: return
     val parentCommandElement = (parentRvalue.parent as? CaosScriptCommandElement)
-        .apply {
-            if (this == null) {
-                LOGGER.info("String completion failed. . String<<Rvalue<<Parent is not a command call. Parent: ${element.parent?.tokenType}; Parent.Parent: ${element.parent?.parent?.tokenType}")
-            }
-        }
         ?: return
 
     val quote = if (element.text.startsWith('\"')) "\"" else ""
@@ -1233,7 +1222,6 @@ private fun addUserDefinedNamedVarsOfType(
         module?.moduleContentScope
             ?: GlobalSearchScope.projectScope(project)
     if (searchScope == null) {
-        LOGGER.info("Search scope is null for element: ${element.text} with var types: ${types.joinToString { it.token }}")
         return
     }
     val vars = CaosScriptNamedGameVarIndex.instance.getAllInScope(project, searchScope)

@@ -264,7 +264,6 @@ internal inline fun <T> readFromStorage(
     }
 
     if (file !is VirtualFileWithId) {
-        LOGGER.info("${file.className} !is VirtualFileWithId")
         return null
     }
 
@@ -305,7 +304,6 @@ private inline fun <T> readFromStorageActual(
     }
 
     if (file !is VirtualFileWithId) {
-        LOGGER.info("${file.className} !is VirtualFileWithId")
         return null
     }
 
