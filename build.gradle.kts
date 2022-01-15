@@ -4,8 +4,8 @@ import org.jetbrains.intellij.releaseType
 
 plugins {
     id("org.jetbrains.intellij") version "1.3.0"
-    kotlin("plugin.serialization") version "1.5.31"
-    kotlin("jvm") version "1.5.31"
+    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("jvm") version "1.6.10"
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
@@ -20,7 +20,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("org.apache.commons:commons-imaging:1.0-alpha2")
     testImplementation("junit", "junit", "4.12")
     implementation("bedalton.creatures:PrayUtil:0.01.0")
