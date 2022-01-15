@@ -67,7 +67,7 @@ private fun validateCommandName(element: CaosScriptCaos2CommandName, holder: Ann
 private fun getFixesForSimilar(element: PsiElement, tagName: String) : List<CaosScriptReplaceElementFix> {
     return PrayCommand.getCommands()
         .map { aTag ->
-            aTag.keyStrings.minBy { it.levenshteinDistance(tagName) }!!.let { key ->
+            aTag.keyStrings.minByOrNull { it.levenshteinDistance(tagName) }!!.let { key ->
                 Pair(key, key.levenshteinDistance(tagName))
             }
         }.filter {
@@ -98,7 +98,7 @@ private fun annotateDuplicateTag(element: CaosScriptCaos2TagName, tag: String, h
         holder.newErrorAnnotation(error)
     } else {
         val error = AgentMessages.message("pray.annotator.duplicate-tags.almost-duplicate-tag-error",
-            matches.minBy { it.indexInFile }!!.tag)
+            matches.minByOrNull { it.indexInFile }!!.tag)
         holder.newWeakWarningAnnotation(error)
     }
     val parentComment = element.getParentOfType(CaosScriptCaos2BlockComment::class.java)

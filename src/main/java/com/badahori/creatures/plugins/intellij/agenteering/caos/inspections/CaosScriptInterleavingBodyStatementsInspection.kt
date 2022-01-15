@@ -156,10 +156,10 @@ private class CombineBodyScriptsToScript(private val tag: String, private val co
                 SmartPointerManager.createPointer(it)
             }
 
-        val start = macros.mapNotNull { it.element?.startOffset }.min()
+        val start = macros.mapNotNull { it.element?.startOffset }.minOrNull()
             ?: return
 
-        val firstNonMacro = allBodyElements.filterNot { it is CaosScriptMacro && it.endOffset < start }.maxBy { it.startOffset }
+        val firstNonMacro = allBodyElements.filterNot { it is CaosScriptMacro && it.endOffset < start }.maxByOrNull { it.startOffset }
             ?: return
         var baseScript = CaosScriptPsiElementFactory.createScriptElement(project, tag)?.let {
             if (tag == "iscr")

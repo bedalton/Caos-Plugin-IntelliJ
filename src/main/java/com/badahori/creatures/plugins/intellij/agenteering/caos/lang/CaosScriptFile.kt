@@ -181,6 +181,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.IMPLICIT_SCRIPT_VARIANT_KEY")
 
         fun quickFormat(caosFile: CaosScriptFile) {
+            if (caosFile.project.isDisposed)
+                return
             if (caosFile.didFormatInitial.getAndSet(true))
                 return
             if (caosFile.virtualFile?.parent == null) {
@@ -196,12 +198,18 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 DumbService.isDumb(project) -> {
                     if (!application.isDispatchThread) {
                         DumbService.getInstance(project).runWhenSmart {
+                            if (project.isDisposed) {
+                                return@runWhenSmart
+                            }
                             application.runWriteAction {
                                 runQuickFormatInWriteAction(caosFile)
                             }
                         }
                     } else {
                         DumbService.getInstance(project).runWhenSmart {
+                            if (project.isDisposed) {
+                                return@runWhenSmart
+                            }
                             application.runWriteAction {
                                 runQuickFormatInWriteAction(caosFile)
                             }
@@ -367,7 +375,7 @@ fun getCaos2VariantRaw(text: CharSequence): CaosVariant? {
                     }
                 }
             }
-        return variants.minBy { it.index }
+        return variants.minByOrNull { it.index }
     }
     return null
 }

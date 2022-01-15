@@ -110,7 +110,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                 val agentName = "Agent.............${agentBlock.name}"
                 val expiry = "Expiry............${agentBlock.expiry.let { DATE_FORMAT.format(it.time) }}"
                 val quantity = "Quantity..........${agentBlock.quantityAvailable}"
-                val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.max()!! + 5
+                val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.maxOrNull()!! + 5
                 val top = (1..width).joinToString("") { "*" }
                 val offset = 3 // leading asterisk, space and trailing asterisk
                 val items = listOfNotNull(
@@ -148,7 +148,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                         dependencies.length,
                         "${block.quantityAvailable}".length,
                         block.useInterval?.let { "$it".length }
-                ).max()!! + 5
+                ).maxOrNull()!! + 5
                 val top = (1..width).joinToString("") { "*" }
                 val padLength = width - "* Agent.........".length
                 val installScript = block.installScripts.joinToString("") {

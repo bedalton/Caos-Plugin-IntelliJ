@@ -1724,7 +1724,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getKeyType(element: CaosScriptNamedGameVar): List<CaosExpressionValueType>? {
-        if (DumbService.isDumb(element.project))
+        if (element.project.isDisposed || DumbService.isDumb(element.project))
             return null
         (element.stub?.keyType ?: element.getUserData(NAMED_GAME_VAR_KEY_TYPE_KEY))?.let { keyType ->
             return keyType
@@ -1967,7 +1967,7 @@ object CaosScriptPsiImplUtil {
         val assignment =
             PsiTreeUtil.collectElementsOfType(varToken.containingFile, CaosScriptCAssignment::class.java).filter {
                 it.endOffset < lastPos && it.lvalue?.text == text && it.sharesScope(scope)
-            }.maxBy {
+            }.maxByOrNull {
                 it.startOffset
             } ?: return null
         val rvalue = (assignment.arguments.lastOrNull() as? CaosScriptRvalue)
@@ -2215,7 +2215,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCobVariant(def: CaosScriptCaos2Block): CaosVariant? {
-        def.stub?.caos2Variants?.minBy { it.index }
+        def.stub?.caos2Variants?.minByOrNull { it.index }
         if (!isCaos2Cob(def))
             return null
         val variant = def.caos2BlockHeader?.caos2CobHeader?.let { header ->
@@ -2288,7 +2288,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCaos2Variant(def: CaosScriptCaos2Block): CaosVariant? {
-        return getCaos2Variants(def).minBy { it.index }
+        return getCaos2Variants(def).minByOrNull { it.index }
     }
 
     /**
