@@ -60,14 +60,14 @@ internal fun List<AttFileLine>.toFileText(variant:CaosVariant) : String {
 }
 
 /**
- * Converts a point in the ATT file data object to a ATT file formatted string for Creatures 1/2
+ * Converts a point in the ATT file data object to an ATT file formatted string for Creatures 1/2
  */
 private val pointToStringC1e = {point:Pair<Int,Int> ->
     "${point.first}".padStart(2, ' ') + " " + "${point.second}".padStart(2, ' ')
 }
 
 /**
- * Converts a point in the ATT file data object to a ATT file formatted string for Creatures 1/2
+ * Converts a point in the ATT file data object to an ATT file formatted string for Creatures 1/2
  */
 private val pointToStringC2e = {point:Pair<Int,Int> ->
     "${point.first} ${point.second}"
@@ -83,7 +83,13 @@ object AttFileParser {
      */
     @JvmStatic
     fun parse(text:String, expectedLines:Int? = null, expectedPoints:Int? = null) : AttFileData {
-        val rawLines = text.split("[\n\r]+".toRegex())
+        // Break ATT into lines
+        val rawLines = text
+            .trimEnd()
+            .split("[\n\r]+".toRegex())
+            .filter { it.isNotBlank() }
+
+        // Convert lines into points list
         val lines = (0 until (expectedLines ?: rawLines.size)).map { lineNumber ->
             val line = rawLines.getOrNull(lineNumber) ?: ""
             val intsRaw = line.trim().split(WHITESPACE)
@@ -102,7 +108,7 @@ object AttFileParser {
     @JvmStatic
     fun parse(project:Project, file:VirtualFile, expectedLines:Int? = null, expectedPoints:Int? = null) : AttFileData {
         val text = file.getPsiFile(project)?.text ?: file.contents
-        val rawLines = text.split("[\n\r]+".toRegex())
+        val rawLines = text.trimEnd().split("[\n\r]+".toRegex())
         val lines = (0 until (expectedLines ?: rawLines.size)).map { lineNumber ->
             val line = rawLines.getOrNull(lineNumber) ?: ""
             val intsRaw = line.trim().split(WHITESPACE)
