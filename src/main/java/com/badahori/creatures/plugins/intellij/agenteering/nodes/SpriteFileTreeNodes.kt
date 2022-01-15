@@ -20,10 +20,11 @@ import icons.CaosScriptIcons
 
 internal class SpriteFileTreeNode(
     project: Project,
-    spriteVirtualFile: VirtualFile,
+    private val spriteVirtualFile: VirtualFile,
     viewSettings: ViewSettings?
 ) : VirtualFileBasedNode<VirtualFile>(project, spriteVirtualFile, viewSettings) {
-    override fun getVirtualFile(): VirtualFile = value
+
+    override fun getVirtualFile(): VirtualFile = spriteVirtualFile
 
     private val spritesVirtualFileContainer: CaosVirtualFile by lazy {
         val modulePath = ModuleUtil.findModuleForFile(spriteVirtualFile, project)?.moduleFile?.path
@@ -41,6 +42,9 @@ internal class SpriteFileTreeNode(
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
+        if (!isValid()) {
+            return@lazy emptyList()
+        }
         val fileNameBase = FileNameUtils.getNameWithoutExtension(value.name).orElse("_") + "."
         val images = sprite.images
         val padLength = "${images.size}".length
@@ -60,15 +64,21 @@ internal class SpriteFileTreeNode(
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren
 
     override fun navigate(focus: Boolean) {
+        if (!isValid()) {
+            return
+        }
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
     }
 
     override fun expandOnDoubleClick(): Boolean = false
     override fun canNavigate(): Boolean =
-        PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
+        isValid() && PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
 
     override fun canNavigateToSource(): Boolean = false
     override fun update(presentationData: PresentationData) {
+        if (!isValid()) {
+            return
+        }
         presentationData.presentableText = value.name
         presentationData.locationString = null
         val icon = when (virtualFile.extension?.toLowerCase()) {

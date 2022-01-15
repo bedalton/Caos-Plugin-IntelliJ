@@ -17,10 +17,14 @@ import javax.swing.JComponent
 import javax.swing.TransferHandler
 
 internal abstract class VirtualFileBasedNode<VfsT : VirtualFile>(
-    project: Project,
+    protected val nonNullProject: Project,
     protected val myVirtualFile: VfsT,
     viewSettings: ViewSettings?,
-) : ProjectViewNode<VfsT>(project, myVirtualFile, viewSettings) {
+) : ProjectViewNode<VfsT>(nonNullProject, myVirtualFile, viewSettings) {
+
+    open fun isValid(): Boolean {
+        return !nonNullProject.isDisposed && myVirtualFile.isValid
+    }
 
     override fun getVirtualFile(): VirtualFile {
         return myVirtualFile
@@ -39,7 +43,7 @@ internal abstract class VirtualFileBasedNode<VfsT : VirtualFile>(
     }
 
     override fun getTypeSortKey(): PsiFileNode.ExtensionSortKey? {
-        val extension = myVirtualFile.extension
+        val extension = if (isValid()) myVirtualFile.extension else null
         return if (extension == null) null else PsiFileNode.ExtensionSortKey(extension)
     }
 
@@ -50,7 +54,7 @@ internal abstract class VirtualFileBasedNode<VfsT : VirtualFile>(
     }
 
     override fun contains(file: VirtualFile): Boolean {
-        return myVirtualFile == file
+        return isValid() && myVirtualFile == file
     }
 
 }

@@ -33,6 +33,9 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, pri
     private val rootDirectory = getSfcAsFolder(myVirtualFile)
 
     val sfc: SfcFile? by lazy {
+        if (!isValid()) {
+            return@lazy null
+        }
         try {
             // Caching is handled by read file method in SfcReader
             SfcReader.readFile(myVirtualFile, cache = true, safe = true).data
@@ -53,6 +56,9 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, pri
     private val eventScriptRegex = "^\\s*[Ss][Cc][Rr][Pp]\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
 
     val scripts: List<CaosScriptFile> by lazy {
+        if (!isValid()) {
+            return@lazy emptyList()
+        }
         val sfc = sfc ?: return@lazy emptyList<CaosScriptFile>()
         val sfcVariant = sfc.variant
         val scripts = sfc.allScripts
@@ -69,16 +75,26 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, pri
         return matches.groupValues.drop(1).dropLast(0).joinToString(" ")
     }
 
-    override fun getChildren(): MutableCollection<out AbstractTreeNode<*>> {
-        return scripts.mapIndexed { index, file ->
-            ChildCaosScriptFileTreeNode(
-                sfcNameWithoutExtension,
-                file,
-                index,
-                file.containingFile.name,
-                viewSettings
-            )
-        }.toMutableList()
+    override fun getChildren(): Collection<AbstractTreeNode<*>> {
+        if (!isValid()) {
+            return emptyList()
+        }
+        return scripts
+            .mapIndexed map@{ index, file ->
+                if (!file.isValid) {
+                    return@map null
+                }
+                ChildCaosScriptFileTreeNode(
+                    nonNullProject,
+                    sfcNameWithoutExtension,
+                    file,
+                    index,
+                    file.containingFile.name,
+                    viewSettings
+                )
+            }
+            .filterNotNull()
+            .toMutableList()
     }
 
     override fun getLeafState(): LeafState {

@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile
 import java.io.File
 
 class CaosTreeViewProvider : TreeStructureProvider{
+
     override fun modify(
             parent: AbstractTreeNode<*>,
             children: MutableCollection<AbstractTreeNode<*>>,
@@ -19,6 +20,9 @@ class CaosTreeViewProvider : TreeStructureProvider{
     ): MutableCollection<AbstractTreeNode<out Any>> {
         val project = parent.project
                 ?: return children
+        if (project.isDisposed) {
+            return children
+        }
         return children.map { child ->
             virtualFileFromNode(child)?.toNode(project, settings) ?: child
         }.toMutableList()
@@ -30,6 +34,11 @@ class CaosTreeViewProvider : TreeStructureProvider{
             is File -> VfsUtil.findFileByIoFile(value, true)
             is PsiFile -> value.virtualFile
             else -> null
+        }.let {
+            if (it?.isValid == true)
+                it
+            else
+                null
         }
     }
 
@@ -38,10 +47,13 @@ class CaosTreeViewProvider : TreeStructureProvider{
 
 
 private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings?) : AbstractTreeNode<*>? {
+    if (project.isDisposed || !isValid) {
+        return null
+    }
     return when (extension?.toLowerCase()) {
         "cob", "rcb" -> CobFileTreeNode(project, this, viewSettings)
         "cos" -> (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
-            ProjectCaosScriptFileTreeNode(psiFile, viewSettings)
+            ProjectCaosScriptFileTreeNode(project, psiFile, viewSettings)
         }
         //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
         "sfc" -> SfcFileTreeNode(project, this, viewSettings)

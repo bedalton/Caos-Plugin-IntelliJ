@@ -27,13 +27,16 @@ import java.awt.Color
 
 
 internal class CobFileTreeNode(
-    private val nonNullProject: Project,
+    project: Project,
     private val file: VirtualFile,
-    private val viewSettings: ViewSettings?
-) : VirtualFileBasedNode<VirtualFile>(nonNullProject, file, viewSettings) {
+    private val viewSettings: ViewSettings?,
+) : VirtualFileBasedNode<VirtualFile>(project, file, viewSettings) {
 
     private val cobNameWithoutExtension = file.nameWithoutExtension
     private val cobData by lazy {
+        if (!isValid()) {
+            return@lazy CobFileData.InvalidCobData("Cob file state invalid")
+        }
         try {
             CobToDataObjectDecompiler.decompile(
                 ByteStreamReader(file.contentsToByteArray()),
@@ -81,6 +84,9 @@ internal class CobFileTreeNode(
     }
 
     private fun getChildren(block: CobBlock, variant: CaosVariant): List<AbstractTreeNode<*>> {
+        if (!isValid()) {
+            return emptyList()
+        }
         return when (block) {
             is SpriteBlock -> listOf(CobSpriteFileTreeNode(nonNullProject, cobVirtualFile, block, viewSettings))
             is SoundBlock -> listOf(SoundFileTreeNode(nonNullProject, cobVirtualFile, block))
@@ -89,10 +95,11 @@ internal class CobFileTreeNode(
                 val needsInstallScriptIdentifier = block.installScripts.size > 2
                 val installScripts = block.installScripts.mapIndexed { i, installScript ->
                     ChildCaosScriptFileTreeNode(
+                        nonNullProject,
                         cobNameWithoutExtension,
                         installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
                         0,
-                        file.nameWithoutExtension + " Install Script" + (if (needsInstallScriptIdentifier)  " ($i)" else ""),
+                        file.nameWithoutExtension + " Install Script" + (if (needsInstallScriptIdentifier) " ($i)" else ""),
                         viewSettings
                     )
                 }
@@ -100,6 +107,7 @@ internal class CobFileTreeNode(
                 val scripts = installScripts + listOfNotNull(
                     block.removalScript?.let {
                         ChildCaosScriptFileTreeNode(
+                            nonNullProject,
                             parentName = cobNameWithoutExtension,
                             caosFile = it.toCaosFile(nonNullProject, cobVirtualFile, variant),
                             scriptIndex = 0,
@@ -119,6 +127,7 @@ internal class CobFileTreeNode(
                 })
                 previews + scripts + block.eventScripts.mapIndexed { index, script ->
                     ChildCaosScriptFileTreeNode(
+                        nonNullProject,
                         cobNameWithoutExtension,
                         script.toCaosFile(nonNullProject, cobVirtualFile, variant),
                         index,
@@ -147,7 +156,7 @@ internal class CobFileTreeNode(
     }
 
     override fun contains(file: VirtualFile): Boolean {
-        return myVirtualFile == file || file in myVirtualFile.children
+        return myVirtualFile.isValid && (myVirtualFile == file || file in myVirtualFile.children)
     }
 
     override fun getLeafState(): LeafState {
@@ -171,11 +180,15 @@ internal class AuthorTreeNode(project: Project, block: AuthorBlock) : AbstractTr
 }
 
 internal class CobSpriteFileTreeNode(
-    project: Project,
+    private val nonNullProject: Project,
     enclosingCob: CaosVirtualFile,
     private val block: SpriteBlock,
-    private val viewSettings: ViewSettings?
-) : AbstractTreeNode<VirtualFile>(project, wrapFileBlock(enclosingCob, block)) {
+    private val viewSettings: ViewSettings?,
+) : AbstractTreeNode<VirtualFile>(nonNullProject, wrapFileBlock(enclosingCob, block)) {
+
+    fun isValid(): Boolean {
+        return !nonNullProject.isDisposed && myVirtualFile.isValid
+    }
 
     private val myVirtualFile by lazy {
         enclosingCob.createChildWithContent(block.fileName, block.contents, true)
@@ -191,13 +204,16 @@ internal class CobSpriteFileTreeNode(
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
+        if (!isValid()) {
+            return@lazy emptyList()
+        }
         val fileNameBase = FileNameUtils.getNameWithoutExtension(block.fileName).orEmpty() + "_"
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
             image?.toPngByteArray()?.let {
                 SpriteImageTreeNode(
-                    project,
+                    nonNullProject,
                     spritesVirtualFileContainer,
                     fileNameBase + "$index".padStart(padLength, '0'),
                     it,
@@ -210,14 +226,18 @@ internal class CobSpriteFileTreeNode(
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren
 
     override fun navigate(focus: Boolean) {
+        if (!isValid())
+            return
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
     }
 
     override fun expandOnDoubleClick(): Boolean = false
+
     override fun canNavigate(): Boolean =
-        PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
+        isValid() && PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
 
     override fun canNavigateToSource(): Boolean = false
+
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = block.fileName
         presentationData.locationString = null
@@ -240,7 +260,7 @@ private fun wrapFileBlock(enclosingCob: CaosVirtualFile, block: CobBlock.FileBlo
 internal class SoundFileTreeNode(
     project: Project,
     private val enclosingCob: CaosVirtualFile,
-    private val block: SoundBlock
+    private val block: SoundBlock,
 ) : AbstractTreeNode<SoundBlock>(project, block) {
 
     internal val virtualFile by lazy {
@@ -250,6 +270,7 @@ internal class SoundFileTreeNode(
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
+
     override fun navigate(focus: Boolean) {
         PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
     }
