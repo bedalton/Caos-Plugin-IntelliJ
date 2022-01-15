@@ -73,7 +73,7 @@ class GenerateBitFlagIntegerIntentionAction : PsiElementBaseIntentionAction(), L
         return parse(element) != null
     }
 
-    override fun getText(): String = CaosBundle.message("com.actions.generate-bit-flags-generic")
+    override fun getText(): String = CaosBundle.message("caos.actions.generate-bit-flags-generic")
 
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
 
