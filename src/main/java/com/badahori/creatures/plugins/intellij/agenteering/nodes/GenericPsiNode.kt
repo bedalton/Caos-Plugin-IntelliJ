@@ -1,11 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
-import com.intellij.application.options.colors.TextAttributesDescription
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
@@ -15,26 +12,36 @@ import com.intellij.ui.SimpleTextAttributes
 import javax.swing.Icon
 
 class GenericPsiNode<T:PsiElement>(
-    project:Project,
+    private val nonNullProject:Project,
     element:T,
     private val presentableText:String? = null,
     private val elementIcon:Icon? = null,
     private val locationString:String? = null,
     private val locationPrefix:String? = null,
     private val sortWeight:Int? = null
-) : AbstractTreeNode<T>(project, element) {
+) : AbstractTreeNode<T>(nonNullProject, element) {
+
+    fun isValid(): Boolean {
+        return !nonNullProject.isDisposed && pointer.virtualFile?.isValid == true && pointer.element?.isValid == true
+    }
 
     val pointer = SmartPointerManager.createPointer(element)
 
     override fun canNavigate(): Boolean {
-        return (pointer.element as? com.intellij.pom.Navigatable)?.canNavigate() ?: false
+        return isValid() && (pointer.element as? com.intellij.pom.Navigatable)?.canNavigate() == true
     }
 
     override fun navigate(requestFocus: Boolean) {
+        if (!isValid()) {
+            return
+        }
         (pointer.element as? com.intellij.pom.Navigatable)?.navigate(requestFocus)
     }
 
     override fun update(presentation: PresentationData) {
+        if (!isValid()) {
+            return
+        }
         val element = pointer.element
         val presentationData = (element as? PsiElementBase)?.presentation
         val text = presentableText

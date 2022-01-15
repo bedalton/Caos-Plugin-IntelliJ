@@ -22,9 +22,10 @@ import icons.CaosScriptIcons
 
 
 internal open class ProjectCaosScriptFileTreeNode(
+    project: Project,
     file: CaosScriptFile,
-    viewSettings: ViewSettings?
-) : VirtualFileBasedNode<VirtualFile>(file.project, file.virtualFile!!, viewSettings) {
+    viewSettings: ViewSettings?,
+) : VirtualFileBasedNode<VirtualFile>(project, file.virtualFile!!, viewSettings) {
 
     private val caosFileName = file.name
 
@@ -33,18 +34,19 @@ internal open class ProjectCaosScriptFileTreeNode(
     val caosFile: CaosScriptFile? get() = pointer.element
 
 
-    private val scripts by lazy {
+    private val scripts: Collection<CaosScriptScriptElement> by lazy {
+        if (!isValid()) {
+            return@lazy emptyList()
+        }
         val caosFile = caosFile
             ?: return@lazy emptyList()
-        if (caosFile.isValid)
-            PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
-        else {
-            LOGGER.severe("Cannot get child scripts in ProjectCaosScriptFileTreeNode. CAOSFile invalid")
-            emptyList()
-        }
+        PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
     }
 
     private val possibleScripts: Int by lazy {
+        if (!isValid()) {
+            return@lazy 0
+        }
         var count = 0
         SCRIPT_HEADER_REGEX.findAll(file.text).iterator().forEach { _ ->
             count++
@@ -52,11 +54,14 @@ internal open class ProjectCaosScriptFileTreeNode(
         count
     }
 
-    private val possibleSubroutines = file.text.toLowerCase().count("subr ")
+    private val possibleSubroutines by lazy { if (isValid()) file.text.toLowerCase().count("subr ") else 0 }
 
 
     private val subroutines by lazy {
-        PsiTreeUtil.collectElementsOfType(file, CaosScriptSubroutine::class.java)
+        if (isValid())
+            PsiTreeUtil.collectElementsOfType(file, CaosScriptSubroutine::class.java)
+        else
+            emptyList()
     }
 
     override fun isAlwaysLeaf(): Boolean {
@@ -69,14 +74,23 @@ internal open class ProjectCaosScriptFileTreeNode(
     }
 
     override fun navigate(requestFocus: Boolean) {
+        if (!isValid()) {
+            return
+        }
         caosFile?.navigate(requestFocus)
     }
 
     override fun canNavigate(): Boolean {
+        if (!isValid()) {
+            return false
+        }
         return caosFile?.canNavigateToSource() == true
     }
 
     override fun canNavigateToSource(): Boolean {
+        if (!isValid()) {
+            return false
+        }
         return caosFile?.canNavigateToSource() == true
     }
 
@@ -84,46 +98,62 @@ internal open class ProjectCaosScriptFileTreeNode(
         return caosFileName
     }
 
+    protected fun isValid(): Boolean {
+        return !nonNullProject.isDisposed && virtualFile.isValid && caosFile?.isValid == true
+    }
+
     override fun getChildren(): List<AbstractTreeNode<*>> {
+        if (!isValid()) {
+            return emptyList()
+        }
         return if (scripts.size != 1) {
             // Macro indices
             var macroIndex = 0
-            val hasMacros = scripts.filterIsInstance<CaosScriptMacro>().size > 1
+            val hasMacros = scripts.filter { it is CaosScriptMacro && it.isValid }.size > 1
             // Install Script indices
             var installScriptIndex = 0
-            val numInstallScripts = scripts.filterIsInstance<CaosScriptInstallScript>().size
+            val numInstallScripts = scripts.filter { it is CaosScriptInstallScript && it.isValid }.size
             // Removal Script indices
             var removalScriptIndex = 0
-            val numRemovalScripts = scripts.filterIsInstance<CaosScriptRemovalScript>().size
-            scripts.mapNotNull { script ->
+            val numRemovalScripts = scripts.filter { it is CaosScriptRemovalScript && it.isValid }.size
+            scripts.mapNotNull map@{ script ->
+                if (!isValid() || !script.isValid) {
+                    return emptyList()
+                }
                 when (script) {
                     is CaosScriptMacro -> {
                         if (PsiTreeUtil.collectElementsOfType(script, CaosScriptIsCommandToken::class.java).isEmpty())
                             null
                         else
                             SubScriptLeafNode(
+                                nonNullProject,
                                 script,
                                 if (hasMacros) ++macroIndex else null
                             )
                     }
                     is CaosScriptInstallScript -> SubScriptLeafNode(
+                        nonNullProject,
                         script,
                         if (numInstallScripts > 1) ++installScriptIndex else null
                     )
                     is CaosScriptRemovalScript -> SubScriptLeafNode(
+                        nonNullProject,
                         script,
                         if (numRemovalScripts > 1) ++removalScriptIndex else null
                     )
                     else -> SubScriptLeafNode(
+                        nonNullProject,
                         script,
                         null
                     )
                 }
             }
         } else {
-            val project = myProject
-                ?: return emptyList()
-            getSubroutineNodes(project, subroutines)
+            if (isValid()) {
+                getSubroutineNodes(nonNullProject, subroutines)
+            } else {
+                return emptyList()
+            }
         }
     }
 
@@ -147,17 +177,22 @@ internal open class ProjectCaosScriptFileTreeNode(
 
 
 internal class ChildCaosScriptFileTreeNode(
+    project: Project,
     private val parentName: String,
     caosFile: CaosScriptFile,
     private val scriptIndex: Int,
     private val presentableTextIn: String? = null,
-    viewSettings: ViewSettings?
+    viewSettings: ViewSettings?,
 ) : ProjectCaosScriptFileTreeNode(
+    project,
     caosFile,
     viewSettings
 ) {
 
     override fun navigate(requestFocus: Boolean) {
+        if (!isValid()) {
+            return
+        }
         val caosFile = caosFile
             ?: return
         if (ApplicationManager.getApplication().isDispatchThread) {
@@ -173,6 +208,9 @@ internal class ChildCaosScriptFileTreeNode(
     }
 
     private fun getPresentableText(): String {
+        if (!isValid()) {
+            return this@ChildCaosScriptFileTreeNode.presentableTextIn ?: ""
+        }
         this@ChildCaosScriptFileTreeNode.presentableTextIn?.let {
             return it
         }
@@ -194,6 +232,9 @@ internal class ChildCaosScriptFileTreeNode(
     }
 
     override fun getWeight(): Int {
+        if (!isValid()) {
+            return 200
+        }
         val script = PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
             .firstOrNull { it !is CaosScriptMacro }
         return when (script) {
@@ -214,12 +255,22 @@ internal class ChildCaosScriptFileTreeNode(
 
 
 internal class SubScriptLeafNode(
+    private val nonNullProject: Project,
     private val script: CaosScriptScriptElement,
     private val index: Int? = null,
     private val enclosingCobFileName: String? = null,
-) : AbstractTreeNode<CaosScriptScriptElement>(script.project, script) {
+) : AbstractTreeNode<CaosScriptScriptElement>(nonNullProject, script) {
 
-    private val possibleSubroutines = script.text.toLowerCase().count("subr ")
+    fun isValid(): Boolean {
+        return !nonNullProject.isDisposed && virtualFile?.isValid != false && script.isValid
+    }
+
+    private val possibleSubroutines by lazy {
+        if (isValid())
+            script.text.toLowerCase().count("subr ")
+        else
+            0
+    }
 
     override fun isAlwaysLeaf(): Boolean {
         return possibleSubroutines < 1
@@ -230,12 +281,19 @@ internal class SubScriptLeafNode(
         return false
     }
 
-    private val subroutines by lazy {
-        PsiTreeUtil.collectElementsOfType(script, CaosScriptSubroutine::class.java)
+    private val subroutines: Collection<CaosScriptSubroutine> by lazy {
+        if (isValid()) {
+            PsiTreeUtil.collectElementsOfType(script, CaosScriptSubroutine::class.java)
+        } else {
+            emptyList()
+        }
     }
 
 
     private val text by lazy {
+        if (!isValid()) {
+            "Script${index?.let { " $it" } ?: ""}"
+        }
         val indexText = if (index != null)
             " ($index)"
         else
@@ -249,23 +307,28 @@ internal class SubScriptLeafNode(
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
-        return getSubroutineNodes(myProject, subroutines)
+        return if (isValid())
+            getSubroutineNodes(nonNullProject, subroutines)
+        else
+            emptyList()
     }
 
-    private val navigationNode: Navigatable
+    private val navigationNode: Navigatable?
         get() {
-            return PsiTreeUtil.collectElementsOfType(script, CaosScriptIsCommandToken::class.java).firstOrNull()
-                ?: script
+            return if (isValid()) {
+                PsiTreeUtil.collectElementsOfType(script, CaosScriptIsCommandToken::class.java).firstOrNull()
+                    ?: script
+            } else {
+                null
+            }
         }
 
     override fun navigate(requestFocus: Boolean) {
-        navigationNode.navigate(requestFocus)
+        navigationNode?.navigate(requestFocus)
     }
 
     override fun getVirtualFile(): VirtualFile? {
         ProgressIndicatorProvider.checkCanceled()
-        if (!script.isValid)
-            return null
         return try {
             if (!script.isValid)
                 return null
@@ -290,9 +353,9 @@ internal class SubScriptLeafNode(
         }
     }
 
-    override fun canNavigate(): Boolean = navigationNode.canNavigate()
+    override fun canNavigate(): Boolean = navigationNode?.canNavigate() == true
 
-    override fun canNavigateToSource(): Boolean = navigationNode.canNavigateToSource()
+    override fun canNavigateToSource(): Boolean = navigationNode?.canNavigateToSource() == true
 
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = text
@@ -309,13 +372,17 @@ internal class SubScriptLeafNode(
         )
     }
 
-    override fun getWeight(): Int = when (script) {
-        is CaosScriptInstallScript -> 17
-        is CaosScriptRemovalScript -> 18
-        is CaosScriptMacro -> 19
-        else -> 16
+    override fun getWeight(): Int {
+        if (!isValid()) {
+            return 200
+        }
+        return when (script) {
+            is CaosScriptInstallScript -> 17
+            is CaosScriptRemovalScript -> 18
+            is CaosScriptMacro -> 19
+            else -> 16
+        }
     }
-
     override fun getLeafState(): LeafState {
         return if (isAlwaysLeaf)
             LeafState.ALWAYS
@@ -326,16 +393,23 @@ internal class SubScriptLeafNode(
 
 
 private fun getSubroutineNodes(
-    project: Project,
-    subroutines: Collection<CaosScriptSubroutine>
+    nonNullProject: Project,
+    subroutines: Collection<CaosScriptSubroutine>,
 ): List<GenericPsiNode<CaosScriptSubroutine>> {
-    return subroutines.map { subroutine ->
-        GenericPsiNode(
-            project,
-            subroutine,
-            subroutine.name,
-            CaosScriptIcons.SUBROUTINE,
-            sortWeight = 50
-        )
+    if (nonNullProject.isDisposed) {
+        return emptyList()
+    }
+    return subroutines.mapNotNull { subroutine ->
+        if (subroutine.isValid) {
+            GenericPsiNode(
+                nonNullProject,
+                subroutine,
+                subroutine.name,
+                CaosScriptIcons.SUBROUTINE,
+                sortWeight = 50
+            )
+        } else {
+            null
+        }
     }
 }
