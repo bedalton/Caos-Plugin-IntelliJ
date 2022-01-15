@@ -123,7 +123,6 @@ data class Caos2CobC2(
         buffer.writeUInt16(thumbnail?.width ?: 0)
         buffer.writeUInt16(thumbnail?.height ?: 0)
         if (thumbnail != null) {
-            LOGGER.info("Writing Thumbnail")
             S16Compiler.writeCompiledSprite(thumbnail, buffer, ColorEncoding.X_565)
         }
 
@@ -157,7 +156,6 @@ data class Caos2CobC2(
     private fun writeFiles(outputStream: ByteArrayOutputStream) {
         if (filesToInline.isEmpty())
             return
-        LOGGER.info("Inlining ${filesToInline.size} Files")
         var buffer: ByteArrayOutputStream
         for (file in filesToInline) {
             buffer = ByteArrayOutputStream()
