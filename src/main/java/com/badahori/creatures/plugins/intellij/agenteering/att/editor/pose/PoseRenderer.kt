@@ -86,7 +86,7 @@ object PoseRenderer {
 
         // Body
         if (pose.body !in 0..sprites.body.bodyData.lines.lastIndex) {
-            throw Exception("Body pose '${pose.body}' out of bounds.")
+            throw Exception("Body pose '${pose.body}' out of bounds. Variant: ${variant.code};")
         }
         val bodyAtt = sprites.body.bodyData[pose.body]
         val bodySprite = sprites.body.sprite[pose.body]?.image!!
@@ -274,11 +274,11 @@ object PoseRenderer {
         val parts = if (sprites.body.sprite.size == 10) {
             // OLD VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + bodyPart + tail + headParts + leftLeg + leftArm
-                8 -> tail + leftLeg + rightLeg + leftArm + rightArm + bodyPart + headParts
+                in 0..3 -> leftArm + leftLeg + tailBase + bodyPart + tailTip + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + tailBase + bodyPart + tailTip + headParts + leftLeg + leftArm
+                8 -> tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
                 9 -> if (variant == CaosVariant.C1)
-                    headParts + leftLeg + rightLeg + bodyPart + tail + leftArm + rightArm
+                    leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail + headParts
                 else
                     headParts + leftArm + rightArm + leftLeg + rightLeg + bodyPart + tail
                 else -> null
@@ -286,19 +286,19 @@ object PoseRenderer {
         } else {
             // NEW VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + bodyPart + tail + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + bodyPart + tail + headParts + leftLeg + leftArm
-                in 8..11 -> tail + leftLeg + rightLeg + bodyPart + headParts + leftArm + rightArm
+                in 0..3 -> leftArm + leftLeg + tailBase + bodyPart + tailTip + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + tailBase + bodyPart + tailTip + headParts + leftLeg + leftArm
+                in 8..11 -> tail + leftLeg + rightLeg + leftUpperArm + rightUpperArm + bodyPart + leftForearm + rightForearm + headParts
                 in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
             }
         }?.filterNotNull()
             ?: return null
 
-        val minX = parts.map { it.position.first }.min() ?: 0
-        val maxX = parts.map { it.position.first + it.bufferedImage.width }.max() ?: 0
-        val minY = parts.map { it.position.second }.min() ?: 0
-        val maxY = parts.map { it.position.second + it.bufferedImage.height }.max() ?: 0
+        val minX = parts.map { it.position.first }.minOrNull() ?: 0
+        val maxX = parts.map { it.position.first + it.bufferedImage.width }.maxOrNull() ?: 0
+        val minY = parts.map { it.position.second }.minOrNull() ?: 0
+        val maxY = parts.map { it.position.second + it.bufferedImage.height }.maxOrNull() ?: 0
 
         val size = Pair(abs(minX) + maxX, abs(minY) + maxY)
         val offset = Pair(-minX, -minY)
