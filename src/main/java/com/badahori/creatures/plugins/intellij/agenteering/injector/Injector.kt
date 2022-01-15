@@ -27,7 +27,11 @@ object Injector {
      * Perhaps too heavy-handed, but trying to assert that the correct game is connected
      * Sends a DDE version check request before each user CAOS injection
      */
-    private fun getActualVersion(project: Project, fallbackVariant: CaosVariant, gameInterfaceName: GameInterfaceName): CaosVariant? {
+    private fun getActualVersion(
+        project: Project,
+        fallbackVariant: CaosVariant,
+        gameInterfaceName: GameInterfaceName,
+    ): CaosVariant? {
         if (fallbackVariant.isNotOld) {
             return fallbackVariant
         }
@@ -58,7 +62,7 @@ object Injector {
         gameInterfaceName: GameInterfaceName,
         caosFile: CaosScriptFile,
         jectFlags: Int,
-        tryJect: Boolean =  project.settings.useJectByDefault
+        tryJect: Boolean = project.settings.useJectByDefault,
     ): Boolean {
         val variant = gameInterfaceName.variant ?: fallbackVariant
         if (!isValidVariant(project, variant, gameInterfaceName))
@@ -82,6 +86,7 @@ object Injector {
         onCaosResponse(project, response)
         return response is InjectionStatus.Ok
     }
+
     /**
      * Checks version info before injection
      */
@@ -89,7 +94,7 @@ object Injector {
         project: Project,
         fallbackVariant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
-        scripts: Map<JectScriptType, List<CaosScriptScriptElement>>
+        scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
     ): Boolean {
         val variant = gameInterfaceName.variant ?: fallbackVariant
         if (!isValidVariant(project, variant, gameInterfaceName))
@@ -145,10 +150,10 @@ object Injector {
         project: Project,
         fallbackVariant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
-        run: (connection: CaosConnection) -> InjectionStatus?
+        run: (connection: CaosConnection) -> InjectionStatus?,
     ): InjectionStatus? {
         val variant = gameInterfaceName.variant?.nullIfUnknown() ?: fallbackVariant.nullIfUnknown()
-            ?: return InjectionStatus.BadConnection("Variant is undefined in injector")
+        ?: return InjectionStatus.BadConnection("Variant is undefined in injector")
         val connection = connection(variant, gameInterfaceName)
             ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
 
@@ -205,8 +210,9 @@ object Injector {
         var gameUrl = gameInterfaceName.url
 
         if (theVariant.isOld) {
-            if (gameUrl.startsWith("dde:"))
-            gameUrl =  "dde:$gameUrl"
+            if (!gameUrl.startsWith("dde:")) {
+                gameUrl = "dde:$gameUrl"
+            }
         }
         if (gameUrl.startsWith("dde:")) {
             gameUrl = gameUrl.substring(4).trim()
