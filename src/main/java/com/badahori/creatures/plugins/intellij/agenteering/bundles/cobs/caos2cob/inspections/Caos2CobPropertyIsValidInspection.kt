@@ -117,7 +117,7 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
                 .mapNotNull { aTag ->
                     aTag.keys.map { key ->
                         Pair(key, key.levenshteinDistance(tagName))
-                    }.minBy { it.second }
+                    }.minByOrNull { it.second }
                 }.filter {
                     it.second < 5
                 }.map {

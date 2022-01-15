@@ -129,7 +129,7 @@ private fun getCountedCompletions(
         out.add(countTag)
     }
 
-    out.add("$prefix ${(children.max() ?: 0) + 1}")
+    out.add("$prefix ${(children.maxOrNull() ?: 0) + 1}")
     return out
 }
 

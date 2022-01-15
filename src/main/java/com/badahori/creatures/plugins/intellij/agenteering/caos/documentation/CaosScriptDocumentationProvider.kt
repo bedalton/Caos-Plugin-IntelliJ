@@ -95,7 +95,7 @@ class CaosScriptDocumentationProvider : AbstractDocumentationProvider() {
                 .filter {
                     it.isVariant(variant)
                 }
-                .minBy {
+                .minByOrNull {
                     when {
                         it.isCommand -> 0
                         it.isRvalue -> 1
