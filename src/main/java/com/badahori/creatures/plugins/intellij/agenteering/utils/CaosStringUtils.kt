@@ -5,9 +5,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.GameVariant
+import java.util.*
 import kotlin.contracts.contract
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.pow
+import kotlin.math.round
 
 object CaosStringUtil {
 
@@ -369,4 +372,28 @@ fun String.count(element: String): Int {
 
 fun String.count(char: Char): Int {
     return this.count { it == char }
+}
+
+@Suppress("SpellCheckingInspection")
+private const val DEFAULT_LETTERS: String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+fun randomString(length: Int): String {
+    return randomString(length, DEFAULT_LETTERS)
+}
+
+fun randomString(
+    length: Int,
+    letters: String
+): String {
+    if (length < 1) {
+        throw Exception("Cannot create random string without length")
+    }
+    val chars = letters.toCharArray()
+    val max = chars.size
+    val random = Random(letters.hashCode() * 31 + Date().time)
+    return (0 until length).map {
+        val index: Int = ceil(random.nextDouble() * max).toInt() - 1
+        chars[index]
+    }.joinToString()
+
 }
