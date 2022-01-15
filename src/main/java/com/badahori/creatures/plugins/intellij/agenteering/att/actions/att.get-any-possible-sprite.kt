@@ -1,8 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
@@ -19,15 +23,31 @@ import com.intellij.psi.search.GlobalSearchScopes
 internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, spriteFileNameBase: String = attFile.nameWithoutExtension): VirtualFile? {
     var parent = attFile.parent
     val module = attFile.getModule(project)
-    val searchScope = module?.moduleContentScope
+
+    // Init search scope
+    val searchScope = module?.moduleContentScope ?:  GlobalSearchScope.projectScope(project)
+    // Get variant
+    val variant = getInitialVariant(project, attFile).nullIfUnknown()
+    // Add variant search scope
+    val variantSearchScope = if (variant != null) {
+        searchScope.intersectWith(CaosVariantGlobalSearchScope(project, variant))
+    } else {
+        searchScope
+    }
     var spriteFile: VirtualFile? = null
     while (spriteFile == null && parent != null) {
-        spriteFile = searchParentRecursive(project, parent, spriteFileNameBase, searchScope)
+        spriteFile = searchParentRecursive(project, parent, spriteFileNameBase, variantSearchScope)
         parent = parent.parent
     }
     if (spriteFile != null)
         return spriteFile
-    return BreedSpriteIndex.findMatching(project, spriteFileNameBase, searchScope).firstOrNull()
+    if (DumbService.isDumb(project)) {
+        return null
+    }
+    return BreedSpriteIndex.findMatching(project, spriteFileNameBase, variantSearchScope, null)
+        .firstOrNull()
+        ?: BreedSpriteIndex.findMatching(project, spriteFileNameBase, searchScope, null)
+            .firstOrNull()
 }
 
 /**
