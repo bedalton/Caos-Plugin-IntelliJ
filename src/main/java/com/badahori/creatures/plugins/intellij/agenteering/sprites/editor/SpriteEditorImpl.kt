@@ -91,6 +91,10 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
             editor.init()
     }
 
+    override fun getFile(): VirtualFile {
+        return myFile
+    }
+
     companion object {
         private const val NAME = "SPREditor"
         private val CACHE_MD5_KEY = Key<String>("creatures.sprites.PARSED_IMAGES_MD5")

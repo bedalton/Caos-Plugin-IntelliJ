@@ -6,8 +6,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
@@ -44,6 +44,10 @@ internal class AttEditorImpl(
         return panel.component
     }
 
+    override fun getFile(): VirtualFile {
+        return myFile
+    }
+
     override fun getPreferredFocusedComponent(): JComponent? {
         return panel.scrollPane
     }
@@ -69,7 +73,12 @@ internal class AttEditorImpl(
     }
 
     override fun deselectNotify() {
-        panel.clearPose()
+        if (myProject.isDisposed) {
+            return
+        }
+        if (this::panel.isInitialized) {
+            panel.clearPose()
+        }
     }
 
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
@@ -77,8 +86,9 @@ internal class AttEditorImpl(
     }
 
     override fun dispose() {
-        if (this::panel.isInitialized)
+        if (this::panel.isInitialized) {
             this.panel.dispose()
+        }
     }
 
     override fun <T> getUserData(key: Key<T>): T? {
@@ -94,7 +104,12 @@ internal class AttEditorImpl(
      * Is not called if file is selected but in text view
      */
     override fun selectNotify() {
-        panel.refresh()
+        if (myProject.isDisposed) {
+            return
+        }
+        if (this::panel.isInitialized) {
+            panel.refresh()
+        }
     }
 
     companion object {
