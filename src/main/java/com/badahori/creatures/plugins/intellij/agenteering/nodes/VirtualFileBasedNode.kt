@@ -1,16 +1,14 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.intellij.ide.projectView.ProjectViewNode
-import com.intellij.ide.projectView.ProjectViewSettings
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
-import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.io.File
@@ -18,8 +16,11 @@ import java.io.IOException
 import javax.swing.JComponent
 import javax.swing.TransferHandler
 
-internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, protected val myVirtualFile:VfsT, viewSettings:ViewSettings?)
-    : ProjectViewNode<VfsT>(project, myVirtualFile, viewSettings) {
+internal abstract class VirtualFileBasedNode<VfsT : VirtualFile>(
+    project: Project,
+    protected val myVirtualFile: VfsT,
+    viewSettings: ViewSettings?,
+) : ProjectViewNode<VfsT>(project, myVirtualFile, viewSettings) {
 
     override fun getVirtualFile(): VirtualFile {
         return myVirtualFile
@@ -54,7 +55,7 @@ internal abstract class VirtualFileBasedNode<VfsT:VirtualFile>(project:Project, 
 
 }
 
-private fun createTransferable(virtualFile: VirtualFile) : Transferable {
+private fun createTransferable(virtualFile: VirtualFile): Transferable {
     try {
         VfsUtil.virtualToIoFile(virtualFile).let { file ->
             if (file.exists())
@@ -72,7 +73,7 @@ private fun createTransferable(virtualFile: VirtualFile) : Transferable {
     return FileTransferable(file)
 }
 
-internal class VfsTransferHandler(virtualFile: VirtualFile): TransferHandler() {
+internal class VfsTransferHandler(virtualFile: VirtualFile) : TransferHandler() {
 
     private val transferable by lazy {
         createTransferable(virtualFile)
@@ -81,7 +82,7 @@ internal class VfsTransferHandler(virtualFile: VirtualFile): TransferHandler() {
     /**
      * Bundle up the data for export.
      */
-    public override fun createTransferable(c: JComponent): Transferable? {
+    public override fun createTransferable(c: JComponent): Transferable {
         return transferable
     }
 
@@ -101,8 +102,8 @@ internal class VfsTransferHandler(virtualFile: VirtualFile): TransferHandler() {
     }
 }
 
-internal class FileTransferable(ioFile:File) : Transferable {
-    val fileList = listOf(ioFile)
+internal class FileTransferable(ioFile: File) : Transferable {
+    private val fileList = listOf(ioFile)
     override fun getTransferDataFlavors(): Array<DataFlavor> {
         return arrayOf(DataFlavor.javaFileListFlavor)
     }
@@ -116,5 +117,26 @@ internal class FileTransferable(ioFile:File) : Transferable {
             throw IOException("Invalid data flavor requested")
         return fileList
     }
+}
 
+internal class VirtualFilesListTransferable(private val files: List<VirtualFile>) : Transferable {
+    private val filesList by lazy {
+        files.map { file ->
+            createTransferable(file)
+        }
+    }
+
+    override fun getTransferDataFlavors(): Array<DataFlavor> {
+        return arrayOf(DataFlavor.javaFileListFlavor)
+    }
+
+    override fun isDataFlavorSupported(flavor: DataFlavor?): Boolean {
+        return flavor == DataFlavor.javaFileListFlavor
+    }
+
+    override fun getTransferData(flavor: DataFlavor?): Any {
+        if (flavor != DataFlavor.javaFileListFlavor)
+            throw IOException("Invalid data flavor requested")
+        return filesList
+    }
 }
