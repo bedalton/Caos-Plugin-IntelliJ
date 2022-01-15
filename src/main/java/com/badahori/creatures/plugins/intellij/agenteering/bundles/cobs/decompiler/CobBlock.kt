@@ -74,7 +74,7 @@ sealed class CobBlock {
                 contents: ByteArray
         ) : FileBlock(CobFileBlockType.SPRITE, fileName, reserved, contents) {
             val sprite: S16SpriteFile by lazy {
-                S16SpriteFile(contents)
+                S16SpriteFile(contents, fileName)
             }
         }
 
