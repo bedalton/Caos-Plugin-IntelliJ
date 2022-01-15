@@ -22,8 +22,15 @@ object CaosBundleSourcesRegistrationUtil {
     private var didSucceedOnce = false
 
     fun register(module: Module?, project: Project) {
+        if (project.isDisposed) {
+            return
+        }
+
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
+                if (project.isDisposed) {
+                    return@smartInvokeLater
+                }
                 register(module, project)
             }
             return

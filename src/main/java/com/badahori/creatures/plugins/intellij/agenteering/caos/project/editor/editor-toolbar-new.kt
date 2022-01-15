@@ -167,6 +167,10 @@ internal fun createCaosScriptHeaderComponent(
     caosFile: CaosScriptFile
 ): JComponent? {
 
+    if (project.isDisposed) {
+        return null
+    }
+
     // Create base toolbar
     val toolbar = JPanel()
     toolbar.layout = BoxLayout(toolbar, BoxLayout.X_AXIS)
@@ -187,6 +191,9 @@ internal fun createCaosScriptHeaderComponent(
 
     if (DumbService.isDumb(project)) {
         DumbService.getInstance(project).runWhenSmart {
+            if (project.isDisposed) {
+                return@runWhenSmart
+            }
             runReadAction {
                 populate(project, fileEditor, virtualFile, pointer, toolbar)
             }
@@ -640,8 +647,15 @@ fun setWhenReady(
     setInitialInjector: (initialVariant: CaosVariant?, gameInterface: GameInterfaceName?) -> Unit
 ) {
 
+    if (project.isDisposed) {
+        return
+    }
+
     if (DumbService.isDumb(project)) {
         DumbService.getInstance(project).runWhenSmart {
+            if (project.isDisposed) {
+                return@runWhenSmart
+            }
             runWriteAction {
                 setWhenReady(project, pointer, setVariant, setInitialInjector)
             }
