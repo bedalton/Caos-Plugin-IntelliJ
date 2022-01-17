@@ -4,10 +4,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVaria
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.defaultVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes
 
 
 /**
@@ -28,11 +32,11 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
                 return it
             }
         // If nothing else try to guess based on file extension
-        val variant = when (file.extension?.toLowerCase()) {
+        val variant = when (file.extension?.lowercase()) {
             "spr" -> CaosVariant.C1
             "c16" -> CaosVariant.C3
             "s16" -> CaosVariant.UNKNOWN
-            "att" -> getVariantByAttLengths(file, null)
+            "att" -> getVariantByAttLengths(project, file, null)
             else -> CaosVariant.UNKNOWN
         }
         // Cache whatever is returned
@@ -42,10 +46,10 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
         return variant
     }
     // Get breed char
-    val breed = file.name.toLowerCase()[3]
+    val breed = file.name.lowercase()[3]
 
     // Get part char
-    val part = file.name.toLowerCase()[0]
+    val part = file.name.lowercase()[0]
 
     // Check if part is CV only
     if (part in listOf('o', 'p', 'q'))
@@ -63,10 +67,13 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
             file.setCachedVariant(it, false)
             return it
         }
+        (project.settings.defaultVariant)?.let {
+            return it
+        }
     }
 
     // Try to figure out type if file is sprite
-    val variant = when (file.extension?.toLowerCase()) {
+    val variant = when (file.extension?.lowercase()) {
         "spr" -> CaosVariant.C1
         "c16" -> {
             val numImages = SpriteParser.numImages(file)
@@ -94,20 +101,34 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
                     CaosVariant.C3
             }
         }
-        else -> getVariantByAttLengths(file, part)
+        else -> getVariantByAttLengths(project, file, part)
     }
     file.setCachedVariant(variant, false)
     return variant
 }
 
 // Tries to determine the Variant based on att file length alone
-private fun getVariantByAttLengths(file: VirtualFile, part: Char?, searchSprite:Boolean = true): CaosVariant {
-    val contents = file.contents.trim()
+private fun getVariantByAttLengths(
+    project: Project?,
+    file: VirtualFile,
+    part: Char?,
+    searchSprite: Boolean = true
+): CaosVariant {
+    val scope = if (project != null) {
+        file.getModule(project)?.moduleContentScope
+            ?: GlobalSearchScope.projectScope(project)
+    } else {
+        null
+    }
+
+    val contents = file.contents.trimEnd(' ', '\n', '\r', '\t')
     val lines = contents.split("[\r\n]+".toRegex()).filter { it.isNotBlank() }
     if (lines.size == 10) {
         if (searchSprite) {
-            val sprite = file.findChildInSelfOrParent(file.nameWithoutExtension, listOf(".spr", "s16"), true)
-                ?: return CaosVariant.UNKNOWN
+            val sprite =
+                file.parent.findChildInSelfOrParent(file.nameWithoutExtension, listOf(".spr", "s16"), true, scope)
+                    ?: return CaosVariant.UNKNOWN
+
             return if (sprite.extension == "spr")
                 CaosVariant.C1
             else
@@ -116,14 +137,14 @@ private fun getVariantByAttLengths(file: VirtualFile, part: Char?, searchSprite:
         return CaosVariant.UNKNOWN
     }
     if (part == 'a') {
-        val longestLine = lines.maxBy { it.length }
+        val longestLine = lines.maxByOrNull { it.length }
             ?: return CaosVariant.C3
         val points = longestLine.split("\\s+".toRegex()).filter { it.isNotBlank() }
         if (points.lastOrNull()?.toIntSafe().orElse(0) > 0)
             return CaosVariant.CV
         return CaosVariant.C3
     }
-    val partLowerCase = part?.toLowerCase()
+    val partLowerCase = part?.lowercase()
     if (partLowerCase == 'o' || partLowerCase == 'p' || partLowerCase == 'q')
         return CaosVariant.CV
     return CaosVariant.C3

@@ -13,6 +13,8 @@ import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
@@ -28,8 +30,8 @@ import javax.swing.JComponent
 internal class AttEditorImpl(
     project: Project,
     file: VirtualFile,
-    private val spriteFile: VirtualFile
-) : UserDataHolderBase(), FileEditor {
+    val spriteFile: VirtualFile
+) : UserDataHolderBase(), FileEditor, DumbAware {
     private val myFile: VirtualFile = file
     private var myProject: Project = project
     private val variant: CaosVariant = getInitialVariant(project, file)
@@ -38,8 +40,12 @@ internal class AttEditorImpl(
 
     override fun getComponent(): JComponent {
         if (!this::panel.isInitialized) {
-            panel = AttEditorPanel(myProject, variant, myFile, spriteFile)
-            panel.init()
+            panel = AttEditorPanel(myProject, variant, myFile, this)
+            if (DumbService.isDumb(myProject)) {
+                DumbService.getInstance(myProject).runWhenSmart(panel::init)
+            } else {
+                panel.init()
+            }
         }
         return panel.component
     }
@@ -63,7 +69,7 @@ internal class AttEditorImpl(
     }
 
     override fun isValid(): Boolean {
-        return myFile.isValid
+        return !myProject.isDisposed && myFile.isValid
     }
 
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
@@ -76,7 +82,7 @@ internal class AttEditorImpl(
         if (myProject.isDisposed) {
             return
         }
-        if (this::panel.isInitialized) {
+        if (this::panel.isInitialized && !DumbService.isDumb(myProject)) {
             panel.clearPose()
         }
     }
@@ -108,7 +114,33 @@ internal class AttEditorImpl(
             return
         }
         if (this::panel.isInitialized) {
+            if (DumbService.isDumb(myProject)) {
+                DumbService.getInstance(myProject).runWhenSmart(::selectNotify)
+            }
             panel.refresh()
+        }
+    }
+
+    fun getImages(part: String): List<BufferedImage?> {
+        val images = parse(spriteFile).images
+        if (part notLike "a")
+            return images
+        return images.mapIndexed { i, image ->
+            var out: BufferedImage? = image
+            if (i % 16 in 4..7) {
+                val repeated =
+                    image == null || (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
+                if (repeated) {
+                    try {
+                        out = images[i - 4]?.flipHorizontal() ?: image
+                        if (out?.width != image?.width || out?.height != image?.height) {
+                            LOGGER.severe("Failed to properly maintain scale in image.")
+                        }
+                    } catch (e: Exception) {
+                    }
+                }
+            }
+            out
         }
     }
 
@@ -118,7 +150,7 @@ internal class AttEditorImpl(
         @JvmStatic
         fun assumedLinesAndPoints(variant: CaosVariant, part: String): Pair<Int, Int> {
             val lines = if (variant.isOld) 10 else 16
-            val columns = when (part.toUpperCase()) {
+            val columns = when (part.uppercase()) {
                 "A" -> when {
                     variant.isOld -> 2
                     else -> 5
@@ -128,30 +160,6 @@ internal class AttEditorImpl(
                 else -> 2
             }
             return Pair(lines, columns)
-        }
-
-        @JvmStatic
-        fun getImages(variant: CaosVariant, part: String, spriteFile: VirtualFile): List<BufferedImage?> {
-            val images = parse(spriteFile).images
-            if (part notLike "a" || variant != CaosVariant.CV)
-                return images
-            return images.mapIndexed { i, image ->
-                var out: BufferedImage? = image
-                if (i % 16 in 4..7) {
-                    val repeated =
-                        image == null || (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
-                    if (repeated) {
-                        try {
-                            out = images[i - 4]?.flipHorizontal() ?: image
-                            if (out?.width != image?.width || out?.height != image?.height) {
-                                LOGGER.severe("Failed to properly maintain scale in image.")
-                            }
-                        } catch (e: Exception) {
-                        }
-                    }
-                }
-                out
-            }
         }
 
         @JvmStatic

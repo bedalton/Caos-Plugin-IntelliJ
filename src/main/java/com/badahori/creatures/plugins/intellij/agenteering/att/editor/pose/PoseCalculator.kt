@@ -47,7 +47,7 @@ object PoseCalculator {
         selectedIndex: Int,
         facingDirection: Int,
         offset: Int,
-        invert: Boolean
+        invert: Boolean,
     ): Int {
         var pose = selectedIndex
         if (pose < 0) {
@@ -186,7 +186,7 @@ object PoseCalculator {
         headPose: Int,
         tilt: Int,
         mood: Int,
-        eyesClosed: Boolean
+        eyesClosed: Boolean,
     ): Int {
         // Head is funny, and needs special handling
 
@@ -221,7 +221,7 @@ object PoseCalculator {
         headPose: Int,
         tilt: Int,
         mood: Int,
-        eyesClosed: Boolean
+        eyesClosed: Boolean,
     ): Int {
         if (headPose !in 0..9) {
             LOGGER.severe("Invalid head pose $headPose found. SelectedIndex: $headPose; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
@@ -271,7 +271,7 @@ object PoseCalculator {
         headPose: Int,
         tilt: Int,
         mood: Int,
-        eyesClosed: Boolean
+        eyesClosed: Boolean,
     ): Int {
         var calculated = when {
             headPose >= 0 -> {
@@ -316,7 +316,7 @@ object PoseCalculator {
     data class HeadPoseData(
         val direction: Int,
         val tilt: Int? = null,
-        val mood: Int? = null
+        val mood: Int? = null,
     )
 
 
@@ -361,7 +361,7 @@ object PoseCalculator {
         pose: Pose?,
         facingDirection: Int,
         poseHolder: BreedPoseHolder,
-        vararg parts: Char
+        vararg parts: Char,
     ): Pose {
 
         // Get facing direction to calculate the sprite offset in the sprite file

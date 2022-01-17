@@ -132,9 +132,9 @@ internal object AttCopyMirroredUtil {
 
     private fun validateFileType(copyFrom: VirtualFile, copyTo: VirtualFile): AttCopyResult.Error? {
         var error: String? = null
-        if (copyTo.extension?.toLowerCase() != "att")
+        if (copyTo.extension?.lowercase() != "att")
             error = "Copy to file"
-        if (copyFrom.extension?.toLowerCase() != "att")
+        if (copyFrom.extension?.lowercase() != "att")
             error =
                 if (error != null) "$error and copy from file are not att files" else "Copy from file is not an att file"
         if (error != null) {

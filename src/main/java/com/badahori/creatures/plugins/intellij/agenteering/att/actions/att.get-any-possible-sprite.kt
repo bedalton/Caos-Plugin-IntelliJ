@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.intellij.openapi.project.DumbService
@@ -21,6 +22,9 @@ import com.intellij.psi.search.GlobalSearchScopes
  * then anywhere in the project
  */
 internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, spriteFileNameBase: String = attFile.nameWithoutExtension): VirtualFile? {
+    if (project.isDisposed) {
+        return null
+    }
     var parent = attFile.parent
     val module = attFile.getModule(project)
 
@@ -41,6 +45,7 @@ internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, sprite
     }
     if (spriteFile != null)
         return spriteFile
+
     if (DumbService.isDumb(project)) {
         return null
     }
@@ -82,7 +87,7 @@ private fun getAnySpriteMatching(parent: VirtualFile, spriteFile: String): Virtu
  * Must do this case insensitively
  */
 private fun getVirtualFilesByName(project: Project, spriteFile: String, extension:String, searchScope: GlobalSearchScope) : List<VirtualFile> {
-    val rawFiles = (FilenameIndex.getAllFilesByExt(project, extension, searchScope) + FilenameIndex.getAllFilesByExt(project, extension.toUpperCase(), searchScope)).toSet()
+    val rawFiles = (FilenameIndex.getAllFilesByExt(project, extension, searchScope) + FilenameIndex.getAllFilesByExt(project, extension.uppercase(), searchScope)).toSet()
     return rawFiles.filter {
         it.nameWithoutExtension like spriteFile
     }
