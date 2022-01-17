@@ -10,11 +10,13 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.rename.RenameInputValidator
+import com.intellij.util.IncorrectOperationException
 
 object CaosScriptPsiElementFactory {
 
-    private val C1E_SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!*]{4}".toRegex()
-    private val C2E_SUBROUTINE_NAME_REGEX = "[a-zA-Z][a-zA-Z0-9_:\$#!*]+".toRegex()
+    internal val C1E_SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!*]{4}".toRegex()
+    internal val C2E_SUBROUTINE_NAME_REGEX = "[a-zA-Z][a-zA-Z0-9_:\$#!*]+".toRegex()
     fun createFileFromText(project: Project, text: String, fileName: String = "dummy.cos"): CaosScriptFile {
         return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile)
     }
