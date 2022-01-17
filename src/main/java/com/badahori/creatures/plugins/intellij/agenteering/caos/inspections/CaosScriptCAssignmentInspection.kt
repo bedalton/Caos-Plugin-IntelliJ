@@ -44,7 +44,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         val commandString = commandElement.commandString
 
         // Get expected type based on command name
-        val expectedType = when (commandString.toUpperCase()) {
+        val expectedType = when (commandString.uppercase()) {
             "SETV" -> {
                 if (variant.isOld) {
                     val lvalue = element.lvalue
@@ -90,7 +90,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         lvalue: CaosScriptLvalue,
         problemsHolder: ProblemsHolder
     ) {
-        val lvalueCommand = lvalue.commandString?.toUpperCase()
+        val lvalueCommand = lvalue.commandString?.uppercase()
             ?: return
         if (variant == CaosVariant.C2 && lvalueCommand == "CLAS") {
             problemsHolder.registerProblem(
@@ -159,7 +159,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         // Create message using suggestion text if any
         var message = CaosBundle.message(
             "caos.inspections.assignments.wrong-type",
-            commandString.toUpperCase(),
+            commandString.uppercase(),
             expectedTypeDescription,
             actualType.simpleName
         )
@@ -184,7 +184,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
                         CaosScriptReplaceElementFix(
                             rvalueElement,
                             "vtos $value",
-                            "Prefix ${actualType.simpleName.toLowerCase()} '$value' with 'VTOS'"
+                            "Prefix ${actualType.simpleName.lowercase()} '$value' with 'VTOS'"
                         )
                     )
                 } else {

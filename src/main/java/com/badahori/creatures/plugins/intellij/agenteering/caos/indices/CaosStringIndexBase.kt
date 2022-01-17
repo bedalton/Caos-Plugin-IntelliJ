@@ -30,9 +30,9 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     override operator fun get(keyString: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
-        val keyLowercase = keyString.toLowerCase()
+        val keyLowercase = keyString.lowercase()
         return getAllKeys(project)
-                .filter { it.toLowerCase() == keyLowercase }
+                .filter { it.lowercase() == keyLowercase }
                 .flatMap {
                     StubIndex.getElements(key, it, project, scope, indexedElementClass)
                 }
@@ -62,7 +62,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
             if (notMatchingKeys.contains(key) || keys.contains(key)) {
                 continue
             }
-            if (key.toLowerCase().startsAndEndsWith(start?.toLowerCase(), tail?.toLowerCase())) {
+            if (key.lowercase().startsAndEndsWith(start?.lowercase(), tail?.lowercase())) {
                 keys.add(key)
             } else {
                 notMatchingKeys.add(key)

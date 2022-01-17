@@ -50,7 +50,7 @@ private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings?) : A
     if (project.isDisposed || !isValid) {
         return null
     }
-    return when (extension?.toLowerCase()) {
+    return when (extension?.lowercase()) {
         "cob", "rcb" -> CobFileTreeNode(project, this, viewSettings)
         "cos" -> (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
             ProjectCaosScriptFileTreeNode(project, psiFile, viewSettings)

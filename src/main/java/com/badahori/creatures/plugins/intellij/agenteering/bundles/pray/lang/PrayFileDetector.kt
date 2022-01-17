@@ -25,7 +25,7 @@ class PrayFileOverrider : FileTypeOverrider {
 
         // Get and normalize extension if any
         val extension = virtualFile.extension
-            ?.toLowerCase()
+            ?.lowercase()
             ?.nullIfEmpty()
             ?: return null
 

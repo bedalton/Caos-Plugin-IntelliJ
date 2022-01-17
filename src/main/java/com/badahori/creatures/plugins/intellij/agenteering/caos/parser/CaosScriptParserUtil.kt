@@ -507,6 +507,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         val originalText = builder_.originalText
         var char: Char = 0.toChar()
         val textLength = originalText.length
+        var couldBeSubroutine = false
         while (next != null && next == TokenType.WHITE_SPACE) {
             val startIndices = builder_.rawTokenTypeStart(lookAhead)
             val endIndex = builder_.rawTokenTypeStart(lookAhead)
@@ -514,6 +515,9 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                 if (charIndex < 0 || charIndex == textLength)
                     break
                 char = originalText[charIndex]
+                if (charIndex == startIndices && (char == 's' || char == 'g')) {
+                    couldBeSubroutine = next == CaosScript_K_SUBR || next == CaosScript_K_GSUB
+                }
                 if (char == '\n' || char == ',')
                     break
                 if (char != ' ' && char != '\t')
@@ -524,6 +528,10 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
         if (next == TokenType.BAD_CHARACTER)
             return true
+
+        if (next == CaosScript_ERROR_WORD) {
+            return !couldBeSubroutine
+        }
 
         if (char == '\n' || char == ',' || eof(builder_, level)) {
             builder_.putUserData(ENDED_ARGS_KEY, 0)
@@ -547,7 +555,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun commandNext(builder_: PsiBuilder, level: Int): Boolean {
-        val nextToken = nextToken(builder_)?.toUpperCase()
+        val nextToken = nextToken(builder_)?.uppercase()
             ?: return false
         if (nextToken in commandStrings)
             return true
@@ -555,7 +563,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         if (startsWith.isEmpty())
             return false
         val nextNextToken = nextToken(builder_, 5)
-            ?.toUpperCase()
+            ?.uppercase()
             ?.let { nextNextToken ->
                 "$nextToken $nextNextToken"
             }

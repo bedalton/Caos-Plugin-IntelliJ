@@ -37,7 +37,7 @@ internal fun isSingleImage(value: String): Boolean {
 
     val extension = FileNameUtils
         .getExtension(fileName)
-        ?.toLowerCase()
+        ?.lowercase()
 
     // Check is sprite extension is valid
     return extension in listOf("gif", "jpeg", "jpg", "png", "spr", "s16", "c16", "bmp")

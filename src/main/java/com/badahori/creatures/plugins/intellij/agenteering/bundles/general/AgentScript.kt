@@ -28,7 +28,7 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
 
     companion object {
         private fun getEventScriptName(code:String) : String? {
-            val codeToLower = code.toLowerCase().trim(' ','\t', ',', '\n')
+            val codeToLower = code.lowercase().trim(' ','\t', ',', '\n')
             val splits = "([,\\s]+scrp|^scrp)".toRegex()
                     .splitWithDelimiter(codeToLower)
                     .map { it.trim(' ','\t', ',', '\n')}

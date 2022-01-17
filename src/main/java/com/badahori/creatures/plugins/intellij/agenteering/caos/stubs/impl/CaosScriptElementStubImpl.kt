@@ -24,7 +24,7 @@ class CaosScriptCommandCallStubImpl(
         override val argumentValues: List<CaosExpressionValueType>
 ) : StubBase<CaosScriptCommandCallImpl>(parent, CaosScriptStubTypes.COMMAND_CALL), CaosScriptCommandCallStub {
     override val commandUpper: String by lazy {
-        command.toUpperCase()
+        command.uppercase()
     }
     override val commandTokens: List<String> by lazy {
         command.split(" ")

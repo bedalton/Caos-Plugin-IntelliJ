@@ -162,7 +162,7 @@ private fun annotateNumberedTag(element: PsiElement, tagName: String, holder: An
     }
     if (index < 1) {
         holder.newErrorAnnotation(
-            AgentMessages.message("pray.annotator.numbered-tag.tags-start-at-1", tagGroup.toLowerCase())
+            AgentMessages.message("pray.annotator.numbered-tag.tags-start-at-1", tagGroup.lowercase())
         )
             .range(element)
             .create()

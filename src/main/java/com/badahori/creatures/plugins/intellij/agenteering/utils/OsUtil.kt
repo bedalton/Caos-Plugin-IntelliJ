@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 object OsUtil {
-    private val osString by lazy { System.getProperty("os.name").toLowerCase() }
+    private val osString by lazy { System.getProperty("os.name").lowercase() }
     val isWindows by lazy {
         osString.contains("win")
     }

@@ -127,5 +127,5 @@ val PsiElement.isNotFolded: Boolean
         }
     }
 
-val PsiElement.textUppercase:String get() = text.toUpperCase()
+val PsiElement.textUppercase:String get() = text.uppercase()
 

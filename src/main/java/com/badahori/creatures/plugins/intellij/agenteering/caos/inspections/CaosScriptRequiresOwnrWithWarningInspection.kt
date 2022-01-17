@@ -28,11 +28,11 @@ class CaosScriptRequiresOwnrWithWarningInspection : LocalInspectionTool() {
             return
         element.getParentOfType(CaosScriptEventScript::class.java)?.let { script:CaosScriptEventScript ->
             if ((script.family != 4 && script.family != 0) && REQUIRES_CREATURE_OWNR.matches(element.text)) {
-                holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-creature-ownr", element.commandString.toUpperCase()))
+                holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-creature-ownr", element.commandString.uppercase()))
             }
             return
         }
-        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-ownr", element.commandString.toUpperCase()))
+        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-ownr", element.commandString.uppercase()))
     }
 
     private fun requiresOwnr(element:CaosScriptIsCommandToken) : Boolean {

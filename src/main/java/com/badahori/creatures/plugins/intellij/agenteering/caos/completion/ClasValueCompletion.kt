@@ -68,7 +68,7 @@ class GenerateClasIntegerAction : PsiElementBaseIntentionAction(), IntentionActi
             val arguments = assignment.arguments.nullIfEmpty()
                 ?: return false
             if (arguments.isNotEmpty())
-                return arguments.first().text?.toUpperCase() == "CLAS"
+                return arguments.first().text?.uppercase() == "CLAS"
             return false
         }
 
@@ -81,12 +81,12 @@ class GenerateClasIntegerAction : PsiElementBaseIntentionAction(), IntentionActi
             ?: return false
         val token = command
             .commandString
-            ?.toUpperCase()
+            ?.uppercase()
             ?: return false
         if (token != "SETV")
             return false
 
-        val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
+        val previousToken = command.arguments.getOrNull(0)?.text?.uppercase()
             ?: return false
         return previousToken == "CLAS"
     }
@@ -110,7 +110,7 @@ class GenerateClasIntegerAction : PsiElementBaseIntentionAction(), IntentionActi
                     ?: return
                 if (arguments.size != 1)
                     return
-                if (arguments.first().text?.toUpperCase() != "CLAS")
+                if (arguments.first().text?.uppercase() != "CLAS")
                     return
                 arguments.first().next
                     ?: return

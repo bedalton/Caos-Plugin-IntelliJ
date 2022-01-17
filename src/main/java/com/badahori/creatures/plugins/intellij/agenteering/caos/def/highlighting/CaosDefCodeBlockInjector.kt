@@ -18,7 +18,7 @@ class CaosDefCodeBlockInjector : LanguageInjector {
     override fun getLanguagesToInject(host: PsiLanguageInjectionHost, injectionPlacesRegistrar: InjectedLanguagePlaces) {
         if (host !is CaosDefCodeBlock)
             return
-        val text = host.text.substring(2, host.text.length - 2).toUpperCase().nullIfEmpty() ?: return
+        val text = host.text.substring(2, host.text.length - 2).uppercase().nullIfEmpty() ?: return
         val prefix = text.substring(0, max(1, min(4, text.length)))
         var suffix = when (prefix) {
             "DOIF" -> if (!text.endsWith("ENDI")) "endi" else null

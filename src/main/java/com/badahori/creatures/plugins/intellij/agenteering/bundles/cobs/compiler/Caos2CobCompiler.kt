@@ -332,7 +332,7 @@ object Caos2CobCompiler {
         return links.map map@{ relativePath ->
             val file = directory.findChild(relativePath)
                 ?: throw Caos2CobException("Failed to locate linked file: at '${directory.path + "/" + relativePath}'")
-            val extension = FileNameUtils.getExtension(relativePath)?.toLowerCase()
+            val extension = FileNameUtils.getExtension(relativePath)?.lowercase()
             if (extension == "wav" || extension in SpriteParser.VALID_SPRITE_EXTENSIONS) {
                 throw Caos2CobException("Linked file was not a CAOS file. Did you mean Attach or Inline?")
             }
@@ -400,7 +400,7 @@ object Caos2CobCompiler {
      */
     private fun stripScriptStartEnd(script: CaosScriptScriptElement, prefix: String): String {
         var text = script.text
-        text.toLowerCase().let { asLower ->
+        text.lowercase().let { asLower ->
             if (asLower.startsWith(prefix))
                 text = text.substring(4)
             if (asLower.endsWith("endm"))
@@ -519,7 +519,7 @@ object Caos2CobCompiler {
         // Create a remover script for all macros in the file.
         // This ignores install files as they should not be marked as such in a CAOS2Cob file
         val removerScriptFromMacros = scripts.filterIsInstance<CaosScriptMacro>().joinToString(",") {
-            it.text.toLowerCase().let { text ->
+            it.text.lowercase().let { text ->
                 val outText = if (text.endsWith("endm"))
                     text.substringFromEnd(0, 4)
                 else

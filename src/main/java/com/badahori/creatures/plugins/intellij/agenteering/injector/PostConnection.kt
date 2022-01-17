@@ -106,7 +106,7 @@ internal class PostConnection(urlString: String, variant: CaosVariant?) : CaosCo
     ): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
-        val caosFormatted = if (!caos.trim().toLowerCase().startsWith(expectedHeader)) {
+        val caosFormatted = if (!caos.trim().lowercase().startsWith(expectedHeader)) {
             if (removalRegex.matches(caos)) {
                 caos.replace(removalRegex, "")
             } else

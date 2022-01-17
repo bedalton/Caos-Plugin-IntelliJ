@@ -14,8 +14,8 @@ class CaosDefVariableLinkReference(element: CaosDefVariableLink) : PsiReferenceB
     override fun resolve(): PsiElement? {
         val parent = element.getParentOfType(CaosDefCommandDefElement::class.java)
                 ?: return null
-        val text = element.variableName.toLowerCase()
-        return parent.parameterList.firstOrNull { it.parameterName.toLowerCase() == text }
+        val text = element.variableName.lowercase()
+        return parent.parameterList.firstOrNull { it.parameterName.lowercase() == text }
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {

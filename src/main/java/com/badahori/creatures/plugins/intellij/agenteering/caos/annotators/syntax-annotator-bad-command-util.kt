@@ -29,7 +29,7 @@ internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement
     if (variant == CaosVariant.UNKNOWN)
         return null
     // Get command as upper case
-    val commandToUpperCase = commandToken.toUpperCase()
+    val commandToUpperCase = commandToken.uppercase()
 
     if ((commandToUpperCase == "RSCR" || commandToUpperCase == "ISCR") && (element.containingFile as? CaosScriptFile)?.isCaos2Cob.orFalse())
         return null
@@ -146,14 +146,14 @@ private fun annotationInvalidCommandTypeInVariant(
         annotationHolder: AnnotationHolder
 ): AnnotationBuilder {
     // Format command to upper case
-    val commandToUpperCase: String = commandToken.toUpperCase()
+    val commandToUpperCase: String = commandToken.uppercase()
     // Gets the command types as a string
     val alternativeCommandTypesAsString = formatPossibleCommandTypes(commandsInVariant)
     // Format message
     val message = message(
             "caos.annotator.syntax-error-annotator.invalid-command-type-in-variant",
             commandToUpperCase,
-            commandType.value.toLowerCase(),
+            commandType.value.lowercase(),
             alternativeCommandTypesAsString,
             variant.code,
     )
@@ -176,7 +176,7 @@ private fun annotationInvalidCommandTypeInVariant(
  */
 private fun addSetvLikeFixes(variant: CaosVariant, element:PsiElement, commandToken: String, builderIn:AnnotationBuilder) : AnnotationBuilder {
     var builder = builderIn
-    val commandToUpperCase = commandToken.toUpperCase()
+    val commandToUpperCase = commandToken.uppercase()
     val nextRvalue = nextRvalues(element)
     val expectsString = nextRvalue.any { (it.command != "CHAR" && it.command != "TRAN") && it.returnType == CaosExpressionValueType.STRING }
     // Add fixes for left values as needed
@@ -219,8 +219,8 @@ private fun validTypeInOtherVariantsAnnotation(
     // Format message for command and variant
     val message = message(
             "caos.annotator.syntax-error-annotator.invalid-variant",
-            commandToken.toUpperCase(),
-            commandType.value.toLowerCase(),
+            commandToken.uppercase(),
+            commandType.value.lowercase(),
             variantsString
 
     )
@@ -246,8 +246,8 @@ private fun nextRvalues(element: PsiElement): List<CaosCommand> {
     }
 
     // Get text for next->next, in case of a two word command
-    val nextText = nextElement?.text?.toUpperCase()
-    val nextNextText = nextElement?.getNextNonEmptySibling(false)?.text?.toUpperCase()
+    val nextText = nextElement?.text?.uppercase()
+    val nextNextText = nextElement?.getNextNonEmptySibling(false)?.text?.uppercase()
 
     // Return possible next commands
     return when {

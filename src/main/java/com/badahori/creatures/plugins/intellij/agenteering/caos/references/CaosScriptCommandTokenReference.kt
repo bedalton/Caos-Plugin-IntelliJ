@@ -259,8 +259,8 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
             OVxx.matches(name) -> "[Oo][Vv][Xx][Xx]"
             MVxx.matches(name) -> "[Mm][Vv][Xx][Xx]"
             else -> name.toCharArray().joinToString("") {
-                val lowerCase = it.toLowerCase()
-                val upperCase = it.toUpperCase()
+                val lowerCase = it.lowercase()
+                val upperCase = it.uppercase()
                 if (lowerCase != upperCase)
                     "[$lowerCase$upperCase]"
                 else if (it == '!' || it == '$')
@@ -284,7 +284,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
                 .filter { commandDefElement ->
                     if (!commandDefElement.variantsIntersect(variants))
                         return@filter false
-                    val words = commandDefElement.commandWords.map { it.toLowerCase() }
+                    val words = commandDefElement.commandWords.map { it.lowercase() }
                     if (words.size < 2)
                         return@filter false
                     matchesWords(words)
@@ -355,7 +355,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      * Checks that a list of words matches this token and possibly the tokens before and after
      */
     private fun matchesWords(words: List<String>): Boolean {
-        when (words.indexOf(name.toLowerCase())) {
+        when (words.indexOf(name.lowercase())) {
             0 -> {
                 var next: CaosDefCommandWord? = myElement as? CaosDefCommandWord
                 for (word in words) {

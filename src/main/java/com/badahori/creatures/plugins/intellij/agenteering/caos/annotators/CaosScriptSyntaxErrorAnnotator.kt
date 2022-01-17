@@ -30,7 +30,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.abs
 import kotlin.math.floor
 
-class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
+class CaosScriptSyntaxErrorAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element.isOrHasParentOfType(CaosDefCompositeElement::class.java))
@@ -169,7 +169,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
      */
     private fun annotateErrorElement(variant: CaosVariant, element: PsiElement, holder: AnnotationHolder) {
         val command = element.text
-        val commandUpperCase = element.text.toUpperCase()
+        val commandUpperCase = element.text.uppercase()
         val isLvalue =
             commandUpperCase == "CLAS" || commandUpperCase == "CLS2" || CaosLibs[variant][LVALUE][command] != null
         if (isLvalue) {
@@ -206,7 +206,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateEqualityExpressionPlus(
         variant: CaosVariant,
         element: CaosScriptEqualityExpressionPlus,
-        holder: AnnotationHolder
+        holder: AnnotationHolder,
     ) {
         if (variant.isNotOld)
             return
@@ -238,7 +238,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateDoubleQuoteString(
         variant: CaosVariant,
         quoteStringLiteral: CaosScriptQuoteStringLiteral,
-        wrapper: AnnotationHolder
+        wrapper: AnnotationHolder,
     ) {
         if (variant.isNotOld || quoteStringLiteral.parent is CaosScriptCaos2Value)
             return
@@ -287,7 +287,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateElseIfStatement(
         variant: CaosVariant,
         element: CaosScriptElseIfStatement,
-        holder: AnnotationHolder
+        holder: AnnotationHolder,
     ) {
         if (variant.isNotOld)
             return
@@ -314,7 +314,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         element: PsiElement,
         message: String,
         holder: AnnotationHolder,
-        vararg fixes: IntentionAction
+        vararg fixes: IntentionAction,
     ) {
         holder.newErrorAnnotation(message)
             .withFixes(*fixes)
@@ -335,7 +335,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateOldEqualityOps(variant: CaosVariant, element: CaosScriptEqOpOld, holder: AnnotationHolder) {
         if (variant.isOld || variant == UNKNOWN)
             return
-        if (element.text.toLowerCase().let { it != "bt" && it != "bf" }) {
+        if (element.text.lowercase().let { it != "bt" && it != "bf" }) {
             return
         }
         holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid_old-eq_operator"))
@@ -430,11 +430,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
     private fun annotateErrorCommand(
         variant: CaosVariant,
         errorCommand: CaosScriptErrorCommand,
-        holder: AnnotationHolder
+        holder: AnnotationHolder,
     ) {
         val rawTokens = errorCommand
             .text
-            .toUpperCase()
+            .uppercase()
             .split(WHITESPACE, 3)
         // Get error as possible error annotation
         val errorAnnotation = rawTokens
@@ -469,7 +469,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         internal fun annotateNotAvailable(
             variant: CaosVariant,
             element: CaosScriptIsCommandToken,
-            holder: AnnotationHolder
+            holder: AnnotationHolder,
         ) {
             // Colorize element as token
             if (element.isOrHasParentOfType(CaosScriptRKwNone::class.java) && element.hasParentOfType(
@@ -479,7 +479,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 holder.colorize(element, CaosScriptSyntaxHighlighter.TOKEN)
                 return
             }
-            val commandText = element.commandString.toUpperCase()
+            val commandText = element.commandString.uppercase()
 
             if (element is CaosScriptCKwInvalidLoopTerminator) {
                 annotateInvalidLoopTerminator(element, holder)
@@ -511,16 +511,17 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             return
         }
 
-        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.classifier-expects-integer-literal", partName.toLowerCase()))
+        holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.classifier-expects-integer-literal",
+            partName.lowercase()))
             .range(element)
             .create()
     }
 
     private fun allowSwift(element: PsiElement): Boolean {
-       return PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
-                .any { comment ->
-                    swiftRegex.matches(comment.text.trim())
-                }
+        return PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
+            .any { comment ->
+                swiftRegex.matches(comment.text.trim())
+            }
     }
 
 }

@@ -87,7 +87,7 @@ class CaosScriptEnumAnnotator : Annotator {
      */
     private fun annotateBadEnumStatement(variant: CaosVariant, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolder) {
         val enumToken = element.enumHeaderCommand.commandToken
-        val enumText = enumToken.text?.toUpperCase() ?: return
+        val enumText = enumToken.text?.uppercase() ?: return
         // All variants support ENUM...NEXT
         if (enumText == "ENUM")
             return

@@ -35,7 +35,7 @@ class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool() {
                 return
             }
         }
-        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-creature-ownr", element.commandString.toUpperCase()))
+        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-creature-ownr", element.commandString.uppercase()))
     }
 }
 

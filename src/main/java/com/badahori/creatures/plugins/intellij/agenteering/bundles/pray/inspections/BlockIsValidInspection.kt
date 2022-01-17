@@ -31,9 +31,9 @@ open class PrayBlockIsValidInspection : LocalInspectionTool() {
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : PsiElementVisitor() {
-            override fun visitElement(element: PsiElement?) {
+            override fun visitElement(element: PsiElement) {
                 super.visitElement(element)
-                if (element != null && element.tokenType == PlainTextTokenTypes.PLAIN_TEXT_FILE) {
+                if (element.tokenType == PlainTextTokenTypes.PLAIN_TEXT_FILE) {
                     validateBlock(element, holder)
                 }
             }
@@ -89,9 +89,9 @@ class PrayPlainTextBlockIsValidInspection: PrayBlockIsValidInspection() {
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : PsiElementVisitor() {
-            override fun visitPlainTextFile(file: PsiPlainTextFile?) {
+            override fun visitPlainTextFile(file: PsiPlainTextFile) {
                 super.visitPlainTextFile(file)
-                if (file != null && PrayFileDetector.isPrayFile(file.text)) {
+                if (PrayFileDetector.isPrayFile(file.text)) {
                     validateBlock(file, holder)
                 }
             }

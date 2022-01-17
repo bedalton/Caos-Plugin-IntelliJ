@@ -39,7 +39,7 @@ class CaosScriptRequiresOwnrInspection : LocalInspectionTool() {
         element.getParentOfType(CaosScriptScriptElement::class.java)?.let {
             return
         }
-        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-ownr", element.commandString.toUpperCase()))
+        holder.registerProblem(element, CaosBundle.message("caos.inspections.ownr-inspection.requires-ownr", element.commandString.uppercase()))
     }
 
     private fun requiresOwnr(element:CaosScriptIsCommandToken) : Boolean {
