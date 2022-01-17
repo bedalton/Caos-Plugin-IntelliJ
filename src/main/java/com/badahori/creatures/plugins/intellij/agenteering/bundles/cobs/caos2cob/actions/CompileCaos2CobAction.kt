@@ -27,10 +27,10 @@ import icons.CaosScriptIcons
  * @todo implement multiple file types (ie. implementations or protocols)
  */
 class CompileCaos2CobAction : AnAction(
-    AgentMessages.message("cob.caos2cob.compile.title"),
-    AgentMessages.message("cob.caos2cob.compile.description"),
-    CaosScriptIcons.C1_COB_FILE_ICON
-), DumbAware {
+    /* text = */ AgentMessages.message("cob.caos2cob.compile.title"),
+    /* description = */ AgentMessages.message("cob.caos2cob.compile.description"),
+    /* icon = */ CaosScriptIcons.C1_COB_FILE_ICON
+) {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
@@ -41,7 +41,6 @@ class CompileCaos2CobAction : AnAction(
             }
         compile(project, files)
     }
-
 
 
     override fun update(event: AnActionEvent) {
@@ -58,6 +57,7 @@ class CompileCaos2CobAction : AnAction(
     companion object {
         private val isCaos2CobRegex =
             "[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]|[*][#]\\s*(C1-Name|C2-Name)".toRegex(RegexOption.IGNORE_CASE)
+
         private fun hasCaos2Cob(file: VirtualFile): Boolean {
             if (file.isDirectory) {
                 ProgressIndicatorProvider.checkCanceled()
