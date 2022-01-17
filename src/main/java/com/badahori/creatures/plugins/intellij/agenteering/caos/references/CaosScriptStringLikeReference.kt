@@ -111,7 +111,19 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
     private val type: CaosScriptNamedGameVarType by lazy {
-        (element.parent?.parent as? CaosScriptNamedGameVar)?.varType ?: CaosScriptNamedGameVarType.UNDEF
+        (element.parent?.parent as? CaosScriptNamedGameVar)?.varType?.let {
+            return@lazy it
+        }
+
+        val command = element.getParentOfType(CaosScriptCommandElement::class.java)
+            ?: return@lazy CaosScriptNamedGameVarType.UNDEF
+        when (command.commandStringUpper) {
+            "DELG" -> CaosScriptNamedGameVarType.GAME
+            "DELE" -> CaosScriptNamedGameVarType.EAME
+            "DELN" -> CaosScriptNamedGameVarType.NAME
+            else -> CaosScriptNamedGameVarType.UNDEF
+        }
+
     }
 
     private val key: String by lazy {
