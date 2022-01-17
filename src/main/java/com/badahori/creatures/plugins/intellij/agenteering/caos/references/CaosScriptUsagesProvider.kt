@@ -16,7 +16,7 @@ import com.intellij.psi.PsiElement
 
 class CaosScriptUsagesProvider : FindUsagesProvider {
 
-    override fun getWordsScanner(): WordsScanner? {
+    override fun getWordsScanner(): WordsScanner {
         return DefaultWordsScanner(
                 CaosScriptLexerAdapter(),
                 CaosScriptTokenSets.ALL_FIND_USAGES_TOKENS,
@@ -29,17 +29,21 @@ class CaosScriptUsagesProvider : FindUsagesProvider {
             = element.text
 
     override fun getDescriptiveName(element: PsiElement): String {
+        element.getSelfOrParentOfType(CaosScriptSubroutineName::class.java)?.let {
+            return "SUBR " + it.name
+        }
+        element.getSelfOrParentOfType(CaosScriptVarToken::class.java)
+            ?.let { return "var ${element.text}" }
+
         return when {
-            element.isOrHasParentOfType(CaosScriptSubroutineName::class.java) -> "SUBR ${element.text}"
-            element.isOrHasParentOfType(CaosScriptVarToken::class.java) -> "var ${element.text}"
             element.tokenType == CaosScriptTypes.CaosScript_INT -> "int ${element.text}"
             element.tokenType == CaosScriptTypes.CaosScript_FLOAT -> "float ${element.text}"
             element.tokenType == CaosScriptTypes.CaosScript_FLOAT -> "number ${element.text}"
-            element.tokenType == CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL -> when {
-                element.parent?.parent is CaosScriptNamedGameVar -> (element.parent?.parent as CaosScriptNamedGameVar).let {variable ->
+            element.tokenType == CaosScriptTypes.CaosScript_QUOTE_STRING_LITERAL -> when (element.parent?.parent) {
+                is CaosScriptNamedGameVar -> (element.parent?.parent as CaosScriptNamedGameVar).let { variable ->
                     "variable ${variable.varType.token} \"${variable.key}\""
                 }
-                    else -> "\"${element.text.substring(1 until element.textLength)}\""
+                else -> "\"${element.text.substring(1 until element.textLength)}\""
             }
             else -> {
                 element.getSelfOrParentOfType(CaosScriptIsCommandToken::class.java)?.let {
