@@ -11,6 +11,7 @@ import com.intellij.ide.fileTemplates.ui.CreateFromTemplateDialog
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidatorEx
 import com.intellij.openapi.util.io.FileUtilRt
@@ -25,14 +26,20 @@ import java.util.*
  * @todo implement multiple file types (ie. implementations or protocols)
  */
 class CaosScriptNewFileAction : CreateFileFromTemplateAction(
-        CaosBundle.message("caos.actions.new-file.title"),
-        CaosBundle.message("caos.actions.new-file.description"),
-        CaosScriptIcons.CAOS_FILE_ICON), DumbAware {
+    /* text = */ CaosBundle.message("caos.actions.new-file.title"),
+    /* description = */ CaosBundle.message("caos.actions.new-file.description"),
+    /* icon = */ CaosScriptIcons.CAOS_FILE_ICON), DumbAware {
 
     override fun update(e: AnActionEvent) {
         super.update(e)
         val project = e.project
             ?: return
+        if (project.isDisposed) {
+            return
+        }
+        if (DumbService.isDumb(project)) {
+            return
+        }
         val hasCaosModule = ModuleManager.getInstance(project).modules.any {
             it.moduleTypeName == CaosScriptModuleType.INSTANCE.name
         } || FilenameIndex.getAllFilesByExt(project, "cos").isNotEmpty()
