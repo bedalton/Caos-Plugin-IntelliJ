@@ -114,7 +114,7 @@ object CaosBundleSourcesRegistrationUtil {
             ?: ""
         if (versionString.isEmpty())
             throw Exception("Caos definitions versions cannot be null")
-        return versionString == oldVersionString
+        return model.getLibraryByName(LIBRARY_NAME)?.getUrls(OrderRootType.SOURCES)?.size == 1 && versionString == oldVersionString
     }
 
 
@@ -122,6 +122,11 @@ object CaosBundleSourcesRegistrationUtil {
         val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return null
         oldLibrary.modifiableModel.removeRoot(BUNDLE_DEFINITIONS_FOLDER, OrderRootType.SOURCES)
         oldLibrary.modifiableModel.removeRoot(libraryPath, OrderRootType.SOURCES)
+        oldLibrary.modifiableModel.getUrls(OrderRootType.SOURCES).forEach { url ->
+            oldLibrary.modifiableModel.removeRoot(url, OrderRootType.SOURCES)
+            oldLibrary.modifiableModel.removeRoot(url.split('!').first(), OrderRootType.SOURCES)
+        }
+        oldLibrary.modifiableModel.commit()
         return oldLibrary
     }
 
