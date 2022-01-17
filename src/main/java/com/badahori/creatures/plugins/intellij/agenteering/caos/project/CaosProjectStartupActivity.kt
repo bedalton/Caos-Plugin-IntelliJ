@@ -23,14 +23,14 @@ import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.vfs.newvfs.events.*
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 
 
 class CaosProjectStartupActivity : StartupActivity {
 
-    private var project:Project? = null
+    private var project: Project? = null
 
     private val callback = object : FileEditorManagerListener {
         override fun fileOpened(editorManager: FileEditorManager, file: VirtualFile) {
@@ -45,8 +45,10 @@ class CaosProjectStartupActivity : StartupActivity {
         val validExtensions = listOf(
             "spr",
             "s16",
-            "c16"
+            "c16",
+            "att"
         )
+
         override fun after(events: MutableList<out VFileEvent>) {
             super.after(events)
             val project = project
@@ -57,41 +59,38 @@ class CaosProjectStartupActivity : StartupActivity {
                 return
             }
 
+            if (events.none { it is VFileMoveEvent || it is VFileCreateEvent || it is VFileDeleteEvent || it is VFileCopyEvent }) {
+                return
+            }
+
             invokeLater {
                 if (project.isDisposed) {
                     this@CaosProjectStartupActivity.project = null
                     return@invokeLater
                 }
                 if (DumbService.isDumb(project)) {
-                    DumbService.getInstance(project).runWhenSmart {
-                        if (project.isDisposed) {
-                            return@runWhenSmart
-                        }
-                        after(events)
-                    }
+                    return@invokeLater
                 }
-                DumbService.getInstance(project).runWhenSmart {
-                    val keys = events
-                        .mapNotNull map@{
-                            val file = it.file
-                                ?: return@map null
-                            if (!file.isValid || file.extension?.toLowerCase() !in validExtensions)
-                                return@map null
-                            BreedPartKey.fromFileName(file.name)
-                        }
-                    try {
-                        for (key in keys) {
-                            val sprites =
-                                BreedSpriteIndex.findMatching(project, key, GlobalSearchScope.projectScope(project))
-                            for (sprite in sprites) {
-                                if (sprite.isValid) {
-                                    SpriteAttPathPropertyPusher.writeToStorage(sprite, null)
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        return@runWhenSmart
+                val keys = events
+                    .mapNotNull map@{
+                        val file = it.file
+                            ?: return@map null
+                        if (!file.isValid || file.extension?.lowercase() !in validExtensions)
+                            return@map null
+                        BreedPartKey.fromFileName(file.name)
                     }
+                try {
+//                    for (key in keys) {
+//                        val sprites =
+//                            BreedSpriteIndex.findMatching(project, key, GlobalSearchScope.projectScope(project))
+//                        for (sprite in sprites) {
+//                            if (sprite.isValid) {
+//                                SpriteAttPathPropertyPusher.writeToStorage(sprite, null)
+//                            }
+//                        }
+//                    }
+                } catch (e: Exception) {
+                    return@invokeLater
                 }
             }
         }
@@ -136,22 +135,23 @@ class CaosProjectStartupActivity : StartupActivity {
     }
 
     private fun registerFileSaveHandler() {
-        ApplicationManager.getApplication().messageBus.connect().subscribe(AppTopics.FILE_DOCUMENT_SYNC, object : FileDocumentManagerListener {
-            override fun beforeDocumentSaving(document: Document) {
-                super.beforeDocumentSaving(document)
-                if (project?.isDisposed != false) {
-                    return
-                }
-                val virtualFile = document.virtualFile
+        ApplicationManager.getApplication().messageBus.connect()
+            .subscribe(AppTopics.FILE_DOCUMENT_SYNC, object : FileDocumentManagerListener {
+                override fun beforeDocumentSaving(document: Document) {
+                    super.beforeDocumentSaving(document)
+                    if (project?.isDisposed != false) {
+                        return
+                    }
+                    val virtualFile = document.virtualFile
                         ?: return
-                if (!virtualFile.isValid) {
-                    return
-                }
-                val caosVirtualFile = virtualFile as? CaosVirtualFile
+                    if (!virtualFile.isValid) {
+                        return
+                    }
+                    val caosVirtualFile = virtualFile as? CaosVirtualFile
                         ?: return
-                CaosVirtualFileSystem.instance.fireOnSaveEvent(caosVirtualFile)
-            }
-        })
+                    CaosVirtualFileSystem.instance.fireOnSaveEvent(caosVirtualFile)
+                }
+            })
     }
 
     private fun hasAnyCaosFiles(project: Project): Boolean {
