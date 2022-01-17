@@ -36,8 +36,9 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
 
         // Try and find references to other var tokens
         if (element is CaosScriptVarToken) {
-            val variants = listOfNotNull(element.variant).nullIfEmpty()
-                    ?: return
+            val variants = listOfNotNull(element.variant)
+                .nullIfEmpty()
+                ?: return
             return checkVarReferences(variants, project, scope, element, processor)
         }
 
@@ -60,7 +61,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
 
     @Suppress("SpellCheckingInspection")
     private fun getVarGroupIfAny(element: CaosDefCompositeElement): CaosScriptVarTokenGroup? {
-        return when (element.text.toUpperCase()) {
+        return when (element.text.uppercase()) {
             "VARX" -> CaosScriptVarTokenGroup.VARx
             "VAXX" -> CaosScriptVarTokenGroup.VAxx
             "OBVX" -> CaosScriptVarTokenGroup.OBVx
@@ -73,108 +74,126 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
     /**
      * Checks for var references throughout all
      */
-    private fun checkVarReferences(variants: List<CaosVariant>, project: Project, scope: SearchScope?, element:CaosScriptVarToken, processor: Processor<in PsiReference>) {
+    private fun checkVarReferences(
+        variants: List<CaosVariant>,
+        project: Project,
+        scope: SearchScope?,
+        element: CaosScriptVarToken,
+        processor: Processor<in PsiReference>,
+    ) {
         val varGroup = element.varGroup
         val index = element.varIndex
         if (varGroup == CaosScriptVarTokenGroup.VAxx || varGroup == CaosScriptVarTokenGroup.VARx) {
             if (scope?.contains(element.containingFile.virtualFile).orTrue()) {
                 val containingScript = element.getParentOfType(CaosScriptScriptElement::class.java)
-                        ?: return
+                    ?: return
                 PsiTreeUtil.collectElementsOfType(containingScript, CaosScriptVarToken::class.java)
-                        .filter {
-                            index == it.varIndex && varGroup == it.varGroup
-                        }
-                        .map {
-                            it.reference
-                        }.all {
-                            processor.process(it)
-                        }
+                    .filter {
+                        index == it.varIndex && varGroup == it.varGroup
+                    }
+                    .map {
+                        it.reference
+                    }.all {
+                        processor.process(it)
+                    }
             }
             return
         }
         getCaosFiles(project, scope)
-                .flatMap map@{ file ->
-                    ProgressIndicatorProvider.checkCanceled()
-                    if (file.variant !in variants)
-                        return@map emptyList<PsiReference>()
-                    PsiTreeUtil.collectElementsOfType(file, CaosScriptVarToken::class.java)
-                            .filter {
-                                index == it.varIndex && varGroup == it.varGroup
-                            }
-                            .mapNotNull { it.reference }
-                }
-                .all {
-                    processor.process(it)
-                }
+            .flatMap map@{ file ->
+                ProgressIndicatorProvider.checkCanceled()
+                if (file.variant !in variants)
+                    return@map emptyList<PsiReference>()
+                PsiTreeUtil.collectElementsOfType(file, CaosScriptVarToken::class.java)
+                    .filter {
+                        index == it.varIndex && varGroup == it.varGroup
+                    }
+                    .mapNotNull { it.reference }
+            }
+            .all {
+                processor.process(it)
+            }
     }
 
     /**
      * Resolves references from command words to a given command word element
      */
-    private fun isReferenceTo(variants: List<CaosVariant>, project: Project, scope: SearchScope?, command: CaosDefCommandWord, processor: Processor<in PsiReference>) {
+    private fun isReferenceTo(
+        variants: List<CaosVariant>,
+        project: Project,
+        scope: SearchScope?,
+        command: CaosDefCommandWord,
+        processor: Processor<in PsiReference>,
+    ) {
         getCaosFiles(project, scope)
-                .flatMap map@{ file ->
-                    ProgressIndicatorProvider.checkCanceled()
-                    if (file.variant !in variants)
-                        return@map emptyList<PsiReference>()
-                    PsiTreeUtil.collectElementsOfType(file, CaosScriptIsCommandToken::class.java)
-                            .mapNotNull { it.reference }
-                            .filter { reference ->
-                                ProgressIndicatorProvider.checkCanceled()
-                                reference.isReferenceTo(command)
-                            }
-                }
-                .all {
-                    processor.process(it)
-                }
+            .flatMap map@{ file ->
+                ProgressIndicatorProvider.checkCanceled()
+                if (file.variant !in variants)
+                    return@map emptyList<PsiReference>()
+                PsiTreeUtil.collectElementsOfType(file, CaosScriptIsCommandToken::class.java)
+                    .mapNotNull { it.reference }
+                    .filter { reference ->
+                        ProgressIndicatorProvider.checkCanceled()
+                        reference.isReferenceTo(command)
+                    }
+            }
+            .all {
+                processor.process(it)
+            }
 
         getCaosDefFiles(project, scope).flatMap map@{ file ->
             if (file.variants.intersect(variants).isEmpty())
                 return@map emptyList<PsiReference>()
             PsiTreeUtil.collectElementsOfType(file, CaosDefCommandWord::class.java)
-                    .filter filter@{ wordElement ->
-                        ProgressIndicatorProvider.checkCanceled()
-                        // Do not match element to self
-                        if (wordElement.parent?.parent is CaosDefCommandDefElement)
-                            return@filter false
-                        wordElement.reference.isReferenceTo(command).orFalse()
-                    }
-                    .map {
-                        it.reference
-                    }
-        }
-                .all {
-                    processor.process(it)
+                .filter filter@{ wordElement ->
+                    ProgressIndicatorProvider.checkCanceled()
+                    // Do not match element to self
+                    if (wordElement.parent?.parent is CaosDefCommandDefElement)
+                        return@filter false
+                    wordElement.reference.isReferenceTo(command).orFalse()
                 }
+                .map {
+                    it.reference
+                }
+        }
+            .all {
+                processor.process(it)
+            }
     }
 
     /**
      * Resolves references to rvalues and event numbers
      */
-    private fun isReferenceTo(variants: List<CaosVariant>, project: Project, scope: SearchScope?, reference: PsiReference, processor: Processor<in PsiReference>) {
+    private fun isReferenceTo(
+        variants: List<CaosVariant>,
+        project: Project,
+        scope: SearchScope?,
+        reference: PsiReference,
+        processor: Processor<in PsiReference>,
+    ) {
         getCaosFiles(project, scope)
-                .flatMap map@{ file ->
-                    if (file.variant !in variants)
-                        return@map emptyList<PsiReference>()
-                    ProgressIndicatorProvider.checkCanceled()
-                    PsiTreeUtil.collectElementsOfType(file, CaosScriptRvalue::class.java)
-                            .filter { expression -> reference.isReferenceTo(expression) }
-                            .mapNotNull {
-                                ProgressIndicatorProvider.checkCanceled()
-                                it.reference
-                            }
+            .flatMap map@{ file ->
+                if (file.variant !in variants)
+                    return@map emptyList<PsiReference>()
+                ProgressIndicatorProvider.checkCanceled()
+                PsiTreeUtil.collectElementsOfType(file, CaosScriptRvalue::class.java)
+                    .filter { expression -> reference.isReferenceTo(expression) }
+                    .mapNotNull {
+                        ProgressIndicatorProvider.checkCanceled()
+                        it.reference
+                    }
 
-                    ProgressIndicatorProvider.checkCanceled()
-                    PsiTreeUtil.collectElementsOfType(file, CaosScriptEventNumberElement::class.java)
-                            .filter { expression ->
-                                ProgressIndicatorProvider.checkCanceled()
-                                reference.isReferenceTo(expression)
-                            }
-                            .mapNotNull { it.reference }
-                }
-                .all {
-                    processor.process(it)
-                }
+                ProgressIndicatorProvider.checkCanceled()
+                PsiTreeUtil.collectElementsOfType(file, CaosScriptEventNumberElement::class.java)
+                    .filter { expression ->
+                        ProgressIndicatorProvider.checkCanceled()
+                        reference.isReferenceTo(expression)
+                    }
+                    .mapNotNull { it.reference }
+            }
+            .all {
+                processor.process(it)
+            }
     }
 
     companion object {
@@ -213,17 +232,21 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
          */
         fun getCobVirtualFiles(project: Project, scope: SearchScope? = null): List<CaosVirtualFile> {
             return FilenameIndex.getAllFilesByExt(project, "cob")
-                    .flatMap { file ->
-                        ProgressIndicatorProvider.checkCanceled()
-                        CobVirtualFileUtil.decompiledCobFiles(file, project)
-                    }
-                    .filter {file ->
-                        scope == null || scope.contains(file)
-                    }
+                .flatMap { file ->
+                    ProgressIndicatorProvider.checkCanceled()
+                    CobVirtualFileUtil.decompiledCobFiles(file, project)
+                }
+                .filter { file ->
+                    scope == null || scope.contains(file)
+                }
 
         }
 
-        private fun getVirtualFilesWithExtension(project: Project, extension: String, scope: SearchScope? = null): List<VirtualFile> {
+        private fun getVirtualFilesWithExtension(
+            project: Project,
+            extension: String,
+            scope: SearchScope? = null,
+        ): List<VirtualFile> {
             return when (scope) {
                 is LocalSearchScope -> scope.virtualFiles.filter { it.extension == extension }
                 is GlobalSearchScope -> {
@@ -231,9 +254,9 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
                             CaosVirtualFileCollector.collectFilesWithExtension(extension, scope)
                 }
                 else -> FilenameIndex.getAllFilesByExt(project, extension)
-                        .filter { file ->
-                            scope == null || scope.contains(file)
-                        } + CaosVirtualFileCollector.collectFilesWithExtension(extension, scope)
+                    .filter { file ->
+                        scope == null || scope.contains(file)
+                    } + CaosVirtualFileCollector.collectFilesWithExtension(extension, scope)
             }
         }
     }
