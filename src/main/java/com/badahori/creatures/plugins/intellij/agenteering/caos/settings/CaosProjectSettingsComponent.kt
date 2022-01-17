@@ -52,7 +52,8 @@ class CaosProjectSettingsComponent: CaosProjectSettingsService,
         val lastGameInterfaceNames: List<String> = listOf(),
         @Transient
         var injectionCheckDisabled: Boolean = false,
-        var useJectByDefault: Boolean = false
+        var useJectByDefault: Boolean = false,
+        var isAutoPoseEnabled: Boolean = false
     ) {
         /**
          * Checks if this settings object is set to the given CAOS variant

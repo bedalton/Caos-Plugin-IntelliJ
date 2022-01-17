@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
+import com.intellij.ui.layout.selected
 import com.intellij.util.ui.FormBuilder
 import java.awt.Color
 import java.awt.Dimension
@@ -20,7 +21,7 @@ import javax.swing.text.BadLocationException
 import javax.swing.text.DefaultHighlighter
 
 
-class CaosProjectSettingsConfigurable(private val project: Project): Configurable {
+class CaosProjectSettingsConfigurable(private val project: Project) : Configurable {
 
     private lateinit var panel: ProjectSettingsPanel
 
@@ -79,6 +80,7 @@ private class ProjectSettingsPanel(private val settings: State) {
     private val originalIgnoredFilesText = settings.ignoredFilenames.joinToString("\n")
     private val originalGameInterfaceName: String = settings.gameInterfaceNames.joinToString("\n")
     private val originalDefaultVariant: String = settings.defaultVariant?.code ?: ""
+    private val originalIsAutoPoseEnabled: Boolean = settings.isAutoPoseEnabled
 
     private var mInterfaceNamesAreValid = true
     val interfaceNamesAreValid get() = mInterfaceNamesAreValid
@@ -112,7 +114,7 @@ private class ProjectSettingsPanel(private val settings: State) {
         Dimension(800, 200)
     }
 
-    private val hintColor get() = JBColor(Color(150,170,170), Color(150,160,170))
+    private val hintColor get() = JBColor(Color(150, 170, 170), Color(150, 160, 170))
 
     private val gameInterfaceNames by lazy {
 
@@ -143,11 +145,17 @@ private class ProjectSettingsPanel(private val settings: State) {
         }
     }
 
+    val autoPoseCheckbox by lazy {
+        JCheckBox()
+    }
+
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
             .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
+            .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
+            .addLabeledComponent(JLabel("Enable AutoPose action"), autoPoseCheckbox, 1, false)
             .panel
             .apply {
                 this.alignmentY = 0f
@@ -165,6 +173,8 @@ private class ProjectSettingsPanel(private val settings: State) {
             return true
         if (gameInterfaceNames.text != originalGameInterfaceName)
             return true
+        if (autoPoseCheckbox.isSelected != originalIsAutoPoseEnabled)
+            return true
         return false
     }
 
@@ -174,7 +184,8 @@ private class ProjectSettingsPanel(private val settings: State) {
         return settings.copy(
             defaultVariant = CaosVariant.fromVal(defaultVariant.selectedItem as? String).nullIfUnknown(),
             ignoredFilenames = getIgnoredFileNames(),
-            gameInterfaceNames = gameInterfaceNames
+            gameInterfaceNames = gameInterfaceNames,
+            isAutoPoseEnabled = autoPoseCheckbox.isSelected
         )
     }
 
@@ -191,6 +202,7 @@ private class ProjectSettingsPanel(private val settings: State) {
         defaultVariant.updateUI()
         ignoredFileNames.text = originalIgnoredFilesText
         gameInterfaceNames.text = originalGameInterfaceName
+        autoPoseCheckbox.isSelected = originalIsAutoPoseEnabled
     }
 
     /**
