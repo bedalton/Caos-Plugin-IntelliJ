@@ -21,10 +21,8 @@ class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
     override fun getShortName(): String = CaosBundle.message("caos.inspection.trailing-white-space.short-name")
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
-            override fun visitElement(element: PsiElement?) {
+            override fun visitElement(element: PsiElement) {
                 super.visitElement(element)
-                if (element == null)
-                    return
                 validate(element, holder)
             }
         }
