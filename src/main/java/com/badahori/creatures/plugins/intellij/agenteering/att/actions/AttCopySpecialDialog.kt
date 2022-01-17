@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
@@ -11,11 +12,11 @@ import javax.swing.*
 class AttCopySpecialDialog(val project: Project, private val thisAtt: VirtualFile) : DialogBuilder(project) {
 
     private val thisPart: Char by lazy {
-        thisAtt.name[0].toLowerCase()
+        thisAtt.name[0].lowercase()
     }
 
     private val mirroredPart: Char? by lazy {
-        opposite(thisPart)?.toLowerCase()
+        opposite(thisPart)?.lowercase()
     }
 
     val left: Char? by lazy {
@@ -23,19 +24,19 @@ class AttCopySpecialDialog(val project: Project, private val thisAtt: VirtualFil
             thisPart in leftSided -> thisPart
             mirroredPart != null -> opposite(mirroredPart!!)
             else -> null
-        }?.toLowerCase()
+        }?.lowercase()
     }
 
     val right: Char? by lazy {
         left?.let {
             opposite(it)
-        }?.toLowerCase()
+        }?.lowercase()
     }
 
     var other:VirtualFile? = null
 
     val index by lazy {
-        thisAtt.nameWithoutExtension.substring(1).toLowerCase()
+        thisAtt.nameWithoutExtension.substring(1).lowercase()
     }
     private val copyLeftValuesOverRight = JRadioButton("Mirror Left values over Right in file")
     private val copyRightValuesOverLeft = JRadioButton("Mirror Right values over Left in file")
@@ -60,7 +61,7 @@ class AttCopySpecialDialog(val project: Project, private val thisAtt: VirtualFil
             val scope = GlobalSearchScopes.directoriesScope(project, true, thisAtt.parent)
             val targetFile = "$mirroredPart$index"
             FilenameIndex.getAllFilesByExt(project, "att", scope).firstOrNull {
-                it.nameWithoutExtension.toLowerCase() == targetFile
+                it.nameWithoutExtension.lowercase() == targetFile
             }
         } else {
             null

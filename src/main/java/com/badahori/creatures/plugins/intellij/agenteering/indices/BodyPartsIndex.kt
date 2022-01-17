@@ -1,111 +1,622 @@
+@file:Suppress("SimplifiableCallChain", "unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFileByVariantIndex
+import bedalton.creatures.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
-import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.impl.FilePropertyPusher
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.search.GlobalSearchScope
-import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.Executors
 
 
+@Suppress("SimplifiableCallChain")
 object BodyPartsIndex {
 
+    internal val BODY_DATA_ATT_KEY = Key<Pointer<Pair<Int, VirtualFile>?>?>("creatures.body-part.att-with-index")
+
+    private const val THIS_INDEX_VERSION = 5
+
+    // Compound version to force a reindex if any of the sourced indices change
+    const val VERSION = THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
+
     @JvmStatic
-    fun variantParts(project: Project, gameVariant: CaosVariant): List<BodyPartFiles> {
-        val fudgedVariant = if (gameVariant == CaosVariant.DS)
+    suspend fun variantParts(
+        project: Project,
+        gameVariant: CaosVariant,
+        progressIndicator: ProgressIndicator?,
+    ): List<BodyPartFiles> {
+        return variantParts(project, gameVariant, null, progressIndicator = progressIndicator)
+    }
+
+    @JvmStatic
+    suspend fun variantParts(
+        project: Project,
+        gameVariant: CaosVariant,
+        searchScope: GlobalSearchScope?,
+        coroutineScope: CoroutineScope = GlobalScope,
+        progressIndicator: ProgressIndicator?,
+    ): List<BodyPartFiles> {
+        val variant = if (gameVariant == CaosVariant.DS)
             CaosVariant.C3
         else
             gameVariant
-        val attFiles = AttFileByVariantIndex.findMatching(project, fudgedVariant)
-        return matchAttsToSprite(project, attFiles) { attFile ->
-            BreedPartKey.fromFileName(attFile.nameWithoutExtension, variant = fudgedVariant)
+
+        return matchSpritesToAtts(
+            project,
+            variant,
+            searchScope,
+            coroutineScope,
+            progressIndicator
+        ) { variantScope ->
+            if (DumbService.isDumb(project)) {
+                emptyList()
+            } else {
+                BreedSpriteIndex.findMatching(project, variant, variantScope, progressIndicator)
+            }
         }
+
     }
 
     @JvmStatic
-    fun findWithKey(project: Project, searchKey: BreedPartKey, scope:GlobalSearchScope? = null): List<BodyPartFiles> {
-        val out = mutableListOf<BodyPartFiles>()
-        val attFiles = AttFilesIndex.findMatching(project, searchKey, scope)
-        for (attFile in attFiles) {
-            val variant = getInitialVariant(project, attFile)
-            val attKey = BreedPartKey.fromFileName(attFile.nameWithoutExtension, variant = variant)
-                ?: continue
-            val matchingSprites = BreedSpriteIndex.findMatching(project, attKey)
-            var parent: VirtualFile? = attFile.parent
-            var matchingSprite: VirtualFile? = null
-            while (parent != null) {
-                val pPath = parent.path.let { if (it.endsWith(File.separator)) it else it + File.separator }
-                //    ?: break
-                matchingSprite = matchingSprites.firstOrNull check@{ spriteFile ->
-                    spriteFile.path.startsWith(pPath).orFalse()
-                }
-                if (matchingSprite != null)
-                    break
-                parent = parent.parent
-                    ?: break
-            }
-            if (matchingSprite != null) {
-                out.add(BodyPartFiles(spriteFile = matchingSprite, bodyDataFile = attFile))
-            }
-        }
-        return out
+    suspend fun findWithKey(
+        project: Project,
+        searchKey: BreedPartKey,
+        progressIndicator: ProgressIndicator?,
+    ): List<BodyPartFiles> {
+        return findWithKey(project, searchKey, null, progressIndicator = progressIndicator)
     }
 
-    private fun matchAttsToSprite(project:Project, attFiles:Collection<VirtualFile>, makeKey:(VirtualFile) -> BreedPartKey?) : List<BodyPartFiles> {
-        // If there are no att files, there is nothing to do
-        if (attFiles.isEmpty()) {
+    @JvmStatic
+    suspend fun findWithKey(
+        project: Project,
+        searchKey: BreedPartKey,
+        searchScope: GlobalSearchScope?,
+        coroutineScope: CoroutineScope = GlobalScope,
+        progressIndicator: ProgressIndicator?,
+    ): List<BodyPartFiles> {
+        progressIndicator?.checkCanceled()
+        // Get sprites matched to ATT
+        return matchSpritesToAtts(
+            project,
+            searchKey.variant,
+            searchScope,
+            coroutineScope,
+            progressIndicator
+        ) { newScope ->
+            if (DumbService.isDumb(project)) {
+                emptyList()
+            } else {
+                BreedSpriteIndex.findMatching(project, searchKey, newScope, progressIndicator)
+            }
+        }
+    }
+
+
+    private suspend fun matchSpritesToAtts(
+        project: Project,
+        variantIn: CaosVariant?,
+        searchScope: GlobalSearchScope?,
+        coroutineScope: CoroutineScope = GlobalScope,
+        progressIndicator: ProgressIndicator?,
+        supplier: (variantScope: GlobalSearchScope?) -> Collection<VirtualFile>,
+    ): List<BodyPartFiles> {
+
+        val variant = variantIn?.selfOrC3IfDS
+
+        // Build variant scope
+        val newScope = if (variant != null) {
+            val variantScope = CaosVariantGlobalSearchScope(project, variant)
+            searchScope?.intersectWith(variantScope) ?: variantScope
+        } else {
+            searchScope
+        }
+
+        // Get the actual sprites
+        val spriteFiles: Collection<VirtualFile> = try {
+            readNonBlocking {
+                supplier(newScope)
+            }
+        } catch (e: Exception) {
+            if (e !is ProcessCanceledException) {
+                LOGGER.severe("Exception encountered in match sprites to atts. Error: ${e.message}")
+                e.printStackTrace()
+            }
             return emptyList()
         }
 
-        val out = mutableListOf<BodyPartFiles>()
+        // Match sprites to ATTs
+        val files = try {
+            matchSpritesToAtts(project, spriteFiles, searchScope, variant, coroutineScope, progressIndicator)
+        } catch (e: Exception) {
+            if (e !is ProcessCanceledException) {
+                LOGGER.severe("variantParts() -> Exception encountered in match sprites to atts. Error: ${e.message}")
+            }
+            throw e
+        }
+        return files
+    }
+
+    private suspend fun matchSpritesToAtts(
+        project: Project,
+        spriteFiles: Collection<VirtualFile>,
+        searchScope: GlobalSearchScope? = null,
+        variant: CaosVariant?,
+        scope: CoroutineScope,
+        progressIndicator: ProgressIndicator?,
+    ): List<BodyPartFiles> {
+        // If there are no att files, there is nothing to do
+        if (spriteFiles.isEmpty()) {
+            return emptyList()
+        }
+
+        progressIndicator?.checkCanceled()
 
         // Match atts to sprites
-        for (attFile in attFiles) {
-            // Get the sprite search key
-            val key = makeKey(attFile)
-                ?: continue
+        val out: List<BodyPartFiles> = spriteFiles
+            .mapNotNull map@{ spriteFile ->
+                if (!spriteFile.isValid) {
+                    return@map null
+                }
+                scope.async {
+                    matchSprite(project, variant, spriteFile, searchScope, progressIndicator)
+                }
+            }
+            .mapNotNull { it.await() }
 
-            val scope = attFile.getModule(project)?.moduleContentScope
-            // Find matching sprites
-            val matchingSprites = BreedSpriteIndex.findMatching(project, key, scope).nullIfEmpty()
-                ?: continue
-            var matchingSprite: VirtualFile? = null
+        return out.distinctBy { it.spriteFile.path }
+    }
 
-            // Find sprites under parent
-            // TODO, find nearest path to parent
-            var parent: VirtualFile? = attFile.parent
-            var offset = Int.MAX_VALUE
-            while (parent != null) {
-                // IN IntelliJ paths use '/' on both windows and linux in VFS
-                val pPath = (parent.canonicalPath?:parent.path).toLowerCase().let { if (it.endsWith('/')) it else "$it/" }
-                    //?: continue
 
-                // Finds nearest sprite to parent directory
-                for (spriteFile in matchingSprites) {
-                    val spritePath = (spriteFile.canonicalPath ?: spriteFile.path).toLowerCase()
-                        //?: continue
-                    if (!spritePath.startsWith(pPath).orFalse())
-                        continue
-                    if (spritePath.length < offset) {
-                        offset = spritePath.length
-                        matchingSprite = spriteFile
+    private fun matchSprite(
+        project: Project,
+        variant: CaosVariant?,
+        spriteFile: VirtualFile,
+        searchScope: GlobalSearchScope?,
+        progressIndicator: ProgressIndicator?,
+    ): BodyPartFiles? {
+        progressIndicator?.checkCanceled()
+        // Get the sprite search key
+        val key = BreedPartKey.fromFileName(spriteFile.name, variant)
+            ?: return null
+
+
+        // If part has been matched, even if it is empty
+        // Stop after checking or using
+        val bodyPartFile = restoreCached(spriteFile)
+        if (bodyPartFile != null) {
+            return bodyPartFile
+        }
+
+
+        val generalScope = spriteFile
+            .getModule(project)
+            ?.moduleContentScope
+            ?: GlobalSearchScope.projectScope(project)
+
+
+//            val scope = generalScope
+        val scope = if (searchScope != null)
+            generalScope.intersectWith(searchScope)
+        else
+            generalScope
+
+        val childAtts = spriteFile
+            .parent
+            .children
+            .filter { childFile ->
+                progressIndicator?.checkCanceled()
+                childFile.extension?.lowercase() == "att" &&
+                        !childFile.isDirectory &&
+                        BreedPartKey.isPartName(childFile.name, variant)
+            }
+
+        val strict = childAtts.isNotEmpty()
+
+        var matchingAtt: VirtualFile? = null
+
+        // Find sprites under parent
+        // TODO, find nearest path to parent
+        if (strict) {
+            matchingAtt = childAtts
+                .sortedBy {
+                    BreedPartKey.fromFileName(it.name, variant)
+                        ?.let { aKey ->
+                            key.distance(aKey)
+                        } ?: Int.MAX_VALUE
+                }
+                .firstOrNull()
+        } else {
+            val parent = spriteFile.parent
+
+            val keys = listOf(
+                key,
+                key.copyWithBreed(null).copyWithAgeGroup(null).copyWithGender(null)
+            )
+            for (theKey in keys) {
+                progressIndicator?.checkCanceled()
+                val atts: Collection<VirtualFile> = readNonBlocking {
+                    if (DumbService.isDumb(project)) {
+                        return@readNonBlocking emptyList()
+                    }
+                    AttFilesIndex.findMatching(project, theKey, searchScope, progressIndicator)
+                }
+                var matching: List<VirtualFile> = atts
+                    .breedFileSort(
+                        variant,
+                        key,
+                        spriteFile.parent
+                    )
+                matching = readNonBlocking {
+                    matching.filter {
+                        scope.accept(it)
                     }
                 }
+                if (matching.isEmpty())
+                    continue
 
-                if (matchingSprite != null) {
+                matchingAtt = readNonBlocking {
+                    nearby(parent, matching, scope)
+                }
+                if (matchingAtt != null) {
                     break
                 }
-                parent = parent.parent
-                    ?: break
-            }
-            if (matchingSprite != null) {
-                out.add(BodyPartFiles(spriteFile = matchingSprite, bodyDataFile = attFile))
             }
         }
-        return out;
+
+        // Set result, whether good or bad
+        // That way we do not need to keep checking it
+        val pointer = Pointer(matchingAtt?.let { Pair(VERSION, it) })
+        SpriteAttPathPropertyPusher.writeToStorage(spriteFile, pointer)
+        return if (matchingAtt != null) {
+            bundle(spriteFile, matchingAtt)!!
+        } else {
+            return null
+        }
+    }
+
+    private fun bundle(spriteFile: VirtualFile, matchingAtt: VirtualFile?): BodyPartFiles? {
+        // If sprite was found, add it to list of body parts
+        if (matchingAtt != null) {
+            return BodyPartFiles(spriteFile = spriteFile, bodyDataFile = matchingAtt)
+        }
+        return null
+    }
+
+    /**
+     * @param otherFiles Triple is first = VirtualFile; second = breed key distance; path distance = Pair(pathUp, pathDown)
+     */
+    private fun nearby(
+        parent: VirtualFile,
+        otherFiles: Collection<VirtualFile>,
+        scope: GlobalSearchScope?,
+    ): VirtualFile? {
+        val topParent = parent.parent?.parent?.parent ?: parent.parent?.parent ?: parent.parent ?: parent
+        return if (scope != null) {
+            otherFiles.firstOrNull { file -> scope.accept(file) && VfsUtil.isAncestor(topParent, file, false) }
+        } else {
+            otherFiles.firstOrNull { file -> VfsUtil.isAncestor(topParent, file, false) }
+        }
+    }
+
+
+    private fun restoreCached(spriteFile: VirtualFile): BodyPartFiles? {
+        val attPointer = SpriteAttPathPropertyPusher.readFromStorage(spriteFile)
+            ?: return null
+        val pointerValue = attPointer.value
+            ?: return null
+        val (indexVersion, att) = pointerValue
+        if (indexVersion == VERSION && att.isValid && att.exists()) {
+            return BodyPartFiles(spriteFile = spriteFile, bodyDataFile = att)
+        }
+        SpriteAttPathPropertyPusher.writeToStorage(spriteFile, null)
+        return null
+    }
+
+
+    suspend fun getImmediate(project: Project, directory: VirtualFile, key: BreedPartKey): Map<Char, BodyPartFiles?>? {
+        if (DumbService.isDumb(project)) {
+            return null
+        }
+        val parent = directory.parent
+        return ('a'..'q').mapNotNull { part ->
+            val bodyPartKey = key
+                .copyWithPart(part)
+
+            val breedPartFiles = try {
+                findWithKey(project, bodyPartKey, null)
+                    .nullIfEmpty()
+            } catch (e: ProcessCanceledException) {
+                LOGGER.info("Process was cancelled in getImmediate")
+                e.printStackTrace()
+                return runBlocking {
+                    getImmediate(project, directory, key)
+                }
+            }
+            val testKey = bodyPartKey.copyWithAgeGroup(null)
+
+            if (breedPartFiles?.any { !BreedPartKey.isGenericMatch(testKey, it.key) } == true) {
+                LOGGER.severe("Breed part does not actually match key: ${testKey.code} in ${directory.path}")
+                throw Exception("Breed part does not actually match key")
+            }
+
+            val bodyPart = breedPartFiles?.firstOrNull first@{ partFiles ->
+                partFiles.spriteFile.isValid
+                        && partFiles.bodyDataFile.isValid
+                        && partFiles.key!!.part == part
+                        && isAncestor(directory, parent, partFiles.spriteFile)
+                        && isAncestor(directory, parent, partFiles.bodyDataFile)
+            }
+
+            if (bodyPart == null && part in 'a'..'l') {
+                return null
+            }
+            part to bodyPart
+        }.toMap()
+    }
+
+    private fun isAncestor(parent: VirtualFile, parentParent: VirtualFile?, child: VirtualFile): Boolean {
+        return VfsUtil.isAncestor(parent, child, false)
+                || parentParent != null && VfsUtil.isAncestor(parentParent, child, false)
+    }
+
+}
+
+
+val NULL_FILE_POINTER_PAIR: Pointer<Pair<Int, VirtualFile>?> = Pointer(Pair(-1, NULL_PLACEHOLDER_FILE as VirtualFile))
+
+internal open class SpriteAttPathPropertyPusher
+    : FilePropertyPusher<Pointer<Pair<Int, VirtualFile>?>?> {
+
+    override fun getDefaultValue(): Pointer<Pair<Int, VirtualFile>?> = NULL_FILE_POINTER_PAIR
+
+    override fun getFileDataKey(): Key<Pointer<Pair<Int, VirtualFile>?>?> = BodyPartsIndex.BODY_DATA_ATT_KEY
+
+    override fun pushDirectoriesOnly(): Boolean = false
+
+    override fun afterRootsChanged(p1: Project) {}
+
+    override fun getImmediateValue(project: Project, file: VirtualFile?): Pointer<Pair<Int, VirtualFile>?>? {
+        if (file == null)
+            return null
+        val out = file.getUserData(BodyPartsIndex.BODY_DATA_ATT_KEY)
+            ?: readFromStorage(file)
+            ?: return null
+        val value = out.value
+            ?: return out
+        return if (value.first < 1 || value.second == NULL_FILE_POINTER_PAIR.value)
+            null
+        else
+            out
+    }
+
+    override fun getImmediateValue(module: Module): Pointer<Pair<Int, VirtualFile>?>? {
+        return null
+    }
+
+    override fun persistAttribute(
+        project: Project,
+        spriteFile: VirtualFile,
+        attFile: Pointer<Pair<Int, VirtualFile>?>,
+    ) {
+        writeToStorage(spriteFile, attFile)
+    }
+
+    override fun acceptsDirectory(directory: VirtualFile, project: Project): Boolean {
+        return true
+    }
+
+    override fun acceptsFile(file: VirtualFile): Boolean {
+        return file.extension in SpriteParser.VALID_SPRITE_EXTENSIONS
+    }
+
+    companion object {
+
+        private val fileAttribute by lazy {
+            FileAttribute(BodyPartsIndex.BODY_DATA_ATT_KEY.toString())
+        }
+
+        fun writeToStorage(spriteFile: VirtualFile, attFile: Pointer<Pair<Int, VirtualFile>?>?) {
+//            spriteFile.putUserData(BodyPartsIndex.BODY_DATA_ATT_KEY, attFile)
+            writeToStorageStream(spriteFile,
+                fileAttribute,
+                BodyPartsIndex.BODY_DATA_ATT_KEY,
+                attFile
+            ) write@{ pointer ->
+                writeBoolean(pointer != null)
+                if (pointer == null) {
+                    return@write Unit
+                }
+                val value = pointer.value
+                writeBoolean(value != null)
+                if (value == null) {
+                    return@write Unit
+                }
+                writeInt(value.first)
+                writeString(value.second.path)
+            }
+        }
+
+        fun readFromStorage(spriteFile: VirtualFile): Pointer<Pair<Int, VirtualFile>?>? {
+//            return spriteFile.getUserData(BodyPartsIndex.BODY_DATA_ATT_KEY)
+            return readFromStorageStream(spriteFile,
+                fileAttribute,
+                BodyPartsIndex.BODY_DATA_ATT_KEY,
+                safe = true) read@{
+                if (!readBoolean()) {
+                    return@read null
+                }
+                if (!readBoolean()) {
+                    Pointer(null)
+                }
+                val version = readInt()
+                val path = readString()
+                if (version < 1) {
+                    return@read Pointer(null)
+                }
+                if (path == null || path == NULL_PLACEHOLDER_FILE.path) {
+                    null
+                } else if (path.isEmpty()) {
+                    Pointer(null)
+                } else {
+                    val virtualFile = spriteFile.fileSystem.findFileByPath(path)
+                    if (virtualFile == null) {
+                        null
+                    } else {
+                        Pointer(Pair(version, virtualFile))
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+internal object BreedFileUtil {
+
+    /**
+     * Sort list of virtual files according to key and distance to parent file
+     */
+    fun sort(
+        variant: CaosVariant?,
+        key: BreedPartKey,
+        parentPath: VirtualFile? = null,
+        matching: Iterable<VirtualFile>,
+    ): List<VirtualFile> {
+        return sort(
+            variant,
+            key,
+            parentPath,
+            matching
+        ) {
+            it
+        }
+    }
+
+    /**
+     * Sort list of breed objects containing a virtual file according to key and distance to parent file
+     */
+    internal inline fun <T> sort(
+        variant: CaosVariant?,
+        key: BreedPartKey,
+        parentPath: VirtualFile? = null,
+        matching: Iterable<T>,
+        get: (T) -> VirtualFile?,
+    ): List<T> {
+        return matching
+            .mapNotNull map@{ item: T ->
+                val file = get(item)
+                    ?: return@map null
+                val distance: Pair<Int, Pair<Int, Int>> =
+                    getDistanceScore(variant, parentPath ?: file, file, key)
+                        ?: return@map null
+                Triple(item, distance.first, distance.second)
+            }
+            .sortedWith sorted@{ a, b ->
+                var offset = a.second - b.second
+                if (offset != 0) {
+                    return@sorted offset
+                }
+                offset = a.third.first - b.third.first
+                if (offset != 0) {
+                    return@sorted offset
+                }
+                a.third.second - b.third.second
+            }
+            .map { it.first }
+    }
+
+    /**
+     * Returns three values with which to sort objects containing a breed virtual file
+     * Triple->second = breed key distance (main indicator)
+     * Triple->third->first = Distance up from child to the base file (second sort key)
+     * Triple->third->second = Distance down from the shared ancestor base file (third sort key)
+     */
+    private fun getDistanceScore(
+        variant: CaosVariant?,
+        baseFile: VirtualFile,
+        breedFile: VirtualFile,
+        key: BreedPartKey,
+    ): Pair<Int, Pair<Int, Int>>? {
+//        val sharedAncestor = VfsUtil.getCommonAncestor(baseFile, breedFile)
+//            ?: return null
+        val relativePath = VfsUtil.findRelativePath(baseFile, breedFile, '/')
+            ?: return null
+
+        val pathUp = relativePath.count("../")
+        val lastIndex = relativePath.lastIndexOf("../")
+
+        // Find distance down, having counted distance up
+        val pathDown = when {
+            lastIndex == relativePath.lastIndex -> 0
+            lastIndex < 0 -> 0
+            else -> relativePath.substring(lastIndex).count { it == '/' }
+        }
+        val pathDistance = Pair(pathUp, pathDown)
+        val breedKeyDistance = key.distance(BreedPartKey.fromFileName(breedFile.name, variant))
+            ?: Int.MAX_VALUE
+        return Pair(breedKeyDistance, pathDistance)
     }
 }
+
+/**
+ * Sort a list of objects with a breed virtual file by nearness to breed key then distance to base file
+ */
+internal inline fun <T> Iterable<T>.breedFileSort(
+    variant: CaosVariant?,
+    key: BreedPartKey,
+    baseFile: VirtualFile? = null,
+    get: (T) -> VirtualFile?,
+): List<T> {
+    return BreedFileUtil.sort(variant, key, baseFile, this, get)
+}
+
+/**
+ * Sort a list of virtual files by nearness to breed key then distance to base file
+ */
+internal fun Iterable<VirtualFile>.breedFileSort(
+    variant: CaosVariant?,
+    key: BreedPartKey,
+    baseFile: VirtualFile? = null,
+): List<VirtualFile> {
+    return BreedFileUtil.sort(variant, key, baseFile, this)
+}
+
+private val nonBlockingExecutor by lazy { Executors.newCachedThreadPool() }
+
+fun <T> readNonBlocking(
+    task: () -> T,
+): T {
+    return runReadAction(task)
+}
+//
+//fun <T> readNonBlocking(
+//    project: Project,
+//    task: () -> T,
+//): T {
+//    return ReadAction
+//        .nonBlocking(Callable {
+//            task()
+//        })
+//        .inSmartMode(project)
+//        .executeSynchronously()
+//}

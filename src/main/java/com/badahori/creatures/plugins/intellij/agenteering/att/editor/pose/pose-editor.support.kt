@@ -1,24 +1,32 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
+import bedalton.creatures.util.pathSeparator
+import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.getPartName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
+import org.jetbrains.rpc.LOG
 import java.awt.Color
 import java.awt.Component
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
+import java.awt.image.BufferedImage
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JList
 
 object PoseEditorSupport {
 
+    @Suppress("SpellCheckingInspection")
     @JvmStatic
     val allParts = "abcdefghijklmnopq".toCharArray()
 
+    @Suppress("unused")
     @JvmStatic
     val directions = arrayOf(
         "Up",
@@ -65,7 +73,7 @@ object PoseEditorSupport {
     )
 
     @JvmStatic
-    fun getMoodOptions(variant:CaosVariant) : Array<String> {
+    fun getMoodOptions(variant: CaosVariant): Array<String> {
         return when (variant) {
             CaosVariant.C1 -> moodsC1
             CaosVariant.CV -> moodsCV
@@ -74,7 +82,7 @@ object PoseEditorSupport {
     }
 
     @JvmStatic
-    fun getPartName(part: Char) : String? {
+    fun getPartName(part: Char): String? {
         return when (part) {
             'a' -> "Head"
             'b' -> "Body"
@@ -99,17 +107,22 @@ object PoseEditorSupport {
 }
 
 interface BreedPoseHolder {
-    fun getPartPose(partChar:Char) : Int?
-    fun getPartPose(part: Char, facingDirection: Int, offset:Int) : Int?
-    fun getHeadPoseActual() : Int
-    fun getPartBreed(partChar:Char) : VirtualFile?
+    val zoom: Int
+    fun setFiles(files: List<BodyPartFiles>)
+    fun setRendered(image: BufferedImage?)
+    fun getPartPose(partChar: Char): Int?
+    fun updatePoseAndGet(vararg parts: Char): Pose
+    fun getVisibilityMask(): Map<Char, PoseRenderer.PartVisibility>?
+    fun getPartPose(part: Char, facingDirection: Int, offset: Int): Int?
+    fun getHeadPoseActual(): Int
+    fun getBreedFiles(part: PartGroups): List<BodyPartFiles>
     fun getBodyPoseActual(): Int
-    val baseBreed:BreedPartKey
-    val variant:CaosVariant
+    val baseBreed: BreedPartKey
+    val variant: CaosVariant
 }
 
 /**
- * Renders the virtual file for the breed in the drop down list
+ * Renders the virtual file for the breed in the dropdown list
  */
 private class BreedFileCellRenderer : DefaultListCellRenderer() {
     override fun getListCellRendererComponent(
@@ -117,39 +130,121 @@ private class BreedFileCellRenderer : DefaultListCellRenderer() {
         value: Any?,
         index: Int,
         isSelected: Boolean,
-        cellHasFocus: Boolean
+        cellHasFocus: Boolean,
     ): Component {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-        val file = value as? VirtualFile
-        if (file == null) {
+
+
+        if (value == null) {
             text = "..."
             return this
         }
-        text = file.nameWithoutExtension.substring(1)
+
+        if (value is String) {
+            text = value
+            return this
+        }
+
+        val items = list?.items
+            .nullIfEmpty()
+
+        if (items == null) {
+            text = "..."
+            return this
+        }
+
+        val parentPaths = items.map map@{ tripleIn ->
+            val triple = (tripleIn as? Triple<*,*,*>)
+                ?: return@map null
+            Pair((triple.second as BreedPartKey).copyWithPart(null), ((triple.third as? List<*>)?.firstOrNull() as? VirtualFile)?.parent)
+        }
+
+        val triple = value as Triple<*, *, *>
+        val fallbackIndex = items.indexOf(value)
+        val self = parentPaths.getOrNull(maxOf(index, fallbackIndex))
+        if (self == null) {
+            text = "..."
+            return this
+        } else {
+            isVisible = true
+        }
+
+        val breed = triple.second as BreedPartKey
+
+        // Get relative path if any
+        // Relative path is needed to disambiguate between conflicting parts with same breed key
+        val relativePath = if (self.second != null) {
+            parentPaths
+                .filterNotNull()
+                .filter { other ->
+                    BreedPartKey.isGenericMatch(other.first,breed) && other.second != self.second
+                }
+                .nullIfEmpty()
+                ?.mapNotNull { other ->
+                    other.second
+                }
+                ?.let { otherPaths ->
+                    " ..." + getRelativePath(otherPaths, self.second!!)
+                }
+        } else {
+            null
+        } ?: ""
+
+        text = "${breed.genus}${breed.ageGroup}${breed.breed}" + relativePath
         return this
+    }
+
+
+    private fun getRelativePath(list:List<VirtualFile>, parent: VirtualFile): String {
+        val myComponents = parent.path.split(pathSeparatorChar).reversed()
+        var matches = list.map { it.path.split(pathSeparatorChar).reversed() }
+        for (i in myComponents.indices) {
+            val component = myComponents[i]
+            matches = matches.filter { components: List<String> -> components.getOrNull(i) == component }
+            if (matches.isEmpty()) {
+                return myComponents.subList(0, i).reversed().joinToString(pathSeparator)
+            }
+        }
+        return parent.path
     }
 }
 
 /**
- * Renders the virtual file for the breed in the drop down list
+ * Renders the virtual file for the breed in the drop-down list
  */
-private class PartFileCellRenderer : DefaultListCellRenderer() {
+private class PartFileCellRenderer(val strict: Boolean = false) : DefaultListCellRenderer() {
     override fun getListCellRendererComponent(
         list: JList<*>?,
         value: Any?,
         index: Int,
         isSelected: Boolean,
-        cellHasFocus: Boolean
+        cellHasFocus: Boolean,
     ): Component {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-        val file = value as? VirtualFile
-        if (file == null) {
-            text = "..related part"
-            foreground = TRANSLUCENT
-            return this
+        var disable = false
+        val text = when (value) {
+            is String -> value
+            is VirtualFile -> value.nameWithoutExtension
+            is BodyPartFiles -> {
+                disable = strict && value.spriteFile.nameWithoutExtension != value.bodyDataFile.nameWithoutExtension
+                value.spriteFile.nameWithoutExtension
+            }
+            null -> {
+                text = "..related part"
+                foreground = TRANSLUCENT
+                return this
+            }
+            else -> {
+                foreground = TRANSLUCENT
+                isVisible = false
+                return this
+            }
         }
         foreground = BLACK
-        val text = file.nameWithoutExtension
+        this.text = text
+        if (disable) {
+            this.isEnabled = false
+        }
         val part = getPartName(text[0])
         if (part != null) {
             setText("$text - $part")
@@ -166,7 +261,11 @@ private class PartFileCellRenderer : DefaultListCellRenderer() {
 }
 
 
-internal data class PoseTransferable(internal val pose: Pose, private val facing:Int, private val variant:CaosVariant) : Transferable {
+internal data class PoseTransferable(
+    internal val pose: Pose,
+    private val facing: Int,
+    private val variant: CaosVariant,
+) : Transferable {
 
     override fun getTransferDataFlavors(): Array<DataFlavor> {
         return flavors
@@ -219,7 +318,7 @@ data class Pose(
 ) {
 
     operator fun get(part: Char): Int? {
-        return when (part.toLowerCase()) {
+        return when (part.lowercase()) {
             'a' -> head
             'b' -> body
             'c' -> leftThigh
@@ -264,7 +363,7 @@ data class Pose(
 
 
     // Example pose: 241000330022333
-    fun poseString(variant:CaosVariant, facing:Int):String? {
+    fun poseString(variant: CaosVariant, facing: Int): String? {
         if (facing !in 0..3) {
             return null
         }
@@ -280,11 +379,16 @@ data class Pose(
 
 
     companion object {
-        const val DO_NOT_SET_POSE = -1
-        const val INVALID_POSE = -2
+        private const val DO_NOT_SET_POSE = -1
+        private const val INVALID_POSE = -2
 
         @JvmStatic
-        fun fromString(variant: CaosVariant, currentDirection:Int, currentPose:Pose?, poseString: String): Pair<Int,Pose> {
+        fun fromString(
+            variant: CaosVariant,
+            currentDirection: Int,
+            currentPose: Pose?,
+            poseString: String,
+        ): Pair<Int, Pose> {
             val directionInt = (poseString[0] - '0').let {
                 if (it !in 0..3) currentDirection else it
             }
@@ -304,10 +408,13 @@ data class Pose(
                 rightThigh = get(variant, poseString, directionOffset, 'f', currentPose?.rightThigh) ?: INVALID_POSE,
                 rightShin = get(variant, poseString, directionOffset, 'g', currentPose?.rightShin) ?: INVALID_POSE,
                 rightFoot = get(variant, poseString, directionOffset, 'h', currentPose?.rightFoot) ?: INVALID_POSE,
-                leftUpperArm = get(variant, poseString, directionOffset, 'i', currentPose?.leftUpperArm) ?: INVALID_POSE,
+                leftUpperArm = get(variant, poseString, directionOffset, 'i', currentPose?.leftUpperArm)
+                    ?: INVALID_POSE,
                 leftForearm = get(variant, poseString, directionOffset, 'j', currentPose?.leftForearm) ?: INVALID_POSE,
-                rightUpperArm = get(variant, poseString, directionOffset, 'k', currentPose?.rightUpperArm) ?: INVALID_POSE,
-                rightForearm = get(variant, poseString, directionOffset, 'l', currentPose?.rightForearm) ?: INVALID_POSE,
+                rightUpperArm = get(variant, poseString, directionOffset, 'k', currentPose?.rightUpperArm)
+                    ?: INVALID_POSE,
+                rightForearm = get(variant, poseString, directionOffset, 'l', currentPose?.rightForearm)
+                    ?: INVALID_POSE,
                 tailBase = get(variant, poseString, directionOffset, 'm', currentPose?.tailBase) ?: INVALID_POSE,
                 tailTip = get(variant, poseString, directionOffset, 'n', currentPose?.tailTip) ?: INVALID_POSE,
                 ears = currentPose?.ears ?: DO_NOT_SET_POSE
@@ -315,33 +422,47 @@ data class Pose(
             val poseEditorDirection = when (directionInt) {
                 3 -> 0 // Right
                 2 -> 1 // Left
-                1 -> 2
-                0 -> 3
+                1 -> 2 // Front
+                0 -> 3 // back
                 else -> currentDirection
             }
             return Pair(poseEditorDirection, pose)
         }
 
-        private fun get(variant: CaosVariant, poseString: String, directionOffset: Int, part: Char, currentPose:Int?): Int? {
-            val i = (part.toLowerCase() - 'a')
+        private fun get(
+            variant: CaosVariant,
+            poseString: String,
+            directionOffset: Int,
+            part: Char,
+            currentPose: Int?,
+        ): Int? {
+            if (variant.isOld) {
+                if (directionOffset == 0) {
+                    if (poseString[0] == '0') { // Back == 0
+                        return 9
+                    } else if (poseString[0] == '1') { // FRONT = 1
+                        return 8
+                    }
+                }
+            }
+            val i = (part.lowercase() - 'a')
             if (i < 0)
                 return -1
-            return when (val pose = poseString[i+1]) {
+            return when (val pose = poseString[i + 1]) {
                 in '0'..'3' -> directionOffset + ("$pose".toInt())
                 'x', '?', '!' -> currentPose ?: -1
                 '4' -> if (part == 'a') {
-                    if (variant.isOld)
-                        8
-                    else
-                        9
+                    8
                 } else {
                     null
                 }
                 '5' -> if (part == 'a') {
                     if (variant.isOld)
                         9
-                    else
+                    else if (variant.isNotOld)
                         13
+                    else
+                        9
                 } else {
                     null
                 }
@@ -354,8 +475,7 @@ data class Pose(
 }
 
 
-
-private fun getPoseStringC1e(pose:Pose, out:StringBuilder) : StringBuilder {
+private fun getPoseStringC1e(pose: Pose, out: StringBuilder): StringBuilder {
     val head = when (pose.head) {
         8 -> 4
         9 -> 5
@@ -368,7 +488,7 @@ private fun getPoseStringC1e(pose:Pose, out:StringBuilder) : StringBuilder {
     return out
 }
 
-private fun getPoseStringC2e(pose:Pose, out:StringBuilder) : StringBuilder {
+private fun getPoseStringC2e(pose: Pose, out: StringBuilder): StringBuilder {
     val head = when (pose.head) {
         8 -> 4
         9 -> 5

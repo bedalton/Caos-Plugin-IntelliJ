@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.indices
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
@@ -7,6 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedKeyIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartDescriptor
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.VariantIndexer
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -30,9 +34,15 @@ class AttFileByVariantIndex : ScalarIndexExtension<CaosVariant>() {
     override fun dependsOnFileContent(): Boolean = true
 
     companion object {
-        const val VERSION = 1
+        // Index name identifier
         val NAME: ID<CaosVariant, Void> =
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.AttByVariantIndex")
+
+        // Update this index's version number, NOT const "VERSION"
+        private const val THIS_VERSION = 1
+
+        // DO NOT ALTER "VERSION" DIRECTLY
+        const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
 
 //        private var didIndexOnce = false
 
@@ -40,7 +50,7 @@ class AttFileByVariantIndex : ScalarIndexExtension<CaosVariant>() {
         fun findMatching(
             project: Project,
             key: CaosVariant,
-            searchScope: GlobalSearchScope? = null
+            searchScope: GlobalSearchScope? = null,
         ): Collection<VirtualFile> {
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
@@ -49,25 +59,9 @@ class AttFileByVariantIndex : ScalarIndexExtension<CaosVariant>() {
                 CaosVariant.C3
             else
                 key
-            //indexOnce(project, searchScope)
             return FileBasedIndex
                 .getInstance()
                 .getContainingFiles(NAME, fudgedKey, scope)
-        }
-
-        fun indexOnce(project: Project) {
-            val runnable = Runnable@{
-//                if (didIndexOnce)
-//                    return@Runnable
-
-                FileBasedIndex.getInstance().requestRebuild(NAME)
-//                didIndexOnce = true
-            }
-            if (DumbService.isDumb(project)) {
-                DumbService.getInstance(project).runWhenSmart(runnable)
-            } else {
-                runnable()
-            }
         }
     }
 }
@@ -80,7 +74,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
 
     override fun getKeyDescriptor(): KeyDescriptor<BreedPartKey> = BreedPartDescriptor
 
-    override fun getVersion(): Int = VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
+    override fun getVersion(): Int = VERSION
 
     override fun getInputFilter(): FileBasedIndex.InputFilter {
         return DefaultFileTypeSpecificInputFilter(AttFileType)
@@ -89,7 +83,8 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
     override fun dependsOnFileContent(): Boolean = true
 
     companion object {
-        const val VERSION = 6
+        private const val THIS_VERSION = 8
+        const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
         val NAME: ID<BreedPartKey, Void> =
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex")
 
@@ -97,8 +92,12 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
         fun findMatching(
             project: Project,
             key: BreedPartKey,
-            searchScope: GlobalSearchScope? = null
+            searchScope: GlobalSearchScope? = null,
+            progressIndicator: ProgressIndicator? = null
         ): Collection<VirtualFile> {
+            if (project.isDisposed) {
+                return emptyList()
+            }
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
@@ -106,24 +105,44 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
                 key.copy(variant = CaosVariant.C3)
             else
                 key
-            //indexOnce(project, searchScope)
+
             return FileBasedIndex.getInstance().getAllKeys(NAME, project)
-                .filter { other -> BreedPartKey.isGenericMatch(fudgedKey, other) }
+                .filter { other ->
+                    progressIndicator?.checkCanceled()
+                    BreedPartKey.isGenericMatch(fudgedKey, other)
+                }
                 .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
+                .let { files ->
+                    progressIndicator?.checkCanceled()
+                    fudgedKey.part
+                        ?.let { part ->
+                            files
+                                .filter {
+                                    it.name[0].lowercase() == part
+                                }
+                                .filterNotNull()
+                        } ?: files
+                }
+        }
+//            return FileBasedIndex.getInstance().getContainingFiles(NAME, fudgedKey, scope)
+
+        /**
+         * Get all keys stored in this index
+         */
+        fun getAllKeys(project: Project): Collection<BreedPartKey> {
+            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
         }
 
-        fun indexOnce(project: Project) {
-            val runnable = runnable@{
-//                if (didIndexOnce)
-//                    return@runnable
-                FileBasedIndex.getInstance().requestRebuild(NAME)
-//                didIndexOnce = true
-            }
-            if (DumbService.isDumb(project))
-                DumbService.getInstance(project).runWhenSmart(runnable)
-            else
-                runnable()
-
+        /**
+         * Get all keys stored in this index with scope
+         * Possibly very, very slow
+         */
+        fun getAllKeys(project: Project, scope: GlobalSearchScope): Collection<BreedPartKey> {
+            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
+                .filter { aKey ->
+                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
+                        .any { file -> scope.accept(file) }
+                }
         }
     }
 }

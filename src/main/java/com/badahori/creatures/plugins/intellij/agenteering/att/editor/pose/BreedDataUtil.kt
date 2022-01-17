@@ -1,86 +1,24 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
+import bedalton.creatures.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.intellij.openapi.project.Project
+import com.badahori.creatures.plugins.intellij.agenteering.indices.breedFileSort
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.intellij.openapi.vfs.VirtualFile
-import org.apache.commons.compress.utils.Lists
+import com.intellij.psi.search.GlobalSearchScope
 import java.util.logging.Logger
 
 object BreedDataUtil {
 
     private val LOGGER = Logger.getLogger("#BreedDataUtil")
 
-
     /**
-     * Gets the body part file given a specific or related breed file
-     *
-     * @param partChar  char to look for
-     * @param breedFile selected breed file in drop down
-     * @return Sprite body part data for a part and breed file
+     * Whether to prioritize breed matches when searching for matches
+     * Or breeds inside the parent path
      */
-    @JvmStatic
-    fun getSpriteBodyPart(
-        project: Project,
-        variant: CaosVariant,
-        files: List<BodyPartFiles>,
-        manualAtts: Map<Char, VirtualFile>,
-        baseBreed: BreedPartKey,
-        partChar: Char,
-        breedFile: VirtualFile
-    ): SpriteBodyPart? {
-        // Ensure that breed file has parent
-        if (breedFile.parent == null) {
-            LOGGER.severe("Breed file parent is null")
-            return null
-        }
-        val parentPath = breedFile.parent.canonicalPath?.toLowerCase()
-            ?: breedFile.parent.path
-        val partString = "" + partChar.toLowerCase()
-
-        // Generate a key from this breed file
-        val key = BreedPartKey.fromFileName(
-            "" + partChar + breedFile.nameWithoutExtension.toLowerCase().substring(1),
-            variant
-        )
-
-        // Find matching breed file for creature
-        val matching: List<BodyPartFiles> = files.filter { b: BodyPartFiles ->
-            b.key != null && BreedPartKey.isGenericMatch(b.key, key) &&
-                    b.bodyDataFile.let { it.canonicalPath ?: it.path }.toLowerCase().startsWith(parentPath) && b.bodyDataFile.name.toLowerCase().startsWith(partString)
-        }
-
-        // If item was found for this breed
-        // Wrap it to return
-        var out = if (matching.isNotEmpty()) {
-            matching.firstOrNull()
-        } else {
-            if (partChar in PoseCalculator.nullableParts) {
-                return null
-            }
-            // Body part data does not exist for this part and breed
-            // Happens when upper arm has breed sprite but lower arm doesn't, etc
-            // Get a breed free key
-            val fallback: BreedPartKey = baseBreed.copy(
-                breed = null,
-                part = partChar
-            )
-            // Filter file age, gender, genus and part
-            files.firstOrNull { b: BodyPartFiles ->
-                b.key != null && BreedPartKey.isGenericMatch(b.key, fallback)
-            }
-        } ?: return null // If still nothing was found, bail out
-
-        // If manual att was passed in, use it instead
-        manualAtts[partChar]?.let {
-            out = out.copy(bodyDataFile = it)
-        }
-        // Return the resolved sprite and att file from the two virtual files
-        return out.data(project)
-    }
+    private const val PRIORITIZE_BREED = true
 
     /**
      * Finds breeds for a given part
@@ -90,73 +28,184 @@ object BreedDataUtil {
      * @return breed body files available for the parts
      */
     @JvmStatic
-    fun findBreeds(files: List<BodyPartFiles>, baseBreed: BreedPartKey, partChars: Array<Char>): MutableList<VirtualFile> {
-        val key: BreedPartKey = baseBreed.copy(
-            breed = null,
-            genus = null,
-            part = null
-        )
-        return files.filter { part: BodyPartFiles ->
+    fun findBreeds(
+        files: List<BodyPartFiles>,
+        baseBreed: BreedPartKey,
+        partChars: Array<Char>,
+    ): MutableList<Triple<String, BreedPartKey, List<BodyPartFiles>>?> {
+        val filtered = files.filter { part: BodyPartFiles ->
             val thisKey = part.key
                 ?: return@filter false
-            BreedPartKey.isGenericMatch(thisKey, key) && thisKey.part in partChars
+            thisKey.part?.lowercase() in partChars
         }
-            .map(BodyPartFiles::bodyDataFile)
+        val roots = filtered
+            .mapNotNull {
+                it.spriteFile.parent?.path
+            }
+            .distinct()
+        val keys = filtered.mapNotNull { it.key?.copyWithPart(null) }
+            .filter { baseBreed.ageGroup == null || it.ageGroup == baseBreed.ageGroup }
+            .distinct()
+        val filesByRoot: List<Pair<String, List<Pair<BreedPartKey, List<BodyPartFiles>>>>> = roots
+            .map { root: String ->
+                root to filtered.filter {
+                    it.spriteFile.parent?.path == root
+                }
+            }
+            .mapNotNull { (root: String, files: List<BodyPartFiles>) ->
+                // Find parts in directory and pair them with their key
+                keys
+                    .mapNotNull { aKey ->
+                        val matches = files.filter { BreedPartKey.isGenericMatch(aKey, it.key) }.toMutableList()
+                        var foundParts = matches.mapNotNull { file -> file.key?.part }
+                        val missing = partChars.filter { it !in foundParts }
+
+                        matches += missing.mapNotNull { char ->
+                            val exactPartKey = aKey.copyWithPart(char)
+                            val base = files.firstOrNull { file -> exactPartKey == file.key }
+                            if (base != null) {
+                                base
+                            } else {
+                                val fudgedPartKey = aKey.copy(
+                                    part = char,
+                                    ageGroup = null
+                                )
+                                files
+                                    .filter { file ->
+                                        BreedPartKey.isGenericMatch(fudgedPartKey, file.key)
+                                    }.minByOrNull { file ->
+                                        aKey.distance(file.key) ?: Int.MAX_VALUE
+                                    }
+                            }
+                        }
+                        foundParts = matches.mapNotNull { file -> file.key?.part }.distinct()
+                        if (partChars.any { it !in foundParts }) {
+                            null
+                        } else {
+                            aKey to matches
+                        }
+                    }
+                    .nullIfEmpty()
+                    ?.let {
+                        root to it
+                    }
+            }
+
+        val out: List<Triple<String, BreedPartKey, List<BodyPartFiles>>> = filesByRoot
+            //List<Pair<String, List<Pair<BreedPartKey, List<BodyPartFiles>>>>>
+            .flatMap { (root: String, items: List<Pair<BreedPartKey, List<BodyPartFiles>>>) ->
+                // Filter items in root to only those containing all parts for a given key in a folder
+                items
+                    .filter { (aKey: BreedPartKey, files: List<BodyPartFiles>) ->
+                        partChars.all { char ->
+                            val partKey = aKey.copyWithPart(char)
+                            files.any { it.key == partKey }
+                        }
+                    }
+                    .let { theseItems: List<Pair<BreedPartKey, List<BodyPartFiles>>> ->
+                        theseItems.mapNotNull { pair ->
+                            pair.second
+                                .nullIfEmpty()
+                                ?.let { bodyFiles ->
+                                    Triple(root, pair.first, bodyFiles)
+                                }
+                        }
+                    }
+            }
+        return out
             .sortedBy {
-                it.nameWithoutExtension
+                it.second.code
             }
             .toMutableList()
     }
 
     @JvmStatic
-    fun findMatchingBreedInList(items: List<VirtualFile?>, rootPath: String?, baseBreed: BreedPartKey, allowNull:Boolean = false): Int? {
-        // Find all breed files matching this path
+    fun findMatchingBreedInList(
+        variant: CaosVariant?,
+        items: List<Triple<String, BreedPartKey, List<BodyPartFiles>>?>,
+        rootPath: VirtualFile?,
+        baseBreed: BreedPartKey,
+        allowNull: Boolean = false,
+        scope: GlobalSearchScope? = null,
+    ): Int? {
 
-        // Find all breed files matching this path
-        val parentPath = rootPath?.toLowerCase()
-        val matchingBreedFiles: MutableList<Pair<Int, VirtualFile>> = Lists.newArrayList()
-        val baseBreedString = "" + baseBreed[1] + "" + baseBreed[2] + "" + baseBreed[3]
-        for (i in items.indices) {
-            val file: VirtualFile? = items[i]
-            val thisBreed = file?.nameWithoutExtension?.toLowerCase()?.substring(1)
-            if (thisBreed == baseBreedString) {
-                if (parentPath != null && file.path.toLowerCase().startsWith(parentPath)) {
-                    return i
-                }
-                // Breed string matches
-                matchingBreedFiles.add(Pair(i, file))
-            }
-        }
-
-        if (matchingBreedFiles.isEmpty() || allowNull) {
+        // If no items, return null
+        if (items.isEmpty()) {
             return null
         }
 
-        // TODO: figure out if I should prioritize matching breed or matching path
-        //  I think breed though. Not sure.
+        val matchingBreedFiles: MutableList<Pair<Int, Triple<String, BreedPartKey, List<BodyPartFiles>>>> =
+            mutableListOf()
+        val notMatchingFiles: MutableList<Pair<Int, Triple<String, BreedPartKey, List<BodyPartFiles>>>> =
+            mutableListOf()
+        val baseBreedString = baseBreed.copyWithPart(null)
+        val genderNeutralBreedString = baseBreedString.copyWithGender(null)
 
-        // If root path was set, find matching att files for this part.
-        if (parentPath != null) {
-            // If a matching breed was not found in root folder
-            // Look for any other breed file in the root folder.
-            for (i in items.indices) {
-                if (items[i]?.canonicalPath?.toLowerCase()?.startsWith(parentPath).orFalse()) {
-                    return i
-                }
+        for (i in items.indices) {
+            val triple: Triple<String, BreedPartKey, List<BodyPartFiles>> = items[i]
+                ?: continue
+            val thisBreed = triple.second
+            val data = Pair(i, triple)
+            if (BreedPartKey.isGenericMatch(thisBreed, genderNeutralBreedString)) {
+                matchingBreedFiles.add(data)
+            } else {
+                notMatchingFiles.add(data)
             }
         }
 
-        // If there are any breed files matching the base breed
-        // Use them first.
+        val sortAndScope: (items: Iterable<Pair<Int, Triple<String, BreedPartKey, List<BodyPartFiles>>>>) -> List<Pair<Int, Triple<String, BreedPartKey, List<BodyPartFiles>>>> =
+            { list: Iterable<Pair<Int, Triple<String, BreedPartKey, List<BodyPartFiles>>>> ->
+                list.breedFileSort(variant, baseBreed, rootPath) { (_, triple) ->
+                    triple.third.first().spriteFile
+                }.filter { (_, triple) ->
+                    scope == null || scope.accept(triple.third.first().spriteFile)
+                }
+            }
+
+        // TODO: figure out if I should prioritize matching breed or matching path
+        //  I think breed though. Not sure.
+        val matchTemp = (if (PRIORITIZE_BREED) {
+                // If there are any breed files matching the base breed
+                // Use them first.
+                sortAndScope(matchingBreedFiles)
+                    .firstOrNull()
+                    ?: sortAndScope(notMatchingFiles)
+                        .firstOrNull()
+            } else {
+                // Start with the nearest file and move forward from there
+                sortAndScope(notMatchingFiles)
+                    .firstOrNull()
+                    ?: sortAndScope(matchingBreedFiles)
+                        .firstOrNull()
+            })
+
+        if (allowNull) {
+            if (matchTemp == null) {
+                return null
+            }
+            val matchKey = matchTemp.second.second.copyWithPart(null)
+            return if (BreedPartKey.isGenericMatch(matchKey, baseBreed.copyWithPart(null))) {
+                matchTemp.first
+            } else {
+                null
+            }
+        } else if (matchTemp != null) {
+            // If you cannot allow null, take matchTemp even if not an exact match
+            return matchTemp.first
+        }
+
 
         // If there are any breed files matching the base breed
         // Use them first.
         if (matchingBreedFiles.isNotEmpty()) {
             return matchingBreedFiles[0].first
+        } else if (notMatchingFiles.isNotEmpty()) {
+            return notMatchingFiles[0].first
         }
 
         // If there are any breed files matching the base breed
         // Use them first.
-        return 0
+        LOGGER.warning("Reached end of line, and somehow have not chosen an index")
+        return null
     }
 }

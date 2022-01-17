@@ -1,34 +1,33 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
-import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.GlobalSearchScopes
 
 
 /**
  * Editor provider for sprite files. Wires up Sprite files to the viewer
  */
-class AttFileEditorProvider : FileEditorProvider, DumbAware {
+class AttFileEditorProvider : FileEditorProvider {
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
-        if (file.extension?.toLowerCase() != "att")
+        if (project.isDisposed) {
+            return false
+        }
+        if (file.extension?.lowercase() != "att")
             return false
         val spriteFileNameBase = file.nameWithoutExtension
         file.getUserData(CACHED_SPRITE_KEY)?.let {
             return true
+        }
+        if (DumbService.isDumb(project)) {
+            return false
         }
         val correspondingSprite = getAnyPossibleSprite(project, file, spriteFileNameBase)
         file.putUserData(CACHED_SPRITE_KEY, correspondingSprite)
@@ -39,8 +38,13 @@ class AttFileEditorProvider : FileEditorProvider, DumbAware {
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
+        if (project.isDisposed) {
+            throw Exception("Cannot create editor. Project already disposed")
+        }
         val spriteFile = file.nameWithoutExtension
-        val correspondingSprite = file.getUserData(CACHED_SPRITE_KEY) ?: getAnyPossibleSprite(project, file, spriteFile)
+        val correspondingSprite = file.getUserData(CACHED_SPRITE_KEY)
+            ?: getAnyPossibleSprite(project, file, spriteFile)
+
         return AttEditorImpl(project, file, correspondingSprite!!)
     }
 
@@ -62,4 +66,4 @@ class AttFileEditorProvider : FileEditorProvider, DumbAware {
     }
 }
 
-private val CACHED_SPRITE_KEY = Key<VirtualFile>("creatures.att.CACHED_SPRITE")
+internal val CACHED_SPRITE_KEY = Key<VirtualFile>("creatures.att.CACHED_SPRITE")
