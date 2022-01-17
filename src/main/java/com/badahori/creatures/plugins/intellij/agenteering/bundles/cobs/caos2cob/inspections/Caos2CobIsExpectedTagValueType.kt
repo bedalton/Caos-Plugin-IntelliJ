@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -80,14 +81,14 @@ private fun validateThumbnail(
 
     val extension = FileNameUtils
         .getExtension(fileName)
-        ?.toLowerCase()
+        ?.lowercase()
 
     // Check is sprite extension is valid
     val check = extension in listOf("gif", "jpeg", "jpg", "png", "spr", "s16", "c16", "bmp")
 
-    if (check)
+    if (check) {
         return
-
+    }
     val fixes = mutableListOf<LocalQuickFix>(Caos2CobRemoveFileFix(tagValueElement))
 
     val error = AgentMessages.message(

@@ -256,7 +256,7 @@ object CaosDefPsiImplUtil {
             ?: -1
         val simpleName = variableTypeElement?.let { type -> (type.typeLiteral ?: type.bracketString)?.text }
         val simpleType = when {
-            simpleName?.toLowerCase() == "int" -> CaosExpressionValueType.INT
+            simpleName?.lowercase() == "int" -> CaosExpressionValueType.INT
             simpleName != null -> CaosExpressionValueType.fromSimpleName(simpleName)
             else -> CaosExpressionValueType.ANY
         }
@@ -374,7 +374,7 @@ object CaosDefPsiImplUtil {
         element.stub?.isCommand?.let {
             return it
         }
-        return element.returnTypeString.toLowerCase() == "command"
+        return element.returnTypeString.lowercase() == "command"
     }
 
     @JvmStatic
@@ -507,7 +507,7 @@ object CaosDefPsiImplUtil {
 
             override fun getLocationString(): String {
                 return parentDeclaration?.let { command ->
-                    command.commandName.toUpperCase() + " " + command.returnTypeString.let { returnType ->
+                    command.commandName.uppercase() + " " + command.returnTypeString.let { returnType ->
                         if (returnType.startsWith('['))
                             returnType
                         else
@@ -536,7 +536,7 @@ object CaosDefPsiImplUtil {
 
             override fun getLocationString(): String {
                 return parentDeclaration?.let { command ->
-                    command.commandName.toUpperCase() + " " + command.returnTypeString.let { returnType ->
+                    command.commandName.uppercase() + " " + command.returnTypeString.let { returnType ->
                         if (returnType.startsWith('['))
                             returnType
                         else
@@ -791,7 +791,7 @@ object CaosDefPsiImplUtil {
                 (another as? CaosScriptVarToken)
                     ?.varGroup
                     ?.value
-                    ?.let { element.text.toUpperCase().equalsIgnoreCase(it) }
+                    ?.let { element.text.uppercase().equalsIgnoreCase(it) }
                     .orFalse()
     }
 

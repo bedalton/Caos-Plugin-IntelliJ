@@ -155,7 +155,7 @@ object CaosScriptInferenceUtil {
         check: (element: CaosScriptNamedGameVar) -> Boolean
     ): List<CaosScriptNamedGameVar> {
         return (FilenameIndex.getAllFilesByExt(project, "cos") + FilenameIndex.getAllFilesByExt(project, "COS"))
-            .distinctBy { it.path.toLowerCase() }
+            .distinctBy { it.path.lowercase() }
             .flatMap map@{
                 val psiFile = it.getPsiFile(project)
                     ?: return@map emptyList()

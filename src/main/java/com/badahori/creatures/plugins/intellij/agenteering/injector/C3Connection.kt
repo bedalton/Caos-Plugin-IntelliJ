@@ -232,7 +232,7 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
                 "!CON" -> InjectionStatus.BadConnection(response.substring(4))
                 "!ERR" -> InjectionStatus.Bad(response.substring(4))
                 else -> {
-                    val responseLower = response.toLowerCase()
+                    val responseLower = response.lowercase()
                     if (response.contains("{@}") || errorPrefix.any { responseLower.startsWith(it) } || errorMessageRegex.any{ it.matches(response) }) {
                         InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
                     } else if (code == "!RES") {
@@ -520,7 +520,7 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
 
         private fun escape(caos: String): String {
             var escaped = caos.trim()
-            if (escaped.toLowerCase().endsWith("endm")) {
+            if (escaped.lowercase().endsWith("endm")) {
                 // Remove last endm, as injection requires its removal on Windows
                 if (isWindows)
                     escaped = escaped.substringFromEnd(0, 4).trim()

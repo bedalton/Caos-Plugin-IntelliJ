@@ -37,7 +37,7 @@ class CaosScriptCommandCaseAnnotator : Annotator {
      */
     private fun annotateC1Token(variant: CaosVariant, token:CaosScriptShouldBeLowerCase, annotationWrapper: AnnotationHolder) {
         val commandString = token.text
-        if (commandString.toLowerCase() == commandString) {
+        if (commandString.lowercase() == commandString) {
             return
         }
         val fix = CaosScriptTokenToLowerCaseFix(token)

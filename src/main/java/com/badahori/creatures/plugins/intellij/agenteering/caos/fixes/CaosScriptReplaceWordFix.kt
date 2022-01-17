@@ -16,7 +16,7 @@ import com.intellij.psi.SmartPointerManager
 
 class CaosScriptReplaceWordFix (private val word:String, element:CaosScriptIsCommandToken)  : IntentionAction, LocalQuickFix {
 
-    private val currentCommand = element.commandString.toUpperCase()
+    private val currentCommand = element.commandString.uppercase()
     private val pointer = SmartPointerManager.createPointer(element)
 
     override fun startInWriteAction(): Boolean = true
@@ -27,7 +27,7 @@ class CaosScriptReplaceWordFix (private val word:String, element:CaosScriptIsCom
         return pointer.element != null && file is CaosScriptFile
     }
 
-    override fun getText(): String = CaosBundle.message("caos.fixes.replace-command-with", currentCommand, word.toUpperCase())
+    override fun getText(): String = CaosBundle.message("caos.fixes.replace-command-with", currentCommand, word.uppercase())
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val element = pointer.element

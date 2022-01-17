@@ -81,7 +81,7 @@ internal class SpriteFileTreeNode(
         }
         presentationData.presentableText = value.name
         presentationData.locationString = null
-        val icon = when (virtualFile.extension?.toLowerCase()) {
+        val icon = when (virtualFile.extension?.lowercase()) {
             "spr" -> CaosScriptIcons.SPR_FILE_ICON
             "s16" -> CaosScriptIcons.S16_FILE_ICON
             "c16" -> CaosScriptIcons.C16_FILE_ICON

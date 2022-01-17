@@ -46,7 +46,7 @@ class CaosScriptTokenToLowerCaseFix(element: CaosScriptShouldBeLowerCase) : Loca
         try {
             PsiDocumentManager.getInstance(project).commitDocument(document)
         } catch (e:Exception) {}
-        EditorUtil.replaceText(document, element.textRange, element.text.toLowerCase())
+        EditorUtil.replaceText(document, element.textRange, element.text.lowercase())
     }
 
 }

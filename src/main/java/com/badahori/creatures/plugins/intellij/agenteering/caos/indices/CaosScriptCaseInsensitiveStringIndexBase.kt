@@ -51,13 +51,13 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
             tailIn: String?,
             project: Project,
             globalSearchScope: GlobalSearchScope?): Map<String, List<PsiT>> {
-        val start = startIn?.toLowerCase()
-        val tail = tailIn?.toLowerCase()
+        val start = startIn?.lowercase()
+        val tail = tailIn?.lowercase()
         val keys = ArrayList<String>()
         val notMatchingKeys = ArrayList<String>()
         for (keyIn in getAllKeys(project)) {
             ProgressIndicatorProvider.checkCanceled()
-            val key = keyIn.toLowerCase()
+            val key = keyIn.lowercase()
             if (notMatchingKeys.contains(key) || keys.contains(key)) {
                 continue
             }
@@ -96,7 +96,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     open fun containsKey(key:String, project: Project) : Boolean {
-        return getAllKeys(project).map { it.toLowerCase() }.contains(key.toLowerCase())
+        return getAllKeys(project).map { it.lowercase() }.contains(key.lowercase())
     }
 
     open fun getStartingWith(pattern: String, project: Project): List<PsiT> {
@@ -131,13 +131,13 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         val matchingKeys = ArrayList<String>()
         val notMatchingKeys = ArrayList<String>()
         val pattern: Pattern = try {
-            Pattern.compile(patternString.toLowerCase())
+            Pattern.compile(patternString.lowercase())
         } catch (e: Exception) {
-            Pattern.compile(Pattern.quote(patternString.toLowerCase()))
+            Pattern.compile(Pattern.quote(patternString.lowercase()))
         }
 
         for (key in getAllKeys(project)) {
-            val keyToTest = key.toLowerCase()
+            val keyToTest = key.lowercase()
             if (notMatchingKeys.contains(key) || matchingKeys.contains(key)) {
                 continue
             }

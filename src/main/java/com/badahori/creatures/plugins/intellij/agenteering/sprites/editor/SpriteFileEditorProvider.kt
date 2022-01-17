@@ -16,7 +16,7 @@ class SpriteFileEditorProvider : FileEditorProvider, DumbAware {
 
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
-        return file.extension?.toLowerCase() in spriteFileTypes
+        return file.extension?.lowercase() in spriteFileTypes
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {

@@ -123,7 +123,7 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
         private val SKIP_LAST = listOf("PUHL", "PUPT", "CLS2")
 
         private fun skipLast(element: CaosScriptCommandElement): Boolean {
-            return if (element.commandString?.toUpperCase() in setLike) {
+            return if (element.commandString?.uppercase() in setLike) {
                 val firstArg = element.argumentValues.firstOrNull()
                 val commandString = (firstArg as? CaosScriptRvalue)?.commandString ?: (firstArg as? CaosScriptLvalue)?.commandString
                 return commandString in SKIP_LAST

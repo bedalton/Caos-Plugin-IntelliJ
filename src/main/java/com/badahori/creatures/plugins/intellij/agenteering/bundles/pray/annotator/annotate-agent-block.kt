@@ -12,7 +12,7 @@ internal fun annotatePrayAgent(agent: PrayAgentBlock, holder: AnnotationHolder) 
 }
 //
 //private fun annotateDuplicateTags(tags: List<PrayTag>, holder: AnnotationHolder) {
-//    val tagNames = tags.map { it.tagName.toLowerCase().replace(WHITESPACE, " ") }
+//    val tagNames = tags.map { it.tagName.lowercase().replace(WHITESPACE, " ") }
 //    LOGGER.info("Tag Structs: $tagNames")
 //    val duplicateTags = tagNames
 //        .filter { tag ->

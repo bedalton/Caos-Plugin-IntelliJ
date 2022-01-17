@@ -36,7 +36,7 @@ class AppendStatementTerminator(elementIn: PsiElement, private val replacementTe
 
     override fun startInWriteAction(): Boolean = true
 
-    override fun getName(): String = "Close statement with ${replacementText.toUpperCase()}"
+    override fun getName(): String = "Close statement with ${replacementText.uppercase()}"
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val element = descriptor.psiElement
@@ -83,7 +83,7 @@ class AppendStatementTerminator(elementIn: PsiElement, private val replacementTe
             is CaosScriptFile -> "ENDM"
             else -> null
         }
-        return if (replacement == null || element.lastChild.text.toUpperCase().endsWith(replacement))
+        return if (replacement == null || element.lastChild.text.uppercase().endsWith(replacement))
             null
         else
             replacement

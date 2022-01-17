@@ -55,7 +55,7 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         // removes possibly badly formatted script header
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
-        val caosFormatted = if (!caos.trim().toLowerCase().startsWith(expectedHeader)) {
+        val caosFormatted = if (!caos.trim().lowercase().startsWith(expectedHeader)) {
              if (removalRegex.matches(caos)) {
                  caos.replace(removalRegex, "")
              } else

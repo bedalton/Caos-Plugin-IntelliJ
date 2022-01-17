@@ -70,7 +70,7 @@ private object Indexer : DataIndexer<FileNameInfo, Void, FileContent> {
     override fun map(fileInfo: FileContent): Map<FileNameInfo, Void?> {
         val file = fileInfo.file
         return mapOf(
-            FileNameInfo(file.name.toLowerCase(), file.nameWithoutExtension.toLowerCase(), file.extension?.toLowerCase() ?: "") to null
+            FileNameInfo(file.name.lowercase(), file.nameWithoutExtension.lowercase(), file.extension?.lowercase() ?: "") to null
         )
     }
 }
@@ -88,11 +88,11 @@ private object Descriptor : KeyDescriptor<FileNameInfo> {
             return true
         if (info1 == null || info2 == null)
             return false
-        if (info1.fileName != null && info2.fileName != null && info1.fileName.toLowerCase() != info2.fileName.toLowerCase())
+        if (info1.fileName != null && info2.fileName != null && info1.fileName.lowercase() != info2.fileName.lowercase())
             return false
-        if (info1.nameWithoutExtension != null && info2.nameWithoutExtension != null && info1.nameWithoutExtension.toLowerCase() != info2.nameWithoutExtension.toLowerCase())
+        if (info1.nameWithoutExtension != null && info2.nameWithoutExtension != null && info1.nameWithoutExtension.lowercase() != info2.nameWithoutExtension.lowercase())
             return false
-        if (info1.extension != null && info2.extension != null && info1.extension.toLowerCase() != info2.extension.toLowerCase())
+        if (info1.extension != null && info2.extension != null && info1.extension.lowercase() != info2.extension.lowercase())
             return false
         return true
     }

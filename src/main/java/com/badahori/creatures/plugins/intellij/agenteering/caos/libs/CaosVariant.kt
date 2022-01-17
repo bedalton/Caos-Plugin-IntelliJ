@@ -29,7 +29,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     companion object {
         private val others: MutableList<CaosVariant> = mutableListOf()
         fun fromVal(variant: String?): CaosVariant {
-            return when (variant?.toUpperCase()) {
+            return when (variant?.uppercase()) {
                 "C1" -> C1
                 "C2" -> C2
                 "CV" -> CV

@@ -28,7 +28,7 @@ internal fun getFilenameSuggestions(
 ): List<CaosScriptReplaceElementFix>? {
     val fileNameExtension = extensions
         ?: getExtension(baseFileName)
-            ?.toLowerCase()
+            ?.lowercase()
             ?.toListOf()
     val directory = element.directory
         ?: return emptyList()
@@ -159,22 +159,22 @@ internal fun getFilenameSuggestions(
     }
 
     // Create a list of allowed extensions
-    val targetExtensions = (extensions?.map { it.toLowerCase() } ?: listOfNotNull(
-        getExtension(fileName)?.toLowerCase()?.nullIfEmpty()
+    val targetExtensions = (extensions?.map { it.lowercase() } ?: listOfNotNull(
+        getExtension(fileName)?.lowercase()?.nullIfEmpty()
     )).nullIfEmpty()
-    val filenameForDistanceCheck = fileNameWithoutExtension.toLowerCase()
+    val filenameForDistanceCheck = fileNameWithoutExtension.lowercase()
     // Find siblings and filter by extension, and similarity to the current file name
 
     val siblings = VirtualFileUtil.findChildrenIfDirectoryOrSiblingsIfLeaf(trueDirectory, fileName)
         ?.filter {
-            if (targetExtensions != null && getExtension(it.name)?.toLowerCase() !in targetExtensions)
+            if (targetExtensions != null && getExtension(it.name)?.lowercase() !in targetExtensions)
                 return@filter false
-            it.nameWithoutExtension.toLowerCase().levenshteinDistance(filenameForDistanceCheck) < orb
+            it.nameWithoutExtension.lowercase().levenshteinDistance(filenameForDistanceCheck) < orb
         }
     val ignoredSiblings = ignoredFiles.filter {
-        if (targetExtensions != null && getExtension(it)?.toLowerCase() !in targetExtensions)
+        if (targetExtensions != null && getExtension(it)?.lowercase() !in targetExtensions)
             return@filter false
-        FileNameUtils.getNameWithoutExtension(it).orEmpty().toLowerCase().levenshteinDistance(filenameForDistanceCheck) < orb
+        FileNameUtils.getNameWithoutExtension(it).orEmpty().lowercase().levenshteinDistance(filenameForDistanceCheck) < orb
     }.map {
         CaosScriptReplaceElementFix(
             element,
@@ -202,7 +202,7 @@ internal fun getSimilarFileNames(
 ): List<String>? {
     val fileNameExtension = extensions
         ?: getExtension(baseFileName)
-            ?.toLowerCase()
+            ?.lowercase()
             ?.toListOf()
         ?: return emptyList()
     val directory = element.directory
@@ -233,7 +233,7 @@ internal fun getSimilarFileNames(
     // Try to find the intended file caseless if needed
     val targetFile: VirtualFile? = if (extensions.isNullOrEmpty()) {
         VirtualFileUtil.findChildIgnoreCase(directory, removeExtension, directory = false, baseFileName)
-    } else if (fileNameWithoutExtension.toLowerCase() == baseFileName) {
+    } else if (fileNameWithoutExtension.lowercase() == baseFileName) {
         extensions!!.mapNotNull { extension ->
             VirtualFileUtil.findChildIgnoreCase(directory, ignoreExtension = false, directory = false, "$baseFileName.$extension")
         }.firstOrNull()
@@ -260,17 +260,17 @@ internal fun getSimilarFileNames(
     }
 
     // Create a list of allowed extensions
-    val targetExtensions = (extensions?.map { it.toLowerCase() }
-        ?: listOfNotNull(getExtension(baseFileName)?.toLowerCase()))
+    val targetExtensions = (extensions?.map { it.lowercase() }
+        ?: listOfNotNull(getExtension(baseFileName)?.lowercase()))
         .nullIfEmpty()
 
-    val filenameForDistanceCheck = fileNameWithoutExtension.toLowerCase()
+    val filenameForDistanceCheck = fileNameWithoutExtension.lowercase()
     // Find siblings and filter by extension, and similarity to the current file name
     val siblings = VirtualFileUtil.findChildrenIfDirectoryOrSiblingsIfLeaf(directory, baseFileName)
         ?.filter {
-            if (targetExtensions != null && getExtension(it.name)?.toLowerCase() !in targetExtensions)
+            if (targetExtensions != null && getExtension(it.name)?.lowercase() !in targetExtensions)
                 return@filter false
-            it.nameWithoutExtension.toLowerCase().levenshteinDistance(filenameForDistanceCheck) <= orb
+            it.nameWithoutExtension.lowercase().levenshteinDistance(filenameForDistanceCheck) <= orb
         }.nullIfEmpty()
         ?: return emptyList()
 

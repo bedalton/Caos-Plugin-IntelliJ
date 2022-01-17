@@ -40,16 +40,16 @@ class Caos2PrayReservedTagUseInspection : LocalInspectionTool() {
         val tag = element.tagName.trim()
         if (tag.isBlank())
             return
-        val usesRscrCommand = if (tag.toLowerCase() == "remove script") {
+        val usesRscrCommand = if (tag.lowercase() == "remove script") {
             PsiTreeUtil.collectElementsOfType(file, CaosScriptCaos2BlockComment::class.java)
                 .any { blockComment ->
                     blockComment.caos2CommandList.any {
-                        val commandName = it.commandName.toLowerCase()
-                        commandName.toLowerCase() == "rscr" || PrayTags.normalize(commandName)
-                            ?.toLowerCase() == "remove script"
+                        val commandName = it.commandName.lowercase()
+                        commandName.lowercase() == "rscr" || PrayTags.normalize(commandName)
+                            ?.lowercase() == "remove script"
                     } || blockComment.caos2TagList.any {
                         val tagName = it.tagName
-                        tagName.toLowerCase() == "rscr" || PrayTags.normalize(tagName)?.toLowerCase() == "remove script"
+                        tagName.lowercase() == "rscr" || PrayTags.normalize(tagName)?.lowercase() == "remove script"
                     }
                 }
         } else {

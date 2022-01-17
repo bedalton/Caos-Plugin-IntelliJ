@@ -227,10 +227,10 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
             }
         } else if (DefaultGameFiles.C3DSFiles.any { it == fileName })
             return
-        val fileNameLowercase = fileName.toLowerCase()
+        val fileNameLowercase = fileName.lowercase()
         val orb = min(fileName.length / 3, 4)
         fixes += DefaultGameFiles.C3DSFiles.filter {
-            it.toLowerCase().levenshteinDistance(fileNameLowercase) < orb
+            it.lowercase().levenshteinDistance(fileNameLowercase) < orb
         }.map { replacement ->
             CaosScriptReplaceElementFix(
                 element,

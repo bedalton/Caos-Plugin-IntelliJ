@@ -13,7 +13,7 @@ object SpriteParser {
 
     @JvmStatic
     fun parse(virtualFile: VirtualFile) : SpriteFile<*> {
-        return when (virtualFile.extension?.toLowerCase()) {
+        return when (virtualFile.extension?.lowercase()) {
             "spr" -> SprSpriteFile(virtualFile)
             "c16" -> C16SpriteFile(virtualFile)
             "s16" -> S16SpriteFile(virtualFile)
@@ -26,7 +26,7 @@ object SpriteParser {
     fun numImages(virtualFile: VirtualFile) : Int? {
         return try {
             val bytesBuffer = ByteStreamReader(virtualFile.contentsToByteArray())
-            if (virtualFile.extension?.toLowerCase() != "spr") {
+            if (virtualFile.extension?.lowercase() != "spr") {
                 bytesBuffer.skip(4)
             }
             bytesBuffer.uInt16

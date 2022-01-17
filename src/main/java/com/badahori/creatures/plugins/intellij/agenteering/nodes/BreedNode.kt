@@ -26,11 +26,11 @@ internal class BreedNode(
     }
 
     private val hasAtts by lazy {
-        files.any { it.extension?.toLowerCase() == "att" }
+        files.any { it.extension?.lowercase() == "att" }
     }
 
     private val spriteExtensions by lazy {
-        files.mapNotNull { it.extension?.toUpperCase() }.filter { it likeAny SpriteParser.VALID_SPRITE_EXTENSIONS }
+        files.mapNotNull { it.extension?.uppercase() }.filter { it likeAny SpriteParser.VALID_SPRITE_EXTENSIONS }
     }
 
     private val tailText by lazy {
@@ -63,7 +63,7 @@ internal class BreedNode(
                 if (!it.isValid) {
                     return@map null
                 }
-                if (it.extension?.toLowerCase() in SpriteParser.VALID_SPRITE_EXTENSIONS) {
+                if (it.extension?.lowercase() in SpriteParser.VALID_SPRITE_EXTENSIONS) {
                     SpriteFileTreeNode(project!!, it, viewSettings)
                 } else {
                     AttFileNode(project!!, it, viewSettings)
@@ -77,7 +77,7 @@ internal class BreedNode(
             throw Exception("Cannot create body data bundle without files")
         }
         val invalidFiles = files.filterNot { file ->
-           file.extension?.toUpperCase()?.let { it likeAny spriteExtensions || it == "ATT" }.orFalse()
+           file.extension?.uppercase()?.let { it likeAny spriteExtensions || it == "ATT" }.orFalse()
         }
         if (invalidFiles.isNotEmpty()) {
             throw Exception("Invalid file(s) body files found. Expected ${spriteExtensions.joinToString(", ")} and ATT files only")

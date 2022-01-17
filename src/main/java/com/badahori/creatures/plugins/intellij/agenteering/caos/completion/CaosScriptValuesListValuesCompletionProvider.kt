@@ -314,7 +314,7 @@ private fun addFileNameCompletions(
     // Flat map is necessary for CV-SM, as they can take C16 or S16
     val allFiles = types
         .flatMap { fileExtensionTemp ->
-            val fileExtension = fileExtensionTemp.toLowerCase()
+            val fileExtension = fileExtensionTemp.lowercase()
             val searchScope =
                 module?.let { GlobalSearchScope.moduleScope(it) }
                     ?: GlobalSearchScope.projectScope(project)

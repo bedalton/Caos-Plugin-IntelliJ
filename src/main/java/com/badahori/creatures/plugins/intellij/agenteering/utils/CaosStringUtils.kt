@@ -2,15 +2,12 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.GameVariant
 import java.util.*
 import kotlin.contracts.contract
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.pow
-import kotlin.math.round
 
 object CaosStringUtil {
 
@@ -24,8 +21,8 @@ object CaosStringUtil {
             return null
         }
         return if (string.length < 2) {
-            string.toUpperCase()
-        } else string.substring(0, 1).toUpperCase() + string.substring(1)
+            string.uppercase()
+        } else string.substring(0, 1).uppercase() + string.substring(1)
     }
 
     fun substringFromEnd(string: String, start: Int, fromEnd: Int): String =
@@ -80,8 +77,8 @@ fun String?.isNotNullOrBlank(): Boolean {
 
 fun String.upperCaseFirstLetter(): String {
     return if (this.length < 2) {
-        this.toUpperCase()
-    } else this.substring(0, 1).toUpperCase() + this.substring(1)
+        this.uppercase()
+    } else this.substring(0, 1).uppercase() + this.substring(1)
 }
 
 @Suppress("unused")
@@ -141,11 +138,11 @@ fun String.equalsIgnoreCase(otherString: String): Boolean {
 }
 
 fun String.endsWithIgnoreCase(otherString: String): Boolean {
-    return this.toLowerCase().endsWith(otherString.toLowerCase())
+    return this.lowercase().endsWith(otherString.lowercase())
 }
 
 fun String.startsWithIgnoreCase(otherString: String): Boolean {
-    return this.toLowerCase().startsWith(otherString.toLowerCase())
+    return this.lowercase().startsWith(otherString.lowercase())
 }
 
 fun String.notEqualsIgnoreCase(otherString: String): Boolean {
@@ -158,7 +155,7 @@ fun String.notEquals(otherString: String, ignoreCase: Boolean): Boolean {
 
 fun String.indexOfFirstNonWhitespaceCharacter(): Int {
     val characters = toCharArray()
-    for (i in 0 until length) {
+    for (i in indices) {
         if (Character.isWhitespace(characters[i]))
             continue
         else
@@ -169,20 +166,20 @@ fun String.indexOfFirstNonWhitespaceCharacter(): Int {
 
 fun String.matchCase(stringToMatch: String, variant: CaosVariant? = null): String {
     if (variant != null && variant < 3)
-        return toLowerCase()
+        return lowercase()
     return when (stringToMatch.case) {
-        Case.UPPER_CASE -> toUpperCase()
-        Case.LOWER_CASE -> toLowerCase()
+        Case.UPPER_CASE -> uppercase()
+        Case.LOWER_CASE -> lowercase()
         Case.CAPITAL_FIRST -> upperCaseFirstLetter()
     }
 }
 
 fun String.matchCase(case: Case, variant: CaosVariant? = null): String {
     if (variant != null && variant < 3)
-        return toLowerCase()
+        return lowercase()
     return when (case) {
-        Case.UPPER_CASE -> toUpperCase()
-        Case.LOWER_CASE -> toLowerCase()
+        Case.UPPER_CASE -> uppercase()
+        Case.LOWER_CASE -> lowercase()
         Case.CAPITAL_FIRST -> upperCaseFirstLetter()
     }
 }
@@ -192,10 +189,10 @@ val String.case: Case
         val chars = toCharArray()
         if (chars.size < 2)
             return Case.LOWER_CASE
-        if (chars[0] == chars[0].toLowerCase()) {
+        if (chars[0] == chars[0].lowercase()) {
             return Case.LOWER_CASE
         }
-        if (chars.size > 1 && chars[1] == chars[1].toUpperCase()) {
+        if (chars.size > 1 && chars[1] == chars[1].uppercase()) {
             return Case.UPPER_CASE
         }
         return Case.CAPITAL_FIRST
@@ -312,7 +309,7 @@ val MULTI_WHITESPACE_REGEX = "\\s\\s+".toRegex()
 val MULTI_SPACE_REGEX = "[ ][ ]+".toRegex()
 
 fun CharSequence.levenshteinDistance(b: CharSequence): Int {
-    val cost = Array(this.length + 1, { IntArray(b.length + 1) })
+    val cost = Array(this.length + 1) { IntArray(b.length + 1) }
     for (iA in 0..this.length) {
         cost[iA][0] = iA
     }
@@ -396,4 +393,13 @@ fun randomString(
         chars[index]
     }.joinToString()
 
+}
+
+
+fun Char.lowercase(): Char {
+    return this.toLowerCase()
+}
+
+fun Char.uppercase(): Char {
+    return this.toUpperCase()
 }

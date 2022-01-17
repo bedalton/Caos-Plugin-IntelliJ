@@ -14,4 +14,4 @@ interface CaosScriptCommandElement : CaosScriptCompositeElement {
 }
 
 val CaosScriptCommandElement.argumentsLength:Int get() = argumentValues.size
-val CaosScriptCommandElement.commandStringUpper:String? get() = commandString?.toUpperCase()
+val CaosScriptCommandElement.commandStringUpper:String? get() = commandString?.uppercase()

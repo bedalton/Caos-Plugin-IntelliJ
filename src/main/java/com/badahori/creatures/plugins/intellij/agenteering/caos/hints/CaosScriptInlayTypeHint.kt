@@ -287,7 +287,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             val valuesList = parent.getValuesList(variant, element)
                 ?: return EMPTY_INLAY_LIST
             val value = element.text
-            if (value == "0" && valuesList.name.toUpperCase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
+            if (value == "0" && valuesList.name.uppercase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
                 return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values
@@ -337,7 +337,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             // Get list for argument
             val valuesList = getValuesList(element)
                 ?: return EMPTY_INLAY_LIST
-            if (value == "0" && valuesList.name.toUpperCase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
+            if (value == "0" && valuesList.name.uppercase().let { it.startsWith("CHEM") || it.startsWith("DRIVE") })
                 return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values

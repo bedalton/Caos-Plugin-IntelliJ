@@ -49,7 +49,7 @@ private fun VirtualFile.findChildRecursive(childName:String, ignoreCase: Boolean
     if (scope?.contains(this) == false)
         return null
     findChild(childName)?.let { return it }
-    val childNameToLower = childName.toLowerCase()
+    val childNameToLower = childName.lowercase()
     for (child in children) {
         if (scope?.contains(child) == false || child in visited)
             continue
@@ -59,7 +59,7 @@ private fun VirtualFile.findChildRecursive(childName:String, ignoreCase: Boolean
             }
         } else if (childName == child.name) {
             return child
-        } else if (ignoreCase && childNameToLower == child.name.toLowerCase()) {
+        } else if (ignoreCase && childNameToLower == child.name.lowercase()) {
             return child
         }
     }
@@ -78,8 +78,8 @@ private fun VirtualFile.findChildRecursive(baseName:String, extensions: List<Str
         return null
 
     val possibleNames = if (ignoreCase) {
-        val baseNameLower = baseName.toLowerCase()
-        extensions.map { extension -> "$baseNameLower.${extension.toLowerCase()}" }
+        val baseNameLower = baseName.lowercase()
+        extensions.map { extension -> "$baseNameLower.${extension.lowercase()}" }
     } else {
         extensions.map { extension -> "$baseName.$extension"}
     }
@@ -94,7 +94,7 @@ private fun VirtualFile.findChildRecursive(baseName:String, extensions: List<Str
             continue
         }
         val childName = if (ignoreCase) {
-            child.name.toLowerCase()
+            child.name.lowercase()
         } else {
             child.name
         }

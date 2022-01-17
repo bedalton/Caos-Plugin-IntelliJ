@@ -72,14 +72,14 @@ private fun validateCommand(commandElement: CaosScriptCaos2Command, holder: Prob
 
     // Find bad file references and build Element data pairs
     val badFileNameData = fileNames.indices.filter { i ->
-        fileNames[i].let { FileNameUtils.getExtension(it)?.toLowerCase() !in expectedExtensions }
+        fileNames[i].let { FileNameUtils.getExtension(it)?.lowercase() !in expectedExtensions }
     }.mapNotNull { i ->
         fileNameElements.getOrNull(i)?.let { element -> Pair(element, fileNames[i]) }
     }
 
     // Add error messages to bad file references
     for ((fileNameElement, fileName) in badFileNameData) {
-        val extension = FileNameUtils.getExtension(fileName)?.toLowerCase()
+        val extension = FileNameUtils.getExtension(fileName)?.lowercase()
         val fixes = getFixes(fileNameElement, extension)
         val parent = fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
         val error = if (commandType in SCRIPT_COMMANDS) {

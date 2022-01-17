@@ -16,7 +16,7 @@ class BlkPreviewViewProvider : FileEditorProvider, DumbAware {
 
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
-        return file.extension?.toLowerCase().let { it == "blk" || it == "back" }
+        return file.extension?.lowercase().let { it == "blk" || it == "back" }
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {

@@ -61,11 +61,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 //            ?: return
 //        val token = command
 //            .commandString
-//            ?.toUpperCase()
+//            ?.uppercase()
 //            ?: return
 //        when {
 //            token == "SETV" && index == 1 -> {
-//                val previousToken = command.arguments.getOrNull(0)?.text?.toUpperCase()
+//                val previousToken = command.arguments.getOrNull(0)?.text?.uppercase()
 //                    ?: return
 //                when (previousToken) {
 //                    "CLAS" -> holder
