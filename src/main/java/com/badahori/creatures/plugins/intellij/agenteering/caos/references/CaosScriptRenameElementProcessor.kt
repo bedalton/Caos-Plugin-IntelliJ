@@ -4,6 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiReference
+import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
 
@@ -14,10 +16,21 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
                 || element is CaosScriptNamedGameVar
                 || element is CaosScriptQuoteStringLiteral
                 || element is CaosScriptStringText
+                || element is CaosScriptStringLike
     }
 
     override fun isInplaceRenameSupported(): Boolean {
         return true
+    }
+
+    override fun findReferences(
+        element: PsiElement,
+        searchScope: SearchScope,
+        searchInCommentsAndStrings: Boolean
+    ): Collection<PsiReference> {
+        return super.findReferences(element, searchScope, searchInCommentsAndStrings)
+            .distinct()
+
     }
 
     override fun substituteElementToRename(element: PsiElement, editor: Editor?): PsiElement? {
@@ -42,4 +55,6 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
             return element
         return super.substituteElementToRename(element, editor)
     }
+
+
 }
