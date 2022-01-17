@@ -22,7 +22,7 @@ class GenericPsiNode<T:PsiElement>(
 ) : AbstractTreeNode<T>(nonNullProject, element) {
 
     fun isValid(): Boolean {
-        return !nonNullProject.isDisposed && pointer.virtualFile?.isValid == true && pointer.element?.isValid == true
+        return !nonNullProject.isDisposed && pointer.virtualFile?.isValid == true// && pointer.element?.isValid == true
     }
 
     val pointer = SmartPointerManager.createPointer(element)
