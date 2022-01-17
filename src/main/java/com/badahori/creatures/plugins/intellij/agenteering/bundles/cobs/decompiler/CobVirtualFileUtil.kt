@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -57,7 +58,8 @@ object CobVirtualFileUtil {
             CobToDataObjectDecompiler.decompile(cobFile)
                     ?: return emptyList<CaosVirtualFile>().apply { LOGGER.severe("Failed to decompile COB: '${cobFile.name}'")}
         } catch (e: Exception) {
-            LOGGER.severe("Failed to decompile cob: '${cobFile.name}'")
+            LOGGER.severe("Failed to decompile cob: '${cobFile.name}'; ${e.className}: ${e.message}")
+            e.printStackTrace()
             return emptyList()
         }
         return when (data) {
