@@ -29,11 +29,11 @@ object FileNameUtils {
         return if (lastIndex < 0) {
             // Has no dot
             null
-        } else if (lastIndex == lastComponent.lastIndex) {
+        } else if (lastIndex + 1 >= lastComponent.lastIndex) {
             // File ends with dot
             ""
         } else {
-            lastComponent.substring(lastIndex)
+            lastComponent.substring(lastIndex + 1)
         }
     }
 
