@@ -12,6 +12,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
@@ -34,13 +35,16 @@ internal open class ProjectCaosScriptFileTreeNode(
     val caosFile: CaosScriptFile? get() = pointer.element
 
 
-    private val scripts: Collection<CaosScriptScriptElement> by lazy {
+    private val scripts: Collection<CaosScriptScriptElement> get() {
         if (!isValid()) {
-            return@lazy emptyList()
+            return emptyList()
+        }
+        if (DumbService.isDumb(nonNullProject)) {
+            return emptyList()
         }
         val caosFile = caosFile
-            ?: return@lazy emptyList()
-        PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
+            ?: return emptyList()
+        return PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptScriptElement::class.java)
     }
 
     private val possibleScripts: Int by lazy {
@@ -54,14 +58,16 @@ internal open class ProjectCaosScriptFileTreeNode(
         count
     }
 
-    private val possibleSubroutines by lazy { if (isValid()) file.text.toLowerCase().count("subr ") else 0 }
+    private val possibleSubroutines by lazy { if (isValid()) file.text.lowercase().count("subr ") else 0 }
 
 
-    private val subroutines by lazy {
-        if (isValid())
-            PsiTreeUtil.collectElementsOfType(file, CaosScriptSubroutine::class.java)
-        else
-            emptyList()
+    private val subroutines: Collection<CaosScriptSubroutine> get() {
+        if (!isValid() && DumbService.isDumb(nonNullProject)) {
+            return emptyList()
+        }
+        val caosFile = caosFile
+            ?: return emptyList()
+        return PsiTreeUtil.collectElementsOfType(caosFile, CaosScriptSubroutine::class.java)
     }
 
     override fun isAlwaysLeaf(): Boolean {
@@ -98,12 +104,12 @@ internal open class ProjectCaosScriptFileTreeNode(
         return caosFileName
     }
 
-    protected fun isValid(): Boolean {
-        return !nonNullProject.isDisposed && virtualFile.isValid && caosFile?.isValid == true
-    }
+//    override fun isValid(): Boolean {
+//        return !nonNullProject.isDisposed && virtualFile.isValid && caosFile?.isValid == true
+//    }
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
-        if (!isValid()) {
+        if (!isValid() || DumbService.isDumb(nonNullProject)) {
             return emptyList()
         }
         return if (scripts.size != 1) {
@@ -262,12 +268,12 @@ internal class SubScriptLeafNode(
 ) : AbstractTreeNode<CaosScriptScriptElement>(nonNullProject, script) {
 
     fun isValid(): Boolean {
-        return !nonNullProject.isDisposed && virtualFile?.isValid != false && script.isValid
+        return !nonNullProject.isDisposed && virtualFile?.isValid != false// && script.isValid
     }
 
     private val possibleSubroutines by lazy {
         if (isValid())
-            script.text.toLowerCase().count("subr ")
+            script.text.lowercase().count("subr ")
         else
             0
     }

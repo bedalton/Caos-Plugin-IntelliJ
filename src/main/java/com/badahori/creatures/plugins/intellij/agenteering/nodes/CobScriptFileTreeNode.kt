@@ -18,6 +18,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.EffectType
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -63,6 +64,9 @@ internal class CobFileTreeNode(
     override fun canNavigateToSource(): Boolean = false
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
+        if (!isValid()) {
+            return emptyList()
+        }
         val children = when (val data = cobData) {
             is CobFileData.C1CobData -> getChildren(data)
             is CobFileData.C2CobData -> getChildren(data)
