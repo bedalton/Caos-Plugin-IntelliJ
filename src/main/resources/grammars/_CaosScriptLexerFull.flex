@@ -54,16 +54,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
   	    yybegin(state);
 	}
 
-	void yypop() {
+	boolean yypop() {
   	    final int size = stack.size();
   	    if (size > 0) {
   	        final Integer poppedState = stack.remove(size - 1);
   	        if (poppedState != null) {
   	            yybegin(poppedState);
-  	            return;
+  	            return poppedState != YYINITIAL;
   	        }
   	    }
   	    yybegin(YYINITIAL);
+	  	return false;
 	}
 
 	protected boolean isByteString() {
@@ -255,7 +256,7 @@ DDE_PICT=[^\s]{3}
     "*#"					{ yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; }
   	{COMMENT_AT_DIRECTIVE}	{ if (isStartOfFile) { yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; } else { yypushback(yylength() - 1); return CaosScript_COMMENT_START; }  }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
-    [^]					 	{ isStartOfFile = false; yypop(); yypushback(yylength());}
+    [^]					 	{ isStartOfFile = false; if (!yypop()) yypush(IN_LINE); yypushback(yylength());}
 }
 
 <IN_BYTE_STRING> {
@@ -327,7 +328,7 @@ DDE_PICT=[^\s]{3}
 <IN_STRING> {
 	\"						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
-  	\n+						{ yypop(); return BAD_CHARACTER; }
+  	\n+						{ yypop(); return CaosScript_GHOST_QUOTE; }
 	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yypop(); yypushback(yylength());}
 }
@@ -335,7 +336,7 @@ DDE_PICT=[^\s]{3}
 <IN_SINGLE_QUOTE_STRING> {
 	\'						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
 	{SINGLE_QUOTE_CHARS}    { return CaosScript_STRING_CHAR; }
-  	\n+						{ yypop(); return BAD_CHARACTER; }
+  	\n 						{ yypop(); return CaosScript_GHOST_QUOTE; }
 	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yypop(); yypushback(yylength());}
 }
@@ -343,6 +344,7 @@ DDE_PICT=[^\s]{3}
 <IN_CHAR> {
 	{CHAR_CHARS}			{ return CaosScript_CHAR_CHAR; }
  	"'"						{ yypop(); return CaosScript_SINGLE_QUOTE; }
+  	\n						{ yypop(); return CaosScript_GHOST_QUOTE; }
     [^]						{ yypop(); yypushback(yylength());}
 }
 

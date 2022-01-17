@@ -2,20 +2,20 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.AppendStatementTerminator
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertAfterFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.next
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.elementType
 
 /**
  * Marks 'Ghost' elements which are required elements in CAOS, that are not required in BNF grammar.
@@ -28,10 +28,39 @@ class CaosScriptGhostElementAnnotator : Annotator {
      */
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         ProgressIndicatorProvider.checkCanceled()
+
+        if (element.elementType == CaosScriptTypes.CaosScript_GHOST_QUOTE) {
+            val parent = element.parent
+            val range = try {
+                parent.textRange.cutOut(element.textRange)
+            }catch (e: Exception) {
+                if (parent is CaosScriptQuoteStringLiteral) {
+                    parent.stringText?.textRange ?: parent.textRange
+                } else {
+                    parent.textRange
+                }
+            }
+            if (parent is CaosScriptQuoteStringLiteral) {
+                annotationHolder.newErrorAnnotation("Unclosed string literal")
+                    .range(range)
+                    .withFix(CaosScriptInsertBeforeFix("Add closing quote", "\"", element))
+                    .create()
+            } else if (parent is CaosScriptCharacter) {
+                annotationHolder.newWarningAnnotation("Unclosed char literal")
+                    .range(range)
+                    .withFix(CaosScriptInsertBeforeFix("Add closing quote", "\'", element))
+                    .create()
+            } else {
+                annotationHolder.newErrorAnnotation("Unclosed string")
+                    .range(range)
+                    .create()
+            }
+        }
         if (element !is CaosScriptCompositeElement || element.hasParentOfType(CaosDefCompositeElement::class.java))
             return
         // Get the expected terminator
         when (element) {
+
             is CaosScriptDoifStatement -> annotate(element, "ENDI", annotationHolder) {
                 it.cEndi != null
             }
@@ -55,7 +84,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
             // Ghost element here is SETV which is optional in grammar for C1 and C2, but not optional in CAOS
             is CaosScriptCAssignment -> {
                 if (element.firstChild is CaosScriptLvalue) {
-                    annotationHolder.newErrorAnnotation("${element.text.substring(0,4).toUpperCase()} is an LValue and must be used with an lvalue operator such as SETV ")
+                    annotationHolder.newErrorAnnotation("${element.text.substring(0,4).uppercase()} is an LValue and must be used with an lvalue operator such as SETV ")
                             .range(element.firstChild)
                             .withFix(CaosScriptInsertBeforeFix("Prepend SETV to statement", "SETV".matchCase(element.lastChild.text, element.variant ?: CaosVariant.C1), element))
                             .create()
@@ -88,7 +117,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
             }
 
         // Add annotation
-        annotationHolder.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
+        annotationHolder.newErrorAnnotation("Unterminated ${element.text.substring(0,4).uppercase()} statement. Expected ${expectedToken.uppercase()}")
                 .range(range)
                 .withFix(AppendStatementTerminator(element, expectedToken))
                 .create()
@@ -104,7 +133,7 @@ class CaosScriptGhostElementAnnotator : Annotator {
         }
         for(expectedToken in expectedTokens) {
             ProgressIndicatorProvider.checkCanceled()
-            annotationHolder.newErrorAnnotation("Unterminated ${element.text.substring(0,4).toUpperCase()} statement. Expected ${expectedToken.toUpperCase()}")
+            annotationHolder.newErrorAnnotation("Unterminated ${element.text.substring(0,4).uppercase()} statement. Expected ${expectedToken.uppercase()}")
                     .range(TextRange(element.lastChild.endOffset - 1, element.lastChild.endOffset))
                     .withFix(AppendStatementTerminator(element, expectedToken))
                     .create()

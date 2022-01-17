@@ -279,6 +279,7 @@
 		BINARY = "binary int"
 		STRING_ESCAPE_CHAR = "escaped char"
 		STRING_CHAR = "string char";
+		GHOST_QUOTE = "\""
 		DOUBLE_QUOTE = "\""
 		SINGLE_QUOTE = "'"
 		CHAR_CHAR = "'char'"
@@ -2483,7 +2484,7 @@ binary_literal
 	;
 
 character
-	::= SINGLE_QUOTE CHAR_CHAR SINGLE_QUOTE
+	::= SINGLE_QUOTE CHAR_CHAR (SINGLE_QUOTE|GHOST_QUOTE)
 	{
 		pin=1
 		implements = [
@@ -2495,6 +2496,7 @@ character
 			isClosed
 		]
 		methods = [
+			ghostQuote="/GHOST_QUOTE"
 			openQuote="/SINGLE_QUOTE[0]"
 			closeQuote="/SINGLE_QUOTE[1]"
 		]
@@ -2515,6 +2517,7 @@ c1_string
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
 		]
 		methods = [
+			getUseScope
 			isClosed
 			getStringValue
 			openQuote="/OPEN_BRACKET"
@@ -2524,7 +2527,7 @@ c1_string
 	;
 
 quote_string_literal
-	::= DOUBLE_QUOTE string_text? DOUBLE_QUOTE
+	::= DOUBLE_QUOTE string_text? (DOUBLE_QUOTE|GHOST_QUOTE)
 	{
 		pin=1;
 		implements = [
@@ -2533,12 +2536,14 @@ quote_string_literal
 			"com.intellij.psi.PsiNamedElement"
 		]
 		methods = [
+			getUseScope
 			getStringValue
 			isClosed
 			getName
 			setName
 			getReference
 			getPresentation
+			getGhostQuote="/GHOST_QUOTE"
 		]
 	}
 	;
@@ -2562,6 +2567,7 @@ subroutine_name
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
 		]
 		methods = [
+			getUseScope
 			getName
 			setName
 			getReference
