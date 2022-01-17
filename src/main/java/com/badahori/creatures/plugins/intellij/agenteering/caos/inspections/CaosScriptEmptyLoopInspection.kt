@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCLoop
@@ -35,6 +36,9 @@ class CaosScriptEmptyLoopInspection : LocalInspectionTool() {
     private fun validate(loop: CaosScriptLoopStatement, problemsHolder: ProblemsHolder) {
         if (loop.loopTerminator == null)
             return
+        if (loop.variant?.isOld != true) {
+            return
+        }
         val isEmpty = loop.codeBlock
             ?.codeBlockLineList
             .orEmpty()
