@@ -19,7 +19,7 @@ import com.intellij.util.xmlb.annotations.Transient
 @State(
     name = "CaosProjectSettingsComponent"
 )
-class CaosProjectSettingsComponent: CaosProjectSettingsService,
+class CaosProjectSettingsComponent : CaosProjectSettingsService,
     PersistentStateComponent<CaosProjectSettingsComponent.State> {
 
     private var state: State = State()
@@ -41,7 +41,7 @@ class CaosProjectSettingsComponent: CaosProjectSettingsService,
         val defaultVariant: CaosVariant? = null,
         val indent: Boolean = true,
         val showLabels: Boolean = true,
-        val ditherSPR:Boolean = false,
+        val ditherSPR: Boolean = false,
         val attScale: Int = 6,
         var showPoseView: Boolean = true,
         @Attribute(converter = GameInterfaceListConverter::class)
@@ -53,7 +53,7 @@ class CaosProjectSettingsComponent: CaosProjectSettingsService,
         @Transient
         var injectionCheckDisabled: Boolean = false,
         var useJectByDefault: Boolean = false,
-        var isAutoPoseEnabled: Boolean = false
+        var isAutoPoseEnabled: Boolean = false,
     ) {
         /**
          * Checks if this settings object is set to the given CAOS variant
@@ -77,22 +77,25 @@ class CaosProjectSettingsComponent: CaosProjectSettingsService,
          */
         @Suppress("unused")
         fun addSettingsChangedListener(listener: (settings: State) -> Unit) {
-            addSettingsChangedListener(object: CaosProjectSettingsChangeListener {
+            addSettingsChangedListener(object : CaosProjectSettingsChangeListener {
                 override fun onChange(settings: State) {
                     listener(settings)
                 }
             })
         }
+
         /**
          * Adds a listener to track and change to the settings component
          * Listener should be released automatically when parent is disposed
          */
         fun addSettingsChangedListener(disposable: Disposable, listener: (settings: State) -> Unit) {
-            addSettingsChangedListener(disposable, object: CaosProjectSettingsChangeListener {
-                override fun onChange(settings: State) {
-                    listener(settings)
-                }
-            })
+            try {
+                addSettingsChangedListener(disposable, object : CaosProjectSettingsChangeListener {
+                    override fun onChange(settings: State) {
+                        listener(settings)
+                    }
+                })
+            } catch (ignored: Exception) {}
         }
 
         /**
@@ -109,7 +112,11 @@ class CaosProjectSettingsComponent: CaosProjectSettingsService,
          */
         @Suppress("MemberVisibilityCanBePrivate")
         fun addSettingsChangedListener(disposable: Disposable, listener: CaosProjectSettingsChangeListener) {
-            ApplicationManager.getApplication().messageBus.connect(disposable).subscribe(TOPIC, listener)
+            try {
+                ApplicationManager.getApplication().messageBus.connect(disposable).subscribe(TOPIC, listener)
+            } catch (ignored: Exception) {
+
+            }
         }
     }
 }
