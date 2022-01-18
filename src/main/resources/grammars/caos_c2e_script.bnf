@@ -2550,6 +2550,21 @@ quote_string_literal
 
 string_text
 	::= (STRING_CHAR|STRING_ESCAPE_CHAR)+
+	{
+		implements = [
+			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+			"com.intellij.psi.PsiNamedElement"
+		]
+		methods = [
+			getStringValue
+			isClosed
+			getName
+			setName
+			getReference
+			getPresentation
+			getUseScope
+		]
+	}
 	;
 
 subroutine_name
@@ -2561,7 +2576,7 @@ subroutine_name
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineNameStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueLikeMixin<com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptSubroutineNameStub>"
 		implements = [
-			"com.intellij.psi.PsiNamedElement"
+			"com.intellij.psi.PsiNameIdentifierOwner"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike"
@@ -2574,6 +2589,7 @@ subroutine_name
 			getIndex
 			getInferredType
 			getUseScope
+			getNameIdentifier
 		]
 	};
 
