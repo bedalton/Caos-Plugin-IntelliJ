@@ -19,8 +19,8 @@ class CaosScriptSubroutineNameStubType(debugName:String) : CaosScriptStubElement
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptSubroutineNameStub {
-        val token = stream.readNameAsString()
-        return CaosScriptSubroutineNameStubImpl(parent, token ?: UNDEF)
+        val token = stream.readNameAsString()!!
+        return CaosScriptSubroutineNameStubImpl(parent, token)
     }
 
     override fun createStub(element: CaosScriptSubroutineNameImpl, parent: StubElement<*>?): CaosScriptSubroutineNameStub {

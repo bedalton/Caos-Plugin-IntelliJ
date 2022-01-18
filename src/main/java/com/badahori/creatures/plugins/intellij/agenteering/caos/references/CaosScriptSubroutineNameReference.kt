@@ -1,12 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineHeader
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasSharedContextOfTypeStrict
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.IncorrectOperationException
 
 class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : PsiReferenceBase<CaosScriptSubroutineName>(element, TextRange.create(0, element.textLength)) {
 
@@ -40,9 +46,7 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
             return null
         val name = myElement.name
 
-        return CaosScriptSubroutineIndex.instance[name, myElement.project].firstOrNull { element ->
-            myElement.hasSharedContextOfTypeStrict(element, CaosScriptScriptBodyElement::class.java)
-        } ?: myElement.getParentOfType(CaosScriptScriptElement::class.java)?.let { scriptElement ->
+        return myElement.getParentOfType(CaosScriptScriptElement::class.java)?.let { scriptElement ->
             PsiTreeUtil.collectElementsOfType(scriptElement, CaosScriptSubroutine::class.java)
                     .mapNotNull { it.subroutineHeader.subroutineName }
                     .firstOrNull {
@@ -52,6 +56,17 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
+        if (myElement.variant?.isOld == true) {
+            LOGGER.info("Subroutine name IS old")
+            if (!CaosScriptPsiElementFactory.C1E_SUBROUTINE_NAME_REGEX.matches(newElementName)) {
+                throw IncorrectOperationException("Subroutine name invalid. SUBR name should be 4 characters in length")
+            }
+        } else {
+            LOGGER.info("Subroutine name is NOT old")
+            if (!CaosScriptPsiElementFactory.C2E_SUBROUTINE_NAME_REGEX.matches(newElementName)) {
+                throw IncorrectOperationException("Subroutine name invalid. SUBR should start with a letter")
+            }
+        }
         return myElement.setName(newElementName)
     }
 }

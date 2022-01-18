@@ -15,7 +15,7 @@ import com.intellij.util.ProcessingContext
 class CaosScriptRenameInputValidator: RenameInputValidator {
 
     override fun getPattern(): ElementPattern<out PsiElement> {
-        return StandardPatterns.instanceOf(CaosScriptCompositeElement::class.java)
+        return StandardPatterns.instanceOf(PsiElement::class.java)
     }
 
     override fun isInputValid(newName: String, element: PsiElement, context: ProcessingContext): Boolean {
