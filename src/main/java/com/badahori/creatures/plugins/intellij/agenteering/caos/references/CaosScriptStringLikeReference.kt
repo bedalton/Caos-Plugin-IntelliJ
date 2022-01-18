@@ -111,7 +111,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
     private val type: CaosScriptNamedGameVarType by lazy {
-        (element.parent?.parent as? CaosScriptNamedGameVar)?.varType?.let {
+        ((element.parent?.parent as? CaosScriptNamedGameVar) ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.varType?.let {
             return@lazy it
         }
 
@@ -127,7 +127,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
     private val key: String by lazy {
-        (element.parent?.parent as? CaosScriptNamedGameVar)?.key ?: UNDEF
+        ((element.parent?.parent as? CaosScriptNamedGameVar) ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.key ?: UNDEF
     }
 
 
@@ -159,7 +159,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
 
         // Ensure other is or has named game var parent element
-        val namedGameVarParent = element.parent?.parent as? CaosScriptNamedGameVar
+        val namedGameVarParent = (element.parent?.parent as? CaosScriptNamedGameVar ?: element.parent?.parent?.parent as? CaosScriptNamedGameVar)
             ?: return false
         // Check that type and key are the same
         return namedGameVarParent.varType == type && namedGameVarParent.key == key
@@ -210,7 +210,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             getNamed(variant, project, type)
         if (references.isEmpty())
             return selfOnlyResult
-        return PsiElementResolveResult.createResults(references + myElement)
+        return PsiElementResolveResult.createResults(references.filter { it != myElement && it != myElement.parent })
     }
 
     private fun getNamed(
@@ -243,6 +243,13 @@ class CaosScriptQuoteStringReference(element: CaosScriptQuoteStringLiteral) :
     }
 }
 
+class CaosScriptStringTextReference(element: CaosScriptStringText) :
+    CaosScriptStringLikeReference<CaosScriptStringText>(element) {
+    override fun handleElementRename(newElementName: String): PsiElement {
+        return myElement.setName(newElementName)
+    }
+}
+
 class PrayQuoteStringReference(element: PrayString) : CaosScriptStringLikeReference<PrayString>(element) {
     override fun handleElementRename(newElementName: String): PsiElement {
         return myElement.setName(newElementName)
@@ -263,7 +270,7 @@ private fun getRange(text: String): TextRange {
     if (text.isEmpty())
         return TextRange(0, 0)
     val firstChar = text[0]
-    val startQuote = if (firstChar == '"' || firstChar == '\"')
+    val startQuote = if (firstChar == '"' || firstChar == '\'')
         firstChar
     else
         null

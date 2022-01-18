@@ -14,7 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
-class CaosScriptSubroutineStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubElementType<CaosScriptSubroutineStub, CaosScriptSubroutineImpl>(debugName) {
+class CaosScriptSubroutineStubType(debugName:String) : CaosScriptStubElementType<CaosScriptSubroutineStub, CaosScriptSubroutineImpl>(debugName) {
 
     override fun createPsi(stub: CaosScriptSubroutineStub): CaosScriptSubroutineImpl {
         return CaosScriptSubroutineImpl(stub, this)
@@ -25,8 +25,7 @@ class CaosScriptSubroutineStubType(debugName:String) : com.badahori.creatures.pl
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CaosScriptSubroutineStub {
-        val name = stream.readNameAsString()
-                ?: ""
+        val name = stream.readNameAsString()!!
         return CaosScriptSubroutineStubImpl(parent, name)
     }
 

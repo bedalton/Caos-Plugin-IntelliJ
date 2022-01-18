@@ -43,7 +43,8 @@ class CaosScriptSubroutineInspection : LocalInspectionTool()  {
         val matches = CaosScriptSubroutineIndex.instance[name, element.project, searchScope]
         val parent = element.getParentOfType(CaosScriptScriptBodyElement::class.java)
                 ?: return
-        if (matches.any { it.getParentOfType(CaosScriptScriptBodyElement::class.java) == parent } || manualSearch(parent, name)) {
+        val range = element.textRange
+        if (matches.any { it.getParentOfType(CaosScriptScriptBodyElement::class.java)?.textRange?.contains(range) == true } || manualSearch(parent, name)) {
             return
         }
 

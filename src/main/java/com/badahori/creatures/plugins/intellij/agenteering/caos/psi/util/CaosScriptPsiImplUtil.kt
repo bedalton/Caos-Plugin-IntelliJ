@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.Caos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
@@ -13,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.ASTNode
@@ -268,7 +270,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandStringUpper(command: CaosScriptCommandElement): String? {
-        return command.commandString?.toUpperCase()
+        return command.commandString?.uppercase()
     }
 
     /**
@@ -276,7 +278,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandStringUpper(command: CaosScriptCAssignment): String {
-        return command.commandString.toUpperCase()
+        return command.commandString.uppercase()
     }
 
     /**
@@ -284,7 +286,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandStringUpper(element: CaosScriptRvalue): String? {
-        return getCommandString(element)?.toUpperCase()
+        return getCommandString(element)?.uppercase()
     }
 
     /**
@@ -292,7 +294,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandStringUpper(element: CaosScriptLvalue): String? {
-        return getCommandString(element)?.toUpperCase()
+        return getCommandString(element)?.uppercase()
     }
 
     /**
@@ -300,7 +302,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandStringUpper(element: CaosScriptIsCommandToken): String {
-        return element.text.toUpperCase()
+        return element.text.uppercase()
     }
 
 
@@ -309,7 +311,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandStringUpper(element: CaosScriptCommandCall): String? {
-        return element.stub?.commandUpper.nullIfUndefOrBlank() ?: getCommandString(element)?.toUpperCase()
+        return element.stub?.commandUpper.nullIfUndefOrBlank() ?: getCommandString(element)?.uppercase()
     }
 
     // ============================== //
@@ -373,7 +375,7 @@ object CaosScriptPsiImplUtil {
     private fun getCommandDefinition(
         element: PsiElement,
         tokenText: String,
-        bias: CaosExpressionValueType? = null
+        bias: CaosExpressionValueType? = null,
     ): CaosCommand? {
         // Ensure that a variant has been set for this element,
         // if not, there is no way to ensure a proper return
@@ -436,7 +438,7 @@ object CaosScriptPsiImplUtil {
         commandType: CaosCommandType,
         tokenIn: String,
         numArguments: Int? = null,
-        bias: CaosExpressionValueType? = null
+        bias: CaosExpressionValueType? = null,
     ): CaosCommand? {
         val lib = CaosLibs[variant]
         val token = tokenIn.replace(WHITESPACE, " ")
@@ -566,7 +568,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getName(element: CaosScriptVarToken): String {
-        return element.text.toUpperCase()
+        return element.text.uppercase()
     }
 
     /**
@@ -623,6 +625,34 @@ object CaosScriptPsiImplUtil {
             ?.replace(newNameElement)
             ?: element
     }
+
+    /**
+     * Gets name value for quote string
+     */
+    @JvmStatic
+    fun getName(element: CaosScriptStringText): String {
+        return element.text
+    }
+
+    /**
+     * Gets name value for quote string
+     */
+    @JvmStatic
+    fun setName(element: CaosScriptStringText, newName: String): PsiElement {
+        val quoteChar = if (element.parent.text.getOrNull(0) == '\'')
+            '\''
+        else
+            '"'
+        // Create a new string element
+        val newNameElement = CaosScriptPsiElementFactory
+            .createStringRValue(element.project, newName, quoteChar)
+
+        // Actually replace string value
+        return (element.parent?.parent as? CaosScriptRvalue)
+            ?.replace(newNameElement)
+            ?: element
+    }
+
 
     /**
      * Gets name for use in PsiNamedElement
@@ -687,11 +717,27 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun setName(name: CaosScriptSubroutineName, newName: String): PsiElement {
-        val variant = name.variant
+        val variant = name.variant.apply {
+            if (this == null) {
+                LOGGER.severe("Cannot rename subroutine without variant; Name: <$newName>")
+            }
+        }
             ?: return name
-        val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, variant, newName)
+        val newElement = CaosScriptPsiElementFactory.createSubroutineNameElement(name.project, variant, newName).apply {
+            if (this == null) {
+                LOGGER.severe("Failed to create new subroutine name element : <$newName>")
+            }
+        }
             ?: return name
         return name.replace(newElement)
+    }
+
+    /**
+     * PsiNamedElement.getName()
+     */
+    @JvmStatic
+    fun getNameIdentifier(name: CaosScriptSubroutineName): PsiElement {
+        return name
     }
 
     /**
@@ -699,8 +745,13 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getName(element: CaosScriptSubroutine): String {
-        return element.stub?.name ?: element.subroutineHeader.subroutineName?.name
-        ?: element.subroutineHeader.subroutineName?.text ?: ""
+        return element.stub?.name
+            ?: element
+                .subroutineHeader
+                .subroutineName?.let {
+                    it.name
+                }
+            ?: ""
     }
 
     @JvmStatic
@@ -858,7 +909,6 @@ object CaosScriptPsiImplUtil {
         return LocalSearchScope(scope)
     }
 
-
     @JvmStatic
     fun getUseScope(element: CaosScriptSubroutineName): SearchScope {
         val scope = element.getParentOfType(CaosScriptScriptElement::class.java)
@@ -878,6 +928,12 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getReference(element: CaosScriptQuoteStringLiteral): CaosScriptQuoteStringReference {
         return CaosScriptQuoteStringReference(element)
+    }
+
+
+    @JvmStatic
+    fun getReference(element: CaosScriptStringText): CaosScriptStringTextReference {
+        return CaosScriptStringTextReference(element)
     }
 
     @JvmStatic
@@ -1043,7 +1099,7 @@ object CaosScriptPsiImplUtil {
     fun getInferredType(
         element: CaosScriptRvalue,
         bias: CaosExpressionValueType,
-        resolveVars: Boolean
+        resolveVars: Boolean,
     ): List<CaosExpressionValueType> {
         return CaosScriptInferenceUtil.getInferredType(element, bias, resolveVars, lastChecked = mutableListOf())
     }
@@ -1100,6 +1156,12 @@ object CaosScriptPsiImplUtil {
     fun isClosed(stringIn: CaosScriptQuoteStringLiteral): Boolean {
         return stringIn.lastChild?.tokenType == CaosScriptTypes.CaosScript_DOUBLE_QUOTE
     }
+
+    @JvmStatic
+    fun isClosed(stringIn: CaosScriptStringText): Boolean {
+        return (stringIn.parent as CaosScriptStringLike)?.isClosed
+    }
+
 
     /**
      * Checks for close to CHAR literal
@@ -1409,7 +1471,7 @@ object CaosScriptPsiImplUtil {
      */
     private fun getArgumentValues(
         arguments: List<CaosScriptArgument>,
-        resolveVars: Boolean? = null
+        resolveVars: Boolean? = null,
     ): List<CaosExpressionValueType> {
         if (arguments.isEmpty())
             return emptyList()
@@ -1524,7 +1586,7 @@ object CaosScriptPsiImplUtil {
         rvaluePrime.stub?.caosVar?.let { return it }
         return rvaluePrime.commandToken?.let {
             val commandString = it.commandString
-            if (commandString.toLowerCase() == "null")
+            if (commandString.lowercase() == "null")
                 return CaosExpressionValueType.NULL
             rvaluePrime.variant?.let { variant ->
                 CaosLibs[variant][CaosCommandType.RVALUE][commandString]
@@ -1580,6 +1642,14 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptQuoteStringLiteral): String {
         return stringIn.stringText?.text ?: ""
+    }
+
+    /**
+     * Gets the string value between the quotes of a double quoted string
+     */
+    @JvmStatic
+    fun getStringValue(stringIn: CaosScriptStringText): String {
+        return stringIn.text ?: ""
     }
 
     /**
@@ -2052,6 +2122,28 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
+     * Gets presentation for the command token
+     */
+    @JvmStatic
+    fun getPresentation(element: CaosScriptStringText): ItemPresentation {
+        return (element.parent as? CaosScriptQuoteStringLiteral)?.let { parent ->
+            getPresentation(parent)
+        } ?: (object : ItemPresentation {
+            override fun getPresentableText(): String? {
+                return element.text
+            }
+
+            override fun getLocationString(): String? {
+                return (element.containingFile ?: element.originalElement?.containingFile)?.name
+            }
+
+            override fun getIcon(unused: Boolean): Icon? {
+                return null
+            }
+        })
+    }
+
+    /**
      * Gets descriptive text for a family parameter
      */
     @JvmStatic
@@ -2156,12 +2248,12 @@ object CaosScriptPsiImplUtil {
                 ?.trim()
                 .nullIfEmpty()
                 ?.let { it.substring(it.length - 2) }
-                ?.toUpperCase()
+                ?.uppercase()
             if (variantString == "C1" || variantString == "C2")
                 variantString to agentNameFromCobTag
-            else if (def.tags.any { it.key.toUpperCase().startsWith("C1") })
+            else if (def.tags.any { it.key.uppercase().startsWith("C1") })
                 "C1" to agentNameFromCobTag
-            else if (def.tags.any { it.key.toUpperCase().startsWith("C2") })
+            else if (def.tags.any { it.key.uppercase().startsWith("C2") })
                 "C2" to agentNameFromCobTag
             else
                 null//def.variant?.code?.let { it to agentNameFromCobTag}
@@ -2194,7 +2286,7 @@ object CaosScriptPsiImplUtil {
                 }
             }
             args.map { arg ->
-                agentBlockName.toUpperCase() to arg
+                agentBlockName.uppercase() to arg
             }
         } + listOfNotNull(cobNamePair)
     }
@@ -2229,7 +2321,7 @@ object CaosScriptPsiImplUtil {
                     else -> null
                 }
             }
-        } ?: when (CAOS2CobVariantRegex.matchEntire(def.text)?.groupValues?.firstOrNull()?.toUpperCase()) {
+        } ?: when (CAOS2CobVariantRegex.matchEntire(def.text)?.groupValues?.firstOrNull()?.uppercase()) {
             "C1" -> CaosVariant.C1
             "C2" -> CaosVariant.C2
             else -> null
@@ -2475,6 +2567,47 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getUseScope(element: CaosScriptCompositeElement): SearchScope {
+        if (element is CaosScriptSubroutineName) {
+            (element.getParentOfType(CaosScriptScriptElement::class.java))?.let { script ->
+                return LocalSearchScope(script)
+            }
+        }
+
+        element.variant?.let { variant ->
+            return CaosVariantSearchScope(
+                variant,
+                element.project,
+                false
+            )
+        }
+        element.module?.let { module ->
+            return module.moduleScope
+        }
+        return GlobalSearchScope.projectScope(element.project)
+    }
+
+    @JvmStatic
+    fun getUseScope(element: CaosScriptStringLike): SearchScope {
+        val stringElement = (element as? CaosScriptQuoteStringLiteral)
+            ?: (element.parent as? CaosScriptQuoteStringLiteral)
+        if (stringElement == null || stringElement.parent?.parent !is CaosScriptNamedGameVar) {
+            return GlobalSearchScope.projectScope(element.project)
+        }
+        val containingFile = stringElement.containingFile
+        val isLocal = getReference(stringElement)
+            .multiResolve(false)
+            .all {
+                it.element?.containingFile?.isEquivalentTo(containingFile) == true
+            }
+        return if (isLocal) {
+            LocalSearchScope(containingFile)
+        } else {
+            return GlobalSearchScope.projectScope(element.project)
+        }
+    }
+
+    @JvmStatic
     fun isValid(element: CaosScriptCaos2TagName): Boolean {
         val parent = element.containingCaosFile
             ?: return true
@@ -2522,10 +2655,10 @@ fun PsiElement.getEnclosingCommandType(): CaosCommandType {
 val PsiElement.case: Case
     get() {
         val chars = this.text.toCharArray()
-        if (chars[0] == chars[0].toLowerCase()) {
+        if (chars[0] == chars[0].lowercase()) {
             return Case.LOWER_CASE
         }
-        if (chars.size > 1 && chars[1] == chars[1].toUpperCase()) {
+        if (chars.size > 1 && chars[1] == chars[1].uppercase()) {
             return Case.UPPER_CASE
         }
         return Case.CAPITAL_FIRST
@@ -2544,7 +2677,7 @@ fun String?.nullIfUndefOrBlank(): String? {
 /**
  * Simplifies getting a command string as upper case regardless of actual psi class implementation
  */
-val CaosScriptCommandLike.commandStringUpper: String? get() = commandString?.toUpperCase()
+val CaosScriptCommandLike.commandStringUpper: String? get() = commandString?.uppercase()
 
 
 val ASTNode.endOffset: Int get() = textRange.endOffset
@@ -2559,3 +2692,7 @@ val CaosScriptVarToken.isMVxxLike: Boolean get() = varGroup == CaosScriptVarToke
 
 val CaosScriptNamedGameVar.isGameEngineVar: Boolean get() = varType == CaosScriptNamedGameVarType.GAME || varType == CaosScriptNamedGameVarType.EAME
 val CaosScriptNamedGameVar.isObjectVar: Boolean get() = varType == CaosScriptNamedGameVarType.NAME || varType == CaosScriptNamedGameVarType.MAME
+
+fun <PsiT : PsiElement> PsiElement.collectElementsOfType(vararg type: Class<PsiT>): Collection<PsiT> {
+    return PsiTreeUtil.collectElementsOfType(this, *type)
+}
