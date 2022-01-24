@@ -15,7 +15,6 @@ class CaosScriptInlayHintsProvider : InlayParameterHintsProvider {
             CaosScriptHintsProvider.values.map { it.option }
 
     override fun getParameterHints(element: PsiElement): List<InlayInfo> {
-        ProgressIndicatorProvider.checkCanceled()
         val resolved = CaosScriptHintsProvider.resolve(element)
                 ?: return mutableListOf()
         return resolved.provideHints(element)
