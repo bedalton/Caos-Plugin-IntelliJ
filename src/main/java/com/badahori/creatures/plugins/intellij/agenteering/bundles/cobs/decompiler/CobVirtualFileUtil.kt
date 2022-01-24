@@ -131,6 +131,9 @@ object CobVirtualFileUtil {
         virtualFile.isWritable = true
         val runnable = run@{
             try {
+                if (project.isDisposed) {
+                    return@run null
+                }
                 // Get PSI file after creating virtual file
                 val psiFile = ApplicationManager.getApplication().runReadAction(Computable {
                     findFile(project, virtualFile)
@@ -156,6 +159,9 @@ object CobVirtualFileUtil {
 }
 
 private fun findFile(project: Project, file:CaosVirtualFile) : CaosScriptFile? {
+    if (project.isDisposed) {
+        return null
+    }
     return if (ApplicationManager.getApplication().isReadAccessAllowed) {
         PsiManager.getInstance(project).findFile(file) as? CaosScriptFile
     } else {
@@ -166,6 +172,9 @@ private fun findFile(project: Project, file:CaosVirtualFile) : CaosScriptFile? {
 }
 
 private fun tryQuickFormat(psiFile:CaosScriptFile, file:CaosVirtualFile) : CaosVirtualFile {
+    if (psiFile.project.isDisposed || !psiFile.isValid || !file.isValid) {
+        return file
+    }
     try {
         psiFile.quickFormat()
     } catch (e: Exception) {

@@ -10,11 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.DefaultGameFiles
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -22,6 +21,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.min
 
 class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
@@ -166,17 +166,17 @@ private fun annotateCaos2PrayCommand(command: PrayCommand, values: List<CaosScri
     }
 
     if (command == PrayCommand.ATTACH) {
-        val input = values.getOrNull(1) ?: values.getOrNull(0)
-            ?: return
-
-        annotateFileError(input, "@Attach", input.valueAsString, "command", true, holder)
+        for (value in values) {
+            annotateFileError(value, "@Attach", value.valueAsString, "command", true, holder)
+        }
+        return
     }
 
     if (command == PrayCommand.INLINE) {
-        for (value in values) {
-            annotateFileError(value, "@Inline", value.valueAsString, "command", true, holder)
-        }
-        return
+        val input = values.getOrNull(1) ?: values.getOrNull(0)
+            ?: return
+
+        annotateFileError(input, "@Inline", input.valueAsString, "command", true, holder)
     }
 
     if (command == PrayCommand.REMOVAL_SCRIPTS) {
@@ -205,12 +205,41 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     val stripExtension = requiresFileWithoutExtension(tagName)
     val requiredExtensions = getPrayTagRequiredExtension(tagName)
 
+    val file = element.containingFile
+        ?: return
+    val includedFiles = if (file is CaosScriptFile) {
+        file.collectElementsOfType(CaosScriptCaos2Command::class.java)
+            .flatMap map@{
+                if (it == element) {
+                    return@map emptyList()
+                }
+                if (it.commandName like "Inline")
+                    listOfNotNull(it.commandArgs.firstOrNull())
+                else if (it.commandName like "Attach") {
+                    it.commandArgs
+                } else
+                    emptyList()
+            }
+    } else {
+        // Is pray file
+        element.containingFile
+            .collectElementsOfType(PrayOutputFileName::class.java)
+            .mapNotNull {
+                if (PsiTreeUtil.isAncestor(element, it, false)) {
+                    null
+                } else {
+                    it.stringValue
+                }
+            }
+    }
+
     // If replacement files is null, then the file matches, so return
     val fixes: MutableList<LocalQuickFix> = (getFilenameSuggestions(
         element,
         stripExtension,
         fileName,
-        requiredExtensions
+        requiredExtensions,
+        includedFiles = includedFiles
     ) ?: return).toMutableList()
 
     fixes += listOfNotNull(

@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -147,7 +148,19 @@ private fun annotateCommand(commandElement: CaosScriptCaos2Command, holder: Prob
         val filenameFixes = getFilenameSuggestions(
             fileNameElement,
             false,
-            fileName
+            fileName,
+            includedFiles = commandElement.containingFile.collectElementsOfType(CaosScriptCaos2Command::class.java)
+                .flatMap map@{
+                    if (it == commandElement) {
+                        return@map emptyList()
+                    }
+                    if (it.commandName like "Inline")
+                        listOfNotNull(it.commandArgs.firstOrNull())
+                    else if (it.commandName like "Attach") {
+                        it.commandArgs
+                    } else
+                        emptyList()
+                }
         )
             ?: continue
         val fixes = filenameFixes + Caos2CobRemoveFileFix(elementToRemove)
