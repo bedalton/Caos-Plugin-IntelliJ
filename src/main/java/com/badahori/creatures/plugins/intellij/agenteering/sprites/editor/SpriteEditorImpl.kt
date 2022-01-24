@@ -84,7 +84,7 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
 
     override fun selectNotify() {
         myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
-            if (cachedMD5 != myFile.md5())
+            if (cachedMD5 == myFile.md5())
                 return
         }
         if (this::editor.isInitialized)
