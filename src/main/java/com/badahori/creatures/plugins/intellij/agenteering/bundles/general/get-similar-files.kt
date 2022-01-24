@@ -24,7 +24,8 @@ internal fun getFilenameSuggestions(
     removeExtension: Boolean,
     baseFileName: String,
     extensions: List<String>? = null,
-    orb: Int = DEFAULT_ORB
+    orb: Int = DEFAULT_ORB,
+    includedFiles: List<String>
 ): List<CaosScriptReplaceElementFix>? {
     val fileNameExtension = extensions
         ?: getExtension(baseFileName)
@@ -38,7 +39,8 @@ internal fun getFilenameSuggestions(
         removeExtension,
         baseFileName,
         extensions = fileNameExtension,
-        orb = orb
+        orb = orb,
+        includedFiles
     )
 }
 
@@ -54,7 +56,8 @@ internal fun getFilenameSuggestions(
     removeExtension: Boolean,
     filePath: String,
     extensions: List<String>? = null,
-    orb: Int = DEFAULT_ORB
+    orb: Int = DEFAULT_ORB,
+    includedFiles: List<String>
 ): List<CaosScriptReplaceElementFix>? {
 
     val fileName = filePath.split(PATH_SPLIT).last()
@@ -68,7 +71,8 @@ internal fun getFilenameSuggestions(
         ?: return null
 
     val ignoredFiles = element.containingFile?.module?.settings?.ignoredFiles.orEmpty() +
-            element.project.settings.ignoredFiles
+            element.project.settings.ignoredFiles +
+            includedFiles
 
     if (fileName in ignoredFiles) {
         return null
