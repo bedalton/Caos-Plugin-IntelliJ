@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2co
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler.CompilationResults
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
@@ -17,7 +16,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.progress.runBackgroundableTask
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
@@ -117,7 +115,6 @@ class CompileCaos2CobAction : AnAction(
                         runWriteAction action@{
                             // Update progress indicator
                             Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
-                            LOGGER.info("Compiled COAS2Cob: ${file.name}")
                             if (compilationResult.index == numFiles) {
                                 printResult(project, compilationResult)
                             }

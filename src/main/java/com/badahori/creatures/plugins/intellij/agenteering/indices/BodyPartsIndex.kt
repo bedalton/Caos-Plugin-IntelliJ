@@ -339,7 +339,6 @@ object BodyPartsIndex {
                 findWithKey(project, bodyPartKey, null)
                     .nullIfEmpty()
             } catch (e: ProcessCanceledException) {
-                LOGGER.info("Process was cancelled in getImmediate")
                 e.printStackTrace()
                 return runBlocking {
                     getImmediate(project, directory, key)
