@@ -34,6 +34,7 @@ interface PrayTagValue: PrayChildElement {
 
 internal fun CaosScriptStringLike.resolveToFile(ignoreExtension: Boolean): VirtualFile? {
     val relativePath = stringValue
+        .replace("\\[[^]]*\\]".toRegex(), "")
         .nullIfEmpty()
         ?: return null
     val directory = this.directory
