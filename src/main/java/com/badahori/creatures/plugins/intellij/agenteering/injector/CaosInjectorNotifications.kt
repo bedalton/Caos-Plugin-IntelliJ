@@ -39,12 +39,16 @@ import javax.swing.Icon
  * @author Jakub Chrzanowski <jakub@hsz.mobi>
  * @since 1.7
  */
-open class CaosNotificationsBase(groupName:String) {
+open class CaosNotificationsBase(
+    groupName: String,
+    displayType: NotificationDisplayType = NotificationDisplayType.TOOL_WINDOW,
+    toolWindow: String? = null,
+) {
     private val notificationGroup: NotificationGroup = NotificationGroup(
-            groupName,
-            NotificationDisplayType.NONE,
-            true,
-            ToolWindowId.PROJECT_VIEW
+        groupName,
+        displayType,
+        true,
+        toolWindow
     )
 
     /**
@@ -55,8 +59,10 @@ open class CaosNotificationsBase(groupName:String) {
      * @param content   notification text
      * @param type      notification type
      */
-    fun show(project: Project, title: String, content: String,
-                    type: NotificationType) {
+    fun show(
+        project: Project, title: String, content: String,
+        type: NotificationType,
+    ) {
         show(project, title, content, notificationGroup, type, null)
     }
 
@@ -102,8 +108,10 @@ open class CaosNotificationsBase(groupName:String) {
      * @param type      notification type
      * @param listener  optional listener
      */
-    fun show(project: Project, title: String, content: String,
-                    type: NotificationType, listener: NotificationListener?) {
+    fun show(
+        project: Project, title: String, content: String,
+        type: NotificationType, listener: NotificationListener?,
+    ) {
         show(project, title, content, notificationGroup, type, listener)
     }
 
@@ -117,159 +125,164 @@ open class CaosNotificationsBase(groupName:String) {
      * @param type     notification type
      * @param listener optional listener
      */
-    fun show(project: Project, title: String, content: String,
-                    group: NotificationGroup, type: NotificationType,
-                    listener: NotificationListener?) {
+    fun show(
+        project: Project,
+        title: String,
+        content: String,
+        group: NotificationGroup,
+        type: NotificationType,
+        listener: NotificationListener?,
+    ) {
         val notification: Notification = group.createNotification(title, content, type, listener)
         Notifications.Bus.notify(notification, project)
     }
 
-    fun create(type:NotificationType, project:Project, title:String? = null, content:String) : CaosNotification {
+    fun create(type: NotificationType, project: Project, title: String? = null, content: String): CaosNotification {
         return CaosNotification(
-                notificationGroup = notificationGroup,
-                type = type,
-                title = title,
-                content = content
+            notificationGroup = notificationGroup,
+            type = type,
+            title = title,
+            content = content
         ) { notification ->
             Notifications.Bus.notify(notification, project)
         }
     }
 
-    fun createErrorNotification(project: Project, title:String? = null, content:String) : CaosNotification {
+    fun createErrorNotification(project: Project, title: String? = null, content: String): CaosNotification {
         return create(NotificationType.ERROR, project, title, content)
     }
 
 
-    fun createWarningNotification(project: Project, title:String? = null, content:String) : CaosNotification {
+    fun createWarningNotification(project: Project, title: String? = null, content: String): CaosNotification {
         return create(NotificationType.ERROR, project, title, content)
     }
 
-    fun createInfoNotification(project: Project, title:String? = null, content:String) : CaosNotification {
+    fun createInfoNotification(project: Project, title: String? = null, content: String): CaosNotification {
         return create(NotificationType.INFORMATION, project, title, content)
     }
 
 }
 
 data class CaosNotification internal constructor(
-        private val notificationGroup:NotificationGroup,
-        val type:NotificationType,
-        val title:String? = null,
-        val content:String? = null,
-        val actions:List<AnAction> = emptyList(),
-        val icon:Icon? = null,
-        val subtitle: String? = null,
-        val dropDownText:String? = null,
-        val contextHelpAction:AnAction? = null,
-        val important: Boolean? = null,
-        val expired:Boolean? = null,
-        val listener:NotificationListener? = null,
-        // In charge of actually showing the notification
-        private val _show:(notification:Notification) -> Unit
+    private val notificationGroup: NotificationGroup,
+    val type: NotificationType,
+    val title: String? = null,
+    val content: String? = null,
+    val actions: List<AnAction> = emptyList(),
+    val icon: Icon? = null,
+    val subtitle: String? = null,
+    val dropDownText: String? = null,
+    val contextHelpAction: AnAction? = null,
+    val important: Boolean? = null,
+    val expired: Boolean? = null,
+    val listener: NotificationListener? = null,
+    // In charge of actually showing the notification
+    private val _show: (notification: Notification) -> Unit,
 ) {
 
-    fun setGroup(group: NotificationGroup) : CaosNotification {
+    fun setGroup(group: NotificationGroup): CaosNotification {
         return copy(
-                notificationGroup = group
+            notificationGroup = group
         )
     }
 
-    fun addAction(action:AnAction) : CaosNotification {
+    fun addAction(action: AnAction): CaosNotification {
         return this.copy(
-                actions = actions + action
+            actions = actions + action
         )
     }
 
-    fun addActions(vararg actions:AnAction) : CaosNotification {
+    fun addActions(vararg actions: AnAction): CaosNotification {
         return this.copy(
-                actions = this.actions + actions
+            actions = this.actions + actions
         )
     }
 
-    fun setIcon(icon:Icon) : CaosNotification {
+    fun setIcon(icon: Icon): CaosNotification {
         return copy(
             icon = icon
         )
     }
 
-    fun setSubtitle(subtitle:String?) : CaosNotification {
+    fun setSubtitle(subtitle: String?): CaosNotification {
         return copy(
             subtitle = subtitle
         )
     }
 
-    fun setDropDownText(text:String?) : CaosNotification {
+    fun setDropDownText(text: String?): CaosNotification {
         return copy(
-                dropDownText = text
+            dropDownText = text
         )
     }
 
-    fun setContextHelpAction(value:AnAction) : CaosNotification {
+    fun setContextHelpAction(value: AnAction): CaosNotification {
         return copy(
             contextHelpAction = value
         )
     }
 
-    fun expired(expired: Boolean) : CaosNotification {
+    fun expired(expired: Boolean): CaosNotification {
         return copy(
-                expired = expired
+            expired = expired
         )
     }
 
-    fun setImportant(important:Boolean) : CaosNotification {
+    fun setImportant(important: Boolean): CaosNotification {
         return copy(
             important = important
         )
     }
 
-    fun setListener(listener: NotificationListener) : CaosNotification {
+    fun setListener(listener: NotificationListener): CaosNotification {
         return copy(
-                listener = listener
+            listener = listener
         )
     }
 
-    fun setTitle(title:String) : CaosNotification {
+    fun setTitle(title: String): CaosNotification {
         return copy(
-                title = title
+            title = title
         )
     }
 
 
-    fun setContent(content:String) : CaosNotification {
+    fun setContent(content: String): CaosNotification {
         return copy(
-                content = content
+            content = content
         )
     }
 
-    fun show() : Notification {
+    fun show(): Notification {
         var notification = notificationGroup.createNotification(type)
-        title?.nullIfEmpty()?.let {title ->
+        title?.nullIfEmpty()?.let { title ->
             notification = notification.setTitle(title)
         }
         content?.nullIfEmpty()?.let { content ->
             notification = notification.setContent(content)
         }
-        for(action in actions) {
+        for (action in actions) {
             notification = notification.addAction(action)
         }
-        icon?.let {icon ->
+        icon?.let { icon ->
             notification = notification.setIcon(icon)
         }
-        subtitle?.let {subtitle ->
+        subtitle?.let { subtitle ->
             notification = notification.setSubtitle(subtitle)
         }
         dropDownText?.let { dropDownText ->
             notification = notification.setDropDownText(dropDownText)
         }
-        contextHelpAction?.let {action ->
+        contextHelpAction?.let { action ->
             notification = notification.setContextHelpAction(action)
         }
-        important?.let {important ->
+        important?.let { important ->
             notification = notification.setImportant(important)
         }
         if (expired == true) {
             notification.expire()
         }
-        listener?.let {listener ->
+        listener?.let { listener ->
             notification = notification.setListener(listener)
         }
         _show(notification)
@@ -279,3 +292,4 @@ data class CaosNotification internal constructor(
 
 object CaosInjectorNotifications : CaosNotificationsBase(CaosBundle.message("caos.injector.notification.group"))
 object CaosNotifications : CaosNotificationsBase(CaosBundle.message("caos.general.notification.group"))
+object CaosBalloonNotifications : CaosNotificationsBase("CAOS Balloon Notifications", NotificationDisplayType.BALLOON)
