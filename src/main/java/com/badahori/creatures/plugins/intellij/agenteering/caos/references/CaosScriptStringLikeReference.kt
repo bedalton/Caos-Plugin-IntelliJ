@@ -16,7 +16,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toNavigableElement
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -43,7 +42,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     private val inPrayFile get() = element.containingFile is PrayFile
 
     private val fileInfo: Int by lazy {
-        (element.parent as? PrayInputFileName)
+        (element.parent as? PrayInputFileName ?: element.parent?.parent as? PrayInputFileName)
             ?.let {
                 when (it.parent) {
                     is PrayInlineFile -> NEEDS_EXTENSION
@@ -51,16 +50,20 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
                     else -> 0
                 }
             }
-            ?: (element.parent as? PrayTagValue)
+            ?: (element.parent as? PrayTagValue ?: element.parent?.parent as? PrayTagValue)
                 ?.parent
                 ?.let { parent ->
                     (parent as? PrayTag)?.let { tag ->
-                        tagRequiresFileOfType(tag.tagName)?.let {
-                            if (it.second)
-                                NO_EXTENSION
-                            else
-                                NEEDS_EXTENSION
-                        } ?: 0
+                        if (tag.tagName.lowercase() == "thumbnail") {
+                            NEEDS_EXTENSION
+                        } else {
+                            tagRequiresFileOfType(tag.tagName)?.let {
+                                if (it.second)
+                                    NO_EXTENSION
+                                else
+                                    NEEDS_EXTENSION
+                            } ?: 0
+                        }
                     } ?: (if (parent is CaosScriptCaos2Command) NEEDS_EXTENSION else 0)
                 }
             ?: (if (parameterFileExtensions != null) NO_EXTENSION else 0)
@@ -209,7 +212,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
         } else
             getNamed(variant, project, type)
         if (references.isEmpty())
-            return selfOnlyResult
+            return PsiElementResolveResult.EMPTY_ARRAY
         return PsiElementResolveResult.createResults(references.filter { it != myElement && it != myElement.parent })
     }
 
@@ -245,6 +248,7 @@ class CaosScriptQuoteStringReference(element: CaosScriptQuoteStringLiteral) :
 
 class CaosScriptStringTextReference(element: CaosScriptStringText) :
     CaosScriptStringLikeReference<CaosScriptStringText>(element) {
+
     override fun handleElementRename(newElementName: String): PsiElement {
         return myElement.setName(newElementName)
     }
