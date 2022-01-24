@@ -12,9 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
@@ -36,7 +34,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun isApplicable(element: PsiElement): Boolean {
             return (element as? CaosScriptRvalue)?.intValue.orElse(0) > 0 && element.parent is CaosScriptEqualityExpressionPrime && usesBitFlags(
                 element as CaosScriptRvalue
-            )
+            ) && element.isNotFolded
         }
 
         private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
@@ -75,6 +73,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
 
+            if (element.isFolded) {
+                return EMPTY_INLAY_LIST
+            }
             // Ensure element is RValue, though that should have been checked in isApplicable()
             val expression = element as? CaosScriptRvalue
                 ?: return EMPTY_INLAY_LIST
@@ -143,7 +144,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun isApplicable(element: PsiElement): Boolean {
             return (element as? CaosScriptRvalue)?.intValue.orElse(0) > 0 && element.parent !is CaosScriptEqualityExpressionPrime && usesBitFlags(
                 element as CaosScriptRvalue
-            )
+            ) && element.isNotFolded
         }
 
         private fun usesBitFlags(element: CaosScriptRvalue): Boolean {
@@ -368,7 +369,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     ASSUMED_EVENT_SCRIPT_NAME_HINT("Show assumed event script name", true) {
 
         override fun isApplicable(element: PsiElement): Boolean {
-            return element is CaosScriptEventNumberElement
+            return element is CaosScriptEventNumberElement && element.isNotFolded
         }
 
         /**
@@ -461,14 +462,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
          * Provide actual hints for this CLAS rvalue
          */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
-            val rvalue = element as? CaosScriptRvalue
+            val formattedClas = getC1ClasText(element)
                 ?: return EMPTY_INLAY_LIST
-            val clasValue = rvalue.intValue
-                ?: return EMPTY_INLAY_LIST
-            val agentClass = CaosAgentClassUtils.parseClas(clasValue)
-                ?: return EMPTY_INLAY_LIST
-            val formattedClas = "family:${agentClass.family} genus:${agentClass.genus} species:${agentClass.species}"
-            return listOf(InlayInfo(formattedClas, rvalue.endOffset))
+            return listOf(InlayInfo(formattedClas, element.endOffset))
         }
 
         override fun getHintInfo(element: PsiElement): HintInfo? {
@@ -497,7 +493,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             if (element !is CaosScriptRvaluePrime)
                 return EMPTY_INLAY_LIST
-            val commandToken = element.commandToken
+            val commandToken = element.commandTokenElement
                 ?: return EMPTY_INLAY_LIST
             val commandString = element.commandStringUpper
                 ?: return EMPTY_INLAY_LIST
@@ -585,17 +581,23 @@ private fun getCommandTokenFromEquality(
     expression: CaosScriptRvalue
 ): CaosScriptIsCommandToken? {
     val other: CaosScriptRvalue? = if (parent.first == expression) parent.second else parent.first
-    return other?.rvaluePrime?.commandToken //?: other?.varToken?.lastAssignment
+    return other?.rvaluePrime?.commandTokenElement //?: other?.varToken?.lastAssignment
 }
 
 /**
  * Generates the inlay hints for a bitflag and bitflag list
  */
 private fun getBitFlagHintValues(typeList: CaosValuesList, bitFlagValue: Int, offset: Int): List<InlayInfo> {
+    val text = getBitFlagText(typeList, bitFlagValue, ",")
+        ?: return EMPTY_INLAY_LIST
+    return listOf(InlayInfo("($text)", offset))
+}
+
+internal fun getBitFlagText(typeList: CaosValuesList, bitFlagValue: Int, delimiter: String): String? {
     // This hint is only worried about bitflags
     // Return if not bit-flags, even if list exists, but is not Bit-Flags
     if (!typeList.bitflag)
-        return EMPTY_INLAY_LIST
+        return null
 
     // Loop through bitflags values list, and collect matches to rvalue int value
     val values = mutableListOf<String>()
@@ -608,13 +610,13 @@ private fun getBitFlagHintValues(typeList: CaosValuesList, bitFlagValue: Int, of
         } catch (e: Exception) {
         }
     }
-    return listOf(InlayInfo("(${values.joinToString()})", offset))
+    return values.joinToString(delimiter)
 }
 
 /**
  * Gets the values list given an element
  */
-private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
+internal fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
     val parent = element.parent as? CaosScriptCommandElement
         ?: return null
     val variant = element.variant
@@ -622,7 +624,7 @@ private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
     val index = element.index
     val key = "${parent.commandString}:$index"
     // If enclosing command and parameter index are the same
-    // Return cached value list or null if value list id is also null
+    // Return the cached value list or null if value list id is also null
     element.getUserData(ARGUMENT_VALUES_LIST_KEY)?.let { cachedValuesListData ->
         if (cachedValuesListData.first like key) {
             return cachedValuesListData.second?.let { valuesListId -> CaosLibs.valuesList[valuesListId] }
@@ -648,7 +650,7 @@ private fun getValuesList(element: CaosScriptRvalue): CaosValuesList? {
     }
     // Cache values list id for easier retrieval without parameters check
     // Stores null id if no list is found
-    // Stored to prevent an additional query if cached and it is already known there is no list
+    // Stored to prevent an additional query if cached, and it is already known that there is no list
     element.putUserData(ARGUMENT_VALUES_LIST_KEY, Pair(key, valuesList?.id))
     // Return nullable values list
     return valuesList

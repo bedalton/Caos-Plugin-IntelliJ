@@ -1,25 +1,21 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCall
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.isNumberType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toFloatSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -46,6 +42,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
      * Gets the folded text for this command call
      */
     private fun getStimFold(commandCall: CaosScriptCommandCall): String? {
+        ProgressIndicatorProvider.checkCanceled()
         val variant = commandCall.containingCaosFile?.variant
             ?: return null
         val commandDefinition = commandCall.commandDefinition
@@ -136,23 +133,42 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         val stringBuilder = StringBuilder()
         val format = ValuesFormat.getFormat(variant, commandCall.commandString ?: "")
 
+        var skipped = 0
         // Fold chemical amount pairs
         for (i in 0 until numParameters) {
             val pos = i * 2
             val argument = chemParameters[pos]
             val expression = argument as? CaosScriptRvalue
             //Ignore blank input
-            if (expression?.text == "255")
+            if (expression == null || expression.text == "255")
                 continue
             // Get type def value.
-            val value = expression?.getValuesListValue()?.name
-                ?: argument.text
+            val value = expression.getValuesListValue()?.name
+                ?: getFallbackName(variant, parameters[pos], expression.text)
+                ?: expression.text.apply {
+                    skipped++
+                }
                 ?: continue
             val amount = chemParameters[pos + 1].text
             formatChemAmount(variant, stringBuilder, value, amount, format)
         }
+        if (skipped == numParameters) {
+            return null
+        }
         return stringBuilder.toString().trim(' ', ',').nullIfEmpty()
         //?: "+ <<NOTHING>>"
+    }
+
+    private fun getFallbackName(variant: CaosVariant, parameter: CaosParameter, rawText: String): String? {
+        val listName = parameter.valuesList[variant]?.name
+            ?: return null
+        val value = rawText.toFloatSafe()
+            ?: return null
+        return when {
+            listName.startsWith("chem") -> "Chem $value"
+            listName.startsWith("driv") -> "Drive $value"
+            else -> null
+        }
     }
 
     /**
@@ -261,7 +277,7 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return true
+        return false
     }
 
     private fun shouldFold(commandCall: CaosScriptCommandCall): Boolean {
@@ -273,13 +289,17 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
             ?: return false
         val commandStringFirstWord = commandString.substring(0, 4)
         val commandCallText = commandCall.text.lowercase()
-        return when (commandStringFirstWord) {
+        val shouldFoldRaw = when (commandStringFirstWord) {
             "EMIT" -> EMIT_REGEX.matches(commandCallText)
             "CHEM", "DRIV" -> CHEM_REGEX.matches(commandCallText)
             "STIM" -> STIM_C1E_REGEX.matches(commandCallText) || STIM_C2E_REGEX.matches(commandCallText)
             "SWAY" -> SWAY_REGEX.matches(commandCallText)
             else -> false
         }
+        if (!shouldFoldRaw) {
+            return false
+        }
+        return getStimFold(commandCall) != null
     }
 
     companion object {
