@@ -49,7 +49,11 @@ class CaosScriptQuoteHandler : QuoteHandler {
             return true
         }
         while (!iterator.atEnd() && iterator.tokenType in insideTokens && iterator.tokenType !in closingTokens) {
-            iterator.advance()
+            try {
+                iterator.advance()
+            } catch (ignored: Exception) {
+                break
+            }
         }
         val lastToken = iterator.tokenType
         iterator.retreat()
