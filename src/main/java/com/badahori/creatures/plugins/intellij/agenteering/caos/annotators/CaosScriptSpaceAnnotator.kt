@@ -3,9 +3,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -45,11 +48,11 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         if (element.textContains(',')) {
             if (variant.isNotOld)
                 annotateC2eCommaError(element, holder)
-            else
+            else if ((element.containingFile as? CaosScriptFile)?.caos2 == null)
                 annotateExtraSpaces(element, annotationHolder = holder)
         } else {
             // Spacing does not matter in CV+, so return
-            if (variant.isOld)
+            if (variant.isOld && (element.containingFile as? CaosScriptFile)?.caos2 == null)
                 annotateExtraSpaces(element, annotationHolder = holder)
             else
                 return
@@ -68,6 +71,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
     private fun annotateExtraSpaces(element: PsiElement, annotationHolder: AnnotationHolder) {
         if (element is PsiComment)
             return
+
         // Get this elements text
         val text = element.text
         // Get text before and after this space

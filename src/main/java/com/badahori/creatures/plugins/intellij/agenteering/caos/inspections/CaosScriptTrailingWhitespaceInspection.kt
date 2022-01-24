@@ -3,8 +3,13 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptFixTooManySpaces
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.next
 import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
@@ -40,6 +45,13 @@ class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
         if (element.variant?.isOld != true)
             return
 
+        if ((element.containingFile as? CaosScriptFile)?.caos2 != null) {
+            return
+        }
+        val previous = element.previous
+        if (previous != null && previous !is CaosScriptCodeBlockLine && previous !is CaosScriptScriptElement && previous.tokenType != TokenType.WHITE_SPACE && previous.tokenType != CaosScriptTypes.CaosScript_NEWLINE) {
+            return
+        }
         // Get this elements text
         val text = element.text
         val next = element.next
