@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineHeader
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasSharedContextOfTypeStrict
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -57,12 +56,10 @@ class CaosScriptSubroutineNameReference(element: CaosScriptSubroutineName) : Psi
 
     override fun handleElementRename(newElementName: String): PsiElement {
         if (myElement.variant?.isOld == true) {
-            LOGGER.info("Subroutine name IS old")
             if (!CaosScriptPsiElementFactory.C1E_SUBROUTINE_NAME_REGEX.matches(newElementName)) {
                 throw IncorrectOperationException("Subroutine name invalid. SUBR name should be 4 characters in length")
             }
         } else {
-            LOGGER.info("Subroutine name is NOT old")
             if (!CaosScriptPsiElementFactory.C2E_SUBROUTINE_NAME_REGEX.matches(newElementName)) {
                 throw IncorrectOperationException("Subroutine name invalid. SUBR should start with a letter")
             }
