@@ -120,7 +120,7 @@ val PsiElement.isNotFolded: Boolean
                     (it as? FoldingModelEx)?.fetchTopLevel() ?: it.allFoldRegions
                 }
                 .none {
-                    !it.isExpanded && (startOffset in it.startOffset..it.endOffset || endOffset in it.startOffset..it.endOffset)
+                    /*!it.isExpanded &&*/ (startOffset in it.startOffset..it.endOffset || endOffset in it.startOffset..it.endOffset)
                 }
         } catch(e:Exception) {
             return false
