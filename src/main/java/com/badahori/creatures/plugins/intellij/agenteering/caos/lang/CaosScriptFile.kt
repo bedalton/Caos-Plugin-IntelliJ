@@ -297,6 +297,14 @@ val CaosScriptFile.caos2CobVariant: CaosVariant?
         CaosScriptCaos2Block::class.java
     )?.cobVariant
 
+
+val CaosScriptFile.caos2Block: CaosScriptCaos2Block?
+    get() = PsiTreeUtil.getChildOfType(
+        this,
+        CaosScriptCaos2Block::class.java
+    )
+
+
 val CaosScriptFile.caos2: String?
     get() {
         if (!this.isValid) {
