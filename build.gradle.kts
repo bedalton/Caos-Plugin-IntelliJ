@@ -3,14 +3,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDe
 import org.jetbrains.intellij.releaseType
 
 plugins {
+    id("java")
     id("org.jetbrains.intellij") version "1.3.0"
-    kotlin("plugin.serialization") version "1.6.10"
-    kotlin("jvm") version "1.6.10"
+    kotlin("plugin.serialization") version "1.5.30"
+    id("org.jetbrains.kotlin.jvm") version "1.5.30"
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2021.12.01"
-
+version = "2022.01.00"
 
 repositories {
     mavenLocal()
@@ -20,12 +20,48 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-    implementation("org.apache.commons:commons-imaging:1.0-alpha2")
-    testImplementation("junit", "junit", "4.12")
-    implementation("bedalton.creatures:PrayUtil:0.01.0")
-    implementation("bedalton.creatures:CommonCore:0.01")
+//    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+
+    implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+
+    testImplementation("junit", "junit", "4.12") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+
+    implementation("bedalton.creatures:PrayUtil:0.01.0") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+    implementation("bedalton.creatures:CommonCore:0.01") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+
 
 }
 sourceSets.main {
@@ -33,20 +69,16 @@ sourceSets.main {
 }
 
 java {
-    releaseType("1.8")
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 kotlin {
 
     tasks.withType<KotlinCompile>().all {
-        kotlinOptions.jvmTarget = "1.8"
-        this.kotlinOptions.apiVersion = "1.4"
-        this.targetCompatibility = "1.8"
-        this.sourceCompatibility = "1.8"
+        kotlinOptions.jvmTarget = "11"
+        this.kotlinOptions.apiVersion = "1.5"
         kotlinOptions.freeCompilerArgs += listOf(
-            "-Xjvm-default=enable",
+            "-Xjvm-default=compatibility",
             "-Xopt-in=kotlin.RequiresOptIn",
             "-Xopt-in=kotlin.OptIn",
             "-Xopt-in=kotlin.ExperimentalMultiplatform",
@@ -67,13 +99,15 @@ kotlin {
 
 }
 
+
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set("2019.3")
+    version.set("2020.1")
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
-    plugins.set(listOf("PsiViewer:193-SNAPSHOT", "com.mallowigi.idea:8.0"))
+    plugins.set(listOf("PsiViewer:201-SNAPSHOT", "com.mallowigi.idea:9.0"))
+
 }
 
 tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
@@ -85,6 +119,8 @@ tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
 tasks.getByName<org.jetbrains.intellij.tasks.RunIdeTask>("runIde") {
     dependsOn("generateCaosDef")
 }
+
+
 tasks.getByName("buildPlugin") {
     dependsOn("generateCaosDef")
 }
@@ -92,7 +128,7 @@ tasks.getByName("buildPlugin") {
 tasks.getByName<org.jetbrains.intellij.tasks.RunPluginVerifierTask>("runPluginVerifier") {
     this.ideVersions.set(
         listOf(
-            "IU-193.7288.26",
+            "IU-201.8743.12",
             "IU-201.8743.12",
             "IC-212.5080.55"
         )
