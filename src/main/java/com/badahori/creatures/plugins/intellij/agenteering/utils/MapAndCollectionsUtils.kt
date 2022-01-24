@@ -1,5 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlin.contracts.contract
 
 
@@ -157,4 +160,8 @@ internal val <T> Array<T>.firstIfOnlyOne: T? get() {
         first()
     else
         null
+}
+
+suspend fun <A, B> Iterable<A>.mapAsync(f: suspend (A) -> B): List<B> = coroutineScope {
+    map { async { f(it) } }.awaitAll()
 }

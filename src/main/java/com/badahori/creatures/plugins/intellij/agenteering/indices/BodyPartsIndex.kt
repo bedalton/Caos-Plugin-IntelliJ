@@ -21,10 +21,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.search.GlobalSearchScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 
 
@@ -172,21 +169,18 @@ object BodyPartsIndex {
 
         // Match atts to sprites
         val out: List<BodyPartFiles> = spriteFiles
-            .mapNotNull map@{ spriteFile ->
+            .mapAsync map@{ spriteFile ->
                 if (!spriteFile.isValid) {
                     return@map null
                 }
-                scope.async {
-                    matchSprite(project, variant, spriteFile, searchScope, progressIndicator)
-                }
-            }
-            .mapNotNull { it.await() }
+                matchSprite(project, variant, spriteFile, searchScope, progressIndicator)
+            }.filterNotNull()
 
         return out.distinctBy { it.spriteFile.path }
     }
 
 
-    private fun matchSprite(
+    private suspend fun matchSprite(
         project: Project,
         variant: CaosVariant?,
         spriteFile: VirtualFile,
@@ -603,7 +597,7 @@ internal fun Iterable<VirtualFile>.breedFileSort(
 
 private val nonBlockingExecutor by lazy { Executors.newCachedThreadPool() }
 
-fun <T> readNonBlocking(
+internal fun <T> readNonBlocking(
     task: () -> T,
 ): T {
     return runReadAction(task)
