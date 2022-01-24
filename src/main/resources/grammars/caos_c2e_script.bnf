@@ -960,7 +960,8 @@ enum_header_command
 			getCommandStringUpper
 			getArguments
 			getArgumentValues
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandDefinition
 		]
 	}
@@ -1425,7 +1426,8 @@ c_targ
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandString
 			getCommandStringUpper
 			getScope
@@ -1470,7 +1472,8 @@ c_rtar
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg"
 		]
 		methods = [
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandString
 			getCommandStringUpper
 			getScope
@@ -1527,7 +1530,8 @@ c_assignment
 		]
 		methods = [
 			getOp
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandString
 			getCommandStringUpper
 			getArguments
@@ -1710,7 +1714,8 @@ c_ssfc
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandString
 			getCommandStringUpper
 			getScope
@@ -2165,7 +2170,8 @@ rvalue
 			"com.intellij.psi.PsiNamedElement"
 		]
 		methods = [
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
      		getCommandString
 			getCommandStringUpper
 			getArguments
@@ -2764,7 +2770,8 @@ command_call
 		methods = [
 			getCommandString
 			getCommandStringUpper
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getArguments
 			getArgumentValues
 			getCommandDefinition
@@ -3730,13 +3737,13 @@ rvalue_prime
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptBaseCommandElement"
 		]
 		methods = [
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandString
 			getCommandStringUpper
 			getArguments
 			getArgumentValues
 			isVariant
-			getCommandToken
 			getInferredType
 			getCommandDefinition
 		]
@@ -3848,7 +3855,8 @@ lvalue
 		]
 //		recoverWhile=command_recover
 		methods = [
-			getCommandToken
+			getCommandTokenElement
+			getCommandTokenElementType
 			getCommandString
 			getCommandStringUpper
 			getArguments
