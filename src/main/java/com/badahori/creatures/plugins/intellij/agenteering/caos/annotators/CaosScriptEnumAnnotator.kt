@@ -86,7 +86,7 @@ class CaosScriptEnumAnnotator : Annotator {
      * Annotates use of enum constructs on wrong variants
      */
     private fun annotateBadEnumStatement(variant: CaosVariant, element: CaosScriptEnumNextStatement, annotationWrapper: AnnotationHolder) {
-        val enumToken = element.enumHeaderCommand.commandToken
+        val enumToken = element.enumHeaderCommand.commandTokenElement
         val enumText = enumToken.text?.uppercase() ?: return
         // All variants support ENUM...NEXT
         if (enumText == "ENUM")

@@ -25,7 +25,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.elementType
 import icons.CaosScriptIcons
 import stripSurroundingQuotes
 import javax.swing.Icon
@@ -53,34 +55,71 @@ object CaosScriptPsiImplUtil {
      * Gets command token for RValue
      */
     @JvmStatic
-    fun getCommandToken(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
-        return rvalue.rvaluePrime?.commandToken
+    fun getCommandTokenElement(rvalue: CaosScriptRvalue): CaosScriptIsCommandToken? {
+        return rvalue.rvaluePrime?.commandTokenElement
         // TODO an incomplete command token still be returned
             ?: rvalue.rvaluePrefixIncompletes
+    }
+
+    /**
+     * Gets command token for RValue
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(rvalue: CaosScriptRvalue): IElementType? {
+        return (rvalue.firstChild as? CaosScriptRvaluePrime)?.let { prime ->
+            prime.firstChild?.firstChild?.firstChild?.elementType ?: prime.firstChild?.firstChild?.elementType ?: prime.firstChild?.elementType
+        }
     }
 
     /**
      * Gets command token for rvalue prime
      */
     @JvmStatic
-    fun getCommandToken(rvaluePrime: CaosScriptRvaluePrime): CaosScriptIsCommandToken? {
+    fun getCommandTokenElement(rvaluePrime: CaosScriptRvaluePrime): CaosScriptIsCommandToken? {
         return rvaluePrime.firstChild as? CaosScriptIsCommandToken
+    }
+
+    /**
+     * Gets command token for RValue
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(prime: CaosScriptRvaluePrime): IElementType? {
+        return prime.firstChild?.firstChild?.elementType ?: prime.firstChild?.elementType
     }
 
     /**
      * Gets command token for a TARG {agent} command call
      */
     @JvmStatic
-    fun getCommandToken(element: CaosScriptCTarg): CaosScriptIsCommandToken {
+    fun getCommandTokenElement(element: CaosScriptCTarg): CaosScriptIsCommandToken {
         return element.cKwTarg
+    }
+
+    /**
+     * Gets command token for a TARG {agent} command call
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(element: CaosScriptCTarg): IElementType? {
+        return element.cKwTarg.firstChild?.elementType
     }
 
     /**
      * Generic command token getter for self referencing Command tokens
      */
     @JvmStatic
-    fun getCommandToken(element: CaosScriptIsCommandToken): CaosScriptIsCommandToken {
+    fun getCommandTokenElement(element: CaosScriptIsCommandToken): CaosScriptIsCommandToken {
         return element
+    }
+
+    /**
+     * Generic command token getter for self referencing Command tokens
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(element: CaosScriptIsCommandToken?): IElementType? {
+        if (element == null) {
+            return null
+        }
+        return element.firstChild?.firstChild?.firstChild?.elementType ?: element.firstChild?.firstChild?.elementType ?: element.firstChild?.elementType ?: element.elementType!!
     }
 
     /**
@@ -88,8 +127,17 @@ object CaosScriptPsiImplUtil {
      * ie ENUM/ETCH/ESEE/EPAS
      */
     @JvmStatic
-    fun getCommandToken(element: CaosScriptEnumHeaderCommand): CaosScriptIsCommandToken {
+    fun getCommandTokenElement(element: CaosScriptEnumHeaderCommand): CaosScriptIsCommandToken {
         return element.cEnum ?: element.cEcon!!
+    }
+
+    /**
+     * Gets command token for enum commands
+     * ie ENUM/ETCH/ESEE/EPAS
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(element: CaosScriptEnumHeaderCommand): IElementType? {
+        return getCommandTokenElementType(element.cEnum ?: element.cEcon)
     }
 
 
@@ -98,20 +146,37 @@ object CaosScriptPsiImplUtil {
      * ie NAME/GAME/MAME/EAME
      */
     @JvmStatic
-    fun getCommandToken(namedGameVar: CaosScriptNamedGameVar): CaosScriptIsCommandToken {
+    fun getCommandTokenElement(namedGameVar: CaosScriptNamedGameVar): CaosScriptIsCommandToken {
         return namedGameVar.namedGameVarKw
+    }
+
+    /**
+     * Gets command token for named game vars
+     * ie NAME/GAME/MAME/EAME
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(namedGameVar: CaosScriptNamedGameVar): IElementType? {
+        return getCommandTokenElementType(namedGameVar.namedGameVarKw)
     }
 
     /**
      * Gets command token for a command call
      */
     @JvmStatic
-    fun getCommandToken(call: CaosScriptCommandCall): CaosScriptIsCommandToken? {
+    fun getCommandTokenElement(call: CaosScriptCommandCall): CaosScriptIsCommandToken? {
         if (call.firstChild is CaosScriptCommandElement) {
-            return (call.firstChild as CaosScriptCommandElement).commandToken
+            return (call.firstChild as CaosScriptCommandElement).commandTokenElement
         }
         return call.getChildOfType(CaosScriptIsCommandToken::class.java)
-            ?: call.getChildOfType(CaosScriptCommandElement::class.java)?.commandToken
+            ?: call.getChildOfType(CaosScriptCommandElement::class.java)?.commandTokenElement
+    }
+
+    /**
+     * Gets command token for a command call
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(call: CaosScriptCommandCall): IElementType? {
+        return getCommandTokenElementType(getCommandTokenElement(call))
     }
 
     /**
@@ -119,32 +184,65 @@ object CaosScriptPsiImplUtil {
      * ie SETV/SETS/NEGV, etc
      */
     @JvmStatic
-    fun getCommandToken(assignment: CaosScriptCAssignment): CaosScriptIsCommandToken? {
+    fun getCommandTokenElement(assignment: CaosScriptCAssignment): CaosScriptIsCommandToken? {
         return assignment.getChildOfType(CaosScriptIsCommandToken::class.java)
+    }
+
+    /**
+     * Gets command token from assignment style command call
+     * ie SETV/SETS/NEGV, etc
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(assignment: CaosScriptCAssignment): IElementType? {
+        return getCommandTokenElementType(assignment.getChildOfType(CaosScriptIsCommandToken::class.java))
+    }
+
+
+    /**
+     * Get command token in lvalue
+     */
+    @JvmStatic
+    fun getCommandTokenElement(lvalue: CaosScriptLvalue): CaosScriptIsCommandToken? {
+        return lvalue.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
 
     /**
      * Get command token in lvalue
      */
     @JvmStatic
-    fun getCommandToken(lvalue: CaosScriptLvalue): CaosScriptIsCommandToken? {
-        return lvalue.getChildOfType(CaosScriptIsCommandToken::class.java)
+    fun getCommandTokenElementType(lvalue: CaosScriptLvalue): IElementType? {
+        return getCommandTokenElementType(lvalue.getChildOfType(CaosScriptIsCommandToken::class.java))
     }
 
     /**
      * Gets command token for RTAR
      */
     @JvmStatic
-    fun getCommandToken(element: CaosScriptCRtar): CaosScriptCKwRtar {
+    fun getCommandTokenElement(element: CaosScriptCRtar): CaosScriptCKwRtar {
         return element.cKwRtar
+    }
+
+    /**
+     * Gets command token for RTAR
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(element: CaosScriptCRtar): IElementType? {
+        return element.cKwRtar.firstChild?.firstChild?.elementType
+    }
+    /**
+     * Gets command token for SSFC
+     */
+    @JvmStatic
+    fun getCommandTokenElement(element: CaosScriptCSsfc): CaosScriptIsCommandToken {
+        return element.cKwSsfc
     }
 
     /**
      * Gets command token for SSFC
      */
     @JvmStatic
-    fun getCommandToken(element: CaosScriptCSsfc): CaosScriptIsCommandToken {
-        return element.cKwSsfc
+    fun getCommandTokenElementType(element: CaosScriptCSsfc): IElementType? {
+        return element.cKwSsfc.firstChild?.firstChild?.elementType
     }
 
     // ============================== //
@@ -202,7 +300,7 @@ object CaosScriptPsiImplUtil {
         element.stub?.commandString.nullIfUndefOrBlank()?.let {
             return it
         }
-        element.rvaluePrime?.commandToken?.text.nullIfUndefOrBlank()?.let {
+        element.rvaluePrime?.commandTokenElement?.text.nullIfUndefOrBlank()?.let {
             return it
         }
         element.incomplete?.text.nullIfEmpty()?.let {
@@ -218,7 +316,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandString(element: CaosScriptLvalue): String? {
         return element.stub?.commandString
-            ?: element.commandToken?.text
+            ?: element.commandTokenElement?.text
     }
 
     /**
@@ -227,7 +325,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandString(call: CaosScriptCommandCall): String? {
         return call.stub?.command.nullIfUndefOrBlank()
-            ?: getCommandToken(call)
+            ?: getCommandTokenElement(call)
                 ?.text
                 .nullIfEmpty()
                 ?.split(" ")
@@ -771,7 +869,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getTextOffset(element: CaosScriptSubroutine): Int {
-        return element.subroutineHeader.subroutineName?.textOffset ?: element.textOffset
+        return element.subroutineHeader.subroutineName?.textOffset ?: element.endOffset
     }
 
 
@@ -2042,7 +2140,7 @@ object CaosScriptPsiImplUtil {
             } ?: return null
         val rvalue = (assignment.arguments.lastOrNull() as? CaosScriptRvalue)
             ?: return null
-        rvalue.rvaluePrime?.let { return it.commandToken }
+        rvalue.rvaluePrime?.let { return it.commandTokenElement }
         return rvalue.varToken?.let {
             getLastAssignment(it)
         }
