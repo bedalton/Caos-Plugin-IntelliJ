@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
+import com.intellij.psi.tree.IElementType
 
 interface CaosScriptRvalueLike : CaosScriptCompositeElement {
 
@@ -27,7 +28,9 @@ interface CaosScriptRvalueLike : CaosScriptCompositeElement {
 
     val incomplete: CaosScriptIncomplete?
 
-    val commandToken: CaosScriptIsCommandToken?
+    val commandTokenElement: CaosScriptIsCommandToken?
+
+    val commandTokenElementType: IElementType?
 
     val commandString: String?
 

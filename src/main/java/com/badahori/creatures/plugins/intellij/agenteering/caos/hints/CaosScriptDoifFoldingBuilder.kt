@@ -21,6 +21,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 
@@ -125,8 +126,8 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
         val second = expression.second
         // If second argument is null, there is nothing to compare
             ?: return false
-        val firstCommandToken = first.actualCommandToken
-        val secondCommandToken = second.actualCommandToken
+        val firstCommandToken = first.commandTokenElementType
+        val secondCommandToken = second.commandTokenElementType
         val commandTokens = listOfNotNull(firstCommandToken, secondCommandToken)
         val isP1P2 = commandTokens.intersect(P1P2).isNotEmpty()
         // Get containing script number to find a possible _P1_ or _P2_ named value
@@ -144,6 +145,9 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 || (isP1P2 && hasParamName(variant, containingScriptNumber, second))
                 || CaosScript_K_KEYD in commandTokens
                 || CaosScript_K_CARR in commandTokens
+                || CaosScript_K_TCAR in commandTokens
+                || CaosScript_K_PROP in commandTokens
+                || CaosScript_K_BABY in commandTokens
     }
 
     private fun hasParamName(variant: CaosVariant, containingScriptNumber: Int, first: CaosScriptRvalue): Boolean {
@@ -169,48 +173,14 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             otherValue: CaosScriptRvalue,
             reversed: Boolean,
         ): String? {
-            val thisCommandToken = thisValue.actualCommandToken
-            val otherCommandToken = otherValue.actualCommandToken
+            val thisCommandToken = thisValue.commandTokenElementType
 
-            if ((thisCommandToken == CaosScript_K_CARR || otherCommandToken == CaosScript_K_CARR) && (eqOp == EQUAL || eqOp == NOT_EQUAL)) {
-                val target = if (variant.isOld) "OWNR" else "TARG"
-                if (thisCommandToken == CaosScript_K_NULL || otherCommandToken == CaosScript_K_NULL) {
-                    return if (eqOp == EQUAL) {
-                        "$target is not carried"
-                    } else {
-                        "$target is carried"
-                    }
-                } else {
-                    val carriedBy = if (thisCommandToken == CaosScript_K_CARR) {
-                        otherValue.text
-                    } else {
-                        thisValue.text
-                    }
-                    return if (eqOp == EQUAL) {
-                        "$target is carried by $carriedBy"
-                    } else {
-                        "$target is not carried by $carriedBy"
-                    }
-                }
-            } else if ((thisCommandToken == CaosScript_K_TCAR || otherCommandToken == CaosScript_K_TCAR) && (eqOp == EQUAL || eqOp == NOT_EQUAL)) {
-                if (thisCommandToken == CaosScript_K_NULL || otherCommandToken == CaosScript_K_NULL) {
-                    return if (eqOp == EQUAL) {
-                        "TARG is not carried"
-                    } else {
-                        "TARG is carried"
-                    }
-                } else {
-                    val carriedBy = if (thisCommandToken == CaosScript_K_CARR) {
-                        otherValue.text
-                    } else {
-                        thisValue.text
-                    }
-                    return if (eqOp == EQUAL) {
-                        "TARG is carried by $carriedBy"
-                    } else {
-                        "TARG is not carried by $carriedBy"
-                    }
-                }
+            carried(variant, thisValue, otherValue, eqOp)?.let {
+                return it
+            }
+
+            baby(variant, thisValue, otherValue, eqOp)?.let {
+                return it
             }
 
             if (thisCommandToken in P1P2) {
@@ -230,25 +200,15 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             val otherValueInt = otherValue.intValue
 
             // Check if foldable
-            val hasDriveOrChemical = thisCommandToken in foldableChemicals
-            if (otherValueInt == null && !hasDriveOrChemical && otherValue.commandDefinition?.returnType != AGENT)
-                return null
 
 
-            // Formats the primary value as a drive or chemical name as needed
-            val thisValueAsDriveOrChemical: String? =
-                if (hasDriveOrChemical && thisCommandToken != CaosScript_K_DRV_EXC)
-                    thisValue.rvaluePrime?.let { rvaluePrime ->
-                        formatChemicalValue(variant, rvaluePrime)
-                    }
-                else
-                    null
+
             // Package parameters for use in formatting
             // Package was build to prevent having to pass so many parameters to each unique formatting function
             var formatInfo = FormatInfo(
                 command = command,
                 variant = variant,
-                thisValue = formatPrimary(thisValueAsDriveOrChemical ?: thisValue.text),
+                thisValue = formatPrimary(formatRvalue(thisValue)?.first ?: thisValue.text),
                 thisValuesArgs = thisValue.arguments.map { it.text },
                 thisValueType = thisValue.inferredType,
                 otherValueInt = otherValue.text.toIntSafe(),
@@ -256,24 +216,28 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 eqOp = eqOp,
                 isBool = false,
                 boolOnLessThan = false,
-                otherValue = formatPrimary(otherValue.text)
+                otherValue = formatPrimary(formatRvalue(otherValue)?.first ?: otherValue.text)
             )
+
+            val hasDriveOrChemical = thisCommandToken in foldableChemicals
+
             // Get return value of "thisValue" as a values list
             if (otherValueInt != null && (!hasDriveOrChemical || commandName like "DRV!")) {
                 formatInfo = getFormatInfoWithValuesList(formatInfo, otherValueInt)
 
                 // Ensure that info contains either other value text, or a chemical name
                 if (formatInfo.otherValue.nullIfEmpty() == null)
-                    return DEFAULT_FORMATTER(
-                        formatInfo.copy(
-                            otherValue = formatPrimary(otherValue.text)
-                        )
-                    )
+//                    return DEFAULT_FORMATTER(
+//                        formatInfo.copy(
+//                            otherValue = formatPrimary(otherValue.text)
+//                        )
+//                    )
+                    return null
             }
 
             // Ensure that eq operation actually has a format to use
             val pattern = command.doifFormat
-                ?: return DEFAULT_FORMATTER(formatInfo)
+                ?: return null //DEFAULT_FORMATTER(formatInfo)
 
 
             // Resolve format to an equation
@@ -327,31 +291,31 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 eqOp = if (doubleNegative) EQUAL else eqOp,
                 isBool = isBool,
                 boolOnLessThan = boolOnLessThan,
-                otherValue = formatPrimary(otherValueText ?: "")
+                otherValue = formatPrimary(otherValueText ?: formatInfo.otherValue ?: "")
             )
         }
 
-        /**
-         * Formats the primary value to a Drive or chemical name based on its first parameter
-         */
-        private fun formatChemicalValue(variant: CaosVariant, rvaluePrime: CaosScriptRvaluePrime?): String? {
-            if (rvaluePrime == null)
-                return null
-            val commandString = rvaluePrime.actualCommandToken
-            if (commandString in foldableChemicals)
-                return null
-            val chemicalIndex = rvaluePrime.arguments.firstOrNull()?.text?.toIntSafe()
-                ?: return null
-            return when (commandString) {
-                CaosScript_K_CHEM -> CaosLibs[variant].valuesList("Chemicals")
-                    ?.get(chemicalIndex)?.name
-                    ?: "Chemical $chemicalIndex"
-                CaosScript_K_DRIV -> CaosLibs[variant].valuesList("Drives")
-                    ?.get(chemicalIndex)?.name
-                    ?: "Driv $chemicalIndex"
-                else -> null
-            }
-        }
+//        /**
+//         * Formats the primary value to a Drive or chemical name based on its first parameter
+//         */
+//        private fun formatChemicalValue(variant: CaosVariant, rvaluePrime: CaosScriptRvaluePrime?): String? {
+//            if (rvaluePrime == null)
+//                return null
+//            val commandString = rvaluePrime.actualCommandToken
+//            if (commandString in foldableChemicals)
+//                return null
+//            val chemicalIndex = rvaluePrime.arguments.firstOrNull()?.text?.toIntSafe()
+//                ?: return null
+//            return when (commandString) {
+//                CaosScript_K_CHEM -> CaosLibs[variant].valuesList("Chemicals")
+//                    ?.get(chemicalIndex)?.name
+//                    ?: "Chemical $chemicalIndex"
+//                CaosScript_K_DRIV -> CaosLibs[variant].valuesList("Drives")
+//                    ?.get(chemicalIndex)?.name
+//                    ?: "Driv $chemicalIndex"
+//                else -> null
+//            }
+//        }
 
         private fun resolvePattern(format: String): Formatter {
             if (format.trim() == "%%")
@@ -426,7 +390,7 @@ data class FormatInfo(
 private val SIMPLE_FORMATTER: Formatter = { formatInfo: FormatInfo ->
     val eqOpText = formatEqOp(
         formatInfo.eqOp,
-        equalSign = true,
+        equalSign = !formatInfo.isBool,
         formatInfo.isBool,
         formatInfo.boolOnLessThan,
         formatInfo.otherValueInt
@@ -680,10 +644,30 @@ private fun formatEqOp(
     otherValueInt: Int?,
 ): String {
     return when (eqOp) {
-        EQUAL -> if (isBool) if (equalSign) "=" else IS else null
-        NOT_EQUAL -> if (isBool) if (equalSign) "!=" else IS_NOT else null
-        GREATER_THAN -> if (isBool && otherValueInt == 0) if (equalSign) "!=" else IS_NOT else null
-        LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) if (equalSign) "!=" else IS_NOT else null
+        EQUAL -> if (isBool) {
+            if (equalSign)
+                "="
+            else IS
+        } else {
+            null
+        }
+        NOT_EQUAL -> if (isBool) {
+            if (equalSign) "!=" else IS_NOT
+        } else {
+            null
+        }
+        GREATER_THAN -> if (isBool && otherValueInt == 0) {
+            if (equalSign) "!=" else IS_NOT
+        } else {
+            null
+        }
+        LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) if (equalSign) {
+            "!="
+        } else {
+            IS_NOT
+        } else {
+            null
+        }
         else -> null
     } ?: eqOp.values.getOrNull(1) ?: eqOp.values.first()
 }
@@ -759,12 +743,82 @@ private fun getParamName(variant: CaosVariant, containingScriptNumber: Int, this
     return list[containingScriptNumber]?.name
 }
 
-private val CaosScriptRvalueLike.actualCommandToken
-    get() = this.commandToken?.let {
-        it.firstChild?.firstChild?.elementType ?: it.firstChild?.elementType ?: it.elementType
+
+private fun carried(variant: CaosVariant, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue, eqOp: EqOp): String? {
+    val thisCommandToken = thisValue.commandTokenElementType
+    val otherCommandToken = otherValue.commandTokenElementType
+    return if ((thisCommandToken == CaosScript_K_CARR || otherCommandToken == CaosScript_K_CARR) && (eqOp == EQUAL || eqOp == NOT_EQUAL)) {
+        val target = if (variant.isOld) "OWNR" else "TARG"
+        return if ((thisCommandToken == CaosScript_K_NULL || thisValue.text == "0") || (otherCommandToken == CaosScript_K_NULL || otherValue.text == "0")) {
+            if (eqOp == EQUAL) {
+                "$target is not carried"
+            } else {
+                "$target is carried"
+            }
+        } else {
+            val carriedBy = if (thisCommandToken == CaosScript_K_CARR) {
+                otherValue.text
+            } else {
+                thisValue.text
+            }
+            if (eqOp == EQUAL) {
+                "$target is carried by $carriedBy"
+            } else {
+                "$target is not carried by $carriedBy"
+            }
+        }
+    } else if ((thisCommandToken == CaosScript_K_TCAR || otherCommandToken == CaosScript_K_TCAR) && (eqOp == EQUAL || eqOp == NOT_EQUAL)) {
+       return if ((thisCommandToken == CaosScript_K_NULL || thisValue.text == "0") || (otherCommandToken == CaosScript_K_NULL || otherValue.text == "0")) {
+            if (eqOp == EQUAL) {
+                "TARG is not carried"
+            } else {
+                "TARG is carried"
+            }
+        } else {
+            val carriedBy = if (thisCommandToken == CaosScript_K_CARR) {
+                otherValue.text
+            } else {
+                thisValue.text
+            }
+            if (eqOp == EQUAL) {
+                "TARG is carried by $carriedBy"
+            } else {
+                "TARG is not carried by $carriedBy"
+            }
+        }
+    } else {
+        null
+    }
+}
+
+private fun baby(variant: CaosVariant, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue, eqOp: EqOp): String? {
+    if (variant.isNotOld) {
+        return null
     }
 
-private val CaosScriptRvaluePrime.actualCommandToken
-    get() = this.commandToken?.let {
-        it.firstChild?.firstChild?.elementType ?: it.firstChild?.elementType ?: it.elementType
+    val other = if (thisValue.commandTokenElementType == CaosScript_K_BABY) {
+        otherValue.intValue
+    } else if (otherValue.commandTokenElementType == CaosScript_K_BABY) {
+        thisValue.intValue
+    } else {
+        return null
+    } ?: return null
+
+    return when (other) {
+        0 -> {
+            when (eqOp) {
+                EQUAL -> "Not Pregnant"
+                NOT_EQUAL, GREATER_THAN -> "Is Pregnant"
+                else -> null
+            }
+        }
+        1 -> {
+            when (eqOp) {
+                EQUAL -> "Is Pregnant"
+                LESS_THAN -> "Not pregnant"
+                else -> null
+            }
+        }
+        else -> null
     }
+}

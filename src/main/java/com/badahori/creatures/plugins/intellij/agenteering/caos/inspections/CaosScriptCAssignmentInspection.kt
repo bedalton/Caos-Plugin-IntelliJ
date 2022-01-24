@@ -12,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
-import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
@@ -37,7 +36,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
         val variant = element.containingCaosFile?.variant
             ?: return
 
-        val commandElement = element.commandToken
+        val commandElement = element.commandTokenElement
             ?: return
 
 

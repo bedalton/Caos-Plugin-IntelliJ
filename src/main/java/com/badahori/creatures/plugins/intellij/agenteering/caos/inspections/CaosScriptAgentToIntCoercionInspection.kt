@@ -92,7 +92,7 @@ class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
             // Register message as information and not error.
             // TODO should this be a weak warning. People using it this way might know what they are doing
             // Perhaps should make this warning a second inspection
-            problemsHolder.registerProblem(childCommand.commandToken ?: childCommand, message)
+            problemsHolder.registerProblem(childCommand.commandTokenElement ?: childCommand, message)
         }
     }
 }

@@ -50,7 +50,7 @@ class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction,
     private fun getScriptText() : String? {
         val element = element.element
                 ?: return null
-        if (!element.commandToken?.commandString?.equalsIgnoreCase("cls2").orFalse())
+        if (!element.commandTokenElement?.commandString?.equalsIgnoreCase("cls2").orFalse())
             return null
         val familyAndGenus = element.lvalue?.getChildrenOfType(CaosScriptArgument::class.java)
                 ?: return null

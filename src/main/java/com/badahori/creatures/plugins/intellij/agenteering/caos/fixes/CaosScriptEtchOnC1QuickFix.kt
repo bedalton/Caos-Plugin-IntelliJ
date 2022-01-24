@@ -44,7 +44,7 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
         val variant = enumNext.containingCaosFile?.variant
                 ?: return false
         return variant == CaosVariant.C1
-                && enumNext.enumHeaderCommand.commandToken equalTo "etch"
+                && enumNext.enumHeaderCommand.commandTokenElement equalTo "etch"
                 && enumNext.enumHeaderCommand.classifier?.species != null
                 && getVarNumberToUse(enumNext) != null
     }
@@ -99,7 +99,7 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
      */
     private fun applyFix(document: Document, editor: Editor?, element: CaosScriptEnumNextStatement) {
         val project = element.project
-        if (element.enumHeaderCommand.commandToken notEqualTo "ETCH")
+        if (element.enumHeaderCommand.commandTokenElement notEqualTo "ETCH")
             return
         val varNumber = getVarNumberToUse(element)
                 ?: return
@@ -108,7 +108,7 @@ class CaosScriptEtchOnC1QuickFix(element: CaosScriptEnumNextStatement) : LocalQu
         val replacement = CaosScriptPsiElementFactory.createCommandTokenElement(element.project, "enum")
                 ?: return
         PsiDocumentManager.getInstance(project).commitDocument(document)
-        element.enumHeaderCommand.commandToken.replace(replacement)
+        element.enumHeaderCommand.commandTokenElement.replace(replacement)
         val lineDelim = if (element.text.contains("\n"))
             "\n"
         else

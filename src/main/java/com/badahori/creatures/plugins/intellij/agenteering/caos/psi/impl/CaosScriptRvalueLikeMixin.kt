@@ -9,6 +9,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.tree.IElementType
 
 abstract class CaosScriptRvalueLikeMixin<StubT : StubElement<out PsiElement>> : CaosScriptStubBasedElementImpl<StubT>, CaosScriptRvalueLike {
     constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
@@ -22,7 +23,9 @@ abstract class CaosScriptRvalueLikeMixin<StubT : StubElement<out PsiElement>> : 
 
     override val varToken: CaosScriptVarToken? get() = null
 
-    override val commandToken: CaosScriptIsCommandToken? get() = null
+    override val commandTokenElement: CaosScriptIsCommandToken? get() = null
+
+    override val commandTokenElementType: IElementType? get() = null
 
     override val commandString: String? get() = null
 
