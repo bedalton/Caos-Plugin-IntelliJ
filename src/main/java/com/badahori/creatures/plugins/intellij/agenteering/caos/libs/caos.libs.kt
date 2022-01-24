@@ -303,3 +303,5 @@ enum class EqOp(val commonName: String, vararg val values: String) {
     }
 }
 
+
+internal val CaosVariant?.lib: CaosLib? get() = if (this != null) CaosLibs[this] else null
