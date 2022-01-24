@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotFolded
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
 interface CaosScriptHintsProvider {
@@ -21,6 +22,7 @@ interface CaosScriptHintsProvider {
     companion object {
         // When resolving hint providers, ensure element is not folded first
         fun resolve(element: PsiElement): CaosScriptHintsProvider? {
+            ProgressIndicatorProvider.checkCanceled()
             return if (element.isNotFolded)
                 values.firstOrNull { it.enabled && it.isApplicable(element) }
             else
