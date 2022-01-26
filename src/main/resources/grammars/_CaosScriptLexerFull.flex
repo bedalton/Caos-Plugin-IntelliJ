@@ -183,10 +183,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	}
 
 	private boolean inBlock(final int type) {
-  	    final int size = mBlocks.size();
-  	    if (size < 1)
-  	        return false;
-  	    return mBlocks.get(size - 1) == type;
+  	    return inBlock(type, false);
+	}
+
+    private boolean inBlock(final int type, final boolean defaultValue) {
+		final int size = mBlocks.size();
+		if (size < 1)
+			return defaultValue;
+		return mBlocks.get(size - 1) == type;
 	}
 
 %}
