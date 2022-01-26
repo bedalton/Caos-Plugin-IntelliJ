@@ -20,6 +20,7 @@ public interface CaosScriptIcons {
     Icon S16_FILE_ICON = IconLoader.getIcon("/icons/s16-file-icon.png");
     Icon C16_FILE_ICON = IconLoader.getIcon("/icons/c16-file-icon.png");
     Icon SPR_FILE_ICON = IconLoader.getIcon("/icons/spr-file-icon.png");
+    Icon AGENT_FILE_ICON = IconLoader.getIcon("/icons/agent-file-icon.png");
     Icon COMMAND = IconLoader.getIcon("/icons/command-icon.png");
     Icon RVALUE = IconLoader.getIcon("/icons/right-value-icon.png");
     Icon LVALUE = IconLoader.getIcon("/icons/left-value-icon.png");
