@@ -11,6 +11,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.ASTNode
+import com.intellij.lang.annotation.AnnotationBuilder.FixBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.Editor
@@ -77,6 +78,9 @@ import org.jetbrains.annotations.Contract
 //    }
 //}
 
+/**
+ * Annotation wrapper to try to unify calls in Intellij 191 and 201, where some annotation commands were deprecated
+ */
 internal data class AnnotationBuilderData(
     internal val message: String,
     internal val severity: HighlightSeverity,
@@ -87,12 +91,12 @@ internal data class AnnotationBuilderData(
     internal val textAttributes: TextAttributesKey? = null,
     internal val needsUpdateOnTyping: Boolean? = null,
     internal val highlightType: ProblemHighlightType? = null,
-    internal val tooltip: String? = null
+    internal val tooltip: String? = null,
 )
 
 class AnnotationBuilder private constructor(
     private val annotationHolder: AnnotationHolder,
-    internal val data: AnnotationBuilderData
+    internal val data: AnnotationBuilderData,
 ) {
 
     constructor(annotationHolder: AnnotationHolder, severity: HighlightSeverity, message: String?)
@@ -177,7 +181,7 @@ class AnnotationBuilder private constructor(
     fun create() {
         if (data.range == null)
             throw Exception("Cannot create annotation without range")
-        var annotation = annotationHolder.createAnnotation(data.severity, data.range, data.message.nullIfEmpty())
+        var annotation = annotationHolder.newAnnotation(data.severity, data.message.nullIfEmpty() ?: "")
         data.fixBuilderData.forEach {
             val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
@@ -187,57 +191,57 @@ class AnnotationBuilder private constructor(
                 null
             if (it.batch.orFalse()) {
                 if (union != null) {
-                    annotation.registerBatchFix(union, it.range, it.key)
+                    annotation = annotation
+                        .newFix(union)
+                        .withData(it)
+                        .registerFix()
                 } else {
                     LOGGER.severe("Batch fix set for ${data.message}, but fix is not batch compatible")
                 }
             }
             if (union != null) {
-                annotation.registerUniversalFix(union, it.range, it.key)
+                annotation.withFix(union)
             }
             if (union == null && it.batch.orFalse()) {
-                if (intentionAction != null) {
-                    if (it.range != null) {
-                        if (it.key != null) {
-                            annotation.registerFix(intentionAction, it.range, it.key)
-                        } else {
-                            annotation.registerFix(intentionAction, it.range)
-                        }
-                    } else {
-                        annotation.registerFix(intentionAction)
-                    }
+                annotation = (if (intentionAction != null) {
+                    annotation
+                        .newFix(intentionAction)
+                        .withData(it)
                 } else if (quickFix != null && it.problemDescriptor != null) {
-                    annotation.registerFix(quickFix, it.range, it.key, it.problemDescriptor)
+                    annotation
+                        .newLocalQuickFix(quickFix, it.problemDescriptor)
+                        .withData(it)
                 } else {
                     throw Exception("Cannot create fix without any fixes")
-                }
+                }).registerFix()
             }
         }
         data.fixes.forEach {
-            annotation.registerFix(it)
+            annotation = annotation.withFix(it)
         }
 
         data.tooltip?.let {
-            annotation.tooltip = it
+            annotation = annotation.tooltip(it)
         }
         data.enforcedTextAttributes?.let {
-            annotation.enforcedTextAttributes = it
+            annotation = annotation.enforcedTextAttributes(it)
         }
         data.textAttributes?.let {
-            annotation.textAttributes = it
+            annotation = annotation.textAttributes(it)
         }
         data.needsUpdateOnTyping?.let {
-            annotation.setNeedsUpdateOnTyping(it)
+            annotation = annotation.needsUpdateOnTyping(it)
         }
         data.highlightType?.let {
-            annotation.highlightType = it
+            annotation = annotation.highlightType(it)
         }
+        annotation.create()
     }
 
 
     class FixBuilder private constructor(
         private val annotationBuilder: AnnotationBuilder,
-        private val fixBuilderData: FixBuilderData
+        private val fixBuilderData: FixBuilderData,
     ) {
 
         @Contract(pure = true)
@@ -264,7 +268,7 @@ class AnnotationBuilder private constructor(
             @Suppress("FunctionName")
             internal fun _createFixBuilder(
                 annotationBuilder: AnnotationBuilder,
-                fixBuilderData: FixBuilderData
+                fixBuilderData: FixBuilderData,
             ): FixBuilder {
                 return FixBuilder(annotationBuilder, fixBuilderData)
             }
@@ -279,9 +283,9 @@ internal data class FixBuilderData(
     internal val key: HighlightDisplayKey? = null,
     internal val universal: Boolean? = null,
     internal val batch: Boolean? = null,
-    internal val problemDescriptor: ProblemDescriptor? = null
+    internal val problemDescriptor: ProblemDescriptor? = null,
 
-)
+    )
 
 class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction) : IntentionAction by intentionAction,
     LocalQuickFix by quickFix {
@@ -343,11 +347,6 @@ fun AnnotationHolder.colorize(range: TextRange, textAttributes: TextAttributesKe
 
 
 @Contract(pure = true)
-fun AnnotationHolder.newAnnotation(severity: HighlightSeverity, message: String): AnnotationBuilder {
-    return AnnotationBuilder(this, severity, message)
-}
-
-@Contract(pure = true)
 fun AnnotationHolder.newErrorAnnotation(message: String): AnnotationBuilder {
     return AnnotationBuilder(this, HighlightSeverity.ERROR, message)
 }
@@ -370,4 +369,20 @@ fun AnnotationHolder.newInfoAnnotation(message: String?): AnnotationBuilder {
 @Contract(pure = true)
 fun AnnotationHolder.newInfoAnnotation(): AnnotationBuilder {
     return AnnotationBuilder(this, HighlightSeverity.INFORMATION, null)
+}
+
+
+private fun FixBuilder.withData(data: FixBuilderData): FixBuilder {
+    return if (data.range != null) {
+        if (data.key != null) {
+            this.range(data.range)
+                .key(data.key)
+        } else {
+            this.range(data.range)
+        }
+    } else if (data.key != null) {
+        this.key(data.key)
+    } else {
+        this
+    }
 }
