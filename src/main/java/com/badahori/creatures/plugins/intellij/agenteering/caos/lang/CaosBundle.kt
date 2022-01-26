@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.AbstractBundle
 import com.intellij.CommonBundle
 import org.jetbrains.annotations.PropertyKey
 import java.util.*
@@ -12,7 +13,7 @@ object CaosBundle {
 
     @JvmStatic
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
-            CommonBundle.messageOrDefault(bundle, key, "", *params).nullIfEmpty()!!
+            AbstractBundle.messageOrDefault(bundle, key, "", *params).nullIfEmpty()!!
 }
 
 
@@ -23,5 +24,5 @@ object AgentMessages {
 
     @JvmStatic
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
-        CommonBundle.messageOrDefault(bundle, key, "", *params).nullIfEmpty()!!
+        AbstractBundle.messageOrDefault(bundle, key, "", *params).nullIfEmpty()!!
 }

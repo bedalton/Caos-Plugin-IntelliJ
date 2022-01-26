@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
@@ -207,7 +209,7 @@ class PoseEditorModel(
         val (_, newPose) = fromString(variant, facing, lastPose, newPoseString)
 
         val errorChars = (0..14).filter { i ->
-            val part = ('a'.toInt() + i).toChar()
+            val part = ('a'.code + i).toChar()
             val thisPose = newPose[part]
             thisPose == null || thisPose < -1
         }
