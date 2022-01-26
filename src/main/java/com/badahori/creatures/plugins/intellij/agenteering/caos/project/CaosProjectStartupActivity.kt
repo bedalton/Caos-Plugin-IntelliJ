@@ -71,6 +71,7 @@ class CaosProjectStartupActivity : StartupActivity {
                 if (DumbService.isDumb(project)) {
                     return@invokeLater
                 }
+                @Suppress("UNUSED_VARIABLE")
                 val keys = events
                     .mapNotNull map@{
                         val file = it.file

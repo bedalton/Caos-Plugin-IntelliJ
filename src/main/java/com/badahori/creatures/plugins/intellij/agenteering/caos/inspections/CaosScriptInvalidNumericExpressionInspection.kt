@@ -57,7 +57,7 @@ object Fix : LocalQuickFix {
         val value = if (element is CaosScriptBinaryLiteral)
             binaryToInteger(element.text.substring(1))
         else
-            text.toCharArray()[1].toLong()
+            text.toCharArray()[1].code.toLong()
         val newElement = CaosScriptPsiElementFactory.createNumber(element.project, value)
         element.getSelfOrParentOfType(CaosScriptRvalue::class.java)?.replace(newElement)
     }

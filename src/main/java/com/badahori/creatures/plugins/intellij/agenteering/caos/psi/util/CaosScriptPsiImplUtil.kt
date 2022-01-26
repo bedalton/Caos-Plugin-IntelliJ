@@ -1257,7 +1257,7 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isClosed(stringIn: CaosScriptStringText): Boolean {
-        return (stringIn.parent as CaosScriptStringLike)?.isClosed
+        return (stringIn.parent as CaosScriptStringLike).isClosed
     }
 
 
@@ -2096,7 +2096,7 @@ object CaosScriptPsiImplUtil {
         dimensions.text.toCharArray().let {
             if (it.isEmpty())
                 return -1
-            return it[0].toInt()
+            return it[0].code
         }
     }
 
@@ -2108,7 +2108,7 @@ object CaosScriptPsiImplUtil {
         dimensions.text.toCharArray().let {
             if (it.size < 3)
                 return -1
-            return it[2].toInt()
+            return it[2].code
         }
     }
 
@@ -2120,7 +2120,7 @@ object CaosScriptPsiImplUtil {
         dimensions.text.toCharArray().let {
             if (it.size < 3)
                 return Pair(-1, -1)
-            return Pair(it[0].toInt(), it[2].toInt())
+            return Pair(it[0].code, it[2].code)
         }
     }
 
