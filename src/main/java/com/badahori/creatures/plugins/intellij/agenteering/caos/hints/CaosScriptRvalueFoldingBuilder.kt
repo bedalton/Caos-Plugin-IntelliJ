@@ -108,7 +108,7 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
 
         if (psi.getUserData(RVALUE_FOLDING_KEY)?.second == null)
             return false
-        return true
+        return false
     }
 
     companion object {
