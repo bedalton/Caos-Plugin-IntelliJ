@@ -116,8 +116,8 @@ endm
             AttributesDescriptor("Equals Symbols", CaosScriptSyntaxHighlighter.SYMBOL),
             AttributesDescriptor("Subroutine Name", CaosScriptSyntaxHighlighter.SUBROUTINE_NAME),
             AttributesDescriptor("Unrecognized Command ", CaosScriptSyntaxHighlighter.ERROR_COMMAND_TOKEN),
-            AttributesDescriptor("CAOS2Pray tag", CaosScriptSyntaxHighlighter.PRAY_TAG),
-            AttributesDescriptor("CAOS2Pray official tag", CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG)
+            AttributesDescriptor("CAOS2Pray Tag", CaosScriptSyntaxHighlighter.PRAY_TAG),
+            AttributesDescriptor("CAOS2Pray Official Tag", CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG)
         )
 
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
