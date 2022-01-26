@@ -80,7 +80,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
         val group = FoldingGroup.newGroup("CaosScript_STIM_FOLDING")
         // Get a collection of the literal expressions in the document below root
         val children = PsiTreeUtil.findChildrenOfType(root, CaosScriptEqualityExpressionPrime::class.java)
-        if (children.size > 400)
+        if ((children.size > 8 && quick) || children.size > 400)
             return emptyArray()
         return children
             .filter {
@@ -291,7 +291,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 eqOp = if (doubleNegative) EQUAL else eqOp,
                 isBool = isBool,
                 boolOnLessThan = boolOnLessThan,
-                otherValue = formatPrimary(otherValueText ?: formatInfo.otherValue ?: "")
+                otherValue = formatPrimary(otherValueText ?: formatInfo.otherValue)
             )
         }
 
@@ -346,7 +346,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
 
 }
 
-internal val P1P2 = listOf(CaosScript_K__P1_, CaosScript_K__P2_)
+internal val P1P2 = setOf(CaosScript_K__P1_, CaosScript_K__P2_)
 
 /**
  * Simple lambda to take formatting parameters and format them as needed
