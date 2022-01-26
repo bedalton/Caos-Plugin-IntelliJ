@@ -10,7 +10,6 @@ import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleServiceManager
 import com.intellij.openapi.project.Project
 
 private const val NOTIFICATION_ERROR_TAG = "CAOS Project: Error"
@@ -40,7 +39,7 @@ fun warningNotification(project: Project? = null, message: String, title: String
 
 val Module.settings: CaosModuleSettingsService
     get() {
-        return ModuleServiceManager.getService(this, CaosModuleSettingsService::class.java)!!
+        return CaosModuleSettingsService.getInstance(this)!!
     }
 
 var Module.variant: CaosVariant?
