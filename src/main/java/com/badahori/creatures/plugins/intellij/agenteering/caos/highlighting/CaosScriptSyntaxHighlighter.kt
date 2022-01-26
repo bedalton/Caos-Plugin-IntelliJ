@@ -33,7 +33,8 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             CaosScriptTypes.CaosScript_OV_XX, CaosScriptTypes.CaosScript_OBV_X -> VAR_TOKEN_OV
             CaosScriptTypes.CaosScript_MV_XX -> VAR_TOKEN_MV
             in CaosScriptTokenSets.NUMBER_LITERALS -> NUMBER
-            in CaosScriptTokenSets.KEYWORDS -> KEYWORDS
+            in CaosScriptTokenSets.KEYWORDS -> INVALID_LOOP_KEYWORDS
+            CaosScriptTypes.CaosScript_K_BAD_LOOP_TERMINATOR -> KEYWORDS
             in CaosScriptTokenSets.PREFIX_KEYWORDS -> PREFIX_TOKEN
             in CaosScriptTokenSets.SUFFIX_TOKENS -> SUFFIX_TOKEN
             in CaosScriptTokenSets.ALL_COMMANDS -> COMMAND_TOKEN
@@ -52,6 +53,8 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         val ID:TextAttributesKey = createTextAttributesKey("CaosScript_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
         @JvmStatic
         val KEYWORDS:TextAttributesKey = createTextAttributesKey("CaosScript_KEYWORDS", DefaultLanguageHighlighterColors.KEYWORD)
+        @JvmStatic
+        val INVALID_LOOP_KEYWORDS:TextAttributesKey = createTextAttributesKey("CaosScript_INVALID_LOOP_KEYWORDS", KEYWORDS)
         @JvmStatic
         val COMMENT: TextAttributesKey = createTextAttributesKey("CaosScript_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         @JvmStatic
