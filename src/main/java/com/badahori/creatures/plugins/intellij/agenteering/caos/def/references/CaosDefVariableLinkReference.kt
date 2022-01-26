@@ -4,6 +4,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefVariableLink
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 
 /**
  * Finds corresponding variable from link

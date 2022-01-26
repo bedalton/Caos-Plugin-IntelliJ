@@ -18,10 +18,6 @@ open class CaosDefStubBasedElementImpl<StubT : StubElement<out PsiElement>>: Stu
     constructor(node: ASTNode) : super(node)
     override fun getLanguage(): Language = CaosDefLanguage.instance
     override fun toString(): String  = elementType.toString()
-    override fun <PsiT: PsiElement> getChildOfType(childType:Class<PsiT>):PsiT? = PsiTreeUtil.getChildOfType(this, childType)
-    override fun <PsiT: PsiElement> getChildrenOfType(childType:Class<PsiT>):List<PsiT> = PsiTreeUtil.getChildrenOfTypeAsList(this, childType)
-    override fun <PsiT: PsiElement> getParentOfType(parentClass:Class<PsiT>):PsiT? = PsiTreeUtil.getParentOfType(this, parentClass)
-
     override val tokenType: IElementType
         get() = node.elementType
 }
