@@ -142,7 +142,7 @@ object BodyPartsIndex {
 
         // Match sprites to ATTs
         val files = try {
-            matchSpritesToAtts(project, spriteFiles, searchScope, variant, coroutineScope, progressIndicator)
+            matchSpritesToAtts(project, spriteFiles, searchScope, variant, progressIndicator)
         } catch (e: Exception) {
             if (e !is ProcessCanceledException) {
                 LOGGER.severe("variantParts() -> Exception encountered in match sprites to atts. Error: ${e.message}")
@@ -157,7 +157,6 @@ object BodyPartsIndex {
         spriteFiles: Collection<VirtualFile>,
         searchScope: GlobalSearchScope? = null,
         variant: CaosVariant?,
-        scope: CoroutineScope,
         progressIndicator: ProgressIndicator?,
     ): List<BodyPartFiles> {
         // If there are no att files, there is nothing to do
