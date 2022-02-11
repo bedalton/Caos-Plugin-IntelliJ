@@ -42,6 +42,8 @@
         <ul>
           <li>Fix body part z-order in Att/Pose editor</li>
           <li>ATT/Sprite indexing lock-up</li>
+          <li>Fix PRAY/CAOS2Pray inspection reporting invalid file when file existed</li>
+          <li>Fix named variable renaming</li>
         </ul>
         <b>#Improvements</b>
         <ul>
@@ -54,7 +56,18 @@
         <ul>
           <li>C1 and C2 injection failure</li>
           <li>Error in sprite viewer</li>
+          <li>Fix subroutine not renaming all usages</li>
+          <li>Show error on bad subroutine instead of failing silently</li>
         </ul>
+        <b>Improvements</b>
+        <ul>
+          <li>Prevent blocking UI thread with lots of breed files</li>
+          <li>Improve unterminated string handling</li>
+          <li>Improve bad command handling</li>
+          <li>Highlight usages of indexed variables under caret</li>
+        </ul>
+      </li>
+      <li>
         <b>Versions: 2021.09.19</b>
         <b>Improvements</b>
         <ul>
@@ -477,7 +490,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="193" />
+  <idea-version since-build="201" />
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -527,11 +540,20 @@
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
 
     <!-- Renaming -->
-    <!--renamePsiElementProcessor
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameElementProcessor" /-->
+    <renamePsiElementProcessor
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameElementProcessor" />
 
-    <!--vetoRenameCondition
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptVetoRenameCondition" / -->
+    <vetoRenameCondition
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptVetoRenameCondition" />
+
+    <renameInputValidator
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameInputValidator"
+    />
+    <lang.refactoringSupport language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameRefactoringSupportProvider" />
+
+    <lang.namesValidator language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptNameValidator" />
 
     <enterHandlerDelegate
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler" />
@@ -957,8 +979,6 @@
     />
 
     <!-- Documentation & Hints -->
-    <codeInsight.parameterNameHints language="CaosScript"
-                                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider" />
     <documentationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider" />
 
@@ -968,14 +988,25 @@
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
     <lang.foldingBuilder language="CaosScript"
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBlockFoldingBuilder" />
+    <lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptRvalueFoldingBuilder"
+                         id="caosRvalueFolder"
+                         order="before caosInlayHints" />
+
+    <codeInsight.parameterNameHints language="CaosScript"
+                                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider"
+                                    id="caosInlayHints"
+                  order="after caosRvalueFolder"
+    />
+
     <lang.braceMatcher language="CaosScript"
                        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBraceMatcher" />
     <lang.quoteHandler
         language="CaosScript"
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
 
-    <referencesSearch
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />
+<!--    <referencesSearch-->
+<!--        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />-->
 
     <!-- Indices -->
     <applicationService
@@ -1211,14 +1242,26 @@
     <annotator language="CreaturesPRAY"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PRAYHighlighterAnnotator" />
 
+    <!-- =========================== -->
+    <!-- ====== AGENTS FILES ======= -->
+    <!-- =========================== -->
+
+    <fileType name="AGENTFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType"
+              fieldName="INSTANCE"
+              extensions="agents;agent;pray" />
+
 
     <!-- EDITOR -->
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor.PrayEditorToolbar" />
 
+
+
     <!-- Completion -->
     <completion.contributor language="CreaturesPRAY"
                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCompletionContributor" />
+
 
 
     <!-- INSPECTIONS -->
