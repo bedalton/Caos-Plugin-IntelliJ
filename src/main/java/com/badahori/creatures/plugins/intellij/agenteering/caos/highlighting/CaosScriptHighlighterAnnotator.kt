@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.colorize
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
@@ -13,6 +14,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
+import com.intellij.psi.util.elementType
 
 class CaosScriptHighlighterAnnotator : Annotator {
 
@@ -65,7 +67,7 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 )
                 else -> colorize(element, holder, CaosScriptSyntaxHighlighter.TOKEN)
             }
-            element is CaosScriptCaos2Value -> if (element.quoteStringLiteral == null && element.c1String == null) {
+            element is CaosScriptCaos2Value -> if (element.quoteStringLiteral != null && element.c1String != null) {
                 colorize(element, holder, CaosScriptSyntaxHighlighter.STRING)
             }
             element is CaosScriptCaos2TagName -> highlightCaos2PrayTag(element, holder)
@@ -73,13 +75,21 @@ class CaosScriptHighlighterAnnotator : Annotator {
     }
 
     private fun colorizeCommand(element: PsiElement, holder: AnnotationHolder) {
-        val tokens = element.node.getChildren(null).filter { it.elementType != TokenType.WHITE_SPACE }
+        val commandToken = (element as? CaosScriptIsCommandToken)
+            ?: ((element as? CaosScriptCommandLike)?.commandTokenElement)
+            ?: return
+
+        val tokens = commandToken.commandTokenElements
         if (tokens.size == 1) {
+            if (tokens[0].elementType in CaosScriptTokenSets.KEYWORDS) {
+                holder.colorize(tokens[0], CaosScriptSyntaxHighlighter.KEYWORDS)
+                return
+            }
             holder.colorize(tokens[0], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
             return
         }
-        //holder.colorize(tokens[1], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
         holder.colorize(tokens[0], CaosScriptSyntaxHighlighter.PREFIX_TOKEN)
+        holder.colorize(tokens[1], CaosScriptSyntaxHighlighter.COMMAND_TOKEN)
         if (tokens.size > 2) {
             holder.colorize(tokens[2], CaosScriptSyntaxHighlighter.SUFFIX_TOKEN)
         }
