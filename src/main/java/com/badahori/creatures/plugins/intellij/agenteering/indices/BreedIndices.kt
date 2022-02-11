@@ -288,9 +288,9 @@ object BreedPartDescriptor : KeyDescriptor<BreedPartKey> {
             IOUtil.writeUTF(storage, variant?.code ?: "")
             storage.writeInt(genus ?: -1)
             storage.writeInt(gender ?: -1)
-            storage.writeInt(breed?.lowercase()?.toInt() ?: -1)
+            storage.writeInt(breed?.lowercase()?.code ?: -1)
             storage.writeInt(ageGroup ?: -1)
-            storage.writeInt(part?.lowercase()?.toInt() ?: -1)
+            storage.writeInt(part?.lowercase()?.code ?: -1)
         }
     }
 

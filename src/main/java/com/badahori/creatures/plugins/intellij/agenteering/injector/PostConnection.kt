@@ -68,7 +68,7 @@ internal class PostConnection(urlString: String, variant: CaosVariant?) : CaosCo
             return InjectionStatus.Bad("Failed to read response from caos server. Error: ${e.message}")
         }
         LOGGER.info("CAOSRESPONSE: $response")
-        val json = com.google.gson.JsonParser().parse(response)
+        val json = com.google.gson.JsonParser.parseString(response)
         return json.asJsonObject.let {
             val status = try {
                 it.get("status").asString
