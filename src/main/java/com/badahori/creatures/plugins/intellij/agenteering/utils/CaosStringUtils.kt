@@ -397,9 +397,9 @@ fun randomString(
 
 
 fun Char.lowercase(): Char {
-    return this.toLowerCase()
+    return this.lowercaseChar()
 }
 
 fun Char.uppercase(): Char {
-    return this.toUpperCase()
+    return this.uppercaseChar()
 }
