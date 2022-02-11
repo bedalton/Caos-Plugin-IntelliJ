@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayInputFileName
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayString
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.notLike
@@ -22,6 +23,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import com.intellij.psi.search.GlobalSearchScope
 
 /**
  * Checks that a string literal is reference to other named game vars
@@ -77,12 +79,14 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     private val parameterFileExtensions by lazy {
         val variant = variant
             ?: return@lazy null
-        val name = parameter?.valuesList?.get(variant)
+        val name = parameter
+            ?.valuesList
+            ?.get(variant)
             ?.name
             ?: return@lazy null
         if (!name.startsWith("File.", ignoreCase = true))
             return@lazy null
-        name.substring(5).split('/')
+        name.lowercase().substring(5).split('/')
     }
 
     private val shouldResolveToFile: Boolean
@@ -114,7 +118,8 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
     private val type: CaosScriptNamedGameVarType by lazy {
-        ((element.parent?.parent as? CaosScriptNamedGameVar) ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.varType?.let {
+        ((element.parent?.parent as? CaosScriptNamedGameVar)
+            ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.varType?.let {
             return@lazy it
         }
 
@@ -130,7 +135,8 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
     private val key: String by lazy {
-        ((element.parent?.parent as? CaosScriptNamedGameVar) ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.key ?: UNDEF
+        ((element.parent?.parent as? CaosScriptNamedGameVar)
+            ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.key ?: UNDEF
     }
 
 
@@ -152,7 +158,8 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             val otherVirtualFile = element.virtualFile
                 ?: return false
             if (relative)
-                return myElement.resolveToFile(ignoreExtension = false)?.path == otherVirtualFile.path
+                return myElement.resolveToFile(ignoreExtension = fileInfo == NO_EXTENSION,
+                    relative = relative)?.path == otherVirtualFile.path
             if (element.name notLike myElement.name)
                 return false
             val parameterExtensions = parameterFileExtensions
@@ -162,7 +169,8 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
 
         // Ensure other is or has named game var parent element
-        val namedGameVarParent = (element.parent?.parent as? CaosScriptNamedGameVar ?: element.parent?.parent?.parent as? CaosScriptNamedGameVar)
+        val namedGameVarParent = (element.parent?.parent as? CaosScriptNamedGameVar
+            ?: element.parent?.parent?.parent as? CaosScriptNamedGameVar)
             ?: return false
         // Check that type and key are the same
         return namedGameVarParent.varType == type && namedGameVarParent.key == key
@@ -174,23 +182,34 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
         val project = myElement.project
 
+        if (project.isDisposed) {
+            return ResolveResult.EMPTY_ARRAY
+        }
+
         if (DumbService.isDumb(project))
             return selfOnlyResult
 
         if (shouldResolveToFile) {
             if (relative) {
                 val file = myElement
-                    .resolveToFile(fileInfo == NO_EXTENSION)
+                    .resolveToFile(fileInfo == NO_EXTENSION, relative)
                     ?.toNavigableElement(project)
                     ?: return ResolveResult.EMPTY_ARRAY
                 return PsiElementResolveResult.createResults(file)
             }
 
             val fileName = myElement.name
+            myElement.containingFile?.module?.moduleContentScope
+            val scope = myElement.containingFile?.module?.moduleScope
+                ?: GlobalSearchScope.projectScope(project)
             return parameterFileExtensions
                 ?.flatMap { extension ->
-                    CaseInsensitiveFileIndex.findWithFileName(project,
-                        "$fileName.$extension", CaosVariantGlobalSearchScope(project, variant))
+                    CaseInsensitiveFileIndex
+                        .findWithFileName(
+                            project,
+                            "$fileName.$extension",
+                           scope
+                        )
                         .map {
                             it.toNavigableElement(project)
                         }
@@ -219,7 +238,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     private fun getNamed(
         variant: CaosVariant,
         project: Project,
-        type: CaosScriptNamedGameVarType
+        type: CaosScriptNamedGameVarType,
     ): List<CaosScriptStringLike> {
         return CaosScriptNamedGameVarIndex.instance[type, key, project, CaosVariantGlobalSearchScope(project, variant)]
             .filter { anElement ->
