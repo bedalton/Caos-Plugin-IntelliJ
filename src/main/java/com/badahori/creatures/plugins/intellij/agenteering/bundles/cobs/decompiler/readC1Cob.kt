@@ -39,7 +39,7 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
         SprSpriteFrame(this, position().toLong(), pictureWidth, pictureHeight).image?.flipVertical()
     else
         null
-    val agentName = cString(uInt8)
+    val agentName = string(uInt8)
     return CobBlock.AgentBlock(
             format = CobFormat.C1,
             name = agentName,
@@ -64,5 +64,5 @@ private fun ByteStreamReader.readC1Script(): String {
         else
             it
     }
-    return cString(scriptSize)
+    return string(scriptSize)
 }

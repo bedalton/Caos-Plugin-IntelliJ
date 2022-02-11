@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.MemoryByteStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AuthorBlock
@@ -40,7 +41,7 @@ internal class CobFileTreeNode(
         }
         try {
             CobToDataObjectDecompiler.decompile(
-                ByteStreamReader(file.contentsToByteArray()),
+                MemoryByteStreamReader(file.contentsToByteArray()),
                 file.nameWithoutExtension
             )
         } catch (e: Exception) {

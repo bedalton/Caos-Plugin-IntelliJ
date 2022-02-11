@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -8,8 +10,10 @@ import com.intellij.util.indexing.*
 import com.intellij.util.indexing.FileBasedIndex.InputFilter
 import com.intellij.util.io.IOUtil
 import com.intellij.util.io.KeyDescriptor
+import org.apache.batik.dom.svg12.Global
 import java.io.DataInput
 import java.io.DataOutput
+import java.util.*
 
 class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
     override fun getName(): ID<FileNameInfo, Void> = NAME
@@ -18,14 +22,14 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
 
     override fun getKeyDescriptor(): KeyDescriptor<FileNameInfo> = Descriptor
 
-    override fun getVersion(): Int = 0
+    override fun getVersion(): Int = 3
 
     override fun getInputFilter(): InputFilter = INPUT_FILTER
 
     override fun dependsOnFileContent(): Boolean = false
 
     companion object {
-        val NAME = ID.create<FileNameInfo,Void>("com.badahori.creatures.plugins.intellij.agenteering.att.indices.CaseInsensitiveFileIndex")
+        val NAME = ID.create<FileNameInfo,Void>("com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex")
         private val INPUT_FILTER = InputFilter { true }
 
         fun findWithExtension(
@@ -33,10 +37,8 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
             extension:String,
             searchScope: GlobalSearchScope? = null
         ) : Collection<VirtualFile> {
-            val scope = GlobalSearchScope.projectScope(project).let {
-                if (searchScope != null) it.intersectWith(searchScope) else it
-            }
-            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(null, null, extension), scope)
+            val key = FileNameInfo(null, null, extension)
+            return findMatching(project, key, searchScope)
         }
 
         fun findWithoutExtension(
@@ -44,10 +46,8 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
             nameWithoutExtension:String,
             searchScope: GlobalSearchScope? = null
         ) : Collection<VirtualFile> {
-            val scope = GlobalSearchScope.projectScope(project).let {
-                if (searchScope != null) it.intersectWith(searchScope) else it
-            }
-            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(null, nameWithoutExtension, null), scope)
+            val key = FileNameInfo(null, nameWithoutExtension, null)
+            return findMatching(project, key, searchScope)
         }
 
 
@@ -56,22 +56,50 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
             fileName:String,
             searchScope: GlobalSearchScope? = null
         ) : Collection<VirtualFile> {
-            val scope = GlobalSearchScope.projectScope(project).let {
-                if (searchScope != null) it.intersectWith(searchScope) else it
-            }
-            return FileBasedIndex.getInstance().getContainingFiles(NAME, FileNameInfo(fileName, null, null), scope)
+            val key = FileNameInfo(fileName, null, null)
+            return findMatching(project, key, searchScope)
         }
+
+        fun keys(project: Project): Set<FileNameInfo> {
+            return FileBasedIndex.getInstance()
+                .getAllKeys(NAME, project)
+                .toSet()
+        }
+
+        private fun findMatching(project: Project, key: FileNameInfo, scope: GlobalSearchScope? = null): List<VirtualFile> {
+            return FileBasedIndex.getInstance()
+                .getAllKeys(NAME, project)
+                .toSet()
+                .filter {
+                    Descriptor.isEqual(it, key)
+                }
+                .flatMap {
+                    FileBasedIndex.getInstance().getContainingFiles(NAME, it, scope ?:  GlobalSearchScope.everythingScope(project))
+                }
+        }
+
     }
 }
 
-data class FileNameInfo(val fileName:String?, val nameWithoutExtension:String?, val extension:String?)
+data class FileNameInfo(
+    val fileName:String?,
+    val nameWithoutExtension:String?,
+    val extension:String?
+) {
+    override fun toString(): String {
+        return fileName ?: nameWithoutExtension?.let { "$it.*"} ?: extension?.let { "*.$it" } ?: "<empty>"
+    }
+}
 
 private object Indexer : DataIndexer<FileNameInfo, Void, FileContent> {
     override fun map(fileInfo: FileContent): Map<FileNameInfo, Void?> {
         val file = fileInfo.file
-        return mapOf(
-            FileNameInfo(file.name.lowercase(), file.nameWithoutExtension.lowercase(), file.extension?.lowercase() ?: "") to null
+        val key = FileNameInfo(
+            file.name.lowercase(),
+            file.nameWithoutExtension.lowercase(),
+            file.extension?.lowercase() ?: ""
         )
+        return Collections.singletonMap(key, null)
     }
 }
 
@@ -82,6 +110,7 @@ private object Descriptor : KeyDescriptor<FileNameInfo> {
     override fun getHashCode(info: FileNameInfo?): Int {
         return info.hashCode()
     }
+
 
     override fun isEqual(info1: FileNameInfo?, info2: FileNameInfo?): Boolean {
         if (info1 == null && info2 == null)
