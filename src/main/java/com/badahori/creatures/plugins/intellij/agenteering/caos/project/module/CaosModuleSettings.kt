@@ -1,16 +1,16 @@
+@file:Suppress("DEPRECATION")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosVariantConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.components.*
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleServiceManager
 import com.intellij.util.xmlb.annotations.Attribute
 
+@Service
 interface CaosModuleSettingsService {
     fun getState(): CaosModuleSettings
     fun loadState(settingsIn: CaosModuleSettings)
