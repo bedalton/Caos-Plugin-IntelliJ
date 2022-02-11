@@ -493,12 +493,12 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
     out = out.replace(EQ_IS_REGEX, eqOpText)
 
     out = if (formatInfo.thisValue[0].lowercase() in VOWELS)
-        out.replace(A_BEFORE_0, " an ${formatInfo.thisValue}")
+        out.replace(A_BEFORE_0, "an ${formatInfo.thisValue}")
     else
         out.replace("{0}", formatInfo.thisValue)
 
-    out = if (formatInfo.thisValue[0].lowercase() in VOWELS)
-        out.replace(A_BEFORE_1, " an ${formatInfo.otherValue}")
+    out = if (formatInfo.otherValue[0].lowercase() in VOWELS)
+        out.replace(A_BEFORE_1, "an ${formatInfo.otherValue}")
     else
         out.replace("{1}", formatInfo.otherValue)
 
