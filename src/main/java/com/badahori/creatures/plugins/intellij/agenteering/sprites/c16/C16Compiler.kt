@@ -24,7 +24,7 @@ object C16Compiler : SpriteCompiler {
         val frames = images.map {image ->
             getCompiledData(image, colorEncoding)
         }
-        var imageDataOffset = SPRITE_HEADER_SIZE + (images.size * IMAGE_HEADER_SIZE) + frames.sumBy {
+        var imageDataOffset = SPRITE_HEADER_SIZE + (images.size * IMAGE_HEADER_SIZE) + frames.sumOf {
             (it.height - 1) * 4
         }
         val bufferSize =  imageDataOffset
@@ -110,7 +110,7 @@ object C16Compiler : SpriteCompiler {
 private data class C16CompilerData(val width:Int, val height:Int, val lines:List<List<Run>>) {
 
     val size:Int by lazy {
-        lines.sumBy { run -> run.sumBy { 2 + it.byteOffset } }
+        lines.sumOf { run -> run.sumOf { 2 + it.byteOffset } }
     }
 
     fun writeHeader(outputStream: OutputStream, offset:Int) : Int {
@@ -122,7 +122,7 @@ private data class C16CompilerData(val width:Int, val height:Int, val lines:List
         if (lines.size != height) {
             throw SpriteCompilerException("Line data and height mismatch. Expected ${height} line data objects. Found: ${lines.size}")
         }
-        val byteOffsets = lines.map { run -> run.sumBy { 2 + it.byteOffset }}
+        val byteOffsets = lines.map { run -> run.sumOf { 2 + it.byteOffset }}
         var lineOffset = offset + byteOffsets.first()
         byteOffsets.drop(1).forEach {
             outputStream.write(lineOffset)

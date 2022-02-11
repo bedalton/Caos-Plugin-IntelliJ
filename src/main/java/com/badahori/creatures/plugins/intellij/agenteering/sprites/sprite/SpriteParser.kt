@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
-import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.skip
 import bedalton.creatures.bytes.uInt16
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkSpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprSpriteFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 
 object SpriteParser {
@@ -25,7 +25,7 @@ object SpriteParser {
     @JvmStatic
     fun numImages(virtualFile: VirtualFile) : Int? {
         return try {
-            val bytesBuffer = ByteStreamReader(virtualFile.contentsToByteArray())
+            val bytesBuffer = VirtualFileStreamReader(virtualFile)
             if (virtualFile.extension?.lowercase() != "spr") {
                 bytesBuffer.skip(4)
             }

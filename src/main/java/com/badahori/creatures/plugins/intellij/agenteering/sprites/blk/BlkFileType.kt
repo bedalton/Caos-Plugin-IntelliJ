@@ -13,7 +13,7 @@ import javax.swing.Icon
 object BlkFileType : FileType {
     override fun getName(): String = "BLK Sprite File"
 
-    override fun getDescription(): String = "Creatures BLK Sprite File"
+    override fun getDescription(): String = "Creatures BLK sprite file"
 
     override fun isBinary() = true
 
@@ -21,7 +21,7 @@ object BlkFileType : FileType {
 
     override fun getDefaultExtension(): String = DEFAULT_EXTENSION
 
-    override fun getIcon(): Icon? = null//CaosScriptIcons.BLK_FILE_ICON
+    override fun getIcon(): Icon? = CaosScriptIcons.BLK_FILE_ICON
 
     override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = Charsets.UTF_8.name()
 

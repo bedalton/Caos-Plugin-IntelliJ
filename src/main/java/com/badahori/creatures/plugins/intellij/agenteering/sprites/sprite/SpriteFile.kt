@@ -9,59 +9,67 @@ import java.awt.image.BufferedImage
 
 abstract class SpriteFile<SpriteT:SpriteFrame<SpriteT>>(private val type:SpriteType<SpriteT>) {
 
-    protected var mFrames:List<SpriteT?> = listOf()
+    protected val mFrames: List<SpriteT?> by lazy {
+        buildFrames()
+    }
     val size: Int get() = mFrames.size
 
-    open val images:List<BufferedImage?> get() = mFrames.mapIndexed { _, it ->
-        it?.image
+    protected abstract fun buildFrames(): List<SpriteT?>
+
+    protected abstract fun close(): Boolean
+
+    open val images: List<BufferedImage?> by lazy {
+        val images = mFrames.mapIndexed { _, it ->
+            it?.image
+        }
+        close()
+        images
     }
 
-    fun getFrame(frameNumber:Int) : SpriteT? = mFrames.getOrNull(frameNumber)
+    fun getFrame(frameNumber: Int): SpriteT? = mFrames.getOrNull(frameNumber)
 
-    fun removeFrame(frame:SpriteT) {
-        val frames = mFrames.toMutableList()
-        frames.remove(frame)
-        mFrames = frames
-    }
+//    fun removeFrame(frame:SpriteT) {
+//        val frames = mFrames.toMutableList()
+//        frames.remove(frame)
+//        mFrames = frames
+//    }
+//
+//    fun removeFrame(frameIndex:Int) : SpriteT? {
+//        if (frameIndex > mFrames.lastIndex)
+//            return null
+//        val frames = mFrames.toMutableList()
+//        val frame = frames.removeAt(frameIndex)
+//        mFrames = frames
+//        return frame
+//    }
+//
+//    fun addFrame(index:Int, frameIn:SpriteFrame<*>) : Boolean {
+//        val frames = mFrames.toMutableList()
+//        val converted = type.convert(frameIn)
+//                ?: return false
+//        frames.add(index, converted)
+//        mFrames = frames
+//        return true
+//    }
+//
+//    fun addFrame(frameIn:SpriteT): Boolean {
+//        val converted = type.convert(frameIn)
+//                ?: return false
+//        mFrames = mFrames + converted
+//        return true
+//    }
+//
+//
+//    private fun convertFrameIfNeeded(frameIn:SpriteFrame<*>) : SpriteT? {
+//        return type.convert(frameIn)
+//    }
 
-    fun removeFrame(frameIndex:Int) : SpriteT? {
-        if (frameIndex > mFrames.lastIndex)
-            return null
-        val frames = mFrames.toMutableList()
-        val frame = frames.removeAt(frameIndex)
-        mFrames = frames
-        return frame
-    }
-
-    fun addFrame(index:Int, frameIn:SpriteFrame<*>) : Boolean {
-        val frames = mFrames.toMutableList()
-        val converted = type.convert(frameIn)
-                ?: return false
-        frames.add(index, converted)
-        mFrames = frames
-        return true
-    }
-
-    fun addFrame(frameIn:SpriteT): Boolean {
-        val converted = type.convert(frameIn)
-                ?: return false
-        mFrames = mFrames + converted
-        return true
-    }
+    abstract fun compile(): ByteArray
 
 
-    private fun convertFrameIfNeeded(frameIn:SpriteFrame<*>) : SpriteT? {
-        return type.convert(frameIn)
-    }
-
-    abstract fun compile() : ByteArray
-
-
-    operator fun get(index:Int) : SpriteT? {
+    operator fun get(index: Int): SpriteT? {
         return mFrames[index]
     }
-
-
 }
 
 abstract class SpriteFrame<SpriteT:SpriteFrame<SpriteT>>(val width:Int, val height:Int, val type:SpriteType<*>) {

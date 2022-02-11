@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 
@@ -17,30 +18,46 @@ import java.awt.image.BufferedImage
  * Based on c2ephp by telyn
  * @url https://github.com/telyn/c2ephp
  */
-class S16SpriteFile(rawBytes:ByteArray, val filePath: String? = null) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
+class S16SpriteFile(private val file: VirtualFile) : SpriteFile<S16SpriteFrame>(SpriteType.S16) {
 
-
-
-    constructor(file: VirtualFile) : this(file.contentsToByteArray(), file.path)
+    private var mBytesBuffer: ByteStreamReader? = null
 
     init {
-        val bytesBuffer = ByteStreamReader(rawBytes)
+        buildFrames()
+    }
+
+    override fun close(): Boolean {
+        return try {
+            if (mBytesBuffer?.close() == true) {
+                mBytesBuffer = null
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override fun buildFrames(): List<S16SpriteFrame?> {
+        val bytesBuffer = VirtualFileStreamReader(file)
+        mBytesBuffer = bytesBuffer
         val encoding = when (val buffer = bytesBuffer.uInt32) {
             1L -> ColorEncoding.X_565
             0L -> ColorEncoding.X_555
-            else -> throw Exception("File encoding not recognized. ('$buffer') for file: $filePath")
+            else -> throw Exception("File encoding not recognized. ('$buffer') for file: ${file.path}")
         }
         val numImages = bytesBuffer.uInt16
-        mFrames = (0 until numImages).map {
+        return (0 until numImages).map {
             val offsetForData = bytesBuffer.uInt32
             val width = bytesBuffer.uInt16
             val height = bytesBuffer.uInt16
             S16SpriteFrame(
-                    bytes = bytesBuffer,
-                    offset = offsetForData,
-                    width = width,
-                    height = height,
-                    encoding = encoding
+                bytes = bytesBuffer,
+                offset = offsetForData,
+                width = width,
+                height = height,
+                encoding = encoding
             )
         }
     }
@@ -72,7 +89,8 @@ class S16SpriteFrame private constructor(width: Int, height: Int, private val en
 
     private fun decode(bytes: ByteStreamReader, offset: Long): BufferedImage {
         val bytesBuffer = bytes.duplicate()
-        bytesBuffer.position(offset.toInt())
+        bytesBuffer.position(offset)
+        @Suppress("UndesirableClassUsage")
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val toRgb = encoding.toRgb
         for (y in 0 until height) {

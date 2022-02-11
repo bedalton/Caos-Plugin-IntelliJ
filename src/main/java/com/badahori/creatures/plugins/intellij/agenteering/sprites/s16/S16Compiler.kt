@@ -22,7 +22,7 @@ object S16Compiler : SpriteCompiler {
     }
 
     fun compileSprites(images: List<BufferedImage>, colorEncoding: ColorEncoding): ByteArray {
-        val imagesBytes = images.sumBy {
+        val imagesBytes = images.sumOf {
             it.width * it.height
         }
         var imageOffset = SPRITE_HEADER_SIZE + (images.size * IMAGE_HEADER_SIZE)

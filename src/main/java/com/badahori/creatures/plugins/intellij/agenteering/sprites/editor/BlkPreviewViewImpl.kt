@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -18,6 +19,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.components.JBScrollPane
 import java.awt.Dimension
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -27,6 +29,7 @@ import java.beans.PropertyChangeListener
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.*
 
 
@@ -39,33 +42,26 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
 
     private lateinit var mComponent: JScrollPane
     private lateinit var mImage: BufferedImage
+    private var isLoading = AtomicBoolean()
+    private lateinit var loadingLabel: JLabel
 
 
     init {
-        ApplicationManager.getApplication().executeOnPooledThread {
-            try {
-                val (stitched, didDrawAll) = BlkSpriteFile(myFile).getStitched().get()
-                if (!didDrawAll && myProject != null) {
-                    ApplicationManager.getApplication().invokeLater {
-                        CaosNotifications.showWarning(
-                            myProject,
-                            "BLK Preview",
-                            "Failed to draw all cells in BLK preview pane"
-                        )
-                    }
-                }
-                setImage(stitched)
-            } catch (e:Exception) {
-                component.setViewportView(JLabel("Failed to decompile sprite for stitching"))
-            }
-        }
+
     }
 
 
     override fun getComponent(): JScrollPane {
         if (this::mComponent.isInitialized)
             return mComponent
-        val component = JScrollPane()
+        val component = JBScrollPane()
+        loadingLabel = object: JLabel("Stitching BLK...", SwingConstants.CENTER) {
+            override fun getPreferredSize(): Dimension {
+                return component.size
+            }
+        }
+        component.setViewportView(loadingLabel)
+
         mComponent = component
         return component
     }
@@ -76,11 +72,11 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
         val component = component
         component.verticalScrollBar.unitIncrement = 16
         component.horizontalScrollBar.unitIncrement = 16
-        this.mComponent = component
         val label = ImagePanel(image, myFile.path)
         label.size = size
         label.minimumSize = size
         label.preferredSize = size
+        component.remove(loadingLabel)
         component.setViewportView(label)
     }
 
@@ -130,7 +126,35 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
     }
 
     override fun selectNotify() {
+        stitchImage()
+    }
 
+    private fun stitchImage() {
+        if (isLoading.getAndSet(true)) {
+            return
+        }
+
+        if (this::mImage.isInitialized) {
+            return
+        }
+
+        ApplicationManager.getApplication().executeOnPooledThread {
+            try {
+                val (stitched, didDrawAll) = BlkSpriteFile(myFile).getStitched().get()
+                if (!didDrawAll && myProject != null) {
+                    ApplicationManager.getApplication().invokeLater {
+                        CaosNotifications.showWarning(
+                            myProject,
+                            "BLK Preview",
+                            "Failed to draw all cells in BLK preview pane"
+                        )
+                    }
+                }
+                setImage(stitched)
+            } catch (e:Exception) {
+                component.setViewportView(JLabel("Failed to decompile sprite for stitching"))
+            }
+        }
     }
 
     companion object {
@@ -152,11 +176,15 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
     private fun initHandlers() {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                showPopUp(e)
+                if (e.button == MouseEvent.BUTTON3) {
+                    showPopUp(e)
+                }
             }
 
             override fun mousePressed(e: MouseEvent) {
-                showPopUp(e)
+                if (e.button == MouseEvent.BUTTON3) {
+                    showPopUp(e)
+                }
             }
         })
     }
