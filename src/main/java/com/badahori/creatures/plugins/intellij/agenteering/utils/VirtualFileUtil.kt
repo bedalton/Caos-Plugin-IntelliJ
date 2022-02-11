@@ -15,6 +15,7 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
 import com.intellij.psi.impl.file.impl.FileManagerImpl
+import com.intellij.psi.search.GlobalSearchScope
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import javax.swing.Icon
@@ -64,6 +65,7 @@ object VirtualFileUtil {
         ignoreExtension: Boolean = false,
         directory: Boolean?,
         vararg path: String,
+        scope: GlobalSearchScope? = null,
     ): VirtualFile? {
 
         val components = (if (path.any { it.contains("\\") })
@@ -85,21 +87,26 @@ object VirtualFileUtil {
                     ?: return null
                 continue
             }
-            file = file.children?.firstOrNull { it.name.equals(component, true) && it.isDirectory }
+            file = file.children?.firstOrNull {
+                (scope == null || scope.accept(it)) && it.name.equals(component,
+                    true) && it.isDirectory
+            }
                 ?: return null
         }
 
         return if (ignoreExtension) {
             val last = FileNameUtils.getNameWithoutExtension(components.last())
             file.children?.firstOrNull {
-                it.nameWithoutExtension.equals(last,
-                    true) && (directory == null || it.isDirectory == directory)
+                (scope == null || scope.accept(it)) &&
+                        it.nameWithoutExtension.equals(last, true) &&
+                        (directory == null || it.isDirectory == directory)
             }
         } else {
             val last = components.last()
             file.children?.firstOrNull {
-                it.name.equals(last,
-                    true) && (directory == null || it.isDirectory == directory)
+                (scope == null || scope.accept(it)) &&
+                        it.name.equals(last, true) &&
+                        (directory == null || it.isDirectory == directory)
             }
         }
     }
