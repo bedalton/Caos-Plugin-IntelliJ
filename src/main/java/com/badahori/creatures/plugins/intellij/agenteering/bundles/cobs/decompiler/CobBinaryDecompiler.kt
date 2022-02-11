@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
 import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.MemoryByteStreamReader
 import bedalton.creatures.bytes.cString
+import bedalton.creatures.bytes.string
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
@@ -29,8 +31,8 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         private val DATE_FORMAT = SimpleDateFormat("MM/dd/YYYY")
 
         internal fun decompileToString(fileName: String, byteArray: ByteArray): String {
-            val byteBuffer = ByteStreamReader(byteArray)
-            if (byteBuffer.cString(4) == "****") {
+            val byteBuffer = MemoryByteStreamReader(byteArray)
+            if (byteBuffer.string(4) == "****") {
                 return byteArray.contentToString()
             }
             val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtils.getNameWithoutExtension(fileName))
@@ -38,7 +40,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
-            val cobData = CobToDataObjectDecompiler.decompile(ByteStreamReader(byteArray), FileNameUtils.getNameWithoutExtension(fileName))
+            val cobData = CobToDataObjectDecompiler.decompile(MemoryByteStreamReader(byteArray), FileNameUtils.getNameWithoutExtension(fileName))
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile

@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import bedalton.creatures.bytes.cString
+import bedalton.creatures.bytes.string
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 
@@ -18,7 +19,7 @@ internal fun SfcReader.readBlackBoard() : PointerSfcBlackboard {
     val textPosition = Vector2(uInt8, uInt8)
     val words = (0 until (if (variant == C1) 16 else 48)).associate {
         val value = uInt32
-        val string = byteBuffer.cString(11).trim()
+        val string = byteBuffer.string(11).trim()
         value to string
     }
     return PointerSfcBlackboard(

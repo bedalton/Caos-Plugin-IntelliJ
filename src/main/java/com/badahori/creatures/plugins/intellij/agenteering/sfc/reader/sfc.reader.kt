@@ -172,14 +172,14 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
     /**
      * Reads in a string with a given length
      */
-    fun string(length: Int): String = byteBuffer.cString(length).trim(' ', 0x00.toChar())
+    fun string(length: Int): String = byteBuffer.string(length).trim(' ', 0x00.toChar())
 
     /**
      * Reads in a string given a variable string length
      */
     val sfcString: String
         get() {
-            return byteBuffer.cString(sfcStringLength).trim(' ', 0x00.toChar())
+            return byteBuffer.string(sfcStringLength).trim(' ', 0x00.toChar())
         }
 
     /**
@@ -248,7 +248,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
         }
 
         private fun readRaw(virtualFile: VirtualFile): SfcFileDataHolder {
-            val byteBuffer = ByteStreamReader(virtualFile.contentsToByteArray())
+            val byteBuffer = MemoryByteStreamReader(virtualFile.contentsToByteArray())
             val dumper = SfcReader(byteBuffer, virtualFile.path)
             val data = dumper.readFile()
             return SfcFileDataHolder(data)

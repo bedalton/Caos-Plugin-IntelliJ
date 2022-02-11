@@ -10,7 +10,7 @@ import java.util.*
 
 internal fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     val type = try {
-        cString(4)
+        string(4)
     } catch (e: Exception) {
         return null
     }
