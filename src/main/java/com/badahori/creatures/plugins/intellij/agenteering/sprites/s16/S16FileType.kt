@@ -13,7 +13,7 @@ import javax.swing.Icon
 object S16FileType : FileType {
     override fun getName(): String =  "S16 Sprite File"
 
-    override fun getDescription(): String = "Creatures S16 Sprite File"
+    override fun getDescription(): String = "Creatures S16 sprite file"
 
     override fun isBinary(): Boolean = true
 

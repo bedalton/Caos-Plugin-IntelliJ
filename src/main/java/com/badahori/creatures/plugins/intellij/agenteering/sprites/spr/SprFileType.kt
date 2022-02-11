@@ -15,7 +15,7 @@ object SprFileType : FileType {
     }
 
     override fun getDescription(): String {
-        return "Creatures 1 Sprite File"
+        return "Creatures 1 sprite file"
     }
 
     override fun isBinary(): Boolean {

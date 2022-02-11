@@ -1,15 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
-import bedalton.creatures.bytes.ByteStreamReader
-import bedalton.creatures.bytes.uInt16
-import bedalton.creatures.bytes.uInt32
-import bedalton.creatures.bytes.uInt8
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import bedalton.creatures.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFrame
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParserException
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -42,14 +39,33 @@ object SprParser {
  * @url http://sheeslostknowledge.blogspot.com/2014/11/parsing-creatures-1-spr-files.html
  */
 
-class SprSpriteFile @Throws constructor(file: VirtualFile) : SpriteFile<SprSpriteFrame>(SpriteType.Spr) {
+class SprSpriteFile @Throws constructor(private val file: VirtualFile) : SpriteFile<SprSpriteFrame>(SpriteType.Spr) {
 
-    init {
-        val rawBytes = file.contentsToByteArray()
-        val numRawBytes = rawBytes.size
-        val bytesBuffer = ByteStreamReader(rawBytes)
+    private var mBytesBuffer: ByteStreamReader? = null
+
+    override fun close(): Boolean {
+        return try {
+            if (mBytesBuffer?.close() == true) {
+                mBytesBuffer = null
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override fun compile(): ByteArray {
+        TODO("Not yet implemented")
+    }
+
+    override fun buildFrames(): List<SprSpriteFrame?> {
+        val bytesBuffer = VirtualFileStreamReader(file)
+        mBytesBuffer = bytesBuffer
+        val numRawBytes = bytesBuffer.size
         val numImages = bytesBuffer.uInt16
-        mFrames =  (0 until numImages).mapNotNull map@{ frameNumber ->
+        return (0 until numImages).mapNotNull map@{ frameNumber ->
             val offsetForData = bytesBuffer.uInt32
             if (offsetForData < 0) {
                 throw SpriteParserException("OffsetForData returned negative number. $offsetForData")
@@ -72,9 +88,6 @@ class SprSpriteFile @Throws constructor(file: VirtualFile) : SpriteFile<SprSprit
         }
     }
 
-    override fun compile(): ByteArray {
-        TODO("Not yet implemented")
-    }
 }
 
 class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<SprSpriteFrame>(width, height, SpriteType.Spr) {
@@ -98,9 +111,8 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
         if (_image == null) {
             synchronized(lock) {
                 if (_image == null) {
-                    image = getImage()?.apply {
-                        _image = image
-                    }
+                    image = getImage()
+                    _image = image
                 }
             }
         }
@@ -125,6 +137,7 @@ class SprSpriteFrame private constructor(width: Int, height: Int) : SpriteFrame<
     }
 
     private fun decode(pixels: List<Int>) : BufferedImage {
+        @Suppress("UndesirableClassUsage")
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val alphaRaster = bufferedImage.alphaRaster
         val black = Color(0, 0, 0).rgb

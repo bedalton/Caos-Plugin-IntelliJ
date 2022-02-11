@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.MemoryByteStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ditherCopy
@@ -74,7 +75,7 @@ object SprCompiler : SpriteCompiler {
     }
 
     fun compileSprites(images:List<BufferedImage>, dither:Boolean) : ByteArray {
-        val imagesBytes = images.sumBy {
+        val imagesBytes = images.sumOf {
             it.width * it.height
         }
         val bufferSize = HEADER_NUM_IMAGES_SIZE + (images.size * IMAGE_HEADER_SIZE) + imagesBytes
@@ -136,7 +137,7 @@ object SprCompiler : SpriteCompiler {
         val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
         return SprSpriteFrame(
-            bytes = ByteStreamReader(bytes.toByteArray()),
+            bytes = MemoryByteStreamReader(bytes.toByteArray()),
             offset = 0L,
             width = imageIn.width,
             height = imageIn.height

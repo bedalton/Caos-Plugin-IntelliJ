@@ -1,11 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.blk
 
 import bedalton.creatures.bytes.ByteStreamReader
+import bedalton.creatures.bytes.seek
 import bedalton.creatures.bytes.uInt16
 import bedalton.creatures.bytes.uInt32
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteReference
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes
+import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,46 +28,88 @@ class BlkSpriteFile(private val file: VirtualFile) : SpriteFile<BlkSpriteFrame>(
     private var cellsWide: Int = 0
     private var cellsHigh: Int = 0
     private lateinit var mStitched: Future<Pair<BufferedImage, Boolean>>
-    private val md5: String
-    lateinit var encoding:ColorEncoding
-    private lateinit var mImages:List<BufferedImage?>
+    private val md5: String by lazy {
+        file.md5() ?: file.getAllBytes().let { bytes ->
+            val md = MessageDigest.getInstance("MD5")
+            BigInteger(1, md.digest(bytes)).toString(16).padStart(32, '0')
+        }
+    }
+    lateinit var encoding: ColorEncoding
+    private lateinit var mImages: List<BufferedImage?>
 
-    override val images:List<BufferedImage?> get() {
-        if (this::mImages.isInitialized)
-            return this.mImages
-        mImages = getAndCacheImages()
-        return mImages
+    private var mBytesBuffer: ByteStreamReader? = null
+
+    override val images: List<BufferedImage?>
+        get() {
+            if (this::mImages.isInitialized)
+                return this.mImages
+            mImages = getAndCacheImages()
+            return mImages
+        }
+
+    override fun close(): Boolean {
+        return try {
+            mBytesBuffer?.close()?.apply {
+                mBytesBuffer = null
+            } ?: true
+        } catch (e: Exception) {
+            false
+        }
     }
 
-    init {
-        // Init buffer
-        val bytes = file.getAllBytes()
-        val md = MessageDigest.getInstance("MD5")
-        md5 = BigInteger(1, md.digest(bytes)).toString(16).padStart(32, '0')
-        val oldMD5 = file.getUserData(HASH_KEY)
-        var didLoadCache = false
-        if (oldMD5 == md5) {
-            val cache = file.getUserData(CACHE_KEY)
-            if (cache != null) {
-                didLoadCache = true
-                encoding = if (cache.is565) ColorEncoding.X_565 else ColorEncoding.X_555
-                mFrames = cache.images.map { image ->
-                    BlkSpriteFrame(image, encoding)
+    override fun buildFrames(): List<BlkSpriteFrame?> {
+        return reloadFromCache()
+            ?: readDelayed()
+    }
+
+    private fun getByteBuffer(): ByteStreamReader {
+        return mBytesBuffer
+            // Try to get existing buffer
+            // Hopefully prevent memory leaks.
+            // Could lead to concurrency issues though
+            ?.let {
+                if (!it.closed) {
+                    it.seek(0)
+                } else {
+                    null
                 }
-                this.cellsWide = cache.cellsWide
-                this.cellsHigh = cache.cellsHigh
             }
-        }
-        if (!didLoadCache) {
-            readDelayed(bytes)
-        }
+        // Try to get IO file first to prevent holding bytes in memory
+            ?: VirtualFileStreamReader(file)
     }
 
-    private fun readDelayed(bytes: ByteArray) {
-        val totalBytes = bytes.size
-        val bytesBuffer = ByteStreamReader(bytes)
+    private fun reloadFromCache(): List<BlkSpriteFrame?>? {
+        val oldMD5 = file.getUserData(HASH_KEY)
+        val cache = file.getUserData(CACHE_KEY)
+            ?: return null
+        if (oldMD5 != md5) {
+            cache.sprite.delete(file)
+            return null
+        }
+        // Reload encoding information
+        encoding = if (cache.is565) ColorEncoding.X_565 else ColorEncoding.X_555
+
+        // Try to reload the sprites
+        val frames = cache.sprite.images(file)?.map { image ->
+            BlkSpriteFrame(image, encoding)
+        } ?: return null
+
+        // Get image size in cells wide and high
+        this.cellsWide = cache.cellsWide
+        this.cellsHigh = cache.cellsHigh
+        // Return that images were loaded from cache
+        return frames
+    }
+
+    private fun readDelayed(): List<BlkSpriteFrame> {
+        val bytesBuffer = getByteBuffer()
+        val totalBytes = bytesBuffer.size
+        mBytesBuffer = bytesBuffer
         val flags = bytesBuffer.uInt32
-        encoding = if (flags and 1L == 1L) ColorEncoding.X_565 else ColorEncoding.X_555
+        encoding = if (flags and 1L == 1L)
+            ColorEncoding.X_565
+        else
+            ColorEncoding.X_555
 
         // Get number of cells wide/high
         val cellsWide = bytesBuffer.uInt16
@@ -78,7 +124,7 @@ class BlkSpriteFile(private val file: VirtualFile) : SpriteFile<BlkSpriteFrame>(
         if (cellsWide * cellsHigh != totalCells) {
             LOGGER.severe("Sprite cells width x height do not match total cells")
         }
-        mFrames = (0 until totalCells).map { i ->
+        return (0 until totalCells).map { i ->
             val offsetForData = bytesBuffer.uInt32 + 4
             if (offsetForData + CELL_BYTES_SIZE > totalBytes) {
                 throw Exception("Invalid byte offset[$i]. Expected < ${totalBytes - CELL_BYTES_SIZE}. Found: $offsetForData")
@@ -138,13 +184,13 @@ class BlkSpriteFile(private val file: VirtualFile) : SpriteFile<BlkSpriteFrame>(
 
     }
 
-    private fun getAndCacheImages() : List<BufferedImage?> {
+    private fun getAndCacheImages(): List<BufferedImage?> {
         return super.images.apply {
             file.putUserData(
                 CACHE_KEY, Cache(
                     cellsWide,
                     cellsHigh,
-                    this,
+                    SpriteReference.create(file, this),
                     encoding == ColorEncoding.X_565
                 )
             )
@@ -191,7 +237,8 @@ class BlkSpriteFrame private constructor(width: Int, height: Int, private val en
 
     private fun decode(bytes: ByteStreamReader, offset: Long): BufferedImage {
         val bytesBuffer = bytes.duplicate()
-        bytesBuffer.position(offset.toInt())
+        bytesBuffer.position(offset)
+        @Suppress("UndesirableClassUsage")
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val toRgb = encoding.toRgb
         for (y in 0 until height) {
@@ -202,6 +249,7 @@ class BlkSpriteFrame private constructor(width: Int, height: Int, private val en
                 image.alphaRaster.setPixel(x, y, SpriteColorUtil.solid)
             }
         }
+        bytesBuffer.close()
         return image
     }
 
@@ -224,4 +272,4 @@ class BlkSpriteFrame private constructor(width: Int, height: Int, private val en
     }
 }
 
-private data class Cache(val cellsWide: Int, val cellsHigh: Int, val images: List<BufferedImage?>, val is565: Boolean)
+private data class Cache(val cellsWide: Int, val cellsHigh: Int, val sprite: SpriteReference, val is565: Boolean)

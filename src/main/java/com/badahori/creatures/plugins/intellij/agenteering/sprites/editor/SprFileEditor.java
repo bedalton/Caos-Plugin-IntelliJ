@@ -21,6 +21,7 @@ public class SprFileEditor {
     private JList<ImageTransferItem> imageList;
     private JComboBox<String> backgroundColor;
     private JComboBox<String> scale;
+    private JScrollPane scrollPane;
     private final List<ImageTransferItem> images;
     public static final String TRANSPARENT = "Transparent";
     public static final String BLACK = "Black";
@@ -34,6 +35,7 @@ public class SprFileEditor {
     private final SpriteCellRenderer cellRenderer = new SpriteCellRenderer();
     private final VirtualFile file;
     private boolean didInit = false;
+    private JLabel loadingLabel;
 
     /**
      * Basic constructor
@@ -52,6 +54,7 @@ public class SprFileEditor {
             return;
         }
         didInit = true;
+        initPlaceholder();
         // Load sprite images
         // Executed on background thread
         loadSprite();
@@ -95,6 +98,10 @@ public class SprFileEditor {
             }
             ApplicationManager.getApplication().invokeLater(() -> {
                 imageList.setListData(images.toArray(new ImageTransferItem[0]));
+                scrollPane.remove(loadingLabel);
+                loadingLabel = null;
+                imageList.setVisible(true);
+                scrollPane.setViewportView(imageList);
             });
         });
     }
@@ -109,6 +116,17 @@ public class SprFileEditor {
             cellRenderer.setScale(newScale);
             imageList.updateUI();
         });
+    }
+
+    private void initPlaceholder() {
+        imageList.setVisible(false);
+        loadingLabel = new JLabel("Loading sprite...", SwingConstants.CENTER) {
+            @Override
+            public Dimension getPreferredSize() {
+                return scrollPane.getSize();
+            }
+        };
+        scrollPane.setViewportView(loadingLabel);
     }
 
     private void initBackgroundColors() {
