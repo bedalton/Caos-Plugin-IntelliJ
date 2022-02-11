@@ -8,10 +8,10 @@ internal fun token(token: String): Int {
     val chars = token.toCharArray()
     if (chars.isEmpty() || chars.size > 4)
         throw CaosInvalidTokenLengthException(chars)
-    return token(chars[0].toInt(), chars[1].toInt(), chars[2].toInt(), chars[3].toInt())
+    return token(chars[0].code, chars[1].code, chars[2].code, chars[3].code)
 }
 
-internal fun token(c1: Char, c2: Char, c3: Char, c4: Char): Int = token(c1.toInt(), c2.toInt(), c3.toInt(), c4.toInt())
+internal fun token(c1: Char, c2: Char, c3: Char, c4: Char): Int = token(c1.code, c2.code, c3.code, c4.code)
 internal fun token(a: Int, b: Int, c: Int, d: Int) = a shl 24 or (b shl 16) or (c shl 8) or d
 
 internal fun binaryToInteger(binary: String): Long {
