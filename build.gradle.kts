@@ -20,7 +20,6 @@ repositories {
 }
 
 dependencies {
-//    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
@@ -29,7 +28,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
     }
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
@@ -54,7 +53,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
     }
-    implementation("bedalton.creatures:CommonCore:0.01") {
+    implementation("bedalton.creatures:CommonCore:0.02") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
@@ -75,18 +74,20 @@ java {
 kotlin {
 
     tasks.withType<KotlinCompile>().all {
-        kotlinOptions.jvmTarget = "11"
-        this.kotlinOptions.apiVersion = "1.5"
-        kotlinOptions.freeCompilerArgs += listOf(
-            "-Xjvm-default=compatibility",
-            "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xopt-in=kotlin.OptIn",
-            "-Xopt-in=kotlin.ExperimentalMultiplatform",
-            "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
-            "-Xopt-in=kotlin.contracts.ExperimentalContracts",
-            "-Xopt-in=ExperimentalJsExport",
-            "-Xopt-in=org.jetbrains.annotations.ApiStatus.Experimental"
-        )
+        kotlinOptions {
+            this.jvmTarget = "11"
+            this.apiVersion = "1.5"
+            this.freeCompilerArgs += listOf(
+                "-Xjvm-default=all-compatibility",
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xopt-in=kotlin.OptIn",
+                "-Xopt-in=kotlin.ExperimentalMultiplatform",
+                "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
+                "-Xopt-in=kotlin.contracts.ExperimentalContracts",
+                "-Xopt-in=ExperimentalJsExport",
+                "-Xopt-in=org.jetbrains.annotations.ApiStatus.Experimental"
+            )
+        }
     }
 
     sourceSets {
