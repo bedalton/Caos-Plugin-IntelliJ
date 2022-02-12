@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.poser.actions
 
+import bedalton.creatures.sprite.util.SpriteType
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
@@ -10,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.setting
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -265,7 +265,7 @@ class AutoPreview : AnAction() {
         val variant = variantIn
             ?: if (mappedParts['a']!!.bodyData.lines.size > 10)
                 CaosVariant.C3
-            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite is S16SpriteFile })
+            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.type == SpriteType.S16})
                 CaosVariant.C2
             else
                 CaosVariant.C1
