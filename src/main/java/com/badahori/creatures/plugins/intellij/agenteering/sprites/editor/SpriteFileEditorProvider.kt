@@ -35,7 +35,7 @@ class SpriteFileEditorProvider : FileEditorProvider, DumbAware {
         return FileEditorPolicy.HIDE_DEFAULT_EDITOR
     }
     companion object {
-        private val spriteFileTypes = listOf("spr", "back",  "blk", "c16", "s16")
+        private val spriteFileTypes = listOf("spr", "c16", "s16")
         private const val EDITOR_TYPE_ID = "creature.spr"
     }
 }

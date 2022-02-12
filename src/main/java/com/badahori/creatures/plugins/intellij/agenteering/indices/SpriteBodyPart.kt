@@ -2,16 +2,15 @@ package com.badahori.creatures.plugins.intellij.agenteering.indices
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileSystem
 
 
 data class SpriteBodyPart(
-    val sprite: SpriteFile<*>,
+    val sprite: SpriteFileHolder,
     val bodyData: AttFileData
 )
 

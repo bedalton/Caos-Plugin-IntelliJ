@@ -1,17 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.MemoryByteStreamReader
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.*
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AuthorBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SpriteBlock
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobFileData
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobToDataObjectDecompiler
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobVirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
@@ -19,7 +21,6 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.EffectType
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -216,16 +217,14 @@ internal class CobSpriteFileTreeNode(
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
-            image?.toPngByteArray()?.let {
-                SpriteImageTreeNode(
-                    nonNullProject,
-                    spritesVirtualFileContainer,
-                    fileNameBase + "$index".padStart(padLength, '0'),
-                    it,
-                    viewSettings = viewSettings
-                )
-            }
-        }.filterNotNull()
+            SpriteImageTreeNode(
+                nonNullProject,
+                spritesVirtualFileContainer,
+                fileNameBase + "$index".padStart(padLength, '0'),
+                image.toPngByteArray(),
+                viewSettings = viewSettings
+            )
+        }
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren

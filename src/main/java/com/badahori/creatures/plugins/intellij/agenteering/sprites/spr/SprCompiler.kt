@@ -2,11 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
 import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.MemoryByteStreamReader
+import bedalton.creatures.sprite.parsers.SprSpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ditherCopy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.soywiz.korim.awt.toAwt
 import org.apache.commons.imaging.palette.SimplePalette
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -136,11 +139,12 @@ object SprCompiler : SpriteCompiler {
     fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean = defaultDither) : BufferedImage {
         val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
-        return SprSpriteFrame(
-            bytes = MemoryByteStreamReader(bytes.toByteArray()),
+        return SprSpriteFile.parseFrame(
+            bytesBuffer = MemoryByteStreamReader(bytes.toByteArray()),
             offset = 0L,
             width = imageIn.width,
-            height = imageIn.height
-        ).decode()!!
+            height = imageIn.height,
+            transparentBlack
+        ).toAwt()
     }
 }
