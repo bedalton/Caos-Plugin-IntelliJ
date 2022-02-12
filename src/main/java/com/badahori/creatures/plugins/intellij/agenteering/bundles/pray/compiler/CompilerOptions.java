@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler;
 
-import bedalton.creatures.pray.compiler.cli.PrayCliOptions;
+import bedalton.creatures.pray.cli.PrayCompilerCliOptions;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import org.jetbrains.annotations.Nullable;
@@ -27,14 +27,14 @@ public class CompilerOptions {
 
     CompilerOptions(
             @Nullable
-            final PrayCliOptions options) {
+            final PrayCompilerCliOptions options) {
         $$$setupUI$$$();
         setCompilerOptions(options);
     }
 
     void setCompilerOptions(
             @Nullable
-            final PrayCliOptions options) {
+            final PrayCompilerCliOptions options) {
         if (options == null) {
             return;
         }
@@ -45,8 +45,8 @@ public class CompilerOptions {
         validatePRAYFileCheckBox.setSelected(options.getValidate());
     }
 
-    public PrayCliOptions getOptions() {
-        return new PrayCliOptions(
+    public PrayCompilerCliOptions getOptions() {
+        return new PrayCompilerCliOptions(
                 mergeScriptsCheckBox.isSelected(),
                 validatePRAYFileCheckBox.isSelected(),
                 "",

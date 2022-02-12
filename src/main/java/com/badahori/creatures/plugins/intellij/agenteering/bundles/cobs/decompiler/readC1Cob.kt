@@ -1,10 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
 import bedalton.creatures.bytes.*
+import bedalton.creatures.sprite.parsers.SprSpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprSpriteFrame
-import com.badahori.creatures.plugins.intellij.agenteering.utils.flipVertical
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
+import com.soywiz.korim.awt.toAwt
 import java.util.*
 
 
@@ -36,7 +37,7 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
     val pictureHeight = int32
     skip(2)
     val image = if (pictureWidth > 0 && pictureHeight > 0)
-        SprSpriteFrame(this, position().toLong(), pictureWidth, pictureHeight).image?.flipVertical()
+        SprSpriteFile.parseFrame(this, position(), pictureWidth, pictureHeight, transparentBlack).flipY().toAwt()
     else
         null
     val agentName = string(uInt8)

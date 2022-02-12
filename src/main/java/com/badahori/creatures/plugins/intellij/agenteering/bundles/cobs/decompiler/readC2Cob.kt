@@ -1,10 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
 import bedalton.creatures.bytes.*
+import bedalton.creatures.sprite.parsers.S16SpriteFile
+import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFrame
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
+import com.soywiz.korim.awt.toAwt
 import java.util.*
 
 
@@ -51,7 +53,7 @@ private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val thumbWidth = uInt16
     val thumbHeight = uInt16
     val image = if (thumbWidth > 0 && thumbHeight > 0)
-        S16SpriteFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565).image
+        S16SpriteFile.parseFrame(this, position(), thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
     else
         null
     skip(thumbWidth * thumbHeight * 2)

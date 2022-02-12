@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDefGeneratorTask
-import org.jetbrains.intellij.releaseType
 
 plugins {
     id("java")
@@ -11,6 +10,9 @@ plugins {
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
 version = "2022.01.00"
+
+
+val korImagesVersion: String by project
 
 repositories {
     mavenLocal()
@@ -46,7 +48,23 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
     }
 
-    implementation("bedalton.creatures:PrayUtil:0.01.0") {
+    implementation("bedalton.creatures:PrayUtil:0.02") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+
+    implementation("bedalton.creatures:SpriteUtil:0.02") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    }
+
+    implementation("com.soywiz.korlibs.korim:korim:$korImagesVersion") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")

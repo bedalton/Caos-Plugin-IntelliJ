@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
-import bedalton.creatures.pray.compiler.cli.PrayCliOptions
+import bedalton.creatures.pray.cli.PrayCompilerCliOptions
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -137,7 +137,7 @@ internal object PrayCompilerToolbarActions {
         }
     }
 
-    private fun getOpts(file: PsiFile, onOpts: (PrayCliOptions?) -> Unit) {
+    private fun getOpts(file: PsiFile, onOpts: (PrayCompilerCliOptions?) -> Unit) {
         val cached = when (file) {
             is CaosScriptFile -> file.compilerSettings
             is PrayFile -> file.compilerSettings

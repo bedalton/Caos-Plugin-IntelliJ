@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang
 
-import bedalton.creatures.pray.compiler.cli.PrayCliOptions
+
+import bedalton.creatures.pray.cli.PrayCompilerCliOptions
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayFileHeader
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayInlineFile
@@ -9,7 +10,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stub
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
@@ -23,7 +23,6 @@ import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.messages.MessageBus
 import stripSurroundingQuotes
 
 class PrayFile constructor(viewProvider: FileViewProvider) :
@@ -64,8 +63,8 @@ class PrayFile constructor(viewProvider: FileViewProvider) :
             }
     }
 
-    private var mCliOptions: PrayCliOptions? = null
-    var compilerSettings: PrayCliOptions?
+    private var mCliOptions: PrayCompilerCliOptions? = null
+    var compilerSettings: PrayCompilerCliOptions?
         get() = mCliOptions ?: getUserData(PRAY_COMPILER_SETTINGS_KEY)
         set(value) {
             mCliOptions = value
@@ -95,9 +94,9 @@ class PrayFile constructor(viewProvider: FileViewProvider) :
 
 
 
-class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<PrayCliOptions?> {
+class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<PrayCompilerCliOptions?> {
 
-    override fun getDefaultValue(): PrayCliOptions = PrayCliOptions(
+    override fun getDefaultValue(): PrayCompilerCliOptions = PrayCompilerCliOptions(
         mergeScripts = false,
         validate = true,
         inputFile = "",
@@ -108,7 +107,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
         generateAgentRemovers = false
     )
 
-    override fun getFileDataKey(): Key<PrayCliOptions?> {
+    override fun getFileDataKey(): Key<PrayCompilerCliOptions?> {
         return PRAY_COMPILER_SETTINGS_KEY
     }
 
@@ -116,7 +115,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
 
     override fun afterRootsChanged(p1: Project) {}
 
-    override fun getImmediateValue(project: Project, file: VirtualFile?): PrayCliOptions? {
+    override fun getImmediateValue(project: Project, file: VirtualFile?): PrayCompilerCliOptions? {
         if (file == null)
             return null
         val local = when (val psi = file.getPsiFile(project)) {
@@ -130,11 +129,11 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
             ?: readFromStorage(file)
     }
 
-    override fun getImmediateValue(module: Module): PrayCliOptions? {
+    override fun getImmediateValue(module: Module): PrayCompilerCliOptions? {
         return null
     }
 
-    override fun persistAttribute(project: Project, file: VirtualFile, variant: PrayCliOptions) {
+    override fun persistAttribute(project: Project, file: VirtualFile, variant: PrayCompilerCliOptions) {
         writeToStorage(file, variant)
     }
 
@@ -149,7 +148,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
     companion object {
         private val PRAY_COMPILER_ATTRIBUTES = FileAttribute("pray_compiler_options", 0, false)
 
-        internal fun readFromStorage(file: VirtualFile): PrayCliOptions? {
+        internal fun readFromStorage(file: VirtualFile): PrayCompilerCliOptions? {
             // If file is not virtual file
             // Bail out as only VirtualFileWithId files
             // Have data that could be read through the stream.
@@ -170,7 +169,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
             val generateScriptRemovers = stream.readBoolean()
             val generateAgentRemovers = stream.readBoolean()
             stream.close()
-            return PrayCliOptions(
+            return PrayCompilerCliOptions(
                 validate = validate,
                 mergeScripts = mergeScripts,
                 mergeRscr = mergeRscr,
@@ -182,7 +181,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
             )
         }
 
-        internal fun writeToStorage(file: VirtualFile, options: PrayCliOptions?) {
+        internal fun writeToStorage(file: VirtualFile, options: PrayCompilerCliOptions?) {
             if (file !is VirtualFileWithId)
                 return
             val stream = PRAY_COMPILER_ATTRIBUTES.writeAttribute(file)
@@ -200,4 +199,4 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
 }
 
 internal val PRAY_COMPILER_SETTINGS_KEY =
-    Key<PrayCliOptions?>("com.badahori.creatures.plugins.intellij.agenteering.bundle.pray.PRAY_COMPILER_SETTINGS")
+    Key<PrayCompilerCliOptions?>("com.badahori.creatures.plugins.intellij.agenteering.bundle.pray.PRAY_COMPILER_SETTINGS")

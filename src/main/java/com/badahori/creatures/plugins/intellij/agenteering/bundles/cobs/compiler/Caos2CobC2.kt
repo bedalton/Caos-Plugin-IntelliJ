@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
 import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
+import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16Compiler
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
