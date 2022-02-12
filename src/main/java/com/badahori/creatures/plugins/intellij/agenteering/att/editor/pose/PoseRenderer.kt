@@ -90,7 +90,7 @@ object PoseRenderer {
             throw Exception("Body pose '${pose.body}' out of bounds. Variant: ${variant.code};")
         }
         val bodyAtt = sprites.body.bodyData[pose.body]
-        val bodySprite = sprites.body.sprite[pose.body]?.image!!
+        val bodySprite = sprites.body.sprite[pose.body]!!
         val bodyPart = RenderPart(bodySprite, Pair(0, 0), visibilityMask['b'] ?: VISIBLE)
 
         // Head
@@ -108,7 +108,7 @@ object PoseRenderer {
             throw Exception("Head pose '${pose.head}->($headPose)' out of bounds.")
         }
         val headPart = RenderPart(
-            head.sprite[pose.head]?.image!!,
+            head.sprite[pose.head]!!,
             bodyAtt[0].let { (bodyHeadX, bodyHeadY) ->
                 val (headX, headY) = head.bodyData[headPose][0]
                 Pair(bodyHeadX - headX, bodyHeadY - headY)
@@ -333,7 +333,7 @@ object PoseRenderer {
             throw Exception("Pose: '$pose' is out of range for part: '$partChar'")
         }
         val thisAtt = part.bodyData[pose][0]
-        val sprite = part.sprite[spritePose]?.image
+        val sprite = part.sprite[spritePose]
             ?: return null
         return RenderPart(sprite, attachAt - thisAtt, visibility)
     }
