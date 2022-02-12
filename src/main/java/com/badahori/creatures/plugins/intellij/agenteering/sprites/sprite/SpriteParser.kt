@@ -65,7 +65,9 @@ object SpriteParser {
             if (virtualFile.extension?.lowercase() != "spr") {
                 bytesBuffer.skip(4)
             }
-            bytesBuffer.uInt16
+            val size = bytesBuffer.uInt16
+            bytesBuffer.close()
+            size
         } catch (e:Exception) {
             null
         }
