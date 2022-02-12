@@ -203,16 +203,9 @@ class DumpSpriteAction : AnAction(
             else -> 5
         }
 
-        // Keep track of skipped files
-        var skipped = 0
-
         // Write each sprite image to the parent directory
         for (i in images.indices) {
             val image = images[i]
-            if (image == null) {
-                skipped++
-                continue
-            }
             CommandProcessor.getInstance().runUndoTransparentAction {
                 // Format File Number
                 val spriteNumber = "$i".padStart(indexLength, '0')
@@ -226,7 +219,7 @@ class DumpSpriteAction : AnAction(
                 createdFiles.add(parentVirtualFile to child)
             }
         }
-        return skipped == 0
+        return true
     }
 
     private fun ensureParentDirectory(path: String, createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>): VirtualFile {

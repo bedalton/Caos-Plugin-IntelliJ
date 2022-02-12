@@ -129,14 +129,14 @@ internal class AttEditorImpl(
             var out: BufferedImage? = image
             if (i % 16 in 4..7) {
                 val repeated =
-                    image == null || (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
+                    (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
                 if (repeated) {
                     try {
-                        out = images[i - 4]?.flipHorizontal() ?: image
-                        if (out?.width != image?.width || out?.height != image?.height) {
+                        out = images[i - 4].flipHorizontal() ?: image
+                        if (out.width != image.width || out.height != image.height) {
                             LOGGER.severe("Failed to properly maintain scale in image.")
                         }
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                     }
                 }
             }

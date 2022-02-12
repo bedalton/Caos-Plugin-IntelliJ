@@ -1,14 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import bedalton.creatures.sprite.parsers.BlkSpriteFile
+import bedalton.creatures.sprite.util.SpriteType
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkSpriteFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteEditorImpl.Companion.cache
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
-import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -20,6 +19,8 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
+import com.soywiz.korim.awt.toAwt
+import com.soywiz.korim.bitmap.Bitmap32
 import java.awt.Dimension
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -30,7 +31,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.*
+import kotlin.math.ceil
+import kotlin.math.floor
 
 
 /**
@@ -39,23 +43,16 @@ import javax.swing.*
 internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDataHolderBase(), FileEditor {
     private val myFile: VirtualFile = file
     private val myProject: Project? = project
-
     private lateinit var mComponent: JScrollPane
     private lateinit var mImage: BufferedImage
     private var isLoading = AtomicBoolean()
     private lateinit var loadingLabel: JLabel
 
-
-    init {
-
-    }
-
-
     override fun getComponent(): JScrollPane {
         if (this::mComponent.isInitialized)
             return mComponent
         val component = JBScrollPane()
-        loadingLabel = object: JLabel("Stitching BLK...", SwingConstants.CENTER) {
+        loadingLabel = object : JLabel("Stitching BLK...", SwingConstants.CENTER) {
             override fun getPreferredSize(): Dimension {
                 return component.size
             }
@@ -133,27 +130,105 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
         if (isLoading.getAndSet(true)) {
             return
         }
-
         if (this::mImage.isInitialized) {
+            isLoading.set(false)
+            return
+        }
+
+        SpriteEditorImpl.fromCacheAsAwt(file)?.getOrNull(0)?.let { image ->
+            setImage(image)
             return
         }
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            try {
-                val (stitched, didDrawAll) = BlkSpriteFile(myFile).getStitched().get()
-                if (!didDrawAll && myProject != null) {
-                    ApplicationManager.getApplication().invokeLater {
-                        CaosNotifications.showWarning(
-                            myProject,
-                            "BLK Preview",
-                            "Failed to draw all cells in BLK preview pane"
-                        )
-                    }
-                }
-                setImage(stitched)
-            } catch (e:Exception) {
-                component.setViewportView(JLabel("Failed to decompile sprite for stitching"))
+            stitchActual()
+        }
+    }
+
+    private fun stitchActual() {
+        val rawImages = try {
+            getRawImages()
+        } catch (e: Exception) {
+            val error = if (e.message?.length.orElse(0) > 0) {
+                "${e::className}: ${e.message}"
+            } else {
+                "${e::className}"
             }
+            showError(myProject, "Failed to parse raw BLK frames. $error")
+            return
+        }
+
+        try {
+            val stitched = stitch(rawImages)
+            cache(file, listOf(stitched))
+            setImage(stitched.toAwt())
+        } catch (e: Exception) {
+            val error = if (e.message?.length.orElse(0) > 0) {
+                "${e::className}: ${e.message}"
+            } else {
+                "${e::className}"
+            }
+            LOGGER.severe(error)
+            e.printStackTrace()
+            showError(myProject, error)
+        } finally {
+            isLoading.set(false)
+        }
+    }
+
+    private fun stitch(rawImages: List<Bitmap32>): Bitmap32 {
+        val stream = VirtualFileStreamReader(file)
+        val (cellsWide, cellsHigh) = try {
+            stream.position(0)
+            BlkSpriteFile.sizeInCells(stream)
+        } finally {
+            if (!stream.closed) {
+                stream.close()
+            }
+        }
+        val mod5 = AtomicInteger(0)
+        return BlkSpriteFile.getStitched(cellsWide, cellsHigh, rawImages) { i, total ->
+            val progress = ceil(i * 100.0 / total)
+            if (progress > mod5.toDouble() * 5) {
+                mod5.set(floor(progress / 5.0).toInt())
+                invokeLater {
+                    loadingLabel.text = "Stitching BLK... " + progress.toInt() + "%"
+                }
+            }
+        }
+    }
+
+    private fun getRawImages(): List<Bitmap32> {
+        val mod5 = AtomicInteger(0)
+        val stream = VirtualFileStreamReader(file)
+        try {
+            val holder = parse(SpriteType.BLK, stream, 5) { i: Int, total: Int ->
+                val progress = ceil((i * 100.0) / total)
+                invokeLater {
+                    loadingLabel.text = "Parsing BLK... " + progress.toInt() + "%      $i/$total"
+                }
+                null
+            }
+            return holder.bitmaps
+        } finally {
+            if (!stream.closed) {
+                stream.close()
+            }
+        }
+    }
+
+    private fun showError(myProject: Project?, error: String) {
+        ApplicationManager.getApplication().invokeLater {
+            if (myProject == null || myProject.isDisposed) {
+                return@invokeLater
+            }
+            CaosNotifications.showWarning(
+                myProject,
+                "BLK Preview",
+                "Failed to draw all cells in BLK preview pane"
+            )
+            component.setViewportView(JLabel("Failed to decompile sprite for stitching. $error"))
+            isLoading.set(false)
         }
     }
 
@@ -232,7 +307,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
                 if (!didCreate) {
                     val builder = DialogBuilder()
                     builder.setTitle("Pose save error")
-                    builder.setErrorText("Failed to create pose file '" + outputFile.name + "' for writing")
+                    builder.setErrorText("Failed to create stitched BLK file '" + outputFile.name + "' for writing")
                     builder.show()
                     return@runWriteAction
                 }
@@ -251,7 +326,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
                     if (bytes == null || bytes.size < 20) {
                         val builder = DialogBuilder()
                         builder.setTitle("Pose save error")
-                        builder.setErrorText("Failed to prepare rendered pose for writing")
+                        builder.setErrorText("Failed to prepare stitched BLK for writing")
                         builder.show()
                         return@runWriteAction
                     }
@@ -260,7 +335,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
             } catch (e: IOException) {
                 val builder = DialogBuilder()
                 builder.setTitle("Pose save error")
-                builder.setErrorText("Failed to save pose image to '" + outputFile.path + "'")
+                builder.setErrorText("Failed to save stitched BLK image to '" + outputFile.path + "'")
                 builder.show()
             }
             val thisFile =

@@ -6,13 +6,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.att.toFileText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTransparentWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
-import java.nio.charset.Charset
 
 internal object AttCopyMirroredUtil {
 
@@ -35,6 +33,7 @@ internal object AttCopyMirroredUtil {
             copyTo.setBinaryContent(newText.toByteArray(CREATURES_CHARACTER_ENCODING))
         }
     }
+
     internal fun mirrorAtt(project: Project, copyFrom: VirtualFile, copyTo: VirtualFile): AttCopyResult {
         validateFileType(copyFrom, copyTo)?.let { error ->
             return error
@@ -64,17 +63,17 @@ internal object AttCopyMirroredUtil {
         val numSprites = copyToSprite.size
         // Offset all ATT lines for present images
         val lines = try {
-            copyFromSprite.images.mapIndexed { i, image ->
+            copyFromSprite.mapIndexed { i, image ->
                 val otherSprite = if (i < numSprites - 2) {
-                    copyToSprite[numSprites - i - 1]!!.image
+                    copyToSprite[numSprites - i - 1]
                 } else {
-                    copyToSprite[i]!!.image
+                    copyToSprite[i]
                 }
                 AttFileLine(
-                    calculateOffset(attLines[i], image!!, otherSprite!!)
+                    calculateOffset(attLines[i], image, otherSprite)
                 )
             }
-        } catch (e:Exception) {
+        } catch (e: Exception) {
             // Most likely thrown from images being null
             return AttCopyResult.Error("Invalid or empty sprite encountered")
         }
@@ -85,7 +84,11 @@ internal object AttCopyMirroredUtil {
      * Calculates the offset of X,Y from the base sprite to the copyTo sprite
      * Offsets are calculated from first visiblePixel and last visible pixel
      */
-    private fun calculateOffset(attLine:AttFileLine, copyFrom:BufferedImage, copyTo:BufferedImage): List<Pair<Int, Int>> {
+    private fun calculateOffset(
+        attLine: AttFileLine,
+        copyFrom: BufferedImage,
+        copyTo: BufferedImage,
+    ): List<Pair<Int, Int>> {
         val fromOffsets = getOffsets(copyFrom)
         val toOffsets = getOffsets(copyTo)
         val fromStartX = fromOffsets.startX
@@ -146,14 +149,14 @@ internal object AttCopyMirroredUtil {
         return null
     }
 
-    private fun getSprite(project: Project, attFile: VirtualFile): SpriteFile<*>? {
+    private fun getSprite(project: Project, attFile: VirtualFile): List<BufferedImage>? {
         val spriteFile = getAnyPossibleSprite(project, attFile)
             ?: return null
-        return SpriteParser.parse(spriteFile)
+        return SpriteParser.parse(spriteFile).images
     }
 
     sealed class AttCopyResult {
-        data class OK(val lines:List<AttFileLine>) : AttCopyResult()
+        data class OK(val lines: List<AttFileLine>) : AttCopyResult()
         data class Error(val error: String) : AttCopyResult()
     }
 
@@ -161,7 +164,7 @@ internal object AttCopyMirroredUtil {
         val startX: Int,
         val endX: Int,
         val startY: Int,
-        val endY: Int
+        val endY: Int,
     )
 
 }

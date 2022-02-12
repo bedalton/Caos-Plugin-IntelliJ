@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.c16
 
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.ColorEncoding
+import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompilerException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
