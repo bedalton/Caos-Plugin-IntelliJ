@@ -8,8 +8,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.EqOp.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.AGENT
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.ASTNode
@@ -21,9 +24,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.elementType
 
 /**
  * Folder for DOIF statement equality expressions
@@ -35,13 +36,15 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
      * Gets command call placeholder text for folding if it should be folded
      */
     override fun getPlaceholderText(node: ASTNode): String? {
+        LOGGER.severe("Getting placeholder, but should already have been set")
         (node.psi as? CaosScriptEqualityExpressionPrime)?.let { expression ->
             expression.getUserData(CACHE_KEY)?.let {
                 if (it.first == expression.text)
                     return it.second
             }
-            if (shouldFold(expression))
+            if (shouldFold(expression)) {
                 return getDoifFold(expression)
+            }
         }
         return null
     }
@@ -51,6 +54,10 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
      */
     private fun getDoifFold(expression: CaosScriptEqualityExpressionPrime): String? {
         ProgressIndicatorProvider.checkCanceled()
+        expression.getUserData(CACHE_KEY)?.let {
+            if (it.first == expression.text)
+                return it.second
+        }
         val variant = expression.variant
             ?: return null
 
@@ -101,7 +108,9 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
     ): FoldingDescriptor? {
         if (!shouldFold(expression))
             return null
-        return FoldingDescriptor(expression.node, expression.textRange, group)
+        val placeholderText = getDoifFold(expression)
+            ?: return null
+        return FoldingDescriptor(expression.node, expression.textRange, group, placeholderText)
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean = true
@@ -203,6 +212,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
 
 
 
+            val otherValueFormatted = formatRvalue(otherValue)?.first?.nullIfEmpty()
             // Package parameters for use in formatting
             // Package was build to prevent having to pass so many parameters to each unique formatting function
             var formatInfo = FormatInfo(
@@ -216,7 +226,8 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 eqOp = eqOp,
                 isBool = false,
                 boolOnLessThan = false,
-                otherValue = formatPrimary(formatRvalue(otherValue)?.first ?: otherValue.text)
+                otherIsMatched = otherValueFormatted != null && otherValueFormatted != otherValue.text,
+                otherValue = formatPrimary(otherValueFormatted ?: otherValue.text)
             )
 
             val hasDriveOrChemical = thisCommandToken in foldableChemicals
@@ -260,6 +271,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             val boolOnLessThan = isBool && extensionType notLike "bool:gt"
             var doubleNegative = isBool && otherValueInt == 0 && (eqOp == GREATER_THAN || eqOp == NOT_EQUAL)
 
+            var isMatched = false
             // Get other value from its values list value
             @Suppress("SpellCheckingInspection") val otherValueText = returnValuesList
                 // Get value as bitflags if possible
@@ -271,6 +283,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             // Get the other value as a values list value
                 ?: otherValueInt.let {
                     returnValuesList?.get(it)?.name?.let { trueValue ->
+                        isMatched = true
                         var out = trueValue
                         if (doubleNegative) {
                             if (trueValue.lowercase()
@@ -291,6 +304,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 eqOp = if (doubleNegative) EQUAL else eqOp,
                 isBool = isBool,
                 boolOnLessThan = boolOnLessThan,
+                otherIsMatched = isMatched,
                 otherValue = formatPrimary(otherValueText ?: formatInfo.otherValue)
             )
         }
@@ -351,7 +365,7 @@ internal val P1P2 = setOf(CaosScript_K__P1_, CaosScript_K__P2_)
 /**
  * Simple lambda to take formatting parameters and format them as needed
  */
-private typealias Formatter = (formatInfo: FormatInfo) -> String
+private typealias Formatter = (formatInfo: FormatInfo) -> String?
 
 // Helper function to quickly get the values list for this rvalue
 private fun getValuesList(variant: CaosVariant, expression: CaosScriptRvalue): CaosValuesList? {
@@ -379,6 +393,7 @@ data class FormatInfo(
     val thisValuesArgs: List<String>,
     val otherValue: String,
     val otherValueInt: Int?,
+    val otherIsMatched: Boolean,
     val reversed: Boolean,
 )
 
@@ -526,7 +541,10 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
  * Format CAGE command to a more readable format
  * Take CAGE > 0 to Is Older Than an Infant
  */
-private val CAGE: Formatter = { formatInfo: FormatInfo ->
+private val CAGE: Formatter = formatter@{ formatInfo: FormatInfo ->
+    if (!formatInfo.otherIsMatched) {
+        return@formatter null
+    }
     val otherValue = formatInfo.otherValue
     when (formatInfo.eqOp) {
         EQUAL -> "Is $otherValue"
@@ -535,7 +553,7 @@ private val CAGE: Formatter = { formatInfo: FormatInfo ->
         LESS_THAN -> "Is younger than a $otherValue"
         GREATER_THAN_EQUAL -> "Is $otherValue or Older"
         LESS_THAN_EQUAL -> "Is $otherValue or Younger"
-        else -> DEFAULT_FORMATTER(formatInfo)
+        else -> null
     }
 }
 
@@ -543,6 +561,9 @@ private val CAGE: Formatter = { formatInfo: FormatInfo ->
  * Formats a HIST CAGE eq operation
  */
 private val HIST_CAGE = formatter@{ formatInfo: FormatInfo ->
+    if (!formatInfo.otherIsMatched) {
+        return@formatter null
+    }
     val moniker = formatInfo.thisValuesArgs.firstOrNull()?.nullIfEmpty()
         ?: return@formatter DEFAULT_FORMATTER(formatInfo)
     val root = CAGE(formatInfo)
@@ -555,15 +576,23 @@ private val HIST_CAGE = formatter@{ formatInfo: FormatInfo ->
  * Formats a time based eq statement
  */
 private val TIME: Formatter = formatter@{ formatInfo: FormatInfo ->
+    if (!formatInfo.otherIsMatched) {
+        return@formatter null
+    }
     val otherValue = formatInfo.otherValue
+    val isPrefix = if (formatInfo.otherValueInt !in 0..4) {
+        "time is"
+    } else {
+        "is"
+    }
     when (formatInfo.eqOp) {
-        EQUAL -> "Is $otherValue"
-        NOT_EQUAL -> "Is not $otherValue"
-        GREATER_THAN -> "Is later than $otherValue"
-        LESS_THAN -> "Is earlier than $otherValue"
-        GREATER_THAN_EQUAL -> "Is $otherValue or Later"
-        LESS_THAN_EQUAL -> "Is $otherValue or Earlier"
-        else -> DEFAULT_FORMATTER(formatInfo)
+        EQUAL -> "$isPrefix $otherValue"
+        NOT_EQUAL -> "$isPrefix not $otherValue"
+        GREATER_THAN -> "$isPrefix later than $otherValue"
+        LESS_THAN -> "$isPrefix earlier than $otherValue"
+        GREATER_THAN_EQUAL -> "$isPrefix $otherValue or Later"
+        LESS_THAN_EQUAL -> "$isPrefix $otherValue or Earlier"
+        else -> null
     }
 }
 
@@ -697,7 +726,7 @@ private val allUpperCase: FormatString = { text: String ->
 }
 
 /**
- * Formats text so each new word is upper cased
+ * Formats text so each new word is upper-cased
  */
 @Suppress("unused")
 private val upperCaseFirstOnAllWords: FormatString = { text: String ->
