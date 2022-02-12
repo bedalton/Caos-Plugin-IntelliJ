@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler
 
-import bedalton.creatures.pray.compiler.cli.PrayCliOptions
-import bedalton.creatures.pray.compiler.cli.compilePrayAndWrite
+import bedalton.creatures.pray.cli.PrayCompilerCliOptions
+import bedalton.creatures.pray.compiler.compilePrayAndWrite
 import bedalton.creatures.pray.compiler.pray.PrayParseValidationFailException
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
@@ -41,7 +41,7 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
     }
 
     companion object {
-        private var lastCLIOptions: PrayCliOptions? = null
+        private var lastCLIOptions: PrayCompilerCliOptions? = null
         private fun isPrayOrCaos2Pray(project: Project, virtualFile: VirtualFile): Boolean {
             val psiFile = virtualFile.getPsiFile(project)
                 ?: return false
@@ -56,7 +56,7 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
             }
         }
 
-        internal fun getOpts(defaultOpts: PrayCliOptions? = lastCLIOptions, apply:(PrayCliOptions?)->Unit) {
+        internal fun getOpts(defaultOpts: PrayCompilerCliOptions? = lastCLIOptions, apply:(PrayCompilerCliOptions?)->Unit) {
             val panel = CompilerOptions(defaultOpts)
             val builder = DialogBuilder()
             builder.setCenterPanel(panel.component)
@@ -89,7 +89,7 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
             }
         }
 
-        internal fun compile(project: Project, filePath: String, opts: PrayCliOptions): String? {
+        internal fun compile(project: Project, filePath: String, opts: PrayCompilerCliOptions): String? {
             val ioFile = File(filePath)
             if (!ioFile.exists()) {
                 invokeLater {
@@ -130,7 +130,7 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
 
 
 
-        private fun compile(project: Project, files: Array<VirtualFile>, opts: PrayCliOptions, indicator: ProgressIndicator) {
+        private fun compile(project: Project, files: Array<VirtualFile>, opts: PrayCompilerCliOptions, indicator: ProgressIndicator) {
             val success = mutableListOf<String>()
             var errors = 0
 

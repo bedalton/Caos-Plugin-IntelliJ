@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
-import bedalton.creatures.pray.compiler.cli.PrayCliOptions
+
+import bedalton.creatures.pray.cli.PrayCompilerCliOptions
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PRAY_COMPILER_SETTINGS_KEY
@@ -108,8 +109,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             }
         }
 
-    private var mCliOptions: PrayCliOptions? = null
-    var compilerSettings: PrayCliOptions?
+    private var mCliOptions: PrayCompilerCliOptions? = null
+    var compilerSettings: PrayCompilerCliOptions?
         get() = mCliOptions ?: getUserData(PRAY_COMPILER_SETTINGS_KEY)
         set(value) {
             mCliOptions = value

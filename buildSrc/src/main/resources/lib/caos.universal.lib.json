@@ -26874,7 +26874,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {1} {0:1}::{0:0} {=} {0:1}::&&",
+      "doifFormat": "{0:0} {1} {0:1}::&&::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [

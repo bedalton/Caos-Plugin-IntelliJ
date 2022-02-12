@@ -1,9 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import bedalton.creatures.bytes.MemoryByteStreamReader
+import bedalton.creatures.sprite.parsers.S16SpriteFile
+import bedalton.creatures.sprite.parsers.SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16SpriteFile
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import java.awt.image.BufferedImage
 import java.util.*
@@ -74,9 +77,9 @@ sealed class CobBlock {
                 reserved: Int,
                 contents: ByteArray
         ) : FileBlock(CobFileBlockType.SPRITE, fileName, reserved, contents) {
-            val file = CaosVirtualFile(fileName, contents)
-            val sprite: S16SpriteFile by lazy {
-                S16SpriteFile(file)
+            val sprite: SpriteFileHolder by lazy {
+                val sprite = S16SpriteFile(MemoryByteStreamReader(contents), false, 1, null)
+                SpriteFileHolder(sprite)
             }
         }
 
