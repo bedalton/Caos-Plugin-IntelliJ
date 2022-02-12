@@ -1,6 +1,7 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.s16
 
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteType
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.impl.PsiManagerImpl

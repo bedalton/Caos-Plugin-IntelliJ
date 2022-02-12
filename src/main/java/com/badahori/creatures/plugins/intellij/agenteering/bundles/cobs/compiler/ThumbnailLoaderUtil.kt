@@ -16,7 +16,7 @@ internal val loadThumbnail: (pictureUrl: String) -> BufferedImage? = { pictureUr
         LocalFileSystem.getInstance().findFileByPath(url)?.let { virtualFile ->
             if (virtualFile.extension likeAny SpriteParser.VALID_SPRITE_EXTENSIONS) {
                 SpriteParser.parse(virtualFile).let {
-                    it.getFrame(frameNumber)!!.decode()
+                    it[frameNumber]
                 } ?: throw Caos2CobException("Failed to load Sprite frame after sprite de-compilation")
             } else {
                 VfsUtil.virtualToIoFile(virtualFile).let { file ->

@@ -54,7 +54,12 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamR
     }
 
     override fun position(): Long {
-        return mReader.position()
+        return mReader.position().let {
+            if (it > 0)
+                it
+            else
+                0
+        }
     }
 
     override fun position(newPosition: Long): ByteStreamReader {

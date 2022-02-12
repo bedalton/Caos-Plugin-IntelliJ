@@ -49,16 +49,14 @@ internal class SpriteFileTreeNode(
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
-            image?.toPngByteArray()?.let {
-                SpriteImageTreeNode(
-                    project,
-                    spritesVirtualFileContainer,
-                    fileNameBase + "$index".padStart(padLength, '0'),
-                    it,
-                    viewSettings
-                )
-            }
-        }.filterNotNull()
+            SpriteImageTreeNode(
+                project,
+                spritesVirtualFileContainer,
+                fileNameBase + "$index".padStart(padLength, '0'),
+                image.toPngByteArray(),
+                viewSettings
+            )
+        }
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren
