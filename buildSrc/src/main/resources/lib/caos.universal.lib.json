@@ -1,5 +1,5 @@
 {
-  "modDate": 1642452453,
+  "modDate": 1644692798,
   "commands": {
     "722": {
       "id": 722,
@@ -14532,7 +14532,10 @@
           "index": 0,
           "name": "type",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 248,
+            "DS": 248
+          },
           "min": null,
           "max": null,
           "description": "",
@@ -14604,7 +14607,10 @@
           "index": 0,
           "name": "type",
           "typeId": 1,
-          "valuesListIds": null,
+          "valuesListIds": {
+            "C3": 248,
+            "DS": 248
+          },
           "min": null,
           "max": null,
           "description": "",
@@ -19484,7 +19490,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "{0:0} {=} {1}::&&",
+      "doifFormat": "{0:0} {1}::&&",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -26931,7 +26937,7 @@
         },
         {
           "index": 1,
-          "name": "value",
+          "name": "agent",
           "typeId": 11,
           "valuesListIds": null,
           "min": null,
@@ -26973,7 +26979,7 @@
         },
         {
           "index": 1,
-          "name": "value",
+          "name": "string",
           "typeId": 4,
           "valuesListIds": null,
           "min": null,
@@ -31877,7 +31883,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "Test Move To {=} {1}",
+      "doifFormat": "Test MoveTo ({0:0},{0:1}) {=} {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -32701,7 +32707,7 @@
       "rvalue": true,
       "lvalue": false,
       "lvalueName": "",
-      "doifFormat": "<{0:0}> is a {1}::<{0:0}> is not a {1}::{0:0} {is} a {1}::{0:0} {=} a {1}",
+      "doifFormat": "{0:0} is a {1}::{0:0} is not a {1}::{0:0} {is} a {1}::{0:0} {=} a {1}",
       "requiresOwnr": 0,
       "requiresCreatureOwnr": false,
       "variants": [
@@ -35426,7 +35432,8 @@
         185,
         158,
         159,
-        182
+        182,
+        "228"
       ]
     },
     "C2": {
@@ -36134,7 +36141,8 @@
         182,
         166,
         154,
-        232
+        232,
+        "230"
       ]
     },
     "CV": {
@@ -37390,7 +37398,7 @@
         205,
         197,
         273,
-        724,
+        274,
         275,
         276
       ]
@@ -38734,6 +38742,7 @@
         96,
         157,
         234,
+        248,
         193,
         195,
         166,
@@ -38791,9 +38800,10 @@
         205,
         197,
         273,
-        724,
+        274,
         275,
-        276
+        276,
+        "229"
       ]
     },
     "DS": {
@@ -40180,6 +40190,7 @@
         96,
         157,
         234,
+        248,
         193,
         195,
         166,
@@ -40241,9 +40252,10 @@
         205,
         197,
         273,
-        724,
+        274,
         275,
-        276
+        276,
+        "229"
       ]
     },
     "SM": {
@@ -41653,7 +41665,7 @@
         205,
         197,
         273,
-        724,
+        274,
         275,
         276
       ]
@@ -41873,6 +41885,116 @@
           "value": "160",
           "name": "Next age@Age",
           "description": "Next life stage of creature for event",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_274": {
+      "id": 274,
+      "variant": "AL",
+      "name": "_P2_",
+      "description": "Name for _P2_ in various event script contexts",
+      "extensionType": null,
+      "base_values_list_id": null,
+      "pattern": null,
+      "values": [
+        {
+          "id": 7312,
+          "valuesListId": 274,
+          "value": "6",
+          "name": "Y-Velocity",
+          "description": "Y collision velocity",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7313,
+          "valuesListId": 274,
+          "value": "75",
+          "name": "Mouse-Y",
+          "description": "New Mouse Y position",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7314,
+          "valuesListId": 274,
+          "value": "120",
+          "name": "Previously selected creature",
+          "description": "The previously selected creature",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7321,
+          "valuesListId": 274,
+          "value": "126",
+          "name": "Speaking creature",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7315,
+          "valuesListId": 274,
+          "value": "127",
+          "name": "Event index",
+          "description": "An index into the events for that moniker.",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7316,
+          "valuesListId": 274,
+          "value": "150",
+          "name": "TargetY",
+          "description": "Y position of approach command's IT object",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7317,
+          "valuesListId": 274,
+          "value": "152",
+          "name": "TargetRoomY",
+          "description": "Y position of room center with the highest (or lowest if retreating) concentration of target IT smell, when there is no IT object",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7318,
+          "valuesListId": 274,
+          "value": "153",
+          "name": "TargetLinkY",
+          "description": "Y position of link center with the highest (or lowest if retreating) concentration of target IT smell, when there is no IT object",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7319,
+          "valuesListId": 274,
+          "value": "154",
+          "name": "RoomY",
+          "description": "Y position of room when creature is in room with highest (or lowest if retreating) concentration of IT smell, when there is no IT object",
           "beforeRegion": null,
           "sub_values": "",
           "ignore_non_specific": false,
@@ -58397,7 +58519,7 @@
         {
           "id": 8231,
           "valuesListId": 281,
-          "value": "cav_useparentmenu::Integer",
+          "value": "cav_useparentmenu",
           "name": "Use Parent Menu::Integer",
           "description": "If non-zero, this causes the engine to deal with extra information such as the countdown clock and birthday agents. These are activated by registry settings",
           "beforeRegion": null,
@@ -58487,6 +58609,1205 @@
           "valuesListId": 71,
           "value": "2",
           "name": "Female",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_228": {
+      "id": 228,
+      "variant": "C1",
+      "name": "Genus",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": 105,
+      "pattern": null,
+      "values": [
+        {
+          "id": 4575,
+          "valuesListId": 228,
+          "value": "2 1",
+          "name": "Hand",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4584,
+          "valuesListId": 228,
+          "value": "2 10",
+          "name": "Animal",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4589,
+          "valuesListId": 228,
+          "value": "2 15",
+          "name": "Weed",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4588,
+          "valuesListId": 228,
+          "value": "2 14",
+          "name": "Big Toy",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4576,
+          "valuesListId": 228,
+          "value": "2 2",
+          "name": "Call(lift call button)",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4586,
+          "valuesListId": 228,
+          "value": "2 12",
+          "name": "Shower\/clock",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4585,
+          "valuesListId": 228,
+          "value": "2 11",
+          "name": "Hot",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4587,
+          "valuesListId": 228,
+          "value": "2 13",
+          "name": "Toy",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4583,
+          "valuesListId": 228,
+          "value": "2 9",
+          "name": "Music(Instruments)",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4582,
+          "valuesListId": 228,
+          "value": "2 8",
+          "name": "Vendor",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4581,
+          "valuesListId": 228,
+          "value": "2 7",
+          "name": "Drink",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4580,
+          "valuesListId": 228,
+          "value": "2 6",
+          "name": "Food",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4579,
+          "valuesListId": 228,
+          "value": "2 5",
+          "name": "Egg",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4578,
+          "valuesListId": 228,
+          "value": "2 4",
+          "name": "Plant (or herb)",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4577,
+          "valuesListId": 228,
+          "value": "2 3",
+          "name": "Invisible",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4590,
+          "valuesListId": 228,
+          "value": "3 1",
+          "name": "Mover (Vehicle)",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4591,
+          "valuesListId": 228,
+          "value": "3 2",
+          "name": "Lift",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4592,
+          "valuesListId": 228,
+          "value": "3 3",
+          "name": "Computer",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4593,
+          "valuesListId": 228,
+          "value": "3 4",
+          "name": "Fun (Projector)",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4594,
+          "valuesListId": 228,
+          "value": "3 5",
+          "name": "Bang (Cannon)",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4595,
+          "valuesListId": 228,
+          "value": "4 1",
+          "name": "Norn",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4596,
+          "valuesListId": 228,
+          "value": "4 2",
+          "name": "Grendel",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4597,
+          "valuesListId": 228,
+          "value": "4 3",
+          "name": "Ettin",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4598,
+          "valuesListId": 228,
+          "value": "4 4",
+          "name": "Shee",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_229": {
+      "id": 229,
+      "variant": "AL",
+      "name": "Genus",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": 105,
+      "pattern": null,
+      "values": [
+        {
+          "id": 4455,
+          "valuesListId": 229,
+          "value": "1 1",
+          "name": "Invisible",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4457,
+          "valuesListId": 229,
+          "value": "1 3",
+          "name": "Favorite Place Signposts",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4458,
+          "valuesListId": 229,
+          "value": "1 4",
+          "name": "Favorite Place Icons",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4456,
+          "valuesListId": 229,
+          "value": "1 2",
+          "name": "User Interface",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4472,
+          "valuesListId": 229,
+          "value": "2 14",
+          "name": "Bad Bug",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4483,
+          "valuesListId": 229,
+          "value": "2 25",
+          "name": "Potion",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4482,
+          "valuesListId": 229,
+          "value": "2 24",
+          "name": "Tool",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4481,
+          "valuesListId": 229,
+          "value": "2 23",
+          "name": "Vendor",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4480,
+          "valuesListId": 229,
+          "value": "2 22",
+          "name": "Incubator",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4479,
+          "valuesListId": 229,
+          "value": "2 21",
+          "name": "Toy",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4478,
+          "valuesListId": 229,
+          "value": "2 20",
+          "name": "Bad",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4477,
+          "valuesListId": 229,
+          "value": "2 19",
+          "name": "Weather",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4475,
+          "valuesListId": 229,
+          "value": "2 17",
+          "name": "Nest",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4474,
+          "valuesListId": 229,
+          "value": "2 16",
+          "name": "Bad Critter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4473,
+          "valuesListId": 229,
+          "value": "2 15",
+          "name": "Good Critter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4476,
+          "valuesListId": 229,
+          "value": "2 18",
+          "name": "Agent Egg",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4471,
+          "valuesListId": 229,
+          "value": "2 13",
+          "name": "Good Bug",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4462,
+          "valuesListId": 229,
+          "value": "2 4",
+          "name": "Good Plant",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4470,
+          "valuesListId": 229,
+          "value": "2 12",
+          "name": "Button",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4459,
+          "valuesListId": 229,
+          "value": "2 1",
+          "name": "Hand",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4460,
+          "valuesListId": 229,
+          "value": "2 2",
+          "name": "Door",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4461,
+          "valuesListId": 229,
+          "value": "2 3",
+          "name": "Seed",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4463,
+          "valuesListId": 229,
+          "value": "2 5",
+          "name": "Bad Plant",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4464,
+          "valuesListId": 229,
+          "value": "2 6",
+          "name": "Leaf",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4465,
+          "valuesListId": 229,
+          "value": "2 7",
+          "name": "Flower",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4466,
+          "valuesListId": 229,
+          "value": "2 8",
+          "name": "Good Fruit",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4467,
+          "valuesListId": 229,
+          "value": "2 9",
+          "name": "Bad Fruit",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4468,
+          "valuesListId": 229,
+          "value": "2 10",
+          "name": "Detritus",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4469,
+          "valuesListId": 229,
+          "value": "2 11",
+          "name": "Food",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4490,
+          "valuesListId": 229,
+          "value": "3 7",
+          "name": "Ettin Home",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4493,
+          "valuesListId": 229,
+          "value": "3 10",
+          "name": "Vehicles",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4492,
+          "valuesListId": 229,
+          "value": "3 9",
+          "name": "Portal",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4491,
+          "valuesListId": 229,
+          "value": "3 8",
+          "name": "Gadget",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4484,
+          "valuesListId": 229,
+          "value": "3 1",
+          "name": "Lift",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4489,
+          "valuesListId": 229,
+          "value": "3 6",
+          "name": "Grendel Home",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4488,
+          "valuesListId": 229,
+          "value": "3 5",
+          "name": "Norn Home",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4487,
+          "valuesListId": 229,
+          "value": "3 4",
+          "name": "Creature Egg",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4486,
+          "valuesListId": 229,
+          "value": "3 3",
+          "name": "Machinery",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4485,
+          "valuesListId": 229,
+          "value": "3 2",
+          "name": "Teleporter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4494,
+          "valuesListId": 229,
+          "value": "4 1",
+          "name": "Norn",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4495,
+          "valuesListId": 229,
+          "value": "4 2",
+          "name": "Grendel",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4496,
+          "valuesListId": 229,
+          "value": "4 3",
+          "name": "Ettin",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4497,
+          "valuesListId": 229,
+          "value": "4 4",
+          "name": "Geat?",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_230": {
+      "id": 230,
+      "variant": "C2",
+      "name": "Genus",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": 105,
+      "pattern": null,
+      "values": [
+        {
+          "id": 4498,
+          "valuesListId": 230,
+          "value": "2 1",
+          "name": "System",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4512,
+          "valuesListId": 230,
+          "value": "2 15",
+          "name": "Bad Plant",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4522,
+          "valuesListId": 230,
+          "value": "2 25",
+          "name": "Fruit",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4521,
+          "valuesListId": 230,
+          "value": "2 24",
+          "name": "Flower",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4520,
+          "valuesListId": 230,
+          "value": "2 23",
+          "name": "Root",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4519,
+          "valuesListId": 230,
+          "value": "2 22",
+          "name": "Leaf",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4518,
+          "valuesListId": 230,
+          "value": "2 21",
+          "name": "Seed",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4499,
+          "valuesListId": 230,
+          "value": "2 2",
+          "name": "Call Button",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4516,
+          "valuesListId": 230,
+          "value": "2 19",
+          "name": "Bad Critter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4515,
+          "valuesListId": 230,
+          "value": "2 18",
+          "name": "Bug",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4514,
+          "valuesListId": 230,
+          "value": "2 17",
+          "name": "Badbug",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4513,
+          "valuesListId": 230,
+          "value": "2 16",
+          "name": "Nest",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4517,
+          "valuesListId": 230,
+          "value": "2 20",
+          "name": "Critter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4511,
+          "valuesListId": 230,
+          "value": "2 14",
+          "name": "Weather",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4509,
+          "valuesListId": 230,
+          "value": "2 12",
+          "name": "Medicine",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4508,
+          "valuesListId": 230,
+          "value": "2 11",
+          "name": "Detritus",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4507,
+          "valuesListId": 230,
+          "value": "2 10",
+          "name": "Cliff Edge",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4506,
+          "valuesListId": 230,
+          "value": "2 9",
+          "name": "Implements",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4505,
+          "valuesListId": 230,
+          "value": "2 8",
+          "name": "Dispenser",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4504,
+          "valuesListId": 230,
+          "value": "2 7",
+          "name": "Drink",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4503,
+          "valuesListId": 230,
+          "value": "2 6",
+          "name": "Processed Food",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4502,
+          "valuesListId": 230,
+          "value": "2 5",
+          "name": "Creature Egg",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4501,
+          "valuesListId": 230,
+          "value": "2 4",
+          "name": "Good Plant",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4500,
+          "valuesListId": 230,
+          "value": "2 3",
+          "name": "Nature",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4510,
+          "valuesListId": 230,
+          "value": "2 13",
+          "name": "Toy",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4529,
+          "valuesListId": 230,
+          "value": "3 7",
+          "name": "Incubator",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4532,
+          "valuesListId": 230,
+          "value": "3 10",
+          "name": "Machine",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4531,
+          "valuesListId": 230,
+          "value": "3 9",
+          "name": "&lt;Empty slot&gt;",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4530,
+          "valuesListId": 230,
+          "value": "3 8",
+          "name": "Teleporter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4524,
+          "valuesListId": 230,
+          "value": "3 2",
+          "name": "Lift",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4528,
+          "valuesListId": 230,
+          "value": "3 6",
+          "name": "LeftRight",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4527,
+          "valuesListId": 230,
+          "value": "3 5",
+          "name": "Messages",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4526,
+          "valuesListId": 230,
+          "value": "3 4",
+          "name": "Fun",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4525,
+          "valuesListId": 230,
+          "value": "3 3",
+          "name": "Computer",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4523,
+          "valuesListId": 230,
+          "value": "3 1",
+          "name": "Mover",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4533,
+          "valuesListId": 230,
+          "value": "4 1",
+          "name": "Norn",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4534,
+          "valuesListId": 230,
+          "value": "4 2",
+          "name": "Grendel",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4535,
+          "valuesListId": 230,
+          "value": "4 3",
+          "name": "Ettin",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 4536,
+          "valuesListId": 230,
+          "value": "4 4",
+          "name": "Geat?",
           "description": null,
           "beforeRegion": null,
           "sub_values": "",
@@ -60655,6 +61976,39 @@
           "value": "17",
           "name": "Warped in",
           "description": "imported through a worm hole",
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        }
+      ]
+    },
+    "list_248": {
+      "id": 248,
+      "variant": "C2",
+      "name": "LocusOrEmitter",
+      "description": null,
+      "extensionType": null,
+      "base_values_list_id": 116,
+      "pattern": null,
+      "values": [
+        {
+          "id": 6323,
+          "valuesListId": 248,
+          "value": "0",
+          "name": "Receptor",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 6324,
+          "valuesListId": 248,
+          "value": "1",
+          "name": "Emitter",
+          "description": null,
           "beforeRegion": null,
           "sub_values": "",
           "ignore_non_specific": false,
