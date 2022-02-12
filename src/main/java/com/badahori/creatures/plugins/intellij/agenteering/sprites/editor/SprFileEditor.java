@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtilKt;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
@@ -14,6 +16,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 @SuppressWarnings("UseJBColor")
 public class SprFileEditor {
@@ -36,6 +40,7 @@ public class SprFileEditor {
     private final VirtualFile file;
     private boolean didInit = false;
     private JLabel loadingLabel;
+    private final Logger LOGGER = Logger.getLogger("#SprFileEditor");
 
     /**
      * Basic constructor
@@ -77,14 +82,25 @@ public class SprFileEditor {
 
             // Initialize sprites
             try {
-                rawImages = SpriteEditorImpl.fromCache(file);
+                rawImages = SpriteEditorImpl.fromCacheAsAwt(file);
+                final AtomicInteger mod5 = new AtomicInteger(0);
                 if (rawImages == null) {
-                    rawImages = SpriteParser.parse(file).getImages();
-                    SpriteEditorImpl.cache(file, rawImages);
+                    final SpriteFileHolder holder = SpriteParser.parse(file, (i, total) -> {
+                        final double progress = Math.ceil((i * 100.0) / total);
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
+                        });
+                        return null;
+                    });
+                    SpriteEditorImpl.cache(file, holder.getBitmaps());
+                    rawImages = holder.getImages();
                 }
             } catch (Exception e) {
                 rawImages = Lists.newArrayList();
-                showException(e);
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    e.printStackTrace();
+                    showException(e);
+                });
             }
 
             // Find number padding for image names for file copy
@@ -171,7 +187,6 @@ public class SprFileEditor {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         main.add(new JLabel("Failed to load sprite images with error: " + exception.getLocalizedMessage()), gbc);
         exception.printStackTrace();
-        return;
     }
 
     private String pad(final int index, final int padLength) {

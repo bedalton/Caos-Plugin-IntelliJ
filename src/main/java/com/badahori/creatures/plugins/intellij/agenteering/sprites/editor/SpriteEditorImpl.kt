@@ -10,6 +10,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korim.awt.toAwt
+import com.soywiz.korim.bitmap.Bitmap32
 import java.awt.image.BufferedImage
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
@@ -75,7 +77,7 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     override fun dispose() {}
 
     override fun <T> getUserData(key: Key<T>): T? {
-        return myFile.getUserData(key);
+        return myFile.getUserData(key)
     }
 
     override fun <T> putUserData(key: Key<T>, value: T?) {
@@ -98,10 +100,10 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
     companion object {
         private const val NAME = "SPREditor"
         private val CACHE_MD5_KEY = Key<String>("creatures.sprites.PARSED_IMAGES_MD5")
-        private val CACHE_KEY = Key<List<BufferedImage>>("creatures.sprites.PARSED_IMAGES")
+        private val CACHE_KEY = Key<List<Bitmap32>>("creatures.sprites.PARSED_IMAGES")
 
         @JvmStatic
-        fun cache(virtualFile: VirtualFile, images:List<BufferedImage>) {
+        fun cache(virtualFile: VirtualFile, images:List<Bitmap32>) {
             virtualFile.putUserData(CACHE_MD5_KEY, null)
             virtualFile.putUserData(CACHE_KEY, null)
             if (images.isEmpty())
@@ -113,12 +115,19 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
         }
 
         @JvmStatic
-        fun fromCache(virtualFile: VirtualFile) : List<BufferedImage>? {
+        fun fromCache(virtualFile: VirtualFile) : List<Bitmap32>? {
             val cachedMD5 = virtualFile.getUserData(CACHE_MD5_KEY)
                 ?: return null
             if (cachedMD5 != virtualFile.md5())
                 return null
             return virtualFile.getUserData(CACHE_KEY).nullIfEmpty()
+        }
+
+        @JvmStatic
+        fun fromCacheAsAwt(virtualFile: VirtualFile) : List<BufferedImage>? {
+            return fromCache(virtualFile)?.map {
+                it.toAwt()
+            }
         }
     }
 }
