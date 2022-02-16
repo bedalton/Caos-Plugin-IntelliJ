@@ -37,14 +37,14 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
      */
     override fun getPlaceholderText(node: ASTNode): String? {
         LOGGER.severe("Getting placeholder, but should already have been set")
-        (node.psi as? CaosScriptEqualityExpressionPrime)?.let { expression ->
-            expression.getUserData(CACHE_KEY)?.let {
-                if (it.first == expression.text)
-                    return it.second
-            }
-            if (shouldFold(expression)) {
-                return getDoifFold(expression)
-            }
+        val expression = node.psi as? CaosScriptEqualityExpressionPrime
+            ?: return null
+        expression.getUserData(CACHE_KEY)?.let {
+            if (it.first == expression.text)
+                return it.second
+        }
+        if (shouldFold(expression)) {
+            return getDoifFold(expression)
         }
         return null
     }
@@ -96,7 +96,11 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             }
             .mapNotNull {
                 ProgressIndicatorProvider.checkCanceled()
-                getFoldingRegion(it, group)
+                if (it.isValid) {
+                    getFoldingRegion(it, group)
+                } else {
+                    null
+                }
             }
             .toTypedArray()
     }
@@ -113,12 +117,15 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
         return FoldingDescriptor(expression.node, expression.textRange, group, placeholderText)
     }
 
-    override fun isCollapsedByDefault(node: ASTNode): Boolean = true
+    override fun isCollapsedByDefault(node: ASTNode): Boolean = node.psi is CaosScriptEqualityExpressionPrime
 
     /**
      * Determines whether to actually fold this command
      */
     private fun shouldFold(expression: CaosScriptEqualityExpressionPrime): Boolean {
+        if (!expression.isValid) {
+            return false
+        }
         val variant = expression.variant
             ?: return false
 
@@ -211,7 +218,6 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             // Check if foldable
 
 
-
             val otherValueFormatted = formatRvalue(otherValue)?.first?.nullIfEmpty()
             // Package parameters for use in formatting
             // Package was build to prevent having to pass so many parameters to each unique formatting function
@@ -254,7 +260,14 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             // Resolve format to an equation
             val format = resolvePattern(pattern)
             // TODO should text be uniformly formatted
-            return format(formatInfo)
+            return format(formatInfo)?.let { out ->
+                if (out.contains("{0") || out.contains("{1")) {
+                    LOGGER.info("Pattern: $pattern;\n$formatInfo")
+                    null
+                } else {
+                    out
+                }
+            }
         }
 
         /**
@@ -375,8 +388,8 @@ private fun getValuesList(variant: CaosVariant, expression: CaosScriptRvalue): C
 
 // Ensures replacement of possibly two eq value expressions
 private val EQ_IS_REGEX = "\\{(is|eq|=)}".toRegex()
-private val A_BEFORE_0 = " a \\{0}".toRegex()
-private val A_BEFORE_1 = " a \\{1}".toRegex()
+private val A_BEFORE_0 = "( a \\{0}|^a \\{0})".toRegex()
+private val A_BEFORE_1 = "( a \\{1}|^a \\{1})".toRegex()
 private val VOWELS = charArrayOf('a', 'e', 'i', 'o', 'u')
 
 /**
@@ -507,15 +520,16 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
     // Replace eq/is in format
     out = out.replace(EQ_IS_REGEX, eqOpText)
 
-    out = if (formatInfo.thisValue[0].lowercase() in VOWELS)
-        out.replace(A_BEFORE_0, "an ${formatInfo.thisValue}")
+    out = if (formatInfo.thisValue[0].lowercase() in VOWELS && out.matches(A_BEFORE_0))
+        out.replace(A_BEFORE_0, " an ${formatInfo.thisValue}")
     else
         out.replace("{0}", formatInfo.thisValue)
 
-    out = if (formatInfo.otherValue[0].lowercase() in VOWELS)
-        out.replace(A_BEFORE_1, "an ${formatInfo.otherValue}")
+    out = if (formatInfo.otherValue[0].lowercase() in VOWELS && out.matches(A_BEFORE_1))
+        out.replace(A_BEFORE_1, " an ${formatInfo.otherValue}")
     else
         out.replace("{1}", formatInfo.otherValue)
+
 
     // Get left side rvalues arguments
     val thisValuesArgs = formatInfo.thisValuesArgs
@@ -773,7 +787,12 @@ private fun getParamName(variant: CaosVariant, containingScriptNumber: Int, this
 }
 
 
-private fun carried(variant: CaosVariant, thisValue: CaosScriptRvalue, otherValue: CaosScriptRvalue, eqOp: EqOp): String? {
+private fun carried(
+    variant: CaosVariant,
+    thisValue: CaosScriptRvalue,
+    otherValue: CaosScriptRvalue,
+    eqOp: EqOp,
+): String? {
     val thisCommandToken = thisValue.commandTokenElementType
     val otherCommandToken = otherValue.commandTokenElementType
     return if ((thisCommandToken == CaosScript_K_CARR || otherCommandToken == CaosScript_K_CARR) && (eqOp == EQUAL || eqOp == NOT_EQUAL)) {
@@ -797,7 +816,7 @@ private fun carried(variant: CaosVariant, thisValue: CaosScriptRvalue, otherValu
             }
         }
     } else if ((thisCommandToken == CaosScript_K_TCAR || otherCommandToken == CaosScript_K_TCAR) && (eqOp == EQUAL || eqOp == NOT_EQUAL)) {
-       return if ((thisCommandToken == CaosScript_K_NULL || thisValue.text == "0") || (otherCommandToken == CaosScript_K_NULL || otherValue.text == "0")) {
+        return if ((thisCommandToken == CaosScript_K_NULL || thisValue.text == "0") || (otherCommandToken == CaosScript_K_NULL || otherValue.text == "0")) {
             if (eqOp == EQUAL) {
                 "TARG is not carried"
             } else {
