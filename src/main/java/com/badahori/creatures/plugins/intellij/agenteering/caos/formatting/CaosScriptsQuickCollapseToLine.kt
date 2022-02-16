@@ -22,6 +22,13 @@ object CaosScriptsQuickCollapseToLine {
             collapse(c2eStringPattern, script)
     }
 
+    fun collapse(isC1e: Boolean, script: String): String {
+        return if (isC1e)
+            collapse(c1eStringPattern, script)
+        else
+            collapse(c2eStringPattern, script)
+    }
+
     private fun collapse(stringRegex:Regex, caosIn: String): String {
         val matches = stringRegex.findAll(caosIn).toList().nullIfEmpty()
         val caos = if (matches != null) {
