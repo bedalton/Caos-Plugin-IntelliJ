@@ -443,9 +443,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
      * Shows family+genus+species breakdown for SETV CLAS statements
      * ie drv! (int) or targ (agent)
      */
-    C1_CLAS_VALUE("Show family+genus+species for CLAS assignment value", true, 100) {
+    C1_CLAS_VALUE("Show family+genus+species for CLAS assignment value", true, 1000) {
 
-        private val setvClasRegexTest = "[Ss][Ee][Tt][Vv]\\s+[Cc][Ll][Aa][Ss].*".toRegex()
+        private val setvClasRegexTest = "[Ss][Ee][Tt][Vv]\\s+[Cc][Ll][Aa][Ss]\\s+\\d+".toRegex()
 
         /**
          * Determines whether to show this parameter hint of not
