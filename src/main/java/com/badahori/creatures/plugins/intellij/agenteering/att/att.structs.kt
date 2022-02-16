@@ -25,7 +25,7 @@ data class AttFileLine( val points: List<Pair<Int,Int>>) {
 /**
  * Holds data about the points in the ATT file by line
  */
-data class AttFileData(val lines:List<AttFileLine>) {
+data class AttFileData(val lines:List<AttFileLine>,  val fileName: String? = null) {
 
     /**
      * Gets a specific line in an ATT file
@@ -82,7 +82,7 @@ object AttFileParser {
      * Parses an ATT file from raw text to a data object, ensuring that there are the expected number of lines and points
      */
     @JvmStatic
-    fun parse(text:String, expectedLines:Int? = null, expectedPoints:Int? = null) : AttFileData {
+    fun parse(text:String, expectedLines:Int? = null, expectedPoints:Int? = null, fileName: String? = null) : AttFileData {
         // Break ATT into lines
         val rawLines = text
             .trimEnd()
@@ -93,14 +93,14 @@ object AttFileParser {
         val lines = (0 until (expectedLines ?: rawLines.size)).map { lineNumber ->
             val line = rawLines.getOrNull(lineNumber) ?: ""
             val intsRaw = line.trim().split(WHITESPACE)
-            val points = (0 until (expectedPoints ?: intsRaw.size)).map { pointIndex ->
+            val points = (0 until (expectedPoints ?: (intsRaw.size / 2))).map { pointIndex ->
                 val x = intsRaw.getOrNull(pointIndex * 2)?.toIntSafe() ?: 0
                 val y = intsRaw.getOrNull(pointIndex * 2 + 1)?.toIntSafe() ?: 0
                 Pair(x, y)
             }
             AttFileLine(points = points)
         }
-        return AttFileData(lines = lines)
+        return AttFileData(lines = lines, fileName = fileName)
     }
     /**
      * Parses an ATT file from virtual file and project, to a data object ensuring that there are the expected number of lines and points
@@ -119,6 +119,6 @@ object AttFileParser {
             }
             AttFileLine(points = points)
         }
-        return AttFileData(lines = lines)
+        return AttFileData(lines = lines, fileName = file.name)
     }
 }

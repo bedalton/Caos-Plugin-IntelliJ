@@ -2,11 +2,13 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils.getExtension
 import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
+import java.awt.AlphaComposite
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -24,6 +26,7 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import kotlin.math.max
 
+
 /**
  * Panel to draw the rendered pose with
  */
@@ -34,6 +37,8 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
         else
             null
     }
+    private val invalidatedAlpha = 0.7F
+    private var mInvalid = false
     private var image: BufferedImage? = null
     private var minSize: Dimension? = null
     var lastDirectory: String? = null
@@ -50,6 +55,11 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
                     showPopUp(e)
             }
         })
+    }
+
+    fun setInvalid(invalid: Boolean) {
+        mInvalid = invalid
+        repaint()
     }
 
     private fun showPopUp(e: MouseEvent) {
@@ -155,8 +165,9 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
     }
 
     fun updateImage(
-        image: BufferedImage
+        image: BufferedImage,
     ) {
+        mInvalid = false
         this.image = image
         if (minSize == null) {
             minSize = size
@@ -168,19 +179,22 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
         )
         preferredSize = size
         minimumSize = minSize
-        revalidate()
-        repaint()
+        invokeLater {
+            revalidate()
+            repaint()
+        }
     }
 
     public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val g2d = g as Graphics2D
+        g2d.clearRect(0, 0, width, height)
+        val image = this.image
         if (image == null) {
-            g2d.clearRect(0, 0, width, height)
             return
         }
         g2d.translate(width / 2, height / 2)
-        g2d.translate(-image!!.getWidth(null) / 2, -image!!.getHeight(null) / 2)
+        g2d.translate(-image.getWidth(null) / 2, -image.getHeight(null) / 2)
         g2d.drawImage(image, 0, 0, null)
     }
 

@@ -16,12 +16,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem.Companion.instance
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
-import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
 class PoseEditorModel(
@@ -33,8 +34,8 @@ class PoseEditorModel(
     private var spriteSet: CreatureSpriteSet? = null
     private var mLocked: Map<Char, BodyPartFiles> = emptyMap()
     private var updating = AtomicBoolean(false)
-    private var mRendering: Boolean = false
-    val rendering: Boolean get() = mRendering
+    private var mRendering: Long? = null
+    val rendering: Boolean get() = mRendering?.let { it < now } ?: false
 
     val locked: Map<Char, BodyPartFiles> get() = mLocked
 
@@ -59,7 +60,7 @@ class PoseEditorModel(
         if (updating.compareAndExchange(false, true)) {
             return
         }
-        GlobalScope.launch launch@{
+        GlobalScope.launch(Dispatchers.IO) launch@{
             if (project.isDisposed) {
                 updating.set(false)
                 Exception().printStackTrace()
@@ -93,6 +94,8 @@ class PoseEditorModel(
                 hair = mappedParts['q']?.data(project)
             )
 
+            LOGGER.info(mappedParts.entries.joinToString("\n") { "${it.key}: {${it.value?.bodyDataFile?.path}" })
+
             spriteSet = sprites
             poseEditor.setFiles(mappedParts.values.filterNotNull())
             @Suppress("SpellCheckingInspection")
@@ -111,13 +114,15 @@ class PoseEditorModel(
             return
         }
 
-        GlobalScope.launch launch@{
+        GlobalScope.launch(Dispatchers.IO) launch@{
             if (project.isDisposed) {
                 return@launch
             }
             if (DumbService.isDumb(project)) {
                 updating.set(false)
-                DumbService.getInstance(project).runWhenSmart(::updateFiles)
+                DumbService.getInstance(project).runWhenSmart {
+                    executeOnPooledThread(this@PoseEditorModel::updateFiles)
+                }
                 return@launch
             }
             try {
@@ -131,13 +136,21 @@ class PoseEditorModel(
         }
     }
 
+    var progressIndicator: ProgressIndicator? = null
     fun requestRender(vararg parts: Char) {
-        GlobalScope.launch {
-            requestRenderAsync(*parts)
+        GlobalScope.launch(Dispatchers.IO) {
+            progressIndicator?.cancel()
+            val indicator = EmptyProgressIndicator()
+            progressIndicator = indicator
+            try {
+                requestRenderAsync(indicator, *parts)
+            } catch (e: ProcessCanceledException) {
+//                LOGGER.info("RenderJob: ${renderJob.get()}; Request: $requestId")
+            }
         }
     }
 
-    private fun requestRenderAsync(vararg parts: Char): Boolean {
+    private fun requestRenderAsync(progressIndicator: ProgressIndicator, vararg parts: Char): Boolean {
         if (project.isDisposed) {
             return false
         }
@@ -145,19 +158,25 @@ class PoseEditorModel(
 //            return false
         }
         if (DumbService.isDumb(project)) {
+            progressIndicator.checkCanceled()
             DumbService.getInstance(project).runWhenSmart {
+                progressIndicator.checkCanceled()
                 requestRender(*parts)
             }
             return false
         }
-        if (mRendering) {
-            return true;
+        if (rendering) {
+//            return true
         }
-//        mRendering = true
+
+        progressIndicator.checkCanceled()
+        mRendering = now + 900
+
         val updatedSprites = try {
-            getUpdatedSpriteSet(*parts)
+            getUpdatedSpriteSet(progressIndicator, *parts)
         } catch (e: java.lang.Exception) {
-            mRendering = false;
+            progressIndicator.checkCanceled()
+            mRendering = null
             LOGGER.severe("Failed to located required sprites Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
             e.printStackTrace()
             poseEditor.setRendered(null)
@@ -167,23 +186,46 @@ class PoseEditorModel(
             if (!updating.get()) {
                 LOGGER.severe("Failed to update sprite sets without reason")
             }
-            mRendering = false
+
+            progressIndicator.checkCanceled()
+            mRendering = null
             return false
         }
+        progressIndicator.checkCanceled()
+        val updatedPose: Pose = invokeAndWaitIfNeeded {
+            try {
+                poseEditor.updatePoseAndGet(progressIndicator, *parts)
+            } catch (e: ProcessCanceledException) {
+                null
+            }
+        } ?: return false
 
-        val updatedPose: Pose = invokeAndWaitIfNeeded { poseEditor.updatePoseAndGet(*parts) }
+        progressIndicator.checkCanceled()
         val visibilityMask = poseEditor.getVisibilityMask() ?: mapOf()
+
+        progressIndicator.checkCanceled()
+
         return try {
             val image = render(variant, updatedSprites, updatedPose, visibilityMask, poseEditor.zoom)
-            poseEditor.setRendered(image)
+            progressIndicator.checkCanceled()
+            invokeLater {
+                progressIndicator.checkCanceled()
+                poseEditor.setRendered(image)
+            }
+
+            LOGGER.info(updatedSprites.asMap().entries.joinToString("\n") { (key, data) ->  "${key}: ${data?.bodyData?.fileName ?: data?.sprite?.fileName }" })
             true
+        } catch (e: ProcessCanceledException) {
+            return false
         } catch (e: java.lang.Exception) {
             LOGGER.severe("Failed to render pose. Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
             e.printStackTrace()
+            progressIndicator.checkCanceled()
             poseEditor.setRendered(null)
             false
         } finally {
-            mRendering = false
+            progressIndicator.checkCanceled()
+            mRendering = null
         }
     }
 
@@ -337,12 +379,13 @@ class PoseEditorModel(
         requestRender(*chars)
     }
 
-    fun getUpdatedSpriteSet(vararg parts: Char): CreatureSpriteSet? {
+    private fun getUpdatedSpriteSet(progressIndicator: ProgressIndicator, vararg parts: Char): CreatureSpriteSet? {
         if (project.isDisposed) {
             return null
         }
         val updatedSprites = SpriteSetUtil.getUpdatedSpriteSet(
             project,
+            progressIndicator,
             spriteSet,
             poseEditor.getBreedFiles(PartGroups.HEAD),
             poseEditor.getBreedFiles(PartGroups.BODY),
@@ -414,6 +457,7 @@ enum class PartGroups {
     HAIR
 }
 
+@Suppress("unused")
 enum class Part(partChar: Char) {
     HEAD('a'),
     Body('b'),

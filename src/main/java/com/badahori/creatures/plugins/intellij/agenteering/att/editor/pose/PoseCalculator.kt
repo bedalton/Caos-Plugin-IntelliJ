@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.intellij.openapi.progress.ProgressIndicator
 import java.util.*
 import java.util.logging.Logger
 import kotlin.math.floor
@@ -357,6 +358,7 @@ object PoseCalculator {
      */
     @JvmStatic
     fun getUpdatedPose(
+        progressIndicator: ProgressIndicator?,
         variant: CaosVariant,
         pose: Pose?,
         facingDirection: Int,
@@ -383,6 +385,7 @@ object PoseCalculator {
 
         // Go through each part passed in for updating, and update it.
         for (part in parts) {
+            progressIndicator?.checkCanceled()
             if (part !in PoseEditorSupport.allParts)
                 continue
             when (part) {

@@ -7,10 +7,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
-import org.jetbrains.rpc.LOG
 import java.awt.Color
 import java.awt.Component
 import java.awt.datatransfer.DataFlavor
@@ -111,7 +110,7 @@ interface BreedPoseHolder {
     fun setFiles(files: List<BodyPartFiles>)
     fun setRendered(image: BufferedImage?)
     fun getPartPose(partChar: Char): Int?
-    fun updatePoseAndGet(vararg parts: Char): Pose
+    fun updatePoseAndGet(progressIndicator: ProgressIndicator?, vararg parts: Char): Pose
     fun getVisibilityMask(): Map<Char, PoseRenderer.PartVisibility>?
     fun getPartPose(part: Char, facingDirection: Int, offset: Int): Int?
     fun getHeadPoseActual(): Int

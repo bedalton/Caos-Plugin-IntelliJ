@@ -3,8 +3,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
 import bedalton.creatures.structs.Pointer
+import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.validSpriteExtensions
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
@@ -21,7 +23,10 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.search.GlobalSearchScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 
 
@@ -30,7 +35,7 @@ object BodyPartsIndex {
 
     internal val BODY_DATA_ATT_KEY = Key<Pointer<Pair<Int, VirtualFile>?>?>("creatures.body-part.att-with-index")
 
-    private const val THIS_INDEX_VERSION = 5
+    private const val THIS_INDEX_VERSION = 6
 
     // Compound version to force a reindex if any of the sourced indices change
     const val VERSION = THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
@@ -67,7 +72,7 @@ object BodyPartsIndex {
             if (DumbService.isDumb(project)) {
                 emptyList()
             } else {
-                BreedSpriteIndex.findMatching(project, variant, variantScope, progressIndicator)
+                AttFilesByVariantIndex.findMatching(project, variant, variantScope)//, progressIndicator)
             }
         }
 
@@ -102,7 +107,7 @@ object BodyPartsIndex {
             if (DumbService.isDumb(project)) {
                 emptyList()
             } else {
-                BreedSpriteIndex.findMatching(project, searchKey, newScope, progressIndicator)
+                AttFilesIndex.findMatching(project, searchKey, newScope, progressIndicator)
             }
         }
     }
@@ -128,8 +133,8 @@ object BodyPartsIndex {
         }
 
         // Get the actual sprites
-        val spriteFiles: Collection<VirtualFile> = try {
-            readNonBlocking {
+        val attFiles: Collection<VirtualFile> = try {
+            readNonBlocking(coroutineScope) {
                 supplier(newScope)
             }
         } catch (e: Exception) {
@@ -142,7 +147,7 @@ object BodyPartsIndex {
 
         // Match sprites to ATTs
         val files = try {
-            matchSpritesToAtts(project, spriteFiles, searchScope, variant, progressIndicator)
+            matchSpritesToAtts(project, attFiles, searchScope, variant, progressIndicator)
         } catch (e: Exception) {
             if (e !is ProcessCanceledException) {
                 LOGGER.severe("variantParts() -> Exception encountered in match sprites to atts. Error: ${e.message}")
@@ -154,53 +159,53 @@ object BodyPartsIndex {
 
     private suspend fun matchSpritesToAtts(
         project: Project,
-        spriteFiles: Collection<VirtualFile>,
+        attFiles: Collection<VirtualFile>,
         searchScope: GlobalSearchScope? = null,
         variant: CaosVariant?,
         progressIndicator: ProgressIndicator?,
     ): List<BodyPartFiles> {
         // If there are no att files, there is nothing to do
-        if (spriteFiles.isEmpty()) {
+        if (attFiles.isEmpty()) {
             return emptyList()
         }
 
         progressIndicator?.checkCanceled()
 
         // Match atts to sprites
-        val out: List<BodyPartFiles> = spriteFiles
+        val out: List<BodyPartFiles> = attFiles
             .mapAsync map@{ spriteFile ->
                 if (!spriteFile.isValid) {
                     return@map null
                 }
-                matchSprite(project, variant, spriteFile, searchScope, progressIndicator)
+                matchOther(project, variant, spriteFile, searchScope, progressIndicator)
             }.filterNotNull()
 
         return out.distinctBy { it.spriteFile.path }
     }
 
 
-    private suspend fun matchSprite(
+    private suspend fun matchOther(
         project: Project,
         variant: CaosVariant?,
-        spriteFile: VirtualFile,
+        baseFile: VirtualFile,
         searchScope: GlobalSearchScope?,
         progressIndicator: ProgressIndicator?,
     ): BodyPartFiles? {
         progressIndicator?.checkCanceled()
         // Get the sprite search key
-        val key = BreedPartKey.fromFileName(spriteFile.name, variant)
+        val key = BreedPartKey.fromFileName(baseFile.name, variant)
             ?: return null
 
 
         // If part has been matched, even if it is empty
         // Stop after checking or using
-        val bodyPartFile = restoreCached(spriteFile)
+        val bodyPartFile = restoreCached(baseFile)
         if (bodyPartFile != null) {
             return bodyPartFile
         }
 
 
-        val generalScope = spriteFile
+        val generalScope = baseFile
             .getModule(project)
             ?.moduleContentScope
             ?: GlobalSearchScope.projectScope(project)
@@ -212,24 +217,24 @@ object BodyPartsIndex {
         else
             generalScope
 
-        val childAtts = spriteFile
+        val childAtts = baseFile
             .parent
             .children
             .filter { childFile ->
                 progressIndicator?.checkCanceled()
-                childFile.extension?.lowercase() == "att" &&
+                childFile.extension?.lowercase() in variant.validSpriteExtensions &&
                         !childFile.isDirectory &&
                         BreedPartKey.isPartName(childFile.name, variant)
             }
 
         val strict = childAtts.isNotEmpty()
 
-        var matchingAtt: VirtualFile? = null
+        var matchingSprite: VirtualFile? = null
 
         // Find sprites under parent
         // TODO, find nearest path to parent
         if (strict) {
-            matchingAtt = childAtts
+            matchingSprite = childAtts
                 .sortedBy {
                     BreedPartKey.fromFileName(it.name, variant)
                         ?.let { aKey ->
@@ -238,7 +243,7 @@ object BodyPartsIndex {
                 }
                 .firstOrNull()
         } else {
-            val parent = spriteFile.parent
+            val parent = baseFile.parent
 
             val keys = listOf(
                 key,
@@ -246,17 +251,17 @@ object BodyPartsIndex {
             )
             for (theKey in keys) {
                 progressIndicator?.checkCanceled()
-                val atts: Collection<VirtualFile> = readNonBlocking {
+                val sprites: Collection<VirtualFile> = readNonBlocking {
                     if (DumbService.isDumb(project)) {
                         return@readNonBlocking emptyList()
                     }
-                    AttFilesIndex.findMatching(project, theKey, searchScope, progressIndicator)
+                    BreedSpriteIndex.findMatching(project, theKey, searchScope, progressIndicator)
                 }
-                var matching: List<VirtualFile> = atts
+                var matching: List<VirtualFile> = sprites
                     .breedFileSort(
                         variant,
                         key,
-                        spriteFile.parent
+                        baseFile.parent
                     )
                 matching = readNonBlocking {
                     matching.filter {
@@ -266,10 +271,10 @@ object BodyPartsIndex {
                 if (matching.isEmpty())
                     continue
 
-                matchingAtt = readNonBlocking {
+                matchingSprite = readNonBlocking {
                     nearby(parent, matching, scope)
                 }
-                if (matchingAtt != null) {
+                if (matchingSprite != null) {
                     break
                 }
             }
@@ -277,19 +282,19 @@ object BodyPartsIndex {
 
         // Set result, whether good or bad
         // That way we do not need to keep checking it
-        val pointer = Pointer(matchingAtt?.let { Pair(VERSION, it) })
-        SpriteAttPathPropertyPusher.writeToStorage(spriteFile, pointer)
-        return if (matchingAtt != null) {
-            bundle(spriteFile, matchingAtt)!!
+        val pointer = Pointer(matchingSprite?.let { Pair(VERSION, it) })
+        SpriteAttPathPropertyPusher.writeToStorage(baseFile, pointer)
+        return if (matchingSprite != null) {
+            bundle(baseFile, matchingSprite)!!
         } else {
             return null
         }
     }
 
-    private fun bundle(spriteFile: VirtualFile, matchingAtt: VirtualFile?): BodyPartFiles? {
+    private fun bundle(attFile: VirtualFile, matchingSprite: VirtualFile?): BodyPartFiles? {
         // If sprite was found, add it to list of body parts
-        if (matchingAtt != null) {
-            return BodyPartFiles(spriteFile = spriteFile, bodyDataFile = matchingAtt)
+        if (matchingSprite != null) {
+            return BodyPartFiles(spriteFile = matchingSprite, bodyDataFile = attFile)
         }
         return null
     }
@@ -311,16 +316,16 @@ object BodyPartsIndex {
     }
 
 
-    private fun restoreCached(spriteFile: VirtualFile): BodyPartFiles? {
-        val attPointer = SpriteAttPathPropertyPusher.readFromStorage(spriteFile)
+    private fun restoreCached(attFile: VirtualFile): BodyPartFiles? {
+        val attPointer = SpriteAttPathPropertyPusher.readFromStorage(attFile)
             ?: return null
         val pointerValue = attPointer.value
             ?: return null
-        val (indexVersion, att) = pointerValue
-        if (indexVersion == VERSION && att.isValid && att.exists()) {
-            return BodyPartFiles(spriteFile = spriteFile, bodyDataFile = att)
+        val (indexVersion, spriteFile) = pointerValue
+        if (indexVersion == VERSION && spriteFile.isValid && spriteFile.exists()) {
+            return BodyPartFiles(spriteFile = spriteFile, bodyDataFile = attFile)
         }
-        SpriteAttPathPropertyPusher.writeToStorage(spriteFile, null)
+        SpriteAttPathPropertyPusher.writeToStorage(attFile, null)
         return null
     }
 
@@ -350,13 +355,27 @@ object BodyPartsIndex {
                 throw Exception("Breed part does not actually match key")
             }
 
-            val bodyPart = breedPartFiles?.firstOrNull first@{ partFiles ->
-                partFiles.spriteFile.isValid
-                        && partFiles.bodyDataFile.isValid
-                        && partFiles.key!!.part == part
-                        && isAncestor(directory, parent, partFiles.spriteFile)
-                        && isAncestor(directory, parent, partFiles.bodyDataFile)
-            }
+
+            val bodyPart = breedPartFiles
+                ?.filter first@{ partFiles ->
+                    partFiles.spriteFile.isValid
+                            && partFiles.bodyDataFile.isValid
+                            && partFiles.key!!.part == part
+                            && isAncestor(directory, parent, partFiles.spriteFile)
+                            && isAncestor(directory, parent, partFiles.bodyDataFile)
+                }?.sortedBy {
+                    val age = it.bodyDataFile.name[2].lowercase() - 'a'
+                    if (bodyPartKey.ageGroup != null) {
+                        if (age < bodyPartKey.ageGroup) {
+                            bodyPartKey.ageGroup - age
+                        } else {
+                            age
+                        }
+                    } else {
+                        0
+                    }
+                }
+                ?.firstOrNull()
 
             if (bodyPart == null && part in 'a'..'l') {
                 return null
@@ -595,10 +614,13 @@ internal fun Iterable<VirtualFile>.breedFileSort(
 
 private val nonBlockingExecutor by lazy { Executors.newCachedThreadPool() }
 
-internal fun <T> readNonBlocking(
+internal suspend fun <T> readNonBlocking(
+    coroutineScope: CoroutineScope = GlobalScope,
     task: () -> T,
 ): T {
-    return runReadAction(task)
+    return withContext(coroutineScope.coroutineContext) {
+        runReadAction(task)
+    }
 }
 //
 //fun <T> readNonBlocking(

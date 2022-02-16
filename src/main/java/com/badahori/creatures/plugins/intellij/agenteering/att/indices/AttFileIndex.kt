@@ -11,14 +11,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.VariantIndexer
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.*
 import com.intellij.util.io.KeyDescriptor
 
-class AttFileByVariantIndex : ScalarIndexExtension<CaosVariant>() {
+class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
     override fun getName(): ID<CaosVariant, Void> = NAME
 
     override fun getIndexer(): DataIndexer<CaosVariant, Void, FileContent> = VariantIndexer

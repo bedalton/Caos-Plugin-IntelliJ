@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.soywiz.korma.math.min
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -72,7 +73,7 @@ internal class AttSpriteCellComponent : JPanel() {
             imageValue
         }
 
-        val scaledPoints: List<Pair<Int, Int>> = value.points.map {
+        val scaledPoints: List<Pair<Int, Int>> = value.points.subList(0, minOf(6, value.points.size)).map {
             Pair(floor(it.first * scale).toInt(), floor(it.second * scale).toInt())
         }
 
@@ -284,8 +285,8 @@ internal class AttSpriteCellList(
 }
 
 interface OnChangePoint {
-    fun onChangePoint(index: Int, newPoint: Pair<Int, Int>)
-    fun onShiftPoint(index: Int, offset: Pair<Int, Int>)
+    fun onChangePoint(lineNumber: Int, newPoint: Pair<Int, Int>)
+    fun onShiftPoint(lineNumber: Int, offset: Pair<Int, Int>)
 }
 
 interface HasSelectedCell {
