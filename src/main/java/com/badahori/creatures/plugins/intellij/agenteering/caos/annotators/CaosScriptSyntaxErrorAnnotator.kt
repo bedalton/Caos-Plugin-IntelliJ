@@ -507,7 +507,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             return
         }
 
-        if (element is CaosScriptSwiftEscapeLiteral && allowSwift(element)) {
+        if (element.swiftEscapeLiteral != null && allowSwift(element)) {
             return
         }
 
