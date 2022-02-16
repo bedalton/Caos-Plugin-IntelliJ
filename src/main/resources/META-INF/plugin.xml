@@ -1192,7 +1192,7 @@
     <fileBasedIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex"
     />
     <fileBasedIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFileByVariantIndex"
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex"
     />
 
     <lang.parserDefinition
