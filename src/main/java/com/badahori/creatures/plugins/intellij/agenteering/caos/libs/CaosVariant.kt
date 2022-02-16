@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import icons.CaosScriptIcons
@@ -123,7 +124,7 @@ fun CaosVariant?.orDefault(): CaosVariant? {
     return CaosScriptProjectSettings.variant
 }
 
-val VARIANT_OLD = listOf(CaosVariant.C1, CaosVariant.C2)
+val VARIANT_OLD = listOf(C1, C2)
 
 typealias GameVariant = CaosVariant
 
@@ -131,8 +132,8 @@ typealias GameVariant = CaosVariant
 val CaosVariant.injectorInterfaceName: String?
     get() {
         return when (this) {
-            CaosVariant.C1, CaosVariant.C2 -> "Vivarium"
-            CaosVariant.CV -> "Creatures Village"
+            C1, C2 -> "Vivarium"
+            CV -> "Creatures Village"
             CaosVariant.C3 -> "Creatures 3"
             CaosVariant.DS -> "Docking Station"
             CaosVariant.SM -> "Sea-Monkeys"
@@ -217,4 +218,14 @@ infix fun CaosVariant?.notLikeOrNull(other: CaosVariant?): Boolean {
     if (variant == otherVariant)
         return false
     return !(variant.isC3DS && otherVariant.isC3DS)
+}
+
+
+val CaosVariant?.validSpriteExtensions: List<String> get() {
+    return when(this) {
+        C1 -> listOf("spr")
+        C2 -> listOf("s16")
+        CV, C3, DS -> listOf("s16", "c16")
+        else -> listOf("spr", "s16", "c16")
+    }
 }

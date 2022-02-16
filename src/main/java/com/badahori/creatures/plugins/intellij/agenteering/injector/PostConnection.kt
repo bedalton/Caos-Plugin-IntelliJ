@@ -106,11 +106,17 @@ internal class PostConnection(urlString: String, variant: CaosVariant?) : CaosCo
     ): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
+        // Does not have expected event script header
         val caosFormatted = if (!caos.trim().lowercase().startsWith(expectedHeader)) {
-            if (removalRegex.matches(caos)) {
-                caos.replace(removalRegex, "")
-            } else
-                "$expectedHeader $caos"
+            // If script has a header, but for a different family, genus, species and event number
+            // Replace the bad header with the correct one
+            val stripped = if (removalRegex.matches(caos)) {
+                caos.replace(removalRegex, "").trim()
+            } else {
+                caos.trim()
+            }
+            // Combine the expected header with the script body
+            "$expectedHeader $stripped"
         } else
             caos
         return inject(caosFormatted)
