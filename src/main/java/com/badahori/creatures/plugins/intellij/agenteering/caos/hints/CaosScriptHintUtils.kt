@@ -284,7 +284,7 @@ private fun formatRoomPropRvalue(rvalue: CaosScriptRvalue): Pair<String, TextRan
 internal fun getC1ClasText(element: PsiElement): String? {
     val rvalue = element as? CaosScriptRvalue
         ?: return null
-    if ((element.parent as? CaosScriptCommandCall)?.lvalue?.text?.uppercase() != "CLAS") {
+    if ((element.parent as? CaosScriptCAssignment)?.lvalue?.text?.uppercase() != "CLAS") {
         return null
     }
     val clasValue = rvalue.intValue
