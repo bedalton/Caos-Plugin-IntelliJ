@@ -50,16 +50,23 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         val ignoredFilenames: List<String> = listOf(),
         val defaultPoseString: String = "313122122111111",
         val lastGameInterfaceNames: List<String> = listOf(),
-        @Transient
-        var injectionCheckDisabled: Boolean = false,
         var useJectByDefault: Boolean = false,
         var isAutoPoseEnabled: Boolean = false,
     ) {
+
+        @Transient
+        private var mInjectionCheckDisabled: Boolean = false
+
+        val injectionCheckDisabled: Boolean get() = mInjectionCheckDisabled
+
+        fun disableInjectionCheck(disable: Boolean) {
+            mInjectionCheckDisabled = disable
+        }
+
         /**
          * Checks if this settings object is set to the given CAOS variant
          */
         fun isVariant(variant: CaosVariant): Boolean = variant == this.lastVariant
-
     }
 
     private fun onUpdate() {

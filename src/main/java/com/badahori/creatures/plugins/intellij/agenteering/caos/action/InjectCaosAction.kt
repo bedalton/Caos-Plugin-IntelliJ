@@ -32,7 +32,6 @@ import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
-import kotlin.math.min
 
 @Suppress("ComponentNotRegistered", "unused")
 internal class InjectCaosAction : AnAction(
@@ -64,7 +63,7 @@ internal fun caosInject(
     project: Project,
     variant: CaosVariant,
     gameInterfaceName: GameInterfaceName,
-    caosFile: CaosScriptFile
+    caosFile: CaosScriptFile,
 ) {
 
     val checkedSettings = JectSettings()
@@ -74,14 +73,7 @@ internal fun caosInject(
 
     // If virtual file is valid run check for validity
     caosFile.virtualFile?.let { virtualFile ->
-        if (CaosScriptProjectSettings.injectionCheckDisabled || project.settings.injectionCheckDisabled)
-            return
-        val detector = CodeSmellDetector.getInstance(project)
-        val smells = detector.findCodeSmells(listOf(virtualFile))
-            .filter {
-                it.severity == HighlightSeverity.ERROR
-            }
-        if (smells.isNotEmpty()) {
+        if (!isValidForInject(project, virtualFile)) {
             CaosInjectorNotifications
                 .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
                 .addAction(object : AnAction("Ignore for Session and Inject") {
@@ -108,7 +100,7 @@ private fun injectActual(
     project: Project,
     variant: CaosVariant,
     gameInterfaceName: GameInterfaceName,
-    caosFile: CaosScriptFile
+    caosFile: CaosScriptFile,
 ) {
     // If variant is CV+ ask which parts of the file to inject
     if (variant.isNotOld || caosFile.isCaos2Cob) {
@@ -148,7 +140,7 @@ private fun injectActual(
 }
 
 internal data class ScriptBundle(
-    val scripts: Collection<CaosScriptScriptElement>
+    val scripts: Collection<CaosScriptScriptElement>,
 ) {
     val eventScripts by lazy {
         scripts.filterIsInstance<CaosScriptEventScript>()
@@ -176,7 +168,7 @@ internal data class JectSettings(
     var injectRemovalScriptsSelected: Boolean = true,
     var injectEventScriptsSelected: Boolean = true,
     var injectInstallScriptsSelected: Boolean = true,
-    var injectLinkedFiles: Boolean = false
+    var injectLinkedFiles: Boolean = false,
 )
 
 /**
@@ -238,7 +230,7 @@ private fun getLinkedScripts(project: Project, file: CaosScriptFile): List<CaosS
 private fun collectScriptsAtPath(
     project: Project,
     parentDirectory: VirtualFile,
-    childPath: String
+    childPath: String,
 ): Collection<CaosScriptScriptElement> {
     val linkedVirtualFile = parentDirectory.findChildRecursive(childPath, true)
         ?: throw Exception(
@@ -263,7 +255,7 @@ internal fun showC3InjectPanel(
     gameInterfaceName: GameInterfaceName,
     file: CaosScriptFile,
     scriptsIn: ScriptBundle,
-    linked: ScriptBundle?
+    linked: ScriptBundle?,
 ) {
 
     val variant = gameInterfaceName.variant ?: file.variant
@@ -401,3 +393,17 @@ internal fun showC3InjectPanel(
 
 //private const val INJECTION_METHOD_USE_JECT = "File with JECT"
 //private const val INJECTION_METHOD_EACH_SCRIPT = "Each script individually"
+
+private fun isValidForInject(project: Project, virtualFile: VirtualFile): Boolean {
+    if (project.isDisposed) {
+        return false
+    }
+    if (CaosScriptProjectSettings.injectionCheckDisabled || project.settings.injectionCheckDisabled)
+        return true
+    val detector = CodeSmellDetector.getInstance(project)
+    val smells = detector.findCodeSmells(listOf(virtualFile))
+        .filter {
+            it.severity == HighlightSeverity.ERROR
+        }
+    return smells.isEmpty()
+}

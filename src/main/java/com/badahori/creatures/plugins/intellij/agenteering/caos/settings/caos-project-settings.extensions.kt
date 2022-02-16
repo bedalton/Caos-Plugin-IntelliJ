@@ -145,9 +145,9 @@ var CaosProjectSettingsService.injectionCheckDisabled: Boolean
         if (state.injectionCheckDisabled == value)
             return
         loadState(
-            state.copy(
-                injectionCheckDisabled = value
-            )
+            state.copy().apply {
+                disableInjectionCheck(value)
+            }
         )
     }
 
