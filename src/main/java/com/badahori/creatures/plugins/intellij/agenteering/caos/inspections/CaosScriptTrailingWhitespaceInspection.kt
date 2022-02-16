@@ -45,7 +45,7 @@ class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
         if (element.variant?.isOld != true)
             return
 
-        if ((element.containingFile as? CaosScriptFile)?.caos2 != null) {
+        if ((element.containingFile as? CaosScriptFile)?.hasCaos2Tags != false) {
             return
         }
         val previous = element.previous

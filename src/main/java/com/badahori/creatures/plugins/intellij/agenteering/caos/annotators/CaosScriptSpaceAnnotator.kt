@@ -48,11 +48,11 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         if (element.textContains(',')) {
             if (variant.isNotOld)
                 annotateC2eCommaError(element, holder)
-            else if ((element.containingFile as? CaosScriptFile)?.caos2 == null)
+            else if ((element.containingFile as? CaosScriptFile)?.hasCaos2Tags == false)
                 annotateExtraSpaces(element, annotationHolder = holder)
         } else {
             // Spacing does not matter in CV+, so return
-            if (variant.isOld && (element.containingFile as? CaosScriptFile)?.caos2 == null)
+            if (variant.isOld && (element.containingFile as? CaosScriptFile)?.hasCaos2Tags == false)
                 annotateExtraSpaces(element, annotationHolder = holder)
             else
                 return
