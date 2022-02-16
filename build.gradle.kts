@@ -1,8 +1,21 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDefGeneratorTask
+import org.jetbrains.intellij.releaseType
+
+configurations {
+    compileClasspath
+        .get()
+        .resolutionStrategy
+        .sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
+
+    testCompileClasspath
+        .get()
+        .resolutionStrategy
+        .sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
+}
 
 plugins {
-    id("java")
+//    id("java")
     id("org.jetbrains.intellij") version "1.3.0"
     kotlin("plugin.serialization") version "1.5.30"
     id("org.jetbrains.kotlin.jvm") version "1.5.30"
@@ -24,59 +37,35 @@ repositories {
 dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
 
     testImplementation("junit", "junit", "4.12") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
 
     implementation("bedalton.creatures:PrayUtil:0.02") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
 
     implementation("bedalton.creatures:SpriteUtil:0.02") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
 
     implementation("com.soywiz.korlibs.korim:korim:$korImagesVersion") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
+
     implementation("bedalton.creatures:CommonCore:0.02") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        excludeKotlin()
     }
 
 
@@ -95,15 +84,9 @@ kotlin {
         kotlinOptions {
             this.jvmTarget = "11"
             this.apiVersion = "1.5"
+            this.languageVersion = "1.5"
             this.freeCompilerArgs += listOf(
-                "-Xjvm-default=all-compatibility",
-                "-Xopt-in=kotlin.RequiresOptIn",
-                "-Xopt-in=kotlin.OptIn",
-                "-Xopt-in=kotlin.ExperimentalMultiplatform",
-                "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
-                "-Xopt-in=kotlin.contracts.ExperimentalContracts",
-                "-Xopt-in=ExperimentalJsExport",
-                "-Xopt-in=org.jetbrains.annotations.ApiStatus.Experimental"
+                "-Xjvm-default=all-compatibility"
             )
         }
     }
@@ -112,6 +95,11 @@ kotlin {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
             languageSettings.optIn("kotlin.ExperimentalMultiplatform")
+            languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
+            languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
+            languageSettings.optIn("kotlin.js.ExperimentalJsExport")
+            languageSettings.optIn("kotlin.ExperimentalJsExport")
+            languageSettings.optIn("org.jetbrains.annotations.ApiStatus.Experimental")
             //languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
         }
     }
@@ -125,7 +113,7 @@ intellij {
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
-    plugins.set(listOf("PsiViewer:201-SNAPSHOT", "com.mallowigi.idea:9.0"))
+    plugins.set(listOf("PsiViewer:201-SNAPSHOT"))
 
 }
 
@@ -161,4 +149,13 @@ tasks.withType<org.jetbrains.intellij.tasks.RunIdeTask>().all {
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
 
+}
+
+
+fun ExternalModuleDependency.excludeKotlin() {
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
 }
