@@ -48,6 +48,9 @@ class CaosScriptInvalidScriptHeaderValueInspection : LocalInspectionTool() {
     private fun validate(o: PsiElement, name: String, problemsHolder: ProblemsHolder) {
         val variant = (o.containingFile as? CaosScriptFile)?.variant
                 ?: return
+        if (o.text.startsWith("\\(")) {
+            return
+        }
         val value = o.text.toIntSafe()
         if (value == null) {
             problemsHolder.registerProblem(o, CaosBundle.message("caos.inspection.invalid-script-header-value.value-is-not-constant.message", name.upperCaseFirstLetter()))

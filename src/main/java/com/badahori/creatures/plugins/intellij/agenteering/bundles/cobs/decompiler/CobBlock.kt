@@ -79,7 +79,7 @@ sealed class CobBlock {
         ) : FileBlock(CobFileBlockType.SPRITE, fileName, reserved, contents) {
             val sprite: SpriteFileHolder by lazy {
                 val sprite = S16SpriteFile(MemoryByteStreamReader(contents), false, 1, null)
-                SpriteFileHolder(sprite)
+                SpriteFileHolder(sprite, fileName)
             }
         }
 
