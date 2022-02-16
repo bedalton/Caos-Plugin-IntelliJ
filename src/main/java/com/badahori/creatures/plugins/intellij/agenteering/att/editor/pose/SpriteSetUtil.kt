@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import java.util.logging.Logger
 
@@ -19,6 +20,7 @@ object SpriteSetUtil {
     @JvmStatic
     fun getUpdatedSpriteSet(
         project: Project,
+        progressIndicator: ProgressIndicator,
         spriteSet: PoseRenderer.CreatureSpriteSet?,
         head: List<BodyPartFiles>,
         body: List<BodyPartFiles>,
@@ -33,6 +35,7 @@ object SpriteSetUtil {
         if (project.isDisposed) {
             return null
         }
+        progressIndicator.checkCanceled()
         var realParts = parts
         val spriteTemp: PoseRenderer.CreatureSpriteSet = spriteSet?.copy() ?: defaultSpriteSet(
             project = project,
@@ -50,6 +53,7 @@ object SpriteSetUtil {
             realParts = PoseEditorSupport.allParts
         }
         for (part in realParts) {
+            progressIndicator.checkCanceled()
             val files = when (part.lowercase()) {
                 'a' -> head
                 'b' -> body

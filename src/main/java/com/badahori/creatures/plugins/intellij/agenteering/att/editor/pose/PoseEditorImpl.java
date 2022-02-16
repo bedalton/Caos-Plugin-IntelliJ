@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
@@ -121,6 +122,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private final PoseEditorModel model;
     private boolean variantChanged = false;
     private boolean didInitComboBoxes = false;
+
+    private String md5 = null;
 
     public PoseEditorImpl(
             @NotNull
@@ -359,14 +362,14 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             headDirection2.setSelectedIndex(2);
         }
         initHeadComboBox(didInitComboBoxes ? headPose.getSelectedIndex() : 0, Integer.MAX_VALUE);
-        assign(mood, PoseEditorSupport.getMoodOptions(variant), didInitComboBoxes  ? mood.getSelectedIndex() : 0);
+        assign(mood, PoseEditorSupport.getMoodOptions(variant), didInitComboBoxes ? mood.getSelectedIndex() : 0);
         freeze(headDirection2, !headDirection2.isEnabled(), variant.isOld());
         if (!didInitComboBoxes) {
             setFacing(0);
         }
         if (variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
             reverse(directions);
-            assign(bodyTilt, directions, didInitComboBoxes? bodyTilt.getSelectedIndex() : 0);
+            assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 0);
             reverse(directions);
         } else {
             assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 0);
@@ -670,7 +673,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             return;
         }
         drawImmediately = true;
-        clear();
+//        clear();
         if (variant != null) {
             redraw(ALL_PARTS);
         } else {
@@ -730,7 +733,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             return;
         }
         if (model.getRendering()) {
-            return;
+//            return;
         }
         final char[] theParts;
         if (wasHidden) {
@@ -756,8 +759,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 //            }
             return;
         }
-
-        model.requestRender(theParts);
+        ApplicationManager.getApplication().runReadAction(() -> model.requestRender(theParts));
     }
 
     @Override
@@ -766,7 +768,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (rendered) {
             ((PoseRenderedImagePanel) imageHolder).updateImage(image);
         } else {
-            ((PoseRenderedImagePanel) imageHolder).clear();
+            ((PoseRenderedImagePanel) imageHolder).setInvalid(true);
         }
         valid = rendered;
         onRedraw(rendered);
@@ -813,9 +815,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     @NotNull
-    public Pose updatePoseAndGet(char @NotNull ... parts) {
+    public Pose updatePoseAndGet(ProgressIndicator progressIndicator, char @NotNull ... parts) {
         final int lastPoseHash = pose != null ? pose.hashCode() : -1;
         final Pose poseTemp = PoseCalculator.getUpdatedPose(
+                progressIndicator,
                 variant,
                 pose,
                 bodyDirection.getSelectedIndex(),
@@ -1405,7 +1408,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     public void addPoseChangeListener(final boolean updateImmediately, final PoseChangeListener listener) {
         poseChangeListeners.add(listener);
         if (updateImmediately) {
-            listener.onPoseChange(updatePoseAndGet());
+            listener.onPoseChange(updatePoseAndGet(null));
         }
     }
 
@@ -2141,6 +2144,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         updateBreedsList();
         initOpenRelatedComboBox();
         model.requestRender(ALL_PARTS);
+    }
+
+    public boolean isRendering() {
+        return model.getRendering();
     }
 
     public interface PoseChangeListener {

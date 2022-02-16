@@ -1,14 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
-import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -19,7 +12,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
-import java.awt.image.BufferedImage
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -30,32 +22,31 @@ import javax.swing.JComponent
 internal class AttEditorImpl(
     project: Project,
     file: VirtualFile,
-    val spriteFile: VirtualFile
+    spriteFile: VirtualFile,
 ) : UserDataHolderBase(), FileEditor, DumbAware {
     private val myFile: VirtualFile = file
     private var myProject: Project = project
     private val variant: CaosVariant = getInitialVariant(project, file)
 
-    private lateinit var panel: AttEditorPanel
+    private val controller by lazy {
+        AttEditorController(
+            project,
+            file,
+            spriteFile,
+            variant
+        )
+    }
 
     override fun getComponent(): JComponent {
-        if (!this::panel.isInitialized) {
-            panel = AttEditorPanel(myProject, variant, myFile, this)
-            if (DumbService.isDumb(myProject)) {
-                DumbService.getInstance(myProject).runWhenSmart(panel::init)
-            } else {
-                panel.init()
-            }
-        }
-        return panel.component
+        return controller.getComponent()
     }
 
     override fun getFile(): VirtualFile {
         return myFile
     }
 
-    override fun getPreferredFocusedComponent(): JComponent? {
-        return panel.scrollPane
+    override fun getPreferredFocusedComponent(): JComponent {
+        return component
     }
 
     override fun getName(): String {
@@ -79,12 +70,10 @@ internal class AttEditorImpl(
     }
 
     override fun deselectNotify() {
-        if (myProject.isDisposed) {
+        if (myProject.isDisposed || DumbService.isDumb(myProject) || !controller.isInitialized) {
             return
         }
-        if (this::panel.isInitialized && !DumbService.isDumb(myProject)) {
-            panel.clearPose()
-        }
+        controller.clearPose()
     }
 
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
@@ -92,9 +81,7 @@ internal class AttEditorImpl(
     }
 
     override fun dispose() {
-        if (this::panel.isInitialized) {
-            this.panel.dispose()
-        }
+        this.controller.dispose()
     }
 
     override fun <T> getUserData(key: Key<T>): T? {
@@ -105,6 +92,7 @@ internal class AttEditorImpl(
         myFile.putUserData(key, value)
     }
 
+
     /**
      * Callback called when custom editor window gains focus
      * Is not called if file is selected but in text view
@@ -113,78 +101,18 @@ internal class AttEditorImpl(
         if (myProject.isDisposed) {
             return
         }
-        if (this::panel.isInitialized) {
+        if (controller.isInitialized) {
             if (DumbService.isDumb(myProject)) {
                 DumbService.getInstance(myProject).runWhenSmart(::selectNotify)
             }
-            panel.refresh()
+            controller.view.refresh()
         }
     }
 
-    fun getImages(part: String): List<BufferedImage?> {
-        val images = parse(spriteFile).images
-        if (part notLike "a")
-            return images
-        return images.mapIndexed { i, image ->
-            var out: BufferedImage? = image
-            if (i % 16 in 4..7) {
-                val repeated =
-                    (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
-                if (repeated) {
-                    try {
-                        out = images[i - 4].flipHorizontal() ?: image
-                        if (out.width != image.width || out.height != image.height) {
-                            LOGGER.severe("Failed to properly maintain scale in image.")
-                        }
-                    } catch (_: Exception) {
-                    }
-                }
-            }
-            out
-        }
-    }
+
 
     companion object {
         private const val NAME = "ATTEditor"
-
-        @JvmStatic
-        fun assumedLinesAndPoints(variant: CaosVariant, part: String): Pair<Int, Int> {
-            val lines = if (variant.isOld) 10 else 16
-            val columns = when (part.uppercase()) {
-                "A" -> when {
-                    variant.isOld -> 2
-                    else -> 5
-                }
-                "B" -> 6
-                "Q" -> 1
-                else -> 2
-            }
-            return Pair(lines, columns)
-        }
-
-        @JvmStatic
-        fun cacheVariant(virtualFile: VirtualFile, variant: CaosVariant) {
-            ExplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
-            ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
-            virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
-            virtualFile.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
-        }
     }
 }
 
-private val BufferedImage.isCompletelyTransparent: Boolean
-    get() {
-        for (i in 0 until this.height) {
-            for (j in 0 until this.width) {
-                if (this.isTransparent(j, i)) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
-fun BufferedImage.isTransparent(x: Int, y: Int): Boolean {
-    val pixel = this.getRGB(x, y)
-    return pixel shr 24 == 0x00
-}

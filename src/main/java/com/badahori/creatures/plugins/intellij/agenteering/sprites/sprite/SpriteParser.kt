@@ -27,17 +27,18 @@ object SpriteParser {
             ?: throw SpriteParserException("Cannot get sprite parser without file extension")
         val type = SpriteType.fromString(extension)
         val stream =  VirtualFileStreamReader(virtualFile)
-        return parse(type, stream, 1, callback)
+        return parse(type, stream, 1, fileName = virtualFile.name, callback)
     }
 
     @JvmStatic
     fun parse(
         extension: String,
         stream: ByteStreamReader,
+        fileName: String? = null,
         callback: ((i:Int, total: Int) -> Boolean?)? = null
     ) : SpriteFileHolder {
         val type = SpriteType.fromString(extension.uppercase())
-        return parse(type, stream, 1, callback)
+        return parse(type, stream, 1, fileName, callback)
     }
 
     @JvmStatic
@@ -45,6 +46,7 @@ object SpriteParser {
         spriteType: SpriteType,
         stream: ByteStreamReader,
         progressEvery: Int = 1,
+        fileName: String? = null,
         callback: ((i:Int, total: Int) -> Boolean?)? = null
     ) : SpriteFileHolder {
         return when (spriteType) {
@@ -54,7 +56,7 @@ object SpriteParser {
             BLK -> BlkSpriteFile(stream,progressEvery, callback)
             else -> throw SpriteParserException("Invalid image file extension found")
         }.let {
-            SpriteFileHolder(it)
+            SpriteFileHolder(it, fileName)
         }
     }
 
@@ -80,7 +82,7 @@ object SpriteParser {
 class SpriteParserException(message:String, throwable: Throwable? = null) : Exception(message, throwable)
 
 
-class SpriteFileHolder(sprite: SpriteFile) {
+class SpriteFileHolder(sprite: SpriteFile, val fileName: String? = null) {
 
     val type = sprite.type
 

@@ -199,7 +199,6 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
     }
 
     private fun getRawImages(): List<Bitmap32> {
-        val mod5 = AtomicInteger(0)
         val stream = VirtualFileStreamReader(file)
         try {
             val holder = parse(SpriteType.BLK, stream, 5) { i: Int, total: Int ->
