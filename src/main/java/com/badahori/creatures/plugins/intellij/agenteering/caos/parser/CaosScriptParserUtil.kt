@@ -526,6 +526,10 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             next = builder_.lookAhead(++lookAhead)
         }
 
+        if (next == CaosScript_GHOST_QUOTE) {
+            return true
+        }
+
         if (next == TokenType.BAD_CHARACTER)
             return true
 
