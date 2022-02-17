@@ -20,7 +20,7 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
         get() = false
 
     override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
-        throw Exception("JECT not supported by POST connection")
+        throw Exception("JECT not supported by DDE connection")
     }
 
     override fun inject(caos: String): InjectionStatus {
