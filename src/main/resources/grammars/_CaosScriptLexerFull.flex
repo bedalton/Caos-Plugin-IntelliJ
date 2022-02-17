@@ -332,7 +332,7 @@ DDE_PICT=[^\s]{3}
 <IN_STRING> {
 	\"						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
 	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
-  	\n+						{ yypop(); return CaosScript_GHOST_QUOTE; }
+  	\n						{ yypop(); return CaosScript_GHOST_QUOTE; }
 	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yypop(); yypushback(yylength());}
 }
