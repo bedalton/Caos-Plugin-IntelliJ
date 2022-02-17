@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionProvider
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.InsertInsideQuoteHandler
+import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.quoter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagName
@@ -79,7 +80,8 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
         val tagValue = element.getSelfOrParentOfType(PrayTagValue::class.java)
         if (tagValue != null) {
-
+            val text = tagValue.text
+            val quoter = quoter(text)
             val parentDirectory = element.containingFile?.directory
                 ?: return
             CaosScriptCompletionProvider.addCaos2PrayFileNameCompletions(
@@ -87,7 +89,7 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet,
                 parentDirectory,
                 tagValue,
-                '"'
+                quoter
             )
         }
     }
