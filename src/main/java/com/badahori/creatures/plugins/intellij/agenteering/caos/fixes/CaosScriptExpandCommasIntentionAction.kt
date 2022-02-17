@@ -5,12 +5,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.next
-import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -62,14 +58,18 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
             return
         if (CommandProcessor.getInstance().isUndoTransparentActionInProgress) {
             try {
-                runnable(project, fileIn)
+                runWriteAction {
+                    runnable(project, fileIn)
+                }
             } catch (e: Exception) {
                 LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in existing transparent action with error: ${e.message}")
             }
         } else {
             CommandProcessor.getInstance().runUndoTransparentAction {
                 try {
-                    runnable(project, fileIn)
+                    runWriteAction {
+                        runnable(project, fileIn)
+                    }
                 } catch (e: Exception) {
                     LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with error: ${e.message}")
                 }
