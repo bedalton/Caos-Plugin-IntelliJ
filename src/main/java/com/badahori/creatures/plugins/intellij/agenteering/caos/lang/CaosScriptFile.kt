@@ -430,8 +430,8 @@ internal inline fun <reified T:CaosScriptScriptElement> CaosScriptFile.getScript
 internal val HAS_CAOS2_KEY = Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_CAOS2_CACHE_KEY")
 internal val CAOS2_KEY = Key<Pair<Long, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.CAOS2_CACHE_KEY")
 
-private val CAOS2COB_REGEX = "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex()
-private val CAOS2PRAY_REGEX = "^([*]#\\s*([a-zA-Z0-9_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex()
+private val CAOS2COB_REGEX = "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+private val CAOS2PRAY_REGEX = "^([*]#\\s*([a-zA-Z0-9_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
 /**
  * Detect if this file has CAOS2 statements
@@ -495,7 +495,7 @@ private fun CaosScriptFile.calculateCaos2(): String? {
     val maxBuffer = 1024
     val buffer = ByteArray(maxBuffer)
 
-    virtualFile.inputStream?.use { stream ->
+    virtualFile?.inputStream?.use { stream ->
         val builder = StringBuilder()
         do {
             val read = stream.read(buffer, 0, maxBuffer)
@@ -513,6 +513,7 @@ private fun CaosScriptFile.calculateCaos2(): String? {
             builder.append(text)
         }  while (builder.length < 4000)
 
+        val text = builder.toString()
         if (CAOS2PRAY_REGEX.containsMatchIn(text)) {
             return CAOS2Pray
         }
