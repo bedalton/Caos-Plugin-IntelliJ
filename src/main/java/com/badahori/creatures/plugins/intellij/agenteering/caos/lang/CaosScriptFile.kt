@@ -32,6 +32,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myFile: VirtualFile) :
@@ -128,7 +129,7 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             }
         }
         val hasCaos2 = calculateHasCaos2Tags()
-        val expiry = time + (60 * 30 * 1000) // 1 minutes
+        val expiry = time + rand(cacheMin, cacheMax) // cache for seconds
         this.putUserData(HAS_CAOS2_KEY, Pair(expiry, hasCaos2))
         return hasCaos2
     }
@@ -349,7 +350,7 @@ val CaosScriptFile.caos2: String?
                 return caos2
             }
         }
-        val cacheForMillis = 20 * 1000
+        val cacheForMillis = rand(cacheMin, cacheMax)
         val caos2 = calculateCaos2()
         this.putUserData(CAOS2_KEY, Pair(time + cacheForMillis, caos2))
         return caos2
@@ -364,7 +365,7 @@ val CaosScriptFile.isCaos2Cob: Boolean
 
 val CaosScriptFile?.disableMultiScriptChecks: Boolean
     get() {
-        return this == null || this.isDump || this.isCaos2Cob
+        return this == null || this.isDump || this.isCaos2Cob || this.isSupplement
     }
 
 @Suppress("unused")
@@ -427,11 +428,16 @@ internal inline fun <reified T:CaosScriptScriptElement> CaosScriptFile.getScript
 
 
 
+private const val cacheMin = 6000
+private const val cacheMax = 8000
 internal val HAS_CAOS2_KEY = Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_CAOS2_CACHE_KEY")
 internal val CAOS2_KEY = Key<Pair<Long, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.CAOS2_CACHE_KEY")
+internal val IS_SUPPLEMENT_KEY = Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_SUPPLEMENT_KEY")
 
+private val CAOS2_HEADER_REGEX = "^[*]{2}\\s*CAOS2(PRAY|COB)".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 private val CAOS2COB_REGEX = "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 private val CAOS2PRAY_REGEX = "^([*]#\\s*([a-zA-Z0-9_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+private val IS_SUPPLEMENT_REGEX = "^[*]{2}\\s*(is\\s*)?(Supplement|link(ed))".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
 /**
  * Detect if this file has CAOS2 statements
@@ -503,6 +509,15 @@ private fun CaosScriptFile.calculateCaos2(): String? {
                 break
             }
             val text = buffer.decodeToCreaturesEncoding()
+            CAOS2_HEADER_REGEX.find(text)
+                ?.groupValues
+                ?.getOrNull(1)
+                ?.let {
+                    return if (it like "PRAY")
+                        CAOS2Pray
+                    else
+                        CAOS2Cob
+                }
             if (CAOS2PRAY_REGEX.containsMatchIn(text)) {
                 return CAOS2Pray
             }
@@ -514,6 +529,15 @@ private fun CaosScriptFile.calculateCaos2(): String? {
         }  while (builder.length < 4000)
 
         val text = builder.toString()
+        CAOS2_HEADER_REGEX.find(text)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.let {
+                return if (it like "PRAY")
+                    CAOS2Pray
+                else
+                    CAOS2Cob
+            }
         if (CAOS2PRAY_REGEX.containsMatchIn(text)) {
             return CAOS2Pray
         }
@@ -522,4 +546,50 @@ private fun CaosScriptFile.calculateCaos2(): String? {
         }
     }
     return null
+}
+
+val CaosScriptFile?.isSupplement: Boolean get() {
+    if (this == null) {
+        return false
+    }
+    val time = now
+    this.getUserData(IS_SUPPLEMENT_KEY)?.let { (expiry, isSupplement) ->
+        if (expiry > time) {
+            return isSupplement
+        }
+    }
+    val isSupplement = calculateIsSupplement()
+    val expiry = time + rand(cacheMin, cacheMax)
+    this.putUserData(IS_SUPPLEMENT_KEY, Pair(expiry, isSupplement))
+    return isSupplement
+}
+
+/**
+ * Determine the kind of CAOS2 file if any
+ */
+private fun CaosScriptFile.calculateIsSupplement(): Boolean {
+    val maxBuffer = 1024
+    val buffer = ByteArray(maxBuffer)
+
+    virtualFile?.inputStream?.use { stream ->
+        val builder = StringBuilder()
+        do {
+            val read = stream.read(buffer, 0, maxBuffer)
+            if (read == 0) {
+                break
+            }
+            val text = buffer.decodeToCreaturesEncoding()
+            if (IS_SUPPLEMENT_REGEX.containsMatchIn(text)) {
+                return true
+            }
+            // Add text in case one block terminates inside a statement
+            builder.append(text)
+        }  while (builder.length < 4000)
+
+        val text = builder.toString()
+        if (IS_SUPPLEMENT_REGEX.containsMatchIn(text)) {
+            return true
+        }
+    }
+    return false
 }
