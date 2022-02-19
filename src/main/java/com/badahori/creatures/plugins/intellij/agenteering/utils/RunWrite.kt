@@ -29,10 +29,10 @@ fun executeOnPooledThread(runnable: Runnable) : Future<*> {
     return application.executeOnPooledThread(runnable)
 }
 
-fun runWriteAction(runnable: () -> Unit) {
-    com.intellij.openapi.application.runWriteAction(runnable)
+fun <T> runWriteAction(runnable: () -> T): T {
+    return com.intellij.openapi.application.runWriteAction(runnable)
 }
 
-fun runUndoTransparentWriteAction(runnable: () -> Unit) {
-    com.intellij.openapi.application.runUndoTransparentWriteAction(runnable)
+fun <T> runUndoTransparentWriteAction(runnable: () -> T): T {
+    return com.intellij.openapi.application.runUndoTransparentWriteAction(runnable)
 }
