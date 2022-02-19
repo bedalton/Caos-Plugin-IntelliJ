@@ -27,9 +27,3 @@ open class AttCompositeElementImpl(node:ASTNode) : ASTWrapperPsiElement(node), C
     override val tokenType: IElementType
         get() = node.elementType
 }
-
-val PsiElement.variant: CaosVariant?
-    get() = (containingFile as? CaosScriptFile)?.variant
-        ?: (containingFile?.originalFile as? CaosScriptFile)?.variant
-            ?: (containingFile as? CaosDefFile)?.variants?.firstOrNull()
-            ?: (containingFile?.originalFile as? CaosDefFile)?.variants?.firstOrNull()

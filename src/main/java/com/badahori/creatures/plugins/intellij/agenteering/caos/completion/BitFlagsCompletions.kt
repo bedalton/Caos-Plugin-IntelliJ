@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue

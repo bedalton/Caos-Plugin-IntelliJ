@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineHeader

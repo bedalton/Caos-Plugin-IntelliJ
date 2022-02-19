@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.Classifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.variable
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
