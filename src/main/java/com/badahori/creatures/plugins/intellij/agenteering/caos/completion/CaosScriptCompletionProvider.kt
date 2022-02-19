@@ -732,7 +732,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         // Get parent path length for sizing down the relative child paths
         val parentPathLength = directory.path.length + 1
 
-        val openQuote = valueElement.text?.firstOrNull()?.let { if (it == '\'' || it == '"') it else null}
+        val openQuote = valueElement.text?.firstOrNull()?.let { if (it == '\'' || it == '"') it else null }
         val quoteFallback = openQuote?.toString() ?: "\""
         val quoter = quoter(valueElement.text)
 
@@ -751,7 +751,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
             // Add quotes and also escape any quotes found inside this path
             val quotedPath = quoter(relativePath.replace(quote, "\\" + quote))
-
 
             val element = if (file.extension likeAny VALID_SPRITE_EXTENSIONS) {
                 // Process filenames if is thumbnail
@@ -956,7 +955,7 @@ private fun addStringCompletions(
     val parentCommandElement = (parentRvalue.parent as? CaosScriptCommandElement)
         ?: return
 
-    val quoter = quoter(element.text)
+    val quoter = quoter(parentRvalue.text)
 
     val commandName = parentCommandElement.commandStringUpper
     when (commandName) {
@@ -1036,7 +1035,7 @@ private fun addFileNameCompletionsForFileTypes(
     extensions: Collection<String>,
     dropExtension: Boolean,
     element: PsiElement,
-    quoter: (String)->String
+    quoter: (String) -> String,
 ) {
 
     // Requires file index, so stop completing if index is not yet built
@@ -1202,17 +1201,17 @@ private fun addUserDefinedNamedVarsOfType(
         parentDirectory?.let {
             GlobalSearchScopes.directoryScope(it, true)
         }
-    } else
+            ?: module?.moduleContentScope
+            ?: GlobalSearchScope.projectScope(project)
+    } else {
         module?.moduleContentScope
             ?: GlobalSearchScope.projectScope(project)
-    if (searchScope == null) {
-        return
     }
     val vars = CaosScriptNamedGameVarIndex.instance.getAllInScope(project, searchScope)
         .filter { gameVar: CaosScriptNamedGameVar ->
             gameVar.parent is CaosScriptLvalue &&
                     gameVar.varType in types &&
-                    gameVar.rvalue?.text?.startsWith('"') == true &&
+                    gameVar.rvalue?.text?.trim()?.startsWith('"') == true &&
                     !PsiTreeUtil.isAncestor(gameVar, element, false)
         }
         .map { gameVar ->
@@ -1221,7 +1220,8 @@ private fun addUserDefinedNamedVarsOfType(
         .distinct()
         .map {
             LookupElementBuilder
-                .createWithSmartPointer(quoter(it), element)
+                .create(quoter(it))
+                .withPsiElement(element)
                 .withLookupStrings(
                     listOf(
                         quoter(it),
@@ -1252,7 +1252,7 @@ internal fun quoter(text: String, defaultQuote: Char = '"'): (text: String) -> S
     }
     val quote = actualOpenQuote ?: actualClosingQuote ?: defaultQuote
     val needsOpenQuote = actualOpenQuote != quote
-    val needsCloseQuote = text.lastOrNull() != quote
+    val needsCloseQuote = actualClosingQuote != quote
     return if (needsOpenQuote) {
         if (needsCloseQuote) {
             { aString ->
