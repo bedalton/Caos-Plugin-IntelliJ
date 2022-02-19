@@ -116,6 +116,14 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun isNewVariant(
         builder_: PsiBuilder,
         level: Int,
+    ): Boolean {
+        return fileVariant(builder_)?.isNotOld ?: false
+    }
+
+    @JvmStatic
+    fun isNewVariant(
+        builder_: PsiBuilder,
+        level: Int,
         includeSeaMonkeys: Boolean
     ): Boolean {
         return fileVariant(builder_)?.let { variant ->
