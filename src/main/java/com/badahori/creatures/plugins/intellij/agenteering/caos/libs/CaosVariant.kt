@@ -221,11 +221,11 @@ infix fun CaosVariant?.notLikeOrNull(other: CaosVariant?): Boolean {
 }
 
 
-val CaosVariant?.validSpriteExtensions: List<String> get() {
+val CaosVariant?.validSpriteExtensions: Set<String> get() {
     return when(this) {
-        C1 -> listOf("spr")
-        C2 -> listOf("s16")
-        CV, C3, DS -> listOf("s16", "c16")
-        else -> listOf("spr", "s16", "c16")
+        C1 -> setOf("spr")
+        C2 -> setOf("s16")
+        CV, C3, DS -> setOf("s16", "c16")
+        else -> setOf("spr", "s16", "c16")
     }
 }
