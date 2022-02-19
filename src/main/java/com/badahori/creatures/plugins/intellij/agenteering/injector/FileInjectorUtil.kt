@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -8,14 +8,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 
 internal object FileInjectorUtil {
 
-    internal fun inject(
+    internal suspend fun inject(
         project: Project,
         connection: CaosConnection,
         caosFile: CaosScriptFile,
@@ -25,7 +24,9 @@ internal object FileInjectorUtil {
         if (useJect && connection.supportsJect) {
             return connection.injectWithJect(caosFile, flags)
         }
-        val fileScripts = caosFile.getScripts()
+        val fileScripts = runReadAction {
+            caosFile.getScripts()
+        }
 
         val scriptBlocks = mutableListOf<List<CaosScriptScriptElement>>()
         if (flags hasFlag Injector.REMOVAL_SCRIPT_FLAG) {
@@ -40,6 +41,7 @@ internal object FileInjectorUtil {
             val scripts = fileScripts.filterIsInstance<CaosScriptEventScript>()
             if (flags == Injector.EVENT_SCRIPT_FLAG && scripts.size == 1) {
                 val eventScript = scripts.first()
+
                 return connection.injectEventScript(
                     eventScript.family,
                     eventScript.genus,
@@ -54,14 +56,14 @@ internal object FileInjectorUtil {
         if (flags hasFlag Injector.INSTALL_SCRIPT_FLAG) {
             val scripts = fileScripts.filterIsInstance<CaosScriptMacroLike>()
             if (flags == Injector.INSTALL_SCRIPT_FLAG && scripts.size == 1) {
-                connection.inject(formatCaos(scripts[0].codeBlock) ?: "")
+                return connection.inject(formatCaos(scripts[0].codeBlock) ?: "")
             }
             scriptBlocks.add(scripts)
         }
         return injectScriptBlocks(project, connection, scriptBlocks)
     }
 
-    internal fun inject(
+    internal suspend fun inject(
         project: Project,
         connection: CaosConnection,
         scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
@@ -79,7 +81,7 @@ internal object FileInjectorUtil {
         return injectScriptBlocks(project, connection, scriptBlocks)
     }
 
-    private fun injectScriptBlocks(
+    private suspend fun injectScriptBlocks(
         project: Project,
         connection: CaosConnection,
         scriptBlocks: List<List<CaosScriptScriptElement>>,
@@ -87,9 +89,9 @@ internal object FileInjectorUtil {
         val responses = mutableListOf<String>()
         var oks = 0
         var error: InjectionStatus? = null
-        for (scripts in scriptBlocks) {
+        scriptBlocks.mapAsync async@{ scripts ->
             if (scripts.isEmpty())
-                continue
+                return@async
             injectScriptList(
                 project,
                 connection,
@@ -98,7 +100,9 @@ internal object FileInjectorUtil {
                 when (injectionStatus) {
                     is InjectionStatus.Ok -> {
                         oks++
-                        responses.add(injectionStatus.response)
+                        if (injectionStatus.response.isNotBlank()) {
+                            responses.add(injectionStatus.response)
+                        }
                     }
                     is InjectionStatus.Bad -> {
                         error = injectionStatus.copy(
@@ -235,16 +239,22 @@ private fun CaosScriptScriptElement.getDescriptor(): String {
 }
 
 
-
-internal val c1eElementsRegex = "tele|vrsn|xvec|yvec|say#|say\$|aim:|setv\\s+(?:clas|cls2|actv|attr|norn)|\\[[a-zA-Z0-9]*[a-zA-Z_\$\\-+#@!][^]]*]|var[0-9]|obv[0-9]|objp|doif\\s+(targ|norn|objp)\\s+(eq|ne)\\s+0|\\s+(?:bt|bf)|bbd:|dde:".toRegex(setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
-internal val c2eElementsRegex = "(\"(?:[^\"]|\\.)*\"|'(?:[^\'\\\\]|\\\\.)'|\\d+\\.\\d+|\\s\\.\\d+|mv[0-9]{2}|(?:do|el)if.+?(?:<>|<|>|<=|>=|=)|(?:eq|ne|<>|=)\\s+null|\\s+(?:seta|sets|adds))|net:|prt:".toRegex(setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
+internal val c1eElementsRegex =
+    "tele|vrsn|xvec|yvec|say#|say\$|aim:|setv\\s+(?:clas|cls2|actv|attr|norn)|\\[[a-zA-Z0-9]*[a-zA-Z_\$\\-+#@!][^]]*]|var[0-9]|obv[0-9]|objp|doif\\s+(targ|norn|objp)\\s+(eq|ne)\\s+0|\\s+(?:bt|bf)|bbd:|dde:".toRegex(
+        setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
+internal val c2eElementsRegex =
+    "(\"(?:[^\"]|\\.)*\"|'(?:[^\'\\\\]|\\\\.)'|\\d+\\.\\d+|\\s\\.\\d+|mv[0-9]{2}|(?:do|el)if.+?(?:<>|<|>|<=|>=|=)|(?:eq|ne|<>|=)\\s+null|\\s+(?:seta|sets|adds))|net:|prt:".toRegex(
+        setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
 
 /**
  * Format the contents of a code block element
  */
 private fun formatCaos(codeBlock: CaosScriptCodeBlock?): String? {
-    val blockText = codeBlock?.text
-        ?: return null
+    if (codeBlock == null)
+        return null
+    val blockText = runReadAction {
+        codeBlock.text
+    } ?: return null
     return formatCaos(codeBlock.variant, blockText)
 }
 

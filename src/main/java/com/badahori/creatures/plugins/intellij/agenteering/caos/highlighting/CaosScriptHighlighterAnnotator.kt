@@ -1,19 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.colorize
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
-import com.intellij.psi.TokenType
 import com.intellij.psi.util.elementType
 
 class CaosScriptHighlighterAnnotator : Annotator {
@@ -32,17 +29,8 @@ class CaosScriptHighlighterAnnotator : Annotator {
                 colorize(element, holder, CaosScriptSyntaxHighlighter.LVALUE_TOKEN)
             }
             element is CaosScriptIsCommandKeywordToken -> colorizeCommand(element, holder)
-            element is CaosScriptAnimationString -> colorize(element, holder, CaosScriptSyntaxHighlighter.ANIMATION)
-            element is CaosScriptByteString && isAnimationByteString(element) -> colorize(
-                element,
-                holder,
-                CaosScriptSyntaxHighlighter.ANIMATION
-            )
-            element is CaosScriptByteString && !isAnimationByteString(element) -> colorize(
-                element,
-                holder,
-                CaosScriptSyntaxHighlighter.BYTE_STRING
-            )
+            element is CaosScriptAnimationString -> annotateByteString(element, holder)
+            element is CaosScriptByteString -> annotateByteString(element, holder)
             element is CaosScriptSubroutineName || element.parent is CaosScriptSubroutineName -> colorize(
                 element,
                 holder,
@@ -101,9 +89,10 @@ class CaosScriptHighlighterAnnotator : Annotator {
     private fun colorize(
         psiElement: PsiElement,
         annotationHolder: AnnotationHolder,
-        attribute: TextAttributesKey
+        attribute: TextAttributesKey,
+        recursive: Boolean = true
     ) {
-        annotationHolder.colorize(psiElement, attribute)
+        annotationHolder.colorize(psiElement, attribute, recursive)
     }
 
     private fun isAnimationByteString(element: PsiElement): Boolean {
@@ -119,15 +108,33 @@ class CaosScriptHighlighterAnnotator : Annotator {
 
     }
 
-}
-
-private fun highlightCaos2PrayTag(element: CaosScriptCaos2TagName, holder: AnnotationHolder) {
-    if (element.variant?.isOld == true)
-        return
-    val tag = element.quoteStringLiteral?.stringValue ?: element.c1String?.stringValue ?: element.text
-    if (PrayTags.isOfficialTag(tag)) {
-        holder.colorize(element, CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG)
-    } else {
-        holder.colorize(element, CaosScriptSyntaxHighlighter.PRAY_TAG)
+    private fun annotateByteString(element: PsiElement, holder: AnnotationHolder) {
+        val attribute = if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
+            CaosScriptSyntaxHighlighter.STRING
+        } else if (element.variant?.isOld == true && element.text.contains(WHITESPACE)) {
+            CaosScriptSyntaxHighlighter.STRING
+        } else if (element is CaosScriptAnimationString || isAnimationByteString(element)) {
+            CaosScriptSyntaxHighlighter.ANIMATION
+        } else {
+            CaosScriptSyntaxHighlighter.BYTE_STRING
+        }
+        colorize(
+            element,
+            holder,
+            attribute,
+            true
+        )
     }
+
+    private fun highlightCaos2PrayTag(element: CaosScriptCaos2TagName, holder: AnnotationHolder) {
+        if (element.variant?.isOld == true)
+            return
+        val tag = element.quoteStringLiteral?.stringValue ?: element.c1String?.stringValue ?: element.text
+        if (PrayTags.isOfficialTag(tag)) {
+            holder.colorize(element, CaosScriptSyntaxHighlighter.OFFICIAL_PRAY_TAG)
+        } else {
+            holder.colorize(element, CaosScriptSyntaxHighlighter.PRAY_TAG)
+        }
+    }
+
 }
