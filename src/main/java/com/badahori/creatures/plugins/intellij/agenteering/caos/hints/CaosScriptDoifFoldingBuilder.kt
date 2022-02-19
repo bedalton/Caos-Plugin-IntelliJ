@@ -262,7 +262,6 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             // TODO should text be uniformly formatted
             return format(formatInfo)?.let { out ->
                 if (out.contains("{0") || out.contains("{1")) {
-                    LOGGER.info("Pattern: $pattern;\n$formatInfo")
                     null
                 } else {
                     out

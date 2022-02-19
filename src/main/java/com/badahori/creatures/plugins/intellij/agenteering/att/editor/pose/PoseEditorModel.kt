@@ -94,8 +94,6 @@ class PoseEditorModel(
                 hair = mappedParts['q']?.data(project)
             )
 
-            LOGGER.info(mappedParts.entries.joinToString("\n") { "${it.key}: {${it.value?.bodyDataFile?.path}" })
-
             spriteSet = sprites
             poseEditor.setFiles(mappedParts.values.filterNotNull())
             @Suppress("SpellCheckingInspection")
@@ -213,7 +211,6 @@ class PoseEditorModel(
                 poseEditor.setRendered(image)
             }
 
-            LOGGER.info(updatedSprites.asMap().entries.joinToString("\n") { (key, data) ->  "${key}: ${data?.bodyData?.fileName ?: data?.sprite?.fileName }" })
             true
         } catch (e: ProcessCanceledException) {
             return false
