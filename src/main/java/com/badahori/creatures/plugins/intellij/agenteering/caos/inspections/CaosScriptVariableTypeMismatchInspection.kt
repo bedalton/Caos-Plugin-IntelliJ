@@ -11,9 +11,9 @@ import com.intellij.psi.PsiElementVisitor
 class CaosScriptVariableTypeMismatchInspection : LocalInspectionTool() {
 
 
-    override fun getDisplayName(): String = "Rndv value is always the same"
+    override fun getDisplayName(): String = "Script variable type mismatch"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
-    override fun getShortName(): String = "RndvIsTheSame"
+    override fun getShortName(): String = "ScriptVariableTypeMismatch"
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
