@@ -4,11 +4,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.text.BlockSupport
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.rename.RenameInputValidator
 import com.intellij.util.IncorrectOperationException
@@ -51,6 +55,12 @@ object CaosScriptPsiElementFactory {
 
     fun createStringRValue(project: Project, newNameString: String, start: Char, end: Char = start): CaosScriptRvalue {
         val script = "$start$newNameString$end"
+        val variant = if (start == '[') {
+            CaosVariant.C1
+        } else {
+            CaosVariant.C3
+        }
+        LOGGER.info("NewStringScript: $script")
         return createRValue(project, script)
     }
 
@@ -102,14 +112,15 @@ object CaosScriptPsiElementFactory {
         val file = createFileFromText(project, script)
         val pointer = SmartPointerManager.createPointer(file)
         (file as? CaosScriptFile)?.apply {
-            file.setVariant(variant, true) // Used to ensure a string is created not bytestring on '['
+            file.setVariant(variant, true) // Used to ensure a string is created not byte-string on '['
         }
-//        runWriteAction {
-//            val range = file.textRange
-//            val recalledFile = pointer.element!!
-//            BlockSupportImpl.getInstance(project).reparseRange(recalledFile, range.startOffset, range.endOffset, recalledFile.text)
-//        }
-        return PsiTreeUtil.collectElementsOfType(pointer.element, type).first()
+        return runWriteAction {
+            BlockSupport.getInstance(project).reparseRange(file, 0, file.endOffset, file.text)
+            if (pointer.element?.variant != variant) {
+                throw Exception("Variant not properly set before fetch created rvalue")
+            }
+            PsiTreeUtil.collectElementsOfType(pointer.element, type).first()
+        }
     }
 
     fun createCodeBlock(project: Project, text: String) : CaosScriptCodeBlock {
