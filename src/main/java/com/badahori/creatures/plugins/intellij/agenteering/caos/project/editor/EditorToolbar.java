@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.lang.reflect.Method;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 public class EditorToolbar {
     private JComboBox<String> variant;
@@ -97,7 +96,7 @@ public class EditorToolbar {
         defaultComboBoxModel1.addElement("DS");
         defaultComboBoxModel1.addElement("SM");
         variant.setModel(defaultComboBoxModel1);
-        variant.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/caos-bundle", "caos.toolbar.varaint-tool-tip"));
+        variant.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/caos-bundle", "caos.toolbar.variant-tool-tip"));
         panel.add(variant, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
