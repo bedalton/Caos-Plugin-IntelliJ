@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
@@ -9,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -637,6 +640,7 @@ object CaosScriptPsiImplUtil {
                 ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()*/
         return element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()
     }
+
 
     // ============================== //
     // ======== Get/Set Name ======== //
@@ -1790,7 +1794,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getFamily(script: CaosScriptEventScript): Int {
         return script.stub?.family
-            ?: script.classifier?.family?.text?.toIntSafe()
+            ?: script.classifier?.family?.text?.toIntOrNull()
             ?: -1
     }
 
@@ -1800,7 +1804,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getGenus(script: CaosScriptEventScript): Int {
         return script.stub?.genus
-            ?: script.classifier?.genus?.text?.toIntSafe()
+            ?: script.classifier?.genus?.text?.toIntOrNull()
             ?: -1
     }
 
@@ -1810,7 +1814,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getSpecies(script: CaosScriptEventScript): Int {
         return script.stub?.species
-            ?: script.classifier?.species?.text?.toIntSafe()
+            ?: script.classifier?.species?.text?.toIntOrNull()
             ?: -1
     }
 
@@ -1821,7 +1825,7 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getEventNumber(script: CaosScriptEventScript): Int {
         return try {
-            script.stub?.eventNumber ?: script.eventNumberElement?.text?.toInt() ?: -1
+            script.stub?.eventNumber ?: script.eventNumberElement?.text?.toIntOrNull() ?: -1
         } catch (e: Exception) {
             -1
         }
@@ -1944,6 +1948,20 @@ object CaosScriptPsiImplUtil {
     fun getIntValue(expression: CaosScriptRvalue): Int? {
         return expression.number?.int?.text?.toInt()
             ?: expression.number?.binaryLiteral?.text?.let { binaryToInteger(it) }?.toInt()
+            ?: expression.number?.character?.text?.stripSurroundingQuotes()?.let {
+                if (it.startsWith('\\') && it.length > 1) {
+                    when (it[1]) {
+                        'n' -> '\n'
+                        't' -> '\t'
+                        '\'' -> '\''
+                        '"' -> '"'
+                        'r' -> '\r'
+                        else -> it[1]
+                    }
+                } else {
+                    it[0]
+                }
+            }?.code
         //?: expression.number?.character?.charChar?.text?.get(0)?.toInt()
     }
 
@@ -2317,7 +2335,7 @@ object CaosScriptPsiImplUtil {
     // ============================== //
 
     /**
-     * Returns whether or not this CAOS2Block is a CAOS2Pray block
+     * Returns whether this CAOS2Block is a CAOS2Pray block
      */
     @JvmStatic
     fun isCaos2Pray(def: CaosScriptCaos2Block): Boolean {
@@ -2414,13 +2432,13 @@ object CaosScriptPsiImplUtil {
                 def.variant
             else {
                 when (text.substring(text.length - 2)) {
-                    "C1" -> CaosVariant.C1
+                    "C1" -> C1
                     "C2" -> CaosVariant.C2
                     else -> null
                 }
             }
         } ?: when (CAOS2CobVariantRegex.matchEntire(def.text)?.groupValues?.firstOrNull()?.uppercase()) {
-            "C1" -> CaosVariant.C1
+            "C1" -> C1
             "C2" -> CaosVariant.C2
             else -> null
         }
@@ -2430,7 +2448,7 @@ object CaosScriptPsiImplUtil {
             ?.firstOrNull()
             ?.let {
                 if (it.first == "C1")
-                    CaosVariant.C1
+                    C1
                 else
                     CaosVariant.C2
             }
@@ -2453,7 +2471,7 @@ object CaosScriptPsiImplUtil {
                 def.variant
             else {
                 when (text.substring(text.length - 3)) {
-                    "C1" -> CaosVariant.C1
+                    "C1" -> C1
                     "C2" -> CaosVariant.C2
                     else -> null
                 }
@@ -2793,4 +2811,34 @@ val CaosScriptNamedGameVar.isObjectVar: Boolean get() = varType == CaosScriptNam
 
 fun <PsiT : PsiElement> PsiElement.collectElementsOfType(vararg type: Class<PsiT>): Collection<PsiT> {
     return PsiTreeUtil.collectElementsOfType(this, *type)
+}
+
+
+/**
+ * Gets the variables numbered index
+ * ie 10 for "va10", 22 for "ov22"
+ */
+
+val CaosScriptVarToken.varIndexOrZero: Int get() {
+    /*return element.stub?.varIndex
+            ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()*/
+    return text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull() ?: 0
+}
+
+
+
+internal val PsiElement.parentParameter: CaosParameter? get() {
+    val argumentParent = getParentOfType(CaosScriptArgument::class.java)
+        ?: return null
+    val index = argumentParent.index
+    val commandParent = getParentOfType(CaosScriptCommandElement::class.java)
+        ?: return null
+    return commandParent.commandDefinition?.parameters?.getOrNull(index)
+}
+
+internal val CaosScriptArgument.parameter: CaosParameter? get() {
+    val index = index
+    val commandParent = getParentOfType(CaosScriptCommandElement::class.java)
+        ?: return null
+    return commandParent.commandDefinition?.parameters?.getOrNull(index)
 }
