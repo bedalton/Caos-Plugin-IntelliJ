@@ -2,13 +2,17 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2co
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertAfterFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.IS_SUPPLEMENT_KEY
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isSupplement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
@@ -17,7 +21,9 @@ import kotlin.math.min
 
 class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
 
-    override fun getDisplayName(): String = AgentMessages.message("inspections.caos-to-compiler.required-fields.display-name")
+    override fun getDisplayName(): String =
+        AgentMessages.message("inspections.caos-to-compiler.required-fields.display-name")
+
     override fun getGroupDisplayName(): String = CAOS2Cob
     override fun getGroupPath(): Array<String> = CAOS2Path
 
@@ -42,8 +48,11 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
         /**
          * Validates a COB comment directive, to ensure that it actually exists
          */
-        private fun validateBlock(element:CaosScriptCaos2Block, holder: ProblemsHolder) {
+        private fun validateBlock(element: CaosScriptCaos2Block, holder: ProblemsHolder) {
             if (!element.isCaos2Cob) {
+                return
+            }
+            if (element.containingCaosFile?.isSupplement == true) {
                 return
             }
             val variant = element.cobVariant
@@ -61,7 +70,6 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
             }
 
 
-
             // Find text range for which to show missing variant error
             val errorTextRange = element.caos2BlockHeader?.textRange
                 ?: element.firstChild?.let {
@@ -71,10 +79,14 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
             if (missingTags.contains(CobTag.AGENT_NAME) && element.agentBlockNames.any { it.first == "C1" || it.first == "C2" }) {
                 missingTags.remove(CobTag.AGENT_NAME)
             } else if (CobTag.AGENT_NAME in foundTags && element.agentBlockNames.none { it.first == "C1" || it.first == "C2" }) {
-                val fixes = element.caos2BlockHeader?.let {header ->
+                val fixes = element.caos2BlockHeader?.let { header ->
                     arrayOf(
-                        CaosScriptReplaceElementFix(header, "**CAOS2Cob C1", AgentMessages.message("error.missing-game-variant.fix-text", CAOS2Cob, "C1")),
-                        CaosScriptReplaceElementFix(header, "**CAOS2Cob C2", AgentMessages.message("error.missing-game-variant.fix-text", CAOS2Cob, "C2"))
+                        CaosScriptReplaceElementFix(header,
+                            "**CAOS2Cob C1",
+                            AgentMessages.message("error.missing-game-variant.fix-text", CAOS2Cob, "C1")),
+                        CaosScriptReplaceElementFix(header,
+                            "**CAOS2Cob C2",
+                            AgentMessages.message("error.missing-game-variant.fix-text", CAOS2Cob, "C2"))
                     )
                 } ?: arrayOf(
                     CaosScriptInsertBeforeFix(
@@ -102,10 +114,16 @@ class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
                 return
 
             val missingTagsString = missingTags.joinToString(", ") { it.keys.first() }
-            holder.registerProblem(element,
-                errorTextRange,
-                AgentMessages.message("error.caos-to-compiler.required-fields.missing-required-properties", CAOS2Cob, missingTagsString)
-            )
+            holder
+                .registerProblem(element,
+                    errorTextRange,
+                    AgentMessages.message("error.caos-to-compiler.required-fields.missing-required-properties",
+                        CAOS2Cob,
+                        missingTagsString),
+                    CaosScriptInsertAfterFix("Mark as a linked file", "\n**Is Linked", element) {
+                        element.containingCaosFile?.putUserData(IS_SUPPLEMENT_KEY, null)
+                    }
+                )
         }
     }
 }
