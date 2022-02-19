@@ -17,7 +17,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 
-
 /**
  * Tests command token validity and generates an annotation if needed
  * Checks for:
@@ -25,7 +24,7 @@ import com.intellij.psi.PsiElement
  *  - Proper context(i.e. Command, RValue, LValue)
  *  - Variant
  */
-internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement, commandToken: String, annotationHolder: AnnotationHolder): AnnotationBuilder? {
+internal fun getErrorCommandAnnotation(variant: CaosVariant, element: PsiElement, commandToken: String, annotationHolder: AnnotationHolder): MyAnnotationBuilder? {
     if (variant == CaosVariant.UNKNOWN)
         return null
     // Get command as upper case
@@ -144,7 +143,7 @@ private fun annotationInvalidCommandTypeInVariant(
         commandType: CaosCommandType,
         commandsInVariant: List<CaosCommand>,
         annotationHolder: AnnotationHolder
-): AnnotationBuilder {
+): MyAnnotationBuilder {
     // Format command to upper case
     val commandToUpperCase: String = commandToken.uppercase()
     // Gets the command types as a string
@@ -174,7 +173,7 @@ private fun annotationInvalidCommandTypeInVariant(
 /**
  * Adds SETV/SETA/SETS prefixing fixes as needed
  */
-private fun addSetvLikeFixes(variant: CaosVariant, element:PsiElement, commandToken: String, builderIn:AnnotationBuilder) : AnnotationBuilder {
+private fun addSetvLikeFixes(variant: CaosVariant, element:PsiElement, commandToken: String, builderIn:MyAnnotationBuilder) : MyAnnotationBuilder {
     var builder = builderIn
     val commandToUpperCase = commandToken.uppercase()
     val nextRvalue = nextRvalues(element)
@@ -211,7 +210,7 @@ private fun validTypeInOtherVariantsAnnotation(
         commandToken:String,
         commandsOutOfVariant:List<CaosCommand>,
         annotationHolder: AnnotationHolder
-) : AnnotationBuilder {
+) : MyAnnotationBuilder {
 
     // Format all variants matching commands as a simplified string
     val variantsString = variantsString(commandsOutOfVariant)
@@ -314,9 +313,9 @@ private fun variantsString(commands:List<CaosCommand>) : String {
 private fun getVariantString(variantsIn: List<CaosVariant>): String {
     val variants = variantsIn.sortedBy { it.index }
     return when {
-        4 == variants.intersect(listOf(CaosVariant.C2, CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "C2+"
-        3 == variants.intersect(listOf(CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "CV+"
-        2 == variants.intersect(listOf(CaosVariant.C3, CaosVariant.DS)).size -> "C3+"
+        4 == variants.intersect(setOf(CaosVariant.C2, CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "C2+"
+        3 == variants.intersect(setOf(CaosVariant.CV, CaosVariant.C3, CaosVariant.DS)).size -> "CV+"
+        2 == variants.intersect(setOf(CaosVariant.C3, CaosVariant.DS)).size -> "C3+"
         else -> variants.joinToString(",") { it.code }
     }
 }

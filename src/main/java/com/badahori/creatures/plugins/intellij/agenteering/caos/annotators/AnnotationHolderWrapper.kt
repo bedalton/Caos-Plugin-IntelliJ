@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.daemon.HighlightDisplayKey
@@ -22,6 +23,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.jetbrains.annotations.Contract
+
+// Alias to allow swapping out builder implementation
+internal typealias MyAnnotationBuilder = com.intellij.lang.annotation.AnnotationBuilder
 
 ///**
 // * Annotation wrapper to try to unify calls in Intellij 191 and 201, where some annotation commands were deprecated
@@ -92,6 +96,7 @@ internal data class AnnotationBuilderData(
     internal val needsUpdateOnTyping: Boolean? = null,
     internal val highlightType: ProblemHighlightType? = null,
     internal val tooltip: String? = null,
+    internal val afterEndOfLine: Boolean = false,
 )
 
 class AnnotationBuilder private constructor(
@@ -112,8 +117,14 @@ class AnnotationBuilder private constructor(
         return AnnotationBuilder(annotationHolder, data.copy(range = element.textRange))
     }
 
+    @Contract(pure = true)
     fun range(node: ASTNode): AnnotationBuilder {
         return AnnotationBuilder(annotationHolder, data.copy(range = node.textRange))
+    }
+
+    @Contract(pure = true)
+    fun afterEndOfLine(): AnnotationBuilder {
+        return AnnotationBuilder(annotationHolder, data.copy(afterEndOfLine = true))
     }
 
     @Contract(pure = true)
@@ -181,7 +192,11 @@ class AnnotationBuilder private constructor(
     fun create() {
         if (data.range == null)
             throw Exception("Cannot create annotation without range")
-        var annotation = annotationHolder.newAnnotation(data.severity, data.message.nullIfEmpty() ?: "")
+        var annotation = (data.message.nullIfEmpty()?.let {
+            annotationHolder
+                .newAnnotation(data.severity, it)
+        } ?: annotationHolder.newSilentAnnotation(data.severity))
+            .range(data.range)
         data.fixBuilderData.forEach {
             val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
@@ -234,6 +249,9 @@ class AnnotationBuilder private constructor(
         }
         data.highlightType?.let {
             annotation = annotation.highlightType(it)
+        }
+        if (data.afterEndOfLine) {
+            annotation = annotation.afterEndOfLine()
         }
         annotation.create()
     }
@@ -320,15 +338,40 @@ fun AnnotationHolder.clearTextAttributes(range: TextRange) {
 /**
  * Colorizes/Styles a AST node
  */
-fun AnnotationHolder.colorize(node: ASTNode, textAttributes: TextAttributesKey) {
-    colorize(node.textRange, textAttributes)
+fun AnnotationHolder.colorize(node: ASTNode, textAttributes: TextAttributesKey, recursive: Boolean = true) {
+    if (recursive) {
+        var child: ASTNode? = node.firstChildNode
+        while (child != null) {
+            colorize(child, textAttributes, true)
+            child = child.treeNext
+        }
+    }
+
+    // Actually colorize
+    newInfoAnnotation(null)
+        .range(node)
+//        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
+        .textAttributes(textAttributes)
+        .create()
 }
 
 /**
  * Colorizes/Styles a psi element
  */
-fun AnnotationHolder.colorize(element: PsiElement, textAttributes: TextAttributesKey) {
-    colorize(element.textRange, textAttributes)
+fun AnnotationHolder.colorize(element: PsiElement, textAttributes: TextAttributesKey, recursive: Boolean = true) {
+    if (recursive) {
+        element.children.forEach { child ->
+            colorize(child, textAttributes, true)
+        }
+    }
+    clearTextAttributes(element.textRange)
+
+    // Actually colorize
+    newInfoAnnotation(null)
+        .range(element)
+//        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
+        .textAttributes(textAttributes)
+        .create()
 }
 
 /**
@@ -341,37 +384,74 @@ fun AnnotationHolder.colorize(range: TextRange, textAttributes: TextAttributesKe
     // Actually colorize
     newInfoAnnotation(null)
         .range(range)
+//        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
         .textAttributes(textAttributes)
         .create()
 }
 
+//
+//@Contract(pure = true)
+//fun AnnotationHolder.newErrorAnnotation(message: String): MyAnnotationBuilder {
+//    return AnnotationBuilder(this, HighlightSeverity.ERROR, message)
+//}
+//
+//@Contract(pure = true)
+//fun AnnotationHolder.newWarningAnnotation(message: String): MyAnnotationBuilder {
+//    return AnnotationBuilder(this, HighlightSeverity.WARNING, message)
+//}
+//
+//@Contract(pure = true)
+//fun AnnotationHolder.newWeakWarningAnnotation(message: String): MyAnnotationBuilder {
+//    return AnnotationBuilder(this, HighlightSeverity.WEAK_WARNING, message)
+//}
+//
+//@Contract(pure = true)
+//fun AnnotationHolder.newInfoAnnotation(message: String?): MyAnnotationBuilder {
+//    return AnnotationBuilder(this, HighlightSeverity.INFORMATION, message)
+//}
+//
+//@Contract(pure = true)
+//fun AnnotationHolder.newInfoAnnotation(): MyAnnotationBuilder {
+//    return AnnotationBuilder(this, HighlightSeverity.INFORMATION, null)
+//}
 
 @Contract(pure = true)
-fun AnnotationHolder.newErrorAnnotation(message: String): AnnotationBuilder {
-    return AnnotationBuilder(this, HighlightSeverity.ERROR, message)
+fun AnnotationHolder.newErrorAnnotation(message: String): MyAnnotationBuilder {
+    return newAnnotation(
+        HighlightSeverity.ERROR,
+        message
+    )
 }
 
 @Contract(pure = true)
-fun AnnotationHolder.newWarningAnnotation(message: String): AnnotationBuilder {
-    return AnnotationBuilder(this, HighlightSeverity.WARNING, message)
+fun AnnotationHolder.newWarningAnnotation(message: String): MyAnnotationBuilder {
+    return newAnnotation(
+        HighlightSeverity.WARNING,
+        message
+    )
 }
 
 @Contract(pure = true)
-fun AnnotationHolder.newWeakWarningAnnotation(message: String): AnnotationBuilder {
-    return AnnotationBuilder(this, HighlightSeverity.WEAK_WARNING, message)
+fun AnnotationHolder.newWeakWarningAnnotation(message: String): MyAnnotationBuilder {
+    return newAnnotation(
+        HighlightSeverity.WARNING,
+        message
+    )
 }
 
 @Contract(pure = true)
-fun AnnotationHolder.newInfoAnnotation(message: String?): AnnotationBuilder {
-    return AnnotationBuilder(this, HighlightSeverity.INFORMATION, message)
+fun AnnotationHolder.newInfoAnnotation(message: String?): MyAnnotationBuilder {
+    return if (message.isNotNullOrBlank()) {
+        newAnnotation(
+            HighlightSeverity.INFORMATION,
+            message
+        )
+    } else {
+        newSilentAnnotation(
+            HighlightSeverity.INFORMATION
+        )
+    }
 }
-
-@Contract(pure = true)
-fun AnnotationHolder.newInfoAnnotation(): AnnotationBuilder {
-    return AnnotationBuilder(this, HighlightSeverity.INFORMATION, null)
-}
-
-
 private fun FixBuilder.withData(data: FixBuilderData): FixBuilder {
     return if (data.range != null) {
         if (data.key != null) {
@@ -385,4 +465,15 @@ private fun FixBuilder.withData(data: FixBuilderData): FixBuilder {
     } else {
         this
     }
+}
+
+@Contract(pure = true)
+internal fun com.intellij.lang.annotation.AnnotationBuilder.withFixes(vararg fixes: IntentionAction): MyAnnotationBuilder {
+    var annotation = this
+    for (fix in fixes) {
+        annotation = annotation
+            .newFix(fix)
+            .registerFix()
+    }
+    return annotation
 }
