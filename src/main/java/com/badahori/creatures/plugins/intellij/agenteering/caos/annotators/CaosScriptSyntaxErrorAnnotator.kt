@@ -1,9 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosScriptInferenceUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter
@@ -13,15 +11,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.LVALUE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parameter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
-import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -54,8 +53,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             is CaosScriptToken -> annotateToken(element, holder)
             is CaosScriptQuoteStringLiteral -> annotateDoubleQuoteString(variant, element, holder)
             is CaosScriptC1String -> annotateC1String(variant, element, holder)
+            is CaosScriptByteString -> annotateByteString(variant, element, holder)
+            is CaosScriptAnimationString -> annotateByteString(variant, element, holder)
             is CaosScriptIsCommandToken -> annotateNotAvailable(variant, element, holder)
-            is CaosScriptVarToken -> annotateVarToken(variant, element, holder)
             is CaosScriptNumber -> annotateNumber(variant, element, holder)
             is CaosScriptErrorRvalue -> holder
                 .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-rvalue"))
@@ -191,7 +191,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
      * Annotates a number if it is a float used outside C2+
      */
     private fun annotateNumber(variant: CaosVariant, element: CaosScriptNumber, holder: AnnotationHolder) {
-        if (variant != CaosVariant.C1 || element.float == null)
+        if (variant != C1 || element.float == null)
             return
         val floatValue = element.text.toFloat()
         var builder =
@@ -242,6 +242,18 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     ) {
         if (variant.isNotOld || quoteStringLiteral.parent is CaosScriptCaos2Value)
             return
+
+        if (quoteStringLiteral.parent?.parent !is CaosScriptEqualityExpressionPrime) {
+            wrapper
+                .newErrorAnnotation(
+                    message(
+                        "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
+                        variant
+                    )
+                )
+                .range(quoteStringLiteral)
+                .create()
+        }
         wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-quote-string"))
             .range(quoteStringLiteral)
             .withFix(CaosScriptFixQuoteType(quoteStringLiteral, '[', ']'))
@@ -251,7 +263,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
     /**
      * Annotates a C1 string as invalid when assigned or used in CV+
      */
-    private fun annotateC1String(variant: CaosVariant, element: CaosScriptC1String, wrapper: AnnotationHolder) {
+    private fun annotateC1String(variant: CaosVariant, element: PsiElement, wrapper: AnnotationHolder) {
         if (variant.isOld) {
             if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
                 wrapper.newErrorAnnotation(
@@ -262,22 +274,40 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
                 )
                     .range(element)
                     .create()
-            } else if (element.getParentOfType(CaosScriptArgument::class.java)?.parent is CaosScriptCAssignment) {
-                wrapper.newErrorAnnotation(
-                    message(
-                        "caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed",
-                        variant
-                    )
-                )
-                    .range(element)
-                    .create()
+            } else {
+                // String is used as argument in C1e
+                val argument = (element.parent as? CaosScriptArgument)
+                if (argument?.parent is CaosScriptCAssignment) {
+                    wrapper
+                        .newErrorAnnotation(
+                            message(
+                                "caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed",
+                                variant
+                            )
+                        )
+                        .range(element)
+                        .create()
+                    return
+                }
+                val parameter = argument?.parameter
+                if (parameter?.type != CaosExpressionValueType.C1_STRING && parameter?.type != CaosExpressionValueType.STRING) {
+                    wrapper
+                        .newErrorAnnotation(
+                            message(
+                                "caos.annotator.syntax-error-annotator.strings-are-not-rvalues",
+                                variant
+                            )
+                        )
+                        .range(element)
+                        .create()
+                }
             }
-            return
+        } else {
+            wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-c1-string"))
+                .range(element)
+                .withFix(CaosScriptFixQuoteType(element, '"'))
+                .create()
         }
-        wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-c1-string"))
-            .range(element)
-            .withFix(CaosScriptFixQuoteType(element, '"'))
-            .create()
     }
 
 
@@ -353,77 +383,6 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             return
         holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
             .range(element.textRange)
-            .create()
-    }
-
-    private fun annotateVarToken(variant: CaosVariant, element: CaosScriptVarToken, holder: AnnotationHolder) {
-        if (variant.isOld) {
-            if (element.parent?.parent is CaosScriptEqualityExpression) {
-                // TODO: Is this check really necessary, in older variants
-                // a string cannot be assigned to a string anyways,
-                // so a variable is guaranteed to have an int (either literal or agent id)
-                val type = if (DumbService.isDumb(element.project))
-                    listOf(CaosExpressionValueType.VARIABLE)
-                else
-                    CaosScriptInferenceUtil.getInferredType(element)
-                if (type != null && type.all { it.isStringType || !it.isByteStringLike }) {
-                    holder.newErrorAnnotation(
-                        message(
-                            "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
-                            variant
-                        )
-                    )
-                        .range(element)
-                        .create()
-                }
-            }
-        }
-        val variants: String = if (element.varX != null) {
-            if (variant.isNotOld)
-                "C1,C2"
-            else
-                return
-        } else if (element.vaXx != null) {
-            if (variant == CaosVariant.C1)
-                "C2+"
-            else
-                return
-        } else if (element.obvX != null) {
-            if (variant.isNotOld) {
-                if (element.varIndex.orElse(100) < 3)
-                    "C1,C2"
-                else
-                    "C2"
-            } else if (variant == CaosVariant.C1 && element.varIndex.orElse(0) > 2)
-                "C2"
-            else
-                return
-        } else if (element.ovXx != null) {
-            if (variant == CaosVariant.C1)
-                "C2+"
-            else
-                return
-        } else if (element.mvXx != null) {
-            if (variant.isOld)
-                "CV+"
-            else
-                return
-        } else
-            return
-
-        val varName = when {
-            element.varX != null -> "VARx"
-            element.vaXx != null -> "VAxx"
-            element.obvX != null -> if (element.varIndex.orElse(0) > 2) "OBVx[3-9]" else "OBVx"
-            element.ovXx != null -> "OVxx"
-            element.mvXx != null -> "MVxx"
-            else -> element.text
-        }
-
-        val error = message("caos.annotator.syntax-error-annotator.invalid-var-type-for-variant", varName, variants)
-        holder
-            .newErrorAnnotation(error)
-            .range(element)
             .create()
     }
 
@@ -522,6 +481,27 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             .any { comment ->
                 swiftRegex.matches(comment.text.trim())
             }
+    }
+
+    private fun annotateByteString(variant: CaosVariant, element: PsiElement, holder: AnnotationHolder) {
+        if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
+            holder
+                .newErrorAnnotation(
+                    message(
+                        "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
+                        variant
+                    )
+                )
+                .range(element)
+                .create()
+            return
+        }
+        (element.parent as? CaosScriptRvalue)?.parameter?.let { parameter ->
+            // IF not animation or byte string
+            if (parameter.type != CaosExpressionValueType.BYTE_STRING && parameter.type != CaosExpressionValueType.ANIMATION) {
+                annotateC1String(variant, element, holder)
+            }
+        }
     }
 
 }
