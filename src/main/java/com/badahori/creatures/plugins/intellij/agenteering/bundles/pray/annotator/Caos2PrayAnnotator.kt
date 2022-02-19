@@ -1,7 +1,10 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newErrorAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWeakWarningAnnotation
+import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.withFixes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages

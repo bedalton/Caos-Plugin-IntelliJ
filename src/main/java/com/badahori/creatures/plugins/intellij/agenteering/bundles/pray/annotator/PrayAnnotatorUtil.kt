@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newErrorAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWarningAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWeakWarningAnnotation
+import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.withFixes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue
