@@ -500,6 +500,20 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
             // IF not animation or byte string
             if (parameter.type != CaosExpressionValueType.BYTE_STRING && parameter.type != CaosExpressionValueType.ANIMATION) {
                 annotateC1String(variant, element, holder)
+            } else if (variant == C1) {
+                if (element is CaosScriptByteString) {
+                    if (element.byteStringPoseElementList.size > 1) {
+                        holder
+                            .newErrorAnnotation(
+                                message(
+                                    "caos.annotator.syntax-error-annotator.c1e-spaces-in-byte-string",
+                                    variant
+                                )
+                            )
+                            .range(element)
+                            .create()
+                    }
+                }
             }
         }
     }
