@@ -2,22 +2,19 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptFixTooManySpaces
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.next
-import com.badahori.creatures.plugins.intellij.agenteering.utils.previous
-import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.TokenType
+import com.intellij.psi.util.PsiTreeUtil
 
 class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
 
@@ -39,6 +36,11 @@ class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
     private fun validate(element: PsiElement, holder: ProblemsHolder) {
         val type = element.tokenType
         if (type != CaosScriptTypes.CaosScript_COMMA && type != TokenType.WHITE_SPACE && type != CaosScriptTypes.CaosScript_NEWLINE) {
+            return
+        }
+        val caosFile = element.containingFile as? CaosScriptFile
+            ?: return
+        if (caosFile.caos2 != null || caosFile.isMultiScript) {
             return
         }
 
@@ -79,11 +81,19 @@ class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
                 break
             prev = prev.previous
         }
-
         // Trailing whitespace
         if (!(element.text.contains('\n') || prev?.text?.endsWith('\n') == true) || next == null || prev == null) {
+            val errorElement = element.getPreviousNonEmptySibling(true) ?: element
+            var parentElement = PsiTreeUtil.findCommonParent(errorElement, element)
+            var start = maxOf(errorElement.endOffset - 1, parentElement?.startOffset ?: (element.endOffset - 1))
+            if (start < parentElement?.startOffset.orElse(element.startOffset)) {
+                start = element.startOffset
+                parentElement = element
+            }
+            val end = element.endOffset
             holder.registerProblem(
-                element,
+                parentElement ?: element,
+                TextRange(start, end),
                 CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace"),
                 CaosScriptFixTooManySpaces(element)
             )
