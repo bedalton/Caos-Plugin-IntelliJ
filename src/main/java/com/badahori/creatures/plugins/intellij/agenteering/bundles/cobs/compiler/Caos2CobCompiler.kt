@@ -280,7 +280,7 @@ object Caos2CobCompiler {
         } else {
             val installScript = installScripts.joinToString(",")
 
-            // Attach files are added to both depends and inline files list
+            // Attached files are added to both the "depends" and the "inline" files list
             val attachments: Set<String> =
                 cobCommands.filter { it.first == CobCommand.ATTACH }.flatMap { it.second }.toSet()
 
@@ -337,7 +337,7 @@ object Caos2CobCompiler {
                 throw Caos2CobException("Linked file was not a CAOS file. Did you mean Attach or Inline?")
             }
             (file.getPsiFile(project) as? CaosScriptFile)?.let { caosFile ->
-                if (caosFile.isCaos2Cob) {
+                if (caosFile.hasCaos2Tags) {
                     compilationResults.warnings++
                     CaosNotifications.showWarning(
                         project,
