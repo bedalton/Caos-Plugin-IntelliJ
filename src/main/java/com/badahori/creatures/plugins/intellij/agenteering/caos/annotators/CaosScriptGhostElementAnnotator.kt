@@ -29,9 +29,16 @@ class CaosScriptGhostElementAnnotator : Annotator {
         ProgressIndicatorProvider.checkCanceled()
 
         if (element.elementType == CaosScriptTypes.CaosScript_GHOST_QUOTE) {
-            val parent = element.parent
+            val parent = element
             val range = try {
-                parent.textRange.cutOut(element.textRange)
+//                parent.textRange.cutOut(element.textRange)
+                parent.textRange.let {
+                    if (it.endOffset - 1 < it.startOffset) {
+                        it
+                    } else {
+                        TextRange(it.endOffset - 1, it.endOffset)
+                    }
+                }
             } catch (e: Exception) {
                 if (parent is CaosScriptQuoteStringLiteral) {
                     parent.stringText?.textRange ?: parent.textRange
@@ -39,23 +46,27 @@ class CaosScriptGhostElementAnnotator : Annotator {
                     parent.textRange
                 }
             }
-            if (parent is CaosScriptQuoteStringLiteral) {
-                annotationHolder.newErrorAnnotation("Unclosed string literal")
-                    .range(range)
-                    .afterEndOfLine()
-                    .withFix(CaosScriptInsertBeforeFix("Add closing quote", "\"", element))
-                    .create()
-            } else if (parent is CaosScriptCharacter) {
-                annotationHolder.newWarningAnnotation("Unclosed char literal")
-                    .range(range)
-                    .afterEndOfLine()
-                    .withFix(CaosScriptInsertBeforeFix("Add closing quote", "\'", element))
-                    .create()
-            } else {
-                annotationHolder.newErrorAnnotation("Unclosed string")
-                    .range(range)
-                    .afterEndOfLine()
-                    .create()
+            when (parent) {
+                is CaosScriptQuoteStringLiteral -> {
+                    annotationHolder.newErrorAnnotation("Unclosed string literal")
+                        .range(range)
+                        .afterEndOfLine()
+                        .withFix(CaosScriptInsertBeforeFix("Add closing quote", "\"", element))
+                        .create()
+                }
+                is CaosScriptCharacter -> {
+                    annotationHolder.newWarningAnnotation("Unclosed char literal")
+                        .range(range)
+                        .afterEndOfLine()
+                        .withFix(CaosScriptInsertBeforeFix("Add closing quote", "\'", element))
+                        .create()
+                }
+                else -> {
+                    annotationHolder.newErrorAnnotation("Unclosed string")
+                        .range(range)
+                        .afterEndOfLine()
+                        .create()
+                }
             }
         }
         if (element !is CaosScriptCompositeElement || element.hasParentOfType(CaosDefCompositeElement::class.java))
