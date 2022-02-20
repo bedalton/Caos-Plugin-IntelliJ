@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 
-import bedalton.creatures.bytes.decodeToCreaturesEncoding
 import bedalton.creatures.pray.cli.PrayCompilerCliOptions
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
@@ -32,8 +31,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.min
 
 class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myFile: VirtualFile) :
     PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
@@ -121,7 +120,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             (virtualFile ?: myFile).putUserData(PRAY_COMPILER_SETTINGS_KEY, value)
         }
 
-    val hasCaos2Tags: Boolean get() {
+    val hasCaos2Tags: Boolean
+        get() {
         val time = now
         this.getUserData(HAS_CAOS2_KEY)?.let { (expiry, hasCaos2) ->
             if (expiry > time) {
@@ -132,7 +132,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
         val expiry = time + rand(cacheMin, cacheMax) // cache for seconds
         this.putUserData(HAS_CAOS2_KEY, Pair(expiry, hasCaos2))
         return hasCaos2
-    }
+//            return calculateHasCaos2Tags()
+        }
 
     val prayTags: List<PrayTagStruct<*>>
         get() {
@@ -140,25 +141,25 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 return emptyList()
             return stub?.prayTags
                 ?: collectElementsOfType(
-                this,
-                CaosScriptCaos2Tag::class.java
-            )
-                .mapNotNull map@{ tag ->
-                    val tagName = tag.tagName
-                    tag.valueAsInt?.let { number ->
-                        PrayTagStruct.IntTag(
-                            tagName,
-                            number,
-                            tag.startOffset
-                        )
-                    } ?: tag.valueAsString?.let { string ->
-                        PrayTagStruct.StringTag(
-                            tagName,
-                            string,
-                            tag.startOffset
-                        )
+                    this,
+                    CaosScriptCaos2Tag::class.java
+                )
+                    .mapNotNull map@{ tag ->
+                        val tagName = tag.tagName
+                        tag.valueAsInt?.let { number ->
+                            PrayTagStruct.IntTag(
+                                tagName,
+                                number,
+                                tag.startOffset
+                            )
+                        } ?: tag.valueAsString?.let { string ->
+                            PrayTagStruct.StringTag(
+                                tagName,
+                                string,
+                                tag.startOffset
+                            )
+                        }
                     }
-                }
         }
 
     override fun getFileType(): FileType {
@@ -260,8 +261,9 @@ val PsiFile.mModule: Module?
         return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
     }
 
-val PsiFile.module : Module? get()
-    =  this.mModule ?: containingFile?.originalFile?.mModule
+val PsiFile.module: Module?
+    get()
+    = this.mModule ?: containingFile?.originalFile?.mModule
 
 val PsiElement.module: Module?
     get() = containingFile?.module ?: originalElement?.containingFile?.module
@@ -354,6 +356,7 @@ val CaosScriptFile.caos2: String?
         val caos2 = calculateCaos2()
         this.putUserData(CAOS2_KEY, Pair(time + cacheForMillis, caos2))
         return caos2
+//        return calculateCaos2()
     }
 
 
@@ -363,9 +366,21 @@ val CaosScriptFile.isCaos2Cob: Boolean
         CaosScriptCaos2Block::class.java
     )?.isCaos2Cob.orFalse()
 
-val CaosScriptFile?.disableMultiScriptChecks: Boolean
+val CaosScriptFile?.isMultiScript: Boolean
     get() {
-        return this == null || this.isDump || this.isCaos2Cob || this.isSupplement
+        if (this == null) {
+            return true
+        }
+        val time = now
+        this.getUserData(IS_MULTI_SCRIPT)?.let { (expiry, isMultiScript) ->
+            if (expiry > time) {
+                return isMultiScript
+            }
+        }
+        val cacheForMillis = rand(cacheMin, cacheMax)
+        val isMultiScript = this.isDump || this.isCaos2Cob || this.isSupplement
+        this.putUserData(IS_MULTI_SCRIPT, Pair(time + cacheForMillis, isMultiScript))
+        return isMultiScript
     }
 
 @Suppress("unused")
@@ -420,75 +435,84 @@ internal fun CaosScriptFile.getScripts(): Collection<CaosScriptScriptElement> {
 }
 
 @Suppress("unused")
-internal inline fun <reified T:CaosScriptScriptElement> CaosScriptFile.getScriptsOfType(): List<CaosScriptScriptElement> {
+internal inline fun <reified T : CaosScriptScriptElement> CaosScriptFile.getScriptsOfType(): List<CaosScriptScriptElement> {
     return collectElementsOfType(this, CaosScriptScriptElement::class.java)
         .filterIsInstance<T>()
 }
 
 
+private const val cacheMin = 3000
+private const val cacheMax = 5000
+
+// Cache KEYS
+internal val HAS_CAOS2_KEY =
+    Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_CAOS2_CACHE_KEY")
+internal val CAOS2_KEY =
+    Key<Pair<Long, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.CAOS2_CACHE_KEY")
+internal val IS_SUPPLEMENT_KEY =
+    Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_SUPPLEMENT_KEY")
+internal val IS_MULTI_SCRIPT =
+    Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_MULTI_SCRIPT")
 
 
-private const val cacheMin = 6000
-private const val cacheMax = 8000
-internal val HAS_CAOS2_KEY = Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_CAOS2_CACHE_KEY")
-internal val CAOS2_KEY = Key<Pair<Long, String?>>("com.badahori.creatures.plugins.intellij.agenteering.caos.CAOS2_CACHE_KEY")
-internal val IS_SUPPLEMENT_KEY = Key<Pair<Long, Boolean>>("com.badahori.creatures.plugins.intellij.agenteering.caos.IS_SUPPLEMENT_KEY")
-
-private val CAOS2_HEADER_REGEX = "^[*]{2}\\s*CAOS2(PRAY|COB)".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
-private val CAOS2COB_REGEX = "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
-private val CAOS2PRAY_REGEX = "^([*]#\\s*([a-zA-Z0-9_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
-private val IS_SUPPLEMENT_REGEX = "^[*]{2}\\s*(is\\s*)?(Supplement|link(ed))".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+// Header REGEX
+private val CAOS2_HEADER_REGEX =
+    "^[*]{2}\\s*CAOS2(PRAY|COB)".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+private val CAOS2COB_REGEX =
+    "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex(setOf(
+        RegexOption.IGNORE_CASE,
+        RegexOption.MULTILINE))
+private val CAOS2PRAY_REGEX =
+    "^([*]#\\s*([a-zA-Z0-9_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(
+        setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+private val IS_SUPPLEMENT_REGEX =
+    "^[*]{2}\\s*(is\\s*)?(Supplement|link(ed))".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
 /**
  * Detect if this file has CAOS2 statements
  */
 private fun CaosScriptFile.calculateHasCaos2Tags(): Boolean {
-    val start = '*'.code.toByte()
-    val second = '#'.code.toByte()
-    val skip2 = ' '.code.toByte()
-    val skip1 = '\t'.code.toByte()
-    val end = '\n'.code.toByte()
-    val maxBuffer = 100
-    val buffer = ByteArray(maxBuffer)
-    var bufferByte: Byte
-    virtualFile.inputStream.use { stream ->
-        var line = 0
-        val maxLines = 20
-        var inComment = false
-        var inCaos2Comment = false
-        while (line++ < maxLines) {
-            val read = stream.read(buffer, 0, maxBuffer)
-            if (read == 0) {
+    val start = '*'.code
+    val second = '#'.code
+    val skip2 = ' '.code
+    val skip1 = '\t'.code
+    val end = '\n'.code
+
+    var line = 0
+    val maxLines = 20
+    var inComment = false
+    var inCaos2Comment = false
+    var bufferByte: Int
+
+    val text = text?.let {
+        it.substring(0, min(4000, it.length))
+    } ?: ""
+    for (char in text) {
+        bufferByte = char.code
+        if (bufferByte < 0) {
+            return false
+        }
+        if (bufferByte == end) {
+            inComment = false
+            inCaos2Comment = false
+            if (line++ >= maxLines) {
                 return false
             }
-            for (i in 0 until read) {
-                bufferByte = buffer[i]
-                if (bufferByte < 0) {
-                    return false
-                }
-                if (bufferByte == end) {
-                    inComment = false
-                    inCaos2Comment = false
-                    if (line++ >= maxLines) {
-                        return false
-                    }
-                    continue
-                }
-                if (bufferByte == skip1 || bufferByte == skip2) {
-                    continue
-                }
-                if (inComment && bufferByte == second) {
-                    inCaos2Comment = true
-                    continue
-                }
-                if (bufferByte == start) {
-                    inComment = true
-                    continue
-                }
-                if (inCaos2Comment) {
-                    return true
-                }
-            }
+            continue
+        }
+        if (bufferByte == skip1 || bufferByte == skip2) {
+            continue
+        }
+        if (inComment && bufferByte == second) {
+            inCaos2Comment = true
+            continue
+        }
+        if (bufferByte == start) {
+            inComment = true
+            continue
+        }
+        if (inCaos2Comment) {
+            return true
         }
     }
     return false
@@ -498,98 +522,53 @@ private fun CaosScriptFile.calculateHasCaos2Tags(): Boolean {
  * Determine the kind of CAOS2 file if any
  */
 private fun CaosScriptFile.calculateCaos2(): String? {
-    val maxBuffer = 1024
-    val buffer = ByteArray(maxBuffer)
-
-    virtualFile?.inputStream?.use { stream ->
-        val builder = StringBuilder()
-        do {
-            val read = stream.read(buffer, 0, maxBuffer)
-            if (read == 0) {
-                break
-            }
-            val text = buffer.decodeToCreaturesEncoding()
-            CAOS2_HEADER_REGEX.find(text)
-                ?.groupValues
-                ?.getOrNull(1)
-                ?.let {
-                    return if (it like "PRAY")
-                        CAOS2Pray
-                    else
-                        CAOS2Cob
-                }
-            if (CAOS2PRAY_REGEX.containsMatchIn(text)) {
-                return CAOS2Pray
-            }
-            if (CAOS2COB_REGEX.containsMatchIn(text)) {
-                return CAOS2Cob
-            }
-            // Add text in case one block terminates inside a statement
-            builder.append(text)
-        }  while (builder.length < 4000)
-
-        val text = builder.toString()
-        CAOS2_HEADER_REGEX.find(text)
-            ?.groupValues
-            ?.getOrNull(1)
-            ?.let {
-                return if (it like "PRAY")
-                    CAOS2Pray
-                else
-                    CAOS2Cob
-            }
-        if (CAOS2PRAY_REGEX.containsMatchIn(text)) {
-            return CAOS2Pray
+    val text = this.text.let {
+        it.substring(0, min(4000, it.length - 1))
+    }
+    CAOS2_HEADER_REGEX.find(text)
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.let {
+            return if (it like "PRAY")
+                CAOS2Pray
+            else
+                CAOS2Cob
         }
-        if (CAOS2COB_REGEX.containsMatchIn(text)) {
-            return CAOS2Cob
-        }
+    if (CAOS2PRAY_REGEX.containsMatchIn(text)) {
+        return CAOS2Pray
+    }
+    if (CAOS2COB_REGEX.containsMatchIn(text)) {
+        return CAOS2Cob
     }
     return null
 }
 
-val CaosScriptFile?.isSupplement: Boolean get() {
-    if (this == null) {
-        return false
-    }
-    val time = now
-    this.getUserData(IS_SUPPLEMENT_KEY)?.let { (expiry, isSupplement) ->
-        if (expiry > time) {
-            return isSupplement
+val CaosScriptFile?.isSupplement: Boolean
+    get() {
+        if (this == null) {
+            return false
         }
+        val time = now
+        this.getUserData(IS_SUPPLEMENT_KEY)?.let { (expiry, isSupplement) ->
+            if (expiry > time) {
+                return isSupplement
+            }
+        }
+        val isSupplement = calculateIsSupplement()
+        val expiry = time + rand(cacheMin, cacheMax)
+        this.putUserData(IS_SUPPLEMENT_KEY, Pair(expiry, isSupplement))
+        return isSupplement
+//        return calculateIsSupplement().apply {
+//            LOGGER.info("isSupplement: $this")
+//        }
     }
-    val isSupplement = calculateIsSupplement()
-    val expiry = time + rand(cacheMin, cacheMax)
-    this.putUserData(IS_SUPPLEMENT_KEY, Pair(expiry, isSupplement))
-    return isSupplement
-}
 
 /**
  * Determine the kind of CAOS2 file if any
  */
 private fun CaosScriptFile.calculateIsSupplement(): Boolean {
-    val maxBuffer = 1024
-    val buffer = ByteArray(maxBuffer)
-
-    virtualFile?.inputStream?.use { stream ->
-        val builder = StringBuilder()
-        do {
-            val read = stream.read(buffer, 0, maxBuffer)
-            if (read == 0) {
-                break
-            }
-            val text = buffer.decodeToCreaturesEncoding()
-            if (IS_SUPPLEMENT_REGEX.containsMatchIn(text)) {
-                return true
-            }
-            // Add text in case one block terminates inside a statement
-            builder.append(text)
-        }  while (builder.length < 4000)
-
-        val text = builder.toString()
-        if (IS_SUPPLEMENT_REGEX.containsMatchIn(text)) {
-            return true
-        }
-    }
-    return false
+    val text = text?.let {
+        it.substring(0, min(4000, it.length))
+    } ?: ""
+    return IS_SUPPLEMENT_REGEX.containsMatchIn(text)
 }

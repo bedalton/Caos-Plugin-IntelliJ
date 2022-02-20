@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.disableMultiScriptChecks
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isMultiScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
@@ -33,21 +33,22 @@ class CaosScriptDuplicateEventScriptInModuleInspection : LocalInspectionTool() {
     }
 
     private fun validate(thisEventScript: CaosScriptEventScript, problemsHolder: ProblemsHolder) {
+        val containingFile = thisEventScript.containingFile
+        if ((containingFile as? CaosScriptFile).isMultiScript)
+            return
+
         val family = thisEventScript.family
         val genus = thisEventScript.genus
         val species = thisEventScript.species
         val eventNumber = thisEventScript.eventNumber
         val key = CaosScriptEventScriptIndex.toIndexKey(family, genus, species, eventNumber)
-        val containingFile = thisEventScript.containingFile
-        if ((containingFile as? CaosScriptFile).disableMultiScriptChecks)
-            return
         val moduleFilePath = thisEventScript.containingFile?.module?.moduleFilePath ?: "UNDEF"
         val exists = CaosScriptEventScriptIndex.instance[key, thisEventScript.project]
                 .any {anEventScript ->
                     // Checks against containing module, as duplicate event numbers in a single file
                     // are covered in another inspection
                     anEventScript.containingFile?.let { aFile ->
-                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFile?.path == moduleFilePath && !(aFile as? CaosScriptFile).disableMultiScriptChecks
+                        !aFile.isEquivalentTo(containingFile) && aFile.module?.moduleFile?.path == moduleFilePath && !(aFile as? CaosScriptFile).isMultiScript
                     }.orFalse()
                 }
         if (exists) {
