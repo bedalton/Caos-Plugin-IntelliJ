@@ -60,7 +60,7 @@ class CaosScriptMultipleScriptsInC1File : LocalInspectionTool() {
     private fun annotate(script: CaosScriptScriptElement, problemsHolder: ProblemsHolder) {
         val file = script.containingCaosFile
                 ?: return
-        if (file.variant?.isNotOld.orFalse() || file.disableMultiScriptChecks)
+        if (file.variant?.isNotOld.orFalse() || file.isMultiScript)
             return
         val thisScriptStart = script.startOffset
         val isNotDeclaredAfterEventScript =
