@@ -95,8 +95,8 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
         private val QUOTE_STRING =
             "(\"([^\"\\\\\\n\\r]|\\\\[\"|\\\\])*\")|('([^\\r\\n'\\\\]|\\\\['\\\\])*')".toRegex(RegexOption.MULTILINE)
         private val BRACKET_STRING = "\\[[^\\\\]*?]".toRegex(RegexOption.MULTILINE)
-        private val AT_DIRECTIVES = "\\*{2}((([^\\n;]|[;][^;])*;;)|[^\\n]*)".toRegex(RegexOption.MULTILINE)
-        val COMMENT = "^[ \t]*\\*[^\\n]+\\n?\$".toRegex(RegexOption.MULTILINE)
+        private val AT_DIRECTIVES = "^[*]{2}((([^\\n;]|[;][^;])*;;)|[^\\n]*)".toRegex(RegexOption.MULTILINE)
+        val COMMENT = "^[ \\t]*[*][^\\n]*\\n?".toRegex(RegexOption.MULTILINE)
 
         // Escape strings
         private const val QUOTE_STRING_ESCAPE = "&;;3&2&1&;xX_X_Xx;1&2&3&;;&"
@@ -123,7 +123,7 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
 
 
         fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
-            val before = elementIn.text.replace(COLLAPSE_TEST_REGEX, "")
+            val before = elementIn.text.replace(COLLAPSE_TEST_REGEX, "").replace(WHITESPACE_OR_COMMA, "")
             val project = elementIn.project
             val document = elementIn.document
             val filePointer = SmartPointerManager.createPointer(elementIn.containingFile)
@@ -235,7 +235,7 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             val didReplaceAll = PsiTreeUtil.collectElementsOfType(newElement, PsiWhiteSpace::class.java)
                 .filter { whiteSpace ->
                     whiteSpace.next?.let { next ->
-                        next is CaosScriptCodeBlockLine || next is CaosScriptCommandCallLike || next is CaosScriptCodeBlock || next is CaosScriptHasCodeBlock || next is CaosScriptScriptBodyElement
+                        next is CaosScriptAtDirectiveComment || next is CaosScriptCodeBlockLine || next is CaosScriptCommandCallLike || next is CaosScriptCodeBlock || next is CaosScriptHasCodeBlock || next is CaosScriptScriptBodyElement
                     } ?: false
                 }
                 .map {
@@ -257,7 +257,9 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
                 LOGGER.severe("Failed to reload document after collapsing")
                 return null
             }
-            val after = out.text.replace(COLLAPSE_TEST_REGEX, "")
+            val after = out.text
+                .replace(COLLAPSE_TEST_REGEX, "")
+                .replace(WHITESPACE_OR_COMMA, "")
             if (before != after) {
                 val error = "Collapsed scripts does not match original script contents. Before(noSpace)<$before>; After(noSpace)<$after>"
                 LOGGER.severe(error)
@@ -295,4 +297,4 @@ enum class CollapseChar(internal val text: String, internal val char: String) {
     COMMA(CaosBundle.message("caos.intentions.collapse-lines-with", "commas"), ",")
 }
 
-private val COLLAPSE_TEST_REGEX = "(\\*[^\n]*\\s*)|([\\s,]+)".toRegex()
+private val COLLAPSE_TEST_REGEX = "(^\\s*[*][^\\n]*\\n*)".toRegex(RegexOption.MULTILINE)
