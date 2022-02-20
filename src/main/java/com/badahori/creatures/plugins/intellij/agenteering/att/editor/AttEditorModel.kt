@@ -202,10 +202,8 @@ internal class AttEditorModel(
                 ) {
                     // Check that changed file is THIS att file
                     if (attFile.path == event.file.path) {
-                        ApplicationManager.getApplication().invokeLater {
-                            val text = event.file.contents
-                            onEdit(text)
-                        }
+                        val text = event.file.contents
+                        onEdit(text)
                     }
                 }
             })
@@ -226,11 +224,14 @@ internal class AttEditorModel(
         // Check if new data, equals old data
         // Return if it does
         if (attData.toFileText(variant) == text) {
-            return
+//            return
         }
         // Parse the file data and set it to the ATT instance data
         mAttData = parse(text, mLinesCount, mPointsCount, fileName = fileName)
-        attChangeListener.onAttUpdate()
+
+        ApplicationManager.getApplication().invokeLater {
+            attChangeListener.onAttUpdate()
+        }
     }
 
     fun setCurrentPoint(newPoint: Int) {
