@@ -70,7 +70,9 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getCommandTokenElementType(rvalue: CaosScriptRvalue): IElementType? {
         return (rvalue.firstChild as? CaosScriptRvaluePrime)?.let { prime ->
-            prime.firstChild?.firstChild?.firstChild?.elementType ?: prime.firstChild?.firstChild?.elementType ?: prime.firstChild?.elementType
+            prime.firstChild?.firstChild?.firstChild?.elementType
+                ?: prime.firstChild?.firstChild?.elementType
+                ?: prime.firstChild?.elementType
         }
     }
 
@@ -87,7 +89,8 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getCommandTokenElementType(prime: CaosScriptRvaluePrime): IElementType? {
-        return prime.firstChild?.firstChild?.elementType ?: prime.firstChild?.elementType
+        return prime.firstChild?.firstChild?.elementType
+            ?: prime.firstChild?.elementType
     }
 
     /**
@@ -122,7 +125,9 @@ object CaosScriptPsiImplUtil {
         if (element == null) {
             return null
         }
-        return element.firstChild?.firstChild?.firstChild?.elementType ?: element.firstChild?.firstChild?.elementType ?: element.firstChild?.elementType ?: element.elementType!!
+        return element.firstChild?.firstChild?.firstChild?.elementType
+            ?: element.firstChild?.firstChild?.elementType
+            ?: element.firstChild?.elementType ?: element.elementType!!
     }
 
     /**
@@ -232,6 +237,7 @@ object CaosScriptPsiImplUtil {
     fun getCommandTokenElementType(element: CaosScriptCRtar): IElementType? {
         return element.cKwRtar.firstChild?.firstChild?.elementType
     }
+
     /**
      * Gets command token for SSFC
      */
@@ -2408,12 +2414,14 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Returns whether or not this CAOS2Block is a CAOS2Cob block
+     * Returns whether this CAOS2Block is a CAOS2Cob block
      */
     @JvmStatic
     fun isCaos2Cob(def: CaosScriptCaos2Block): Boolean {
-        return def.stub?.isCaos2Cob
-                ?: (def.caos2BlockHeader?.caos2CobHeader != null) ||
+        def.stub?.isCaos2Cob?.let {
+            return it
+        }
+        return (def.caos2BlockHeader?.caos2CobHeader != null) ||
                 def.stub?.agentBlockNames?.any { it.first == "C1" || it.second == "C2" }.orFalse() ||
                 def.agentBlockNames.any { it.first == "C1" || it.first == "C2" }
     }
@@ -2819,26 +2827,28 @@ fun <PsiT : PsiElement> PsiElement.collectElementsOfType(vararg type: Class<PsiT
  * ie 10 for "va10", 22 for "ov22"
  */
 
-val CaosScriptVarToken.varIndexOrZero: Int get() {
-    /*return element.stub?.varIndex
-            ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()*/
-    return text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull() ?: 0
-}
+val CaosScriptVarToken.varIndexOrZero: Int
+    get() {
+        /*return element.stub?.varIndex
+                ?: element.text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull()*/
+        return text.replace("[a-zA-Z]".toRegex(), "").toIntOrNull() ?: 0
+    }
 
 
+internal val PsiElement.parentParameter: CaosParameter?
+    get() {
+        val argumentParent = getParentOfType(CaosScriptArgument::class.java)
+            ?: return null
+        val index = argumentParent.index
+        val commandParent = getParentOfType(CaosScriptCommandElement::class.java)
+            ?: return null
+        return commandParent.commandDefinition?.parameters?.getOrNull(index)
+    }
 
-internal val PsiElement.parentParameter: CaosParameter? get() {
-    val argumentParent = getParentOfType(CaosScriptArgument::class.java)
-        ?: return null
-    val index = argumentParent.index
-    val commandParent = getParentOfType(CaosScriptCommandElement::class.java)
-        ?: return null
-    return commandParent.commandDefinition?.parameters?.getOrNull(index)
-}
-
-internal val CaosScriptArgument.parameter: CaosParameter? get() {
-    val index = index
-    val commandParent = getParentOfType(CaosScriptCommandElement::class.java)
-        ?: return null
-    return commandParent.commandDefinition?.parameters?.getOrNull(index)
-}
+internal val CaosScriptArgument.parameter: CaosParameter?
+    get() {
+        val index = index
+        val commandParent = getParentOfType(CaosScriptCommandElement::class.java)
+            ?: return null
+        return commandParent.commandDefinition?.parameters?.getOrNull(index)
+    }
