@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
@@ -14,6 +15,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.TokenType
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
@@ -43,18 +45,19 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         }
         val variant = element.variant.nullIfUnknown()
             ?: return
-        if (element.textContains(',')) {
-            if (variant.isNotOld)
+
+        if (variant.isNotOld) {
+            if (element.textContains(',')) {
                 annotateC2eCommaError(element, holder)
-            else if ((element.containingFile as? CaosScriptFile)?.hasCaos2Tags == false)
-                annotateExtraSpaces(element, annotationHolder = holder)
-        } else {
-            // Spacing does not matter in CV+, so return
-            if (variant.isOld && (element.containingFile as? CaosScriptFile)?.hasCaos2Tags == false)
-                annotateExtraSpaces(element, annotationHolder = holder)
-            else
-                return
+            }
+            return
         }
+
+        // Is CAOS2, too spaces will be stripped automatically
+        if ((element.containingFile as? CaosScriptFile)?.hasCaos2Tags != false) {
+            return
+        }
+        annotateExtraSpaces(element, annotationHolder = holder)
     }
 
     private fun annotateC2eCommaError(element: PsiElement, holder: AnnotationHolder) {
@@ -70,74 +73,53 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         if (element is PsiComment)
             return
 
-        // Get this elements text
-        val text = element.text
-        // Get text before and after this space
-        val nextText = element.next?.text ?: ""
-        val prevText = element.previous?.text ?: ""
-        if (text.contains(',')) {
+
+        if (element.elementType == CaosScript_COMMA) {
+            // see if next non-empty sibling is an argument, if so, ask to replace comma with a space
             element.getNextNonEmptySibling(false)?.let { next ->
                 if (!canFollowComma(next)) {
                     var annotation =
                         annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.unexpected-comma"))
                             .range(element)
-
-                    if (prevText.isNotBlank()) {
-                        annotation = annotation
-                            .withFix(CaosScriptReplaceElementFix(element, " ", "Replace comma with space", true))
-                    }
-
+                    annotation = annotation
+                        .withFix(CaosScriptReplaceElementFix(element, " ", "Replace comma with space", true))
                     annotation.create()
                     return
                 }
             }
         }
 
-        // Test if previous element is a comma or space
-        val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
 
-        // Is a single space, and not followed by terminating comma or newline
-        if (text.length == 1 && !(COMMA_NEW_LINE_REGEX.matches(nextText) || previousIsCommaOrSpace))
-            return
+        // Get previous non-space element to check if it is a newline
+        val elementBeforeSpaces = WhitespacePsiUtil.getElementBeforeSpaces(element)
+            ?: return
 
-        val next = element.next
-
-        var prev: PsiElement? = element.previous
-        while (prev != null) {
-            if (prev.tokenType != WHITE_SPACE && prev.tokenType != CaosScript_NEWLINE)
-                break
-            if (!prev.textContains('\n'))
-                prev = prev.previous
-            else
-                break
-        }
-        if (next == null || prev == null) {
+        // This preceding run of spaces is start of line
+        if (elementBeforeSpaces.tokenType == CaosScript_NEWLINE || elementBeforeSpaces.text.contains('\n')) {
             return
         }
 
+        if (element.textLength == 1) {
+            return
+        }
+        // Only mark self if previous is space-like character
+        // Is start of line, so cannot be a multiple whitespace that matters
+        // Trailing whitespace is dealt with in another inspection
+        val elementAfterSpaces = WhitespacePsiUtil.getElementAfterSpaces(element)
+            ?: return
+        // Check if this space is trailing
+        if (elementAfterSpaces.tokenType == CaosScript_NEWLINE || elementAfterSpaces.text.contains('\n')) {
+            return
+        }
 
-        // Psi element is empty, denoting a missing space, possible after quote or byte-string or number
-        if (text.isEmpty()) {
-            val toMark = TextRange(element.startOffset - 1, next.startOffset + 1)
-            annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.missing-space"))
-                .range(toMark)
-                .withFix(CaosScriptInsertSpaceFix(next))
-                .create()
-            return
+        val range = element.textRange.let {
+            TextRange.create(it.startOffset + 1, it.endOffset)
         }
-        // Did check for trailing comma, but this is assumed to be removed before injection
-        // I think BoBCoB does this and CyberLife CAOS tool strips this as well.
-        if (nextText.startsWith("\n") || element.node.isDirectlyPrecededByNewline()) {// && variant != CaosVariant.C1) {
-            return
-        }
-        val errorTextRange = element.textRange.let {
-            if (element.text.length > 1)
-                TextRange(it.startOffset + 1, it.endOffset)
-            else
-                it
-        }
+
+        // Error affects only one element at a time now
+        // So only mark self
         annotationHolder.newErrorAnnotation(CaosBundle.message("caos.annotator.syntax-error-annotator.too-many-spaces"))
-            .range(errorTextRange)
+            .range(range)
             .withFix(CaosScriptFixTooManySpaces(element))
             .newFix(CaosScriptTrimErrorSpaceBatchFix())
             .range(element.containingFile.textRange)

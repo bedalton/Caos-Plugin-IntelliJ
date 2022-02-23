@@ -1,13 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.inspections
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptFixTooManySpaces
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCodeBlockLine
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_NEWLINE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WhitespacePsiUtil.getElementAfterSpaces
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WhitespacePsiUtil.getElementBeforeSpaces
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WhitespacePsiUtil.isNewline
+import com.badahori.creatures.plugins.intellij.agenteering.utils.WhitespacePsiUtil.isNotWhitespace
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
@@ -15,7 +18,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.TokenType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.elementType
 
+/**
+ * Detects whitespace trailing after the end of line
+ */
 class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.trailing-white-space.display-name")
@@ -35,76 +42,79 @@ class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
      */
     private fun validate(element: PsiElement, holder: ProblemsHolder) {
         val type = element.tokenType
-        if (type != CaosScriptTypes.CaosScript_COMMA && type != TokenType.WHITE_SPACE && type != CaosScriptTypes.CaosScript_NEWLINE) {
+
+        if (type != CaosScriptTypes.CaosScript_COMMA && type != TokenType.WHITE_SPACE) {
             return
         }
-        val caosFile = element.containingFile as? CaosScriptFile
-            ?: return
-        if (caosFile.caos2 != null || caosFile.isMultiScript) {
+
+        // Do not annotate newline
+        if (isNewline(element)) {
             return
         }
 
         if (element.variant?.isOld != true)
             return
 
-        if ((element.containingFile as? CaosScriptFile)?.hasCaos2Tags != false) {
+        val caosScriptFile = (element.containingFile as? CaosScriptFile)
+                ?: return
+
+        // Do not monitor spaces on CAOS2 or CAOS2 supplement
+        if (caosScriptFile.hasCaos2Tags || caosScriptFile.isSupplement) {
             return
         }
-        val previous = element.previous
-        if (previous != null && previous !is CaosScriptCodeBlockLine && previous !is CaosScriptScriptElement && previous.tokenType != TokenType.WHITE_SPACE && previous.tokenType != CaosScriptTypes.CaosScript_NEWLINE) {
+
+        // Get where this spaces list ends
+        val after = getElementAfterSpaces(element)
+
+        // Make sure these spaces are followed by a newline
+        // otherwise they are part of a command or leading spaces
+        if (after != null && !isNewline(after)) {
             return
         }
-        // Get this elements text
-        val text = element.text
-        val next = element.next
-        // Get text before and after this space
-        val nextText = next?.text ?: ""
-        val prevText = element.previous?.text ?: ""
 
-        // Test if previous element is a comma or space
-        val previousIsCommaOrSpace = IS_COMMA_OR_SPACE.matches(prevText)
+        var textRange: TextRange? = null
+        // Error element should be the one before
+        var beforeElement = element.getPreviousNonEmptySibling(false)
 
-        // Is a single space, and not followed by terminating comma or newline
-        if (text.length == 1 && !(COMMA_NEW_LINE_REGEX.matches(nextText) || previousIsCommaOrSpace)) {
-            if (next != null) {
-                return
+        // If there is a before non-empty sibling
+        if (beforeElement != null) {
+            val parent = PsiTreeUtil.findCommonParent(element, beforeElement)
+            if (parent != null) {
+                val startOffset = beforeElement.endOffset - 1
+                val endOffset = after?.startOffset?.minus(1) ?: element.endOffset
+                if (startOffset >= parent.endOffset || endOffset <= parent.endOffset) {
+                    beforeElement = parent
+                    textRange = TextRange(startOffset, endOffset)
+                }
+            } else {
+                beforeElement = null
+                textRange = null
             }
         }
 
-
-        // Find if previously on this line there is a newline
-        var prev: PsiElement? = element.previous
-        while (prev != null) {
-            if (prev.tokenType != TokenType.WHITE_SPACE)
-                break
-            if (prev.textContains('\n'))
-                break
-            prev = prev.previous
-        }
-        // Trailing whitespace
-        if (!(element.text.contains('\n') || prev?.text?.endsWith('\n') == true) || next == null || prev == null) {
-            val errorElement = element.getPreviousNonEmptySibling(true) ?: element
-            var parentElement = PsiTreeUtil.findCommonParent(errorElement, element)
-            var start = maxOf(errorElement.endOffset - 1, parentElement?.startOffset ?: (element.endOffset - 1))
-            if (start < parentElement?.startOffset.orElse(element.startOffset)) {
-                start = element.startOffset
-                parentElement = element
+        // Error range was not properly found
+        if (beforeElement != null && textRange != null) {
+            if (beforeElement.endOffset < textRange.endOffset ||
+                textRange.startOffset > beforeElement.startOffset) {
+                beforeElement = null
+                textRange = null
             }
-            val end = element.endOffset
-            holder.registerProblem(
-                parentElement ?: element,
-                TextRange(start, end),
-                CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace"),
-                CaosScriptFixTooManySpaces(element)
-            )
-            return
         }
-    }
+        if (textRange == null || beforeElement == null) {
+            beforeElement = element
+            textRange = element.textRange
+        }
 
+        textRange = beforeElement.textRange.let {
+            val startOffsetInParent = textRange!!.startOffset - it.startOffset
+            TextRange(startOffsetInParent, startOffsetInParent + textRange!!.length)
+        }
 
-    companion object {
-        private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
-        private val COMMA_NEW_LINE_REGEX = "([,]|\n)+".toRegex()
-
+        holder.registerProblem(
+            beforeElement,
+            textRange,
+            CaosBundle.message("caos.annotator.syntax-error-annotator.invalid-trailing-whitespace"),
+            CaosScriptFixTooManySpaces(element)
+        )
     }
 }
