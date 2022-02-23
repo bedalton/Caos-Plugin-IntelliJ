@@ -622,11 +622,9 @@
     <colorSettingsPage
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
 
-    <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
-
     <!-- Annotators -->
     <annotator language="CaosScript"
+               id="errorAnnotator"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSpaceAnnotator" />
@@ -636,20 +634,26 @@
     />
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptCommandCaseAnnotator" />
+
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptGhostElementAnnotator" />
 
-
     <!--annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" / -->
+
     <annotator language="CaosScript"
                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator.Caos2PrayAnnotator" />
+
+    <annotator language="CaosScript"
+               order="after errorAnnotator"
+               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
 
     <!-- Inspections -->
     <localInspection language="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTypesInspection"
                      level="WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Expected parameter type"
                      shortName="ExpectedParameterType"
@@ -659,6 +663,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCAssignmentInspection"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Assigned value is of expected type"
                      shortName="ExpectedAssigmentType"
@@ -668,6 +673,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSubroutineInspection"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Subroutine is defined"
                      shortName="SubroutineIsDefined"
@@ -676,6 +682,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomVarOutOfOrderInspection"
                      level="WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="RNDV values out of order"
                      shortName="RNDVOutOfOrder"
@@ -685,6 +692,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInterleavingBodyStatements"
                      level="WEAK WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Interleaving body script elements"
                      shortName="InterleavingBodyScripts"
@@ -694,6 +702,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptIgnoredScriptsAfterRemovalScriptInspection"
                      level="WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Scripts after removal scripts are ignored"
                      shortName="ScriptsAfterRemovalScripts"
@@ -703,6 +712,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
                      level="WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Multiple removal scripts"
                      shortName="MultipleRemovalScripts"
@@ -711,6 +721,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomValueIsTheSameInspection"
                      level="WEAK WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Rndv value is always the same"
                      shortName="RndvIsTheSame"
@@ -720,6 +731,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrInspection"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Command used without OWNR object"
                      shortName="NoOwnrObject"
@@ -729,6 +741,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrWithWarningInspection"
                      level="WEAK WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Non-error generating use of OWNR object command without OWNR object"
                      shortName="NoOwnrObjectWarning"
@@ -738,6 +751,7 @@
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTrailingWhitespaceInspection"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Trailing whitespace characters"
                      shortName="C1eTrailingWhitespace"
@@ -746,6 +760,7 @@
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Scripts defined after event script in C1/C2"
                      shortName="ScriptAfterEventScriptC1"
@@ -755,6 +770,7 @@
     <localInspection language="CaosScript"
                      level="WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid script header value"
                      shortName="InvalidScriptHeaderValue"
@@ -764,6 +780,7 @@
     <localInspection language="CaosScript"
                      level="WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Duplicate event script in file"
                      shortName="DuplicateEventScriptInFile"
@@ -773,6 +790,7 @@
     <localInspection language="CaosScript"
                      level="WEAK WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Duplicate event script in module"
                      shortName="DuplicateEventScriptInModule"
@@ -782,6 +800,7 @@
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="SSFC number of arguments"
                      shortName="SSFCArgumentsCheck"
@@ -791,6 +810,7 @@
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid numeric expression in variant"
                      shortName="InvalidNumericExpression"
@@ -800,6 +820,7 @@
     <localInspection language="CaosScript"
                      level="WEAK WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Agent to int coercion"
                      shortName="AgentToIntCoercion"
@@ -809,11 +830,24 @@
     <localInspection language="CaosScript"
                      level="WEAK WARNING"
                      groupName="CaosScript"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Requires creature ownr object"
                      shortName="RequiresCreatureOwnr"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresCreatureOwnrInspection"
     />
+
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="CaosScript"
+                     groupPath="CaosScript"
+                     enabledByDefault="true"
+                     displayName="Out of variant variable use"
+                     shortName="OutOfVariantVariable"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptOutOfVariantVariable"
+    />
+
 
 
     <localInspection language="CaosScript"
@@ -829,90 +863,90 @@
     <localInspection language="CaosScript"
                      level="WARNING"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid property value"
                      shortName="Caos2CobInvalidTagValue"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobIsExpectedTagValueType"
     />
 
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Source file does not exist"
                      shortName="Caos2CobSourceFileDoesNotExist"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobRequiredFileExistsInspection"
     />
 
     <localInspection language="CaosScript"
                      level="WARNING"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Out of variant CAOS2Cob directive"
                      shortName="Caos2CobOutOfVariantDirective"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOutOfVariantDirectiveInspection"
     />
 
     <localInspection language="CaosScript"
                      level="WARNING"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid CAOS2Cob property"
                      shortName="Caos2CobInvalidProperty"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobPropertyIsValidInspection"
     />
 
     <localInspection language="CaosScript"
                      level="WARNING"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Invalid CAOS2Cob command"
                      shortName="Caos2CobInvalidCommand"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobCommandIsValidInspection"
     />
 
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Missing required CAOS2Cob properties"
                      shortName="Caos2CobMissingRequiredProperties"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobHasRequiredFieldsInspection"
     />
 
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Included file is valid type"
                      shortName="Caos2CobIncludedFileIsValidType"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobIncludedFileIsCorrectTypeInspection"
     />
 
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Only one agent name"
                      shortName="Caos2CobTooManyAgentNames"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneAgentNameInspection"
     />
 
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Cob"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Only one cob name"
                      shortName="Caos2CobTooManyCobNames"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneCobNameInspection"
     />
 
@@ -930,17 +964,17 @@
     <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Pray"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Incorrect tag case"
                      shortName="CAOS2PrayTagIncorrectCase"
-                     groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayTagCaseInspection"
     />
 
     <localInspection language="CaosScript"
                      level="INFO"
-                     groupPath="CaosScript"
                      groupName="CAOS2Pray"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="PRAY tag is similar to official tag"
                      shortName="CAOS2PraySimilarTags"
@@ -949,8 +983,8 @@
 
     <localInspection language="CaosScript"
                      level="ERROR"
-                     groupPath="CaosScript"
                      groupName="CAOS2Pray"
+                     groupPath="CaosScript"
                      enabledByDefault="true"
                      displayName="Use of reserved auto-generated tag"
                      shortName="CAOS2PrayReservedTagUse"
