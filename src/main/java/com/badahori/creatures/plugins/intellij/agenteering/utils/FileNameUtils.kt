@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import bedalton.creatures.util.pathSeparator
 import bedalton.creatures.util.pathSeparatorChar
 import java.io.File
 
@@ -16,8 +17,8 @@ object FileNameUtils {
         val lastIndex = lastComponent.lastIndexOf('.')
         return when {
             lastIndex == 0 -> null // dot starts last component
-            lastIndex > 0 -> fileName.substring(0, lastIndex)
-            else -> fileName
+            lastIndex > 0 -> lastComponent.substring(0, lastIndex)
+            else -> lastComponent // There is no dot
         }
     }
 
@@ -40,26 +41,46 @@ object FileNameUtils {
     @JvmStatic
     fun lastPathComponent(path: String, keepLastSlash: Boolean = false): String {
         // Remove trailing slash if any
-        val refined = if (keepLastSlash) path else path.trimEnd(pathSeparatorChar)
-        val lastSlash = refined.lastIndexOf(File.separatorChar)
-        return if (lastSlash <= 0)
+        val refined = path.trimEnd(pathSeparatorChar)
+        val lastSlash = refined.lastIndexOf(pathSeparatorChar)
+        var out = if (lastSlash <= 0)
             refined
         else
             refined.substring(lastSlash)
+        out = out.trimStart(pathSeparatorChar)
+        return if (keepLastSlash)
+            out
+        else
+            out.trimEnd(pathSeparatorChar)
     }
 
     @JvmStatic
-    fun withoutLastPathComponent(path: String): String? {
+    fun withoutLastPathComponent(aPath: String): String? {
+        var path = aPath
+        // Unescape whitespace
+        if (path.contains('/') && path.contains('\\')) {
+            if (path.contains("\\ ")) {
+                path = path.replace("\\ ", " ")
+            }
+            if (path.contains("\\\t")) {
+                path = path.replace("\\\t", "\t")
+            }
+            // Do not unescape newline, as a path should not have newline in it
+        }
         val separator = if (path.contains('/')) {
             if (path.contains('\\')) {
                 pathSeparatorChar
-            } else
+            } else {
                 '/'
+            }
         } else {
             '\\'
         }
 
         val refined = path.trimEnd(separator)
+        if (separator == '\\' && refined.matches("[a-zA-Z][:]".toRegex())) {
+            return refined + '\\'
+        }
         val lastIndex = refined.lastIndexOf(separator)
         if (lastIndex < 0) {
             return null
@@ -69,7 +90,19 @@ object FileNameUtils {
 
 
     @JvmStatic
-    fun pathSeparatingLastPathComponent(path: String): Pair<String?, String>? {
+    fun pathSeparatingLastPathComponent(aPath: String): Pair<String?, String?>? {
+        var path = aPath
+        // Unescape whitespace
+        if (path.contains('/') && path.contains('\\')) {
+            if (path.contains("\\ ")) {
+                path = path.replace("\\ ", " ")
+            }
+            if (path.contains("\\\t")) {
+                path = path.replace("\\\t", "\t")
+            }
+            // Do not unescape newline, as a path should not have newline in it
+        }
+
         val separator = if (path.contains('/')) {
             if (path.contains('\\')) {
                 pathSeparatorChar
@@ -81,9 +114,16 @@ object FileNameUtils {
         val components = path.split(separator)
         if (components.isEmpty())
             return null
-        if (components.size == 1)
-            return Pair(null, components.first())
-        return Pair(components.dropLast(1).joinToString(separator.toString()), components.last())
+        return if (components.size == 1) {
+            val component = components.first()
+            if (separator == '\\' && component.matches("[a-zA-Z][:]".toRegex())) {
+                Pair(component + '\\', null)
+            } else {
+                Pair(null, components.first())
+            }
+        } else {
+            Pair(components.dropLast(1).joinToString(separator.toString()), components.last())
+        }
     }
 
 }
