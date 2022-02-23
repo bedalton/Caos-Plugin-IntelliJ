@@ -1,9 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
+import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import ensureEndsWith
 import kotlinx.serialization.Serializable
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -30,7 +33,7 @@ data class Caos2CobC1(
         objectScripts: List<String>,
         installScripts: List<String>,
         removalScript: String?,
-        yearMonthDay: List<Int?> = cobData[CobTag.EXPIRY]?.split("-")?.map { it.toIntSafe() }.orEmpty()
+        yearMonthDay: List<Int?> = cobData[CobTag.EXPIRY]?.split("-")?.map { it.toIntSafe() }.orEmpty(),
     ) : this(
         agentName = cobData[CobTag.AGENT_NAME] ?: throw Caos2CobException("Cannot create C1 cob without agent name"),
         targetFile = cobData[CobTag.COB_NAME] ?: throw Caos2CobException("Cannot create C1 COB without COB file name"),
@@ -83,9 +86,27 @@ data class Caos2CobC1(
     val removerCob: Caos2CobC1? by lazy {
         val removalScript = removalScript
             ?: return@lazy null
+        var removerName = removerName
+        if (removerName == null) {
+            val directory = FileNameUtils
+                .withoutLastPathComponent(targetFile)
+                ?.nullIfEmpty()
+                ?.ensureEndsWith(pathSeparatorChar)
+                ?: ""
+            removerName = FileNameUtils.getNameWithoutExtension(targetFile).nullIfEmpty()
+            removerName = if (removerName == null) {
+                targetFile
+            } else {
+                directory + removerName
+            }
+        }
+        val extension = FileNameUtils.getExtension(removerName)
+        if (extension.isNullOrBlank()) {
+            removerName += ".rcb"
+        }
         Caos2CobC1(
             agentName = "$agentName Remover",
-            targetFile = removerName ?: (targetFile.split(File.separatorChar).dropLast(1).joinToString(File.separatorChar + "") + File.separatorChar + FileNameUtils.getNameWithoutExtension(targetFile).orEmpty()) + ".rcb",
+            targetFile = removerName,
             installScripts = listOf(removalScript),
             quantityUsed = 0,
             quantityAvailable = 255
