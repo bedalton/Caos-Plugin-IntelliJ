@@ -55,12 +55,6 @@ object CaosScriptPsiElementFactory {
 
     fun createStringRValue(project: Project, newNameString: String, start: Char, end: Char = start): CaosScriptRvalue {
         val script = "$start$newNameString$end"
-        val variant = if (start == '[') {
-            CaosVariant.C1
-        } else {
-            CaosVariant.C3
-        }
-        LOGGER.info("NewStringScript: $script")
         return createRValue(project, script)
     }
 
