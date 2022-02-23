@@ -113,7 +113,7 @@ intellij {
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
-    plugins.set(listOf("PsiViewer:201-SNAPSHOT"))
+    plugins.set(listOf("PsiViewer:201-SNAPSHOT"))//, "com.mallowigi.idea:10.0"))
 
 }
 
