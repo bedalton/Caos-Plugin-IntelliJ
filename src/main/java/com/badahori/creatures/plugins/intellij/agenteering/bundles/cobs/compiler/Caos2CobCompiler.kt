@@ -423,6 +423,12 @@ object Caos2CobCompiler {
         return try {
             val targetIoFile = Paths.get(VfsUtil.virtualToIoFile(directory).path, targetFile)
             targetIoFile.write(data)
+            try {
+                VfsUtil.findFile(targetIoFile, true)?.let { thisFile ->
+                    VfsUtil.markDirtyAndRefresh(true, false, true, thisFile)
+                }
+            } catch (_: Exception) {
+            }
             true
         } catch (e: Exception) {
 
