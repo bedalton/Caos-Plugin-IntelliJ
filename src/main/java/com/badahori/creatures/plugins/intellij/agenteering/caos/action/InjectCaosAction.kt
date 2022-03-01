@@ -28,6 +28,8 @@ import com.intellij.openapi.vcs.CodeSmellDetector
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.components.CheckBox
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JLabel
@@ -106,7 +108,9 @@ private fun injectActual(
     if (variant.isNotOld || caosFile.isCaos2Cob) {
         val scripts = caosFile.getScripts()
         if (scripts.isNotEmpty() && scripts.all { it is CaosScriptMacro })
-            Injector.inject(project, variant, gameInterfaceName, caosFile, 7, project.settings.useJectByDefault)
+            GlobalScope.launch {
+                Injector.inject(project, variant, gameInterfaceName, caosFile, 7, project.settings.useJectByDefault)
+            }
         else
             injectC3WithDialog(caosFile, gameInterfaceName)
         return
@@ -124,8 +128,7 @@ private fun injectActual(
                 return@run
             }
             // Add inject command to thread pool
-            executeOnPooledThread {
-                (@Suppress("ComponentNotRegistered")
+            GlobalScope.launch {
                 Injector.inject(
                     project = project,
                     fallbackVariant = variant,
@@ -133,7 +136,7 @@ private fun injectActual(
                     caosFile = caosFile,
                     jectFlags = 7,
                     tryJect = false
-                ))
+                )
             }
         }
 
@@ -371,10 +374,12 @@ internal fun showC3InjectPanel(
 //                }
                 // Do not use ject for now.
                 // TODO figure out how to get directories from Registry
-                val useJect: Boolean? = null
+//                val useJect: Boolean? = null
                 // Inject CAOS
                 if (injectLinkedCheckbox?.isSelected != true)
-                    Injector.inject(project, variant, gameInterfaceName, file, flags, useJect == true)
+                    GlobalScope.launch {
+                        Injector.inject(project, variant, gameInterfaceName, file, flags, false)
+                    }
                 else {
                     val out = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
                     if (flags hasFlag Injector.REMOVAL_SCRIPT_FLAG)
@@ -384,7 +389,9 @@ internal fun showC3InjectPanel(
                     if (flags hasFlag Injector.INSTALL_SCRIPT_FLAG)
                         out[JectScriptType.INSTALL] = scriptsIn.installScripts + linked?.installScripts.orEmpty()
 
-                    Injector.inject(project, variant, gameInterfaceName, out)
+                    GlobalScope.launch {
+                        Injector.inject(project, variant, gameInterfaceName, out)
+                    }
                 }
             }
         }.showModal(true)

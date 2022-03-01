@@ -27,7 +27,7 @@ internal class PostConnection(urlString: String, variant: CaosVariant?) : CaosCo
             urlString.replace("*", variant.code)
         } else
             urlString
-        LOGGER.info("URLPath: $path")
+
         if (path.startsWith("http"))
             URL(path)
         else
@@ -67,7 +67,6 @@ internal class PostConnection(urlString: String, variant: CaosVariant?) : CaosCo
         } catch (e: Exception) {
             return InjectionStatus.Bad("Failed to read response from caos server. Error: ${e.message}")
         }
-        LOGGER.info("CAOSRESPONSE: $response")
         val json = com.google.gson.JsonParser.parseString(response)
         return json.asJsonObject.let {
             val status = try {
