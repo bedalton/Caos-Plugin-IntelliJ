@@ -12,7 +12,7 @@ public interface CaosScriptIcons {
     Icon CAOS_DEF_FILE_ICON = IconLoader.getIcon("/icons/caos-def-file-icon.svg");
     Icon COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.svg");
     Icon ATT_FILE_ICON = IconLoader.getIcon("/icons/att-file-icon.svg");
-    Icon C1_COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.svf");
+    Icon C1_COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.svg");
     Icon C2_COB_FILE_ICON = IconLoader.getIcon("/icons/c2-cob-file-icon.svg");
     Icon RCB_FILE_ICON = IconLoader.getIcon("/icons/rcb-file-icon.svg");
     Icon SFC_FILE_ICON = IconLoader.getIcon("/icons/sfc-file-icon.svg");
@@ -42,6 +42,6 @@ public interface CaosScriptIcons {
     Icon IMAGE = IconLoader.getIcon("/icons/ImagesFileType.svg");
     Icon COMPILE = IconLoader.getIcon("/icons/compile.svg");
     Icon BUILD = IconLoader.getIcon("/icons/compile.svg");
-    Icon RUN = IconLoader.getIcon("/icons/run.svg");
+//    Icon RUN = IconLoader.getIcon("/icons/run.svg");
     Icon ATT_GROUP = IconLoader.getIcon("/icons/att-group-icon.svg");
 }
