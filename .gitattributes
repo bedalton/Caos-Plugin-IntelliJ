@@ -29,7 +29,6 @@
 *.[Ii][Nn][Ii] text
 *.[Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] text
 *.[Xx][Mm][Ll] text
-*.[Ss][Vv][Gg] text
 *.[Yy][Mm][Ll] text
 .[Hh][Tt[Aa][Cc][Cc][Ee][Ss][Ss] text
 
@@ -82,6 +81,7 @@
 *.[Gg][Ii][Ff] binary
 *.[Ww][Ee][Bb][Pp] binary
 *.[Ii][Cc][Oo] binary
+*.[Ss][Vv][Gg] binary
 
 # Other
 *.[Ee][Xx][Ee] binary
