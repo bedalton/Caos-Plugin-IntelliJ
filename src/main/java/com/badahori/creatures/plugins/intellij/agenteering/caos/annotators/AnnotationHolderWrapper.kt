@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlan
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.daemon.HighlightDisplayKey
+import com.intellij.codeInsight.daemon.impl.HighlightInfoType
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -329,7 +330,7 @@ class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction
  * Clears formatting in a given range
  */
 fun AnnotationHolder.clearTextAttributes(range: TextRange) {
-    newInfoAnnotation(null)
+    newSilentAnnotation(HighlightInfoType.SYMBOL_TYPE_SEVERITY)
         .range(range)
         .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
         .create()
@@ -348,7 +349,7 @@ fun AnnotationHolder.colorize(node: ASTNode, textAttributes: TextAttributesKey, 
     }
 
     // Actually colorize
-    newInfoAnnotation(null)
+    newSilentAnnotation(HighlightInfoType.SYMBOL_TYPE_SEVERITY)
         .range(node)
 //        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
         .textAttributes(textAttributes)
@@ -367,7 +368,7 @@ fun AnnotationHolder.colorize(element: PsiElement, textAttributes: TextAttribute
     clearTextAttributes(element.textRange)
 
     // Actually colorize
-    newInfoAnnotation(null)
+    newSilentAnnotation(HighlightInfoType.SYMBOL_TYPE_SEVERITY)
         .range(element)
 //        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
         .textAttributes(textAttributes)
@@ -382,7 +383,7 @@ fun AnnotationHolder.colorize(range: TextRange, textAttributes: TextAttributesKe
     clearTextAttributes(range)
 
     // Actually colorize
-    newInfoAnnotation(null)
+    newSilentAnnotation(HighlightInfoType.SYMBOL_TYPE_SEVERITY)
         .range(range)
 //        .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
         .textAttributes(textAttributes)
