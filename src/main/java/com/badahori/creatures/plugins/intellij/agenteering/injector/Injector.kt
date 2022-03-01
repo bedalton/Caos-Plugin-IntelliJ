@@ -27,7 +27,7 @@ object Injector {
      * Perhaps too heavy-handed, but trying to assert that the correct game is connected
      * Sends a DDE version check request before each user CAOS injection
      */
-    private fun getActualVersion(
+    private suspend fun getActualVersion(
         project: Project,
         fallbackVariant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
@@ -56,7 +56,7 @@ object Injector {
     /**
      * Checks version info before injection
      */
-    internal fun inject(
+    internal suspend fun inject(
         project: Project,
         fallbackVariant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
@@ -90,7 +90,7 @@ object Injector {
     /**
      * Checks version info before injection
      */
-    internal fun inject(
+    internal suspend fun inject(
         project: Project,
         fallbackVariant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
@@ -120,7 +120,7 @@ object Injector {
     /**
      * Ensures that variant is supported, and if C1e, that the correct game is running
      */
-    private fun isValidVariant(project: Project, variant: CaosVariant, gameInterfaceName: GameInterfaceName): Boolean {
+    private suspend fun isValidVariant(project: Project, variant: CaosVariant, gameInterfaceName: GameInterfaceName): Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
             invokeLater {
@@ -146,11 +146,11 @@ object Injector {
     /**
      * Responsible for actually injecting the CAOS code.
      */
-    private fun injectPrivate(
+    private suspend fun injectPrivate(
         project: Project,
         fallbackVariant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
-        run: (connection: CaosConnection) -> InjectionStatus?,
+        run: suspend (connection: CaosConnection) -> InjectionStatus?,
     ): InjectionStatus? {
         val variant = gameInterfaceName.variant?.nullIfUnknown() ?: fallbackVariant.nullIfUnknown()
         ?: return InjectionStatus.BadConnection("Variant is undefined in injector")
