@@ -128,7 +128,6 @@ object CobVirtualFileUtil {
             throw e
         }
         virtualFile.fileType = CaosScriptFileType.INSTANCE
-        virtualFile.isWritable = true
         val runnable = run@{
             try {
                 if (project.isDisposed) {
@@ -139,11 +138,14 @@ object CobVirtualFileUtil {
                     findFile(project, virtualFile)
                 }) ?: return@run virtualFile.apply { LOGGER.severe("Failed to find CaosPsiFile after virtual file completion") }
                 // Try quick format if file is found
+                virtualFile.isWritable = true
                 tryQuickFormat(psiFile, virtualFile)
             } catch(e:Exception) {
                 LOGGER.severe("Failed to quick-format after creating virtual file")
                 e.printStackTrace()
                 virtualFile
+            } finally {
+                virtualFile.isWritable = false
             }
         }
         if (ApplicationManager.getApplication().isDispatchThread)
@@ -175,11 +177,15 @@ private fun tryQuickFormat(psiFile:CaosScriptFile, file:CaosVirtualFile) : CaosV
     if (psiFile.project.isDisposed || !psiFile.isValid || !file.isValid) {
         return file
     }
+    val writable = file.isWritable
     try {
+        file.isWritable = true
         psiFile.quickFormat()
     } catch (e: Exception) {
         LOGGER.severe("Failed to quick format in createChildScript method in CobVirtualFileUtil. Error: ${e.message}")
         e.printStackTrace()
+    } finally {
+        file.isWritable = writable
     }
     return psiFile.virtualFile as? CaosVirtualFile ?: file
 }

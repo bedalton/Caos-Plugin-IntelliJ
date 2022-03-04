@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
@@ -17,6 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.rd.util.string.print
 
 /**
  * Object class for expanding commas and newline-like spaces into newlines
@@ -63,6 +65,7 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
                 }
             } catch (e: Exception) {
                 LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in existing transparent action with error: ${e.message}")
+                e.printStackTrace()
             }
         } else {
             CommandProcessor.getInstance().runUndoTransparentAction {
@@ -72,6 +75,7 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
                     }
                 } catch (e: Exception) {
                     LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with error: ${e.message}")
+                    e.printStackTrace()
                 }
             }
         }
@@ -82,7 +86,6 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
      */
     private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
         val file = fileIn as? CaosScriptFile ?: return false
-
         // Check that there are more than two commands.
         // If not, no need to try to separate them by newlines
         if (shouldNotCollapse(file)) {
@@ -133,16 +136,24 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
             .map { SmartPointerManager.createPointer(it) }
             .forEach { it.element?.replace(CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(project)) }
 
+        val readonly = (file.document?.isWritable == false)
         // Get the document again, and this time commit it
         file.document?.let {
+            it.setReadOnly(false)
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
         }
         CodeStyleManager.getInstance(project).reformat(file)
+        file.document?.setReadOnly(readonly)
         // Return success only if there are enough newlines to cover the elements, ignoring enum blocks
         return true
     }
 
     private fun shouldNotCollapse(file: PsiFile): Boolean {
+        if (!file.isWritable) {
+            LOGGER.warning("Cannot flatten readonly file: ${file.name}")
+            (Exception()).printStackTrace()
+            return false
+        }
         if (PsiTreeUtil.collectElementsOfType(file, CaosScriptCommandCall::class.java).size > 1)
             return false
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptHasCodeBlock::class.java)

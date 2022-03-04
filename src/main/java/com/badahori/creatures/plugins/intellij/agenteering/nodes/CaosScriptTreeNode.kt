@@ -200,20 +200,26 @@ internal class ChildCaosScriptFileTreeNode(
         if (!isValid()) {
             return
         }
-        val caosFile = caosFile
-            ?: return
+
+        val open: ()->Unit = run@{
+            val caosFile = caosFile
+                ?: return@run
+            quickFormat(caosFile)
+            caosFile.navigate(requestFocus)
+        }
         if (!ApplicationManager.getApplication().isDispatchThread) {
             invokeLater {
-                navigate(requestFocus)
+                runWriteAction(open)
             }
         } else {
-            runWriteAction {
-                caosFile.virtualFile?.isWritable = true
-                caosFile.quickFormat()
-                caosFile.virtualFile?.isWritable = false
-                caosFile.navigate(requestFocus)
-            }
+            runWriteAction(open)
         }
+    }
+
+    private fun quickFormat(caosFile: CaosScriptFile) {
+        caosFile.virtualFile?.isWritable = true
+        caosFile.quickFormat()
+        caosFile.virtualFile?.isWritable = false
     }
 
     private fun getPresentableText(): String {
