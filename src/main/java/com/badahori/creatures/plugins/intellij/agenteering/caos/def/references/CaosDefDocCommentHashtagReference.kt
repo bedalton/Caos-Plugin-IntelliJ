@@ -27,7 +27,7 @@ class CaosDefDocCommentHashtagReference(hashtag: CaosDefDocCommentHashtag)
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         val project = myElement.project
-        if (DumbService.isDumb(project)) {
+        if (project.isDisposed || DumbService.isDumb(project)) {
             return emptyArray()
         }
         val variants = variants

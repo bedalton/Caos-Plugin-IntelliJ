@@ -618,6 +618,9 @@ private fun onP1P2(
     thisValue: CaosScriptRvalue,
     otherValue: CaosScriptRvalue,
 ): String? {
+    if (thisValue.isInvalid) {
+        return null
+    }
     // Gets event number safely,
     // as an infinite loop is created if calling before index is build
     val eventScriptNumber = (if (DumbService.isDumb(thisValue.project))

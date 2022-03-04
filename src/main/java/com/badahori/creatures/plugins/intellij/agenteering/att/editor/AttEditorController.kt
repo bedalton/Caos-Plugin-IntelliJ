@@ -176,6 +176,9 @@ internal class AttEditorController(
      */
     private fun createView(): AttEditorPanel {
         val mView = AttEditorPanel(project, this)
+        if (project.isDisposed) {
+            return mView
+        }
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).runWhenSmart(view::init)
         } else {

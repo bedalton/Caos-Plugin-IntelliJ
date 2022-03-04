@@ -12,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope

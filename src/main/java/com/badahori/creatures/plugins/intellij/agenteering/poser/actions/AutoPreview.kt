@@ -43,14 +43,12 @@ class AutoPreview : AnAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val headFiles = (e.files.filter {
-            headSpriteRegex.matches(it.name)
-        } + e.files.filter { it.isDirectory }.flatMap {
-            VirtualFileUtil.childrenWithExtensions(it, true, "spr", "s16", "c16")
-                .filter { child -> headSpriteRegex.matches(child.name) }
-        }).distinctBy { it.path }
         val project = e.project
             ?: throw Exception("No project available to generate preview")
+
+        if (project.isDisposed) {
+            return
+        }
 
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).runWhenSmart {
@@ -61,6 +59,14 @@ class AutoPreview : AnAction() {
             }
             return
         }
+
+        val headFiles = (e.files.filter {
+            headSpriteRegex.matches(it.name)
+        } + e.files.filter { it.isDirectory }.flatMap {
+            VirtualFileUtil.childrenWithExtensions(it, true, "spr", "s16", "c16")
+                .filter { child -> headSpriteRegex.matches(child.name) }
+        }).distinctBy { it.path }
+
         val projectFile = project.projectFile?.let {
             VfsUtil.virtualToIoFile(it)
         }

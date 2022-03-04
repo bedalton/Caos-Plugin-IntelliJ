@@ -169,6 +169,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     public synchronized void init() {
+        if (project.isDisposed()) {
+            return;
+        }
         if (didInit) {
             return;
         }
