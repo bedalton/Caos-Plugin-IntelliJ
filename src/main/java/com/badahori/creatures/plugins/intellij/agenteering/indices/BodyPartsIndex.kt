@@ -70,7 +70,7 @@ object BodyPartsIndex {
             coroutineScope,
             progressIndicator
         ) { variantScope ->
-            if (DumbService.isDumb(project)) {
+            if (project.isDisposed || DumbService.isDumb(project)) {
                 emptyList()
             } else {
                 if (ATT_TO_SPRITE) {
@@ -109,7 +109,7 @@ object BodyPartsIndex {
             coroutineScope,
             progressIndicator
         ) { newScope ->
-            if (DumbService.isDumb(project)) {
+            if (project.isDisposed || DumbService.isDumb(project)) {
                 emptyList()
             } else if (ATT_TO_SPRITE) {
                 AttFilesIndex.findMatching(project, searchKey, newScope, progressIndicator)
@@ -264,7 +264,7 @@ object BodyPartsIndex {
             for (theKey in keys) {
                 progressIndicator?.checkCanceled()
                 val otherFiles: Collection<VirtualFile> = readNonBlocking {
-                    if (DumbService.isDumb(project)) {
+                    if (project.isDisposed || DumbService.isDumb(project)) {
                         return@readNonBlocking emptyList()
                     }
                     if (ATT_TO_SPRITE) {
@@ -357,7 +357,7 @@ object BodyPartsIndex {
 
 
     suspend fun getImmediate(project: Project, directory: VirtualFile, key: BreedPartKey): Map<Char, BodyPartFiles?>? {
-        if (DumbService.isDumb(project)) {
+        if (project.isDisposed || DumbService.isDumb(project)) {
             return null
         }
         val parent = directory.parent

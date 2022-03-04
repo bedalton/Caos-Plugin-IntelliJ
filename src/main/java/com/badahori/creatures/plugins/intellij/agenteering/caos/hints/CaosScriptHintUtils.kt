@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEncl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesListId
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.projectDisposed
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -136,7 +137,7 @@ internal fun getCommand(commandToken: CaosScriptIsCommandToken): CaosCommand? {
 
 
 internal fun formatRvalue(rvalue: CaosScriptRvalue?): Pair<String, TextRange>? {
-    if (rvalue == null || DumbService.isDumb(rvalue.project)) {
+    if (rvalue == null || rvalue.projectDisposed || DumbService.isDumb(rvalue.project)) {
         return null
     }
 

@@ -391,7 +391,7 @@ private fun rangeFromCommand(
 private fun getValuesList(variant: CaosVariant, assignment: CaosScriptCAssignment): CaosValuesList? {
     if (!assignment.containingFile.isValid)
         return null
-    if (DumbService.isDumb(assignment.project))
+    if (assignment.project.isDisposed || DumbService.isDumb(assignment.project))
         return null
     val commandDefinition = assignment.lvalue?.commandDefinition
         ?: return null

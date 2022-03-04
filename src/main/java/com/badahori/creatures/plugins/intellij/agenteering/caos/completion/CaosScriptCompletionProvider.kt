@@ -1039,7 +1039,7 @@ private fun addFileNameCompletionsForFileTypes(
 ) {
 
     // Requires file index, so stop completing if index is not yet built
-    if (DumbService.isDumb(project))
+    if (project.isDisposed || DumbService.isDumb(project))
         return
 
     // Get module of containing file
@@ -1188,7 +1188,7 @@ private fun addUserDefinedNamedVarsOfType(
     quoter: (String) -> String,
 ) {
 
-    if (DumbService.isDumb(project))
+    if (project.isDisposed || DumbService.isDumb(project))
         return
     // If index is built, get user defined named variables
     // Get module of containing file

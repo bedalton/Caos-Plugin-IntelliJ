@@ -129,3 +129,6 @@ val PsiElement.isNotFolded: Boolean
 
 val PsiElement.textUppercase:String get() = text.uppercase()
 
+val PsiElement.projectDisposed: Boolean get() = project.isDisposed
+
+val PsiElement?.isInvalid: Boolean get() = this == null || !isValid || project.isDisposed

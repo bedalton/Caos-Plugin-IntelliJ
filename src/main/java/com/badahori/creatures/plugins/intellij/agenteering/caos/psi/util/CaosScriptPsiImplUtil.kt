@@ -1087,6 +1087,10 @@ object CaosScriptPsiImplUtil {
             return it
         }
 
+        if (rvalue.project.isDisposed) {
+            return emptyList()
+        }
+
         // If project is not dumb, and this rvalue is a variable
         // Return its resolved value
         if (!DumbService.isDumb(rvalue.project)) {

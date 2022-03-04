@@ -328,6 +328,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             if (element !is CaosScriptRvalue)
                 return EMPTY_INLAY_LIST
+            if (!element.isValid || element.project.isDisposed) {
+                return EMPTY_INLAY_LIST
+            }
             val value = element.text
             if (value.contains(' '))
                 return EMPTY_INLAY_LIST
@@ -493,6 +496,9 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             if (element !is CaosScriptRvaluePrime)
                 return EMPTY_INLAY_LIST
+            if (!element.isValid || element.project.isDisposed) {
+                return EMPTY_INLAY_LIST
+            }
             val commandToken = element.commandTokenElement
                 ?: return EMPTY_INLAY_LIST
             val commandString = element.commandStringUpper

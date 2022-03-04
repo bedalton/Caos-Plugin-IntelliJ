@@ -96,7 +96,7 @@ object CaosScriptInferenceUtil {
             return null
         if (!resolveVars)
             return listOf(VARIABLE)
-        if (DumbService.isDumb(element.project))
+        if (!element.isValid || element.project.isDisposed || DumbService.isDumb(element.project))
             return null
         return when (element) {
             is CaosScriptVarToken -> {
@@ -125,6 +125,8 @@ object CaosScriptInferenceUtil {
         }
 
         val project = element.project
+        if (project.isDisposed)
+            return emptyList()
         val varType = element.varType
         val key = element.key
             ?: return emptyList()

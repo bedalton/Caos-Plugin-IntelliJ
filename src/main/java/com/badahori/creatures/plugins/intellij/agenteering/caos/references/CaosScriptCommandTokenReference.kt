@@ -148,7 +148,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
      */
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         // Cannot resolve on dumb index, return
-        if (DumbService.isDumb(myElement.project)) {
+        if (myElement.project.isDisposed || DumbService.isDumb(myElement.project)) {
             return PsiElementResolveResult.EMPTY_ARRAY
         }
         // If parent.parent is CommandDefElement
