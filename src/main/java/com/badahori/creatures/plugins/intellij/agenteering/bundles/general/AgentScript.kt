@@ -17,7 +17,7 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
     fun toCaosFile(project: Project, cobPath: CaosVirtualFile, caosVariant: CaosVariant): CaosScriptFile {
         val fileName = getEventScriptName(code) ?: scriptName
         val file = CobVirtualFileUtil.createChildCaosScript(project, cobPath, caosVariant, "$fileName.cos", code).apply {
-            isWritable = true
+            isWritable = false
         }
         val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
                 ?: PsiFileFactory.getInstance(project)

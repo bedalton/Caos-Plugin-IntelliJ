@@ -10,6 +10,7 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -201,16 +202,18 @@ internal class ChildCaosScriptFileTreeNode(
         }
         val caosFile = caosFile
             ?: return
-        if (ApplicationManager.getApplication().isDispatchThread) {
-            caosFile.virtualFile?.isWritable = true
+        if (!ApplicationManager.getApplication().isDispatchThread) {
+            invokeLater {
+                navigate(requestFocus)
+            }
+        } else {
             runWriteAction {
+                caosFile.virtualFile?.isWritable = true
                 caosFile.quickFormat()
                 caosFile.virtualFile?.isWritable = false
+                caosFile.navigate(requestFocus)
             }
         }
-
-        caosFile.navigate(requestFocus)
-        caosFile.virtualFile?.isWritable = false
     }
 
     private fun getPresentableText(): String {

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
@@ -406,4 +408,19 @@ internal fun DataInputStream.readString(): String? {
         out.append(this.readChar())
     }
     return out.toString()
+}
+
+internal inline fun <T> VirtualFile.asWritable(work:(file:VirtualFile)->T): T {
+    val writable = this.isWritable
+    this.isWritable = true
+    val out = work(this)
+    isWritable = writable
+    return out
+}
+
+internal inline fun VirtualFile.applyWritable(work:VirtualFile.() -> Unit) {
+    val writable = this.isWritable
+    this.isWritable = true
+    work(this)
+    isWritable = writable
 }
