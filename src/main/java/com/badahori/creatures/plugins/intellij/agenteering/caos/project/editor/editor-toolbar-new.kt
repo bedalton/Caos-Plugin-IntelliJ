@@ -35,6 +35,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -216,6 +217,10 @@ private fun populate(
     pointer: SmartPsiElementPointer<CaosScriptFile>,
     toolbar: JPanel
 ) {
+
+    if (project.isDisposed) {
+        return
+    }
 //    val initialVariant = caosFile.variant
 //    val initialLastInterfaceName = try {
 //        caosFile.lastInjector
@@ -225,7 +230,7 @@ private fun populate(
 
     // Variants
     val variantPanel = JPanel()
-    val variantSelect = JComboBox(
+    val variantSelect = ComboBox(
         arrayOf(
             "",
             "C1",
@@ -246,7 +251,7 @@ private fun populate(
 
     // Injector
     val injectorsContainer = JPanel()
-    val injectors = JComboBox<AnAction>()
+    val injectors = ComboBox<AnAction>()
     injectors.renderer = ActionCellRender
     injectors.updateUI()
     val injectorActionGroup = pointer.element?.let { caosFile ->
@@ -367,7 +372,7 @@ private fun populate(
                 ?: return@run
             try {
                 BlockSupport.getInstance(project).reparseRange(file, 0, file.endOffset, file.text)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
         file = pointer.element
