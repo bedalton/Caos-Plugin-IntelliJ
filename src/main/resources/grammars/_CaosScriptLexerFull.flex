@@ -260,7 +260,7 @@ DDE_PICT=[^\s]{3}
     "*#"					{ yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; }
   	{COMMENT_AT_DIRECTIVE}	{ if (isStartOfFile) { yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; } else { yypushback(yylength() - 1); return CaosScript_COMMENT_START; }  }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
-    [^]					 	{ isStartOfFile = false; if (!yypop()) yypush(IN_LINE); yypushback(yylength());}
+    [^]					 	{ isStartOfFile = false; if (!yypop() || yystate() == START_OF_LINE) { yypush(IN_LINE); } yypushback(yylength());}
 }
 
 <IN_BYTE_STRING> {
