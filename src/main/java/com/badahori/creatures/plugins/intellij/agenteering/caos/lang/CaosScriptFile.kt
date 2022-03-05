@@ -21,6 +21,7 @@ import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
@@ -35,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
 class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myFile: VirtualFile) :
-    PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant {
+    PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant, DumbAware {
 
 
     private val didFormatInitial = AtomicBoolean(false)
