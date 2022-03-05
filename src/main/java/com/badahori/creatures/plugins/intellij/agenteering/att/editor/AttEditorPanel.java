@@ -721,7 +721,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private void loadRequestedPose() {
-        final Pose requestedPose = controller.getRequestedPose();
+        final Pose requestedPose = controller.getPose();
         if (requestedPose == null) {
             return;
         }
