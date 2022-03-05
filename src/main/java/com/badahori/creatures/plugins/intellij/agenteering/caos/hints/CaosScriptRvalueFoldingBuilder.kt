@@ -3,7 +3,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.commandToken2ElementType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isFolded
+import com.badahori.creatures.plugins.intellij.agenteering.utils.minus
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -20,14 +23,19 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
         if (quick) {
             return rvalues
                 .mapNotNull map@{ rvalue ->
-                    if (rvalue.isFolded) {
+                    if (!rvalue.isValid || rvalue.isFolded) {
                         return@map null
                     }
                     val (oldText, foldData) = rvalue.getUserData(RVALUE_FOLDING_KEY)
                         ?: return@map null
                     return@map if (oldText == rvalue.text) {
                         if (foldData != null) {
-                            FoldingDescriptor(rvalue, foldData.second)
+                            // Calculate range offsets in rvalue
+                            val newRange = rvalue.textRange - foldData.second
+                            if (newRange.length < 1) {
+                                return@map null
+                            }
+                            FoldingDescriptor(rvalue, newRange)
                         } else {
                             null
                         }
@@ -47,16 +55,25 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
                 // Filter by cached value first
                 rvalue.getUserData(RVALUE_FOLDING_KEY)?.let { (oldText, value) ->
                     if (oldText == text) {
-                        return@map if (value != null) {
-                             FoldingDescriptor(rvalue, value.second)
-                        } else {
-                            null
+                        // Value is null return self
+                        if (value == null) {
+                            return@map null
                         }
+                        // Calculate range offsets in rvalue
+                        val newRange = rvalue.textRange - value.second
+                        if (newRange.length < 1) {
+                            return@map null
+                        }
+                        return@map FoldingDescriptor(rvalue, newRange)
                     }
                 }
                 val resolved = getRvalueTextCaching(rvalue)
                 if (resolved != null) {
-                    FoldingDescriptor(rvalue, resolved.second)
+                    val newRange = rvalue.textRange - resolved.second
+                    if (newRange.length < 1) {
+                        return@map null
+                    }
+                    FoldingDescriptor(rvalue, newRange)
                 } else {
                     null
                 }
@@ -91,7 +108,9 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
             if (foldData.first.isEmpty()) {
                 null
             } else {
-                foldData
+                foldData.copy(
+                    second = rvalue.textRange - foldData.second
+                )
             }
         }
         rvalue.putUserData(RVALUE_FOLDING_KEY, Pair(text, foldData))

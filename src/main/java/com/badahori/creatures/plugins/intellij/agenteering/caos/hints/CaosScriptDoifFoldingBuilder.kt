@@ -287,7 +287,9 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             // Get other value from its values list value
             @Suppress("SpellCheckingInspection") val otherValueText = returnValuesList
                 // Get value as bitflags if possible
-                ?.getWithBitFlags(otherValueInt)
+                ?.getWithBitFlags(otherValueInt)?.apply {
+                    isMatched = true
+                }
                 // If bitflags is empty -> nullify to prevent empty string
                 ?.nullIfEmpty()
                 // Join bitflags to single string for use in doif format
@@ -350,7 +352,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
                 return createCompoundFormatter(format)
             return when (format.uppercase()) {
                 // Though %ATTRIBUTES is simple, it is registered here for consistency between the two versions of the command
-                "%ATTRIBUTES" -> createCompoundFormatter("Targ Attributes {=} {1}")
+                "%ATTRIBUTES" -> ATTRIBUTE_FORMATTER//createCompoundFormatter("Targ {is} {1}")
                 "%CAGE" -> CAGE
                 "%HIST_CAGE" -> HIST_CAGE
                 "%IS_SIMPLE" -> SIMPLE_FORMATTER
@@ -464,6 +466,32 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
         "$first $second"
     else
         "$first $eqOpText $second"
+}
+
+private val ATTRIBUTE_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
+    if (!formatInfo.otherIsMatched) {
+        LOGGER.info("Other value is not matched")
+        return@formatter null
+    }
+    val otherValue = formatInfo.otherValue
+    if (otherValue == formatInfo.otherValueInt.toString()) {
+        LOGGER.info("Other value is int as string")
+        return@formatter null
+    }
+    when (formatInfo.eqOp) {
+        BITWISE_AND -> "Targ $IS $otherValue"
+        BITWISE_NAND -> "Targ $IS_NOT $otherValue"
+        else -> {
+            val eqOp = formatEqOp(
+                eqOp = formatInfo.eqOp,
+                equalSign = true,
+                isBool = false,
+                boolOnLessThan = false,
+                otherValueInt = formatInfo.otherValueInt
+            )
+            "ATTR $eqOp $otherValue"
+        }
+    }
 }
 
 /**
@@ -706,12 +734,24 @@ private fun formatEqOp(
         } else {
             null
         }
-        LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) if (equalSign) {
-            "!="
-        } else {
-            IS_NOT
+        LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) {
+            if (equalSign) {
+                "!="
+            } else {
+                IS_NOT
+            }
         } else {
             null
+        }
+        BITWISE_AND -> if (equalSign) {
+            "&"
+        } else {
+            IS
+        }
+        BITWISE_NAND -> if (equalSign) {
+            "!&"
+        } else {
+            IS_NOT
         }
         else -> null
     } ?: eqOp.values.getOrNull(1) ?: eqOp.values.first()
@@ -720,11 +760,12 @@ private fun formatEqOp(
 private typealias FormatString = (text: String) -> String
 
 /**
- * Formats text so only first letter of string is upper cased
+ * Formats text so only first letter of sentence is capitalized
  */
-private val formatUpperCaseFirst: FormatString = { text: String ->
+private val sentenceCase: FormatString = { text: String ->
     text.lowercase().upperCaseFirstLetter()
 }
+
 
 /**
  * Formats text so all text is lower cased
@@ -745,9 +786,9 @@ private val allUpperCase: FormatString = { text: String ->
  * Formats text so each new word is upper-cased
  */
 @Suppress("unused")
-private val upperCaseFirstOnAllWords: FormatString = { text: String ->
+private val titleCase: FormatString = { text: String ->
     text.split(" ").joinToString(" ") {
-        if (it like "an" || it like "a" || it like "or")
+        if (it like "an" || it like "a" || it like "or" || it like "of" || it like "the")
             it
         else
             it.upperCaseFirstLetter()
@@ -761,7 +802,7 @@ private val noChange: FormatString = { string: String -> string }
  * @TODO should the words all be upper-cased or only first letter
  * ie Is Not Dead <> Is not dead <> is not dead <> is not Dead
  */
-private val homogenizeFormattedText: FormatString get() = noChange
+private val homogenizeFormattedText: FormatString get() = sentenceCase
 
 
 /**

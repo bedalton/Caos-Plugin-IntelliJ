@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.intellij.openapi.util.TextRange
 
 
 fun <T> T?.orElse(defaultValue: T): T {
@@ -37,3 +38,8 @@ fun Int.addFlag(flag: Int): Int = this or flag
 
 val CaosVariant.selfOrC3IfDS: CaosVariant
     get() = if (this == CaosVariant.DS) CaosVariant.C3 else this
+
+
+operator fun TextRange.minus(range:TextRange): TextRange {
+    return TextRange(startOffset - range.startOffset, endOffset - range.endOffset)
+}
