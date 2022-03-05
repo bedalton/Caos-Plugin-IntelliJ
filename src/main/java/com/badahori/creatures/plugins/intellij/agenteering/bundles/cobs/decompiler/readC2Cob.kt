@@ -5,7 +5,9 @@ import bedalton.creatures.sprite.parsers.S16SpriteFile
 import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.soywiz.korim.awt.toAwt
 import java.util.*
 
@@ -39,7 +41,7 @@ private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val agentName = cString
     val description = cString
     val installScript = AgentScript.InstallScript(cString)
-    val removalScript = AgentScript.RemovalScript(cString)
+    val removalScript = cString.nullIfEmpty()?.let { AgentScript.RemovalScript(it) }
     val eventScripts = (0 until uInt16).map {index ->
         val script = cString
         AgentScript(script, "Script $index", AgentScriptType.EVENT)

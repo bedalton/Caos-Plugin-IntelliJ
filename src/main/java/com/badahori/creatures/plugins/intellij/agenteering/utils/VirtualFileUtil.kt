@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -18,6 +19,7 @@ import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
 import com.intellij.psi.impl.file.impl.FileManagerImpl
 import com.intellij.psi.search.GlobalSearchScope
+import icons.CaosScriptIcons
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import javax.swing.Icon
@@ -410,7 +412,7 @@ internal fun DataInputStream.readString(): String? {
     return out.toString()
 }
 
-internal inline fun <T> VirtualFile.asWritable(work:(file:VirtualFile)->T): T {
+internal inline fun <T> VirtualFile.asWritable(work: (file: VirtualFile) -> T): T {
     val writable = this.isWritable
     this.isWritable = true
     val out = work(this)
@@ -418,9 +420,40 @@ internal inline fun <T> VirtualFile.asWritable(work:(file:VirtualFile)->T): T {
     return out
 }
 
-internal inline fun VirtualFile.applyWritable(work:VirtualFile.() -> Unit) {
+internal inline fun VirtualFile.applyWritable(work: VirtualFile.() -> Unit) {
     val writable = this.isWritable
     this.isWritable = true
     work(this)
     isWritable = writable
+}
+
+
+/**
+ * Get the swing icon for a given file name
+ */
+internal fun getFileIcon(fileName: String, nonNullDefault: Boolean = true): Icon? {
+    val extension = (FileNameUtils.getExtension(fileName) ?: fileName)
+    return when (extension.toUpperCase()) {
+        "COS" -> CaosScriptIcons.CAOS_FILE_ICON
+        "SPR" -> CaosScriptIcons.SPR_FILE_ICON
+        "S16" -> CaosScriptIcons.S16_FILE_ICON
+        "C16" -> CaosScriptIcons.C16_FILE_ICON
+        "ATT" -> CaosScriptIcons.ATT_FILE_ICON
+        "AGENT", "AGENTS" -> CaosScriptIcons.AGENT_FILE_ICON
+        "COB" -> CaosScriptIcons.COB_FILE_ICON
+        "PRAY" -> CaosScriptIcons.PRAY_FILE_ICON
+        "BLK" -> CaosScriptIcons.BLK_FILE_ICON
+        "RCB" -> CaosScriptIcons.RCB_FILE_ICON
+        "WAV" -> CaosScriptIcons.WAV_FILE_ICON
+        "MNG" -> CaosScriptIcons.MNG_FILE_ICON
+        "SFC" -> CaosScriptIcons.SFC_FILE_ICON
+        "CAOSDEF" -> CaosScriptIcons.CAOS_DEF_FILE_ICON
+        else -> {
+            if (nonNullDefault) {
+                AllIcons.FileTypes.Any_type
+            } else {
+                null
+            }
+        }
+    }
 }

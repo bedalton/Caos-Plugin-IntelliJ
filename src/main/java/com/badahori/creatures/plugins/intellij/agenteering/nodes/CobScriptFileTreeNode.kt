@@ -2,19 +2,22 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import bedalton.creatures.bytes.MemoryByteStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AuthorBlock
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SpriteBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobFileData
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobToDataObjectDecompiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobVirtualFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getFileIcon
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -22,6 +25,7 @@ import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.tree.LeafState
@@ -81,15 +85,16 @@ internal class CobFileTreeNode(
     }
 
     private fun getChildren(data: CobFileData.C1CobData): List<AbstractTreeNode<*>> {
-        return getChildren(data.cobBlock, CaosVariant.C1)
+        return getChildren(data.cobBlock, CaosVariant.C1, true)
     }
 
     private fun getChildren(data: CobFileData.C2CobData): List<AbstractTreeNode<*>> {
-        return data.let { it.agentBlocks + it.authorBlocks + it.soundFileBlocks + it.spriteFileBlocks }
-            .flatMap { getChildren(it, CaosVariant.C2) }
+        val blocks = data.let { it.agentBlocks + it.authorBlocks + it.soundFileBlocks + it.spriteFileBlocks }
+        val solo = data.agentBlocks.size == 1
+        return blocks.flatMap { getChildren(it, CaosVariant.C2, solo) }
     }
 
-    private fun getChildren(block: CobBlock, variant: CaosVariant): List<AbstractTreeNode<*>> {
+    private fun getChildren(block: CobBlock, variant: CaosVariant, solo: Boolean): List<AbstractTreeNode<*>> {
         if (!isValid()) {
             return emptyList()
         }
@@ -98,50 +103,64 @@ internal class CobFileTreeNode(
             is SoundBlock -> listOf(SoundFileTreeNode(nonNullProject, cobVirtualFile, block))
             is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, block))
             is AgentBlock -> {
-                val needsInstallScriptIdentifier = block.installScripts.size > 2
-                val installScripts = block.installScripts.mapIndexed { i, installScript ->
-                    ChildCaosScriptFileTreeNode(
-                        nonNullProject,
-                        cobNameWithoutExtension,
-                        installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
-                        0,
-                        file.nameWithoutExtension + " Install Script" + (if (needsInstallScriptIdentifier) " ($i)" else ""),
-                        viewSettings
-                    )
-                }
-
-                val scripts = installScripts + listOfNotNull(
-                    block.removalScript?.let {
-                        ChildCaosScriptFileTreeNode(
-                            nonNullProject,
-                            parentName = cobNameWithoutExtension,
-                            caosFile = it.toCaosFile(nonNullProject, cobVirtualFile, variant),
-                            scriptIndex = 0,
-                            presentableTextIn = file.nameWithoutExtension + " Removal Script",
-                            viewSettings
-                        )
-                    }
-                )
-                val previews: List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
-                    SpriteImageTreeNode(
+                if (solo) {
+                    flattenedAgent(block, variant)
+                } else {
+                    CobAgentTreeNode(
                         nonNullProject,
                         cobVirtualFile,
-                        "Thumbnail",
-                        it.toPngByteArray(),
+                        block,
+                        variant,
                         viewSettings
-                    )
-                })
-                previews + scripts + block.eventScripts.mapIndexed { index, script ->
-                    ChildCaosScriptFileTreeNode(
-                        nonNullProject,
-                        cobNameWithoutExtension,
-                        script.toCaosFile(nonNullProject, cobVirtualFile, variant),
-                        index,
-                        viewSettings = viewSettings
-                    )
+                    ).toListOf()
                 }
             }
-            is CobBlock.UnknownCobBlock -> emptyList()
+            is UnknownCobBlock -> emptyList()
+        }
+    }
+
+    private fun flattenedAgent(block: AgentBlock, variant: CaosVariant): List<AbstractTreeNode<*>> {
+        val needsInstallScriptIdentifier = block.installScripts.size > 2
+        val installScripts = block.installScripts.mapIndexed { i, installScript ->
+            ChildCaosScriptFileTreeNode(
+                nonNullProject,
+                cobNameWithoutExtension,
+                installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                0,
+                file.nameWithoutExtension + " Install Script" + (if (needsInstallScriptIdentifier) " ($i)" else ""),
+                viewSettings
+            )
+        }
+
+        val scripts = installScripts + listOfNotNull(
+            block.removalScript?.nullIfEmpty()?.let {
+                ChildCaosScriptFileTreeNode(
+                    nonNullProject,
+                    parentName = cobNameWithoutExtension,
+                    caosFile = it.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                    scriptIndex = 0,
+                    presentableTextIn = file.nameWithoutExtension + " Removal Script",
+                    viewSettings
+                )
+            }
+        )
+        val previews: List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
+            SpriteImageTreeNode(
+                nonNullProject,
+                cobVirtualFile,
+                "Thumbnail",
+                it.toPngByteArray(),
+                viewSettings
+            )
+        })
+        return previews + scripts + block.eventScripts.mapIndexed { index, script ->
+            ChildCaosScriptFileTreeNode(
+                nonNullProject,
+                cobNameWithoutExtension,
+                script.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                index,
+                viewSettings = viewSettings
+            )
         }
     }
 
@@ -170,6 +189,114 @@ internal class CobFileTreeNode(
     }
 }
 
+internal class CobAgentTreeNode(
+    private val nonNullProject: Project,
+    private val parentCobFile: VirtualFile,
+    private val agentBlock: AgentBlock,
+    private val variant: CaosVariant,
+    private val viewSettings: ViewSettings?,
+) : AbstractTreeNode<AgentBlock>(nonNullProject, agentBlock) {
+
+    private val agentName get() = StringUtil.toTitleCase(agentBlock.name)
+
+    private val cobVirtualFile: CaosVirtualFile by lazy {
+        CobVirtualFileUtil.getOrCreateCobVirtualFileDirectory(parentCobFile).let { parent ->
+            if (parent.hasChild(agentName)) {
+                var filename: String
+                do {
+                    filename = agentName + '_' + randomString(4)
+                } while (parent.hasChild(filename))
+                parent.createChildDirectory(filename)
+            } else {
+                parent.createChildDirectory(agentName)
+            }
+        }
+    }
+
+    override fun expandOnDoubleClick(): Boolean {
+        return true
+    }
+
+    override fun navigate(requestFocus: Boolean) {
+    }
+
+    override fun canNavigate(): Boolean = false
+
+    override fun canNavigateToSource(): Boolean = false
+
+    override fun getChildren(): List<AbstractTreeNode<*>> {
+        val children = getChildren(agentBlock, CaosVariant.C2)
+        children.forEach {
+            it.parent = this
+        }
+        return children
+    }
+
+    private fun getChildren(block: AgentBlock, variant: CaosVariant): List<AbstractTreeNode<*>> {
+        val needsInstallScriptIdentifier = block.installScripts.size > 2
+        val installScripts = block.installScripts.mapIndexed { i, installScript ->
+            ChildCaosScriptFileTreeNode(
+                nonNullProject,
+                agentName,
+                installScript.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                0,
+                agentName + " Install Script" + (if (needsInstallScriptIdentifier) " ($i)" else ""),
+                viewSettings
+            )
+        }
+
+        val scripts = installScripts + listOfNotNull(
+            block.removalScript?.nullIfEmpty()?.let {
+                ChildCaosScriptFileTreeNode(
+                    nonNullProject,
+                    parentName = agentName,
+                    caosFile = it.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                    scriptIndex = 0,
+                    presentableTextIn = "$agentName Removal Script",
+                    viewSettings
+                )
+            }
+        )
+        val previews: List<AbstractTreeNode<*>> = listOfNotNull(block.image?.let {
+            SpriteImageTreeNode(
+                nonNullProject,
+                cobVirtualFile,
+                "Thumbnail",
+                it.toPngByteArray(),
+                viewSettings
+            )
+        })
+        return previews + scripts + block.eventScripts.mapIndexed { index, script ->
+            ChildCaosScriptFileTreeNode(
+                nonNullProject,
+                agentName,
+                script.toCaosFile(nonNullProject, cobVirtualFile, variant),
+                index,
+                viewSettings = viewSettings
+            )
+        }
+    }
+
+    override fun getWeight(): Int {
+        return 10
+    }
+
+    override fun update(presentationData: PresentationData) {
+        val icon = when (variant) {
+            CaosVariant.C1 -> CaosScriptIcons.C1_COB_AGENT_ICON
+            CaosVariant.C2 -> CaosScriptIcons.C2_COB_AGENT_ICON
+            else -> CaosScriptIcons.C1_COB_AGENT_ICON
+        }
+        presentationData.setIcon(icon)
+        presentationData.presentableText = agentName
+        presentationData.locationString = null
+    }
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ASYNC
+    }
+}
+
 internal class AuthorTreeNode(project: Project, block: AuthorBlock) : AbstractTreeNode<AuthorBlock>(project, block) {
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
     override fun navigate(p0: Boolean) {}
@@ -182,6 +309,10 @@ internal class AuthorTreeNode(project: Project, block: AuthorBlock) : AbstractTr
     }
 
     override fun getName() = virtualFile.name
+
+    override fun getWeight(): Int {
+        return super.getWeight() * 3
+    }
 
 }
 
@@ -245,7 +376,7 @@ internal class CobSpriteFileTreeNode(
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = block.fileName
         presentationData.locationString = null
-        presentationData.setIcon(null)
+        presentationData.setIcon(getFileIcon(block.fileName))
     }
 
     override fun getName() = virtualFile.name
@@ -255,7 +386,7 @@ internal class CobSpriteFileTreeNode(
     }
 }
 
-private fun wrapFileBlock(enclosingCob: CaosVirtualFile, block: CobBlock.FileBlock): VirtualFile {
+private fun wrapFileBlock(enclosingCob: CaosVirtualFile, block: FileBlock): VirtualFile {
     return CaosVirtualFile(block.fileName, block.contents, false).apply {
         enclosingCob.addChild(this)
     }
@@ -286,7 +417,7 @@ internal class SoundFileTreeNode(
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = block.fileName
         presentationData.locationString = "(decompiled)"
-        presentationData.setIcon(null)
+        presentationData.setIcon(getFileIcon(virtualFile.name))
     }
 
 

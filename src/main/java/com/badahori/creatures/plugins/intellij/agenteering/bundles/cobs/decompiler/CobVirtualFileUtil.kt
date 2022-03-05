@@ -1,12 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.openapi.application.ApplicationManager
@@ -98,7 +97,7 @@ object CobVirtualFileUtil {
                     }
                 }
                 val scripts: List<CaosVirtualFile> = installScripts + listOfNotNull(
-                        block.removalScript?.let { createChildCaosScript(project, agentDirectory, variant, it.scriptName, it.code) }
+                        block.removalScript?.nullIfEmpty()?.let { createChildCaosScript(project, agentDirectory, variant, it.scriptName, it.code) }
                 ) + block.eventScripts.map map@{ script ->
                     createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code)
                 }
@@ -136,7 +135,7 @@ object CobVirtualFileUtil {
                 // Get PSI file after creating virtual file
                 val psiFile = ApplicationManager.getApplication().runReadAction(Computable {
                     findFile(project, virtualFile)
-                }) ?: return@run virtualFile.apply { LOGGER.severe("Failed to find CaosPsiFile after virtual file completion") }
+                }) ?: return@run virtualFile.apply { LOGGER.severe("Failed to find CaosPsiFile after virtual file creation") }
                 // Try quick format if file is found
                 virtualFile.isWritable = true
                 tryQuickFormat(psiFile, virtualFile)
@@ -149,10 +148,10 @@ object CobVirtualFileUtil {
             }
         }
         if (ApplicationManager.getApplication().isDispatchThread)
-            runnable()
+            runWriteAction(runnable)
         else {
             ApplicationManager.getApplication().invokeLater {
-                runnable()
+                runWriteAction(runnable)
             }
         }
         return virtualFile
@@ -174,7 +173,7 @@ private fun findFile(project: Project, file:CaosVirtualFile) : CaosScriptFile? {
 }
 
 private fun tryQuickFormat(psiFile:CaosScriptFile, file:CaosVirtualFile) : CaosVirtualFile {
-    if (psiFile.project.isDisposed || !psiFile.isValid || !file.isValid) {
+    if (psiFile.projectDisposed || psiFile.isInvalid || !file.isValid) {
         return file
     }
     val writable = file.isWritable
@@ -187,5 +186,5 @@ private fun tryQuickFormat(psiFile:CaosScriptFile, file:CaosVirtualFile) : CaosV
     } finally {
         file.isWritable = writable
     }
-    return psiFile.virtualFile as? CaosVirtualFile ?: file
+    return (psiFile.virtualFile as? CaosVirtualFile) ?: file
 }

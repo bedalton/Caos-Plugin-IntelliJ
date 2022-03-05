@@ -216,12 +216,14 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 }
                 DumbService.isDumb(project) -> {
                     if (!application.isDispatchThread) {
-                        DumbService.getInstance(project).runWhenSmart {
-                            if (project.isDisposed) {
-                                return@runWhenSmart
-                            }
-                            application.runWriteAction {
-                                runQuickFormatInWriteAction(caosFile)
+                        invokeLater {
+                            DumbService.getInstance(project).runWhenSmart {
+                                if (project.isDisposed) {
+                                    return@runWhenSmart
+                                }
+                                application.runWriteAction {
+                                    runQuickFormatInWriteAction(caosFile)
+                                }
                             }
                         }
                     } else {
@@ -251,8 +253,7 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
         }
 
         private fun runQuickFormatInWriteAction(caosFile: CaosScriptFile) {
-            if (caosFile.virtualFile?.apply { isWritable = true }?.isWritable.orFalse())
-                CaosScriptExpandCommasIntentionAction.invoke(caosFile.project, caosFile)
+            CaosScriptExpandCommasIntentionAction.invoke(caosFile.project, caosFile)
         }
     }
 }

@@ -61,3 +61,10 @@ enum class AgentScriptType {
     EVENT,
     OBJECT
 }
+
+fun <T:AgentScript> T.nullIfEmpty(): T? {
+    return if (this.code.isBlank())
+        null
+    else
+        this
+}
