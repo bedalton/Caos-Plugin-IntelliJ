@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.count
+import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.ide.projectView.PresentationData
@@ -17,6 +18,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.tree.LeafState
@@ -202,9 +204,19 @@ internal class ChildCaosScriptFileTreeNode(
         }
 
         val open: ()->Unit = run@{
+            val project = project
+                ?: return@run
             val caosFile = caosFile
                 ?: return@run
             quickFormat(caosFile)
+            caosFile.document?.let { document ->
+                if (project.isDisposed) {
+                    return@run
+                }
+                val manager = PsiDocumentManager.getInstance(project)
+                manager.doPostponedOperationsAndUnblockDocument(document)
+                manager.commitDocument(document)
+            }
             caosFile.navigate(requestFocus)
         }
         if (!ApplicationManager.getApplication().isDispatchThread) {
@@ -217,9 +229,7 @@ internal class ChildCaosScriptFileTreeNode(
     }
 
     private fun quickFormat(caosFile: CaosScriptFile) {
-        caosFile.virtualFile?.isWritable = true
         caosFile.quickFormat()
-        caosFile.virtualFile?.isWritable = false
     }
 
     private fun getPresentableText(): String {

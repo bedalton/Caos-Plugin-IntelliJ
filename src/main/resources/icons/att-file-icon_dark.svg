@@ -17,7 +17,7 @@
                 </g>
             </g>
             <rect x="0.846" y="8.839" width="16" height="7.416" style="fill:rgb(131,36,231);"/>
-            <g id="Text">
+            <g id="Text" opacity="0.95">
                 <path d="M2.713,15.044L4.242,10.391L4.81,10.391L6.439,15.044L5.839,15.044L5.374,13.635L3.71,13.635L3.273,15.044L2.713,15.044ZM3.862,13.133L5.212,13.133L4.796,11.845C4.669,11.453 4.575,11.132 4.514,10.88C4.463,11.178 4.391,11.474 4.299,11.768L3.862,13.133Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.45px;"/>
                 <path d="M7.844,15.044L7.844,10.94L6.532,10.94L6.532,10.391L9.687,10.391L9.687,10.94L8.37,10.94L8.37,15.044L7.844,15.044Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.45px;"/>
                 <path d="M11.624,15.044L11.624,10.94L10.313,10.94L10.313,10.391L13.468,10.391L13.468,10.94L12.151,10.94L12.151,15.044L11.624,15.044Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.45px;"/>

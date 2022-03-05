@@ -13,7 +13,9 @@ public interface CaosScriptIcons {
     Icon COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.svg");
     Icon ATT_FILE_ICON = IconLoader.getIcon("/icons/att-file-icon.svg");
     Icon C1_COB_FILE_ICON = IconLoader.getIcon("/icons/c1-cob-file-icon.svg");
+    Icon C1_COB_AGENT_ICON = IconLoader.getIcon("/icons/c1-cob-agent.svg");
     Icon C2_COB_FILE_ICON = IconLoader.getIcon("/icons/c2-cob-file-icon.svg");
+    Icon C2_COB_AGENT_ICON = IconLoader.getIcon("/icons/c2-cob-agent.svg");
     Icon RCB_FILE_ICON = IconLoader.getIcon("/icons/rcb-file-icon.svg");
     Icon SFC_FILE_ICON = IconLoader.getIcon("/icons/sfc-file-icon.svg");
     Icon PRAY_FILE_ICON = IconLoader.getIcon("/icons/pray-file-icon.svg");
@@ -22,6 +24,8 @@ public interface CaosScriptIcons {
     Icon SPR_FILE_ICON = IconLoader.getIcon("/icons/spr-file-icon.svg");
     Icon AGENT_FILE_ICON = IconLoader.getIcon("/icons/agent-file-icon.svg");
     Icon BLK_FILE_ICON = IconLoader.getIcon("/icons/blk-file-icon.svg");
+    Icon WAV_FILE_ICON = IconLoader.getIcon("/icons/wav-file-icon.svg");
+    Icon MNG_FILE_ICON = IconLoader.getIcon("/icons/mng-file-icon.svg");
     Icon COMMAND = IconLoader.getIcon("/icons/command-icon.png");
     Icon RVALUE = IconLoader.getIcon("/icons/right-value-icon.png");
     Icon LVALUE = IconLoader.getIcon("/icons/left-value-icon.png");
