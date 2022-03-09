@@ -78,6 +78,13 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
 
         if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
             runWriteAction {
+                if (virtualFile is CaosVirtualFile) {
+                    invokeLater {
+                        runWriteAction {
+                            quickFormat()
+                        }
+                    }
+                }
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
             }
         }

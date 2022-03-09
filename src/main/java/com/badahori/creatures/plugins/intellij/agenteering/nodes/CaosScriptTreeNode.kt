@@ -202,34 +202,42 @@ internal class ChildCaosScriptFileTreeNode(
         if (!isValid()) {
             return
         }
+        quickFormat()
+        val caosFile = caosFile
+            ?: return
+        caosFile.navigate(requestFocus)
+        LOGGER.info("Navigated to child script")
 
-        val open: ()->Unit = run@{
-            val project = project
-                ?: return@run
-            val caosFile = caosFile
-                ?: return@run
-            quickFormat(caosFile)
-            caosFile.document?.let { document ->
-                if (project.isDisposed) {
-                    return@run
-                }
-                val manager = PsiDocumentManager.getInstance(project)
-                manager.doPostponedOperationsAndUnblockDocument(document)
-                manager.commitDocument(document)
-            }
-            caosFile.navigate(requestFocus)
-        }
+    }
+
+    internal fun quickFormat() {
+        val caosFile = caosFile
+            ?: return
+        val project = project
+            ?: return
         if (!ApplicationManager.getApplication().isDispatchThread) {
             invokeLater {
-                runWriteAction(open)
+                runWriteAction {
+                    quickFormat(project, caosFile)
+                }
             }
         } else {
-            runWriteAction(open)
+            runWriteAction {
+                quickFormat(project, caosFile)
+            }
         }
     }
 
-    private fun quickFormat(caosFile: CaosScriptFile) {
+    private fun quickFormat(project: Project, caosFile: CaosScriptFile) {
         caosFile.quickFormat()
+        caosFile.document?.let { document ->
+            if (project.isDisposed) {
+                return
+            }
+            val manager = PsiDocumentManager.getInstance(project)
+            manager.doPostponedOperationsAndUnblockDocument(document)
+            manager.commitDocument(document)
+        }
     }
 
     private fun getPresentableText(): String {
