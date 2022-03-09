@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -85,7 +86,15 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
      * Method to expand commas and spaces into newlines
      */
     private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
-        val file = fileIn as? CaosScriptFile ?: return false
+        val file = fileIn as? CaosScriptFile
+            ?: return false
+        val variant = fileIn.variant
+            .nullIfUnknown()
+
+        if (variant == null) {
+            LOGGER.severe("Cannot quick format without variant")
+            return false
+        }
         // Check that there are more than two commands.
         // If not, no need to try to separate them by newlines
         if (shouldNotCollapse(file)) {
@@ -125,8 +134,8 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
             .forEach { it.element?.replace(CaosScriptPsiElementFactory.newLine(project)) }
 
 
+        val manager = PsiDocumentManager.getInstance(project)
         fileIn.document?.let { document ->
-            val manager = PsiDocumentManager.getInstance(project)
             manager.doPostponedOperationsAndUnblockDocument(document)
             manager.commitDocument(document)
         }
@@ -138,9 +147,10 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
 
         val readonly = (file.document?.isWritable == false)
         // Get the document again, and this time commit it
-        file.document?.let {
-            it.setReadOnly(false)
-            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(it)
+        file.document?.let { document ->
+            document.setReadOnly(false)
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+            manager.commitDocument(document)
         }
         CodeStyleManager.getInstance(project).reformat(file)
         file.document?.setReadOnly(readonly)
