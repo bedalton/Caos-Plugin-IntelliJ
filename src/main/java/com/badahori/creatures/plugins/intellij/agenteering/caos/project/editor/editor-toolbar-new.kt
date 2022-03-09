@@ -355,8 +355,9 @@ private fun populate(
         }
 
         // Set default variant in settings
-        if (selected != null && explicit)
+        if (selected != null && explicit) {
             CaosScriptProjectSettings.setVariant(selected)
+        }
 
         var file = pointer.element
             ?: return@select

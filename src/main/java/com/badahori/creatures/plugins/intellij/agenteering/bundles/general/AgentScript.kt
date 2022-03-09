@@ -22,6 +22,7 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
         val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
                 ?: PsiFileFactory.getInstance(project)
                         .createFileFromText("$scriptName.cos", CaosScriptLanguage, code) as CaosScriptFile
+        psiFile.setVariant(caosVariant, false)
         psiFile.setVariant(caosVariant, true)
         return psiFile
     }
