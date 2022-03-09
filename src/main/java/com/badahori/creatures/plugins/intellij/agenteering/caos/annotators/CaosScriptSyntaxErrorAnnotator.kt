@@ -45,6 +45,10 @@ class CaosScriptSyntaxErrorAnnotator : Annotator {
         if (element is PsiComment)
             return
         when (element) {
+            is PsiErrorElement -> holder.newErrorAnnotation(element.errorDescription)
+                .range(element)
+                .afterEndOfLine()
+                .create()
             is CaosScriptEqOpOld -> annotateOldEqualityOps(variant, element, holder)
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, holder)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, holder)
