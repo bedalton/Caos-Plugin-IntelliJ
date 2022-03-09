@@ -509,8 +509,8 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
     // Test for "is" or "is not" and return appropriate sub format
     var out = formatIn.split("::").let { patterns ->
         when {
-            eqOpText == IS -> patterns.first()
-            eqOpText != IS_NOT -> {
+            eqOpText == IS || eqOpText == "=" -> patterns.first()
+            eqOpText == IS_NOT || eqOpText == "!=" || eqOpText == "<>" -> {
                 if (patterns.size > 1) {
                     patterns[1].let {
                         if (it == "&&")
@@ -720,7 +720,8 @@ private fun formatEqOp(
         EQUAL -> if (isBool) {
             if (equalSign)
                 "="
-            else IS
+            else
+                IS
         } else {
             null
         }
