@@ -13,7 +13,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
-class CaosScriptInsertAfterFix(private val fixText:String, private val elementText:String, element:PsiElement, private val offsetInElement:Int = element.text.length, private val postInsert: (()->Unit)? = null) : LocalQuickFix, IntentionAction {
+class CaosScriptInsertAfterFix(
+    private val fixText: String,
+    private val elementText: String,
+    element: PsiElement,
+    private val offsetInElement: Int = element.text.length,
+    private val postInsert: ((editor:Editor) -> Unit)? = null,
+) : LocalQuickFix, IntentionAction {
 
     private val element = SmartPointerManager.createPointer(element)
 
@@ -44,6 +50,6 @@ class CaosScriptInsertAfterFix(private val fixText:String, private val elementTe
         if (editor == null)
             return
         EditorUtil.insertText(editor, "$elementText ", element.startOffset + offsetInElement, true)
-        postInsert?.invoke()
+        postInsert?.invoke(editor)
     }
 }

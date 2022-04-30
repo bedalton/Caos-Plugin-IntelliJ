@@ -5,9 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CobTa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE_OR_DASH
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 
 interface CaosScriptCaos2Statement : CaosScriptCompositeElement
 interface CaosScriptCaos2Child : CaosScriptCompositeElement
@@ -135,6 +133,15 @@ enum class PrayCommand(val keyStrings: Array<String>, val cosFiles:Boolean, val 
 
         fun getCommands(): List<PrayCommand> {
             return values().toList()
+        }
+
+        fun getActionCommands(): List<String> {
+            return PrayCommand.getCommands().mapNotNull {
+                if (it.singleton)
+                    null
+                else
+                    it.name.lowercase().matchCase(Case.CAPITAL_FIRST)
+            }
         }
 
         fun fromString(keyIn: String, variant: CaosVariant? = null): PrayCommand? {
