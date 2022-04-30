@@ -1,5 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import bedalton.creatures.sprite.parsers.SPRITE_DEBUG_LOGGING
+import bedalton.creatures.util.Log
+import bedalton.creatures.util.iIf
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser.parse
@@ -18,6 +21,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileEvent
@@ -36,9 +40,11 @@ internal class AttEditorModel(
     val attFile: VirtualFile,
     val spriteFile: VirtualFile,
     variant: CaosVariant,
+    val showNotification: (message: String, messageType: MessageType) -> Unit,
     val attChangeListener: AttChangeListener,
 ) : OnChangePoint, HasSelectedCell {
 
+    private var mImages: List<BufferedImage>? = null
     private var mVariant: CaosVariant = variant
     internal val variant: CaosVariant get() = mVariant
     private var changedSelf: Boolean = false
@@ -81,6 +87,8 @@ internal class AttEditorModel(
     val lockY: Boolean get() = mLockY
 
     val actionId = AtomicInteger(0)
+
+    val readonly = attFile.isWritable
 
     init {
         val psiFile = attFile.getPsiFile(project)
@@ -136,18 +144,19 @@ internal class AttEditorModel(
     }
 
     fun getImages(): List<BufferedImage?> {
-        val images = SpriteParser.parse(spriteFile).images
-        if (part != 'a')
-            return images
-        return images.mapIndexed { i, image ->
-            var out: BufferedImage? = image
+        mImages?.let {
+            return it
+        }
+        var images: List<BufferedImage> = SpriteParser.parse(spriteFile).images
+        images = images.mapIndexed { i, image ->
+            var out: BufferedImage = image
             if (i % 16 in 4..7) {
-                val repeated =
-                    (image.width == 32 && image.height == 32) || image.isCompletelyTransparent
+                val repeated = image.width == 32 && image.height == 32 && image.isCompletelyTransparent
                 if (repeated) {
                     try {
+                        val sourceImage = images[i - 4]
                         out = images[i - 4].flipHorizontal()
-                        if (out.width != image.width || out.height != image.height) {
+                        if (out.width != sourceImage.width || out.height != sourceImage.height) {
                             LOGGER.severe("Failed to properly maintain scale in image.")
                         }
                     } catch (_: Exception) {
@@ -156,6 +165,8 @@ internal class AttEditorModel(
             }
             out
         }
+        mImages = images
+        return images
     }
 
     /**
@@ -253,6 +264,11 @@ internal class AttEditorModel(
 
 
     override fun onShiftPoint(lineNumber: Int, offset: Pair<Int, Int>) {
+        if (readonly) {
+            showNotification("File is readonly", MessageType.INFO)
+
+            return
+        }
         val data = getEnsuringLines(lineNumber)
         val oldPoints = data.lines[lineNumber]
         val oldPoint = oldPoints[currentPoint]
@@ -264,6 +280,10 @@ internal class AttEditorModel(
         lineNumber: Int,
         newPoint: Pair<Int, Int>,
     ) {
+        if (readonly) {
+            showNotification("File is readonly", MessageType.INFO)
+            return
+        }
         val data = getEnsuringLines(lineNumber)
         val oldPoints = data.lines[lineNumber].points
         val newPoints: MutableList<Pair<Int, Int>> = ArrayList()
@@ -314,6 +334,12 @@ internal class AttEditorModel(
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
+    }
+
+    internal fun reloadFiles() {
+        mImages = null
+        getImages()
+        showNotification("Reloaded ATT data", MessageType.INFO)
     }
 
 
@@ -458,9 +484,9 @@ internal class AttEditorModel(
 
 private val BufferedImage.isCompletelyTransparent: Boolean
     get() {
-        for (i in 0 until this.height) {
-            for (j in 0 until this.width) {
-                if (this.isTransparent(j, i)) {
+        for (y in 0 until this.height) {
+            for (x in 0 until this.width) {
+                if (!this.isTransparent(x, y)) {
                     return false
                 }
             }

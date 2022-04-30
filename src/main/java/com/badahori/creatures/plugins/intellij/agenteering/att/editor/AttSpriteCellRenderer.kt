@@ -187,8 +187,9 @@ internal class AttSpriteCellComponent : JPanel() {
         add(canvas)
         revalidate()
         repaint()
-        if (selected)
+        if (selected) {
             requestFocus()
+        }
     }
 
     private fun bindKeyStroke(condition: Int, name: String?, keyStroke: KeyStroke?, action: () -> Unit) {

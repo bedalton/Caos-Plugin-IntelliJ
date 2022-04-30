@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import bedalton.creatures.sprite.parsers.SPRITE_DEBUG_LOGGING
+import bedalton.creatures.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -9,6 +11,8 @@ import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.ui.popup.util.PopupUtil
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
@@ -33,12 +37,17 @@ internal class AttEditorImpl(
             project,
             file,
             spriteFile,
-            variant
+            variant,
+            this::showFooterNotification
         )
     }
 
+    init {
+        Log.setMode(SPRITE_DEBUG_LOGGING, true)
+    }
+
     override fun getComponent(): JComponent {
-        return controller.getComponent()
+        return controller.getComponent() as JComponent
     }
 
     override fun getFile(): VirtualFile {
@@ -109,6 +118,10 @@ internal class AttEditorImpl(
         }
     }
 
+
+    private fun showFooterNotification(message: String, messageType: MessageType) {
+        PopupUtil.showBalloonForComponent(controller.getPopupMessageTarget(), message, messageType, true, null)
+    }
 
 
     companion object {

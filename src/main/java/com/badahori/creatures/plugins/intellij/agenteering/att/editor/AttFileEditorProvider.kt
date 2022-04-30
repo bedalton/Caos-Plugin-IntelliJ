@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
@@ -18,6 +20,11 @@ class AttFileEditorProvider : FileEditorProvider {
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
         if (project.isDisposed) {
+            return false
+        }
+
+        val lines = file.contents.split("\r?\n".toRegex()).filter { it.isNotBlank() }.size;
+        if (lines !in listOf(10, 16)) {
             return false
         }
         if (file.extension?.lowercase() != "att")

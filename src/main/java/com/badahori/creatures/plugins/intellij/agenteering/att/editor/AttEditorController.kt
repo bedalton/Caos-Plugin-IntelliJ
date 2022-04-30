@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
@@ -17,6 +18,7 @@ internal class AttEditorController(
     attFile: VirtualFile,
     spriteFile: VirtualFile,
     variant: CaosVariant,
+    override val showFooterNotification: (message: String, messageType: MessageType) -> Unit
 ) : AttEditorHandler, AttChangeListener, Disposable {
 
     private val model: AttEditorModel = AttEditorModel(
@@ -24,11 +26,12 @@ internal class AttEditorController(
         attFile,
         spriteFile,
         variant,
+        showFooterNotification,
         this
     )
 
-    private lateinit var mView: AttEditorPanel
-    internal val view:  AttEditorPanel get() {
+    private lateinit var mView: View
+    internal val view:  View get() {
         if (this::mView.isInitialized)
             return mView
         val view =  createView()
@@ -167,8 +170,12 @@ internal class AttEditorController(
     /**
      * Gets the current component
      */
-    internal fun getComponent(): JComponent {
+    internal fun getComponent(): Any {
         return view.component
+    }
+
+    internal fun getPopupMessageTarget(): JComponent {
+        return view.toolbar as JComponent
     }
 
     /**
@@ -191,11 +198,22 @@ internal class AttEditorController(
         view.dispose()
     }
 
+    override fun reloadFiles() {
+        model.reloadFiles()
+        view.refresh()
+    }
 
     /**
      * Interface for the view
      */
-    internal interface View: AttChangeListener
+    internal interface View: AttChangeListener {
+        val component: Any
+        val toolbar: Any
+        fun init()
+        fun dispose()
+        fun refresh()
+        fun clearPose()
+    }
 
 }
 
@@ -216,6 +234,7 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     val rootPath: VirtualFile
     val pointNames: List<String>
     val fileName: String
+    val showFooterNotification:(message: String, messageType: MessageType)->Unit
     fun getCurrentPoint(): Int
     fun setCurrentPoint(point: Int)
     fun setVariant(variant: CaosVariant)
@@ -224,4 +243,5 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     fun getPose(): Pose?
     fun getRequestedPose(): Pose?
     fun getBreedPartKey(): BreedPartKey?
+    fun reloadFiles()
 }
