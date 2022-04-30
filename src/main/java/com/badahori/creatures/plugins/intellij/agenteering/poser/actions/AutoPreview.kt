@@ -19,6 +19,9 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
+import com.soywiz.korio.dynamic.KDynamic.Companion.toIntOrNull
 import kotlinx.coroutines.*
 import java.io.File
 import javax.imageio.ImageIO
@@ -27,6 +30,7 @@ import kotlin.random.Random
 class AutoPreview : AnAction() {
 
     val strict: Boolean = true
+    private val defaultZoom = 2
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -35,11 +39,34 @@ class AutoPreview : AnAction() {
             e.presentation.isVisible = false
             return
         }
+
         e.presentation.isVisible =
             e.files.any { headSpriteRegex.matches(it.name) } || e.files.filter { it.isDirectory }.any {
                 VirtualFileUtil.childrenWithExtensions(it, true, "spr", "s16", "c16")
                     .any { child -> headSpriteRegex.matches(child.name) }
             }
+    }
+
+    private fun getZoom(project: Project, defaultZoom: Int): Int {
+        return FilenameIndex.getFilesByName(project, "caos.cfg", GlobalSearchScope.everythingScope(project))
+            .flatMap { file ->
+                file.text
+                    .trim()
+                    .split("(\r?\n)+".toRegex())
+                    .map { line ->
+                        line.split('=')
+                            .let { parts ->
+                                Pair(parts.first(), parts.getOrNull(1) ?: "")
+                            }
+                    }
+            }
+            .firstNotNullOfOrNull { property ->
+                if (property.first.lowercase() == "autopreview.zoom") {
+                    property.second.toIntOrNull()
+                } else {
+                    null
+                }
+            } ?: defaultZoom
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -70,17 +97,18 @@ class AutoPreview : AnAction() {
         val projectFile = project.projectFile?.let {
             VfsUtil.virtualToIoFile(it)
         }
+        val zoom = getZoom(project, defaultZoom)
         GlobalScope.launch {
-            renderPreviews(project, projectFile, headFiles)
+            renderPreviews(project, projectFile, headFiles, zoom)
         }
 
     }
 
-    private suspend fun renderPreviews(project: Project, projectFile: File?, headFiles: List<VirtualFile>) {
+    private suspend fun renderPreviews(project: Project, projectFile: File?, headFiles: List<VirtualFile>, zoom: Int) {
         val renderedFiles: List<File> = headFiles
             .map { headFile ->
                 GlobalScope.async {
-                    renderFromHeadSprite(project, projectFile, headFile)
+                    renderFromHeadSprite(project, projectFile, headFile, zoom)
                 }
             }
             .map { it.await() }
@@ -112,7 +140,7 @@ class AutoPreview : AnAction() {
         }
     }
 
-    private suspend fun renderFromHeadSprite(project: Project, projectFile: File?, headFile: VirtualFile): File? {
+    private suspend fun renderFromHeadSprite(project: Project, projectFile: File?, headFile: VirtualFile, zoom: Int): File? {
         if (!headFile.isValid || project.isDisposed) {
             return null
         }
@@ -141,7 +169,7 @@ class AutoPreview : AnAction() {
             }
             ?: return null
         try {
-            return render(variant, project, headFile.parent, key).apply {
+            return render(variant, project, headFile.parent, key, zoom).apply {
                 if (this == null) {
                     invokeLater {
                         CaosNotifications.showError(
@@ -191,10 +219,15 @@ class AutoPreview : AnAction() {
                         Pose.fromString(variant, 2, null, "223322111013311").second
                     } else if (seed < 200) {
                         Pose.fromString(variant, 2, null, "213322100111211").second
+//                    } else if (seed < 300) {
+//                        Pose.fromString(variant, 2, null, "142233022022333000").second
                     } else {
                         return Pose.fromString(variant, 1, null, "242010222032211000").second
                     }
                 } else {
+                    if (seed > 300) {
+                        return Pose.fromString(variant, 1, null, "142230322333333000").second
+                    }
                     return Pose.fromString(variant, 1, null, straight).second
                 }
             }
@@ -204,10 +237,15 @@ class AutoPreview : AnAction() {
                         Pose.fromString(variant, 3, null, "343322100210311000").second
                     } else if (seed < 200) {
                         Pose.fromString(variant, 3, null, "312010222220011").second
+//                    } else if (seed < 300) {
+//                        Pose.fromString(variant, 3, null, "141222022102211000").second
                     } else {
                         return Pose.fromString(variant, 1, null, "333020332330011").second
                     }
                 } else {
+//                    if (seed > 300) {
+//                        return Pose.fromString(variant, 1, null, "142313222330033000").second
+//                    }
                     return Pose.fromString(variant, 1, null, straight).second
                 }
             }
@@ -223,6 +261,7 @@ class AutoPreview : AnAction() {
         project: Project,
         directory: VirtualFile,
         key: BreedPartKey,
+        zoom: Int
     ): File? {
 
         if (project.isDisposed || !directory.isValid || !directory.exists()) {
@@ -232,7 +271,7 @@ class AutoPreview : AnAction() {
             DumbService.getInstance(project).runWhenSmart {
                 GlobalScope.launch {
                     try {
-                        render(variantIn, project, directory, key)
+                        render(variantIn, project, directory, key, zoom)
                     } catch (e: Exception) {
                         CaosNotifications.showError(project,
                             "Breed Preview Error",
@@ -295,12 +334,14 @@ class AutoPreview : AnAction() {
             rightEar = mappedParts['p'],
             hair = mappedParts['q']
         )
+
+
         val rendered = PoseRenderer.render(
             variant,
             sprites,
             getPose(variant, key),
             emptyMap(),
-            2
+            zoom
         )
 
         val hasSprites = directory.children.any {
