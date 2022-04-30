@@ -82,20 +82,34 @@ internal fun caosInject(
                     override fun actionPerformed(e: AnActionEvent) {
                         CaosScriptProjectSettings.injectionCheckDisabled = true
                         project.settings.injectionCheckDisabled = true
-                        injectActual(project, variant, gameInterfaceName, caosFile)
+                        try {
+                            injectActual(project, variant, gameInterfaceName, caosFile)
+                        } catch (e: Exception) {
+                            LOGGER.severe("Inject ignored for session failed: ${e.message}")
+                            e.printStackTrace()
+                        }
                     }
                 })
                 .addAction(object : AnAction("Inject Anyways") {
                     override fun actionPerformed(e: AnActionEvent) {
-                        injectActual(project, variant, gameInterfaceName, caosFile)
+                        try {
+                            injectActual(project, variant, gameInterfaceName, caosFile)
+                        } catch (e: Exception) {
+                            LOGGER.severe("Inject always failed: ${e.message}")
+                            e.printStackTrace()
+                        }
                     }
                 })
                 .show()
             return
         }
     }
-
-    injectActual(project, variant, gameInterfaceName, caosFile)
+    try {
+        injectActual(project, variant, gameInterfaceName, caosFile)
+    } catch (e: Exception) {
+        LOGGER.severe("Inject actual failed: ${e.message}")
+        e.printStackTrace()
+    }
 }
 
 private fun injectActual(
@@ -107,12 +121,18 @@ private fun injectActual(
     // If variant is CV+ ask which parts of the file to inject
     if (variant.isNotOld || caosFile.isCaos2Cob) {
         val scripts = caosFile.getScripts()
-        if (scripts.isNotEmpty() && scripts.all { it is CaosScriptMacro })
+        if (scripts.isNotEmpty() && scripts.all { it is CaosScriptMacro }) {
             GlobalScope.launch {
-                Injector.inject(project, variant, gameInterfaceName, caosFile, 7, project.settings.useJectByDefault)
+                try {
+                    Injector.inject(project, variant, gameInterfaceName, caosFile, 7, project.settings.useJectByDefault)
+                } catch (e: Exception) {
+                    LOGGER.severe("Failed to inject C2e: ${e.message}")
+                    e.printStackTrace()
+                }
             }
-        else
+        } else {
             injectC3WithDialog(caosFile, gameInterfaceName)
+        }
         return
     }
 
@@ -129,14 +149,19 @@ private fun injectActual(
             }
             // Add inject command to thread pool
             GlobalScope.launch {
-                Injector.inject(
-                    project = project,
-                    fallbackVariant = variant,
-                    gameInterfaceName = gameInterfaceName,
-                    caosFile = caosFile,
-                    jectFlags = 7,
-                    tryJect = false
-                )
+                try {
+                    Injector.inject(
+                        project = project,
+                        fallbackVariant = variant,
+                        gameInterfaceName = gameInterfaceName,
+                        caosFile = caosFile,
+                        jectFlags = 7,
+                        tryJect = false
+                    )
+                } catch (e: Exception) {
+                    LOGGER.severe("Failed to inject through command ${e.message}")
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -378,7 +403,12 @@ internal fun showC3InjectPanel(
                 // Inject CAOS
                 if (injectLinkedCheckbox?.isSelected != true)
                     GlobalScope.launch {
-                        Injector.inject(project, variant, gameInterfaceName, file, flags, false)
+                        try {
+                            Injector.inject(project, variant, gameInterfaceName, file, flags, false)
+                        } catch (e: Exception) {
+                            LOGGER.severe("Failed to inject linked files ${e.message}")
+                            e.printStackTrace()
+                        }
                     }
                 else {
                     val out = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
