@@ -169,3 +169,15 @@ var CaosProjectSettingsService.useJectByDefault: Boolean
             )
         )
     }
+
+var CaosProjectSettingsService.combineAttNodes: Boolean
+    get() = state.combineAttNodes
+    set(value) {
+        if (value == state.combineAttNodes)
+            return
+        loadState(
+            state.copy(
+                combineAttNodes = value
+            )
+        )
+    }

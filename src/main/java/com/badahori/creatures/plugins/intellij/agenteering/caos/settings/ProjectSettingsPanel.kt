@@ -12,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
-import com.intellij.ui.layout.selected
 import com.intellij.util.ui.FormBuilder
 import java.awt.Color
 import java.awt.Dimension
@@ -77,6 +76,7 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
 
 private class ProjectSettingsPanel(private val settings: State) {
 
+    private val originalCombineAttNodes = settings.combineAttNodes
     private val originalIgnoredFilesText = settings.ignoredFilenames.joinToString("\n")
     private val originalGameInterfaceName: String = settings.gameInterfaceNames.joinToString("\n")
     private val originalDefaultVariant: String = settings.defaultVariant?.code ?: ""
@@ -145,13 +145,24 @@ private class ProjectSettingsPanel(private val settings: State) {
         }
     }
 
+
+    val combineAttNodes by lazy {
+        JCheckBox().apply {
+            this.isSelected = originalCombineAttNodes
+        }
+    }
+
     val autoPoseCheckbox by lazy {
-        JCheckBox()
+        JCheckBox().apply {
+            this.isSelected = originalIsAutoPoseEnabled
+        }
     }
 
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
             .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
+            .addLabeledComponent(JLabel("Combine ATT file nodes"), combineAttNodes, 1, false)
+            .addComponent(JLabel("ATT files will be displayed under a single node. i.e. \"*04a\""))
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
@@ -169,6 +180,9 @@ private class ProjectSettingsPanel(private val settings: State) {
     fun modified(): Boolean {
         if (defaultVariant.selectedItem != originalDefaultVariant)
             return true
+        if (combineAttNodes.isSelected == originalCombineAttNodes) {
+            return true
+        }
         if (ignoredFileNames.text != originalIgnoredFilesText)
             return true
         if (gameInterfaceNames.text != originalGameInterfaceName)
@@ -183,6 +197,7 @@ private class ProjectSettingsPanel(private val settings: State) {
             ?: return null
         return settings.copy(
             defaultVariant = CaosVariant.fromVal(defaultVariant.selectedItem as? String).nullIfUnknown(),
+            combineAttNodes = combineAttNodes.isSelected,
             ignoredFilenames = getIgnoredFileNames(),
             gameInterfaceNames = gameInterfaceNames,
             isAutoPoseEnabled = autoPoseCheckbox.isSelected
@@ -203,6 +218,7 @@ private class ProjectSettingsPanel(private val settings: State) {
         ignoredFileNames.text = originalIgnoredFilesText
         gameInterfaceNames.text = originalGameInterfaceName
         autoPoseCheckbox.isSelected = originalIsAutoPoseEnabled
+        combineAttNodes.isSelected = originalCombineAttNodes
     }
 
     /**

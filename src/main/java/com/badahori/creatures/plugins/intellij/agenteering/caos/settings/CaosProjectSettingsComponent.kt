@@ -48,6 +48,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         val gameInterfaceNames: List<GameInterfaceName> = listOf(),
         @Attribute(converter = StringListConverter::class)
         val ignoredFilenames: List<String> = listOf(),
+        val combineAttNodes: Boolean = false,
         val defaultPoseString: String = "313122122111111",
         val lastGameInterfaceNames: List<String> = listOf(),
         var useJectByDefault: Boolean = false,
