@@ -52,7 +52,7 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:PrayUtil:0.02") {
+    implementation("bedalton.creatures:PrayUtil:0.03") {
         excludeKotlin()
     }
 
