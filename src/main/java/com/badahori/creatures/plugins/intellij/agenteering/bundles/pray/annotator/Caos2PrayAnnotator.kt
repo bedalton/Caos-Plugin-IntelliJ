@@ -15,7 +15,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
-import stripSurroundingQuotes
+import bedalton.creatures.util.stripSurroundingQuotes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newInfoAnnotation
+import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.LinkFilesInsertHandler
 
 class Caos2PrayAnnotator: Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -41,7 +43,7 @@ private fun annotateTag(element: CaosScriptCaos2Tag, holder: AnnotationHolder) {
 }
 
 
-private val AGENT_NAME_COMMAND_REGEX = "((C3|DS)-?Name)|[a-zA-Z0-9_]{4}".toRegex(RegexOption.IGNORE_CASE)
+private val AGENT_NAME_COMMAND_REGEX = "((C3|DS)-?Name)|[a-zA-Z0-9_]{4}-Name".toRegex(RegexOption.IGNORE_CASE)
 
 /**
  * Validates a COB comment directive, to ensure that it actually exists
@@ -49,6 +51,18 @@ private val AGENT_NAME_COMMAND_REGEX = "((C3|DS)-?Name)|[a-zA-Z0-9_]{4}".toRegex
 private fun validateCommandName(element: CaosScriptCaos2CommandName, holder: AnnotationHolder) {
     if (!element.containingCaosFile?.isCaos2Pray.orFalse())
         return
+    val file = element.containingFile
+    val actions = PrayCommand.getActionCommands()
+    for(action in actions) {
+        val insertAction = LinkFilesInsertHandler(action, true)
+        if (!insertAction.isAvailable(file)) {
+            continue
+        }
+        holder.newInfoAnnotation(null)
+            .range(element)
+            .withFix(insertAction)
+            .create()
+    }
     val tagNameRaw = element.text
     if (tagNameRaw.matches(AGENT_NAME_COMMAND_REGEX) && tagNameRaw notLike "Link" && tagNameRaw notLike "RSCR")
         return

@@ -51,6 +51,7 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
          * Validates a COB comment directive, to ensure that it actually exists
          */
         private fun validateTag(element: CaosScriptCaos2TagName, holder: ProblemsHolder) {
+
             if (!element.containingCaosFile?.isCaos2Cob.orFalse())
                 return
             val tagNameRaw = element.text?.nullIfEmpty()

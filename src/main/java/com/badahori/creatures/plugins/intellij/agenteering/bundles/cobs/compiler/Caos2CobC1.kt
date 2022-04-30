@@ -1,16 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
+import bedalton.creatures.util.ensureEndsWith
 import bedalton.creatures.util.nullIfEmpty
 import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
-import com.badahori.creatures.plugins.intellij.agenteering.utils.flipVertical
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import ensureEndsWith
 import kotlinx.serialization.Serializable
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.io.File
 
 @Serializable
 data class Caos2CobC1(
@@ -37,7 +35,7 @@ data class Caos2CobC1(
     ) : this(
         agentName = cobData[CobTag.AGENT_NAME] ?: throw Caos2CobException("Cannot create C1 cob without agent name"),
         targetFile = cobData[CobTag.COB_NAME] ?: throw Caos2CobException("Cannot create C1 COB without COB file name"),
-        quantityAvailable = cobData[CobTag.QUANTITY_AVAILABLE]?.toIntSafe() ?: 255,
+        quantityAvailable = cobData[CobTag.QUANTITY_AVAILABLE]?.toIntSafe() ?: -1,
         expiresYear = yearMonthDay.getOrNull(0) ?: 9999,
         expiresMonth = yearMonthDay.getOrNull(1) ?: 12,
         expiresDay = yearMonthDay.getOrNull(2) ?: 31,
@@ -58,7 +56,7 @@ data class Caos2CobC1(
     override fun compile(): ByteArray {
         val buffer = ByteArrayOutputStream()
         buffer.writeUInt16(1) // Cob Version
-        buffer.writeUInt16(quantityAvailable ?: 255)
+        buffer.writeUInt16(quantityAvailable ?: -1)
         buffer.writeUint32(expiresMonth)
         buffer.writeUint32(expiresDay)
         buffer.writeUint32(expiresYear)

@@ -17,7 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toArrayOf
 import com.intellij.lang.annotation.AnnotationHolder
-import stripSurroundingQuotes
+import bedalton.creatures.util.stripSurroundingQuotes
 
 
 object PrayAnnotatorUtil {

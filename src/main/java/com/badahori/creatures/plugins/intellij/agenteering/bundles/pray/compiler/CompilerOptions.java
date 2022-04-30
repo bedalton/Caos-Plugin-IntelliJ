@@ -55,6 +55,7 @@ public class CompilerOptions {
                 mergeRSCRCheckBox.isSelected(),
                 autogenerateEventScriptRemoversCheckBox.isSelected(),
                 autogenerateAgentRemoversCheckBox.isSelected(),
+                false,
                 false
         );
     }

@@ -23,7 +23,7 @@ import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import stripSurroundingQuotes
+import bedalton.creatures.util.stripSurroundingQuotes
 
 class PrayFile constructor(viewProvider: FileViewProvider) :
     PsiFileBase(viewProvider, PrayLanguage) {
