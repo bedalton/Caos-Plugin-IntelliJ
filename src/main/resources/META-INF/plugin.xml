@@ -569,8 +569,9 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider" />
 
 
-    <treeStructureProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider" />
+<!--    <treeStructureProvider-->
+<!--        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider" />-->
+
     <treeStructureProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider" />
 
@@ -951,7 +952,7 @@
     />
 
 
-    <!--localInspection language="CaosScript"
+    <localInspection language="CaosScript"
                      level="ERROR"
                      groupName="CAOS2Pray"
                      enabledByDefault="true"
@@ -959,7 +960,7 @@
                      shortName="CAOS2PrayBlockIsInvalid"
                      groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayBlockIsValidInspection"
-    /-->
+    />
 
     <localInspection language="CaosScript"
                      level="ERROR"
@@ -1405,6 +1406,12 @@
     >
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
     </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
+            class="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
+            text="Dump Agent Files" description="Dumps all agent files and scripts into a directory"
+    >
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
+    </action>
 
     <action id="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
             class="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
@@ -1412,6 +1419,13 @@
     >
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
     </action>
+
+<!--    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.EnableBreedNodes"-->
+<!--            class="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider$Companion$UseBreedNodeOptionAction"-->
+<!--            text="Combine Breed Files"-->
+<!--      >-->
+<!--      <add-to-group group-id="ProjectView.ToolWindow.SecondaryActions" relative-to-action="ProjectView.HideEmptyMiddlePackages" anchor="after" />-->
+<!--    </action>-->
 
     <!--suppress PluginXmlCapitalization -->
     <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
