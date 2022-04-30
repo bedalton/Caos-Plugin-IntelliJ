@@ -35,7 +35,8 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
 
     companion object {
 
-        private val REMOVAL_SCRIPT_REGEX = "Removal\\s*Script|Remove[r]?\\s*Script|RSCR".toRegex(RegexOption.IGNORE_CASE)
+        private val REMOVAL_SCRIPT_REGEX =
+            "Removal\\s*Script|Remove[r]?\\s*Script|RSCR".toRegex(RegexOption.IGNORE_CASE)
 
         /**
          * Validates a COB comment directive, to ensure that it actually exists
@@ -55,27 +56,78 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
                 return
             }
 
+            if (tagName in listOf("Genetics File", "Father Genetic File", "Mother Genetic File")) {
+                val value = element.getParentOfType(CaosScriptCaos2Tag::class.java)
+                val filePath = value?.valueAsString?.nullIfEmpty()
+                if (filePath == null) {
+                    holder.registerProblem(
+                        element,
+                        AgentMessages.message(
+                            "errors.caos2properties.property-invalid.missing-value",
+                            tagName,
+                            "genetics file value"
+                        )
+                    )
+                    return
+                }
+                val fileExpression =
+                    FileNameUtils.lastPathComponent(filePath).replace("[*]+".toRegex(), "[^/]+").toRegex()
+                val hasMatch = element.getParentOfType(CaosScriptCaos2Block::class.java)
+                    ?.commands
+                    .orEmpty()
+                    .any { (command, files) ->
+                        val matches: List<String> = when (command.lowercase()) {
+                            "link" -> emptyList()
+                            "inline" -> {
+                                if (fileExpression.matches(files.firstOrNull()
+                                        ?: "")
+                                ) listOfNotNull(files.firstOrNull()) else emptyList()
+                            }
+                            else -> files.filter(fileExpression::matches)
+                        }
+                        matches.any { it.lowercase().endsWith(".gen") }
+                    }
+                if (!hasMatch) {
+                    holder.registerProblem(
+                        value,
+                        AgentMessages.message(
+                            "errors.caos2properties.property-invalid.no-genetics-files-matching",
+                            filePath
+                        )
+                    )
+                }
+                return
+            }
+
             if (PrayTags.isOfficialTag(tagName)) {
                 return
             }
 
             if (tagName.matches(REMOVAL_SCRIPT_REGEX)) {
                 val parentTagElement = element.getParentOfType(CaosScriptCaos2Tag::class.java)
-                val fix = parentTagElement?.let { tag->
+                val fix = parentTagElement?.let { tag ->
                     CaosScriptReplaceElementFix(
                         tag,
                         "Rscr \"${tag.valueAsString}\"",
-                        AgentMessages.message("caos2properties.property-is-valid.replace-with-message", tagNameRaw, "Rscr"),
+                        AgentMessages.message("caos2properties.property-is-valid.replace-with-message",
+                            tagNameRaw,
+                            "Rscr"),
                         true
                     )
                 }
-                val error = AgentMessages.message("pray.inspections.tags.similar-tags.is-similar-message", "command", tagNameRaw)
+                val error = AgentMessages.message("pray.inspections.tags.similar-tags.is-similar-message",
+                    "command",
+                    tagNameRaw)
                 holder.registerProblem(element, error, fix)
             }
 
         }
 
-        private fun getFixesForSimilar(element: PsiElement, tagName: String, orb: Int) : List<CaosScriptReplaceElementFix> {
+        private fun getFixesForSimilar(
+            element: PsiElement,
+            tagName: String,
+            orb: Int,
+        ): List<CaosScriptReplaceElementFix> {
             return PrayTags.allTags
                 .map { aTag ->
                     Pair(aTag, aTag.levenshteinDistance(tagName))

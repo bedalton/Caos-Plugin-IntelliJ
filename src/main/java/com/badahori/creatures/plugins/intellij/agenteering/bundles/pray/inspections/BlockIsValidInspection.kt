@@ -5,11 +5,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.PRAY
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertAfterFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -18,6 +22,7 @@ import com.intellij.psi.PlainTextTokenTypes
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiPlainTextFile
+import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -110,10 +115,51 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection() {
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : CaosScriptVisitor() {
-            override fun visitCaos2Block(o: CaosScriptCaos2Block) {
-                super.visitCaos2Block(o)
-                if (o.isCaos2Pray)
-                    validateBlock(o, holder)
+            override fun visitCaos2Block(block: CaosScriptCaos2Block) {
+                super.visitCaos2Block(block)
+                if (!block.isCaos2Pray) {
+                    return
+                }
+                val before = PsiTreeUtil.collectElementsOfType(block, CaosScriptCaos2BlockComment::class.java)
+                    .firstOrNull()
+
+                val fix = { command: String ->
+                    val newText = "*# $command \"\""
+                    val label = "Insert '$command' directive"
+                    if (before != null) {
+                        CaosScriptInsertBeforeFix(label, newText + "\n", before, null) { editor ->
+                            editor.caretModel.moveToOffset(editor.caretModel.offset + (newText.length - 1))
+                        }
+                    } else {
+                        CaosScriptInsertAfterFix(
+                            label,
+                            "\n$newText",
+                            block,
+                            0
+                        ) { editor ->
+                            editor.caretModel.moveToOffset(editor.caretModel.offset + newText.length)
+                        }
+                    }
+                }
+
+                val text = "\n" + block.text.lowercase()
+                if (!text.contains("^\\s*\\*#\\s+pray-?file +\\S+".toRegex(setOf(RegexOption.IGNORE_CASE,RegexOption.MULTILINE)))) {
+                    holder.registerProblem(
+                        block,
+                        TextRange(0, 2),
+                        AgentMessages.message("caos2pray.block-valid-inspection.missing-pray-file"),
+                        fix("Pray-File")
+                    )
+                }
+                if (!text.contains("^\\s*\\*#\\s+([a-z\\d]{4}|[Dd][Ss]|[Cc]3)-name +\\S+".toRegex(setOf(RegexOption.IGNORE_CASE,RegexOption.MULTILINE)))) {
+                    holder.registerProblem(
+                        block,
+                        TextRange(0, 2),
+                        AgentMessages.message("caos2pray.block-valid-inspection.missing-agent-name"),
+                        fix("DSAG-Name"),
+                        fix("AGNT-Name")
+                    )
+                }
             }
         }
     }

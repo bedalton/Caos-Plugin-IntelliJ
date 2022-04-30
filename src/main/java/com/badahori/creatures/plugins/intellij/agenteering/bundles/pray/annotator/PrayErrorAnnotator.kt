@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.fixes.PrayDependencyOrderFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags.DEPENDENCY
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags.DEPENDENCY_CATEGORY
@@ -278,6 +279,7 @@ private fun annotateCountOf(parentAgent: PrayAgentBlock?, element: PrayPrayTag, 
                 "$actualCount",
                 "Replace with $countOf count of $actualCount"
             ))
+            .withFix(PrayDependencyOrderFix())
             .create()
         return
     }
@@ -287,6 +289,7 @@ private fun annotateCountOf(parentAgent: PrayAgentBlock?, element: PrayPrayTag, 
     holder
         .newErrorAnnotation(AgentMessages.message("pray.inspection.required-tags.tag-count.missing-indices", countOf, missing.joinToString(",")))
         .range(element.tagTagValue)
+        .withFix(PrayDependencyOrderFix())
         .create()
 }
 

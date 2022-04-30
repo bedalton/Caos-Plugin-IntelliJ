@@ -173,7 +173,7 @@ private fun annotateCaos2PrayCommand(command: PrayCommand, values: List<CaosScri
     }
 
     if (command == PrayCommand.INLINE) {
-        val input = values.getOrNull(1) ?: values.getOrNull(0)
+        val input = values.lastOrNull()
             ?: return
 
         annotateFileError(input, "@Inline", input.valueAsString, "command", true, holder)
@@ -210,7 +210,7 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     val includedFiles = if (file is CaosScriptFile) {
         file.collectElementsOfType(CaosScriptCaos2Command::class.java)
             .flatMap map@{
-                if (it == element) {
+                if (PsiTreeUtil.findCommonContext(it,element)?.hasParentOfType(CaosScriptCaos2BlockComment::class.java) == true) {
                     return@map emptyList()
                 }
                 if (it.commandName like "Inline")
