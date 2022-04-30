@@ -19,10 +19,20 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
+import com.intellij.refactoring.suggested.startOffset
 
 class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+       try {
+           annotateElement(element, holder)
+       } catch (e: Exception) {
+           LOGGER.severe("Failed to annotate space: ${e.message ?: ""}")
+           e.printStackTrace();
+       }
+    }
+
+    private fun annotateElement(element: PsiElement, holder: AnnotationHolder) {
         val type = element.tokenType
         if (type != WHITE_SPACE && type != CaosScript_COMMA && type != CaosScript_NEWLINE) {
             val previous = element.previous
@@ -36,8 +46,17 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
             if (isBracket(previousType, type) || isQuoted(previousType, type) || isQuoted(type, previousType))
                 return
             if (previousType != WHITE_SPACE && previousType != CaosScript_COMMA && previousType != CaosScript_NEWLINE) {
+                val endOffset = element.startOffset + 1
+                var elementToAnnotate: PsiElement = element
+                while (elementToAnnotate.endOffset < endOffset) {
+                    elementToAnnotate = elementToAnnotate.parent
+                        ?: return
+                }
+                if (elementToAnnotate.endOffset < endOffset) {
+                    return
+                }
                 holder.newErrorAnnotation("missing whitespace character")
-                    .range(TextRange.create(element.startOffset, element.startOffset + 1))
+                    .range(TextRange.create(element.startOffset, endOffset))
                     .withFix(CaosScriptInsertBeforeFix("Insert space", "", element, ' '))
                     .create()
             }
