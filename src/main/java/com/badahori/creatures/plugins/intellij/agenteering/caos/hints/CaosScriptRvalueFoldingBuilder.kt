@@ -2,11 +2,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.commandToken2ElementType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isFolded
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isNeg
 import com.badahori.creatures.plugins.intellij.agenteering.utils.minus
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -31,8 +30,8 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
                     return@map if (oldText == rvalue.text) {
                         if (foldData != null) {
                             // Calculate range offsets in rvalue
-                            val newRange = rvalue.textRange - foldData.second
-                            if (newRange.length < 1) {
+                            val newRange = (rvalue.textRange - foldData.second)
+                            if (newRange == null || newRange.isNeg() || newRange.length < 1) {
                                 return@map null
                             }
                             FoldingDescriptor(rvalue, newRange)
@@ -61,7 +60,7 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
                         }
                         // Calculate range offsets in rvalue
                         val newRange = rvalue.textRange - value.second
-                        if (newRange.length < 1) {
+                        if (newRange == null || newRange.isNeg() || newRange.length < 1) {
                             return@map null
                         }
                         return@map FoldingDescriptor(rvalue, newRange)
@@ -70,7 +69,7 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
                 val resolved = getRvalueTextCaching(rvalue)
                 if (resolved != null) {
                     val newRange = rvalue.textRange - resolved.second
-                    if (newRange.length < 1) {
+                    if (newRange == null || newRange.isNeg() || newRange.length < 1) {
                         return@map null
                     }
                     FoldingDescriptor(rvalue, newRange)
@@ -109,9 +108,13 @@ class CaosScriptRvalueFoldingBuilder : FoldingBuilderEx() {
                 null
             } else {
                 foldData.copy(
-                    second = rvalue.textRange - foldData.second
+                    second = (rvalue.textRange - foldData.second)
+                        ?: return null
                 )
             }
+        }
+        if (foldData?.second?.length.orElse(0) <= 0) {
+            return null
         }
         rvalue.putUserData(RVALUE_FOLDING_KEY, Pair(text, foldData))
         return foldData
