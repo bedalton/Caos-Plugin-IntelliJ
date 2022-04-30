@@ -36,7 +36,7 @@ object BodyPartsIndex {
 
     internal val BODY_DATA_ATT_KEY = Key<Pointer<Pair<Int, VirtualFile>?>?>("creatures.body-part.att-with-index")
 
-    private const val THIS_INDEX_VERSION = 7
+    private const val THIS_INDEX_VERSION = 8
 
     // Compound version to force a reindex if any of the sourced indices change
     const val VERSION = THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
@@ -328,11 +328,27 @@ object BodyPartsIndex {
         otherFiles: Collection<VirtualFile>,
         scope: GlobalSearchScope?,
     ): VirtualFile? {
-        val topParent = parent.parent?.parent?.parent ?: parent.parent?.parent ?: parent.parent ?: parent
-        return if (scope != null) {
-            otherFiles.firstOrNull { file -> scope.accept(file) && VfsUtil.isAncestor(topParent, file, false) }
+
+        if (scope != null) {
+            var aParent = parent
+            while (scope.contains(aParent)) {
+                otherFiles.firstOrNull { file -> scope.accept(file) && VfsUtil.isAncestor(aParent, file, false) }?.let {
+                    return it
+                }
+                aParent = aParent.parent
+                    ?: return null
+            }
+            return null
         } else {
-            otherFiles.firstOrNull { file -> VfsUtil.isAncestor(topParent, file, false) }
+            val parents = listOfNotNull(
+                parent,
+                parent.parent,
+                parent.parent?.parent,
+                parent.parent?.parent?.parent,
+            )
+            return parents.firstNotNullOfOrNull { aParent ->
+                otherFiles.firstOrNull { file -> VfsUtil.isAncestor(aParent, file, false) }
+            }
         }
     }
 
@@ -360,7 +376,7 @@ object BodyPartsIndex {
         if (DumbService.isDumb(project)) {
             return null
         }
-        val parent = directory.parent
+        val parent = if (directory.isDirectory) directory else directory.parent
         return ('a'..'q').mapNotNull { part ->
             val bodyPartKey = key
                 .copyWithPart(part)
