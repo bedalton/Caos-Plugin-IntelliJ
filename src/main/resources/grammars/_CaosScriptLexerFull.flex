@@ -35,7 +35,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 	private List<Integer> stack = new ArrayList();
 	private static final Logger LOGGER = Logger.getLogger("#CaosScriptLexer");
 
-
   	public _CaosScriptLexer(boolean plusPlus) {
 		this((java.io.Reader)null);
 		this.plusPlus = plusPlus;
@@ -66,6 +65,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
   	    yybegin(YYINITIAL);
 	  	return false;
 	}
+
+    boolean isTrueStartOfLine() {
+        int prevIndex = 0;
+        char prevChar = '\n';
+        do {
+            try {
+                prevChar = yycharat(prevIndex--);
+            } catch (Exception e) {
+                return true;
+            }
+        } while (prevChar == ' ' || prevChar == '\t');
+        return prevChar == '\n' || prevIndex == 0 || (isStartOfFile && (prevChar == ' ' || prevChar == '\t'));
+    }
 
 	protected boolean isByteString() {
 		int index = 0;
@@ -245,7 +257,7 @@ SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
 CAOS_2_ID=[^\s\"'=]+
-COMMENT_AT_DIRECTIVE=\*{2}((([^\n;]|[;][^;])*;;)|[^\n]*)
+COMMENT_AT_DIRECTIVE=\*{2}((([^\n;]|[;][^;])+;;)|[^\n]+)
 JS_INSIDE_BRACES=[$]?\{[^}]*[}]
 JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 DDE_PICT=[^\s]{3}
@@ -257,8 +269,8 @@ DDE_PICT=[^\s]{3}
 	{CAOS_2_PRAY} 			{ return CaosScript_CAOS_2_PRAY_HEADER; }
 	\n						{ return CaosScript_NEWLINE; }
 	[ \t]					{ return WHITE_SPACE; }
-    "*#"					{ yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; }
-  	{COMMENT_AT_DIRECTIVE}	{ if (isStartOfFile) { yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; } else { yypushback(yylength() - 1); return CaosScript_COMMENT_START; }  }
+    "*#"					{ yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; }//if (isTrueStartOfLine()) { yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; } else { yybegin(COMMENT_START); return CaosScript_COMMENT_START; } }
+  	{COMMENT_AT_DIRECTIVE}	{ if (isStartOfFile) { yybegin(COMMENT_START); return CaosScript_AT_DIRECTIVE_COMMENT_START; } else { yybegin(COMMENT_START); return CaosScript_COMMENT_START; }  }
     "*"						{ yybegin(COMMENT_START); return CaosScript_COMMENT_START; }
     [^]					 	{ isStartOfFile = false; if (!yypop() || yystate() == START_OF_LINE) { yypush(IN_LINE); } yypushback(yylength());}
 }
@@ -279,17 +291,18 @@ DDE_PICT=[^\s]{3}
 <IN_CAOS_2> {
     "="						{ return CaosScript_EQUAL_SIGN; }
 	\"						{ yypush(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
-	\'						{ yypush(IN_SINGLE_QUOTE_STRING); return CaosScript_DOUBLE_QUOTE; }
+	\'						{ yypush(IN_SINGLE_QUOTE_STRING); return CaosScript_SINGLE_QUOTE; }
     [ \t]					{ return WHITE_SPACE; }
     \n						{ yypop(); return CaosScript_NEWLINE; /*return CaosScript_NEWLINE;*/ }
 	{CAOS_2_ID}				{ return CaosScript_ID; }
   	{INT}					{ return CaosScript_INT; }
-    [^]					 	{ yypop(); yypushback(yylength());}
+    [^]					 	{ yypop(); yypush(IN_COMMENT); yypushback(yylength());}
 }
 <IN_COMMENT> {
 	{COMMENT_TEXT}			{ return CaosScript_COMMENT_BODY_LITERAL; }
-    \n						{ yypop(); return CaosScript_NEWLINE; }
-    [^]					 	{ yypop(); yypushback(yylength());}
+    \r\n					{ yypop(); yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+    \n						{ yypop(); yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
+    \r						{ yypop(); yybegin(START_OF_LINE); return CaosScript_NEWLINE; }
 }
 
 <IN_TEXT> {
@@ -338,7 +351,7 @@ DDE_PICT=[^\s]{3}
 }
 
 <IN_SINGLE_QUOTE_STRING> {
-	\'						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
+	\'						{ yypop(); return CaosScript_SINGLE_QUOTE;}
 	{SINGLE_QUOTE_CHARS}    { return CaosScript_STRING_CHAR; }
   	\n 						{ yypop(); return CaosScript_GHOST_QUOTE; }
 	[ \t]+					{ return WHITE_SPACE; }
