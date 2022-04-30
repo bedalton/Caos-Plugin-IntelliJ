@@ -16,7 +16,7 @@ class CaosTreeViewProvider : TreeStructureProvider{
     override fun modify(
             parent: AbstractTreeNode<*>,
             children: MutableCollection<AbstractTreeNode<*>>,
-            settings: ViewSettings?
+            settings: ViewSettings
     ): MutableCollection<AbstractTreeNode<out Any>> {
         val project = parent.project
                 ?: return children
@@ -46,7 +46,7 @@ class CaosTreeViewProvider : TreeStructureProvider{
 }
 
 
-private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings?) : AbstractTreeNode<*>? {
+private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings) : AbstractTreeNode<*>? {
     if (project.isDisposed || !isValid) {
         return null
     }
@@ -55,6 +55,11 @@ private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings?) : A
         "cos" -> (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
             ProjectCaosScriptFileTreeNode(project, psiFile, viewSettings)
         }
+        "agents", "agent" -> PrayFileTreeNode(
+            project,
+            this,
+            viewSettings
+        )
         //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
         "sfc" -> SfcFileTreeNode(project, this, viewSettings)
         else -> null

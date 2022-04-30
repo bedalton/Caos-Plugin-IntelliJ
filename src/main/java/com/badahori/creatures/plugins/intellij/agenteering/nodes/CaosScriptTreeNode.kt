@@ -206,8 +206,6 @@ internal class ChildCaosScriptFileTreeNode(
         val caosFile = caosFile
             ?: return
         caosFile.navigate(requestFocus)
-        LOGGER.info("Navigated to child script")
-
     }
 
     internal fun quickFormat() {

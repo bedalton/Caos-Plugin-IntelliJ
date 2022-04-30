@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlan
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
+import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.SmartPointerManager
@@ -28,14 +29,14 @@ class GenericPsiNode<T:PsiElement>(
     val pointer = SmartPointerManager.createPointer(element)
 
     override fun canNavigate(): Boolean {
-        return isValid() && (pointer.element as? com.intellij.pom.Navigatable)?.canNavigate() == true
+        return isValid() && (pointer.element as? NavigatablePsiElement)?.canNavigate() == true
     }
 
     override fun navigate(requestFocus: Boolean) {
         if (!isValid()) {
             return
         }
-        (pointer.element as? com.intellij.pom.Navigatable)?.navigate(requestFocus)
+        (pointer.element as? NavigatablePsiElement)?.navigate(requestFocus)
     }
 
     override fun update(presentation: PresentationData) {
