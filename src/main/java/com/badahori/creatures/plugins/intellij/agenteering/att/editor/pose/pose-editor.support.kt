@@ -155,7 +155,7 @@ private class BreedFileCellRenderer : DefaultListCellRenderer() {
         val parentPaths = items.map map@{ tripleIn ->
             val triple = (tripleIn as? Triple<*,*,*>)
                 ?: return@map null
-            Pair((triple.second as BreedPartKey).copyWithPart(null), ((triple.third as? List<*>)?.firstOrNull() as? VirtualFile)?.parent)
+            Pair((triple.second as BreedPartKey).copyWithPart(null), ((triple.third as? List<*>)?.firstOrNull() as? BodyPartFiles)?.spriteFile?.parent)
         }
 
         val triple = value as Triple<*, *, *>
@@ -189,7 +189,7 @@ private class BreedFileCellRenderer : DefaultListCellRenderer() {
             null
         } ?: ""
 
-        text = "${breed.genus}${breed.ageGroup}${breed.breed}" + relativePath
+        text = (breed.copyWithPart(null).code ?: "${breed.genus.orElse("?")}${breed.ageGroup.orElse("?")}${breed.breed.orElse("?")}") + relativePath
         return this
     }
 
@@ -241,9 +241,7 @@ private class PartFileCellRenderer(val strict: Boolean = false) : DefaultListCel
         }
         foreground = BLACK
         this.text = text
-        if (disable) {
-            this.isEnabled = false
-        }
+        this.isEnabled = !disable
         val part = getPartName(text[0])
         if (part != null) {
             setText("$text - $part")

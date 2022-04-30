@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="838" height="400"/>
+      <xy x="20" y="20" width="923" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -139,6 +139,17 @@
             <constraints/>
             <properties>
               <text value="Pose View"/>
+            </properties>
+          </component>
+          <component id="22ae2" class="javax.swing.JButton" binding="refreshButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <enabled value="true"/>
+              <maximumSize width="30" height="30"/>
+              <minimumSize width="30" height="30"/>
+              <preferredSize width="30" height="30"/>
+              <text value=""/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/caos-bundle" key="att-editor.reload-files"/>
             </properties>
           </component>
         </children>

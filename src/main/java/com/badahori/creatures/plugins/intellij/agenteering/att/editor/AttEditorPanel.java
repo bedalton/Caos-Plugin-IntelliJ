@@ -48,6 +48,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     JPanel posePanel;
     private JPanel mainPanel;
     JCheckBox poseViewCheckbox;
+    private JButton refreshButton;
     private JPanel display;
     private List<String> pointNames = Collections.emptyList();
     private boolean lockY;
@@ -70,12 +71,22 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         init();
     }
 
-    JComponent getComponent() {
-        init();
+    @Override
+    @NotNull
+    public JComponent getComponent() {
+        if (!didInit) {
+            init();
+        }
         return mainPanel;
     }
 
-    synchronized void init() {
+    @Override
+    @NotNull
+    public JComponent getToolbar() {
+        return this.Toolbar;
+    }
+
+    public synchronized void init() {
         if (didInit) {
             return;
         }
@@ -174,8 +185,19 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         poseViewCheckbox.addItemListener((e) -> showPoseView(poseViewCheckbox.isSelected()));
+        refreshButton.addActionListener((e) -> reloadFiles());
+        refreshButton.setOpaque(false);
+        refreshButton.setContentAreaFilled(false);
+        refreshButton.setBorderPainted(false);
     }
 
+
+    private void reloadFiles() {
+        this.getImages(true);
+        poseEditor.hardReload();
+        this.redrawPose();
+        updateCells();
+    }
 
     private void initPopupMenu() {
         final JPopupMenu menu = new JPopupMenu();
@@ -300,7 +322,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             return;
         }
 
-
         // Add Sprite cell list to scroll pane
         scrollPane.setViewportView(spriteCellList);
 
@@ -353,6 +374,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         setScale(CaosScriptProjectSettings.getAttScale());
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
         loadRequestedPose();
+        refreshButton.setIcon(com.intellij.icons.AllIcons.Actions.Refresh);
     }
 
     private void pushAttToPoseEditor(final AttFileData attFile) {
@@ -464,7 +486,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         }
     }
 
-    private void onPartChange(@NotNull final Character part) {
+    private void onPartChange(
+            @NotNull
+            final Character part) {
         final char oldChar = controller.getPart();
         if (oldChar >= 'a' && oldChar <= 'q') {
             poseEditor.freeze(oldChar, false);
@@ -587,7 +611,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final String error;
 
         final List<AttFileLine> lines = controller.getAttLines();
-        if (lines.size() < 8) {
+        final int linesCount = controller.getLinesCount();
+        if (lines.size() < linesCount) {
             error = "There should be at least 8 lines in each att file template";
         } else if (controller.getPointCount() < 0) {
             error = "There should be at least 1 point in each ATT file template";
@@ -605,7 +630,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final List<AttSpriteCellData> out = new ArrayList<>();
         int maxWidth = 0;
         int maxHeight = 0;
-        final int linesCount = controller.getLinesCount();
         // Adds point to list as well as sets size of all cells
         for (int i = 0; i < Math.min(images.size(), linesCount); i++) {
             final BufferedImage image = images.get(i);
@@ -628,6 +652,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private List<BufferedImage> getImages() {
+        return getImages(false);
+    }
+    private List<BufferedImage> getImages(final boolean deepReload) {
+        if (deepReload) {
+            controller.reloadFiles();
+        }
         return controller.getImages();
     }
 
@@ -668,8 +698,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 "7x"
         });
 
-        final BreedPartKey key = controller.getBreedPartKey();
-        poseEditor = new PoseEditorImpl(project, getVariant(), Objects.requireNonNull(key), EAGER_LOAD_POSE_EDITOR, (rendered) -> {
+        BreedPartKey key = controller.getBreedPartKey();
+        if (key == null) {
+            LOGGER.severe("Failed to get breed key");
+            key = new BreedPartKey();
+        }
+        poseEditor = new PoseEditorImpl(project, getVariant(), key, EAGER_LOAD_POSE_EDITOR, (rendered) -> {
             if (posePanel.isVisible() != rendered) {
                 posePanel.setVisible(rendered);
             }
@@ -698,11 +732,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         }
     }
 
-    void dispose() {
+    public void dispose() {
         poseEditor.dispose();
     }
 
-    void refresh() {
+    public void refresh() {
         if (project.isDisposed()) {
             dispose();
             return;
@@ -734,11 +768,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         if (pose != null) {
             setSelected(pose);
             final JComponent component = spriteCellList.get(pose);
-            scrollPane.scrollRectToVisible(component.getVisibleRect());
+//            scrollPane.scrollRectToVisible(component.getVisibleRect());
         }
     }
 
-    void clearPose() {
+    public void clearPose() {
         poseEditor.clear();
     }
 

@@ -5,6 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose.Companion.fromString
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseCalculator.calculateHeadPose
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.allParts
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.CreatureSpriteSet
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.render
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -16,12 +17,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem.Companion.instance
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
-import com.intellij.openapi.progress.*
+import com.intellij.openapi.progress.EmptyProgressIndicator
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.*
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
@@ -33,7 +39,7 @@ class PoseEditorModel(
 
     private var spriteSet: CreatureSpriteSet? = null
     private var mLocked: Map<Char, BodyPartFiles> = emptyMap()
-    private var updating = AtomicBoolean(false)
+    private var updating = AtomicInteger(0)
     private var mRendering: Long? = null
     val rendering: Boolean get() = mRendering?.let { it < now } ?: false
 
@@ -57,12 +63,13 @@ class PoseEditorModel(
         if (project.isDisposed) {
             return
         }
-        if (updating.compareAndExchange(false, true)) {
+        if (updating.getAndIncrement() > 0) {
+            updating.decrementNotNegative()
             return
         }
         GlobalScope.launch(Dispatchers.IO) launch@{
             if (project.isDisposed) {
-                updating.set(false)
+                updating.decrementNotNegative()
                 Exception().printStackTrace()
                 return@launch
             }
@@ -70,7 +77,8 @@ class PoseEditorModel(
             val mappedParts = BodyPartsIndex.getImmediate(project, directory, key)
 
             if (mappedParts == null) {
-                updating.set(false)
+                updating.decrementNotNegative()
+                executeOnPooledThread(this@PoseEditorModel::updateFiles)
                 return@launch
             }
 
@@ -98,7 +106,7 @@ class PoseEditorModel(
             poseEditor.setFiles(mappedParts.values.filterNotNull())
             @Suppress("SpellCheckingInspection")
             requestRender(*("abcdefghijklmnopq").toCharArray())
-            updating.set(false)
+            updating.decrementNotNegative()
             executeOnPooledThread(this@PoseEditorModel::updateFiles)
         }
     }
@@ -107,7 +115,8 @@ class PoseEditorModel(
         if (project.isDisposed) {
             return
         }
-        if (updating.compareAndExchange(false, true)) {
+        if (updating.getAndIncrement() > 0) {
+            updating.decrementNotNegative()
             Exception().printStackTrace()
             return
         }
@@ -117,7 +126,7 @@ class PoseEditorModel(
                 return@launch
             }
             if (DumbService.isDumb(project)) {
-                updating.set(false)
+                updating.decrementNotNegative()
                 DumbService.getInstance(project).runWhenSmart {
                     executeOnPooledThread(this@PoseEditorModel::updateFiles)
                 }
@@ -126,8 +135,9 @@ class PoseEditorModel(
             try {
                 val files = BodyPartsIndex.variantParts(project, variant, null)
                 poseEditor.setFiles(files)
-                updating.set(false)
+                updating.decrementNotNegative()
             } catch (e: ProcessCanceledException) {
+                updating.decrementNotNegative()
                 delay(20)
                 updateFiles()
             }
@@ -149,13 +159,15 @@ class PoseEditorModel(
     }
 
     private fun requestRenderAsync(progressIndicator: ProgressIndicator, vararg parts: Char): Boolean {
+
         if (project.isDisposed) {
             return false
         }
-        if (updating.get()) {
+        if (updating.get() > 0) {
 //            return false
         }
         if (DumbService.isDumb(project)) {
+
             progressIndicator.checkCanceled()
             DumbService.getInstance(project).runWhenSmart {
                 progressIndicator.checkCanceled()
@@ -181,7 +193,7 @@ class PoseEditorModel(
             return false
         }
         if (updatedSprites == null) {
-            if (!updating.get()) {
+            if (updating.get() == 0) {
                 LOGGER.severe("Failed to update sprite sets without reason")
             }
 
@@ -199,6 +211,7 @@ class PoseEditorModel(
         } ?: return false
 
         progressIndicator.checkCanceled()
+
         val visibilityMask = poseEditor.getVisibilityMask() ?: mapOf()
 
         progressIndicator.checkCanceled()
@@ -398,6 +411,14 @@ class PoseEditorModel(
         return updatedSprites
     }
 
+    fun hardReload() {
+        val progressIndicator = EmptyProgressIndicator()
+        try {
+            getUpdatedSpriteSet(progressIndicator, *allParts)
+            requestRender(*allParts)
+        } catch (_: Exception) {}
+    }
+
     fun getBodyPoseActual(bodyDirection: Int, tilt: Int): Int {
         return if (variant.isOld) {
             when (bodyDirection) {
@@ -473,4 +494,10 @@ enum class Part(partChar: Char) {
     LEFT_EAR('o'),
     RIGHT_EAR('p'),
     HAIR('q')
+}
+
+private fun AtomicInteger.decrementNotNegative() {
+    updateAndGet {
+        maxOf(0, it - 1)
+    }
 }

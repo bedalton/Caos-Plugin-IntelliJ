@@ -443,6 +443,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (rootPath == null || files == null || files.isEmpty()) {
             freeze(openRelated, true, true);
             openRelatedLabel.setVisible(false);
+            LOGGER.info("No files to initialize \"Open related...\" text box");
             return;
         }
         final BreedPartKey key = baseBreed.copyWithPart(null);
@@ -675,6 +676,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             DumbService.getInstance(project).runWhenSmart(this::redrawAll);
             return;
         }
+
         drawImmediately = true;
 //        clear();
         if (variant != null) {
@@ -689,6 +691,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (imageHolder != null) {
             ((PoseRenderedImagePanel) imageHolder).clear();
         }
+    }
+
+    public void hardReload() {
+        model.hardReload();
     }
 
     /**
@@ -762,6 +768,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 //            }
             return;
         }
+
         ApplicationManager.getApplication().runReadAction(() -> model.requestRender(theParts));
     }
 
@@ -2141,7 +2148,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         }
         final boolean hadTail = hasTail;
         hasTail = variant != CaosVariant.C1.INSTANCE || model.hasTail(files);
-        if (!didInit || hadTail != hasTail || variantChanged) {
+        if (!didInitOnce || hadTail != hasTail || variantChanged) {
             PoseEditorImpl.this.initUI();
         }
         updateBreedsList();

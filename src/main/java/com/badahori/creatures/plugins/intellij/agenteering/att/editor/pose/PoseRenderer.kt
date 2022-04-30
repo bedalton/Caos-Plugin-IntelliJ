@@ -3,8 +3,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
@@ -23,7 +23,7 @@ object PoseRenderer {
         sprites: CreatureSpriteSet,
         pose: Pose,
         visibilityMask: Map<Char, PartVisibility>,
-        zoom: Int = 1
+        zoom: Int = 1,
     ): BufferedImage {
         val (parts, size) = buildParts(variant, sprites, pose, visibilityMask)
             ?: throw Exception("Failed to build body parts for pose render")
@@ -31,6 +31,7 @@ object PoseRenderer {
         val zoomWidth = width * zoom
         val zoomHeight = height * zoom
 
+        @Suppress("UndesirableClassUsage")
         val image = BufferedImage(zoomWidth, zoomHeight, BufferedImage.TYPE_INT_ARGB)
 
         val graphics2d = image.graphics as Graphics2D
@@ -83,7 +84,7 @@ object PoseRenderer {
         variant: CaosVariant,
         sprites: CreatureSpriteSet,
         pose: Pose,
-        visibilityMask: Map<Char, PartVisibility>
+        visibilityMask: Map<Char, PartVisibility>,
     ): Pair<List<RenderPart>, Pair<Int, Int>>? {
 
         // Body
@@ -297,10 +298,10 @@ object PoseRenderer {
         }?.filterNotNull()
             ?: return null
 
-        val minX = parts.map { it.position.first }.minOrNull() ?: 0
-        val maxX = parts.map { it.position.first + it.bufferedImage.width }.maxOrNull() ?: 0
-        val minY = parts.map { it.position.second }.minOrNull() ?: 0
-        val maxY = parts.map { it.position.second + it.bufferedImage.height }.maxOrNull() ?: 0
+        val minX = parts.minOfOrNull { it.position.first } ?: 0
+        val maxX = parts.maxOfOrNull { it.position.first + it.bufferedImage.width } ?: 0
+        val minY = parts.minOfOrNull { it.position.second } ?: 0
+        val maxY = parts.maxOfOrNull { it.position.second + it.bufferedImage.height } ?: 0
 
         val size = Pair(abs(minX) + maxX, abs(minY) + maxY)
         val offset = Pair(-minX, -minY)
@@ -317,7 +318,7 @@ object PoseRenderer {
         part: SpriteBodyPart,
         pose: Int,
         attachAt: Pair<Int, Int>,
-        visibility: PartVisibility
+        visibility: PartVisibility,
     ): RenderPart? {
         return getPart(partChar, part, pose, pose, attachAt, visibility)
     }
@@ -328,7 +329,7 @@ object PoseRenderer {
         pose: Int,
         spritePose: Int,
         attachAt: Pair<Int, Int>,
-        visibility: PartVisibility
+        visibility: PartVisibility,
     ): RenderPart? {
         if (pose !in 0..part.bodyData.lines.lastIndex) {
             throw Exception("Pose: '$pose' is out of range for part: '$partChar'")
@@ -342,7 +343,7 @@ object PoseRenderer {
     private data class RenderPart(
         val bufferedImage: BufferedImage,
         val position: Pair<Int, Int>,
-        val visibility: PartVisibility
+        val visibility: PartVisibility,
     )
 
 
@@ -363,7 +364,7 @@ object PoseRenderer {
         var tailTip: SpriteBodyPart?,
         var leftEar: SpriteBodyPart?,
         var rightEar: SpriteBodyPart?,
-        var hair: SpriteBodyPart?
+        var hair: SpriteBodyPart?,
     ) {
         fun replacing(part: Char, att: AttFileData): CreatureSpriteSet {
             return when (part) {
@@ -511,15 +512,15 @@ object PoseRenderer {
 
             @JvmStatic
             val allVisible: MutableMap<Char, PartVisibility>
-                get() = HashMap(ALL_PARTS.associate { it to VISIBLE }.toMap())
+                get() = HashMap(ALL_PARTS.associateWith { VISIBLE })
 
             @JvmStatic
             val allGhost: MutableMap<Char, PartVisibility>
-                get() = HashMap(ALL_PARTS.associate { it to GHOST }.toMap())
+                get() = HashMap(ALL_PARTS.associateWith { GHOST })
 
             @JvmStatic
             val allHidden: MutableMap<Char, PartVisibility>
-                get() = HashMap(ALL_PARTS.associate { it to HIDDEN }.toMap())
+                get() = HashMap(ALL_PARTS.associateWith { HIDDEN })
         }
     }
 }
