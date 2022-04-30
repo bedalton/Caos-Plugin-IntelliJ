@@ -81,9 +81,13 @@ internal fun getFilenameSuggestions(
     if (removeExtension && ignoredFiles.any { FileNameUtils.getNameWithoutExtension(it) == fileNameWithoutExtension })
         return null
 
+    val absolute = includedFiles.map {
+        PathUtil.combine(directory.path, it)
+    }
+
     // Get target file matching baseFileName case-insensitive
     val ignoredFilename: String? =
-        if (removeExtension || fileNameWithoutExtension == fileName) {
+        if (!fileName.contains('/') && (removeExtension || fileNameWithoutExtension == fileName)) {
             if (extensions != null) {
                 // Filename should not have an extension, so attach all possible and check
                 extensions.firstOrNull { extension ->
@@ -98,8 +102,10 @@ internal fun getFilenameSuggestions(
                     FileNameUtils.getNameWithoutExtension(it).equals(fileNameWithoutExtension, true)
                 }
             }
-        } else {
+        } else if (!fileName.contains('/')) {
             ignoredFiles.firstOrNull { it.equals(fileName, true) }
+        } else {
+            null
         }
 
     if (ignoredFilename == fileName) {
@@ -140,7 +146,7 @@ internal fun getFilenameSuggestions(
 
 
     if (targetFile != null) {
-        if (fileName == targetFile.name) {
+        if (PathUtil.combine(directory.path, filePath) == targetFile.path) {
             return null
         }
         if (removeExtension && fileNameWithoutExtension == targetFile.nameWithoutExtension) {

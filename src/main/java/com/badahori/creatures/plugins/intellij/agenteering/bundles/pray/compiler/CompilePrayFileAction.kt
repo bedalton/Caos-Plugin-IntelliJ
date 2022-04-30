@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compile
 import bedalton.creatures.pray.cli.PrayCompilerCliOptions
 import bedalton.creatures.pray.compiler.compilePrayAndWrite
 import bedalton.creatures.pray.compiler.pray.PrayParseValidationFailException
+import bedalton.creatures.pray.util.logProgress
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
@@ -102,8 +103,10 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
                 return null
             }
             val fileOpts = opts.copy(
-                inputFile = ioFile.path
+                inputFile = ioFile.path,
+                logProgress = true
             )
+            logProgress(true)
             try {
                 return compilePrayAndWrite(fileOpts, ioFile.parent, false)
             } catch (e: Exception) {

@@ -12,30 +12,58 @@ import com.intellij.psi.PsiManager
 
 
 open class AgentScript(val code: String, val scriptName: String, val type: AgentScriptType) {
-    class InstallScript(code: String, scriptName: String = "Install Script") : AgentScript(code, scriptName, AgentScriptType.INSTALL)
-    class RemovalScript(code: String, scriptName: String = "Removal Script") : AgentScript(code, scriptName, AgentScriptType.REMOVAL)
+    class InstallScript(code: String, scriptName: String = "Install Script") :
+        AgentScript(code, scriptName, AgentScriptType.INSTALL)
+
+    class RemovalScript(code: String, scriptName: String = "Removal Script") :
+        AgentScript(code, scriptName, AgentScriptType.REMOVAL)
+
     fun toCaosFile(project: Project, cobPath: CaosVirtualFile, caosVariant: CaosVariant): CaosScriptFile {
-        val fileName = getEventScriptName(code) ?: scriptName
-        val file = CobVirtualFileUtil.createChildCaosScript(project, cobPath, caosVariant, "$fileName.cos", code).apply {
-            isWritable = false
-        }
-        val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
-                ?: PsiFileFactory.getInstance(project)
-                        .createFileFromText("$scriptName.cos", CaosScriptLanguage, code) as CaosScriptFile
-        psiFile.setVariant(caosVariant, false)
-        psiFile.setVariant(caosVariant, true)
-        return psiFile
+        val fileName = (getEventScriptName(code) ?: scriptName)
+        return createAgentCaosFile(
+            project, fileName, cobPath, caosVariant, code
+        )
     }
 
     companion object {
-        private fun getEventScriptName(code:String) : String? {
-            val codeToLower = code.lowercase().trim(' ','\t', ',', '\n')
+
+        internal fun createAgentCaosFile(
+            project: Project,
+            fileName: String,
+            cobPath: CaosVirtualFile,
+            caosVariant: CaosVariant,
+            code: String,
+        ): CaosScriptFile {
+            val actualFileName = if (fileName.lowercase().endsWith(".cos")) {
+                fileName
+            } else {
+                "$fileName.cos"
+            }
+            val file = CobVirtualFileUtil.createChildCaosScript(
+                project,
+                cobPath,
+                caosVariant,
+                actualFileName,
+                code
+            ).apply {
+                isWritable = false
+            }
+            val psiFile = (PsiManager.getInstance(project).findFile(file) as? CaosScriptFile)
+                ?: PsiFileFactory.getInstance(project)
+                    .createFileFromText(fileName, CaosScriptLanguage, code) as CaosScriptFile
+            psiFile.setVariant(caosVariant, false)
+            psiFile.setVariant(caosVariant, true)
+            return psiFile
+        }
+
+        private fun getEventScriptName(code: String): String? {
+            val codeToLower = code.lowercase().trim(' ', '\t', ',', '\n')
             val splits = "([,\\s]+scrp|^scrp)".toRegex()
-                    .splitWithDelimiter(codeToLower)
-                    .map { it.trim(' ','\t', ',', '\n')}
+                .splitWithDelimiter(codeToLower)
+                .map { it.trim(' ', '\t', ',', '\n') }
             val valid = mutableListOf<String>()
             var i = if (codeToLower.startsWith("scrp")) 0 else 1
-            while(++i < splits.size) {
+            while (++i < splits.size) {
                 val prev = splits[i++].trim()
                 if (prev == "scrp") {
                     // Only 4 parts needed as SCRP was removed earlier, and have
@@ -51,10 +79,11 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
         }
     }
 }
+
 private const val withDelimiter = "((?<=%1\$s)|(?=%1\$s))"
 
 fun Regex.splitWithDelimiter(input: CharSequence) =
-        Regex(withDelimiter.format(this.pattern)).split(input)
+    Regex(withDelimiter.format(this.pattern)).split(input)
 
 enum class AgentScriptType {
     INSTALL,
@@ -63,7 +92,7 @@ enum class AgentScriptType {
     OBJECT
 }
 
-fun <T:AgentScript> T.nullIfEmpty(): T? {
+fun <T : AgentScript> T.nullIfEmpty(): T? {
     return if (this.code.isBlank())
         null
     else
