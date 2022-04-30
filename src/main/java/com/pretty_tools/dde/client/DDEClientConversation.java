@@ -432,9 +432,9 @@ public class DDEClientConversation {
     static// Loads the library, if available.
     {
         if ("64".equals(System.getProperty("sun.arch.data.model"))) {
-            CaosLibraryLoader.loadLib("/dde/JavaDDEx64");
+            CaosLibraryLoader.loadLib("dde/JavaDDEx64");
         } else {
-            CaosLibraryLoader.loadLib("/dde/JavaDDE");
+            CaosLibraryLoader.loadLib("dde/JavaDDE");
         }
     }
 }

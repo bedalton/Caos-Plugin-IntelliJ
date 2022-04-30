@@ -26,8 +26,10 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
     private val exeName = "C3CaosInjector.exe"
     private val file: File by lazy {
         val file = if (isWindows) {
+            LOGGER.info("Is Windows ensure EXE")
              ensureExe(!ranOnce)
         } else {
+            LOGGER.info("Non windows ensure lib")
             ensureLib(!ranOnce)
         }
         ranOnce = true
@@ -60,6 +62,7 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
         try {
             assertExeWasCopied()
         } catch (e: Exception) {
+            LOGGER.severe("C3 Injector EXE was not copied")
             return InjectionStatus.BadConnection(e.message ?: "Failed to copy injector executable")
         }
         val preparedCaos = prepareCaos(caos, cliTypeFlag)
@@ -77,26 +80,30 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
                 ).toTypedArray()
             }
             else -> {
+                LOGGER.severe("Should not try to C3 inject on non-windows through EXE")
                 return InjectionStatus.BadConnection("Only windows versions of Creatures are supported")
             }
         }
 
         return try {
+            LOGGER.info("Process with args: <${args.joinToString(" ")}>")
             process(args)
         } catch(e: Exception) {
             throw e
         } finally {
             try {
                 val tempFile = File(preparedCaos)
-                if (tempFile.exists())
+                if (tempFile.exists()) {
                     tempFile.delete()
+                }
             } catch (e: Exception) {
-
+                LOGGER.severe("Failed to delete temp CAOS file")
             }
         }
     }
 
     private fun assertExeWasCopied() {
+        LOGGER.info("Copying EXE")
         // Ensure that the exe has been extracted and placed in accessible folder
         val file = try {
             this.file
@@ -190,43 +197,44 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
         // Create injection process
         val proc: Process
         try {
+            LOGGER.info("Start process")
             proc = Runtime.getRuntime().exec(args)
         } catch (e: Exception) {
             e.printStackTrace()
             return InjectionStatus.BadConnection("Failed to run executable with error: ${e.message};")
         }
 
-        // Wait for process to finish
-        try {
-            proc.waitFor()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            InjectionStatus.Bad("Injection process interrupted.")
-        }
         // Parse result
         return try {
+            LOGGER.info("Waiting for process")
             proc.waitFor()
+            LOGGER.info("Process ended")
             if (proc.exitValue() != 0) {
-                try {
+                LOGGER.severe("Process exited non-zero")
+                return try {
                     val error = proc.errorStream?.bufferedReader()?.readText()?.nullIfEmpty()
                     InjectionStatus.Bad(error ?: "CAOS injector crashed or failed.")
                 } catch (e: Exception) {
-
+                    e.printStackTrace()
+                    InjectionStatus.Bad("CAOS injector crashed or failed. ${e.message}")
                 }
             }
+
+            LOGGER.info("Process exited zero")
             var response = proc.inputStream
                 ?.bufferedReader(Charsets.UTF_8)
                 ?.readText()
                 .nullIfEmpty()
-                ?: proc.errorStream?.bufferedReader()?.readText()?.nullIfEmpty()?.apply {
-                    return InjectionStatus.Bad(this)
+                ?: return InjectionStatus.Bad("Injector returned no response").apply {
+                    LOGGER.severe("Process returned no response")
                 }
-                ?: return InjectionStatus.Bad("Injector returned no response")
             //var response = responseBase64
             val code = if (response.length >= 4) {
                 response.substring(0, 4)
-            } else
+            } else {
                 response
+            }
+            LOGGER.info("Response code: $code; Response: $response")
             when (code) {
                 "!CMD" -> InjectionStatus.BadConnection("Internal plugin run error. " + response.substring(4))
                 "!CON" -> InjectionStatus.BadConnection(response.substring(4))
@@ -234,8 +242,10 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
                 else -> {
                     val responseLower = response.lowercase()
                     if (response.contains("{@}") || errorPrefix.any { responseLower.startsWith(it) } || errorMessageRegex.any{ it.matches(response) }) {
+                        LOGGER.info("C3DS: CAOS Error: $response")
                         InjectionStatus.Bad(response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1))
                     } else if (code == "!RES") {
+                        LOGGER.info("Valid Response: $response")
                         if (response.last() == 0.toChar()) {
                             response = response.substringFromEnd(if (response.startsWith("!RES")) 4 else 0, 1)
                         } else if (response.startsWith("!RES")) {
@@ -243,6 +253,7 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
                         }
                         InjectionStatus.Ok(response)
                     } else {
+                        LOGGER.info("Pass through other injector")
                         // Allow for injectors other than mine. Return OK and response just in case
                         InjectionStatus.Ok(response)
                     }

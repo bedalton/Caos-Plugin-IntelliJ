@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.useJectByDefault
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.notification.NotificationType
@@ -163,7 +164,7 @@ object Injector {
         }
 
         if (!connection.isConnected() && !connection.connect(false)) {
-            return null
+            return InjectionStatus.BadConnection("Failed to connect to ${gameInterfaceName.name}")
         }
         return run(connection)
     }
@@ -218,6 +219,8 @@ object Injector {
             gameUrl = gameUrl.substring(4).trim()
             return DDEConnection(gameUrl, theVariant, gameInterfaceName.name)
         }
+
+        LOGGER.info("Creating C3 Injector connection")
         return C3Connection(gameInterfaceName)
     }
 

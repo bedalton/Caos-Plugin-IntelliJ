@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
 import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import java.io.File
 import java.io.InputStream
 import java.lang.reflect.Field
@@ -18,14 +19,29 @@ object CaosLibraryLoader{
         else
             "$pathIn.dll"
         val myFile: String = FileNameUtil.getFileNameWithoutExtension(pathIn)!!
+
         try {
             // have to use a stream
             val dllInputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
                     ?: throw Exception("Failed to get resource as stream")
             // always write to different location
             val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
-            dllInputStream.use { inputStream ->
-                CaosFileUtil.copyStreamToFile(inputStream, fileOut, true)
+            if (fileOut.exists()) {
+                try {
+                    fileOut.delete()
+                } catch (e: Exception) {
+
+                }
+            }
+
+            try {
+                dllInputStream.use { inputStream ->
+                    CaosFileUtil.copyStreamToFile(inputStream, fileOut, true)
+                }
+            } catch (e: Exception) {
+                if (!fileOut.exists()) {
+                    return false
+                }
             }
             val directory = fileOut.parentFile
             addLibraryPath(directory.absolutePath)
@@ -49,8 +65,9 @@ object CaosLibraryLoader{
 
         //get array of paths
         val paths = getUserPaths()
-        if (paths.contains(pathToAdd))
+        if (paths.contains(pathToAdd)) {
             return
+        }
 
         //check if the path to add is already present
         for (path in paths) {
