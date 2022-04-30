@@ -470,12 +470,10 @@ private val DEFAULT_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
 
 private val ATTRIBUTE_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo ->
     if (!formatInfo.otherIsMatched) {
-        LOGGER.info("Other value is not matched")
         return@formatter null
     }
     val otherValue = formatInfo.otherValue
     if (otherValue == formatInfo.otherValueInt.toString()) {
-        LOGGER.info("Other value is int as string")
         return@formatter null
     }
     when (formatInfo.eqOp) {
