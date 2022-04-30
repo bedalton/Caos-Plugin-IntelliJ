@@ -92,6 +92,9 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
                 quoter
             )
         }
+
+        val file = element.containingFile
+
     }
 }
 
