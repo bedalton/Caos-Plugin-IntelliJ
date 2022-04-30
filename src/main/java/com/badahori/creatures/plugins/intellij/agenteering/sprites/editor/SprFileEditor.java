@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtilKt;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 @SuppressWarnings("UseJBColor")
@@ -26,6 +25,7 @@ public class SprFileEditor {
     private JComboBox<String> backgroundColor;
     private JComboBox<String> scale;
     private JScrollPane scrollPane;
+    private JButton reloadSpriteButton;
     private final List<ImageTransferItem> images;
     public static final String TRANSPARENT = "Transparent";
     public static final String BLACK = "Black";
@@ -52,6 +52,10 @@ public class SprFileEditor {
         images = new ArrayList<>();
         $$$setupUI$$$();
         init();
+    }
+
+    synchronized void clearInit() {
+        didInit = false;
     }
 
     synchronized void init() {
@@ -83,12 +87,13 @@ public class SprFileEditor {
             // Initialize sprites
             try {
                 rawImages = SpriteEditorImpl.fromCacheAsAwt(file);
-                final AtomicInteger mod5 = new AtomicInteger(0);
                 if (rawImages == null) {
                     final SpriteFileHolder holder = SpriteParser.parse(file, (i, total) -> {
                         final double progress = Math.ceil((i * 100.0) / total);
                         ApplicationManager.getApplication().invokeLater(() -> {
-                            loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
+                            if (loadingLabel != null) {
+                                loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
+                            }
                         });
                         return null;
                     });
@@ -107,17 +112,37 @@ public class SprFileEditor {
             final int padLength = (rawImages.size() + "").length();
             final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
             final String suffix = ".png";
+            final int lastSize = images.size();
             images.clear();
+            final int[] selection = imageList.getSelectedIndices();
+            final List<ImageTransferItem> images = Lists.newArrayList();
+
             for (int i = 0; i < rawImages.size(); i++) {
                 final String fileName = prefix + pad(i, padLength) + suffix;
                 images.add(new ImageTransferItem(fileName, rawImages.get(i)));
             }
+            this.images.addAll(images);
             ApplicationManager.getApplication().invokeLater(() -> {
+                imageList.setListData(new ImageTransferItem[0]);
+                imageList.updateUI();
                 imageList.setListData(images.toArray(new ImageTransferItem[0]));
-                scrollPane.remove(loadingLabel);
-                loadingLabel = null;
-                imageList.setVisible(true);
-                scrollPane.setViewportView(imageList);
+                if (lastSize == images.size()) {
+                    try {
+                        imageList.setSelectedIndices(selection);
+                    } catch (Exception e) {
+                        LOGGER.severe("Failed to preserve selection on reload in file " + file.getName());
+                    }
+                }
+                if (scrollPane != null) {
+                    if (loadingLabel != null) {
+                        scrollPane.remove(loadingLabel);
+                    }
+                    loadingLabel = null;
+                    if (imageList != null) {
+                        imageList.setVisible(true);
+                        scrollPane.setViewportView(imageList);
+                    }
+                }
             });
         });
     }
@@ -132,6 +157,16 @@ public class SprFileEditor {
             cellRenderer.setScale(newScale);
             imageList.updateUI();
         });
+        reloadSpriteButton.setIcon(AllIcons.Actions.Refresh);
+        reloadSpriteButton.addActionListener((e) -> reloadSprite());
+        reloadSpriteButton.setOpaque(false);
+        reloadSpriteButton.setContentAreaFilled(false);
+        reloadSpriteButton.setBorderPainted(false);
+    }
+
+    void reloadSprite() {
+        SpriteEditorImpl.clearCache(file);
+        loadSprite();
     }
 
     private void initPlaceholder() {
@@ -198,7 +233,7 @@ public class SprFileEditor {
     }
 
     private void createUIComponents() {
-        imageList = new ImageListPanel(images);
+        imageList = new ImageListPanel<>(images);
         cellRenderer.setColor(TRANSPARENT_COLOR);
         imageList.setCellRenderer(cellRenderer);
         backgroundColor = new ComboBox<>(new String[]{

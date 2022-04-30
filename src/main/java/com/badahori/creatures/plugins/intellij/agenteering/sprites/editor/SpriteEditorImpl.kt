@@ -1,5 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import bedalton.creatures.sprite.parsers.SPRITE_DEBUG_LOGGING
+import bedalton.creatures.util.Log
+import bedalton.creatures.util.iIf
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -20,19 +23,10 @@ import javax.swing.JComponent
 /**
  * Sprite viewer (eventually will be editor) for various Creatures file types
  */
-internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
-    private var myFile: VirtualFile
-    private var myProject: Project? = null
+internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserDataHolderBase(), FileEditor {
+    private var myFile: VirtualFile = file
+    private var myProject: Project? = project
     private lateinit var editor:SprFileEditor
-
-    constructor(file: VirtualFile) {
-        myFile = file
-    }
-
-    constructor(project: Project?, file: VirtualFile) {
-        myFile = file
-        myProject = project
-    }
 
     override fun getComponent(): JComponent {
         if (this::editor.isInitialized)
@@ -88,9 +82,11 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
         myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
             if (cachedMD5 == myFile.md5())
                 return
+            clearCache(myFile)
         }
-        if (this::editor.isInitialized)
-            editor.init()
+        if (this::editor.isInitialized) {
+            editor.reloadSprite();
+        }
     }
 
     override fun getFile(): VirtualFile {
@@ -128,6 +124,12 @@ internal class SpriteEditorImpl : UserDataHolderBase, FileEditor {
             return fromCache(virtualFile)?.map {
                 it.toAwt()
             }
+        }
+
+        @JvmStatic
+        fun clearCache(virtualFile: VirtualFile) {
+            virtualFile.putUserData(CACHE_MD5_KEY, null)
+            virtualFile.putUserData(CACHE_KEY, null)
         }
     }
 }
