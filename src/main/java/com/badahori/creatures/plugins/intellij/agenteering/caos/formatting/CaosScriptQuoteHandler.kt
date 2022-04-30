@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.highlighter.HighlighterIterator
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IElementType
 
 class CaosScriptQuoteHandler : QuoteHandler {
     private val openingTokens = listOf(
@@ -39,10 +40,15 @@ class CaosScriptQuoteHandler : QuoteHandler {
     )
 
     override fun isOpeningQuote(iterator: HighlighterIterator, offset: Int): Boolean {
-        if (iterator.start != offset && iterator.tokenType !in openingTokens) {
+        try {
+            if (iterator.start != offset && iterator.tokenType !in openingTokens) {
+                return false
+            }
+        } catch (_:Exception) {
             return false
         }
-        val firstToken = iterator.tokenType
+        val firstToken = iterator.getTokenSafe()
+            ?: return false
         iterator.advance()
         if (iterator.atEnd()) {
             iterator.retreat()
@@ -55,20 +61,26 @@ class CaosScriptQuoteHandler : QuoteHandler {
                 break
             }
         }
-        val lastToken = iterator.tokenType
+        val lastToken = iterator.getTokenSafe()
+            ?: return false
         iterator.retreat()
         return lastToken == firstToken || (firstToken == CaosScriptTypes.CaosScript_OPEN_BRACKET && lastToken == CaosScriptTypes.CaosScript_CLOSE_BRACKET)
     }
 
     override fun hasNonClosedLiteral(editor: Editor, iterator: HighlighterIterator, offset: Int): Boolean {
-        val start = iterator.start
+        val start = try {
+            iterator.start
+        } catch (_: Exception) {
+            return false
+        }
 
         try {
             val doc = editor.document
             //val chars = doc.charsSequence
             val lineEnd = doc.getLineEndOffset(doc.getLineNumber(offset))
             while (!iterator.atEnd() && start < lineEnd) {
-                val tokenType = iterator.tokenType
+                val tokenType = iterator.getTokenSafe()
+                    ?: return false
                 if (tokenType in closingTokens) {
                     return false
                 }
@@ -87,7 +99,9 @@ class CaosScriptQuoteHandler : QuoteHandler {
     }
 
     override fun isClosingQuote(iterator: HighlighterIterator, offset: Int): Boolean {
-        val tokenType = iterator.tokenType
+
+        val tokenType = iterator.getTokenSafe()
+            ?: return false
         return if (tokenType !in closingTokens) {
             false
         } else {
@@ -103,7 +117,16 @@ class CaosScriptQuoteHandler : QuoteHandler {
     }
 
     override fun isInsideLiteral(iterator: HighlighterIterator): Boolean {
-        return iterator.tokenType in insideTokens
+        return iterator.getTokenSafe() in insideTokens
     }
 
+}
+
+
+private fun HighlighterIterator.getTokenSafe(): IElementType? {
+    return try {
+        this.tokenType
+    } catch (_: Exception) {
+        return null
+    }
 }
