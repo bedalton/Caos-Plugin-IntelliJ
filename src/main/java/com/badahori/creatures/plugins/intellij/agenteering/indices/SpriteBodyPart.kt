@@ -30,7 +30,7 @@ data class BodyPartFiles(
     }
     fun data(project:Project): SpriteBodyPart {
         return SpriteBodyPart(
-            sprite = SpriteParser.parse(spriteFile),
+            sprite = SpriteParser.parse(spriteFile, bodyPart = true),
             bodyData = runReadAction { AttFileParser.parse(project, bodyDataFile) }
         )
     }
