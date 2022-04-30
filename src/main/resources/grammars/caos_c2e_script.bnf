@@ -512,6 +512,7 @@ at_directive_comment
 
 private line_comment
 	::= COMMENT_START comment_body?
+	| CAOS_2_COMMENT_START (ID|INT|COMMENT_BODY_LITERAL)+
 	;
 
 comment_body
@@ -2600,6 +2601,8 @@ subroutine_name
 
 token_rvalue
 	::= token
+	|	swift_escape_literal
+	|	js_element
 	{
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueLikeMixin<com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub>"
