@@ -16,7 +16,7 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
-import stripSurroundingQuotes
+import bedalton.creatures.util.stripSurroundingQuotes
 
 class Caos2PrayTagCaseInspection : LocalInspectionTool() {
 

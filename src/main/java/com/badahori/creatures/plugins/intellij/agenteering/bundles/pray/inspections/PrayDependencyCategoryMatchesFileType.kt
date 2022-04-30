@@ -16,7 +16,7 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
-import nullIfEmpty
+import bedalton.creatures.util.nullIfEmpty
 
 class PrayDependencyCategoryMatchesFileType: LocalInspectionTool() {
 
