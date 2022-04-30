@@ -43,6 +43,18 @@
             <constraints/>
             <properties/>
           </component>
+          <component id="38094" class="javax.swing.JButton" binding="reloadSpriteButton">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+              <contentAreaFilled value="false"/>
+              <maximumSize width="30" height="30"/>
+              <minimumSize width="30" height="30"/>
+              <preferredSize width="30" height="30"/>
+              <text value=""/>
+              <toolTipText resource-bundle="com/badahori/creatures/plugins/intellij/caos-bundle" key="sprite-editor.reload-sprite"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>

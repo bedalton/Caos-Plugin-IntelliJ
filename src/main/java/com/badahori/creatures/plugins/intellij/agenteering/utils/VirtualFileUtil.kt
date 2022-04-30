@@ -433,7 +433,7 @@ internal inline fun VirtualFile.applyWritable(work: VirtualFile.() -> Unit) {
  */
 internal fun getFileIcon(fileName: String, nonNullDefault: Boolean = true): Icon? {
     val extension = (FileNameUtils.getExtension(fileName) ?: fileName)
-    return when (extension.toUpperCase()) {
+    return when (extension.uppercase()) {
         "COS" -> CaosScriptIcons.CAOS_FILE_ICON
         "SPR" -> CaosScriptIcons.SPR_FILE_ICON
         "S16" -> CaosScriptIcons.S16_FILE_ICON

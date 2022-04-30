@@ -25,10 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Virtual File for Caos Scripts Plugin
  */
-open class CaosVirtualFile private constructor(
+open class CaosVirtualFile protected constructor(
     private var fileName: String,
     private var stringContents: String? = null,
-    private var byteArrayContents: ByteArray? = null,
+    private var byteArrayGetter: (() -> ByteArray?)? = null,
     private val isDirectory: Boolean,
     private val allowSubdirectories: Boolean = isDirectory
 ) : VirtualFile(), ModificationTracker, HasVariant, HasVariants {
@@ -37,9 +37,11 @@ open class CaosVirtualFile private constructor(
 
     constructor(name: String, content: String?, isDirectory: Boolean) : this(name, content, null, isDirectory)
 
-    constructor(name: String, content: ByteArray) : this(name, null, content, false)
+    constructor(name: String, content: ByteArray) : this(name, null, { content }, false)
 
-    constructor(name: String, content: ByteArray, isDirectory: Boolean) : this(name, null, content, isDirectory)
+    constructor(name: String, content: () -> ByteArray?) : this(name, null, content, false)
+
+    constructor(name: String, content: ByteArray, isDirectory: Boolean) : this(name, null, { content }, isDirectory)
 
     private var timestamp = now
     private var modificationStamp: Long = timestamp
@@ -91,12 +93,12 @@ open class CaosVirtualFile private constructor(
 
     fun setContent(contents: ByteArray?) {
         stringContents = null
-        byteArrayContents = contents
+        byteArrayGetter = { contents }
     }
 
     fun setContent(contents: String?) {
         stringContents = contents
-        byteArrayContents = null
+        byteArrayGetter = { null }
     }
 
     /** {@inheritDoc}  */
@@ -174,14 +176,14 @@ open class CaosVirtualFile private constructor(
     /** {@inheritDoc}  */
     @Throws(IOException::class)
     override fun contentsToByteArray(): ByteArray {
-        return byteArrayContents ?: stringContents?.toByteArray() ?: ByteArray(0)
+        return byteArrayGetter?.invoke() ?: stringContents?.toByteArray() ?: ByteArray(0)
     }
 
     /** {@inheritDoc}  */
     override fun getTimeStamp(): Long = 0L
 
     /** {@inheritDoc}  */
-    override fun getLength(): Long = byteArrayContents?.size?.toLong() ?: stringContents?.length?.toLong() ?: 0L
+    override fun getLength(): Long = byteArrayGetter?.invoke()?.size?.toLong() ?: stringContents?.length?.toLong() ?: 0L
 
     /** {@inheritDoc}  */
     override fun refresh(
@@ -273,6 +275,17 @@ open class CaosVirtualFile private constructor(
             throw IOException("Child with name '$name' already exists $name")
         return CaosVirtualFile(name, content, false).let {
             it.setContent(content)
+            this.addChild(it)
+            if (!this.hasChild(name))
+                throw IOException("Failed to properly add child to filesystem")
+            it
+        }
+    }
+
+    fun createChildWithContent(name: String, content: () -> ByteArray?, overwrite: Boolean = true): CaosVirtualFile {
+        if (hasChild(name) && !overwrite)
+            throw IOException("Child with name '$name' already exists $name")
+        return CaosVirtualFile(name, content).let {
             this.addChild(it)
             if (!this.hasChild(name))
                 throw IOException("Failed to properly add child to filesystem")

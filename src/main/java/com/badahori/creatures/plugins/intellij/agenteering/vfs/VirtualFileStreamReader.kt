@@ -15,8 +15,7 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamR
             try {
                 val ioFile = VfsUtil.virtualToIoFile(virtualFile)
                 if (ioFile.exists()) {
-                    val reader = FileStreamByteReader(ioFile.path)
-                    return@lazy reader
+                    return@lazy FileStreamByteReader(ioFile.path)
                 }
             } catch (_: Exception) {
             }
@@ -68,5 +67,17 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamR
 
     override fun toByteArray(): ByteArray {
         return mReader.toByteArray()
+    }
+
+    override fun canReopen(): Boolean {
+        return virtualFile.isValid && !virtualFile.isDirectory && virtualFile.exists()
+    }
+
+    override fun copyAsOpened(): VirtualFileStreamReader? {
+        return if (canReopen()) {
+            VirtualFileStreamReader(virtualFile)
+        } else {
+            null
+        }
     }
 }
