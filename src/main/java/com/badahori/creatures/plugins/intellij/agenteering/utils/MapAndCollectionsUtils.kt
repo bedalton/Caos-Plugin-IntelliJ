@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import kotlinx.coroutines.async
@@ -11,7 +13,7 @@ fun <T> Iterable<T?>.filterNotNull() : List<T> {
     for (item in this)
         if (item != null)
             list.add(item)
-    return list;
+    return list
 }
 
 fun <R, T:Collection<R>> T?.nullIfEmpty(): T? {
@@ -75,7 +77,7 @@ val <T:Any> Iterator<T>.values:List<T> get() {
 fun <T> List<T>.equalIgnoringOrder(other:List<T>) : Boolean {
     if (other.size != size)
         return false
-    val otherCopy:MutableList<T> = ArrayList<T>(other)
+    val otherCopy:MutableList<T> = ArrayList(other)
     for (e in this) {
         if (e !in otherCopy)
             return false
@@ -132,20 +134,20 @@ inline fun <reified T> T.toArrayOf(): Array<T> {
 
 
 infix fun <T> Collection<T>.likeAny(other:Collection<T>): Boolean {
-    return this.intersect(other).isNotEmpty()
+    return this.intersect(other.toSet()).isNotEmpty()
 }
 
 infix fun <T> Collection<T>.likeAny(other:Array<T>): Boolean {
-    return this.intersect(other.toList()).isNotEmpty()
+    return this.intersect(other.toSet()).isNotEmpty()
 }
 
 
 infix fun <T> Array<T>.likeAny(other:Collection<T>): Boolean {
-    return this.intersect(other).isNotEmpty()
+    return this.intersect(other.toSet()).isNotEmpty()
 }
 
 infix fun <T> Array<T>.likeAny(other:Array<T>): Boolean {
-    return this.intersect(other.toList()).isNotEmpty()
+    return this.intersect(other.toSet()).isNotEmpty()
 }
 
 internal val <T> Collection<T>.firstIfOnlyOne: T? get() {
