@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "unused", "unused")
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
@@ -32,7 +32,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import icons.CaosScriptIcons
-import stripSurroundingQuotes
+import bedalton.creatures.util.stripSurroundingQuotes
 import javax.swing.Icon
 
 
@@ -353,7 +353,7 @@ object CaosScriptPsiImplUtil {
 
     /**
      * Gets a command sstring for a loop statement
-     * ie. LOOP
+     * i.e. LOOP
      */
     @JvmStatic
     fun getCommandString(element: CaosScriptLoopStatement): String {
@@ -856,9 +856,8 @@ object CaosScriptPsiImplUtil {
         return element.stub?.name
             ?: element
                 .subroutineHeader
-                .subroutineName?.let {
-                    it.name
-                }
+                .subroutineName
+                ?.name
             ?: ""
     }
 
@@ -1302,7 +1301,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun isClosed(element: CaosScriptDoifStatementStatement): Boolean {
-        // If last child is not a DOIF statement statement,
+        // If last child is not a DOIF statement's statement,
         // then something else follows it such as ELIF, ELSE or ENDI
         return element.parent.lastChild != element
     }
@@ -1352,7 +1351,7 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Checks that an install script has a terminator
+     * Checks that an installation script has a terminator
      */
     @JvmStatic
     fun isClosed(element: CaosScriptInstallScript): Boolean {
@@ -1368,7 +1367,7 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Checks that an macro script has a terminating ENDM
+     * Checks that a macro script has a terminating ENDM
      */
     @JvmStatic
     fun isClosed(element: CaosScriptMacro): Boolean {
@@ -1404,7 +1403,7 @@ object CaosScriptPsiImplUtil {
     // ============================== //
 
     /* *
-     * Gets the expected type of an argument
+     * Gets the expected type of argument
      * /
     @JvmStatic
     fun getExpectedType(element: CaosScriptLvalue): CaosExpressionValueType {
@@ -1749,7 +1748,7 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Gets the string value between the quotes of a double quoted string
+     * Gets the string value between the quotes of a double quote string
      */
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptQuoteStringLiteral): String {
@@ -1757,7 +1756,7 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Gets the string value between the quotes of a double quoted string
+     * Gets the string value between the quotes of a double quote string
      */
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptStringText): String {
@@ -1899,7 +1898,7 @@ object CaosScriptPsiImplUtil {
         return element.rvalue?.stringValue
     }
 
-    val NAMED_GAME_VAR_KEY_TYPE_KEY = Key<List<CaosExpressionValueType>>("creatures.caos.named-game-var.KEY_TYPE")
+    private val NAMED_GAME_VAR_KEY_TYPE_KEY = Key<List<CaosExpressionValueType>>("creatures.caos.named-game-var.KEY_TYPE")
 
     /**
      * Gets the key or text component for a named game variable
