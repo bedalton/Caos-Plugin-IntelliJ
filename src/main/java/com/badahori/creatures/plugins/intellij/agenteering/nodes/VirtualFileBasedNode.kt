@@ -2,13 +2,19 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getFileIcon
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
+import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.NavigatablePsiElement
+import com.intellij.ui.tree.LeafState
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.io.File
@@ -24,6 +30,22 @@ internal abstract class VirtualFileBasedNode<VfsT : VirtualFile>(
 
     open fun isValid(): Boolean {
         return !nonNullProject.isDisposed && myVirtualFile.isValid
+    }
+
+    private val mNavigable: NavigatablePsiElement? by lazy {
+        myVirtualFile.getPsiFile(nonNullProject)
+    }
+
+    override fun canNavigate(): Boolean {
+        return mNavigable?.canNavigate() ?: false
+    }
+
+    override fun navigate(requestFocus: Boolean) {
+        mNavigable?.navigate(requestFocus)
+    }
+
+    override fun canNavigateToSource(): Boolean {
+        return mNavigable?.canNavigateToSource() ?: false
     }
 
     override fun getVirtualFile(): VirtualFile {
@@ -56,7 +78,6 @@ internal abstract class VirtualFileBasedNode<VfsT : VirtualFile>(
     override fun contains(file: VirtualFile): Boolean {
         return isValid() && myVirtualFile == file
     }
-
 }
 
 private fun createTransferable(virtualFile: VirtualFile): Transferable {
@@ -65,7 +86,7 @@ private fun createTransferable(virtualFile: VirtualFile): Transferable {
             if (file.exists())
                 return FileTransferable(file)
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
     val directory = FileUtil.createTempDirectory(virtualFile.name, null, true).apply {
         createNewFile()
@@ -143,4 +164,33 @@ internal class VirtualFilesListTransferable(private val files: List<VirtualFile>
             throw IOException("Invalid data flavor requested")
         return filesList
     }
+}
+
+internal class GenericFileBasedNode<VfsT : VirtualFile>(
+    nonNullProject: Project,
+    myVirtualFile: VfsT,
+    viewSettings: ViewSettings?,
+) : VirtualFileBasedNode<VirtualFile>(nonNullProject, myVirtualFile, viewSettings) {
+
+    init {
+        icon = getFileIcon(myVirtualFile.name, false)
+    }
+
+    override fun update(presentation: PresentationData) {
+        presentation.presentableText = myVirtualFile.name
+        presentation.setIcon(icon)
+    }
+
+    override fun getChildren(): Collection<AbstractTreeNode<*>> {
+        return emptyList()
+    }
+
+    override fun isAlwaysLeaf(): Boolean {
+        return true
+    }
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ALWAYS
+    }
+
 }
