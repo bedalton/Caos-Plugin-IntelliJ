@@ -17,7 +17,8 @@ class CaosScriptInsertBeforeFix(
     private val fixDescription: String,
     private val textToInsert: String,
     element: PsiElement,
-    private val appendChar: Char? = ' '
+    private val appendChar: Char? = ' ',
+    private val after: ((editor: Editor) -> Unit)? = null
 ) : IntentionAction, LocalQuickFix {
 
     private val element = SmartPointerManager.createPointer(element)
@@ -54,5 +55,6 @@ class CaosScriptInsertBeforeFix(
         else
             "$appendChar"
         EditorUtil.insertText(editor, "$textToInsert$appendText", element.startOffset, false)
+        after?.invoke(editor)
     }
 }
