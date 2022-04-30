@@ -26,6 +26,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileEditor
@@ -700,31 +701,44 @@ private class RunInjectorAction(
         mAction = action
     }
 
-    fun setAction(action: AnAction?) {
+    fun setAction(action: AnAction?, presentation: Presentation = this.templatePresentation) {
         if (action !is CaosInjectorAction) {
             LOGGER.severe("RunInjector action is not CAOS injector")
             return
         }
         this.mAction = action
+        updatePresentation(presentation, action)
     }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
         var injector: AnAction? = mAction
         if (injector == null || injector is AddGameInterfaceAction) {
+            // Get the selected item
             injector = injectors.selectItem(true) {
                 it !is AddGameInterfaceAction
             }
-            setAction(injector)
+            // Set selected as an action
+            setAction(injector, e.presentation)
+
+            // If injector is null, return
+            // NULL means this could be an AddGameInterfaceAction
             if (injector == null) {
-                e.presentation.text = "Select Injector Interface"
-                e.presentation.isEnabled = false
                 return
             }
         }
+        updatePresentation(e.presentation, injector)
+    }
+
+    private fun updatePresentation(presentation: Presentation, injector: AnAction?) {
+        if (injector == null) {
+            presentation.text = "Select Injector Interface"
+            presentation.isEnabled = false
+            return
+        }
         val valid = injector !is AddGameInterfaceAction
-        e.presentation.isEnabled = valid
-        e.presentation.text = injector.templateText ?: "Select Injector Interface"
+        presentation.isEnabled = valid
+        presentation.text = injector.templateText ?: "Select Injector Interface"
     }
 
     override fun actionPerformed(e: AnActionEvent) {
