@@ -28,14 +28,14 @@ internal object FileInjectorUtil {
             caosFile.getScripts()
         }
 
-        val scriptBlocks = mutableListOf<List<CaosScriptScriptElement>>()
+        val scriptBlocks = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
         if (flags hasFlag Injector.REMOVAL_SCRIPT_FLAG) {
             val scripts = fileScripts.filterIsInstance<CaosScriptRemovalScript>()
             if (flags == Injector.REMOVAL_SCRIPT_FLAG && scripts.size == 1) {
                 val caos = formatCaos(scripts[0].codeBlock) ?: ""
                 return connection.inject(caos)
             }
-            scriptBlocks.add(scripts)
+            scriptBlocks[JectScriptType.REMOVAL] = scripts
         }
         if (flags hasFlag Injector.EVENT_SCRIPT_FLAG) {
             val scripts = fileScripts.filterIsInstance<CaosScriptEventScript>()
@@ -50,7 +50,7 @@ internal object FileInjectorUtil {
                     formatCaos(eventScript.codeBlock) ?: ""
                 )
             }
-            scriptBlocks.add(scripts)
+            scriptBlocks[JectScriptType.EVENT] = scripts
         }
 
         if (flags hasFlag Injector.INSTALL_SCRIPT_FLAG) {
@@ -58,7 +58,7 @@ internal object FileInjectorUtil {
             if (flags == Injector.INSTALL_SCRIPT_FLAG && scripts.size == 1) {
                 return connection.inject(formatCaos(scripts[0].codeBlock) ?: "")
             }
-            scriptBlocks.add(scripts)
+            scriptBlocks[JectScriptType.INSTALL] = scripts
         }
         return injectScriptBlocks(project, connection, scriptBlocks)
     }
@@ -68,15 +68,15 @@ internal object FileInjectorUtil {
         connection: CaosConnection,
         scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
     ): InjectionStatus {
-        val scriptBlocks = mutableListOf<List<CaosScriptScriptElement>>()
+        val scriptBlocks = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
         scripts[JectScriptType.REMOVAL]?.apply {
-            scriptBlocks.add(this)
+            scriptBlocks[JectScriptType.REMOVAL] = this
         }
         scripts[JectScriptType.EVENT]?.apply {
-            scriptBlocks.add(this)
+            scriptBlocks[JectScriptType.EVENT] = this
         }
         scripts[JectScriptType.INSTALL]?.apply {
-            scriptBlocks.add(this)
+            scriptBlocks[JectScriptType.INSTALL] = this
         }
         return injectScriptBlocks(project, connection, scriptBlocks)
     }
@@ -84,12 +84,22 @@ internal object FileInjectorUtil {
     private suspend fun injectScriptBlocks(
         project: Project,
         connection: CaosConnection,
-        scriptBlocks: List<List<CaosScriptScriptElement>>,
+        scriptBlocks: Map<JectScriptType, List<CaosScriptScriptElement>>,
     ): InjectionStatus {
         val responses = mutableListOf<String>()
         var oks = 0
         var error: InjectionStatus? = null
-        scriptBlocks.mapAsync async@{ scripts ->
+
+        val scriptTypesInOrder = listOf(
+            JectScriptType.REMOVAL,
+            JectScriptType.EVENT,
+            JectScriptType.INSTALL
+        )
+
+        scriptTypesInOrder.map async@{ scriptType ->
+            val scripts = scriptBlocks[scriptType]
+                ?.nullIfEmpty()
+                ?: return@async
             if (scripts.isEmpty())
                 return@async
             injectScriptList(
