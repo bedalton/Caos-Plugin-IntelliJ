@@ -24,7 +24,7 @@ class CaosScriptTokenRValueStubType(debugName:String) : CaosScriptStubElementTyp
     }
 
     override fun createStub(element: CaosScriptTokenRvalueImpl, parent: StubElement<*>?): CaosScriptTokenRValueStub {
-        return CaosScriptTokenRValueStubImpl(parent, element.text)
+        return CaosScriptTokenRValueStubImpl(parent, element.token?.text)
     }
 
 }
