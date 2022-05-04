@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.intellij.openapi.application.runReadAction
