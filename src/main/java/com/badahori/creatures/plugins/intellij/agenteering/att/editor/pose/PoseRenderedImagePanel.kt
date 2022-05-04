@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils.getExtension
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -8,7 +8,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
-import java.awt.AlphaComposite
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -37,7 +36,6 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
         else
             null
     }
-    private val invalidatedAlpha = 0.7F
     private var mInvalid = false
     private var image: BufferedImage? = null
     private var minSize: Dimension? = null
@@ -73,7 +71,7 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
         if (image == null) {
             val builder = DialogBuilder()
             builder.setTitle("Pose save error")
-            builder.setErrorText("Cannot save unrendered image")
+            builder.setErrorText("Cannot save un-rendered image")
             builder.show()
             return
         }
@@ -96,7 +94,7 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
             return
         }
         var outputFileTemp = fileChooser.selectedFile
-        val extension = getExtension(outputFileTemp.name)
+        val extension = FileNameUtil.getExtension(outputFileTemp.name)
         if (extension == null || !extension.equals("png", ignoreCase = true)) {
             outputFileTemp = File(outputFileTemp.path + ".png")
         }
@@ -190,9 +188,7 @@ class PoseRenderedImagePanel(defaultDirectory: String?) : JPanel() {
         val g2d = g as Graphics2D
         g2d.clearRect(0, 0, width, height)
         val image = this.image
-        if (image == null) {
-            return
-        }
+            ?: return
         g2d.translate(width / 2, height / 2)
         g2d.translate(-image.getWidth(null) / 2, -image.getHeight(null) / 2)
         g2d.drawImage(image, 0, 0, null)

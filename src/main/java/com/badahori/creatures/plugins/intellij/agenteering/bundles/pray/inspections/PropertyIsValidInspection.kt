@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
@@ -71,7 +72,7 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
                     return
                 }
                 val fileExpression =
-                    FileNameUtils.lastPathComponent(filePath).replace("[*]+".toRegex(), "[^/]+").toRegex()
+                    FileNameUtil.getLastPathComponent(filePath).replace("[*]+".toRegex(), "[^/]+").toRegex()
                 val hasMatch = element.getParentOfType(CaosScriptCaos2Block::class.java)
                     ?.commands
                     .orEmpty()

@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import bedalton.creatures.bytes.MemoryByteStreamReader
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
@@ -8,16 +9,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobFileData
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobToDataObjectDecompiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobVirtualFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getFileIcon
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -344,7 +339,7 @@ internal class CobSpriteFileTreeNode(
         if (!isValid()) {
             return@lazy emptyList()
         }
-        val fileNameBase = FileNameUtils.getNameWithoutExtension(block.fileName).orEmpty() + "_"
+        val fileNameBase = FileNameUtil.getFileNameWithoutExtension(block.fileName).orEmpty() + "_"
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->

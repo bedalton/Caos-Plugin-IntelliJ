@@ -1,12 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
+import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.util.FileNameUtil.getExtension
 import bedalton.creatures.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ignoredFiles
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils.getExtension
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -67,7 +68,7 @@ internal fun getFilenameSuggestions(
 //        ?.joinToString(pathSeparator)
 //        ?.let { "$it$pathSeparator" }
 
-    val fileNameWithoutExtension = FileNameUtils.getNameWithoutExtension(fileName)
+    val fileNameWithoutExtension = FileNameUtil.getFileNameWithoutExtension(fileName)
         ?: return null
 
     val ignoredFiles = element.containingFile?.module?.settings?.ignoredFiles.orEmpty() +
@@ -78,11 +79,8 @@ internal fun getFilenameSuggestions(
         return null
     }
 
-    if (removeExtension && ignoredFiles.any { FileNameUtils.getNameWithoutExtension(it) == fileNameWithoutExtension })
+    if (removeExtension && ignoredFiles.any { FileNameUtil.getFileNameWithoutExtension(it) == fileNameWithoutExtension }) {
         return null
-
-    val absolute = includedFiles.map {
-        PathUtil.combine(directory.path, it)
     }
 
     // Get target file matching baseFileName case-insensitive
@@ -97,9 +95,9 @@ internal fun getFilenameSuggestions(
                 }
             } else {
                 ignoredFiles.firstOrNull {
-                    FileNameUtils.getNameWithoutExtension(it) == fileNameWithoutExtension
+                    FileNameUtil.getFileNameWithoutExtension(it) == fileNameWithoutExtension
                 } ?:  ignoredFiles.firstOrNull {
-                    FileNameUtils.getNameWithoutExtension(it).equals(fileNameWithoutExtension, true)
+                    FileNameUtil.getFileNameWithoutExtension(it).equals(fileNameWithoutExtension, true)
                 }
             }
         } else if (!fileName.contains('/')) {
@@ -117,7 +115,7 @@ internal fun getFilenameSuggestions(
         if (OsUtil.isWindows)
             return null
 
-        if (removeExtension && FileNameUtils.getNameWithoutExtension(ignoredFilename) == fileNameWithoutExtension)
+        if (removeExtension && FileNameUtil.getFileNameWithoutExtension(ignoredFilename) == fileNameWithoutExtension)
             return null
 
         // Create single fix array
@@ -137,9 +135,12 @@ internal fun getFilenameSuggestions(
         VirtualFileUtil.findChildIgnoreCase(trueDirectory, removeExtension, directory = false, fileName)
     } else if (removeExtension && fileNameWithoutExtension.equals(fileName, ignoreCase = true)) {
         // Filename should not have an extension, so attach all possible and check
-        extensions!!.mapNotNull { extension ->
-            VirtualFileUtil.findChildIgnoreCase(trueDirectory, ignoreExtension = false, directory = false, "$fileName.$extension")
-        }.firstOrNull()
+        extensions!!.firstNotNullOfOrNull { extension ->
+            VirtualFileUtil.findChildIgnoreCase(trueDirectory,
+                ignoreExtension = false,
+                directory = false,
+                "$fileName.$extension")
+        }
     } else {
         VirtualFileUtil.findChildIgnoreCase(trueDirectory, ignoreExtension = false, directory = false, fileName)
     }
@@ -184,7 +185,7 @@ internal fun getFilenameSuggestions(
     val ignoredSiblings = ignoredFiles.filter {
         if (targetExtensions != null && getExtension(it)?.lowercase() !in targetExtensions)
             return@filter false
-        FileNameUtils.getNameWithoutExtension(it).orEmpty().lowercase().levenshteinDistance(filenameForDistanceCheck) < orb
+        FileNameUtil.getFileNameWithoutExtension(it).orEmpty().lowercase().levenshteinDistance(filenameForDistanceCheck) < orb
     }.map {
         CaosScriptReplaceElementFix(
             element,
@@ -237,16 +238,19 @@ internal fun getSimilarFileNames(
     orb: Int = DEFAULT_ORB
 ): List<String>? {
     // Get name without extension for simple name checks
-    val fileNameWithoutExtension = FileNameUtils.getNameWithoutExtension(baseFileName)
+    val fileNameWithoutExtension = FileNameUtil.getFileNameWithoutExtension(baseFileName)
         ?: return null
 
     // Try to find the intended file caseless if needed
     val targetFile: VirtualFile? = if (extensions.isNullOrEmpty()) {
         VirtualFileUtil.findChildIgnoreCase(directory, removeExtension, directory = false, baseFileName)
     } else if (fileNameWithoutExtension.lowercase() == baseFileName) {
-        extensions!!.mapNotNull { extension ->
-            VirtualFileUtil.findChildIgnoreCase(directory, ignoreExtension = false, directory = false, "$baseFileName.$extension")
-        }.firstOrNull()
+        extensions!!.firstNotNullOfOrNull { extension ->
+            VirtualFileUtil.findChildIgnoreCase(directory,
+                ignoreExtension = false,
+                directory = false,
+                "$baseFileName.$extension")
+        }
     } else {
         VirtualFileUtil.findChildIgnoreCase(directory, ignoreExtension = false, directory = false, baseFileName)
     }
@@ -317,15 +321,16 @@ private fun getRelativePath(directory: VirtualFile, similarFile: VirtualFile, re
     val newPath = VfsUtil.findRelativePath(directory, similarFile, File.separatorChar)
         ?: return null
 
-    if (!removeExtension)
-        return newPath
-
     val path = newPath.split(File.separatorChar)
         .dropLast(1)
         .joinToString("" + File.separatorChar)
         .nullIfEmpty()
         ?.let { it + File.pathSeparator }
         .orElse("")
-    val fileName = if (removeExtension) similarFile.nameWithoutExtension else similarFile.name
+    val fileName = if (removeExtension) {
+        similarFile.nameWithoutExtension
+    } else {
+        similarFile.name
+    }
     return path + fileName
 }

@@ -1,8 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -10,7 +7,6 @@ import com.intellij.util.indexing.*
 import com.intellij.util.indexing.FileBasedIndex.InputFilter
 import com.intellij.util.io.IOUtil
 import com.intellij.util.io.KeyDescriptor
-import org.apache.batik.dom.svg12.Global
 import java.io.DataInput
 import java.io.DataOutput
 import java.util.*

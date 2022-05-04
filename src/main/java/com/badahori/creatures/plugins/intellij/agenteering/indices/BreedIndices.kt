@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.FileType
@@ -188,7 +188,7 @@ data class BreedPartKey(
             if (!isPartName(fileName, variant))
                 return null
 
-            val chars = FileNameUtils.getNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
+            val chars = FileNameUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
                 ?: return null
 
             return BreedPartKey(
@@ -203,7 +203,7 @@ data class BreedPartKey(
 
         @JvmStatic
         fun isPartName(fileName: String, variant: CaosVariant? = null): Boolean {
-            val chars = FileNameUtils.getNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
+            val chars = FileNameUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
                 ?: return false
             if (chars.size != 4) {
                 return false

@@ -1,10 +1,12 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
@@ -45,7 +47,7 @@ internal class SpriteFileTreeNode(
         if (!isValid()) {
             return@lazy emptyList()
         }
-        val fileNameBase = FileNameUtils.getNameWithoutExtension(value.name).orElse("_") + "."
+        val fileNameBase = FileNameUtil.getFileNameWithoutExtension(value.name).orElse("_") + "."
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
@@ -61,11 +63,11 @@ internal class SpriteFileTreeNode(
 
     override fun getChildren(): List<AbstractTreeNode<*>> = myChildren
 
-    override fun navigate(focus: Boolean) {
+    override fun navigate(requestFocus: Boolean) {
         if (!isValid()) {
             return
         }
-        PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
+        PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(requestFocus)
     }
 
     override fun expandOnDoubleClick(): Boolean = false
@@ -106,8 +108,8 @@ internal class SpriteImageTreeNode(
 ) {
     override fun getVirtualFile(): VirtualFile = myVirtualFile
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
-    override fun navigate(focus: Boolean) {
-        PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(focus)
+    override fun navigate(requestFocus: Boolean) {
+        PsiManager.getInstance(project!!).findFile(virtualFile)?.navigate(requestFocus)
     }
 
     override fun canNavigate(): Boolean =

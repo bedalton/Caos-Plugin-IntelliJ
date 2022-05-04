@@ -1,11 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -110,7 +110,7 @@ object Caos2CobCompiler {
                 error
             )
         }*/
-        if (FileNameUtils.getNameWithoutExtension(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
+        if (FileNameUtil.getFileNameWithoutExtension(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
             val removerData = compile(project, file, removerCob)
             if (removerData == null) {
                 ++compilationResult.failures
@@ -332,7 +332,7 @@ object Caos2CobCompiler {
         return links.map map@{ relativePath ->
             val file = directory.findChild(relativePath)
                 ?: throw Caos2CobException("Failed to locate linked file: at '${directory.path + "/" + relativePath}'")
-            val extension = FileNameUtils.getExtension(relativePath)?.lowercase()
+            val extension = FileNameUtil.getExtension(relativePath)?.lowercase()
             if (extension == "wav" || extension in SpriteParser.VALID_SPRITE_EXTENSIONS) {
                 throw Caos2CobException("Linked file was not a CAOS file. Did you mean Attach or Inline?")
             }
@@ -415,7 +415,7 @@ object Caos2CobCompiler {
     private fun writeCob(project: Project, directory: VirtualFile, cob: Caos2Cob, data: ByteArray): Boolean {
         var targetFile = cob.targetFile.nullIfEmpty()
             ?: throw Caos2CobException("Cannot write COB for agent: '${cob.agentName}' without target file.")
-        if (FileNameUtils.getExtension(targetFile).isNullOrBlank()) {
+        if (FileNameUtil.getExtension(targetFile).isNullOrBlank()) {
             targetFile += ".cob"
         }
         if (!directory.isDirectory)

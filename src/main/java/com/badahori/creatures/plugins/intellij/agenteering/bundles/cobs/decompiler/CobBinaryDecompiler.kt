@@ -1,15 +1,15 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.MemoryByteStreamReader
-import bedalton.creatures.bytes.cString
 import bedalton.creatures.bytes.string
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.BinaryFileDecompiler
 import com.intellij.openapi.project.Project
@@ -35,12 +35,12 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             if (byteBuffer.string(4) == "****") {
                 return byteArray.contentToString()
             }
-            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtils.getNameWithoutExtension(fileName))
+            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtil.getFileNameWithoutExtension(fileName))
             return presentCobData(fileName, cobData)
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
-            val cobData = CobToDataObjectDecompiler.decompile(MemoryByteStreamReader(byteArray), FileNameUtils.getNameWithoutExtension(fileName))
+            val cobData = CobToDataObjectDecompiler.decompile(MemoryByteStreamReader(byteArray), FileNameUtil.getFileNameWithoutExtension(fileName))
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile

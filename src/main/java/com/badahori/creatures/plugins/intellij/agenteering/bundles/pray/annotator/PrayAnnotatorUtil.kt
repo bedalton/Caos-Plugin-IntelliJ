@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator
 
+import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.util.stripSurroundingQuotes
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayDependencyCategories
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayDependencyCategories.dependencyCategoryName
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newErrorAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWarningAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newWeakWarningAnnotation
@@ -12,12 +14,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toArrayOf
 import com.intellij.lang.annotation.AnnotationHolder
-import bedalton.creatures.util.stripSurroundingQuotes
 
 
 object PrayAnnotatorUtil {
@@ -26,7 +26,7 @@ object PrayAnnotatorUtil {
     }
 }
 
-private val FLOAT_REGEX = "[+-]?[0-9]*\\.[0-9]+".toRegex()
+private val FLOAT_REGEX = "[+-]?\\d*\\.\\d+".toRegex()
 
 
 private fun annotateTagTypeError(tag: String, valueRaw: PrayTagValue, holder: AnnotationHolder): Boolean {
@@ -141,9 +141,9 @@ private fun annotateStringValue(tag: String, tagValueElement: PrayTagValue, stri
         }
         "Agent Animation Gallery",
         "Egg Gallery male",
-        "Egg Gallery female" -> if (FileNameUtils.getExtension(string).nullIfEmpty() != null) {
+        "Egg Gallery female" -> if (FileNameUtil.getExtension(string).nullIfEmpty() != null) {
             val error = AgentMessages.message("pray.annotator.tag-values.gallery-should-not-have-extension", tag)
-            val fixes = FileNameUtils.getNameWithoutExtension(string)?.let { fileNameWithoutExtension ->
+            val fixes = FileNameUtil.getFileNameWithoutExtension(string)?.let { fileNameWithoutExtension ->
                 CaosScriptReplaceElementFix(
                     tagValueElement,
                     "\"${fileNameWithoutExtension}\"",

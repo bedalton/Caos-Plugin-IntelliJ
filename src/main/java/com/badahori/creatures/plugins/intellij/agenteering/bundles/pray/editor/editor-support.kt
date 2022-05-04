@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
 import bedalton.creatures.pray.cli.PrayCompilerCliOptions
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -129,7 +130,7 @@ internal object PrayCompilerToolbarActions {
                     CaosNotifications.showInfo(
                         project,
                         "PRAY Compiler",
-                        "Compiled PRAY file '${file.name}' to '${FileNameUtils.getNameWithoutExtension(output)}'"
+                        "Compiled PRAY file '${file.name}' to '${FileNameUtil.getFileNameWithoutExtension(output)}'"
                     )
                 }
             }
