@@ -11,7 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.GlobalSearchScopes
 
 
 /**
@@ -76,7 +75,7 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
     val variant = when (file.extension?.lowercase()) {
         "spr" -> CaosVariant.C1
         "c16" -> {
-            val numImages = SpriteParser.numImages(file)
+            val numImages = SpriteParser.imageCount(file)
             when (part) {
                 'a' -> when (numImages) {
                     576 -> CaosVariant.CV
@@ -87,7 +86,7 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
             }
         }
         "s16" -> {
-            val numImages = SpriteParser.numImages(file)
+            val numImages = SpriteParser.imageCount(file)
             when (part) {
                 'a' -> when (numImages) {
                     120 -> CaosVariant.C2
