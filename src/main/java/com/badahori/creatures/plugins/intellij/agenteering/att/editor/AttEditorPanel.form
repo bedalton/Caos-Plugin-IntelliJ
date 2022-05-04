@@ -7,7 +7,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="b651a" binding="Toolbar" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+      <grid id="b651a" binding="attToolbar" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints border-constraint="North"/>
         <properties/>
         <border type="none"/>
