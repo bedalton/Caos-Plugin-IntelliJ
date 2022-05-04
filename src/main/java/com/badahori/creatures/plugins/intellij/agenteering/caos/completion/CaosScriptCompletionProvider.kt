@@ -2,9 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import bedalton.creatures.util.PathUtil
-import bedalton.creatures.util.pathSeparator
-import bedalton.creatures.util.pathSeparatorChar
+import bedalton.creatures.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.psiDirectory
@@ -28,6 +26,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.case
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -50,7 +52,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
 import icons.CaosScriptIcons
-import bedalton.creatures.util.stripSurroundingQuotes
 import com.intellij.psi.PsiWhiteSpace
 import java.nio.file.Path
 import kotlin.math.max
@@ -61,7 +62,7 @@ import kotlin.math.min
  * Adds completions for commands, variables, subroutine names, and known values.
  */
 object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
-    private val IS_NUMBER = "^[0-9]+".toRegex()
+    private val IS_NUMBER = "^\\d+".toRegex()
     private val WHITESPACE_ONLY = "^\\s+$".toRegex()
 
     @Suppress("SpellCheckingInspection")
@@ -666,11 +667,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         eggs: Boolean = false,
     ) {
         val existingTags: List<String> = prayTags.map { it.tag.lowercase() }
-        val tagTextRaw = tagElement?.tagText ?: ""
-        // Get tag text if any including previous siblings
-        val textComponents = tagTextRaw
-            .split("\\s+".toRegex())
-        val skip = max(0, textComponents.size - 1)
 
         val tags = PrayTags.allLiterals
             .keys
@@ -712,14 +708,12 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         val hasTagElement = tagElement != null
         var elements = tags.map { tag ->
-            val parts = tag.split(' ')
-            val text = tag//parts.drop(skip).joinToString(" ")
             (if (hasTagElement) {
-                LookupElementBuilder.createWithSmartPointer(text, tagElement!!)
+                LookupElementBuilder.createWithSmartPointer(tag, tagElement!!)
             } else {
-                LookupElementBuilder.create(text)
+                LookupElementBuilder.create(tag)
             })
-                .withLookupString(text)
+                .withLookupString(tag)
                 .withPresentableText(tag)
         }
         if (isCaosScriptFile) {
@@ -909,7 +903,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     .joinToString(pathSeparator)
                     .nullIfEmpty()
                     ?.let { it + pathSeparator }
-                val baseName = FileNameUtils.getNameWithoutExtension(childPath)
+                val baseName = FileNameUtil.getFileNameWithoutExtension(childPath)
                     ?: continue
                 parentPath + baseName
             } else {
