@@ -2,12 +2,15 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.util.count
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.openapi.vfs.newvfs.FileAttribute
@@ -99,7 +102,7 @@ object VirtualFileUtil {
         }
 
         return if (ignoreExtension) {
-            val last = FileNameUtils.getNameWithoutExtension(components.last())
+            val last = FileNameUtil.getFileNameWithoutExtension(components.last())
             file.children?.firstOrNull {
                 (scope == null || scope.accept(it)) &&
                         it.nameWithoutExtension.equals(last, true) &&
@@ -127,7 +130,7 @@ object VirtualFileUtil {
         }
         if (components.size == 1) {
             val onlyComponent = components[0]
-            if (FileNameUtils.getExtension(onlyComponent)?.nullIfEmpty() == null) {
+            if (FileNameUtil.getExtension(onlyComponent)?.nullIfEmpty() == null) {
                 virtualFile.children.firstOrNull { it.name.equals(onlyComponent, ignoreCase = true) }
                     ?.let {
                         if (it.isDirectory)
@@ -157,7 +160,7 @@ object VirtualFileUtil {
         val lastComponent = components.last()
         var last = file.children?.firstOrNull { it.name.equals(lastComponent, true) }
         if (last == null) {
-            if (FileNameUtils.getExtension(lastComponent).nullIfEmpty() == null)
+            if (FileNameUtil.getExtension(lastComponent).nullIfEmpty() == null)
                 return null
             else
                 last = file
@@ -167,6 +170,35 @@ object VirtualFileUtil {
         } else {
             file.children
         }.filter { !it.isDirectory }
+    }
+
+    fun nearest(virtualFile: VirtualFile, otherFiles: List<VirtualFile>, filter: (VirtualFile) -> Boolean = { true }): VirtualFile? {
+        if (otherFiles.isEmpty()) {
+            return null
+        }
+        return otherFiles
+            .mapNotNull map@ { other ->
+                if (!filter(other)) {
+                    return@map null
+                }
+                val relativePath = VfsUtil.findRelativePath(virtualFile, other, '/')
+                    ?: return@map null
+                val countPrevious = relativePath.count("../", false)
+                val after = relativePath.replace("../", "")
+                val countAfter = after.count('/')
+                return@map Triple(countPrevious, countAfter, other)
+            }
+            .nullIfEmpty()
+            ?.sortedWith sorted@{ a, b ->
+                val difference = b.first - a.first
+                if (difference != 0) {
+                    return@sorted difference
+                }
+                b.second - a.second
+            }
+            ?.firstOrNull()
+            ?.third
+
     }
 
 }
@@ -432,7 +464,7 @@ internal inline fun VirtualFile.applyWritable(work: VirtualFile.() -> Unit) {
  * Get the swing icon for a given file name
  */
 internal fun getFileIcon(fileName: String, nonNullDefault: Boolean = true): Icon? {
-    val extension = (FileNameUtils.getExtension(fileName) ?: fileName)
+    val extension = (FileNameUtil.getExtension(fileName) ?: fileName)
     return when (extension.uppercase()) {
         "COS" -> CaosScriptIcons.CAOS_FILE_ICON
         "SPR" -> CaosScriptIcons.SPR_FILE_ICON
