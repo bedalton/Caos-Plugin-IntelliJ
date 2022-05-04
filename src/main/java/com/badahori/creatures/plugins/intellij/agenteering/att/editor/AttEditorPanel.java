@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine;
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -44,14 +45,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     JComboBox<String> variantComboBox;
     JScrollPane scrollPane;
     JCheckBox labels;
-    JPanel Toolbar;
+    JPanel attToolbar;
     JPanel posePanel;
     private JPanel mainPanel;
     JCheckBox poseViewCheckbox;
-    private JButton refreshButton;
     private JPanel display;
     private List<String> pointNames = Collections.emptyList();
-    private boolean lockY;
     private PoseEditorImpl poseEditor;
     private int cell = -1;
     private boolean didLoadOnce = false;
@@ -71,19 +70,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         init();
     }
 
-    @Override
-    @NotNull
-    public JComponent getComponent() {
-        if (!didInit) {
-            init();
-        }
+    public @NotNull JComponent getComponent() {
+        init();
         return mainPanel;
-    }
-
-    @Override
-    @NotNull
-    public JComponent getToolbar() {
-        return this.Toolbar;
     }
 
     public synchronized void init() {
@@ -185,31 +174,31 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         poseViewCheckbox.addItemListener((e) -> showPoseView(poseViewCheckbox.isSelected()));
-        refreshButton.addActionListener((e) -> reloadFiles());
-        refreshButton.setOpaque(false);
-        refreshButton.setContentAreaFilled(false);
-        refreshButton.setBorderPainted(false);
     }
 
-
-    private void reloadFiles() {
-        this.getImages(true);
-        poseEditor.hardReload();
-        this.redrawPose();
-        updateCells();
-    }
 
     private void initPopupMenu() {
         final JPopupMenu menu = new JPopupMenu();
         final JMenuItem lockY = new JCheckBoxMenuItem("Lock Y-axis");
-        lockY.setSelected(this.lockY);
+        lockY.setSelected(this.controller.getLockY());
         lockY.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AttEditorPanel.this.lockY = !AttEditorPanel.this.lockY;
-                lockY.setSelected(AttEditorPanel.this.lockY);
+                controller.setLockY(!controller.getLockY());
+                lockY.setSelected(controller.getLockY());
             }
         });
+
+        final JMenuItem lockX = new JCheckBoxMenuItem("Lock X-axis");
+        lockX.setSelected(this.controller.getLockX());
+        lockX.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.setLockX(!controller.getLockX());
+                lockX.setSelected(controller.getLockX());
+            }
+        });
+        menu.add(lockX);
         menu.add(lockY);
         menu.addSeparator();
         for (int i = 0; i < 6; i++) {
@@ -265,9 +254,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         addNumberedPointKeyBinding(inputMap, actionMap, 5);
 
         // Initializes the key controls for the next point
-        final String SELECT_NEXT_POINT = "Next Point";
-        inputMap.put(KeyStroke.getKeyStroke("W"), SELECT_NEXT_POINT);
-        actionMap.put(SELECT_NEXT_POINT, new AbstractAction() {
+        final String selectNextPoint = "Next Point";
+        inputMap.put(KeyStroke.getKeyStroke("W"), selectNextPoint);
+        actionMap.put(selectNextPoint, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setCurrentPoint(wrapCurrentPoint(controller.getCurrentPoint() + 1));
@@ -275,9 +264,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         // Initializes the arrow key for previous point
-        final String SELECT_PREVIOUS_POINT = "Previous Point";
-        inputMap.put(KeyStroke.getKeyStroke("Q"), SELECT_PREVIOUS_POINT);
-        actionMap.put(SELECT_PREVIOUS_POINT, new AbstractAction() {
+        final String selectPreviousPoint = "Previous Point";
+        inputMap.put(KeyStroke.getKeyStroke("Q"), selectPreviousPoint);
+        actionMap.put(selectPreviousPoint, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setCurrentPoint(wrapCurrentPoint(controller.getCurrentPoint() - 1));
@@ -285,24 +274,51 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         // Sets a key to lock the y-axis
-        final String LOCK_Y = "LockY";
-        inputMap.put(KeyStroke.getKeyStroke("Y"), LOCK_Y);
-        actionMap.put(LOCK_Y, new AbstractAction() {
+        final String lockY = "LockY";
+        inputMap.put(KeyStroke.getKeyStroke("Y"), lockY);
+        actionMap.put(lockY, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lockY = !lockY;
+                controller.setLockY(!controller.getLockY());
+            }
+        });
+        // Sets a key to lock the y-axis
+        final String lockX = "LockX";
+        inputMap.put(KeyStroke.getKeyStroke("X"), lockX);
+        actionMap.put(lockX, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.setLockX(!controller.getLockX());
             }
         });
 
         // Sets a shortcut key to hide the labels
-        final String LABELS = "Labels";
-        inputMap.put(KeyStroke.getKeyStroke("L"), LABELS);
-        actionMap.put(LABELS, new AbstractAction() {
+        final String labels = "Labels";
+        inputMap.put(KeyStroke.getKeyStroke("L"), labels);
+        actionMap.put(labels, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                final boolean show = !labels.isSelected();
+                final boolean show = !AttEditorPanel.this.labels.isSelected();
                 CaosScriptProjectSettings.setShowLabels(show);
-                labels.setSelected(show);
+                AttEditorPanel.this.labels.setSelected(show);
+            }
+        });
+
+        final String previousFrame = "Previous Frame";
+        inputMap.put(KeyStroke.getKeyStroke("shift tab"), previousFrame);
+        actionMap.put(previousFrame, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.setSelected(controller.getSelectedCell() - 1);
+            }
+        });
+
+        final String nextFrame = "Next Frame";
+        inputMap.put(KeyStroke.getKeyStroke("shift tab"), nextFrame);
+        actionMap.put(nextFrame, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.setSelected(controller.getSelectedCell() + 1);
             }
         });
     }
@@ -321,6 +337,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             DumbService.getInstance(project).runWhenSmart(() -> initDisplay(variantIn));
             return;
         }
+
 
         // Add Sprite cell list to scroll pane
         scrollPane.setViewportView(spriteCellList);
@@ -374,16 +391,16 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         setScale(CaosScriptProjectSettings.getAttScale());
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
         loadRequestedPose();
-        refreshButton.setIcon(com.intellij.icons.AllIcons.Actions.Refresh);
     }
 
     private void pushAttToPoseEditor(final AttFileData attFile) {
         final HashMap<Character, BodyPartFiles> locked = new HashMap<>();
         final VirtualFile spriteFile = controller.getSpriteFile();
         CaosVariant variant = getVariant();
-//        final String attText = attFile.toFileText(variant);
-//        locked.put(getPart(), new BodyPartFiles(spriteFile, newFile));
-//        poseEditor.setLocked(locked);
+        final String attText = attFile.toFileText(variant);
+        final VirtualFile virtualFile = CaosVirtualFileSystem.getInstance().createTemporaryFile(attText, "att");
+        locked.put(getPart(), new BodyPartFiles(spriteFile, virtualFile));
+        poseEditor.setLocked(locked);
     }
 
     /**
@@ -611,8 +628,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final String error;
 
         final List<AttFileLine> lines = controller.getAttLines();
-        final int linesCount = controller.getLinesCount();
-        if (lines.size() < linesCount) {
+        if (lines.size() < 8) {
             error = "There should be at least 8 lines in each att file template";
         } else if (controller.getPointCount() < 0) {
             error = "There should be at least 1 point in each ATT file template";
@@ -630,6 +646,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final List<AttSpriteCellData> out = new ArrayList<>();
         int maxWidth = 0;
         int maxHeight = 0;
+        final int linesCount = controller.getLinesCount();
         // Adds point to list as well as sets size of all cells
         for (int i = 0; i < Math.min(images.size(), linesCount); i++) {
             final BufferedImage image = images.get(i);
@@ -652,12 +669,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private List<BufferedImage> getImages() {
-        return getImages(false);
-    }
-    private List<BufferedImage> getImages(final boolean deepReload) {
-        if (deepReload) {
-            controller.reloadFiles();
-        }
         return controller.getImages();
     }
 
@@ -698,12 +709,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 "7x"
         });
 
-        BreedPartKey key = controller.getBreedPartKey();
-        if (key == null) {
-            LOGGER.severe("Failed to get breed key");
-            key = new BreedPartKey();
-        }
-        poseEditor = new PoseEditorImpl(project, getVariant(), key, EAGER_LOAD_POSE_EDITOR, (rendered) -> {
+        final BreedPartKey key = controller.getBreedPartKey();
+        poseEditor = new PoseEditorImpl(project, getVariant(), Objects.requireNonNull(key), EAGER_LOAD_POSE_EDITOR, (rendered) -> {
             if (posePanel.isVisible() != rendered) {
                 posePanel.setVisible(rendered);
             }
@@ -755,7 +762,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private void loadRequestedPose() {
-        final Pose requestedPose = controller.getPose();
+        final Pose requestedPose = controller.getRequestedPose();
         if (requestedPose == null) {
             return;
         }
@@ -768,7 +775,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         if (pose != null) {
             setSelected(pose);
             final JComponent component = spriteCellList.get(pose);
-//            scrollPane.scrollRectToVisible(component.getVisibleRect());
+            scrollPane.scrollRectToVisible(component.getVisibleRect());
         }
     }
 
@@ -830,12 +837,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         createUIComponents();
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(0, 0));
-        Toolbar = new JPanel();
-        Toolbar.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(Toolbar, BorderLayout.NORTH);
+        attToolbar = new JPanel();
+        attToolbar.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(attToolbar, BorderLayout.NORTH);
         final JLabel label1 = new JLabel();
         label1.setText("Variant");
-        Toolbar.add(label1);
+        attToolbar.add(label1);
         variantComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("C1");
@@ -843,12 +850,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         defaultComboBoxModel1.addElement("CV");
         defaultComboBoxModel1.addElement("C3+");
         variantComboBox.setModel(defaultComboBoxModel1);
-        Toolbar.add(variantComboBox);
+        attToolbar.add(variantComboBox);
         final JSeparator separator1 = new JSeparator();
-        Toolbar.add(separator1);
+        attToolbar.add(separator1);
         final JLabel label2 = new JLabel();
         label2.setText("Part");
-        Toolbar.add(label2);
+        attToolbar.add(label2);
         part = new JComboBox();
         part.setEditable(false);
         part.setEnabled(true);
@@ -871,45 +878,45 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         defaultComboBoxModel2.addElement("P");
         defaultComboBoxModel2.addElement("Q");
         part.setModel(defaultComboBoxModel2);
-        Toolbar.add(part);
+        attToolbar.add(part);
         final JSeparator separator2 = new JSeparator();
-        Toolbar.add(separator2);
+        attToolbar.add(separator2);
         final JLabel label3 = new JLabel();
         label3.setText("Point");
-        Toolbar.add(label3);
+        attToolbar.add(label3);
         point1 = new JRadioButton();
         point1.setText("1");
-        Toolbar.add(point1);
+        attToolbar.add(point1);
         point2 = new JRadioButton();
         point2.setText("2");
-        Toolbar.add(point2);
+        attToolbar.add(point2);
         point3 = new JRadioButton();
         point3.setText("3");
-        Toolbar.add(point3);
+        attToolbar.add(point3);
         point4 = new JRadioButton();
         point4.setText("4");
-        Toolbar.add(point4);
+        attToolbar.add(point4);
         point5 = new JRadioButton();
         point5.setText("5");
-        Toolbar.add(point5);
+        attToolbar.add(point5);
         point6 = new JRadioButton();
         point6.setText("6");
-        Toolbar.add(point6);
+        attToolbar.add(point6);
         labels = new JCheckBox();
         labels.setSelected(true);
         labels.setText("Labels");
-        Toolbar.add(labels);
+        attToolbar.add(labels);
         final JSeparator separator3 = new JSeparator();
-        Toolbar.add(separator3);
+        attToolbar.add(separator3);
         final JLabel label4 = new JLabel();
         label4.setText("Scale");
-        Toolbar.add(label4);
-        Toolbar.add(scale);
+        attToolbar.add(label4);
+        attToolbar.add(scale);
         final Spacer spacer1 = new Spacer();
-        Toolbar.add(spacer1);
+        attToolbar.add(spacer1);
         poseViewCheckbox = new JCheckBox();
         poseViewCheckbox.setText("Pose View");
-        Toolbar.add(poseViewCheckbox);
+        attToolbar.add(poseViewCheckbox);
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel1, BorderLayout.CENTER);
@@ -935,4 +942,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         return mainPanel;
     }
 
+    @NotNull
+    @Override
+    public Object getToolbar() {
+        return attToolbar;
+    }
 }

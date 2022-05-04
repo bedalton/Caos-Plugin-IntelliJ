@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
@@ -38,6 +38,18 @@ internal class AttEditorController(
         mView = view
         return view
     }
+
+    override var lockX: Boolean
+        get() = model.lockX
+        set(value) {
+            model.lockX = value
+        }
+
+    override var lockY: Boolean
+        get() = model.lockY
+        set(value) {
+            model.lockY = value
+        }
 
     val isInitialized: Boolean
         get() = this::mView.isInitialized
@@ -235,6 +247,8 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     val pointNames: List<String>
     val fileName: String
     val showFooterNotification:(message: String, messageType: MessageType)->Unit
+    var lockY: Boolean
+    var lockX: Boolean
     fun getCurrentPoint(): Int
     fun setCurrentPoint(point: Int)
     fun setVariant(variant: CaosVariant)

@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.att
+package com.badahori.creatures.plugins.intellij.agenteering.att.parser
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
@@ -25,7 +25,7 @@ data class AttFileLine( val points: List<Pair<Int,Int>>) {
 /**
  * Holds data about the points in the ATT file by line
  */
-data class AttFileData(val lines:List<AttFileLine>,  val fileName: String? = null) {
+data class AttFileData(val lines:List<AttFileLine>, val fileName: String? = null) {
 
     /**
      * Gets a specific line in an ATT file

@@ -1,10 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
