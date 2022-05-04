@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
 import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
-import com.badahori.creatures.plugins.intellij.agenteering.att.toFileText
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.toFileText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTransparentWriteAction

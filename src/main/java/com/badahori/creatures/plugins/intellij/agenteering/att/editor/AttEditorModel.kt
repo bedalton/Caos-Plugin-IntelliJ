@@ -1,12 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import bedalton.creatures.sprite.parsers.SPRITE_DEBUG_LOGGING
-import bedalton.creatures.util.Log
-import bedalton.creatures.util.iIf
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileLine
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileParser.parse
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill.paddedData
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser.parse
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
@@ -74,8 +72,19 @@ internal class AttEditorModel(
     val fileName: String get() = attFile.name
 
     val attData: AttFileData
-        get() = mAttData ?: parse(attFile.contents, fileName = attFile.name).apply {
-            mAttData = this
+        get() {
+            mAttData?.let {
+                return it
+            }
+            val contents = attFile.contents
+            val data = paddedData(contents, spriteFile, variant)
+                ?.let { (trueVariant, data) ->
+                    mVariant = trueVariant
+                    data
+                }
+                ?: parse(contents, fileName = attFile.name)
+            mAttData = data
+            return data
         }
 
     private var md5: String? = null
@@ -83,8 +92,8 @@ internal class AttEditorModel(
 
     val attLines: List<AttFileLine> get() = attData.lines
 
-    private var mLockY: Boolean = false
-    val lockY: Boolean get() = mLockY
+    var lockY: Boolean = false
+    var lockX: Boolean = false
 
     val actionId = AtomicInteger(0)
 
@@ -234,6 +243,7 @@ internal class AttEditorModel(
 
         // Check if new data, equals old data
         // Return if it does
+        @Suppress("ControlFlowWithEmptyBody")
         if (attData.toFileText(variant) == text) {
 //            return
         }
@@ -289,8 +299,13 @@ internal class AttEditorModel(
         val newPoints: MutableList<Pair<Int, Int>> = ArrayList()
         var changedPoint = newPoint
         for (i in oldPoints.indices) {
-            if (currentPoint == i && lockY) {
-                changedPoint = Pair(newPoint.first, oldPoints[i].second)
+            if (currentPoint == i) {
+                if (lockY) {
+                    changedPoint = Pair(newPoint.first, oldPoints[i].second)
+                }
+                if (lockX) {
+                    changedPoint = Pair(oldPoints[i].first, newPoint.second)
+                }
             }
             newPoints.add(if (i == currentPoint) changedPoint else oldPoints[i])
         }
@@ -475,6 +490,12 @@ internal class AttEditorModel(
     }
 
     override fun setSelected(index: Int) {
+        if (index < 0) {
+            return
+        }
+        if (index >= attData.lines.size) {
+            return
+        }
         mSelectedCell = index
     }
 

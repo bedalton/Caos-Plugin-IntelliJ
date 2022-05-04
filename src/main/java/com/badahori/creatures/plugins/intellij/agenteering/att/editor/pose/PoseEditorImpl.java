@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.AttFileData;
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
