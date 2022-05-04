@@ -1,16 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobMoveFileToCommandFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.getFileNameWithArrayAccess
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Command
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
@@ -72,14 +74,14 @@ private fun validateCommand(commandElement: CaosScriptCaos2Command, holder: Prob
 
     // Find bad file references and build Element data pairs
     val badFileNameData = fileNames.indices.filter { i ->
-        fileNames[i].let { FileNameUtils.getExtension(it)?.lowercase() !in expectedExtensions }
+        fileNames[i].let { FileNameUtil.getExtension(it)?.lowercase() !in expectedExtensions }
     }.mapNotNull { i ->
         fileNameElements.getOrNull(i)?.let { element -> Pair(element, fileNames[i]) }
     }
 
     // Add error messages to bad file references
     for ((fileNameElement, fileName) in badFileNameData) {
-        val extension = FileNameUtils.getExtension(fileName)?.lowercase()
+        val extension = FileNameUtil.getExtension(fileName)?.lowercase()
         val fixes = getFixes(fileNameElement, extension)
         val parent = fileNameElement.getParentOfType(CaosScriptCaos2Command::class.java)!!.commandName
         val error = if (commandType in SCRIPT_COMMANDS) {

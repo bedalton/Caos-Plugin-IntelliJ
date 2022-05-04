@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import bedalton.creatures.sprite.parsers.BlkSpriteFile
 import bedalton.creatures.sprite.util.SpriteType
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteEditorImpl.Companion.cache
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
@@ -290,7 +291,7 @@ private class ImagePanel(val mImage: BufferedImage, defaultDirectory: String?) :
             return
         }
         var outputFileTemp = fileChooser.selectedFile
-        val extension = FileNameUtils.getExtension(outputFileTemp.name)
+        val extension = FileNameUtil.getExtension(outputFileTemp.name)
         if (extension == null || !extension.equals("png", ignoreCase = true)) {
             outputFileTemp = File(outputFileTemp.path + ".png")
         }

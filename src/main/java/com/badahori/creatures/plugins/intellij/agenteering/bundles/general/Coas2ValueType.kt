@@ -1,10 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
+import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.POS_NEG_NUMBER_REGEX
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import java.time.format.DateTimeFormatter
 
 enum class CobTagFormat(val formatDescriptor: String, val validate: (value:String) -> Boolean) {
@@ -36,7 +35,7 @@ internal fun isSingleImage(value: String): Boolean {
     val fileName = getFileName(value.stripSurroundingQuotes())
         ?: return false
 
-    val extension = FileNameUtils
+    val extension = FileNameUtil
         .getExtension(fileName)
         ?.lowercase()
 

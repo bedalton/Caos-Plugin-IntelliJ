@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compile
 
 import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
 import bedalton.creatures.sprite.util.ColorEncoding
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16Compiler
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -109,7 +110,7 @@ data class Caos2CobC2(
         objectScripts.forEach { script -> buffer.writeNullTerminatedString(script, CREATURES_CHARACTER_ENCODING) }
         buffer.writeUInt16(dependencies.size)
         dependencies.forEach { fileName ->
-            val tag = when (FileNameUtils.getExtension(fileName)?.lowercase()) {
+            val tag = when (FileNameUtil.getExtension(fileName)?.lowercase()) {
                 "s16" -> 0
                 "wav" -> 1
                 else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")

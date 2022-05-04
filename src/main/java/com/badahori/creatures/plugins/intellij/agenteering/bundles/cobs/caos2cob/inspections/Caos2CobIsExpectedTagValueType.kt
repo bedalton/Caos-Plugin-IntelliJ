@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
@@ -8,8 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
@@ -79,7 +78,7 @@ private fun validateThumbnail(
         ?.let { getFileNameWithArrayAccess(it) }
         ?: return
 
-    val extension = FileNameUtils
+    val extension = FileNameUtil
         .getExtension(fileName)
         ?.lowercase()
 

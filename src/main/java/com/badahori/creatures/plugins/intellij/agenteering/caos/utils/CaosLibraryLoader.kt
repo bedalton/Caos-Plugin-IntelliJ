@@ -1,8 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
-import java.io.*
+import java.io.File
+import java.io.InputStream
 import java.lang.reflect.Field
 
 object CaosLibraryLoader{
@@ -16,7 +17,7 @@ object CaosLibraryLoader{
             pathIn
         else
             "$pathIn.dll"
-        val myFile: String = FileNameUtils.getNameWithoutExtension(pathIn)!!
+        val myFile: String = FileNameUtil.getFileNameWithoutExtension(pathIn)!!
         try {
             // have to use a stream
             val dllInputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)

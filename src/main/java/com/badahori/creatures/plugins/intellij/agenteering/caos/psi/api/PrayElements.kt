@@ -4,7 +4,6 @@ import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.vfs.VfsUtil

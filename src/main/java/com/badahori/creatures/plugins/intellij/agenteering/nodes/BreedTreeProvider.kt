@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.combineAttNodes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.isPartName
-import com.badahori.creatures.plugins.intellij.agenteering.utils.FileNameUtils
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
@@ -76,7 +76,7 @@ class BreedTreeProvider : TreeStructureProvider {
 
         // Create the breed nodes using the map of breed keys to files
         val breedNodes: List<AbstractTreeNode<*>> = groups.mapNotNull map@{ (key, children) ->
-            val extensions = children.mapNotNull { FileNameUtils.getExtension(it.nameExtended ?: "")?.uppercase() }
+            val extensions = children.mapNotNull { FileNameUtil.getExtension(it.nameExtended ?: "")?.uppercase() }
             if (extensions.filter { it == "ATT" }.size < 6 && extensions.filterNot { it == "ATT" }.size < 6 ) {
                 out.addAll(children)
                 return@map null
@@ -100,6 +100,7 @@ class BreedTreeProvider : TreeStructureProvider {
     }
 
     companion object {
+        @Suppress("ComponentNotRegistered")
         class UseBreedNodeOptionAction : ToggleOptionAction({ event ->
             event.project?.let { it.settings.combineAttNodes = !it.settings.combineAttNodes }
             UseBreedNodeOption(event.project)
@@ -111,7 +112,7 @@ class BreedTreeProvider : TreeStructureProvider {
                 return "Combine Breed Nodes"
             }
 
-            override fun getDescription(): String? {
+            override fun getDescription(): String {
                 return "Combine all breed files for a given genus, age and breed into a single project node"
             }
 
