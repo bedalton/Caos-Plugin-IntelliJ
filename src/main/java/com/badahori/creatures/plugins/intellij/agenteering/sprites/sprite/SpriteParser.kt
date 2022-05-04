@@ -7,7 +7,10 @@ import bedalton.creatures.bytes.uInt16
 import bedalton.creatures.sprite.parsers.*
 import bedalton.creatures.sprite.util.SpriteType
 import bedalton.creatures.sprite.util.SpriteType.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.awt.toAwt
@@ -81,7 +84,7 @@ object SpriteParser {
     }
 
     @JvmStatic
-    fun numImages(virtualFile: VirtualFile) : Int? {
+    fun imageCount(virtualFile: VirtualFile) : Int? {
         return try {
             val bytesBuffer = VirtualFileStreamReader(virtualFile)
             if (virtualFile.extension?.lowercase() != "spr") {
@@ -93,6 +96,45 @@ object SpriteParser {
         } catch (e:Exception) {
             null
         }
+    }
+
+    @JvmStatic
+    fun getBodySpriteVariant(spriteFile: VirtualFile, defaultVariant: CaosVariant): CaosVariant {
+        if (!BreedPartKey.isPartName(spriteFile.nameWithoutExtension)) {
+            return defaultVariant
+        }
+        val extension = spriteFile.extension?.lowercase()
+            ?: defaultVariant
+        if (extension !in SpriteParser.VALID_SPRITE_EXTENSIONS) {
+            return defaultVariant
+        }
+        if (extension == "spr") {
+            return CaosVariant.C1
+        }
+
+        val part = spriteFile.name.getOrNull(0)?.lowercase()
+            ?: defaultVariant
+
+        val imageCount = try {
+            imageCount(spriteFile)
+                ?: return defaultVariant
+        } catch (e: Exception) {
+            return defaultVariant
+        }
+        if (extension == "s16") {
+            if (imageCount == 10 || imageCount == 120) {
+                return CaosVariant.C2
+            }
+        }
+        if (defaultVariant == CaosVariant.CV) {
+            return CaosVariant.CV
+        }
+        if (part == 'a') {
+            if (imageCount > 192) {
+                return CaosVariant.CV
+            }
+        }
+        return CaosVariant.C3
     }
 
     val VALID_SPRITE_EXTENSIONS = listOf("spr", "c16", "s16")
