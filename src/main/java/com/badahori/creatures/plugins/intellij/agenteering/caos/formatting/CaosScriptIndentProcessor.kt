@@ -18,8 +18,14 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
         val element = node.psi
             ?: return Indent.getNoneIndent()
 
+        val blockIndent = if (caosSettings.INDENT_BLOCKS) {
+            Indent.getNormalIndent()
+        } else {
+            Indent.getNoneIndent()
+        }
+
         val elementType = node.elementType
-        // Handle indent if cursor is at block end (ie. NEXT, ENDI)
+        // Handle indent if cursor is at block end (i.e. NEXT, ENDI)
         return when {
             elementType in CaosScriptTokenSets.BLOCK_STARTS_AND_ENDS -> {
                 Indent.getNoneIndent()
@@ -27,16 +33,20 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             elementType in CaosScriptTokenSets.COMMENTS -> {
                 val previous: ASTNode = node.previous
                     ?: return Indent.getAbsoluteNoneIndent()
-                if (previous.elementType == TokenType.WHITE_SPACE && previous.text == "\n")
-                    return Indent.getAbsoluteNoneIndent()
-                Indent.getNormalIndent()
+                if (previous.elementType == TokenType.WHITE_SPACE && previous.text == "\n") {
+                    Indent.getAbsoluteNoneIndent()
+                } else {
+                    blockIndent
+                }
             }
 
             // C1 String indents... which should be none on new line as it adds the spaces to the output
             elementType == CaosScriptTypes.CaosScript_CLOSE_BRACKET -> Indent.getAbsoluteNoneIndent()
             elementType == CaosScriptTypes.CaosScript_TEXT_LITERAL -> Indent.getAbsoluteNoneIndent()
 
-            elementType in CaosScriptTokenSets.WHITESPACES -> Indent.getNormalIndent()
+            elementType in CaosScriptTokenSets.WHITESPACES -> {
+                blockIndent
+            }
 
             node.getPreviousNonEmptyNode(true)?.elementType == CaosScriptTypes.CaosScript_COMMENT_BLOCK ->
                 Indent.getAbsoluteNoneIndent()
@@ -48,13 +58,14 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             element is CaosScriptCodeBlockLine -> {
                 (element.parent?.parent as? CaosScriptScriptElement)?.let {
                     getIndent(it, caosSettings)
-                } ?: Indent.getNormalIndent()
+                } ?: blockIndent
             }
             element is CaosScriptCodeBlock -> {
-                if (element.firstChild?.firstChild?.firstChild is CaosScriptComment) {
+                if (element.firstChild?.firstChild?.firstChild is CaosScriptComment && caosSettings.INDENT_BLOCKS) {
                     Indent.getNormalIndent()
-                } else
+                } else {
                     Indent.getNoneIndent()
+                }
             }
             element is CaosScriptCaos2Block -> Indent.getAbsoluteNoneIndent()
             element is CaosScriptCaos2BlockComment -> Indent.getAbsoluteNoneIndent()
@@ -64,10 +75,6 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
 
     }
 
-    companion object {
-        private val afterNewlineRegex = ".*\n$".toRegex()
-        private val spacesBeforeRegex = ".*[ ]$".toRegex()
-    }
 }
 
 private fun getIndent(parentBlock: CaosScriptScriptElement, caosSettings: CaosScriptCodeStyleSettings): Indent {
