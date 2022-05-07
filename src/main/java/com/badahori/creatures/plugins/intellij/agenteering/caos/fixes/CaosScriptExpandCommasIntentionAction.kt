@@ -24,7 +24,7 @@ import com.jetbrains.rd.util.string.print
 /**
  * Object class for expanding commas and newline-like spaces into newlines
  */
-object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), IntentionAction, LocalQuickFix {
+object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), IntentionAction, LocalQuickFix {
     override fun startInWriteAction(): Boolean = true
 
     override fun getFamilyName(): String = CAOSScript
@@ -152,8 +152,21 @@ object CaosScriptExpandCommasIntentionAction: PsiElementBaseIntentionAction(), I
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
             manager.commitDocument(document)
         }
-        CodeStyleManager.getInstance(project).reformat(file)
-        file.document?.setReadOnly(readonly)
+        if (!file.isValid || file.isInvalid || file.firstChild?.isValid != true) {
+            return false
+        }
+        try {
+            CodeStyleManager.getInstance(project).reformat(file)
+            file.document?.setReadOnly(readonly)
+        } catch (e: Exception) {
+            LOGGER.severe("Reformat threw error: ${e.message}")
+            e.printStackTrace()
+            return false
+        } catch (e: Error) {
+            LOGGER.severe("Reformat threw ERROR not exception: ${e.message}")
+            e.printStackTrace()
+            return false
+        }
         // Return success only if there are enough newlines to cover the elements, ignoring enum blocks
         return true
     }
