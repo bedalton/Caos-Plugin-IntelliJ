@@ -21,7 +21,6 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.soywiz.korio.dynamic.KDynamic.Companion.toIntOrNull
 import kotlinx.coroutines.*
 import java.io.File
 import javax.imageio.ImageIO

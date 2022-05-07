@@ -30,6 +30,7 @@ object SpriteSetUtil {
         ears: List<BodyPartFiles>,
         hair: List<BodyPartFiles>,
         manualAtts: Map<Char, BodyPartFiles>,
+        locked: Map<Char, BodyPartFiles>,
         vararg parts: Char,
     ): PoseRenderer.CreatureSpriteSet? {
         if (project.isDisposed) {
@@ -46,7 +47,8 @@ object SpriteSetUtil {
             tailParts = tail,
             earParts = ears,
             hairParts = hair,
-            manualAtts = manualAtts
+            manualAtts = manualAtts,
+            locked = locked
         )
         ?: return null
         if (parts.isEmpty()) {
@@ -68,6 +70,7 @@ object SpriteSetUtil {
                 project,
                 files,
                 manualAtts,
+                locked,
                 part
             )
             if (bodyData == null && part.lowercase() in 'a' .. 'l') {
@@ -115,36 +118,37 @@ object SpriteSetUtil {
         earParts: List<BodyPartFiles>,
         hairParts: List<BodyPartFiles>,
         manualAtts: Map<Char, BodyPartFiles>,
+        locked: Map<Char, BodyPartFiles>
     ): PoseRenderer.CreatureSpriteSet? {
-        val head = file(project, headParts, manualAtts, 'a')
+        val head = file(project, headParts, manualAtts, locked, 'a')
             ?: return null
-        val body = file(project, bodyParts, manualAtts, 'b')
+        val body = file(project, bodyParts, manualAtts, locked, 'b')
             ?: return null
-        val leftThigh = file(project, legParts, manualAtts, 'c')
+        val leftThigh = file(project, legParts, manualAtts, locked, 'c')
             ?: return null
-        val leftShin = file(project, legParts, manualAtts, 'd')
+        val leftShin = file(project, legParts, manualAtts, locked, 'd')
             ?: return null
-        val leftFoot = file(project, legParts, manualAtts, 'e')
+        val leftFoot = file(project, legParts, manualAtts, locked, 'e')
             ?: return null
-        val rightThigh = file(project, legParts, manualAtts, 'f')
+        val rightThigh = file(project, legParts, manualAtts, locked, 'f')
             ?: return null
-        val rightShin = file(project, legParts, manualAtts, 'g')
+        val rightShin = file(project, legParts, manualAtts, locked, 'g')
             ?: return null
-        val rightFoot = file(project, legParts, manualAtts, 'h')
+        val rightFoot = file(project, legParts, manualAtts, locked, 'h')
             ?: return null
-        val leftUpperArm = file(project, armParts, manualAtts, 'i')
+        val leftUpperArm = file(project, armParts, manualAtts, locked, 'i')
             ?: return null
-        val leftForearm = file(project, armParts, manualAtts, 'j')
+        val leftForearm = file(project, armParts, manualAtts, locked, 'j')
             ?: return null
-        val rightUpperArm = file(project, armParts, manualAtts, 'k')
+        val rightUpperArm = file(project, armParts, manualAtts, locked, 'k')
             ?: return null
-        val rightForearm = file(project, armParts, manualAtts, 'l')
+        val rightForearm = file(project, armParts, manualAtts, locked, 'l')
             ?: return null
-        val tailBase = file(project, tailParts, manualAtts, 'm')
-        val tailTip = file(project, tailParts, manualAtts, 'n')
-        val leftEar = file(project, earParts, manualAtts, 'o')
-        val rightEar = file(project, earParts, manualAtts, 'p')
-        val hair = file(project, hairParts, manualAtts, 'q')
+        val tailBase = file(project, tailParts, manualAtts, locked, 'm')
+        val tailTip = file(project, tailParts, manualAtts, locked, 'n')
+        val leftEar = file(project, earParts, manualAtts, locked, 'o')
+        val rightEar = file(project, earParts, manualAtts, locked, 'p')
+        val hair = file(project, hairParts, manualAtts, locked, 'q')
         return PoseRenderer.CreatureSpriteSet(
             head = head,
             body = body,
@@ -176,12 +180,17 @@ object SpriteSetUtil {
         project: Project,
         files: List<BodyPartFiles>,
         manualAtts: Map<Char, BodyPartFiles>,
+        locked: Map<Char, BodyPartFiles>,
         part: Char,
     ): SpriteBodyPart? {
         if (project.isDisposed) {
             return null
         }
         manualAtts[part]?.let {
+            return it.data(project)
+        }
+
+        locked[part]?.let {
             return it.data(project)
         }
         val breedFile = files

@@ -1,14 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
-import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl;
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.MouseListenerBase;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -58,6 +60,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private boolean showPoseView = CaosScriptProjectSettings.getShowPoseView();
     private boolean didInit = false;
     private final AttEditorHandler controller;
+
+    protected JButton refreshButton;
 
     AttEditorPanel(
             @NotNull
@@ -174,6 +178,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         poseViewCheckbox.addItemListener((e) -> showPoseView(poseViewCheckbox.isSelected()));
+        refreshButton.addActionListener((e) -> {
+            controller.reloadFiles();
+            poseEditor.hardReload();
+            refresh();
+        });
     }
 
 
@@ -201,6 +210,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         menu.add(lockX);
         menu.add(lockY);
         menu.addSeparator();
+//        scrollPane.addMouseListener(new MouseListenerBase() {
+//            @Override
+//            public void mouseClicked(@NotNull MouseEvent e) {
+//                menu.show(scrollPane, e.getX(), e.getY());
+//            }
+//        });
         for (int i = 0; i < 6; i++) {
             final JMenuItem pointMenuItem = new JMenuItem("Point " + i);
             JRadioButton button;
@@ -321,6 +336,10 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 controller.setSelected(controller.getSelectedCell() + 1);
             }
         });
+
+        scrollPane.setInputMap(JComponent.WHEN_FOCUSED, inputMap);
+        scrollPane.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+        scrollPane.setActionMap(actionMap);
     }
 
     /**
@@ -391,6 +410,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         setScale(CaosScriptProjectSettings.getAttScale());
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
         loadRequestedPose();
+        poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
     }
 
     private void pushAttToPoseEditor(final AttFileData attFile) {
@@ -774,9 +794,21 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final Integer pose = requestedPose.get(getPart());
         if (pose != null) {
             setSelected(pose);
-            final JComponent component = spriteCellList.get(pose);
-            scrollPane.scrollRectToVisible(component.getVisibleRect());
         }
+    }
+
+    @Override
+    public void scrollCellIntoView() {
+        final Pose currentPose = controller.getPose();
+        if (currentPose == null) {
+            return;
+        }
+        final Integer pose = currentPose.get(getPart());
+        if (pose == null) {
+            return;
+        }
+        final JComponent component = spriteCellList.get(pose);
+        scrollPane.scrollRectToVisible(component.getVisibleRect());
     }
 
     public void clearPose() {

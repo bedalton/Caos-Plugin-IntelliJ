@@ -338,11 +338,22 @@ class PoseEditorModel(
      * Removes a manually set att from the list
      */
     fun removeManualAtt(part: Char) {
-        if (manualAtts.containsKey(part)) {
+        if (!locked.containsKey(part) && manualAtts.containsKey(part)) {
             manualAtts.remove(part)
         }
     }
 
+    /**
+     * Removes a manually set att from the list
+     */
+    fun removeManualAttIfSpriteNotMatching(part: Char, spriteFile: VirtualFile) {
+        if (!locked.containsKey(part) && manualAtts.containsKey(part)) {
+            val manual = manualAtts[part]
+            if (manual?.spriteFile?.path != spriteFile.path) {
+                manualAtts.remove(part)
+            }
+        }
+    }
 
     /**
      * Get the actual direction that is faced based on other dropdowns
@@ -404,6 +415,7 @@ class PoseEditorModel(
             poseEditor.getBreedFiles(PartGroups.EARS),
             poseEditor.getBreedFiles(PartGroups.HAIR),
             manualAtts,
+            locked,
             *parts
         )
         spriteSet = updatedSprites

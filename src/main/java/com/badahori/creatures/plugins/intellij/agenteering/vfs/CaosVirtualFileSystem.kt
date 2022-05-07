@@ -143,7 +143,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
         newParentIn: VirtualFile
     ) {
         if (newParentIn !is CaosVirtualFile) {
-            LOGGER.info("VirtualFileTypeMove. NewParentFileType: ${newParentIn.canonicalName}. FileSystem: ${newParentIn.fileSystem.canonicalName}")
+//            LOGGER.info("VirtualFileTypeMove. NewParentFileType: ${newParentIn.canonicalName}. FileSystem: ${newParentIn.fileSystem.canonicalName}")
             (newParentIn.fileSystem as? LocalFileSystem)?.let { vfs ->
                 val temp = File.createTempFile(virtualFileIn.nameWithoutExtension, virtualFileIn.extension)
                 temp.writeBytes(virtualFileIn.contentsToByteArray())
@@ -152,7 +152,7 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
                 fireFileMoved(requestor, virtualFileIn, virtualFileIn.parent)
                 return
             }
-            LOGGER.info("New parent was not CAOS virtual file System. Was: ${newParentIn.fileSystem.className}")
+//            LOGGER.info("New parent was not CAOS virtual file System. Was: ${newParentIn.fileSystem.className}")
             return
         }
         val virtualFile = if (virtualFileIn !is CaosVirtualFile) {

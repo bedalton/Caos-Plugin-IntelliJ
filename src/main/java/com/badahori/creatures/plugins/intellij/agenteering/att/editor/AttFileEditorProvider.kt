@@ -23,10 +23,7 @@ class AttFileEditorProvider : FileEditorProvider {
             return false
         }
 
-        val lines = file.contents.split("\r?\n".toRegex()).filter { it.isNotBlank() }.size;
-        if (lines !in listOf(10, 16)) {
-            return false
-        }
+//        val lines = file.contents.split("\r?\n".toRegex()).filter { it.isNotBlank() }.size;
         if (file.extension?.lowercase() != "att")
             return false
         val spriteFileNameBase = file.nameWithoutExtension

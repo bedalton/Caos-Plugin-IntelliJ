@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtilKt;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosStringUtilsKt;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.MouseListenerBase;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -123,7 +124,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private boolean variantChanged = false;
     private boolean didInitComboBoxes = false;
 
-    private String md5 = null;
+    private final Map<Character, BodyPartFiles> last = new HashMap<>();
 
     public PoseEditorImpl(
             @NotNull
@@ -151,6 +152,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         model = new PoseEditorModel(project, variant, this);
         init();
     }
+
 
     /**
      * Reverses the items in an array
@@ -443,7 +445,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (rootPath == null || files == null || files.isEmpty()) {
             freeze(openRelated, true, true);
             openRelatedLabel.setVisible(false);
-            LOGGER.info("No files to initialize \"Open related...\" text box");
             return;
         }
         final BreedPartKey key = baseBreed.copyWithPart(null);
@@ -494,34 +495,13 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         final Highlighter highlighter = new DefaultHighlighter();
         final PopUp poseContextMenu = new PopUp();
         poseStringField.setHighlighter(highlighter);
-        poseStringField.addMouseListener(new MouseListener() {
-
+        poseStringField.addMouseListener(new MouseListenerBase() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(@NotNull MouseEvent e) {
                 poseContextMenu.updateItems();
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     poseContextMenu.show(e.getComponent(), e.getX(), e.getY());
                 }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
             }
         });
         poseStringField.addKeyListener(new KeyAdapter() {
@@ -544,6 +524,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 redraw();
             }
         });
+
         // Breed listener
         addBreedListener(headBreed, 'a');
         addBreedListener(bodyBreed, 'b');
@@ -651,13 +632,56 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 return;
             }
 
-            for (char part : parts) {
-                model.removeManualAtt(part);
+            final List<BodyPartFiles> theseFiles = getSelectedFiles(box);
+            for (final char part : parts) {
+                clearManualAttOnChange(theseFiles, part);
             }
+
             if (didInitOnce) {
                 redraw(parts);
             }
         });
+    }
+
+    private List<BodyPartFiles> getSelectedFiles(final JComboBox<Triple<String, BreedPartKey, List<BodyPartFiles>>> box) {
+        final Object raw = box.getSelectedItem();
+        final List<BodyPartFiles> files;
+        if (raw != null) {
+            @SuppressWarnings("unchecked")
+            final Triple<String, BreedPartKey, List<BodyPartFiles>> selected = (Triple<String, BreedPartKey, List<BodyPartFiles>>) raw;
+            files = selected.getThird();
+        } else {
+            files = Lists.newArrayList();
+        }
+        return files;
+    }
+
+    private void clearManualAttOnChange(List<BodyPartFiles> files, char part) {
+        final BodyPartFiles lastFile = last.get(part);
+        final BodyPartFiles selectedFile = getSelectedPart(files, part);
+        last.put(part, selectedFile);
+
+        final BodyPartFiles partFiles = lastFile != null ? lastFile : selectedFile;
+        if (partFiles == null) {
+            model.removeManualAtt(part);
+        } else {
+            model.removeManualAttIfSpriteNotMatching(part, partFiles.getSpriteFile());
+        }
+    }
+
+    @Nullable
+    private BodyPartFiles getSelectedPart(List<BodyPartFiles> files, char part) {
+        final Optional<BodyPartFiles> file = files.stream()
+                .filter((i) -> {
+                    final BreedPartKey key = i.getKey();
+                    Character partChar = key != null && key.getPart() == null ? key.getPart() : null;
+                    if (partChar == null) {
+                        partChar = i.getSpriteFile().getName().charAt(0);
+                    }
+                    return partChar == part;
+                })
+                .findFirst();
+        return file.orElse(null);
     }
 
     /**
@@ -741,6 +765,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             wasHidden = true;
             return;
         }
+        //noinspection StatementWithEmptyBody
         if (model.getRendering()) {
 //            return;
         }
@@ -875,6 +900,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 spriteFile,
                 att
         );
+
     }
 
     /**
