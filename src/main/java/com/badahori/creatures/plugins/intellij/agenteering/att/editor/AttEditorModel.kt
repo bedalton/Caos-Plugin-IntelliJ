@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.fromFileName
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
@@ -92,12 +93,23 @@ internal class AttEditorModel(
 
     val attLines: List<AttFileLine> get() = attData.lines
 
-    var lockY: Boolean = false
-    var lockX: Boolean = false
+    // Lock X axis for point
+    private var mLockX: Boolean = false
+    var lockX: Boolean
+        get() = mLockX
+        set(value) { mLockY = false; mLockX = value}
+
+    // Lock Y axis for point
+    private var mLockY: Boolean = false
+    var lockY: Boolean
+        get() = mLockY
+        set(value) { mLockX = false; mLockY = value}
+
+
 
     val actionId = AtomicInteger(0)
 
-    val readonly = attFile.isWritable
+    val readonly = attFile is CaosVirtualFile
 
     init {
         val psiFile = attFile.getPsiFile(project)

@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import bedalton.creatures.sprite.parsers.SPRITE_DEBUG_LOGGING
-import bedalton.creatures.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -40,10 +38,6 @@ internal class AttEditorImpl(
             variant,
             this::showFooterNotification
         )
-    }
-
-    init {
-        Log.setMode(SPRITE_DEBUG_LOGGING, true)
     }
 
     override fun getComponent(): JComponent {
@@ -115,6 +109,7 @@ internal class AttEditorImpl(
                 DumbService.getInstance(myProject).runWhenSmart(::selectNotify)
             }
             controller.view.refresh()
+            controller.view.scrollCellIntoView()
         }
     }
 

@@ -379,99 +379,90 @@ object PoseRenderer {
                 )
                 'c' -> copy(
                     leftThigh = leftThigh.copy(
-                        sprite = leftThigh.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'd' -> copy(
                     leftShin = leftShin.copy(
-                        sprite = leftShin.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'e' -> copy(
                     leftFoot = leftFoot.copy(
-                        sprite = leftFoot.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'f' -> copy(
                     rightThigh = rightThigh.copy(
-                        sprite = rightThigh.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'g' -> copy(
                     rightShin = rightShin.copy(
-                        sprite = rightShin.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'h' -> copy(
                     rightFoot = rightFoot.copy(
-                        sprite = rightFoot.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'i' -> copy(
                     leftUpperArm = leftUpperArm.copy(
-                        sprite = leftUpperArm.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'j' -> copy(
                     leftForearm = leftForearm.copy(
-                        sprite = leftForearm.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'k' -> copy(
                     rightUpperArm = rightUpperArm.copy(
-                        sprite = rightUpperArm.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
                 'l' -> copy(
                     rightForearm = rightForearm.copy(
-                        sprite = rightForearm.sprite, bodyData = att
+                        bodyData = att
                     )
                 )
 
                 'm' -> copy(
-                    tailBase = tailBase?.let {
-                        it.copy(
-                            sprite = it.sprite, bodyData = att
-                        )
-                    }
+                    tailBase = tailBase?.copy(
+                        bodyData = att
+                    )
                 )
                 'n' -> copy(
-                    tailTip = tailTip?.let {
-                        it.copy(
-                            sprite = it.sprite, bodyData = att
-                        )
-                    }
+                    tailTip = tailTip?.copy(
+                        bodyData = att
+                    )
                 )
 
                 'o' -> copy(
-                    leftEar = leftEar?.let {
-                        it.copy(
-                            sprite = it.sprite, bodyData = att
-                        )
-                    }
+                    leftEar = leftEar?.copy(
+                        bodyData = att
+                    )
+
                 )
 
                 'p' -> copy(
-                    rightEar = rightEar?.let {
-                        it.copy(
-                            sprite = it.sprite, bodyData = att
-                        )
-                    }
+                    rightEar = rightEar?.copy(
+                        bodyData = att
+                    )
                 )
 
                 'q' -> copy(
-                    hair = hair?.let {
-                        it.copy(
-                            sprite = it.sprite, bodyData = att
-                        )
-                    }
+                    hair = hair?.copy(
+                        bodyData = att
+                    )
                 )
                 else -> throw Exception("Invalid part '$part' for att replacing")
             }
         }
 
         fun asMap(): Map<Char, SpriteBodyPart?> {
-            return ('a'..'q').associateWith{ part ->
+            return ('a'..'q').associateWith { part ->
                 get(part)
             }
         }

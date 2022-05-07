@@ -225,6 +225,7 @@ internal class AttEditorController(
         fun dispose()
         fun refresh()
         fun clearPose()
+        fun scrollCellIntoView()
     }
 
 }
@@ -247,8 +248,8 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     val pointNames: List<String>
     val fileName: String
     val showFooterNotification:(message: String, messageType: MessageType)->Unit
-    var lockY: Boolean
     var lockX: Boolean
+    var lockY: Boolean
     fun getCurrentPoint(): Int
     fun setCurrentPoint(point: Int)
     fun setVariant(variant: CaosVariant)

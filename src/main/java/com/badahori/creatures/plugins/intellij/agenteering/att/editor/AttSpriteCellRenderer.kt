@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
 import com.intellij.openapi.editor.colors.EditorColorsManager
@@ -276,10 +277,11 @@ internal class AttSpriteCellList(
         invokeLater later@{
             (parent as? JPanel)?.doLayout()
             val bounds = item.bounds
+            val visibleRect = visibleRect
             if (visibleRect.contains(bounds).orTrue())
                 return@later
-            val offset = ((pose * 0.85) * item.height).toInt()
-            (parent?.parent as? JScrollPane)?.verticalScrollBar?.value = offset
+            val offset = visibleRect.intersection(bounds)
+//            (parent?.parent as? JScrollPane)?.verticalScrollBar?.value = offset
 
         }
     }

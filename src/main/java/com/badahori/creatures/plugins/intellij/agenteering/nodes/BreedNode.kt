@@ -66,7 +66,7 @@ internal class BreedNode(
         } else {
             ""
         }
-        presentation.presentableText = "*${key.code}"
+        presentation.presentableText = "*${key.code}.$extension"
         val icon = if (hasAtts) {
             CaosScriptIcons.ATT_FILE_ICON
         } else {
