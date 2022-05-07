@@ -1,8 +1,7 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import bedalton.creatures.sprite.parsers.SPRITE_DEBUG_LOGGING
-import bedalton.creatures.util.Log
-import bedalton.creatures.util.iIf
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -85,7 +84,7 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
             clearCache(myFile)
         }
         if (this::editor.isInitialized) {
-            editor.reloadSprite();
+            editor.reloadSprite()
         }
     }
 

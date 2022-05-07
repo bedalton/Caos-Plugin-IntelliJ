@@ -17,7 +17,7 @@ object SpriteDumpDialog {
         multiFile: Boolean = false,
         folderChangeListener: (path: String?, useChildDirectories: Boolean) -> Unit
     ): DialogBuilder {
-        val useChildDirectories = JCheckBox("Use child directories based on file name", true).apply {
+        val useChildDirectories = JCheckBox("Use child directories based on file name", multiFile).apply {
             this.alignmentX = Component.LEFT_ALIGNMENT
         }
 
