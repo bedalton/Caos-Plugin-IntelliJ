@@ -417,10 +417,17 @@ private fun populate(
         pointer.element?.let { caosFile ->
             val caos2Listener = caosFile.addCaos2ChangeListener { isCaos2 ->
                 compilePanel.isVisible = isCaos2 != null
-                if (showVariantSelect)
-                    variantPanel.isVisible = isCaos2 == null
+                compileButton.isVisible = isCaos2 != null
+                compileButton.revalidate()
+                compilePanel.revalidate()
+//                if (showVariantSelect) {
+//                    variantSelect.isEditable = isCaos2 == null
+//                    variantSelect.isEnabled = isCaos2 == null
+//                    variantSelect.revalidate()
+//                }
             } ?: return@run
             PsiManager.getInstance(project).addPsiTreeChangeListener(caos2Listener)
+
         }
     }
 
