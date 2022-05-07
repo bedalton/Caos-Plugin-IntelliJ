@@ -5,15 +5,17 @@ import bedalton.creatures.util.PathUtil
 import bedalton.creatures.util.pathSeparator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.mapAsync
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeChild
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.CommandProcessor
@@ -24,10 +26,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korim.awt.toAwt
 import icons.CaosScriptIcons
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicInteger
 
 class DumpSpriteAction : AnAction(
     AgentMessages.message("actions.dump-sprite.title"),
@@ -36,8 +43,6 @@ class DumpSpriteAction : AnAction(
 ), DumbAware {
 
     override fun isDumbAware(): Boolean = true
-
-    override fun startInTransaction(): Boolean = true
 
     override fun update(e: AnActionEvent) {
         val files = e.files
@@ -54,12 +59,14 @@ class DumpSpriteAction : AnAction(
             ?: return
         if (files.isEmpty())
             return
-        val initialPath = if (files.size == 1) {
+
+        val allBlks = files.all { it.extension?.lowercase() == "blk" }
+        val initialPath = if (files.size == 1 && !allBlks) {
             files[0].parent.path + File.separatorChar + files[0].nameWithoutExtension
         } else {
             files[0].parent.path + File.separatorChar
         }
-        SpriteDumpDialog.create(project, initialPath, files.size > 1) run@{ parentPath, useChildDirectories ->
+        SpriteDumpDialog.create(project, initialPath, !allBlks) run@{ parentPath, useChildDirectories ->
             if (parentPath == null)
                 return@run
             val commandName = if (files.size == 1)
@@ -67,18 +74,27 @@ class DumpSpriteAction : AnAction(
             else
                 "Dump Sprites"
             val createdFiles = mutableListOf<Pair<VirtualFile, VirtualFile>>()
+            val groupId = "caos.SPRITE_DUMP-" + spriteDumpId.incrementAndGet()
             WriteCommandAction
                 .writeCommandAction(project)
-                .withGroupId("caos.SPRITE_DUMP")
+                .withGroupId(groupId)
                 .withName(commandName)
                 .withUndoConfirmationPolicy(UndoConfirmationPolicy.REQUEST_CONFIRMATION)
                 .withGlobalUndo()
                 .run<Exception> {
-                    CommandProcessor.getInstance().runUndoTransparentAction {
-                        dump(project, files, parentPath, useChildDirectories, createdFiles)
+                    GlobalScope.launch {
+                        dump(
+                            project,
+                            commandName,
+                            groupId,
+                            files,
+                            parentPath,
+                            useChildDirectories,
+                            createdFiles
+                        )
+                        val parent = VfsUtil.findFile(Path.of(parentPath), true)
+                        parent?.parent?.refresh(true, true)
                     }
-                    val parent = VfsUtil.findFile(Path.of(parentPath), true)
-                    parent?.parent?.refresh(true, true)
                 }
         }.apply {
             setCancelOperation {
@@ -89,44 +105,35 @@ class DumpSpriteAction : AnAction(
         }
     }
 
-    private fun dump(
+    private suspend fun dump(
         project: Project,
+        name: String,
+        groupId: String,
         files: Array<VirtualFile>,
         path: String,
         useChildDirectories: Boolean,
-        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
+        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
     ) {
         ensureParentDirectory(path, createdFiles)
         val dumped = Pointer(0)
         val failed = Pointer(0)
-        for (file in files) {
-//            WriteCommandAction.writeCommandAction(project)
-//                .withName("Dump Sprite: ${file.name}")
-//                .withGroupId("caos.DUMP_SPRITE")
-//                .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
-//                .run<Exception> {
-//                    dumpFile(
-//                        files,
-//                        file,
-//                        parent,
-//                        useChildDirectories,
-//                        dumped,
-//                        failed,
-//                        createdFiles
-//                    )
-//                }
-            CommandProcessor.getInstance().runUndoTransparentAction {
-                dumpFile(
-                    files,
-                    file,
-                    path,
-                    useChildDirectories,
-                    dumped,
-                    failed,
-                    createdFiles
-                )
-            }
+        files.mapAsync { file ->
+            WriteCommandAction.writeCommandAction(project)
+                .withName(name)
+                .withGroupId(groupId)
+                .run<Throwable> {
+                    dumpFile(
+                        files,
+                        file,
+                        path,
+                        useChildDirectories,
+                        dumped,
+                        failed,
+                        createdFiles
+                    )
+                }
         }
+
         when {
             failed.value > 0 -> {
                 CaosNotifications.showError(
@@ -155,11 +162,11 @@ class DumpSpriteAction : AnAction(
         useChildDirectories: Boolean,
         dumped: Pointer<Int>,
         failed: Pointer<Int>,
-        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
+        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
     ) {
         if (file.fileType !in spriteFileTypes)
             return
-        val targetPath = if (files.size > 1 && useChildDirectories)
+        val targetPath = if (files.size > 1 && useChildDirectories && file.extension?.lowercase() != "blk")
             parentPath + '/' + file.nameWithoutExtension
         else
             parentPath
@@ -187,9 +194,21 @@ class DumpSpriteAction : AnAction(
     private fun dump(
         parentVirtualFile: VirtualFile,
         file: VirtualFile,
-        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
+        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
     ): Boolean {
         // Parse sprite and get images
+        val blk = file.extension?.lowercase() == "blk"
+
+        if (blk) {
+            try {
+                val stream = VirtualFileStreamReader(file)
+                val png = bedalton.creatures.sprite.parsers.SpriteParser.getStitched(stream).toAwt()
+                write(parentVirtualFile, file.nameWithoutExtension + ".png", png, createdFiles)
+                return true
+            } catch (e: Exception) {
+                return false
+            }
+        }
         val sprite = SpriteParser.parse(file)
         val images = sprite.images
 
@@ -206,23 +225,33 @@ class DumpSpriteAction : AnAction(
         // Write each sprite image to the parent directory
         for (i in images.indices) {
             val image = images[i]
-            CommandProcessor.getInstance().runUndoTransparentAction {
-                // Format File Number
-                val spriteNumber = "$i".padStart(indexLength, '0')
-                // Create sprite image destination file
-                val spriteFileName = prefix + spriteNumber + suffix
-                val existing = parentVirtualFile.findChild(spriteFileName)
-                existing?.delete(this@DumpSpriteAction)
-                val imageBytes = image.toPngByteArray()
-                // Write the sprite image to the file as PNG
-                val child = parentVirtualFile.writeChild(spriteFileName, imageBytes)
-                createdFiles.add(parentVirtualFile to child)
-            }
+            // Format File Number
+            val spriteNumber = "$i".padStart(indexLength, '0')
+            // Create sprite image destination file
+            val spriteFileName = prefix + spriteNumber + suffix
+            write(parentVirtualFile, spriteFileName, image, createdFiles)
         }
         return true
     }
 
-    private fun ensureParentDirectory(path: String, createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>): VirtualFile {
+    private fun write(
+        parentVirtualFile: VirtualFile,
+        spriteFileName: String,
+        image: BufferedImage,
+        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
+    ) {
+        val existing = parentVirtualFile.findChild(spriteFileName)
+        existing?.delete(this@DumpSpriteAction)
+        val imageBytes = image.toPngByteArray()
+        // Write the sprite image to the file as PNG
+        val child = parentVirtualFile.writeChild(spriteFileName, imageBytes)
+        createdFiles.add(parentVirtualFile to child)
+    }
+
+    private fun ensureParentDirectory(
+        path: String,
+        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
+    ): VirtualFile {
         val first = getFirstExistsParent(path)
             ?: throw IOException("Path <$path> is invalid")
 //        if (ApplicationManager.getApplication().isReadAccessAllowed)
@@ -266,6 +295,7 @@ class DumpSpriteAction : AnAction(
     }
 
     companion object {
+        private val spriteDumpId = AtomicInteger(0)
         private val spriteFileTypes = listOf(
             SprFileType,
             S16FileType,
