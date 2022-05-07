@@ -33,6 +33,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import icons.CaosScriptIcons
 import bedalton.creatures.util.stripSurroundingQuotes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import javax.swing.Icon
 
 
@@ -495,9 +497,10 @@ object CaosScriptPsiImplUtil {
             // Necessary in case a variant has changed since cache
             if (variantForCommand == variant) {
                 // Return cached value only if command text matches
-                if (command == null || command.command like tokenText)
-                // return cached value
+                if (command == null || command.command like tokenText) {
+                    // return cached value
                     return command
+                }
             }
         }
 
@@ -570,8 +573,9 @@ object CaosScriptPsiImplUtil {
             }
         }
         return lib.allCommands.filter(filter).let { commands ->
-            if (bias != null)
+            if (bias != null) {
                 commands.firstOrNull { command -> command.returnType == bias }?.let { return it }
+            }
             commands.firstOrNull()
         }
     }
@@ -1036,7 +1040,6 @@ object CaosScriptPsiImplUtil {
     fun getReference(element: CaosScriptQuoteStringLiteral): CaosScriptQuoteStringReference {
         return CaosScriptQuoteStringReference(element)
     }
-
 
     @JvmStatic
     fun getReference(element: CaosScriptStringText): CaosScriptStringTextReference {
@@ -1786,6 +1789,84 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getStringValue(element: CaosScriptCaos2ValueToken): String {
         return element.text
+    }
+
+    @JvmStatic
+    fun getStubKind(element: CaosScriptQuoteStringLiteral): StringStubKind? {
+
+        // No string completion in C1e
+        if (element.variant?.isOld != false) {
+            return null
+        }
+
+        element.stub?.kind?.let {
+            return it
+        }
+
+        val argument = element.parent as? CaosScriptRvalue
+            ?: return null
+        val command = argument.parent as? CaosScriptCommandElement
+            ?: return null
+        val commandDefinition = command.commandDefinition
+            ?: return null
+        val index = argument.index
+        val parameter = commandDefinition.parameters.getOrNull(index)
+            ?: return null
+        if (parameter.type != CaosExpressionValueType.STRING) {
+            return null
+        }
+        val commandName = commandDefinition.command;
+        val first = try {
+            commandName.substring(0, 4)
+        } catch (e: Exception) {
+            return null
+        }
+        return when (first) {
+            //GAME
+            "GAME" -> StringStubKind.GAME
+            "DELG" -> StringStubKind.GAME
+            // EAME
+            "EAME" -> StringStubKind.EAME
+            "DELE" -> StringStubKind.EAME
+            // NAME
+            "NAME" -> StringStubKind.NAME
+            "MAME" -> StringStubKind.NAME
+            "DELN" -> StringStubKind.NAME
+            // JOURNAL
+            "FILE" -> StringStubKind.JOURNAL
+            else -> null
+        }
+    }
+
+    @JvmStatic
+    fun getMeta(element: CaosScriptQuoteStringLiteral): Int {
+
+        if (element.variant?.isOld != false) {
+            return 0
+        }
+        element.stub?.meta?.let {
+            return it
+        }
+        val kind = getStubKind(element)
+            ?: return 0
+        return when (kind) {
+            StringStubKind.JOURNAL -> {
+                val rvalue = element.parent as? CaosScriptRvalue
+                    ?: return -1
+                val command = rvalue.parent as? CaosScriptCommandElement
+                    ?: return -1
+                val siblingIndex = rvalue.index - 1
+                if (siblingIndex < 0) {
+                    -1
+                } else {
+                    command.arguments.getOrNull(siblingIndex)
+                        ?.text
+                        ?.toIntOrNull()
+                        ?: -1
+                }
+            }
+            else -> 0
+        }
     }
 
     /**

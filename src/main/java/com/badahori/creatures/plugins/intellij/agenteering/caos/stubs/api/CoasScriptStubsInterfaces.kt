@@ -159,3 +159,9 @@ interface CaosScriptCaos2CommandStub:StubElement<CaosScriptCaos2CommandImpl> {
     val commandName:String
     val args:List<String>
 }
+
+interface CaosScriptQuoteStringLiteralStub: StubElement<CaosScriptQuoteStringLiteralImpl> {
+    val kind: StringStubKind?
+    val value: String
+    val meta: Int
+}
