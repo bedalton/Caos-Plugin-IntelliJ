@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDefGeneratorTask
-import org.jetbrains.intellij.releaseType
 
 configurations {
     compileClasspath
@@ -22,7 +21,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.01.00"
+version = "2022.02.00"
 
 
 val korImagesVersion: String by project
@@ -40,7 +39,7 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
 
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
