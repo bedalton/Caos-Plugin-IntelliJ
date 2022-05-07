@@ -5,10 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
@@ -68,25 +65,24 @@ internal fun CaosScriptFile.addCaos2ChangeListener(listener: ((isCaos2: String?)
         return null
     val pointer = SmartPointerManager.createPointer(this)
     val project = this.project
-    val caos2 = try {
-        caos2
-    } catch(e: Exception) {
-        return null
-    }
-    return CaosFileCaos2ChangedListener(project, pointer, caos2, listener)
+    return CaosFileCaos2ChangedListener(project, pointer, listener)
 }
 
 private class CaosFileCaos2ChangedListener(
     var project: Project?,
     private var pointer: SmartPsiElementPointer<CaosScriptFile>?,
-    private var caos2: String?,
     private inline var isCaos2ChangeHandler: ((isCaos2: String?) -> Unit)?
 ) : DisposablePsiTreChangeListener {
 
+    private var caos2: String? = "::NULL::"
+    init {
+        onChange(null)
+    }
     override fun beforeChildAddition(event: PsiTreeChangeEvent) {
     }
 
     override fun beforeChildRemoval(event: PsiTreeChangeEvent) {
+        onChange(event.child)
     }
 
     override fun beforeChildReplacement(event: PsiTreeChangeEvent) {
@@ -118,6 +114,7 @@ private class CaosFileCaos2ChangedListener(
     }
 
     override fun childMoved(event: PsiTreeChangeEvent) {
+        onChange(null)
     }
 
     override fun propertyChanged(event: PsiTreeChangeEvent) {
@@ -137,8 +134,19 @@ private class CaosFileCaos2ChangedListener(
         try {
             val associatedFile = pointer?.element
                 ?: return dispose()
-            if (!child?.containingFile?.isEquivalentTo(associatedFile).orFalse())
+
+            if (!associatedFile.isValid) {
+                return dispose()
+            }
+            try {
+                if (!child?.containingFile?.isEquivalentTo(associatedFile).orTrue()) {
+                    LOGGER.info("Child is not child of associated file")
+                    return
+                }
+            } catch (e: Exception ) {
+                caos2 = null
                 return
+            }
             val newIsCaos2 = associatedFile.caos2
             if (newIsCaos2 == caos2) {
                 return
@@ -150,7 +158,8 @@ private class CaosFileCaos2ChangedListener(
                 }
             }
         } catch (e: PsiInvalidElementAccessException) {
-
+            LOGGER.severe("Invalid PSI access. ${e.message}")
+            e.printStackTrace()
         }
     }
 }
