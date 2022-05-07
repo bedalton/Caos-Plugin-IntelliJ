@@ -52,7 +52,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
                     elementToAnnotate = elementToAnnotate.parent
                         ?: return
                 }
-                if (elementToAnnotate.endOffset < endOffset) {
+                if (element.endOffset < endOffset) {
                     return
                 }
                 holder.newErrorAnnotation("missing whitespace character")

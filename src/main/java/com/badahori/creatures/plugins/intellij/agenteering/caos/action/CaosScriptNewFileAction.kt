@@ -10,6 +10,7 @@ import com.intellij.ide.fileTemplates.actions.AttributesDefaults
 import com.intellij.ide.fileTemplates.ui.CreateFromTemplateDialog
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -41,7 +42,7 @@ class CaosScriptNewFileAction : CreateFileFromTemplateAction(
             return
         }
         val hasCaosModule = ModuleManager.getInstance(project).modules.any {
-            it.moduleTypeName == CaosScriptModuleType.INSTANCE.name
+            ModuleType.`is`(it, CaosScriptModuleType.INSTANCE)
         } || FilenameIndex.getAllFilesByExt(project, "cos").isNotEmpty()
         e.presentation.isVisible = hasCaosModule
     }

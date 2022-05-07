@@ -10,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspecti
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
@@ -23,7 +24,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayComm
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.case
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parameter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
@@ -34,6 +38,7 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED
+import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -127,7 +132,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         val previous = element.previous?.text
 
-        if (element is CaosScriptStringText || element.parent is CaosScriptStringText || element is CaosScriptQuoteStringLiteral) {
+        if (element is CaosScriptStringText || element.parent is CaosScriptStringText || element.parent is CaosScriptQuoteStringLiteral || element is CaosScriptQuoteStringLiteral) {
             addStringCompletions(project, resultSet, expandedSearch = parameters.isExtendedCompletion, variant, element)
             resultSet.stopHere()
             return
@@ -448,8 +453,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             ?: return
 
         // Make sure parent is command or tag, as those should be the only parents
-        val parent =
-            (caos2Child.parent as? CaosScriptCaos2Statement ?: caos2Child.parent?.parent as? CaosScriptCaos2Statement)
+        val parent = (caos2Child.parent as? CaosScriptCaos2Statement)
+            ?: (caos2Child.parent?.parent as? CaosScriptCaos2Statement)
 
         if (parent == null) {
             LOGGER.severe("Found CAOS2Child in unexpected context. Parent: ${caos2Child.parent?.elementType}")
@@ -461,7 +466,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
 
         val text = caos2Child.text
         // Get case for Command name completion which is case flexible (at least in my plugin)
-        val case = text.stripSurroundingQuotes().replace(DUMMY_IDENTIFIER_TRIMMED, "").nullIfEmpty()?.case
+        val case = text.stripSurroundingQuotes().replace(DUMMY_IDENTIFIER_TRIMMED, "")
+            .nullIfEmpty()
+            ?.case
             ?: Case.CAPITAL_FIRST
 
         if (caos2Cob) {
@@ -484,7 +491,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
 
-        if (caos2Child !is CaosScriptCaos2Tag && variant.isNotOld) {
+        if (caos2Child is CaosScriptCaos2CommandName && variant.isNotOld) {
             val file = caos2Child.containingFile
             for (action in PrayCommand.getActionCommands()) {
                 val insertAction = LinkFilesInsertHandler(action, true)
@@ -540,6 +547,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 cobTag,
                 value,
             )
+            return
         }
 
         addCaos2PrayFileNameCompletions(variant, resultSet, directory, value, quoter)
@@ -666,6 +674,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         isCaosScriptFile: Boolean,
         eggs: Boolean = false,
     ) {
+        if (tagElement is CaosScriptCaos2Value && tagElement.parent is PrayTag) {
+            return
+        }
         val existingTags: List<String> = prayTags.map { it.tag.lowercase() }
 
         val tags = PrayTags.allLiterals
@@ -678,23 +689,23 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             } + (
                 if (isCaosScriptFile)
                     PrayTags.shortTagLiterals
-                    .keys
-                    .filter { tagName ->
-                        tagName.lowercase() !in existingTags && PrayTags.normalize(tagName)?.lowercase()
-                            ?.let { normalizedTag ->
-                                !(PrayTags.isAutogenerated(
-                                    normalizedTag,
-                                    true
-                                )) && normalizedTag !in existingTags
-                            } == true
-                    }.let { tags ->
-                        if (case != null) {
-                            tags.map { tag ->
-                                tag.matchCase(case)
-                            }
-                        } else
-                            tags
-                    }
+                        .keys
+                        .filter { tagName ->
+                            tagName.lowercase() !in existingTags && PrayTags.normalize(tagName)?.lowercase()
+                                ?.let { normalizedTag ->
+                                    !(PrayTags.isAutogenerated(
+                                        normalizedTag,
+                                        true
+                                    )) && normalizedTag !in existingTags
+                                } == true
+                        }.let { tags ->
+                            if (case != null) {
+                                tags.map { tag ->
+                                    tag.matchCase(case)
+                                }
+                            } else
+                                tags
+                        }
                 else
                     emptyList()
                 ) + (
@@ -713,12 +724,35 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             } else {
                 LookupElementBuilder.create(tag)
             })
-                .withLookupString(tag)
+                .withLookupStrings(listOf(
+                    tag,
+                    tag.lowercase(),
+                    tag.matchCase(Case.CAPITAL_FIRST)
+                ))
                 .withPresentableText(tag)
         }
-        if (isCaosScriptFile) {
+        val start = tagElement?.parent?.startOffset
+
+        // Get possible equal sign insert handler
+        val equalSignInsertHandler: InsertHandler<LookupElement>? = if (isCaosScriptFile) {
+            EqualSignInsertHandler
+        } else {
+            null
+        }
+
+        // Get actual insert handler
+        val insertHandler: InsertHandler<LookupElement>? = if (start != null) {
+            ReplaceFromStartInsertHandler(start, EqualSignInsertHandler)
+        } else if (isCaosScriptFile) {
+            equalSignInsertHandler
+        } else {
+            null
+        }
+
+        // Apply insert handler
+        if (insertHandler != null) {
             elements = elements.map {
-                it.withInsertHandler(EqualSignInsertHandler)
+                it.withInsertHandler(insertHandler)
             }
         }
         resultSet.addAllElements(elements.map {
@@ -852,7 +886,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
-        val trueDirectory = element.text.stripSurroundingQuotes(2)
+        val trueDirectory = element.text
+            .stripSurroundingQuotes(2)
             .substringFromEnd(0, DUMMY_IDENTIFIER_TRIMMED.length).let { thePath: String ->
                 val components: List<String> = if (thePath.contains('/')) {
                     thePath.split("/")
@@ -880,8 +915,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
 
         // Ensure there are matching files
-        if (files.isEmpty())
+        if (files.isEmpty()) {
             return
+        }
 
 //        val firstChar = element.text[0]
 //        val quoteCharBase = if (element.containingFile is PrayFile)
@@ -905,7 +941,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                     ?.let { it + pathSeparator }
                 val baseName = FileNameUtil.getFileNameWithoutExtension(childPath)
                     ?: continue
-                parentPath + baseName
+                (parentPath ?: "") + baseName
             } else {
                 childPath
             }
@@ -981,19 +1017,25 @@ private fun addStringCompletions(
     variant: CaosVariant,
     element: PsiElement,
 ) {
-    val parentRvalue = element.parent.getParentOfType(CaosScriptRvalue::class.java)
+    if (variant.isOld) {
+        return
+    }
+
+    val quoteStringLiteral = element.getSelfOrParentOfType(CaosScriptQuoteStringLiteral::class.java)
         ?: return
-    val parentCommandElement = (parentRvalue.parent as? CaosScriptCommandElement)
+
+    val parentRvalue = quoteStringLiteral.parent as? CaosScriptRvalue
         ?: return
 
     val quoter = quoter(parentRvalue.text)
-
-    when (parentCommandElement.commandStringUpper) {
-        "GAME", "DELG" -> {
+    val kind = quoteStringLiteral.stubKind
+        ?: return
+    when (kind) {
+        StringStubKind.GAME -> {
             addGameNameCompletions(project, resultSet, variant, expandedSearch, element, quoter)
             return
         }
-        "NAME", "MAME", "DELN" -> {
+        StringStubKind.NAME -> {
             addUserDefinedNamedVarsOfType(
                 resultSet,
                 project,
@@ -1004,7 +1046,7 @@ private fun addStringCompletions(
             )
             return
         }
-        "EAME", "DELE" -> {
+        StringStubKind.EAME -> {
             addUserDefinedNamedVarsOfType(
                 resultSet,
                 project,
@@ -1015,17 +1057,44 @@ private fun addStringCompletions(
             )
             return
         }
+        StringStubKind.JOURNAL -> {
+            val lock = GlobalSearchScope.fileScope(
+                element.project,
+                element.containingFile?.virtualFile ?: element.containingFile?.originalFile?.virtualFile
+            )
+            val meta = quoteStringLiteral.meta
+            val lookupElements = (CaosScriptStringLiteralIndex
+                .instance
+                .getAllInScope(project, lock) + PsiTreeUtil.collectElementsOfType(element.containingFile,
+                CaosScriptQuoteStringLiteral::class.java))
+                .distinct()
+                .filter {
+                    if (it.stubKind == StringStubKind.JOURNAL) {
+                        val thisMeta = it.meta
+                        meta == -1 || thisMeta == -1 || meta == thisMeta
+                    } else {
+                        false
+                    }
+                }
+                .map {
+                    val completionText = it.stringValue
+                    LookupElementBuilder
+                        .createWithSmartPointer(quoter(completionText), element)
+                        .withLookupStrings(listOf(
+                            completionText,
+                            completionText.toLowerCase(),
+                            completionText.matchCase(Case.CAPITAL_FIRST),
+                        ))
+                        .withPresentableText(completionText)
+                        .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
+                }
+            resultSet.addAllElements(lookupElements)
+        }
     }
-    val parentCommand = parentCommandElement.commandDefinition
+
+    val parameter = parentRvalue.parameter
         ?: return
 
-
-    val index = parentRvalue.index
-    if (index < 0) {
-        return
-    }
-    val parameter = parentCommand.parameters.getOrNull(index)
-        ?: return
     val valuesList = parameter.valuesList[variant]
         ?: return
 
@@ -1042,7 +1111,9 @@ private fun addStringCompletions(
                 else
                     it
             }
-        val dropExtension = parentCommand.command != "JECT"
+        val commandString = (parentRvalue.parent as? CaosScriptCommandElement)?.commandStringUpper
+            ?: return
+        val dropExtension = commandString != "JECT"
         addFileNameCompletionsForFileTypes(
             project,
             resultSet,
@@ -1107,14 +1178,16 @@ private fun addFileNameCompletionsForFileTypes(
 
     // Util method to get the relative path between a file and its parent module or directory
     val relativePath: (path: String?) -> String? = path@{ path: String? ->
-        if (path == null)
+        if (path == null) {
             return@path null
-        if (modulePath != null && path.startsWith(modulePath))
+        }
+        if (modulePath != null && path != modulePath && path.startsWith(modulePath)) {
             path.substring(modulePathLength)
-        else if (projectPath != null && path.startsWith(projectPath))
+        } else if (projectPath != null && path != projectPath && path.startsWith(projectPath)) {
             path.substring(projectPathLength)
-        else
+        } else {
             null
+        }
     }
 
     // Get files as completion elements

@@ -22,4 +22,8 @@ class CaosScriptIndexServiceImpl : CaosScriptIndexService {
         indexSink.occurrence(CaosScriptNamedGameVarIndex.KEY, key)
     }
 
+    override fun indexString(stub: CaosScriptQuoteStringLiteralStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosScriptStringLiteralIndex.KEY, stub.value)
+    }
+
 }
