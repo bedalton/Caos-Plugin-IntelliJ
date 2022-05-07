@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.template
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.platform.ProjectTemplate
 import com.intellij.platform.ProjectTemplatesFactory
@@ -9,11 +10,11 @@ import javax.swing.Icon
 
 /**
  * @author Dennis.Ushakov
- * adapted by Bedalton
+ * @adapted by Bedalton
  */
 class CaosScriptTemplateFactory : ProjectTemplatesFactory() {
     override fun getGroups(): Array<String> {
-        return arrayOf(GROUP_NAME)
+        return arrayOf(CaosScriptModuleType.GROUP_NAME)
     }
 
     override fun getGroupIcon(group: String?): Icon {
@@ -27,6 +28,5 @@ class CaosScriptTemplateFactory : ProjectTemplatesFactory() {
     }
 
     companion object {
-        private const val GROUP_NAME = "Caos Script"
     }
 }
