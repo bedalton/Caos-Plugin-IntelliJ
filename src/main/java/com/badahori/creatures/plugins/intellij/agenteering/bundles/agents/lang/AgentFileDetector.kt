@@ -1,16 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.getPrayTagRequiredExtension
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.openapi.fileTypes.FileType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.charAt
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.fileTypes.impl.FileTypeOverrider
 import com.intellij.openapi.util.io.ByteArraySequence
 import com.intellij.openapi.util.io.ByteSequence
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korio.dynamic.KDynamic.Companion.toChar
-import kotlin.math.min
 
 /**
  * File Overrider to mark files as AGENT files

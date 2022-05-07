@@ -36,6 +36,8 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
 
     companion object {
 
+        private const val FORCE_GENETICS_WILDCARD = true
+
         private val REMOVAL_SCRIPT_REGEX =
             "Removal\\s*Script|Remove[r]?\\s*Script|RSCR".toRegex(RegexOption.IGNORE_CASE)
 
@@ -58,45 +60,7 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
             }
 
             if (tagName in listOf("Genetics File", "Father Genetic File", "Mother Genetic File")) {
-                val value = element.getParentOfType(CaosScriptCaos2Tag::class.java)
-                val filePath = value?.valueAsString?.nullIfEmpty()
-                if (filePath == null) {
-                    holder.registerProblem(
-                        element,
-                        AgentMessages.message(
-                            "errors.caos2properties.property-invalid.missing-value",
-                            tagName,
-                            "genetics file value"
-                        )
-                    )
-                    return
-                }
-                val fileExpression =
-                    FileNameUtil.getLastPathComponent(filePath).replace("[*]+".toRegex(), "[^/]+").toRegex()
-                val hasMatch = element.getParentOfType(CaosScriptCaos2Block::class.java)
-                    ?.commands
-                    .orEmpty()
-                    .any { (command, files) ->
-                        val matches: List<String> = when (command.lowercase()) {
-                            "link" -> emptyList()
-                            "inline" -> {
-                                if (fileExpression.matches(files.firstOrNull()
-                                        ?: "")
-                                ) listOfNotNull(files.firstOrNull()) else emptyList()
-                            }
-                            else -> files.filter(fileExpression::matches)
-                        }
-                        matches.any { it.lowercase().endsWith(".gen") }
-                    }
-                if (!hasMatch) {
-                    holder.registerProblem(
-                        value,
-                        AgentMessages.message(
-                            "errors.caos2properties.property-invalid.no-genetics-files-matching",
-                            filePath
-                        )
-                    )
-                }
+                annotateGeneticsTag(element, tagName, holder)
                 return
             }
 
@@ -124,6 +88,114 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
 
         }
 
+        private fun annotateGeneticsTag(element: PsiElement, tagName: String, holder: ProblemsHolder) {
+            val value = element.getParentOfType(CaosScriptCaos2Tag::class.java)
+            val filePath = value?.valueAsString?.nullIfEmpty()
+            if (filePath == null) {
+                holder.registerProblem(
+                    element,
+                    AgentMessages.message(
+                        "errors.caos2properties.property-invalid.missing-value",
+                        tagName,
+                        "genetics file value"
+                    )
+                )
+                return
+            }
+            val blockCommands: List<Pair<String, MutableList<String>>> =
+                element.getParentOfType(CaosScriptCaos2Block::class.java)
+                    ?.commands
+                    .orEmpty()
+            var geneticFilePath = FileNameUtil.getLastPathComponent(filePath)
+                .nullIfEmpty()
+            if (geneticFilePath == null) {
+                holder.registerProblem(
+                    element,
+                    AgentMessages.message(
+                        "errors.caos2properties.property-invalid.missing-value",
+                        tagName,
+                        "genetics file value"
+                    )
+                )
+                return
+            }
+
+            val geneticsFileRegex = geneticFilePath
+                .replace("[*]+".toRegex(), "[^/]+")
+                .toRegex(RegexOption.IGNORE_CASE)
+
+
+            val hasGeneticsFileMatch = hasGeneticFileMatch(blockCommands, geneticsFileRegex)
+            if (hasGeneticsFileMatch) {
+                return
+            }
+            val fixes = mutableListOf<LocalQuickFix>()
+
+            // TODO: Check and fix case
+//            val caseFix = getGeneticsFileCaseFix()
+
+
+            if (!FORCE_GENETICS_WILDCARD && !geneticFilePath.endsWith('*')) {
+                val newGeneticsFileRegex = "$geneticsFileRegex[^/]+".toRegex()
+                if (hasGeneticFileMatch(blockCommands, geneticsFileRegex)) {
+                    fixes.add(
+                        CaosScriptReplaceElementFix(
+                            element,
+                            "$tagName = \"${filePath}*\""
+                        )
+                    )
+                }
+            }
+            holder.registerProblem(
+                value,
+                AgentMessages.message(
+                    "errors.caos2properties.property-invalid.no-genetics-files-matching",
+                    filePath
+                ),
+                *fixes.toTypedArray()
+            )
+        }
+
+        private fun hasGeneticFileMatch(
+            blockCommands: List<Pair<String, MutableList<String>>>,
+            fileExpression: Regex,
+        ): Boolean {
+            return blockCommands
+                .any { (command, files) ->
+                    // Get wildcard file names
+                    val matches: List<String> = when (command.lowercase()) {
+                        "link" -> emptyList()
+                        "inline" -> {
+                            val matches = fileExpression.matches(files.firstOrNull() ?: "")
+                            if (matches) {
+                                listOfNotNull(files.firstOrNull())
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        else -> files.filter(fileExpression::matches)
+                    }
+                    // Check that matches contains genetics file
+                    matches.any { it.lowercase().endsWith(".gen") }
+                }
+        }
+
+//        private fun getGeneticsFileCaseFix(
+//            element: PsiElement,
+//            blockCommands: List<Pair<String, MutableList<String>>>,
+//            geneticFilePath: String
+//        ) {
+//            val splits = geneticFilePath
+//                .split('*')
+//            var counts = 0
+//            for (part in splits) {
+//
+//            }
+//            var geneticsFileRegexIgnoreCase = geneticFilePath
+//                .replace("[*]+".toRegex(), "[^/]+")
+//                .toRegex(RegexOption.IGNORE_CASE)
+//        }
+
         private fun getFixesForSimilar(
             element: PsiElement,
             tagName: String,
@@ -142,6 +214,7 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
                     )
                 }
         }
+
     }
 }
 

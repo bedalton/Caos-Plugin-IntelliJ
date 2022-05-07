@@ -147,7 +147,7 @@ private val requiresSpriteRegex = requiresSprite.joinToString("|") { "(" + it.re
 
 internal fun getPrayTagRequiredExtension(tagName: String): List<String>? {
     return if (requiresSpriteRegex.matches(tagName))
-        listOf("c16")
+        listOf("c16", "s16")
     else if (requiresScript.matches(tagName))
         listOf("cos", "caos")
     else

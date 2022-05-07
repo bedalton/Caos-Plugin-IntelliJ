@@ -36,12 +36,12 @@ private fun annotateTagTypeError(tag: String, valueRaw: PrayTagValue, holder: An
         ?: return false
 
     // There is no parseable tag value
-    if (valueRaw.valueAsInt == null && valueRaw.valueAsString.nullIfEmpty() == null) {
+    if (valueRaw.valueAsInt == null && valueRaw.valueAsString == null) {
         if (FLOAT_REGEX.matches(valueRaw.text)) {
             holder.newErrorAnnotation(AgentMessages.message("pray.annotator.tag-values.invalid-float-value"))
                 .range(valueRaw)
                 .create()
-        } else {
+        } else  {
             // This should not happen....
             // not sure why PrayTagValue element would be created for something that is not a string, int or float
             LOGGER.severe("Tag value: <${valueRaw.text}> is neither an int nor a string....")
