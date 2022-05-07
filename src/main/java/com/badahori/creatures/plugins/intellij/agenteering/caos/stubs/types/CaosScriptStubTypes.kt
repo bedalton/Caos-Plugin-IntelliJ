@@ -42,5 +42,7 @@ interface CaosScriptStubTypes {
         val FILE = CaosScriptFileStubType()
         @JvmStatic
         val RVALUE_PRIME = CaosScriptRValuePrimeStubType("CaosScript_RVALUE_PRIME")
+        @JvmStatic
+        val QUOTE_STRING_LITERAL = CaosScriptQuoteStringLiteralStubType("CaosScript_QUOTE_STRING_LITERAL")
     }
 }

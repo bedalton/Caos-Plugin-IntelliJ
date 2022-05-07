@@ -17,7 +17,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|subroutine_name|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|quote_string_literal|subroutine_name|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -334,7 +334,7 @@ private token_stream_tokens
 	;
 
 private file_body_with_variant
-	::= ((comment_block? caos_2_block script_body_element?)| script_body_element) (!<<eof>> script_body_element)*
+	::= <<enterMode "start">>((comment_block? caos_2_block| script_body_element) <<exitMode "start">> (!<<eof>> script_body_element)*
 	;
 
 caos_2_block
@@ -512,7 +512,7 @@ at_directive_comment
 
 private line_comment
 	::= COMMENT_START comment_body?
-	| CAOS_2_COMMENT_START (ID|INT|COMMENT_BODY_LITERAL)+
+	| <<notInMode "start">>CAOS_2_COMMENT_START (ID|INT|COMMENT_BODY_LITERAL)+
 	;
 
 comment_body
@@ -2536,6 +2536,8 @@ quote_string_literal
 	::= DOUBLE_QUOTE string_text? (DOUBLE_QUOTE|GHOST_QUOTE)
 	{
 		pin=1;
+		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptQuoteStringLiteralStub"
+		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
@@ -2549,6 +2551,8 @@ quote_string_literal
 			setName
 			getReference
 			getPresentation
+			getStubKind
+			getMeta
 			getGhostQuote="/GHOST_QUOTE"
 		]
 	}

@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptQuoteStringLiteral
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes
@@ -218,6 +219,13 @@ class CaosScriptCaos2BlockStubImpl(
                 }.toMap()
         }
 }
+
+class CaosScriptQuoteStringLiteralStubImpl(
+        parent: StubElement<*>,
+        override val kind: StringStubKind?,
+        override val value: String,
+        override val meta: Int
+): StubBase<CaosScriptQuoteStringLiteralImpl>(parent, CaosScriptStubTypes.QUOTE_STRING_LITERAL), CaosScriptQuoteStringLiteralStub
 
 
 class CaosScriptCaos2TagStubImpl(
