@@ -118,8 +118,13 @@ object CaosScriptValuesListValuesCompletionProvider {
 
         // Retrieve values list by variant
         val valuesList = valuesListGetter[variant]
-            ?: return
 
+        if (valuesList == null) {
+            if (isExtendedCompletion) {
+                addAllListValues(resultSet, variant, case, addSpace)
+            }
+            return
+        }
 
         // If type definition contains values list annotation, add list values
         // If supertype == Files, should complete with known file names for type

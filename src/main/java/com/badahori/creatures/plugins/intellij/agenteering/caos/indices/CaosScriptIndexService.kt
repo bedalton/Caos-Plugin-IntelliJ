@@ -8,4 +8,5 @@ interface CaosScriptIndexService {
     fun indexVarAssignment(stub: CaosScriptAssignmentStub, indexSink: IndexSink)
     fun indexEventScript(stub: CaosScriptEventScriptStub, indexSink: IndexSink)
     fun indexNamedGameVar(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink)
+    fun indexString(stub: CaosScriptQuoteStringLiteralStub, indexSink: IndexSink)
 }

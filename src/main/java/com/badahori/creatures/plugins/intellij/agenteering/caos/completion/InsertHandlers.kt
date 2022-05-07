@@ -26,6 +26,14 @@ object ReplaceTextWithValueInsertHandler : InsertHandler<LookupElement> {
     }
 }
 
+
+class ReplaceFromStartInsertHandler(private val start: Int, private val afterInsert: InsertHandler<LookupElement>? = null) : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
+        context.document.replaceString(start, context.tailOffset, lookupEl.lookupString)
+        afterInsert?.handleInsert(context, lookupEl)
+    }
+}
+
 class ReplaceUntilWithValueInsertHandler(private val length: Int) : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
         context.document.replaceString(context.startOffset, context.startOffset + length, lookupEl.lookupString)

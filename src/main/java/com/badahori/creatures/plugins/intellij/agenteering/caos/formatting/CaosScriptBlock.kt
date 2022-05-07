@@ -57,7 +57,6 @@ class CaosScriptBlock internal constructor(
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
         if (caosSettings.indentNone()) {
-            LOGGER.info("BLOCK: IndentNone!")
             return noneIndent
         }
         val psi = myNode.psi

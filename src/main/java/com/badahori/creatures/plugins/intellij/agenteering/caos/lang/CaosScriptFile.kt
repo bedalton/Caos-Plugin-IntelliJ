@@ -335,6 +335,7 @@ val CaosScriptFile.caos2Block: CaosScriptCaos2Block?
 val CaosScriptFile.caos2: String?
     get() {
         if (!this.isValid) {
+            LOGGER.severe("Cannot calculate CAOS2 file is invalid")
             return null
         }
 
@@ -531,9 +532,9 @@ private fun CaosScriptFile.calculateHasCaos2Tags(): Boolean {
  * Determine the kind of CAOS2 file if any
  */
 private fun CaosScriptFile.calculateCaos2(): String? {
-    val text = this.text.let {
+    val text = this.text.nullIfEmpty()?.let {
         it.substring(0, min(4000, it.length - 1))
-    }
+    } ?: return null
     CAOS2_HEADER_REGEX.find(text)
         ?.groupValues
         ?.getOrNull(1)
