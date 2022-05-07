@@ -10,6 +10,7 @@ import javax.swing.plaf.FontUIResource;
 import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -56,6 +57,8 @@ public class CompilerOptions {
                 autogenerateEventScriptRemoversCheckBox.isSelected(),
                 autogenerateAgentRemoversCheckBox.isSelected(),
                 false,
+                false,
+                new String[0],
                 false
         );
     }
