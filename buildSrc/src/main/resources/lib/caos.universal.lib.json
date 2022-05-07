@@ -43027,7 +43027,7 @@
           "id": 2580,
           "valuesListId": 122,
           "value": "1",
-          "name": "MonoStabe",
+          "name": "MonoStable",
           "description": "Clicks activate, further clicks have no effect until object is inactive again",
           "beforeRegion": null,
           "sub_values": "",
