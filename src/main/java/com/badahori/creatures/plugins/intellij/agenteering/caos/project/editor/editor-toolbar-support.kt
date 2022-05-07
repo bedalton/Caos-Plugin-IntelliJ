@@ -140,7 +140,6 @@ private class CaosFileCaos2ChangedListener(
             }
             try {
                 if (!child?.containingFile?.isEquivalentTo(associatedFile).orTrue()) {
-                    LOGGER.info("Child is not child of associated file")
                     return
                 }
             } catch (e: Exception ) {
