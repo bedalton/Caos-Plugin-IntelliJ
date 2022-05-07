@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 17 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <rect id="C1-CobAgent" x="0.097" y="0" width="16" height="16" style="fill:none;"/>
+    <g>
+        <path d="M8.115,0.111C11.465,0.111 14.185,6.451 14.185,9.808C14.185,13.166 11.465,15.892 8.115,15.892C4.765,15.892 2.046,13.166 2.046,9.808C2.046,6.451 4.765,0.111 8.115,0.111Z" style="fill:rgb(47,170,240);"/>
+        <path d="M9.86,2.887C12.509,3.255 13.965,8.555 13.596,11.204C13.228,13.853 10.779,15.704 8.13,15.336C5.481,14.968 3.63,12.519 3.998,9.87C4.366,7.221 7.211,2.519 9.86,2.887Z" style="fill:rgb(121,206,254);"/>
+        <path d="M10.566,7.166C12.29,7.629 12.815,11.262 12.352,12.987C11.888,14.711 10.111,15.735 8.387,15.271C6.662,14.808 5.638,13.031 6.102,11.306C6.566,9.582 8.841,6.702 10.566,7.166Z" style="fill:rgb(192,231,255);"/>
+    </g>
+</svg>

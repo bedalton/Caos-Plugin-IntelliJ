@@ -4,21 +4,24 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.errorNotification
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.warningNotification
-import com.intellij.ide.util.projectWizard.ModuleBuilder
-import com.intellij.ide.util.projectWizard.ModuleBuilderListener
-import com.intellij.ide.util.projectWizard.ModuleWizardStep
-import com.intellij.ide.util.projectWizard.SettingsStep
+import com.intellij.ide.util.projectWizard.*
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.roots.ModifiableModelsProvider
 import com.intellij.openapi.roots.ModifiableRootModel
+import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import com.intellij.openapi.vfs.VfsUtil
 import java.awt.Color
 import java.io.File
+import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JList
 
@@ -48,13 +51,42 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
         addListener(this)
     }
 
-    override fun getModuleType(): ModuleType<*> {
-        return CaosScriptModuleType.INSTANCE
+    override fun getCustomOptionsStep(context: WizardContext?, parentDisposable: Disposable?): ModuleWizardStep {
+        return object: ModuleWizardStep() {
+            override fun getComponent(): JComponent {
+                val landingPage = ModuleLandingPage()
+                return landingPage.panel
+            }
+
+            override fun updateDataModel() {
+                // Do nothing
+            }
+
+        }
+    }
+
+    override fun isTemplateBased(): Boolean {
+        return false
+    }
+
+    override fun isTemplate(): Boolean {
+        return false
+    }
+
+    override fun createWizardSteps(
+        wizardContext: WizardContext,
+        modulesProvider: ModulesProvider
+    ): Array<ModuleWizardStep> {
+        return emptyArray()
     }
 
     override fun modifySettingsStep(settingsStep: SettingsStep): ModuleWizardStep? {
         settingsStep.addSettingsField("Caos Variant", variantComboBox)
         return super.modifySettingsStep(settingsStep)
+    }
+
+    override fun getModuleType(): ModuleType<*> {
+        return CaosScriptModuleType.INSTANCE
     }
 
     override fun setupRootModel(modifiableRootModel: ModifiableRootModel) {
@@ -64,10 +96,13 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
         }*/
         moduleFileDirectory?.let {
             val file = File(it)
-            if (!file.exists()) {
+            val virtualFile = if (!file.exists()) {
                 VfsUtil.createDirectories(it)
+            } else {
+                VfsUtil.findFileByIoFile(file, true)
             }
             modifiableRootModel.addContentEntry("file://$it")
+            VfsUtil.markDirtyAndRefresh(true, true, true, virtualFile)
             true
         } ?: modifiableRootModel.addContentEntry(moduleFilePath)
     }
@@ -81,37 +116,57 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
                 module.variant = variant
             }
             module.rootManager.modifiableModel.apply {
-                inheritSdk()
-                moduleFileDirectory?.let {
-                    try {
-                        val baseDir = File(it)
-                        if (!baseDir.exists()) {
-                            VfsUtil.createDirectories(it)
-                        }
-                    } catch (e: Exception) {
-                        errorNotification(project, "Failed to create root directory.")
-                    }
-                }
-                (contentEntries.firstOrNull { it.file != null} ?: contentEntries.firstOrNull()) ?.apply setupRoot@{
-                    val project = module.project
-                    val baseDir = file ?: sourceFolders.firstOrNull { it.file != null }?.file ?: VfsUtil.findFileByIoFile(File(url), true)
-                    ?: run {
-                        warningNotification(project, "Module root initialization delayed. Wait or refresh root")
-                        return@setupRoot
-                    }
-                    try {
-                        if (!baseDir.exists()) {
-                            val file = VfsUtil.virtualToIoFile(baseDir)
-                            VfsUtil.createDirectories(file.path)
-                        }
-                        addSourceFolder(baseDir, false)
-                    } catch(e:Exception) {
-                        errorNotification(project, "Failed to create root directory.")
-                    }
-                }
+                addModuleToModifiableModel(project, this, module, moduleFileDirectory)
                 commit()
             }
             ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel)
         }
+    }
+}
+
+
+private fun addModuleToModifiableModel(project: Project, modifiableModel: ModifiableRootModel, module: Module, moduleFileDirectory: String?) {
+    modifiableModel.inheritSdk()
+    moduleFileDirectory?.let {
+        try {
+            val baseDir = File(it)
+            if (!baseDir.exists()) {
+                VfsUtil.createDirectories(it)
+            }
+        } catch (e: Exception) {
+            errorNotification(project, "Failed to create root directory.")
+        }
+    }
+    (modifiableModel.contentEntries.firstOrNull { it.file != null} ?: modifiableModel.contentEntries.firstOrNull()) ?.apply setupRoot@{
+        setupContentEntries(project, module, this, url)
+    }
+}
+
+private fun setupContentEntries(project: Project, module: Module, contentEntries: ContentEntry, url: String) {
+    val baseDir = module.moduleFile
+        ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
+        ?: VfsUtil.findFileByIoFile(File(url), true)
+    ?: run {
+        invokeLater {
+            val temp = module.moduleFile
+                ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
+                ?: VfsUtil.findFileByIoFile(File(url), true)
+            if (temp == null) {
+                warningNotification(project, "Module root initialization delayed. Wait or refresh root")
+            }
+        }
+        return
+    }
+    try {
+        if (!baseDir.exists()) {
+            val file = VfsUtil.virtualToIoFile(baseDir)
+            VfsUtil.createDirectories(file.path)
+            VfsUtil.findFileByIoFile(file, true)?.let { directoryFile ->
+                VfsUtil.markDirtyAndRefresh(true, true, false, directoryFile)
+            }
+        }
+        contentEntries.addSourceFolder(baseDir, false)
+    } catch(e:Exception) {
+        errorNotification(project, "Failed to create root directory.")
     }
 }
