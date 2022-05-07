@@ -4,14 +4,13 @@ import bedalton.creatures.bytes.RelativeFileWriter
 import bedalton.creatures.pray.io.FileWriter
 import bedalton.creatures.pray.parser.parsePrayAgentToFiles
 import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.PathUtil
-import bedalton.creatures.util.pathSeparator
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -21,12 +20,10 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileTooBigException
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
 import java.io.File
-import java.io.IOException
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -37,8 +34,6 @@ class DumpAgentAction : AnAction(
 ), DumbAware {
 
     override fun isDumbAware(): Boolean = true
-
-    override fun startInTransaction(): Boolean = true
 
     override fun update(e: AnActionEvent) {
         val files = e.files
@@ -98,7 +93,7 @@ class DumpAgentAction : AnAction(
         useChildDirectories: Boolean,
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
     ) {
-        ensureParentDirectory(path, createdFiles)
+        VirtualFileUtil.ensureParentDirectory(path, createdFiles)
         val dumped = Pointer(0)
         val failed = Pointer(0)
         for (file in files) {
@@ -150,7 +145,7 @@ class DumpAgentAction : AnAction(
             parentPath + '/' + file.nameWithoutExtension
         else
             parentPath
-        val parentFile = ensureParentDirectory(targetPath, createdFiles)
+        val parentFile = VirtualFileUtil.ensureParentDirectory(targetPath, createdFiles)
         // Try and dump agent
         // Dump may throw exception on agent parse failure
         val success = try {
@@ -200,48 +195,6 @@ class DumpAgentAction : AnAction(
         return result.files.isNotEmpty()
     }
 
-    private fun ensureParentDirectory(path: String, createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>): VirtualFile {
-        val first = getFirstExistsParent(path)
-            ?: throw IOException("Path <$path> is invalid")
-//        if (ApplicationManager.getApplication().isReadAccessAllowed)
-//            throw IOException("Find file cannot be called from read thread")
-
-        if (first.path == path.replace(pathSeparator, "/")) {
-            return first
-        }
-        var tempParent: VirtualFile = first
-        for (component in path.split(pathSeparator)) {
-            if (component.isBlank())
-                continue
-            var current = tempParent.findChild(component)
-            if (current?.isDirectory == false)
-                throw IOException("Cannot dump agents. Path component ${tempParent.path + pathSeparator + component} is not a directory")
-            if (current == null || !current.exists()) {
-                current = tempParent.createChildDirectory(this@DumpAgentAction, component)
-                createdFiles.add(tempParent to current)
-            }
-            if (tempParent.path == current.path) {
-                throw IOException("Path not changed after set")
-            }
-            tempParent = current
-        }
-        return tempParent
-    }
-
-    private fun getFirstExistsParent(path: String): VirtualFile? {
-        var currentPath = ""
-        var current: VirtualFile? = null
-        val pathNormalize = PathUtil.combine(*path.split(pathSeparator).toTypedArray())
-        for (component in pathNormalize.split(path)) {
-            currentPath += component + pathSeparator
-            LocalFileSystem.getInstance().findFileByPath(currentPath)?.let {
-                if (!it.exists())
-                    return current
-                current = it
-            } ?: return current
-        }
-        return current
-    }
 
     companion object {
         private var actionIndex = AtomicInteger(0)

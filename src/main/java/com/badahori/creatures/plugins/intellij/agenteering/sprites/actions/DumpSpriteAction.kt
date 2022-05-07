@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.actions
 
 import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.PathUtil
-import bedalton.creatures.util.pathSeparator
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -11,19 +9,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.mapAsync
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
-import com.badahori.creatures.plugins.intellij.agenteering.utils.writeChild
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.awt.toAwt
@@ -32,7 +25,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.awt.image.BufferedImage
 import java.io.File
-import java.io.IOException
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -61,11 +53,11 @@ class DumpSpriteAction : AnAction(
             return
 
         val allBlks = files.all { it.extension?.lowercase() == "blk" }
-        val initialPath = if (files.size == 1 && !allBlks) {
+        val initialPath = (if (files.size == 1 && !allBlks) {
             files[0].parent.path + File.separatorChar + files[0].nameWithoutExtension
         } else {
             files[0].parent.path + File.separatorChar
-        }
+        }).replace('/', File.separatorChar)
         SpriteDumpDialog.create(project, initialPath, !allBlks) run@{ parentPath, useChildDirectories ->
             if (parentPath == null)
                 return@run
@@ -114,7 +106,7 @@ class DumpSpriteAction : AnAction(
         useChildDirectories: Boolean,
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
     ) {
-        ensureParentDirectory(path, createdFiles)
+        VirtualFileUtil.ensureParentDirectory(path, createdFiles)
         val dumped = Pointer(0)
         val failed = Pointer(0)
         files.mapAsync { file ->
@@ -170,7 +162,7 @@ class DumpSpriteAction : AnAction(
             parentPath + '/' + file.nameWithoutExtension
         else
             parentPath
-        val parentFile = ensureParentDirectory(targetPath, createdFiles)
+        val parentFile = VirtualFileUtil.ensureParentDirectory(targetPath, createdFiles)
         // Try and dump sprite
         // Dump may throw exception on sprite parse failure
         val success = try {
@@ -200,13 +192,13 @@ class DumpSpriteAction : AnAction(
         val blk = file.extension?.lowercase() == "blk"
 
         if (blk) {
-            try {
+            return try {
                 val stream = VirtualFileStreamReader(file)
                 val png = bedalton.creatures.sprite.parsers.SpriteParser.getStitched(stream).toAwt()
                 write(parentVirtualFile, file.nameWithoutExtension + ".png", png, createdFiles)
-                return true
+                true
             } catch (e: Exception) {
-                return false
+                false
             }
         }
         val sprite = SpriteParser.parse(file)
@@ -246,52 +238,6 @@ class DumpSpriteAction : AnAction(
         // Write the sprite image to the file as PNG
         val child = parentVirtualFile.writeChild(spriteFileName, imageBytes)
         createdFiles.add(parentVirtualFile to child)
-    }
-
-    private fun ensureParentDirectory(
-        path: String,
-        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
-    ): VirtualFile {
-        val first = getFirstExistsParent(path)
-            ?: throw IOException("Path <$path> is invalid")
-//        if (ApplicationManager.getApplication().isReadAccessAllowed)
-//            throw IOException("Find file cannot be called from read thread")
-
-        if (first.path == path.replace(pathSeparator, "/")) {
-            return first
-        }
-        var tempParent: VirtualFile = first
-        for (component in path.split(pathSeparator)) {
-            if (component.isBlank())
-                continue
-            var current = tempParent.findChild(component)
-            if (current?.isDirectory == false)
-                throw IOException("Cannot dump sprites. Path component ${tempParent.path + pathSeparator + component} is not a directory")
-            if (current == null || !current.exists()) {
-                current = tempParent.createChildDirectory(this@DumpSpriteAction, component)
-                createdFiles.add(tempParent to current)
-            }
-            if (tempParent.path == current.path) {
-                throw IOException("Path not changed after set")
-            }
-            tempParent = current
-        }
-        return tempParent
-    }
-
-    private fun getFirstExistsParent(path: String): VirtualFile? {
-        var currentPath = ""
-        var current: VirtualFile? = null
-        val pathNormalize = PathUtil.combine(*path.split(pathSeparator).toTypedArray())
-        for (component in pathNormalize.split(path)) {
-            currentPath += component + pathSeparator
-            LocalFileSystem.getInstance().findFileByPath(currentPath)?.let {
-                if (!it.exists())
-                    return current
-                current = it
-            } ?: return current
-        }
-        return current
     }
 
     companion object {

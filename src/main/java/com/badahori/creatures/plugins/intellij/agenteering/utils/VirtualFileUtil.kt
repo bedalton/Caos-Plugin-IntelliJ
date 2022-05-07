@@ -2,14 +2,14 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.count
+import bedalton.creatures.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileWithId
@@ -25,6 +25,8 @@ import com.intellij.psi.search.GlobalSearchScope
 import icons.CaosScriptIcons
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.File
+import java.io.IOException
 import javax.swing.Icon
 
 
@@ -172,12 +174,16 @@ object VirtualFileUtil {
         }.filter { !it.isDirectory }
     }
 
-    fun nearest(virtualFile: VirtualFile, otherFiles: List<VirtualFile>, filter: (VirtualFile) -> Boolean = { true }): VirtualFile? {
+    fun nearest(
+        virtualFile: VirtualFile,
+        otherFiles: List<VirtualFile>,
+        filter: (VirtualFile) -> Boolean = { true },
+    ): VirtualFile? {
         if (otherFiles.isEmpty()) {
             return null
         }
         return otherFiles
-            .mapNotNull map@ { other ->
+            .mapNotNull map@{ other ->
                 if (!filter(other)) {
                     return@map null
                 }
@@ -200,6 +206,69 @@ object VirtualFileUtil {
             ?.third
 
     }
+
+    internal fun ensureParentDirectory(
+        path: String,
+        createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,
+    ): VirtualFile {
+//        val first = getFirstExistsParent(path)
+//            ?: throw IOException("Path <$path> is invalid")
+////        if (ApplicationManager.getApplication().isReadAccessAllowed)
+////            throw IOException("Find file cannot be called from read thread")
+//
+//        if (first.path == path.replace(pathSeparator, "/")) {
+//            return first
+//        }
+//        var tempParent: VirtualFile = first
+//        LOGGER.info("First: " + first.path)
+//        for (component in path.replace(pathSeparatorChar, '/').split('/')) {
+//            if (component.isBlank())
+//                continue
+//            var current = tempParent.findChild(component)
+//            if (current?.isDirectory == false)
+//                throw IOException("Path component ${tempParent.path + pathSeparator + component} is not a directory")
+//            if (current == null || !current.exists()) {
+//                current = tempParent.createChildDirectory(this@VirtualFileUtil, component)
+//                createdFiles.add(tempParent to current)
+//            }
+//            if (tempParent.path == current.path) {
+//                throw IOException("Path not changed after set")
+//            }
+//            tempParent = current
+//        }
+        path.replace("\\\\/".toRegex(), pathSeparator)
+        val file = File(path)
+        if (file.exists()) {
+            if (!file.isDirectory) {
+                throw IOException("Path file is not a directory")
+            }
+        } else if (!file.mkdirs()) {
+            throw IOException("Failed to create intermediate directories")
+        }
+        val vfs = LocalFileSystem.getInstance()
+        vfs.refreshIoFiles(listOf(file))
+        return vfs.findFileByIoFile(file)
+            ?: throw IOException("Failed to locate parent directory $path after make directories")
+    }
+
+//
+//    private fun getFirstExistsParent(path: String): VirtualFile? {
+//        var currentPath = ""
+//        var current: VirtualFile? = null
+//        val pathNormalize = PathUtil.combine(*path.split("[\\\\/]".toRegex()).toTypedArray())
+//        for (component in pathNormalize.split(pathSeparatorChar)) {
+//            currentPath += "$component/"
+//            LOGGER.info("CurrentPath: $currentPath")
+//            LocalFileSystem.getInstance().findFileByPath(currentPath)?.let {
+//                if (!it.exists()) {
+//                    LOGGER.info("Path: $currentPath does not exist")
+//                    return current
+//                }
+//                current = it
+//            } ?: return current
+//        }
+//        return current
+//    }
 
 }
 
