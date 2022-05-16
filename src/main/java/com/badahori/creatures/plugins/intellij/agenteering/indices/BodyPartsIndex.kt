@@ -255,7 +255,7 @@ object BodyPartsIndex {
                 }
                 .firstOrNull()
         } else {
-            val parent = baseFile.parent
+//            val parent = baseFile.parent
 
             val keys = listOf(
                 key,
@@ -285,12 +285,15 @@ object BodyPartsIndex {
                         scope.accept(it)
                     }
                 }
-                if (matching.isEmpty())
+                if (matching.isEmpty()) {
                     continue
+                }
 
                 matchingFile = readNonBlocking {
-                    nearby(parent, matching, scope)
+//                    nearby(parent, matching, scope)
+                    VirtualFileUtil.nearest(baseFile, matching)
                 }
+
                 if (matchingFile != null) {
                     break
                 }
