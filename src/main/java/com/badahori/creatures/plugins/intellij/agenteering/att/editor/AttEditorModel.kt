@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
@@ -14,6 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
@@ -31,6 +34,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.SmartPointerManager
 import java.awt.image.BufferedImage
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger
 
@@ -40,13 +44,14 @@ internal class AttEditorModel(
     val spriteFile: VirtualFile,
     variant: CaosVariant,
     val showNotification: (message: String, messageType: MessageType) -> Unit,
-    val attChangeListener: AttChangeListener,
-) : OnChangePoint, HasSelectedCell {
+    private var attChangeListener: AttChangeListener?,
+) : OnChangePoint, HasSelectedCell, Disposable, VirtualFileListener, DocumentListener {
 
     private var mImages: List<BufferedImage>? = null
     private var mVariant: CaosVariant = variant
     internal val variant: CaosVariant get() = mVariant
     private var changedSelf: Boolean = false
+    private var disposed: AtomicBoolean = AtomicBoolean(false)
 
     private var project: Project? = project
 
@@ -97,14 +102,17 @@ internal class AttEditorModel(
     private var mLockX: Boolean = false
     var lockX: Boolean
         get() = mLockX
-        set(value) { mLockY = false; mLockX = value}
+        set(value) {
+            mLockY = false; mLockX = value
+        }
 
     // Lock Y axis for point
     private var mLockY: Boolean = false
     var lockY: Boolean
         get() = mLockY
-        set(value) { mLockX = false; mLockY = value}
-
+        set(value) {
+            mLockX = false; mLockY = value
+        }
 
 
     val actionId = AtomicInteger(0)
@@ -199,47 +207,58 @@ internal class AttEditorModel(
         // If file is not null. add commit file listeners
         if (psiFile != null) {
             // Get document for psi file
-            PsiDocumentManager.getInstance(project).getDocument(psiFile)?.let { document ->
-                // Add a listener to the document, to listen for change events
-                document.addDocumentListener(object : DocumentListener {
-                    override fun documentChanged(
-                        event: DocumentEvent,
-                    ) {
-
-                        // If this change was made internally by this class
-                        // update display, but do not update att file data
-                        // As it was just set by the application
-                        if (changedSelf) {
-                            changedSelf = false
-                            attChangeListener.onAttUpdate()
-                            return
-                        }
-
-                        // Get the document text from the changed document
-                        // Changed due to external file changes, or an undo/redo operation
-                        val text = event.document.text
-                        onEdit(text)
-                    }
-                })
-            }
+            PsiDocumentManager.getInstance(project)
+                .getDocument(psiFile)
+                ?.addDocumentListener(this@AttEditorModel)
         }
 
         // If this document is null
         // Add a local file system watcher, which watches for changes to any file
         if (this.document == null) {
             // Add listener for all files
-            LocalFileSystem.getInstance().addVirtualFileListener(object : VirtualFileListener {
-                override fun contentsChanged(
-                    event: VirtualFileEvent,
-                ) {
-                    // Check that changed file is THIS att file
-                    if (attFile.path == event.file.path) {
-                        val text = event.file.contents
-                        onEdit(text)
-                    }
-                }
-            })
+            LocalFileSystem.getInstance().addVirtualFileListener(this)
         }
+    }
+
+    private fun removeDocumentListeners(project: Project) {
+        if (disposed.get()) {
+            return
+        }
+        try {
+            attFile.getPsiFile(project)?.document?.removeDocumentListener(this)
+        } catch (_: Exception) {
+        } catch (_: Error) {
+        }
+        LocalFileSystem.getInstance().removeVirtualFileListener(this)
+        attChangeListener = null
+    }
+
+    override fun contentsChanged(
+        event: VirtualFileEvent,
+    ) {
+        // Check that changed file is THIS att file
+        if (attFile.path == event.file.path) {
+            val text = event.file.contents
+            onEdit(text)
+        }
+    }
+
+    override fun documentChanged(
+        event: DocumentEvent,
+    ) {
+        // If this change was made internally by this class
+        // update display, but do not update att file data
+        // As it was just set by the application
+        if (changedSelf) {
+            changedSelf = false
+            attChangeListener?.onAttUpdate()
+            return
+        }
+
+        // Get the document text from the changed document
+        // Changed due to external file changes, or an undo/redo operation
+        val text = event.document.text
+        onEdit(text)
     }
 
     /**
@@ -263,7 +282,7 @@ internal class AttEditorModel(
         mAttData = parse(text, mLinesCount, mPointsCount, fileName = fileName)
 
         ApplicationManager.getApplication().invokeLater {
-            attChangeListener.onAttUpdate()
+            attChangeListener?.onAttUpdate()
         }
     }
 
@@ -420,7 +439,8 @@ internal class AttEditorModel(
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
                 document.setText(fileData.toFileText(variant).replace("\r?\n".toRegex(), "\n"))
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
-            }, psiFile)
+            }, psiFile
+        )
         return true
     }
 
@@ -439,6 +459,7 @@ internal class AttEditorModel(
                 }
                 'b' -> 6
                 'q' -> 1
+                'z' -> 1
                 else -> 2
             }
             return Pair(lines, columns)
@@ -491,6 +512,7 @@ internal class AttEditorModel(
                     "Hand"
                 )
                 'q' -> listOf("Head")
+                'z' -> listOf("Center")
                 else -> Arrays.asList(
                     "Start",
                     "End"
@@ -509,6 +531,18 @@ internal class AttEditorModel(
             return
         }
         mSelectedCell = index
+    }
+
+    override fun dispose() {
+        if (disposed.getAndSet(true)) {
+            return
+        }
+        val project = project
+            ?: return
+        if (project.isDisposed) {
+            return
+        }
+        removeDocumentListeners(project)
     }
 
 

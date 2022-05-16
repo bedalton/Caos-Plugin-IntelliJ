@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
@@ -26,6 +26,9 @@ class AttFileEditorProvider : FileEditorProvider {
 //        val lines = file.contents.split("\r?\n".toRegex()).filter { it.isNotBlank() }.size;
         if (file.extension?.lowercase() != "att")
             return false
+        if (file.name.getOrNull(0)?.lowercase() == 'z' && !BreedPartKey.allowZ) {
+            return false
+        }
         val spriteFileNameBase = file.nameWithoutExtension
         file.getUserData(CACHED_SPRITE_KEY)?.let {
             return true
@@ -55,6 +58,10 @@ class AttFileEditorProvider : FileEditorProvider {
 
     override fun disposeEditor(editor: FileEditor) {
         Disposer.dispose(editor)
+        if (editor is AttEditorImpl) {
+            editor.dispose()
+        }
+
     }
 
     override fun getEditorTypeId(): String {
