@@ -2,6 +2,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import bedalton.creatures.structs.Pointer
 import bedalton.creatures.util.ensureEndsWith
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayBlockElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAtDirectiveComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
@@ -18,16 +21,17 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBCheckBox
 import java.util.*
 import java.util.Timer
 import javax.swing.*
@@ -58,15 +62,17 @@ internal class LinkFilesInsertHandler(
         if (file == null || file !is CaosScriptFile) {
             return false
         }
-        val preflight = PsiTreeUtil.collectElementsOfType(file, CaosScriptCaos2Block::class.java).isNotEmpty() &&
-                file.variant?.isNotOld.orTrue()
-        if (!preflight) {
-            return false
-        }
         val virtualFile = (file.virtualFile ?: file.originalFile.virtualFile)
             ?: return false
         val parent = virtualFile.parent
             ?: return false
+
+        val caos2Preflight = PsiTreeUtil.collectElementsOfType(file, CaosScriptCaos2Block::class.java).isNotEmpty() &&
+                file.variant?.isNotOld.orTrue()
+
+        if (!caos2Preflight) {
+            return false
+        }
         return getLinksInDirectory(parent, "", virtualFile, action.lowercase() == "link").isNotEmpty()
     }
 
@@ -96,26 +102,31 @@ internal class LinkFilesInsertHandler(
         val parent = file.virtualFile.parent
         val linksRaw = getLinksInDirectory(parent, "", file.virtualFile, action.lowercase() == "link")
         val allExtensions = linksRaw.map { it.category + " in " + it.parentPath }.distinct().sorted().toSet()
-        val selected = Pointer<List<LinkedFile>?>(null)
+        val selected = Pointer<Pair<List<LinkedFile>, Boolean>?>(null)
         invokeLater(ModalityState.current()) {
-            showPanel(project, allExtensions, linksRaw, selected)
+            showPanel(file.fileType == PrayFileType, project, allExtensions, linksRaw, selected)
 
             val selectedFiles = selected.value
                 ?: return@invokeLater
 
             if (isCaos2) {
-                linkCaos2(project, file, selectedFiles)
+                linkCaos2(project, file, selectedFiles.first)
+                file.document?.let { document ->
+                    PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+                }
             } else {
-                TODO("Add file linker for Pray Files")
+                //TODO: Add PRAY linker
+//                linkPray(project, file, selectedFiles)
             }
         }
     }
 
     private fun showPanel(
+        isPray: Boolean,
         project: Project,
         allExtensions: Set<String>,
         files: List<LinkedFile>,
-        out: Pointer<List<LinkedFile>?>,
+        out: Pointer<Pair<List<LinkedFile>,Boolean>?>,
     ) {
 
         // Initialize JPanel
@@ -156,7 +167,6 @@ internal class LinkFilesInsertHandler(
         val regexField = JTextField().apply {
             isEditable = true
         }
-        panel.add(regexField)
 
 
         // Report the number of downloads that will be added vs those possible
@@ -196,6 +206,11 @@ internal class LinkFilesInsertHandler(
         panel.add(regexField)
 
 
+        val inlineFiles = JBCheckBox("Inline Files")
+        if (isPray) {
+            panel.add(inlineFiles)
+        }
+
         // Show modal and apply on okay
         DialogBuilder(project)
             .centerPanel(panel).apply {
@@ -205,7 +220,7 @@ internal class LinkFilesInsertHandler(
                         filterWithCheckboxData(all.isSelected, files, getCheckedCheckboxFilterData(checkboxes))
                     val afterRegexCount = filterWithRegex(selected, regexField.text, filtered)
                         ?: return@setOkOperation
-                    out.value = afterRegexCount
+                    out.value = Pair(afterRegexCount, isPray && inlineFiles.isSelected)
                     this.dialogWrapper.close(0)
                 }
             }.showModal(true)
@@ -244,19 +259,21 @@ internal class LinkFilesInsertHandler(
                 val insertPoint = elementAtCursor
                     ?.let {
                         val start = it.startOffset
+                        val nextPointer = (it.previous as? PsiWhiteSpace)?.let { ws -> SmartPointerManager.createPointer(ws) }
                         it.delete()
+                        nextPointer?.element?.delete()
                         start
                     }
                     ?: file.getChildOfType(CaosScriptCaos2Block::class.java)?.endOffset
                     ?: file.getChildOfType(CaosScriptAtDirectiveComment::class.java)?.endOffset
                     ?: 0
-                val text = buildText(file, action, files).trimEnd().nullIfEmpty()
+                val text = buildCaos2Text(file, action, files).trimEnd().nullIfEmpty()
                     ?: return@runWriteAction
 
                 if (editor != null) {
-                    EditorUtil.insertText(editor, text, insertPoint, true)
+                    EditorUtil.insertText(editor, text + "\n", insertPoint, true)
                 } else {
-                    EditorUtil.insertText(document, text, insertPoint)
+                    EditorUtil.insertText(document, text + "\n", insertPoint)
                 }
             }
         }
@@ -271,7 +288,7 @@ internal class LinkFilesInsertHandler(
     }
 
 
-    private fun buildText(file: PsiFile, action: String, linksUnfiltered: List<LinkedFile>): String {
+    private fun buildCaos2Text(file: PsiFile, action: String, linksUnfiltered: List<LinkedFile>): String {
         val sorted = mutableMapOf<String, MutableList<String>>()
         val linksFiltered = getPathsToAdd(file, action, linksUnfiltered)
         for (link in linksFiltered) {
@@ -521,6 +538,7 @@ private val creaturesFileExtensions = listOf(
     "mng",
     "pray",
     "creature",
+    "journal"
 )
 
 private val skipExtensions = listOf(
