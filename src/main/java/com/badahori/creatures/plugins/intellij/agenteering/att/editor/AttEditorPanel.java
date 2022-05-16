@@ -403,17 +403,26 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         //poseEditor.setPose(0, partChar, 0);
         updateUI();
 
-        poseViewCheckbox.setSelected(showPoseView);
-        showPoseView(showPoseView);
-
         // Set sprite scale
         setScale(CaosScriptProjectSettings.getAttScale());
         labels.setSelected(CaosScriptProjectSettings.getShowLabels());
+        if (this.controller.getPart() == 'z') {
+            showPoseView(false);
+            return;
+        }
+
+        poseViewCheckbox.setSelected(showPoseView);
+        showPoseView(showPoseView);
+
+
         loadRequestedPose();
         poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
     }
 
     private void pushAttToPoseEditor(final AttFileData attFile) {
+        if (this.controller.getPart() == 'z') {
+            return;
+        }
         final HashMap<Character, BodyPartFiles> locked = new HashMap<>();
         final VirtualFile spriteFile = controller.getSpriteFile();
         CaosVariant variant = getVariant();
@@ -494,7 +503,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private void showPoseView(final boolean show) {
         this.showPoseView = show;
         this.posePanel.setVisible(show);
-        CaosScriptProjectSettings.setShowPoseView(show);
+        if (this.controller.getPart() != 'z') {
+            CaosScriptProjectSettings.setShowPoseView(show);
+        }
         if (show) {
             this.poseEditor.redraw();
         }
@@ -529,9 +540,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final char oldChar = controller.getPart();
         if (oldChar >= 'a' && oldChar <= 'q') {
             poseEditor.freeze(oldChar, false);
+            poseEditor.freezeBreedForPart(oldChar, false);
         }
         poseEditor.freeze(part, true);
         poseEditor.setVisibilityFocus(part);
+        poseEditor.freezeBreedForPart(part, true);
         updateUI();
     }
 
@@ -695,8 +708,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     @Override
     public void onAttUpdate(int @NotNull ... lines) {
-        pushAttToPoseEditor(controller.getAttData());
-        poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
+
+        if (this.controller.getPart() != 'z') {
+            pushAttToPoseEditor(controller.getAttData());
+            poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
+        }
         // Update display
         updateCells();
     }
@@ -730,6 +746,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         final BreedPartKey key = controller.getBreedPartKey();
+
         poseEditor = new PoseEditorImpl(project, getVariant(), Objects.requireNonNull(key), EAGER_LOAD_POSE_EDITOR, (rendered) -> {
             if (posePanel.isVisible() != rendered) {
                 posePanel.setVisible(rendered);
@@ -743,6 +760,10 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
 
     private void redrawPose() {
+
+        if (this.controller.getPart() == 'z') {
+            return;
+        }
         if (project.isDisposed()) {
             return;
         }
@@ -764,17 +785,19 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     public void refresh() {
+
         if (project.isDisposed()) {
             dispose();
             return;
         }
-        if (!poseEditor.isValid()) {
+        if (controller.getPart() != 'z' && !poseEditor.isValid()) {
             return;
         }
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).runWhenSmart(this::refresh);
             return;
         }
+
         poseEditor.isShown();
         poseEditor.init();
         loadRequestedPose();

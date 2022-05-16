@@ -936,11 +936,23 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
      * @param part   part to alter state of
      * @param freeze whether to freeze or unfreeze this part
      */
+    public void freezeBreedForPart(char part, Boolean freeze) {
+        final JComboBox<Triple<String,BreedPartKey, List<BodyPartFiles>>> poseComboBox = getComboBoxForBreed(part);
+        if (poseComboBox != null) {
+            freeze(poseComboBox, freeze, null);
+        }
+    }
+
+    /**
+     * Convenience method to freeze/unfreeze a control given its part char
+     *
+     * @param part   part to alter state of
+     * @param freeze whether to freeze or unfreeze this part
+     */
     public void freeze(char part, Boolean freeze) {
-        freeze(getComboBoxForBreed(part), freeze, null);
         final JComboBox<String> poseComboBox = getComboBoxForPart(part);
         if (poseComboBox != null) {
-            freeze(getComboBoxForPart(part), freeze, null);
+            freeze(poseComboBox, freeze, null);
         }
         if (part == 'a') {
             freeze(headDirection2, freeze, null);
@@ -990,7 +1002,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             case 'o':
             case 'p':
             case 'q':
+            case 'z':
                 return null;
+
             default:
                 throw new IndexOutOfBoundsException("Part: " + part + " is not a valid body part char");
         }
@@ -1052,6 +1066,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 return earBreed;
             case 'q':
                 return hairBreed;
+            case 'z':
+                return null;
             default:
                 LOGGER.severe("Part: " + part + " is not a valid body part char");
                 return null;

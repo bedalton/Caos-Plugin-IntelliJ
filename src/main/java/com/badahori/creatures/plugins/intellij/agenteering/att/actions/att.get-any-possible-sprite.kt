@@ -38,9 +38,14 @@ internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, sprite
     } else {
         searchScope
     }
+    val spriteFileName = if (spriteFileNameBase[0] == 'z') {
+        'a' + spriteFileNameBase.substring(1)
+    } else {
+        spriteFileNameBase
+    }
     var spriteFile: VirtualFile? = null
     while (spriteFile == null && parent != null) {
-        spriteFile = searchParentRecursive(project, parent, spriteFileNameBase, variantSearchScope)
+        spriteFile = searchParentRecursive(project, parent, spriteFileName, variantSearchScope)
         parent = parent.parent
     }
     if (spriteFile != null)
@@ -49,9 +54,9 @@ internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, sprite
     if (DumbService.isDumb(project)) {
         return null
     }
-    return BreedSpriteIndex.findMatching(project, spriteFileNameBase, variantSearchScope, null)
+    return BreedSpriteIndex.findMatching(project, spriteFileName, variantSearchScope, null)
         .firstOrNull()
-        ?: BreedSpriteIndex.findMatching(project, spriteFileNameBase, searchScope, null)
+        ?: BreedSpriteIndex.findMatching(project, spriteFileName, searchScope, null)
             .firstOrNull()
 }
 
