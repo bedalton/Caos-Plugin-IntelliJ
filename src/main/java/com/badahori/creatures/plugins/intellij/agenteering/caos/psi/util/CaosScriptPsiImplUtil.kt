@@ -1803,7 +1803,8 @@ object CaosScriptPsiImplUtil {
             return it
         }
 
-        val argument = element.parent as? CaosScriptRvalue
+        val argument: CaosScriptArgument = element.parent as? CaosScriptRvalue
+            ?: element.parent as? CaosScriptLvalue
             ?: return null
         val command = argument.parent as? CaosScriptCommandElement
             ?: return null
@@ -1812,7 +1813,10 @@ object CaosScriptPsiImplUtil {
         val index = argument.index
         val parameter = commandDefinition.parameters.getOrNull(index)
             ?: return null
-        if (parameter.type != CaosExpressionValueType.STRING) {
+        if (parameter.type != CaosExpressionValueType.STRING
+            && parameter.type != CaosExpressionValueType.ANY
+            && parameter.type != CaosExpressionValueType.UNKNOWN
+        ) {
             return null
         }
         val commandName = commandDefinition.command;
