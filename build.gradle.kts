@@ -21,7 +21,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.02.00"
+version = "2022.02.01"
 
 
 val korImagesVersion: String by project
