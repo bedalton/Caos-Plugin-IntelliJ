@@ -20,6 +20,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
 import java.io.File
@@ -146,8 +147,12 @@ class CompilePrayFileAction(private val transient: Boolean = true): AnAction("Co
                     indicator.text2 = ": ${file.name}"
                 }
                 val outputFile = compile(project, file.path, opts)
+
                 if (outputFile != null) {
                     success.add("${file.name} -> ${File(outputFile).name}")
+                    invokeLater {
+                        VfsUtil.markDirtyAndRefresh(true, true, true, file.parent)
+                    }
                 } else {
                     errors++
                 }
