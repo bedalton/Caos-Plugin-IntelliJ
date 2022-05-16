@@ -36,7 +36,7 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
 
     companion object {
 
-        private const val FORCE_GENETICS_WILDCARD = true
+        private const val FORCE_GENETICS_WILDCARD = false
 
         private val REMOVAL_SCRIPT_REGEX =
             "Removal\\s*Script|Remove[r]?\\s*Script|RSCR".toRegex(RegexOption.IGNORE_CASE)
@@ -121,7 +121,10 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
             }
 
             val geneticsFileRegex = geneticFilePath
-                .replace("[*]+".toRegex(), "[^/]+")
+                .replace("[*]+".toRegex(), "[^/]*")
+                .let {
+                    "$it(\\.gen)?"
+                }
                 .toRegex(RegexOption.IGNORE_CASE)
 
 
@@ -136,7 +139,7 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
 
 
             if (!FORCE_GENETICS_WILDCARD && !geneticFilePath.endsWith('*')) {
-                val newGeneticsFileRegex = "$geneticsFileRegex[^/]+".toRegex()
+                val newGeneticsFileRegex = "$geneticsFileRegex[^/]*".toRegex()
                 if (hasGeneticFileMatch(blockCommands, geneticsFileRegex)) {
                     fixes.add(
                         CaosScriptReplaceElementFix(
