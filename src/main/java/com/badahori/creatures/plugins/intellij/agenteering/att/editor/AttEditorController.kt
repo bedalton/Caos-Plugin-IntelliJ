@@ -207,6 +207,7 @@ internal class AttEditorController(
     }
 
     override fun dispose() {
+        model.dispose()
         view.dispose()
     }
 
