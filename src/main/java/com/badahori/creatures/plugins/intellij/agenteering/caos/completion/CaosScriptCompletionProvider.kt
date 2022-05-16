@@ -724,11 +724,13 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             } else {
                 LookupElementBuilder.create(tag)
             })
-                .withLookupStrings(listOf(
-                    tag,
-                    tag.lowercase(),
-                    tag.matchCase(Case.CAPITAL_FIRST)
-                ))
+                .withLookupStrings(
+                    listOf(
+                        tag,
+                        tag.lowercase(),
+                        tag.matchCase(Case.CAPITAL_FIRST)
+                    )
+                )
                 .withPresentableText(tag)
         }
         val start = tagElement?.parent?.startOffset
@@ -1030,67 +1032,82 @@ private fun addStringCompletions(
     val quoter = quoter(parentRvalue.text)
     val kind = quoteStringLiteral.stubKind
         ?: return
-    when (kind) {
-        StringStubKind.GAME -> {
-            addGameNameCompletions(project, resultSet, variant, expandedSearch, element, quoter)
-            return
-        }
-        StringStubKind.NAME -> {
-            addUserDefinedNamedVarsOfType(
-                resultSet,
-                project,
-                listOf(NAME, MAME),
-                expandedSearch,
-                element,
-                quoter
-            )
-            return
-        }
-        StringStubKind.EAME -> {
-            addUserDefinedNamedVarsOfType(
-                resultSet,
-                project,
-                listOf(EAME),
-                expandedSearch,
-                element,
-                quoter
-            )
-            return
-        }
-        StringStubKind.JOURNAL -> {
-            val lock = GlobalSearchScope.fileScope(
-                element.project,
-                element.containingFile?.virtualFile ?: element.containingFile?.originalFile?.virtualFile
-            )
-            val meta = quoteStringLiteral.meta
-            val lookupElements = (CaosScriptStringLiteralIndex
-                .instance
-                .getAllInScope(project, lock) + PsiTreeUtil.collectElementsOfType(element.containingFile,
-                CaosScriptQuoteStringLiteral::class.java))
-                .distinct()
-                .filter {
-                    if (it.stubKind == StringStubKind.JOURNAL) {
-                        val thisMeta = it.meta
-                        meta == -1 || thisMeta == -1 || meta == thisMeta
-                    } else {
-                        false
-                    }
-                }
-                .map {
-                    val completionText = it.stringValue
-                    LookupElementBuilder
-                        .createWithSmartPointer(quoter(completionText), element)
-                        .withLookupStrings(listOf(
-                            completionText,
-                            completionText.toLowerCase(),
-                            completionText.matchCase(Case.CAPITAL_FIRST),
-                        ))
-                        .withPresentableText(completionText)
-                        .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
-                }
-            resultSet.addAllElements(lookupElements)
-        }
+    val virtualFile = (element.containingFile?.virtualFile ?: element.containingFile?.originalFile?.virtualFile)
+        ?: return
+    val lock = if (expandedSearch && virtualFile.parent != null) {
+        GlobalSearchScopes.directoryScope(project, virtualFile.parent, false)
+    } else {
+        GlobalSearchScope.fileScope(
+            element.project,
+            virtualFile
+        )
     }
+    val indexedStrings = CaosScriptStringLiteralIndex
+        .instance
+        .getAllInScope(project, lock)
+    val inFileStrings = PsiTreeUtil.collectElementsOfType(
+        element.containingFile,
+        CaosScriptQuoteStringLiteral::class.java
+    )
+    val meta = quoteStringLiteral.meta
+    val strings = (inFileStrings + indexedStrings)
+        .distinct()
+        .filter {
+            if (it.stubKind != kind) {
+                false
+            } else if (kind != StringStubKind.JOURNAL) {
+                true
+            } else {
+                val thisMeta = it.meta
+                meta == -1 || thisMeta == -1 || meta == thisMeta
+            }
+        }
+    val case = element.textWithoutCompletionIdString
+        .case
+    val lookupElements = strings.map {
+        val completionText = it.stringValue
+        LookupElementBuilder
+            .createWithSmartPointer(quoter(completionText), element)
+            .withLookupStrings(
+                listOf(
+                    completionText,
+                    completionText.toLowerCase(),
+                    completionText.matchCase(Case.CAPITAL_FIRST),
+                    completionText.matchCase(case)
+                )
+            )
+            .withPresentableText(completionText)
+            .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
+    }
+    resultSet.addAllElements(lookupElements)
+//    when (kind) {
+//        StringStubKind.GAME -> {
+//            addGameNameCompletions(project, resultSet, variant, expandedSearch, element, quoter)
+//            return
+//        }
+//        StringStubKind.NAME -> {
+//            addUserDefinedNamedVarsOfType(
+//                resultSet,
+//                project,
+//                listOf(NAME, MAME),
+//                expandedSearch,
+//                element,
+//                quoter
+//            )
+//            return
+//        }
+//        StringStubKind.EAME -> {
+//            addUserDefinedNamedVarsOfType(
+//                resultSet,
+//                project,
+//                listOf(EAME),
+//                expandedSearch,
+//                element,
+//                quoter
+//            )
+//            return
+//        }
+//    }
 
     val parameter = parentRvalue.parameter
         ?: return
