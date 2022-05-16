@@ -202,19 +202,49 @@ object PoseRenderer {
             getPart('l', part, pose.rightForearm, attachAt, visibilityMask['l'] ?: VISIBLE)
         }
 
-        // Tail Base
-        val tailBase = sprites.tailBase?.let { part ->
-            val attachAt = bodyAtt.getOrNull(5)
-                ?: return@let null
-            getPart('m', part, pose.tailBase, attachAt, visibilityMask['m'] ?: VISIBLE)
-        }
-
-        // Tail Tip
-        val tailTip = sprites.tailTip?.let { part ->
-            val attachAt =
-                sprites.tailBase?.bodyData?.getOrNull(pose.tailBase)?.getOrNull(1)?.let { tailBase!!.position + it }
+        val tail = if (variant == CaosVariant.C1) {
+            val tailBase = sprites.tailTip?.let { part ->
+                val attachAt = bodyAtt.getOrNull(5)
                     ?: return@let null
-            getPart('n', part, pose.tailTip, attachAt, visibilityMask['n'] ?: VISIBLE)
+                getPart('n', part, pose.tailTip, attachAt, visibilityMask['m'] ?: VISIBLE)
+            }
+
+            val tailTip = sprites.tailBase?.let { part ->
+                val attachAt = sprites
+                    .tailTip
+                    ?.bodyData
+                    ?.getOrNull(pose.tailTip)
+                    ?.getOrNull(1)
+                    ?.let { tailBase!!.position + it }
+                    ?: return@let null
+                getPart('m', part, pose.tailBase, attachAt, visibilityMask['n'] ?: VISIBLE)
+            }
+            // Tail layer
+            listOfNotNull(
+                tailBase,
+                tailTip
+            )
+        } else {
+            val tailBase = sprites.tailBase?.let { part ->
+                val attachAt = bodyAtt.getOrNull(5)
+                    ?: return@let null
+                getPart('m', part, pose.tailBase, attachAt, visibilityMask['m'] ?: VISIBLE)
+            }
+
+            val tailTip = sprites.tailTip?.let { part ->
+                val attachAt = sprites.tailBase
+                    ?.bodyData
+                    ?.getOrNull(pose.tailBase)
+                    ?.getOrNull(1)
+                    ?.let { tailBase!!.position + it }
+                    ?: return@let null
+                getPart('n', part, pose.tailTip, attachAt, visibilityMask['n'] ?: VISIBLE)
+            }
+            // Tail layer
+            listOfNotNull(
+                tailBase,
+                tailTip
+            )
         }
 
         // Head layer
@@ -265,19 +295,12 @@ object PoseRenderer {
             rightForearm
         )
 
-        // Tail layer
-        val tail = listOfNotNull(
-            tailBase,
-            tailTip
-        )
-
-
         // Parts in order
         val parts = if (sprites.body.sprite.size == 10) {
             // OLD VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + tailBase + bodyPart + tailTip + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + tailBase + bodyPart + tailTip + headParts + leftLeg + leftArm
+                in 0..3 -> leftArm + leftLeg + tail[0] + bodyPart + tail[1] + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + tail[0] + bodyPart + tail[1]+ headParts + leftLeg + leftArm
                 8 -> tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
                 9 -> if (variant == CaosVariant.C1)
                     leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail + headParts
@@ -288,8 +311,8 @@ object PoseRenderer {
         } else {
             // NEW VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + tailBase + bodyPart + tailTip + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + tailBase + bodyPart + tailTip + headParts + leftLeg + leftArm
+                in 0..3 -> leftArm + leftLeg + tail[0] + bodyPart + tail[1] + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + tail[0] + bodyPart + tail[1] + headParts + leftLeg + leftArm
                 in 8..11 -> tail + leftLeg + rightLeg + leftUpperArm + rightUpperArm + bodyPart + leftForearm + rightForearm + headParts
                 in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
