@@ -75,7 +75,11 @@ object EditorUtil {
 
     fun insertText(editor: Editor, text: String, offset: Int, moveCaretToEnd: Boolean) {
         runWriteAction(Runnable {
+            val project = editor.project
+            val manager = if (project != null) PsiDocumentManager.getInstance(project) else null
+            manager?.doPostponedOperationsAndUnblockDocument(editor.document)
             editor.document.insertString(offset, text)
+            manager?.doPostponedOperationsAndUnblockDocument(editor.document)
             if (moveCaretToEnd) {
                 offsetCaret(editor, text.length)
             }
@@ -85,7 +89,10 @@ object EditorUtil {
 
     fun insertText(project:Project, document: Document, text: String, offset: Int) {
         runWriteAction(Runnable {
+            val manager = PsiDocumentManager.getInstance(project)
+            manager.doPostponedOperationsAndUnblockDocument(document)
             document.insertString(offset, text)
+            manager.doPostponedOperationsAndUnblockDocument(document)
         }, project, document)
     }
 
@@ -105,7 +112,11 @@ object EditorUtil {
 
     fun replaceText(editor: Editor, range:TextRange, text: String, moveCaretToEnd: Boolean = false) {
         WriteCommandAction.runWriteCommandAction(editor.project) {
+            val project = editor.project
+            val manager = if (project != null) PsiDocumentManager.getInstance(project) else null
+            manager?.doPostponedOperationsAndUnblockDocument(editor.document)
             editor.document.replaceString(range.startOffset, range.endOffset, text)
+            manager?.doPostponedOperationsAndUnblockDocument(editor.document)
             if (moveCaretToEnd) {
                 editor.caretModel.moveToOffset(range.endOffset + text.length)
             }
