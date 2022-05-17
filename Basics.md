@@ -6,6 +6,7 @@ The CAOS and Agenteering plugin for IntelliJ adds CAOS, PRAY, and ATT file editi
 
 1. Install JetBrain's IntelliJ IDE, **Community (it's free)** version   
 `https://www.jetbrains.com/idea/download/`
+
 2. Open IntelliJ and Select plugins on the left side menu.
 3. In the search bar, type CAOS and click "Creatures CAOS and Agenteering"
 4. Click install in the panel on the right, and restart IntelliJ when prompted.
@@ -81,7 +82,7 @@ In CAOS this could be the command to view documentation, a subroutine name, or a
 **Disable Inspections** If the plugin is marking code wrong that is not wrong, you can disable the inspection.
 1. Press `ALT+ENTER` (Windows), `Option+Enter`
 2. Use arrows to highlight the inspection
-3. Press Right
+3. Press Right Arrow Key
 4. Highlight Disable inspection
 5. Press enter
 
