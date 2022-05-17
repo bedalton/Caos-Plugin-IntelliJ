@@ -299,8 +299,8 @@ object PoseRenderer {
         val parts = if (sprites.body.sprite.size == 10) {
             // OLD VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + tail[0] + bodyPart + tail[1] + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + tail[0] + bodyPart + tail[1]+ headParts + leftLeg + leftArm
+                in 0..3 -> leftArm + leftLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1)+ headParts + leftLeg + leftArm
                 8 -> tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
                 9 -> if (variant == CaosVariant.C1)
                     leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail + headParts
@@ -311,8 +311,8 @@ object PoseRenderer {
         } else {
             // NEW VARIANTS
             when (pose.body) {
-                in 0..3 -> leftArm + leftLeg + tail[0] + bodyPart + tail[1] + headParts + rightLeg + rightArm
-                in 4..7 -> rightArm + rightLeg + tail[0] + bodyPart + tail[1] + headParts + leftLeg + leftArm
+                in 0..3 -> leftArm + leftLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + rightLeg + rightArm
+                in 4..7 -> rightArm + rightLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + leftLeg + leftArm
                 in 8..11 -> tail + leftLeg + rightLeg + leftUpperArm + rightUpperArm + bodyPart + leftForearm + rightForearm + headParts
                 in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
                 else -> null
