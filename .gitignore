@@ -102,3 +102,7 @@ gradle-app.setting
 /src/main/gen
 src/main/resources/c3engine/C3CaosInjector(0.01).exe
 .idea/codeStyles/codeStyleConfig.xml
+Guides/images/raw
+/Guides/Intellij Tutorial
+/Guides/.idea
+/Guides/**/*.afdesign
