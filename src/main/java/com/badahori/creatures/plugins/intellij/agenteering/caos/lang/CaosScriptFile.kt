@@ -1,7 +1,13 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 
 import bedalton.creatures.pray.cli.PrayCompilerCliOptions
+import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PRAY_COMPILER_SETTINGS_KEY
@@ -14,6 +20,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
@@ -23,6 +30,7 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
@@ -292,6 +300,67 @@ val VirtualFile.cachedVariantExplicitOrImplicit: CaosVariant?
         ?: ExplicitVariantFilePropertyPusher.readFromStorage(this)
         ?: ImplicitVariantFilePropertyPusher.readFromStorage(this)
 
+fun VirtualFile.getVariant(project: Project, walk: Boolean): CaosVariant? {
+    cachedVariantExplicitOrImplicit?.let {
+        return it
+    }
+    val implicit = deduceVariant(project, this, walk)
+    if (implicit != null && implicit != CaosVariant.UNKNOWN) {
+        setCachedVariant(implicit, false)
+    }
+    return implicit
+}
+
+private fun deduceVariant( project: Project, virtualFile: VirtualFile, walk: Boolean): CaosVariant? {
+
+    val psi = virtualFile.getPsiFile(project)
+    if (psi is CaosScriptFile) {
+        return psi.variant.nullIfUnknown()
+    }
+    psi?.module?.variant.nullIfUnknown()?.let {
+        return it
+    }
+    var defaultVariant = project.settings.defaultVariant.nullIfUnknown()
+    if (virtualFile.fileType != AttFileType || !walk) {
+        return defaultVariant
+    }
+    val attData = AttFileParser.parse(project, virtualFile)
+    val sprite = getAnyPossibleSprite(project, virtualFile)
+        ?: return getDefaultVariantWithAttData(defaultVariant, attData)
+    if (sprite.extension like "spr") {
+        return CaosVariant.C1
+    }
+    if (defaultVariant == null) {
+        defaultVariant = if (sprite.extension like "s16") {
+            CaosVariant.C2
+        } else {
+            CaosVariant.C3
+        }
+    }
+    return SpriteParser.getBodySpriteVariant(sprite, defaultVariant)
+}
+
+private fun getDefaultVariantWithAttData(defaultVariant: CaosVariant?, attData: AttFileData): CaosVariant? {
+    val attLinesCount = attData.lines.size
+    return if (defaultVariant != null) {
+        if (attLinesCount > 10) {
+            if (defaultVariant.isOld) {
+                CaosVariant.C3
+            } else {
+                defaultVariant
+            }
+        } else if (defaultVariant.isNotOld) { // ATT lines do not match default C2E variant
+            null
+        } else { // Default variant should be okay
+            defaultVariant
+        }
+    } else if (attLinesCount > 10) { // Default to C3 when not ready
+        CaosVariant.C3
+    } else {
+        null
+    }
+}
+
 fun VirtualFile.setCachedVariant(variant: CaosVariant?, explicit: Boolean) {
     (this as? CaosVirtualFile)?.setVariantBase(this, variant, explicit)
     if (explicit) {
@@ -400,7 +469,7 @@ val CaosScriptFile?.agentNames
 
 private val CAOS2COB_VARIANT_REGEX = "^[*]{2}Caos2Cob\\s*(C1|C2)".toRegex(RegexOption.IGNORE_CASE)
 private val CAOS2_BLOCK_VARIANT_REGEX =
-    "^[*]#\\s*(C1|C2|CV|C3|DS|SM|[a-zA-Z][a-zA-Z0-9]{3}[ ])(-?Name)?".toRegex(
+    "^[*]#\\s*(C1|C2|CV|C3|DS|SM|[a-zA-Z][a-zA-Z\\d]{3} )(-?Name)?".toRegex(
         setOf(
             RegexOption.IGNORE_CASE,
             RegexOption.MULTILINE
@@ -473,7 +542,7 @@ private val CAOS2COB_REGEX =
         RegexOption.IGNORE_CASE,
         RegexOption.MULTILINE))
 private val CAOS2PRAY_REGEX =
-    "^([*]#\\s*([a-zA-Z0-9_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(
+    "^([*]#\\s*([a-zA-Z\\d_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(
         setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 private val IS_SUPPLEMENT_REGEX =
     "^[*]{2}\\s*(is\\s*)?(Supplement|link(ed))".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))

@@ -21,7 +21,7 @@ plugins {
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.02.01"
+version = "2022.02.02"
 
 
 val korImagesVersion: String by project
@@ -39,7 +39,7 @@ dependencies {
         excludeKotlin()
     }
 
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
 
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
@@ -153,6 +153,7 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
 
 fun ExternalModuleDependency.excludeKotlin() {
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")

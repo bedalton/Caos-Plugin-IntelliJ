@@ -2,12 +2,12 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose.Companion.fromString
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseCalculator.calculateHeadPose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.allParts
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.CreatureSpriteSet
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.render
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
@@ -36,6 +36,7 @@ class PoseEditorModel(
     val poseEditor: BreedPoseHolder,
 ) {
 
+    var progressIndicator: ProgressIndicator? = null
     private var spriteSet: CreatureSpriteSet? = null
     private var mLocked: Map<Char, BodyPartFiles> = emptyMap()
     private var updating = AtomicInteger(0)
@@ -60,6 +61,7 @@ class PoseEditorModel(
 
     fun setImmediate(directory: VirtualFile, key: BreedPartKey) {
         if (project.isDisposed) {
+            updating.set(0)
             return
         }
         if (updating.getAndIncrement() > 0) {
@@ -77,6 +79,7 @@ class PoseEditorModel(
 
             if (mappedParts == null) {
                 updating.decrementNotNegative()
+                updating.set(0)
                 executeOnPooledThread(this@PoseEditorModel::updateFiles)
                 return@launch
             }
@@ -105,7 +108,7 @@ class PoseEditorModel(
             poseEditor.setFiles(mappedParts.values.filterNotNull())
             @Suppress("SpellCheckingInspection")
             requestRender(*("abcdefghijklmnopq").toCharArray())
-            updating.decrementNotNegative()
+            updating.set(0)
             executeOnPooledThread(this@PoseEditorModel::updateFiles)
         }
     }
@@ -122,10 +125,11 @@ class PoseEditorModel(
 
         GlobalScope.launch(Dispatchers.IO) launch@{
             if (project.isDisposed) {
+                updating.set(0)
                 return@launch
             }
             if (DumbService.isDumb(project)) {
-                updating.decrementNotNegative()
+                updating.set(0)
                 DumbService.getInstance(project).runWhenSmart {
                     executeOnPooledThread(this@PoseEditorModel::updateFiles)
                 }
@@ -134,16 +138,15 @@ class PoseEditorModel(
             try {
                 val files = BodyPartsIndex.variantParts(project, variant, null)
                 poseEditor.setFiles(files)
-                updating.decrementNotNegative()
+                updating.set(0)
             } catch (e: ProcessCanceledException) {
-                updating.decrementNotNegative()
+                updating.set(0)
                 delay(20)
                 updateFiles()
             }
         }
     }
 
-    var progressIndicator: ProgressIndicator? = null
     fun requestRender(vararg parts: Char) {
         GlobalScope.launch(Dispatchers.IO) {
             progressIndicator?.cancel()
@@ -151,8 +154,7 @@ class PoseEditorModel(
             progressIndicator = indicator
             try {
                 requestRenderAsync(indicator, *parts)
-            } catch (e: ProcessCanceledException) {
-//                LOGGER.info("RenderJob: ${renderJob.get()}; Request: $requestId")
+            } catch (_: ProcessCanceledException) {
             }
         }
     }
@@ -183,6 +185,7 @@ class PoseEditorModel(
 
         val updatedSprites = try {
             getUpdatedSpriteSet(progressIndicator, *parts)
+                ?: getUpdatedSpriteSet(progressIndicator, *allParts)
         } catch (e: java.lang.Exception) {
             progressIndicator.checkCanceled()
             mRendering = null
@@ -195,7 +198,6 @@ class PoseEditorModel(
             if (updating.get() == 0) {
                 LOGGER.severe("Failed to update sprite sets without reason")
             }
-
             progressIndicator.checkCanceled()
             mRendering = null
             return false

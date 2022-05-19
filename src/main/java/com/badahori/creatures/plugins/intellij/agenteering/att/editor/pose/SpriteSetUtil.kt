@@ -71,12 +71,12 @@ object SpriteSetUtil {
                 files,
                 manualAtts,
                 locked,
-                part
+                part.lowercase()
             )
             if (bodyData == null && part.lowercase() in 'a' .. 'l') {
                 return null
             }
-            when (part) {
+            when (part.lowercase()) {
                 'a' -> spriteTemp.head = bodyData!!
                 'b' -> spriteTemp.body = bodyData!!
                 'c' -> spriteTemp.leftThigh = bodyData!!
@@ -186,16 +186,16 @@ object SpriteSetUtil {
         if (project.isDisposed) {
             return null
         }
-        manualAtts[part]?.let {
+        manualAtts[part.lowercase()]?.let {
             return it.data(project)
         }
 
-        locked[part]?.let {
+        locked[part.lowercase()]?.let {
             return it.data(project)
         }
         val breedFile = files
             .firstOrNull {
-                it.spriteFile.name[0].lowercase() == part
+                it.spriteFile.name[0].lowercase() == part.lowercase()
             }
             ?: return null
         // Check if manual att exists

@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.Breed
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -38,7 +39,7 @@ internal fun getAnyPossibleSprite(project: Project, attFile: VirtualFile, sprite
     } else {
         searchScope
     }
-    val spriteFileName = if (spriteFileNameBase[0] == 'z') {
+    val spriteFileName = if (spriteFileNameBase[0].lowercase() == 'z') {
         'a' + spriteFileNameBase.substring(1)
     } else {
         spriteFileNameBase

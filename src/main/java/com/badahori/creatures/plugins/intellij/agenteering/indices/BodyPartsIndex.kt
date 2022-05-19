@@ -3,8 +3,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
 import bedalton.creatures.structs.Pointer
+import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.validSpriteExtensions
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
@@ -22,6 +25,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.FileAttribute
+import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -36,7 +40,7 @@ object BodyPartsIndex {
 
     internal val BODY_DATA_ATT_KEY = Key<Pointer<Pair<Int, VirtualFile>?>?>("creatures.body-part.att-with-index")
 
-    private const val THIS_INDEX_VERSION = 8
+    private const val THIS_INDEX_VERSION = 9
 
     // Compound version to force a reindex if any of the sourced indices change
     const val VERSION = THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
@@ -66,21 +70,65 @@ object BodyPartsIndex {
         return matchSpritesToAtts(
             project,
             variant,
-            searchScope,
+            searchScope ?: GlobalSearchScope.everythingScope(project),
             coroutineScope,
             progressIndicator
         ) { variantScope ->
+
+            // Make sure indices are not dumb
             if (DumbService.isDumb(project)) {
-                emptyList()
+                return@matchSpritesToAtts emptyList()
+            }
+
+            // Get scope filter for all matching virtual files
+            val nonNullScope = searchScope ?: GlobalSearchScope.everythingScope(project)
+
+
+            // Get initial files from breed specific indices by variant
+            val initialFiles = if (ATT_TO_SPRITE) {
+                AttFilesByVariantIndex.findMatching(project, variant, variantScope)
             } else {
-                if (ATT_TO_SPRITE) {
-                    AttFilesByVariantIndex.findMatching(project, variant, variantScope)
-                } else {
-                    BreedSpriteIndex.findMatching(project, variant, variantScope, progressIndicator)
+                BreedSpriteIndex.findMatching(project, variant, variantScope, progressIndicator)
+            }
+
+            // If files where found, then index is not empty, so return
+            if (initialFiles.isNotEmpty()) {
+                return@matchSpritesToAtts initialFiles
+            }
+
+            // Create filter if needed
+            val filter = filter@{ virtualFile: VirtualFile ->
+                return@filter BreedPartKey.isPartName(virtualFile.nameWithoutExtension)
+                        && virtualFile.getVariant(project, true) == gameVariant
+            }
+
+            // Get extension for source files based
+            val extensions = if (ATT_TO_SPRITE) {
+                setOf("att")
+            } else {
+                when (gameVariant) {
+                    CaosVariant.C1 -> setOf("spr")
+                    CaosVariant.C2 -> setOf("s16")
+                    else -> setOf("s16", "c16")
                 }
             }
-        }
 
+            // Get files from raw file name indices
+            getRawWithCaselessIndex(
+                project,
+                nonNullScope,
+                progressIndicator,
+                extensions,
+                filter
+            ).nullIfEmpty()
+                ?: getRawWithCaseSensitiveIndex(
+                    project,
+                    gameVariant,
+                    nonNullScope,
+                    progressIndicator,
+                    extensions
+                )
+        }
     }
 
     @JvmStatic
@@ -105,18 +153,133 @@ object BodyPartsIndex {
         return matchSpritesToAtts(
             project,
             searchKey.variant,
-            searchScope,
+            searchScope ?: GlobalSearchScope.everythingScope(project),
             coroutineScope,
             progressIndicator
         ) { newScope ->
+
+            // Make sure file is not dumb
             if (DumbService.isDumb(project)) {
-                emptyList()
-            } else if (ATT_TO_SPRITE) {
-                AttFilesIndex.findMatching(project, searchKey, newScope, progressIndicator)
+                return@matchSpritesToAtts emptyList()
+            }
+
+            // Get absolutely not null scope
+            // Used to filter virtual files
+            val nonNullScope = newScope ?: GlobalSearchScope.everythingScope(project)
+
+
+            // Get initial files the sprite/att index's findMatching with breed key
+            val initialFiles = if (ATT_TO_SPRITE) {
+                AttFilesIndex.findMatching(project, searchKey, nonNullScope, progressIndicator)
             } else {
-                BreedSpriteIndex.findMatching(project, searchKey, newScope, progressIndicator)
-             }
+                BreedSpriteIndex.findMatching(project, searchKey, nonNullScope, progressIndicator)
+            }
+
+            // If initial files is not empty, that means indices should be build
+            if (initialFiles.isNotEmpty()) {
+                return@matchSpritesToAtts initialFiles
+            }
+
+            // Create filter by key function
+            val filter = filter@{ file: VirtualFile ->
+                progressIndicator?.checkCanceled()
+                val key = BreedPartKey.fromFileName(file.nameWithoutExtension)
+                    ?: return@filter false
+                BreedPartKey.isGenericMatch(key, searchKey)
+            }
+
+            // Get target file extensions
+            val extensions = if (ATT_TO_SPRITE) {
+                setOf("att")
+            } else {
+                when (searchKey.variant) {
+                    CaosVariant.C1 -> setOf("spr")
+                    CaosVariant.C2 -> setOf("s16")
+                    null -> setOf("spr", "s16", "c16")
+                    else -> setOf("s16", "c16")
+                }
+            }
+
+            // Get files first with caseless index, then with case-sensitive index
+            getRawWithCaselessIndex(
+                project,
+                nonNullScope,
+                progressIndicator,
+                extensions,
+                filter
+            ).nullIfEmpty()
+                ?: getRawWithCaseSensitiveIndex(
+                    project,
+                    searchKey,
+                    nonNullScope,
+                    progressIndicator,
+                    extensions
+                )
         }
+    }
+
+    private inline fun getRawWithCaselessIndex(
+        project: Project,
+        searchScope: GlobalSearchScope,
+        progressIndicator: ProgressIndicator?,
+        extensions: Set<String>,
+        filter: (file: VirtualFile) -> Boolean,
+    ): Collection<VirtualFile> {
+        return extensions
+            .flatMap map@{ extension ->
+                progressIndicator?.checkCanceled()
+                CaseInsensitiveFileIndex
+                    .findWithExtension(project, extension, searchScope)
+            }
+            .filter(filter)
+
+    }
+
+    private fun getRawWithCaseSensitiveIndex(
+        project: Project,
+        searchKey: BreedPartKey,
+        searchScope: GlobalSearchScope,
+        progressIndicator: ProgressIndicator?,
+        extensions: Set<String>,
+    ): Collection<VirtualFile> {
+        val extensionsLowercase = extensions.mapNotNull { it.nullIfEmpty()?.lowercase() }
+        return FilenameIndex
+            .getAllFilenames(project)
+            .filter { fileName ->
+                progressIndicator?.checkCanceled()
+                val key = BreedPartKey.fromFileName(fileName)
+                    ?: return@filter false
+                BreedPartKey.isGenericMatch(key, searchKey) &&
+                        FileNameUtil.getExtension(fileName)?.lowercase() in extensionsLowercase
+            }
+            .flatMap { fileName ->
+                FilenameIndex.getVirtualFilesByName(project, fileName, searchScope)
+            }
+
+    }
+
+    private fun getRawWithCaseSensitiveIndex(
+        project: Project,
+        variant: CaosVariant,
+        searchScope: GlobalSearchScope,
+        progressIndicator: ProgressIndicator?,
+        extensions: Set<String>,
+    ): Collection<VirtualFile> {
+        val extensionsLowercase = extensions.mapNotNull { it.nullIfEmpty()?.lowercase() }
+        return FilenameIndex
+            .getAllFilenames(project)
+            .filter { fileName ->
+                progressIndicator?.checkCanceled()
+                BreedPartKey.isPartName(fileName) && FileNameUtil.getExtension(fileName)
+                    ?.lowercase() in extensionsLowercase
+            }
+            .flatMap { fileName ->
+                FilenameIndex.getVirtualFilesByName(project, fileName, searchScope)
+                    .filter { virtualFile ->
+                        virtualFile.getVariant(project, true) == variant
+                    }
+            }
+
     }
 
 
@@ -132,7 +295,7 @@ object BodyPartsIndex {
         val variant = variantIn?.selfOrC3IfDS
 
         // Build variant scope
-        val newScope = if (variant != null) {
+        val newScope: GlobalSearchScope? = if (variant != null) {
             val variantScope = CaosVariantGlobalSearchScope(project, variant)
             searchScope?.intersectWith(variantScope) ?: variantScope
         } else {
@@ -379,7 +542,11 @@ object BodyPartsIndex {
         if (DumbService.isDumb(project)) {
             return null
         }
-        val parent = if (directory.isDirectory) directory else directory.parent
+        val parent = if (directory.isDirectory) {
+            directory
+        } else {
+            directory.parent
+        }
         return ('a'..'q').mapNotNull { part ->
             val bodyPartKey = key
                 .copyWithPart(part)
@@ -492,7 +659,8 @@ internal open class SpriteAttPathPropertyPusher
 
         fun writeToStorage(baseFile: VirtualFile, otherFile: Pointer<Pair<Int, VirtualFile>?>?) {
 //            spriteFile.putUserData(BodyPartsIndex.BODY_DATA_ATT_KEY, attFile)
-            writeToStorageStream(baseFile,
+            writeToStorageStream(
+                baseFile,
                 fileAttribute,
                 BodyPartsIndex.BODY_DATA_ATT_KEY,
                 otherFile
@@ -513,10 +681,12 @@ internal open class SpriteAttPathPropertyPusher
 
         fun readFromStorage(baseFile: VirtualFile): Pointer<Pair<Int, VirtualFile>?>? {
 //            return spriteFile.getUserData(BodyPartsIndex.BODY_DATA_ATT_KEY)
-            return readFromStorageStream(baseFile,
+            return readFromStorageStream(
+                baseFile,
                 fileAttribute,
                 BodyPartsIndex.BODY_DATA_ATT_KEY,
-                safe = true) read@{
+                safe = true
+            ) read@{
                 if (!readBoolean()) {
                     return@read null
                 }
