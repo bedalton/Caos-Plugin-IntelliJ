@@ -242,7 +242,7 @@ private class PartFileCellRenderer(val strict: Boolean = false) : DefaultListCel
         foreground = BLACK
         this.text = text
         this.isEnabled = !disable
-        val part = getPartName(text[0])
+        val part = getPartName(text[0].lowercaseChar())
         if (part != null) {
             setText("$text - $part")
         } else {

@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
@@ -35,7 +35,10 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -1210,6 +1213,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             });
             return;
         }
+
         this.rootPath = path;
         drawImmediately = false;
         final String lastDirectory = ((PoseRenderedImagePanel) imageHolder).getLastDirectory();

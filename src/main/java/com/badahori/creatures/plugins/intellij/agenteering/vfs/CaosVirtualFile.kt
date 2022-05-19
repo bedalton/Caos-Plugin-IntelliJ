@@ -59,7 +59,11 @@ open class CaosVirtualFile protected constructor(
     /** Allows Quick access to CAOS Variant */
     private var mVariant: CaosVariant? = null
 
-    override val variant: CaosVariant? get() = mVariant ?: VariantsFilePropertyPusher.readFromStorageCatching(this).firstOrNull().nullIfUnknown()
+    override val variant: CaosVariant? get() = mVariant
+        ?: VariantsFilePropertyPusher
+            .readFromStorageCatching(this)
+            .firstOrNull()
+            .nullIfUnknown()
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
         mVariant = variant

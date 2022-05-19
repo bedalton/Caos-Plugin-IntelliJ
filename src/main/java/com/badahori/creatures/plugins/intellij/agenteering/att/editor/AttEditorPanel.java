@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
-import com.badahori.creatures.plugins.intellij.agenteering.utils.MouseListenerBase;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -22,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -95,6 +93,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initPopupMenu();
         initDisplay(controller.getVariant());
 //        poseEditor.init();
+
+        (new RuntimeException()).printStackTrace();
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
     }
@@ -252,6 +252,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         mainPanel.setComponentPopupMenu(menu);
         display.setInheritsPopupMenu(true);
         scrollPane.setInheritsPopupMenu(true);
+        spriteCellList.setComponentPopupMenu(menu);
         spriteCellList.setInheritsPopupMenu(true);
     }
 
@@ -388,6 +389,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseEditor.setRootPath(controller.getRootPath());
         pushAttToPoseEditor(controller.getAttData());
         final Pose pose = controller.getPose();
+        controller.setPose(null);
         if (pose != null && (getVariant().isNotOld() || pose.getBody() < 8)) {
             try {
                 poseEditor.setPose(pose, true);
