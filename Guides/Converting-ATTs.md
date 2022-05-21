@@ -33,8 +33,8 @@ To get started with IDEA and CAOS and Agenteering plugin, see this [Getting star
 Along the top of the editor are radio buttons with a number beside them. These numbers represent a point in the ATT
 
 To switch the point being edited:  
-- click the radio button
-- **press the corresponding number key on the keyboard**
+- Click the radio button
+- **Press the corresponding number key on the keyboard**
 
 **X/Y lock**
 Pressing `x` on the keyboard will lock the all points x-axis movement  
@@ -54,7 +54,7 @@ Begin by creating a project to organize your files
 ### 2. Add and Organize Files  
 
 For best results, the ATTs cannot be edited in isolation. 
-1. Your newly converted breed ATTs and sprites(1) in a subfolder together or in separate Image/Body Data folders
+1. Put your newly converted breed ATTs and sprites(1) in a subfolder together or in separate Image/Body Data folders
    1. An official breed's ATTs and Sprites from your target game.(2) *Though you can copy all Breeds together, copying only one of the official breeds will
       make navigation between the breeds easier.*
       Finding a specific breeds file is easier with glob syntax where you can substitute `?` for any one letter or number  
@@ -77,7 +77,7 @@ There are three basic ways to open a breed files.
   - Typing the file name while project view has focus will attempt to highlight it
 - Hit `shift` twice while focus is on editor or project view to open the quick action dialog
   - Type the file name into the text field and click it or press enter with the file name highlighted
-- In editor view, you can click the combo-box `... related files` next to `Open` is the left side pose editor panel
+- In editor view, you can click the combo-box `... related files` next to `Open` on the left side pose editor panel
   - This will show you the related breed files, clicking on an item will open it up
 
 
@@ -135,7 +135,7 @@ Arms and legs may need only little adjustments, or none at all.
 
 
 ### The Limbs
-Now repeat the process done for the head, with the tail, the left and right thigh and the left and right shoulders --
+Now repeat the process done for the head, with the tail, the left and right thigh and the left and right shoulders \-\-
 which was replacing the converted breed's body with the body with your reference breed.
 
 I find it easier to work with the left and right limbs at the same time. 
@@ -154,7 +154,7 @@ position.
 **Remember, you have only been setting points on the converted breed to the reference breed, not to itself. 
 You also have not altered any ATTs for the reference breed**
 
-We also have only been doing the main attachment points, the thighs, upper arms, head and tail to the body, and the body to them__**
+**__We also have only been doing the main attachment points, the thighs, upper arms, head and tail to the body, and the body to them__**
 
 When you have set all points on the converted breed onto the reference breed, it is time to see the converted breed
 on its own. Here you may find that things look a little funny. 
