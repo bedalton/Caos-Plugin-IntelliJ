@@ -55,10 +55,11 @@ Begin by creating a project to organize your files
 
 For best results, the ATTs cannot be edited in isolation. 
 1. Put your newly converted breed ATTs and sprites(1) in a subfolder together or in separate Image/Body Data folders
-   1. An official breed's ATTs and Sprites from your target game.(2) *Though you can copy all Breeds together, copying only one of the official breeds will
-      make navigation between the breeds easier.*
+2. Copy an official breed's ATTs and Sprites from your target game into a subfolder in the project.  
+     *Though you can copy all Breeds together, copying only one of the official breeds will
+      make navigation between the breeds easier.*.  
       Finding a specific breeds file is easier with glob syntax where you can substitute `?` for any one letter or number  
-      *Example*: Astro male body data `?0?m.att`, Astro norn Female `?4?m.att`
+**Example**: Astro male body data `?0?m.att`, Astro norn Female `?4?m.att`
 - On Windows glob syntax works in Explorer's search and CMD using `copy`
 - On macOS, glob syntax only works in terminal with the `cp` command. When using Finder search, 
 you would have to use "ends with" to get files by breed letter, and select actual files manually
@@ -136,7 +137,7 @@ Arms and legs may need only little adjustments, or none at all.
 
 ### The Limbs
 Now repeat the process done for the head, with the tail, the left and right thigh and the left and right shoulders \-\-
-which was replacing the converted breed's body with the body with your reference breed.
+which was replacing the converted breed's body with body of your reference breed.
 
 I find it easier to work with the left and right limbs at the same time. 
 
