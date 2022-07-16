@@ -3,6 +3,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.generator
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.io.IOException
@@ -20,11 +22,13 @@ open class CaosDefGeneratorTask : DefaultTask() {
     /**
      * The folder into which to generate all files
      */
+    @OutputDirectory
     lateinit var targetFolder: File
 
     /**
      * Whether or not to create the target file, if it does not exist.
      */
+    @Input
     var createFolder: Boolean = false
 
     /**
@@ -38,13 +42,16 @@ open class CaosDefGeneratorTask : DefaultTask() {
 
         // Ensure target folder exists
         val exists = targetFolder.exists()
-        if (exists && targetFolder.isFile)
+        if (exists && targetFolder.isFile) {
             throw IOException("Cannot generate CAOS def files into non-directory path: $targetFolder")
-        if (!exists && !createFolder)
+        }
+        if (!exists && !createFolder) {
             throw IOException("Directory '$targetFolder' for CAOS def generation does not exist")
+        }
         if (!exists) {
-            if (!targetFolder.mkdirs())
+            if (!targetFolder.mkdirs()) {
                 throw IOException("Failed to create folder file '$targetFolder'")
+            }
         }
 
         // Get all variants
