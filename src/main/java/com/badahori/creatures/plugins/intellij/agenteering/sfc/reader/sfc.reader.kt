@@ -107,8 +107,9 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
 
             // Write a dump file as needed.
             // Todo: Remove this before pushing plugin update
-            if (sfcFilePath != null)
+            if (sfcFilePath != null) {
                 File("$sfcFilePath.dump.json").writeText("$this")
+            }
         }
     }
 
@@ -216,8 +217,9 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
                 }
             }
             // Check for valid SFC
-            if (virtualFile.extension?.equalsIgnoreCase("sfc").orFalse() && isSfc(virtualFile))
+            if (virtualFile.extension?.equalsIgnoreCase("sfc").orFalse() && isSfc(virtualFile)) {
                 throw IOException("Cannot parse non-sfc file as sfc")
+            }
 
             // Parse or create data holder
             val holder = try {
