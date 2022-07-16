@@ -42356,7 +42356,7 @@
           "id": 930,
           "valuesListId": 68,
           "value": "2",
-          "name": "Mousable",
+          "name": "Mouseable",
           "description": "Mouse can pick up object",
           "beforeRegion": null,
           "sub_values": "",
@@ -58847,6 +58847,17 @@
           "require_prev": null
         },
         {
+          "id": 7328,
+          "valuesListId": 228,
+          "value": "4 0",
+          "name": "Creature",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
           "id": 4595,
           "valuesListId": 228,
           "value": "4 1",
@@ -59331,6 +59342,17 @@
           "require_prev": null
         },
         {
+          "id": 7329,
+          "valuesListId": 228,
+          "value": "4 0",
+          "name": "Creature",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
           "id": 4494,
           "valuesListId": 229,
           "value": "4 1",
@@ -59764,6 +59786,17 @@
           "valuesListId": 230,
           "value": "3 1",
           "name": "Mover",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 7330,
+          "valuesListId": 230,
+          "value": "4 0",
+          "name": "Creature",
           "description": null,
           "beforeRegion": null,
           "sub_values": "",
