@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support
 
-import bedalton.creatures.pray.compiler.pray.CATEGORIES
+import bedalton.creatures.agents.pray.compiler.pray.CATEGORIES
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock

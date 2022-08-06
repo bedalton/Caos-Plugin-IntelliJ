@@ -16,12 +16,12 @@ configurations {
 plugins {
 //    id("java")
     id("org.jetbrains.intellij") version "1.3.0"
-    kotlin("plugin.serialization") version "1.5.30"
-    id("org.jetbrains.kotlin.jvm") version "1.5.30"
+    kotlin("plugin.serialization") version "1.6.21"
+    id("org.jetbrains.kotlin.jvm") version "1.6.21"
 }
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.02.02"
+version = "2022.03.00"
 
 
 val korImagesVersion: String by project
@@ -51,11 +51,11 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:PrayUtil:0.03") {
+    implementation("bedalton.creatures:AgentUtil:0.04") {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:SpriteUtil:0.02") {
+    implementation("bedalton.creatures:SpriteUtil:0.03") {
         excludeKotlin()
     }
 
@@ -63,7 +63,11 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:CommonCore:0.02") {
+    implementation("bedalton.creatures:CommonCore:0.03") {
+        excludeKotlin()
+    }
+
+    implementation("bedalton.creatures:CommonCLI:0.03") {
         excludeKotlin()
     }
 

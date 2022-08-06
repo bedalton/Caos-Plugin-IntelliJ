@@ -55,7 +55,7 @@ private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val thumbWidth = uInt16
     val thumbHeight = uInt16
     val image = if (thumbWidth > 0 && thumbHeight > 0)
-        S16SpriteFile.parseFrame(this, position(), thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
+        S16SpriteFile.parseFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
     else
         null
     skip(thumbWidth * thumbHeight * 2)

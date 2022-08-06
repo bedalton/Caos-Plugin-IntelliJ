@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
-import bedalton.creatures.pray.cli.PrayCompilerCliOptions
+import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions
 import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile

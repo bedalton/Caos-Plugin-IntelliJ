@@ -3,7 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 
-import bedalton.creatures.pray.cli.PrayCompilerCliOptions
+import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData

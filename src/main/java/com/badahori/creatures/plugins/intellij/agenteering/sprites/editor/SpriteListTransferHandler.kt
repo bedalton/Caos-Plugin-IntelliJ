@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.Transferable
 import javax.swing.JComponent
 import javax.swing.JList

@@ -54,11 +54,7 @@ internal open class ProjectCaosScriptFileTreeNode(
         if (!isValid()) {
             return@lazy 0
         }
-        var count = 0
-        SCRIPT_HEADER_REGEX.findAll(file.text).iterator().forEach { _ ->
-            count++
-        }
-        count
+        SCRIPT_HEADER_REGEX.findAll(file.text).count()
     }
 
     private val possibleSubroutines by lazy { if (isValid()) file.text.lowercase().count("subr ") else 0 }
@@ -179,7 +175,7 @@ internal open class ProjectCaosScriptFileTreeNode(
     }
 
     companion object {
-        private val SCRIPT_HEADER_REGEX = "(scrp|iscr|rscr)".toRegex()
+        private val SCRIPT_HEADER_REGEX = "(scrp|iscr|rscr) ".toRegex(RegexOption.IGNORE_CASE)
     }
 
 }
@@ -297,10 +293,11 @@ internal class SubScriptLeafNode(
     }
 
     private val possibleSubroutines by lazy {
-        if (isValid())
+        if (isValid()) {
             script.text.lowercase().count("subr ")
-        else
+        }else {
             0
+        }
     }
 
     override fun isAlwaysLeaf(): Boolean {

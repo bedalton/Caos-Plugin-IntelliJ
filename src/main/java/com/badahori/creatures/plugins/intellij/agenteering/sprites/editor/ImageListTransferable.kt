@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import bedalton.creatures.util.Log
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
@@ -7,18 +8,17 @@ import java.io.File
 
 internal class ImageListTransferable(private val items: List<ImageTransferItem>) : Transferable {
 
-    @Suppress("IMPLICIT_CAST_TO_ANY")
     @Throws(UnsupportedFlavorException::class)
-    override fun getTransferData(flavor: DataFlavor): Any? {
+    override fun getTransferData(flavor: DataFlavor?): Any {
         return when (flavor) {
             DataFlavor.javaFileListFlavor -> fileList
-            DataFlavor.imageFlavor -> items.first().image
+            DataFlavor.imageFlavor -> items.first().image!!
             else -> throw UnsupportedFlavorException(flavor)
         }
     }
 
-    val fileList: List<File> by lazy {
-        items.map { it.file }
+    private val fileList: List<File> by lazy {
+        items.mapNotNull { it.file }
     }
 
     override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {

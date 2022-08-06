@@ -33,7 +33,7 @@ internal class SpriteTransferHandler(private val fileName: String, private val i
      * Actions for this list include copying only
      */
     override fun getSourceActions(c: JComponent?): Int {
-        return COPY_OR_MOVE
+        return COPY
     }
 
     override fun getDragImage(): Image? {

@@ -1,19 +1,26 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
+import bedalton.creatures.bytes.ByteStreamReader;
+import bedalton.creatures.sprite.parsers.PhotoAlbum;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
+import com.soywiz.korim.bitmap.Bitmap32;
 import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -42,18 +49,25 @@ public class SprFileEditor {
     private JLabel loadingLabel;
     private final Logger LOGGER = Logger.getLogger("#SprFileEditor");
 
+    @Nullable
+    private String moniker = null;
+
+    private final Project project;
+
     /**
      * Basic constructor
      *
      * @param file sprite file to construct panel for
      */
-    SprFileEditor(VirtualFile file) {
+    SprFileEditor(final Project project, final VirtualFile file) {
+        this.project = project;
         this.file = file;
         images = new ArrayList<>();
         $$$setupUI$$$();
         init();
     }
 
+    @SuppressWarnings("unused")
     synchronized void clearInit() {
         didInit = false;
     }
@@ -69,11 +83,75 @@ public class SprFileEditor {
         loadSprite();
         // Initialize the UI controls
         initUI();
+        main.setFocusable(true);
+        imageList.setFocusable(true);
+        main.setTransferHandler(imageList.getTransferHandler());
     }
 
     JComponent getComponent() {
         init();
         return main;
+    }
+
+    @Nullable
+    private List<List<BufferedImage>> readFileAsPhotoAlbum() {
+        final ByteStreamReader stream = new VirtualFileStreamReader(file);
+        final PhotoAlbum album = bedalton.creatures.sprite.parsers.SpriteParser.INSTANCE.parsePhotoAlbum(file.getNameWithoutExtension(), stream, 1, (i, total) -> {
+            final double progress = Math.ceil((i * 100.0) / total);
+            ApplicationManager.getApplication().invokeLater(() -> {
+                if (file.isValid()) {
+                    if (loadingLabel != null) {
+                        loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
+                    }
+                } else {
+                    if (loadingLabel != null) {
+                        initPlaceholder();
+                    }
+                    assert loadingLabel != null;
+                    loadingLabel.setText("Sprite file invalidated");
+                }
+            });
+            return null;
+        });
+        if (album == null) {
+            if (loadingLabel != null) {
+                initPlaceholder();
+            }
+            assert loadingLabel != null;
+            loadingLabel.setText("Failed to load photo album");
+            return null;
+        }
+        moniker = album.getMoniker();
+        if (moniker != null && moniker.trim().length() != 4) {
+            moniker = null;
+        }
+        final List<Bitmap32> bitmaps = SpriteEditorImpl.toBitmapList(album);
+        final List<List<Bitmap32>> images = List.of(bitmaps);
+        SpriteEditorImpl.cache(file, images);
+        final List<BufferedImage> bufferedImages = SpriteEditorImpl.toBufferedImages(album);
+        return List.of(bufferedImages);
+    }
+
+    private List<List<BufferedImage>> readFileAsRegularSprite() {
+        final SpriteFileHolder holder = SpriteParser.parse(file, (i, total) -> {
+            final double progress = Math.ceil((i * 100.0) / total);
+            ApplicationManager.getApplication().invokeLater(() -> {
+                if (file.isValid()) {
+                    if (loadingLabel != null) {
+                        loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
+                    }
+                } else {
+                    if (loadingLabel != null) {
+                        initPlaceholder();
+                    }
+                    assert loadingLabel != null;
+                    loadingLabel.setText("Sprite file invalidated");
+                }
+            });
+            return null;
+        });
+        SpriteEditorImpl.cache(file, holder.getBitmaps());
+        return holder.getImageSets();
     }
 
     /**
@@ -82,23 +160,22 @@ public class SprFileEditor {
      */
     private void loadSprite() {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            List<BufferedImage> rawImages;
+            if (!file.isValid()) {
+                return;
+            }
+            final String fullFileName = file.getName();
+            List<List<BufferedImage>> rawImages;
 
             // Initialize sprites
             try {
                 rawImages = SpriteEditorImpl.fromCacheAsAwt(file);
                 if (rawImages == null) {
-                    final SpriteFileHolder holder = SpriteParser.parse(file, (i, total) -> {
-                        final double progress = Math.ceil((i * 100.0) / total);
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            if (loadingLabel != null) {
-                                loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
-                            }
-                        });
-                        return null;
-                    });
-                    SpriteEditorImpl.cache(file, holder.getBitmaps());
-                    rawImages = holder.getImages();
+                    final String extension = file.getExtension();
+                    if (extension != null && extension.equalsIgnoreCase("PHOTO ALBUM")) {
+                        rawImages = readFileAsPhotoAlbum();
+                    } else {
+                        rawImages = readFileAsRegularSprite();
+                    }
                 }
             } catch (Exception e) {
                 rawImages = Lists.newArrayList();
@@ -108,18 +185,35 @@ public class SprFileEditor {
                 });
             }
 
+            if (rawImages == null) {
+                rawImages = Collections.emptyList();
+            }
+
+
             // Find number padding for image names for file copy
             final int padLength = (rawImages.size() + "").length();
-            final String prefix = FileUtil.getNameWithoutExtension(file.getName()) + ".";
+            final String prefix = moniker != null ? moniker : FileUtil.getNameWithoutExtension(fullFileName);
             final String suffix = ".png";
             final int lastSize = images.size();
             images.clear();
             final int[] selection = imageList.getSelectedIndices();
             final List<ImageTransferItem> images = Lists.newArrayList();
-
-            for (int i = 0; i < rawImages.size(); i++) {
-                final String fileName = prefix + pad(i, padLength) + suffix;
-                images.add(new ImageTransferItem(fileName, rawImages.get(i)));
+            final int spriteSetCounts = rawImages.size();
+            final int setPrefixLength = (spriteSetCounts + "").length();
+            for (int i = 0; i < spriteSetCounts; i++) {
+                String setPrefix;
+                if (spriteSetCounts == 1) {
+                    setPrefix = "";
+                } else {
+                    setPrefix = "." + pad(i, setPrefixLength);
+                    images.add(new ImageTransferItem(prefix + "[" + pad(i, setPrefixLength) + "]", null));
+                }
+                final List<BufferedImage> spriteSet = rawImages.get(i);
+                final int spriteCount = spriteSet.size();
+                for (int j = 0; j < spriteCount; j++) {
+                    final String fileName = prefix + setPrefix + "." + pad(j, padLength) + suffix;
+                    images.add(new ImageTransferItem(fileName, spriteSet.get(j)));
+                }
             }
             this.images.addAll(images);
             ApplicationManager.getApplication().invokeLater(() -> {
@@ -130,7 +224,7 @@ public class SprFileEditor {
                     try {
                         imageList.setSelectedIndices(selection);
                     } catch (Exception e) {
-                        LOGGER.severe("Failed to preserve selection on reload in file " + file.getName());
+                        LOGGER.severe("Failed to preserve selection on reload in file " + fullFileName);
                     }
                 }
                 if (scrollPane != null) {
@@ -171,12 +265,14 @@ public class SprFileEditor {
 
     private void initPlaceholder() {
         imageList.setVisible(false);
-        loadingLabel = new JLabel("Loading sprite...", SwingConstants.CENTER) {
-            @Override
-            public Dimension getPreferredSize() {
-                return scrollPane.getSize();
-            }
-        };
+        if (loadingLabel == null) {
+            loadingLabel = new JLabel("Loading sprite...", SwingConstants.CENTER) {
+                @Override
+                public Dimension getPreferredSize() {
+                    return scrollPane.getSize();
+                }
+            };
+        }
         scrollPane.setViewportView(loadingLabel);
     }
 
@@ -220,7 +316,7 @@ public class SprFileEditor {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        main.add(new JLabel("Failed to load sprite images with error: " + exception.getLocalizedMessage()), gbc);
+        main.add(new JLabel("Failed to load sprite images with "+exception.getClass().getSimpleName()+": " + exception.getMessage()), gbc);
         exception.printStackTrace();
     }
 
@@ -233,7 +329,7 @@ public class SprFileEditor {
     }
 
     private void createUIComponents() {
-        imageList = new ImageListPanel<>(images);
+        imageList = new ImageListPanel<>(project, images);
         cellRenderer.setColor(TRANSPARENT_COLOR);
         imageList.setCellRenderer(cellRenderer);
         backgroundColor = new ComboBox<>(new String[]{

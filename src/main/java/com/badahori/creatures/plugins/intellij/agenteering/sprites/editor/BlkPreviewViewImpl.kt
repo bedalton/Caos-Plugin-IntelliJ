@@ -137,7 +137,7 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
         }
 
         SpriteEditorImpl.fromCacheAsAwt(file)?.getOrNull(0)?.let { image ->
-            setImage(image)
+            setImage(image.first())
             return
         }
 
@@ -161,7 +161,7 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
 
         try {
             val stitched = stitch(rawImages)
-            cache(file, listOf(stitched))
+            cache(file, listOf(listOf(stitched)))
             setImage(stitched.toAwt())
         } catch (e: Exception) {
             val error = if (e.message?.length.orElse(0) > 0) {
@@ -180,7 +180,7 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
     private fun stitch(rawImages: List<Bitmap32>): Bitmap32 {
         val stream = VirtualFileStreamReader(file)
         val (cellsWide, cellsHigh) = try {
-            stream.position(0)
+            stream.setPosition(0)
             BlkSpriteFile.sizeInCells(stream)
         } finally {
             if (!stream.closed) {
@@ -209,7 +209,7 @@ internal class BlkPreviewViewImpl(project: Project?, file: VirtualFile) : UserDa
                 }
                 null
             }
-            return holder.bitmaps
+            return holder.bitmaps.first()
         } finally {
             if (!stream.closed) {
                 stream.close()

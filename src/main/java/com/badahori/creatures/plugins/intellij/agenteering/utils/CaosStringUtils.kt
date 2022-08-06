@@ -391,7 +391,7 @@ fun randomString(
     return (0 until length).map {
         val index: Int = ceil(random.nextDouble() * max).toInt() - 1
         chars[index]
-    }.joinToString()
+    }.joinToString("")
 
 }
 

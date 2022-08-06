@@ -14,16 +14,16 @@ internal class ImageTransferable(private val imageTransferItem: ImageTransferIte
     constructor(name: String, image: BufferedImage?) : this(ImageTransferItem(name, image))
 
     @Throws(UnsupportedFlavorException::class)
-    override fun getTransferData(flavor: DataFlavor): Any? {
+    override fun getTransferData(flavor: DataFlavor?): Any {
         return when (flavor) {
             DataFlavor.javaFileListFlavor -> fileList
-            DataFlavor.imageFlavor -> imageTransferItem.image
+            DataFlavor.imageFlavor -> imageTransferItem.image!!
             else -> throw UnsupportedFlavorException(flavor)
         }
     }
 
-    val fileList: List<File> by lazy {
-        listOf(imageTransferItem.file)
+    private val fileList: List<File> by lazy {
+        listOfNotNull(imageTransferItem.file)
     }
 
     override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {

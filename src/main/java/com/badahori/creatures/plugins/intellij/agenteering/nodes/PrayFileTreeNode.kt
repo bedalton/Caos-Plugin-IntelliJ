@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.pray.data.PrayBlock
-import bedalton.creatures.pray.parser.parsePrayAgentBlocks
+import bedalton.creatures.agents.pray.data.PrayBlock
+import bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
+import bedalton.creatures.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
@@ -15,9 +15,13 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+
+private val PRAY_TREE_CHILD_CACHE_KEY = Key<Pair<String,List<AbstractTreeNode<*>>>>("bedalton.node.pray.PRAY_CHILDREN")
 
 internal class PrayFileTreeNode(
     project: Project,
@@ -25,9 +29,11 @@ internal class PrayFileTreeNode(
     private val viewSettings: ViewSettings,
 ) : VirtualFileBasedNode<VirtualFile>(project, file, viewSettings) {
 
+
     private val directory by lazy {
-        val directory = CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory("PRAY")
-        val name = file.name + '.' + randomString(6)
+        val baseDirectory = CaosVirtualFileSystem.instance.getOrCreateRootChildDirectory("PRAY")
+        val directory = baseDirectory.createChildDirectory(randomString(6))
+        val name = file.name
         directory.createChildDirectory(name)
     }
 
@@ -44,6 +50,12 @@ internal class PrayFileTreeNode(
     }
 
     private val blockChildren by lazy {
+        val md5 = ""
+        virtualFile.getUserData(PRAY_TREE_CHILD_CACHE_KEY)?.let {
+            if (it.first == md5) {
+                return@lazy it.second
+            }
+        }
         blocks.mapNotNull map@{ block ->
             if (block is PrayBlock.DataBlock) {
                 val file = try {
@@ -64,7 +76,14 @@ internal class PrayFileTreeNode(
                     return@lazy emptyList()
                 }
             }
+        }.apply {
+            virtualFile.putUserData(PRAY_TREE_CHILD_CACHE_KEY, Pair(md5 ?: "", this))
         }
+    }
+
+    override fun shouldUpdateData(): Boolean {
+
+        return super.shouldUpdateData()
     }
 
     override fun update(presentation: PresentationData) {
@@ -74,6 +93,10 @@ internal class PrayFileTreeNode(
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
         return blockChildren
+    }
+
+    override fun getLeafState(): LeafState {
+        return LeafState.ASYNC
     }
 
 }
@@ -107,7 +130,11 @@ internal class PrayBlockTreeNode(
         }
 
         val isAgent = try {
-            prayBlock.intTags.any { it.tag like "Agent Type" }
+            prayBlock.intTags.any { it.tag like "Agent Type" } || prayBlock.stringTags.any { it.tag like "Agent Type"}.apply {
+                if (this) {
+                    Log.i { "Agent type tag is a string" }
+                }
+            }
         } catch (e: Exception) {
             LOGGER.severe("Failed to parse block [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
@@ -115,6 +142,7 @@ internal class PrayBlockTreeNode(
         }
 
         if (!isAgent) {
+            Log.i { "Block: ${prayBlock.blockTag}: ${prayBlock.blockName} is not an agent. IntTags: [${prayBlock.intTags.joinToString { it.tag }}]; StringTags: [${prayBlock.stringTags.joinToString { it.tag }}]" }
             return@lazy emptyList()
         }
         val scriptTagRegex = "Script\\s+(\\d+)".toRegex()
@@ -150,9 +178,17 @@ internal class PrayBlockTreeNode(
                 it.tag,
                 viewSettings
             )
+        }.apply {
+            if (isEmpty()) {
+                Log.i { "Agent ${prayBlock.blockTag} ${prayBlock.blockName} has no scripts. Has <${stringTags.size}> string tags" }
+            }
         }
     }
 
+
+    override fun shouldUpdateData(): Boolean {
+        return super.shouldUpdateData()
+    }
     override fun getChildren(): List<AbstractTreeNode<*>> {
         return try {
             childNodes

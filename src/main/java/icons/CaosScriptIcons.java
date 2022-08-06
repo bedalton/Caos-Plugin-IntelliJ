@@ -22,6 +22,8 @@ public interface CaosScriptIcons {
     Icon S16_FILE_ICON = IconLoader.getIcon("/icons/s16-file-icon.svg");
     Icon C16_FILE_ICON = IconLoader.getIcon("/icons/c16-file-icon.svg");
     Icon SPR_FILE_ICON = IconLoader.getIcon("/icons/spr-file-icon.svg");
+
+    Icon PHOTO_ALBUM_FILE_ICON = IconLoader.getIcon("/icons/photo-album-file-icon.svg");
     Icon AGENT_FILE_ICON = IconLoader.getIcon("/icons/agent-file-icon.svg");
     Icon BLK_FILE_ICON = IconLoader.getIcon("/icons/blk-file-icon.svg");
     Icon WAV_FILE_ICON = IconLoader.getIcon("/icons/wav-file-icon.svg");

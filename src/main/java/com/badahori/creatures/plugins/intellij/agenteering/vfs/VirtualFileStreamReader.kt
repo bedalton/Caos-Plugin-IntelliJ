@@ -2,21 +2,23 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.FileStreamByteReader
+import bedalton.creatures.bytes.InputStreamByteReader
 import bedalton.creatures.bytes.MemoryByteStreamReader
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 
-class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamReader {
+class VirtualFileStreamReader(private val virtualFile: VirtualFile, start: Int? = null, end: Int? = null): ByteStreamReader {
+
+    constructor(virtualFile: VirtualFile): this (virtualFile, null, null)
 
     private var mClosed = false
 
     private val mReader: ByteStreamReader by lazy {
         if (virtualFile !is CaosVirtualFile) {
             try {
-                val ioFile = VfsUtil.virtualToIoFile(virtualFile)
-                if (ioFile.exists()) {
-                    return@lazy FileStreamByteReader(ioFile.path)
-                }
+                    return@lazy InputStreamByteReader(start, end) {
+                        virtualFile.inputStream
+                    }
             } catch (_: Exception) {
             }
         }
@@ -27,7 +29,7 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamR
     override val closed: Boolean
         get() = mClosed
 
-    override val size: Long
+    override val size: Int
         get() = mReader.size
 
     override fun close(): Boolean {
@@ -52,7 +54,7 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamR
         return mReader.get()
     }
 
-    override fun position(): Long {
+    override fun position(): Int {
         return mReader.position().let {
             if (it > 0)
                 it
@@ -61,8 +63,8 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile): ByteStreamR
         }
     }
 
-    override fun position(newPosition: Long): ByteStreamReader {
-        return mReader.position(newPosition)
+    override fun setPosition(newPosition: Int): ByteStreamReader {
+        return mReader.setPosition(newPosition)
     }
 
     override fun toByteArray(): ByteArray {

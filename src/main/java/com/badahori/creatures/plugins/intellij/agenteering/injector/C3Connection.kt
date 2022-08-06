@@ -312,8 +312,9 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
                 } catch (e: Exception) {
                     LOGGER.severe("Failed to delete prior injector EXE")
                 }
-            } else
+            } else {
                 return fileOut
+            }
         }
         inputStream.use {stream ->
             val success = try {

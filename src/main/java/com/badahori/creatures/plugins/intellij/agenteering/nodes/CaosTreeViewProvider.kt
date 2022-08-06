@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import bedalton.creatures.sprite.parsers.PhotoAlbum
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.ide.projectView.TreeStructureProvider
@@ -24,11 +25,11 @@ class CaosTreeViewProvider : TreeStructureProvider{
             return children
         }
         return children.map { child ->
-            virtualFileFromNode(child)?.toNode(project, settings) ?: child
+            virtualFileFromNode(child)?.toNode(project, settings, child) ?: child
         }.toMutableList()
     }
 
-    private fun virtualFileFromNode(node:AbstractTreeNode<*>) : VirtualFile? {
+    private fun virtualFileFromNode(node: AbstractTreeNode<*>) : VirtualFile? {
         return when (val value = node.value) {
             is VirtualFile -> value
             is File -> VfsUtil.findFileByIoFile(value, true)
@@ -46,7 +47,7 @@ class CaosTreeViewProvider : TreeStructureProvider{
 }
 
 
-private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings) : AbstractTreeNode<*>? {
+private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings, originalNode: AbstractTreeNode<*>) : AbstractTreeNode<*>? {
     if (project.isDisposed || !isValid) {
         return null
     }
@@ -60,6 +61,12 @@ private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings) : Ab
             this,
             viewSettings
         )
+        "photo album" -> {
+            PhotoAlbum.creaturesHexMonikerToToken(this.nameWithoutExtension)?.let {
+                originalNode.presentation.locationString = it
+            }
+            originalNode
+        }
         //in VALID_SPRITE_EXTENSIONS -> SpriteFileTreeNode(project, this)
         "sfc" -> SfcFileTreeNode(project, this, viewSettings)
         else -> null

@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.badahori.creatures.plugins.intellij.agenteering</id>
   <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2021.12.01</version>
+  <version><!-- *** SET VERSION IN GRADLE *** -->2022.03.00</version>
   <vendor>Bedalton</vendor>
 
   <description><![CDATA[
@@ -840,6 +840,10 @@
               fieldName="INSTANCE"
               extensions="blk" />
 
+    <fileType name="C1 Photo Album File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.photoalbum.PhotoAlbumFileType"
+              fieldName="INSTANCE"
+              extensions="Photo Album" />
 
     <fileBasedIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex"

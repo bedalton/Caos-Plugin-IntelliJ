@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions
 
 import bedalton.creatures.bytes.RelativeFileWriter
-import bedalton.creatures.pray.io.FileWriter
-import bedalton.creatures.pray.parser.parsePrayAgentToFiles
+import bedalton.creatures.io.FileWriter
+import bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
 import bedalton.creatures.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType

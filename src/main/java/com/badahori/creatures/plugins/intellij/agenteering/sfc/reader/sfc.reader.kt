@@ -42,7 +42,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
     fun readFile(): SfcFile? {
         dataHolder?.let { return it.data }
         // Ensure buffer is at zero in case of repeated reads
-        byteBuffer.position(0)
+        byteBuffer.setPosition(0)
         val mapData = (readClass(SfcType.MAP_DATA)!!.pointed as PointerSfcMapData)
         assert(this::variant.isInitialized) { "Variant should have been set at this point" }
         // Skip to objects start
@@ -120,7 +120,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
         var x = 0
         while (x == 0)
             x = uInt8
-        byteBuffer.position(byteBuffer.position() - 1)
+        byteBuffer.setPosition(byteBuffer.position() - 1)
     }
 
     /**
