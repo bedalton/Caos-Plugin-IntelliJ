@@ -74,11 +74,15 @@ class CaosProjectStartupActivity : StartupActivity {
                 @Suppress("UNUSED_VARIABLE")
                 val keys = events
                     .mapNotNull map@{
+                        if (!(it is VFileMoveEvent || it is VFileDeleteEvent || it is VFileCreateEvent)) {
+                            return@map  null
+                        }
                         val file = it.file
                             ?: return@map null
                         if (!file.isValid || file.extension?.lowercase() !in validExtensions)
                             return@map null
                         BreedPartKey.fromFileName(file.name)
+
                     }
                 try {
 //                    for (key in keys) {

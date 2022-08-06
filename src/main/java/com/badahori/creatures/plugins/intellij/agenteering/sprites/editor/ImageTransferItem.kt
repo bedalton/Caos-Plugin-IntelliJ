@@ -10,11 +10,19 @@ interface HasImage {
 }
 
 internal data class ImageTransferItem(internal val fileName:String, override val image: BufferedImage?) : HasImage {
-    internal val file: File by lazy {
+    internal val file: File? by lazy {
+        if (image == null) {
+            return@lazy null
+        }
+        val bytes = try {
+            image.toPngByteArray()
+        } catch (e: Exception) {
+            return@lazy null
+        }
         val tempDirectory = Files.createTempDirectory(null).toFile()
         File(tempDirectory.path + File.separator + fileName).apply {
             if (!exists()) {
-                writeBytes(image?.toPngByteArray() ?: ByteArray(0))
+                writeBytes(bytes)
                 createNewFile()
             }
         }

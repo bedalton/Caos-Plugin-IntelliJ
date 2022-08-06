@@ -19,7 +19,7 @@ object CobToDataObjectDecompiler {
 
     fun decompile(buffer: ByteStreamReader, fileName: String?): CobFileData {
         val header = buffer.string(4)
-        buffer.position(0)
+        buffer.setPosition(0)
         return if (header == "cob2") {
             decompileC2Cob(buffer)
         } else {
@@ -29,7 +29,7 @@ object CobToDataObjectDecompiler {
                 decompressor.write(buffer.toByteArray())
                 MemoryByteStreamReader(decompressed.toByteArray())
             } catch (e: Exception) {
-                buffer.position(0)
+                buffer.setPosition(0)
                 if (buffer.string(4) != "cob2")
                     return decompileC1Cob(buffer, fileName)
                 buffer
@@ -40,7 +40,7 @@ object CobToDataObjectDecompiler {
 
 
     private fun decompileC1Cob(buffer: ByteStreamReader, fileName:String?): CobFileData {
-        buffer.position(0)
+        buffer.setPosition(0)
         val version = buffer.uInt16
         if (version > 4) {
             val message = "Invalid COB file with version: $version. Data(\"${buffer.bytes(20).joinToString("") { "${it.toInt().toChar()}" }}\")"
@@ -53,7 +53,7 @@ object CobToDataObjectDecompiler {
     }
 
     private fun decompileC2Cob(buffer: ByteStreamReader): CobFileData {
-        buffer.position(0)
+        buffer.setPosition(0)
         val header = buffer.string(4)
         if (header != "cob2")
             throw Exception("Invalid C2 Cob file")

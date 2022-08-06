@@ -148,14 +148,23 @@ internal class AttEditorModel(
     }
 
     internal fun setPose(pose: Pose?) {
+        if (!attFile.isValid) {
+            return
+        }
         attFile.putUserData(AttEditorPanel.ATT_FILE_POSE_KEY, pose)
     }
 
     internal fun getPose(): Pose? {
+        if (!attFile.isValid) {
+            return null
+        }
         return attFile.getUserData(AttEditorPanel.ATT_FILE_POSE_KEY)
     }
 
     internal fun getRequestedPose(): Pose? {
+        if (!attFile.isValid) {
+            return null
+        }
         return attFile.getUserData(AttEditorPanel.REQUESTED_POSE_KEY)
     }
 
@@ -175,6 +184,10 @@ internal class AttEditorModel(
     fun getImages(): List<BufferedImage?> {
         mImages?.let {
             return it
+        }
+
+        if (!spriteFile.isValid) {
+            return emptyList()
         }
         var images: List<BufferedImage> = SpriteParser.parse(spriteFile).images
         images = images.mapIndexed { i, image ->
@@ -205,7 +218,7 @@ internal class AttEditorModel(
      */
     private fun initDocumentListeners(project: Project, psiFile: PsiFile?) {
         // If file is not null. add commit file listeners
-        if (psiFile != null) {
+        if (psiFile != null && psiFile.isValid) {
             // Get document for psi file
             PsiDocumentManager.getInstance(project)
                 .getDocument(psiFile)
@@ -225,7 +238,9 @@ internal class AttEditorModel(
             return
         }
         try {
-            attFile.getPsiFile(project)?.document?.removeDocumentListener(this)
+            if (attFile.isValid) {
+                attFile.getPsiFile(project)?.document?.removeDocumentListener(this)
+            }
         } catch (_: Exception) {
         } catch (_: Error) {
         }
@@ -236,6 +251,9 @@ internal class AttEditorModel(
     override fun contentsChanged(
         event: VirtualFileEvent,
     ) {
+        if (!attFile.isValid) {
+            return
+        }
         // Check that changed file is THIS att file
         if (attFile.path == event.file.path) {
             val text = event.file.contents
@@ -246,6 +264,10 @@ internal class AttEditorModel(
     override fun documentChanged(
         event: DocumentEvent,
     ) {
+
+        if (!attFile.isValid) {
+            return
+        }
         // If this change was made internally by this class
         // update display, but do not update att file data
         // As it was just set by the application
@@ -265,7 +287,9 @@ internal class AttEditorModel(
      * Called when the document is edited
      */
     private fun onEdit(text: String) {
-
+        if (!attFile.isValid) {
+            return
+        }
         val newMD5 = MD5.fromString(text)
         if (md5 != null && md5 == newMD5) {
             return
@@ -305,6 +329,9 @@ internal class AttEditorModel(
 
 
     override fun onShiftPoint(lineNumber: Int, offset: Pair<Int, Int>) {
+        if (!attFile.isValid) {
+            return
+        }
         if (readonly) {
             showNotification("File is readonly", MessageType.INFO)
 
@@ -321,6 +348,9 @@ internal class AttEditorModel(
         lineNumber: Int,
         newPoint: Pair<Int, Int>,
     ) {
+        if (!attFile.isValid) {
+            return
+        }
         if (readonly) {
             showNotification("File is readonly", MessageType.INFO)
             return
@@ -397,6 +427,9 @@ internal class AttEditorModel(
                 if (project.isDisposed) {
                     return@runWriteAction
                 }
+                if (!attFile.isValid) {
+                    return@runWriteAction
+                }
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document!!)
                 PsiDocumentManager.getInstance(project).commitDocument(document!!)
             }
@@ -467,6 +500,9 @@ internal class AttEditorModel(
 
         @JvmStatic
         fun cacheVariant(virtualFile: VirtualFile, variant: CaosVariant) {
+            if (!virtualFile.isValid) {
+                return
+            }
             ExplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
             ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
             virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)

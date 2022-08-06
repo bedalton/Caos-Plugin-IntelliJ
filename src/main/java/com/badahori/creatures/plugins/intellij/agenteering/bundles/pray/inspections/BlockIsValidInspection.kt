@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections
 
-import bedalton.creatures.pray.compiler.pray.PrayDataValidator
+import bedalton.creatures.agents.pray.compiler.pray.PrayDataValidator
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.PRAY

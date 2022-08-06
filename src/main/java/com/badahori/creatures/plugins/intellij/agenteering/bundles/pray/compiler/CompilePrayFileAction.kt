@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler
 
-import bedalton.creatures.pray.cli.PrayCompilerCliOptions
-import bedalton.creatures.pray.compiler.compilePrayAndWrite
-import bedalton.creatures.pray.compiler.pray.PrayParseValidationFailException
-import bedalton.creatures.pray.util.logProgress
+import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions
+import bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
+import bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
+import bedalton.creatures.cli.logProgress
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files

@@ -2,6 +2,11 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import bedalton.creatures.sprite.parsers.PhotoAlbum
+import bedalton.creatures.sprite.parsers.SPR_SHORT_DEBUG_LOGGING
+import bedalton.creatures.sprite.parsers.image
+import bedalton.creatures.util.Log
+import com.badahori.creatures.plugins.intellij.agenteering.utils.ensureMacOsCopyLib
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -17,6 +22,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import java.awt.image.BufferedImage
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
+import javax.swing.JLabel
 
 
 /**
@@ -27,10 +33,23 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
     private var myProject: Project? = project
     private lateinit var editor:SprFileEditor
 
+    private val invalidatedLabel: JComponent by lazy {
+        JLabel("Sprite file has been invalidated")
+    }
+
     override fun getComponent(): JComponent {
-        if (this::editor.isInitialized)
+        if (!isValid) {
+            return invalidatedLabel
+        }
+        if (this::editor.isInitialized) {
             return editor.component
-        val editor = SprFileEditor(myFile)
+        }
+        Log.setMode(SPR_SHORT_DEBUG_LOGGING, true)
+        try {
+            ensureMacOsCopyLib()
+        } catch (_: Exception) {
+        }
+        val editor = SprFileEditor(myProject, myFile)
         editor.init()
         this.editor = editor
         return editor.component
@@ -70,14 +89,23 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
     override fun dispose() {}
 
     override fun <T> getUserData(key: Key<T>): T? {
+        if (!isValid) {
+            return null
+        }
         return myFile.getUserData(key)
     }
 
     override fun <T> putUserData(key: Key<T>, value: T?) {
+        if (!isValid) {
+            return
+        }
         myFile.putUserData(key, value)
     }
 
     override fun selectNotify() {
+        if (!isValid) {
+            return
+        }
         myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
             if (cachedMD5 == myFile.md5())
                 return
@@ -95,10 +123,13 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
     companion object {
         private const val NAME = "SPREditor"
         private val CACHE_MD5_KEY = Key<String>("creatures.sprites.PARSED_IMAGES_MD5")
-        private val CACHE_KEY = Key<List<Bitmap32>>("creatures.sprites.PARSED_IMAGES")
+        private val CACHE_KEY = Key<List<List<Bitmap32>>>("creatures.sprites.PARSED_IMAGES")
 
         @JvmStatic
-        fun cache(virtualFile: VirtualFile, images:List<Bitmap32>) {
+        fun cache(virtualFile: VirtualFile, images:List<List<Bitmap32>>) {
+            if (!virtualFile.isValid) {
+                return
+            }
             virtualFile.putUserData(CACHE_MD5_KEY, null)
             virtualFile.putUserData(CACHE_KEY, null)
             if (images.isEmpty())
@@ -110,7 +141,7 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         }
 
         @JvmStatic
-        fun fromCache(virtualFile: VirtualFile) : List<Bitmap32>? {
+        fun fromCache(virtualFile: VirtualFile) : List<List<Bitmap32>>? {
             val cachedMD5 = virtualFile.getUserData(CACHE_MD5_KEY)
                 ?: return null
             if (cachedMD5 != virtualFile.md5())
@@ -119,14 +150,30 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         }
 
         @JvmStatic
-        fun fromCacheAsAwt(virtualFile: VirtualFile) : List<BufferedImage>? {
-            return fromCache(virtualFile)?.map {
-                it.toAwt()
+        fun fromCacheAsAwt(virtualFile: VirtualFile) : List<List<BufferedImage>>? {
+            if (!virtualFile.isValid) {
+                return null
+            }
+            return fromCache(virtualFile)?.map { file ->
+                file.map(Bitmap32::toAwt)
             }
         }
 
         @JvmStatic
+        fun toBitmapList(album: PhotoAlbum): List<Bitmap32> {
+            return album.photos.map { it.image }
+        }
+
+        @JvmStatic
+        fun toBufferedImages(album: PhotoAlbum): List<BufferedImage> {
+            return album.photos.map { it.image.toAwt() }
+        }
+
+        @JvmStatic
         fun clearCache(virtualFile: VirtualFile) {
+            if (!virtualFile.isValid) {
+                return
+            }
             virtualFile.putUserData(CACHE_MD5_KEY, null)
             virtualFile.putUserData(CACHE_KEY, null)
         }

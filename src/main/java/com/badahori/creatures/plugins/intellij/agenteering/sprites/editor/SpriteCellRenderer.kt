@@ -1,13 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.util.ui.JBFont
 import java.awt.Color
 import java.awt.Component
+import java.awt.Font
 import java.awt.Image
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
+
+private val font by lazy {
+    JBFont.create(JBFont.label(), true)
+        .deriveFont(
+            JBFont.BOLD,
+            18.0f
+        )
+}
 
 /**
  * Cell renderer for individual sprite image in Sprite file list
@@ -22,6 +32,14 @@ internal class SpriteCellRenderer : ListCellRenderer<ImageTransferItem> {
                 isVisible = false
             }
         }
+
+        if (value.file == null) {
+            val label = JLabel(value.fileName)
+
+            label.font = font
+            return label
+        }
+
         val panel = JPanel()
         panel.addMouseListener(DragMouseAdapter)
 

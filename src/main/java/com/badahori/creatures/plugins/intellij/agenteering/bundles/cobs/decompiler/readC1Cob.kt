@@ -37,7 +37,7 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
     val pictureHeight = int32
     skip(2)
     val image = if (pictureWidth > 0 && pictureHeight > 0)
-        SprSpriteFile.parseFrame(this, position(), pictureWidth, pictureHeight, transparentBlack).flipY().toAwt()
+        SprSpriteFile.parseFrame(this, position().toLong(), pictureWidth, pictureHeight, transparentBlack).flipY().toAwt()
     else
         null
     val agentName = string(uInt8)
