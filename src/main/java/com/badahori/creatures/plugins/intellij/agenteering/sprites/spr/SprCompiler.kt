@@ -32,7 +32,7 @@ object SprCompiler : SpriteCompiler {
             return@lazy (0..(255 * 3)).map { blackIntArray }
         }
         val bytes = pathToPalette.contentsToByteArray()
-        (0..255).map {
+        (0 until 255).map {
             val start = it * 3
             val r = bytes[start] * 4
             val g = bytes[start + 1] * 4
