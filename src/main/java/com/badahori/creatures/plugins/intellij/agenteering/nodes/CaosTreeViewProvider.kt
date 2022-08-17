@@ -52,18 +52,38 @@ private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings, orig
         return null
     }
     return when (extension?.lowercase()) {
-        "cob", "rcb" -> CobFileTreeNode(project, this, viewSettings)
-        "cos" -> (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
-            ProjectCaosScriptFileTreeNode(project, psiFile, viewSettings)
+        "cob", "rcb" -> {
+            if (originalNode is CobFileTreeNode) {
+                originalNode
+            } else {
+                CobFileTreeNode(project, this, viewSettings)
+            }
         }
-        "agents", "agent" -> PrayFileTreeNode(
-            project,
-            this,
-            viewSettings
-        )
+        "cos" -> {
+            if (originalNode is ProjectCaosScriptFileTreeNode) {
+                originalNode
+            } else {
+                (getPsiFile(project) as? CaosScriptFile)?.let { psiFile ->
+                    ProjectCaosScriptFileTreeNode(project, psiFile, viewSettings)
+                }
+            }
+        }
+        "agents", "agent" -> {
+            if (originalNode is PrayFileTreeNode) {
+                originalNode
+            } else {
+                PrayFileTreeNode(
+                    project,
+                    this,
+                    viewSettings
+                )
+            }
+        }
         "photo album" -> {
-            PhotoAlbum.creaturesHexMonikerToToken(this.nameWithoutExtension)?.let {
-                originalNode.presentation.locationString = it
+            if (originalNode.presentation.locationString.isNullOrBlank()) {
+                PhotoAlbum.creaturesHexMonikerToToken(this.nameWithoutExtension)?.let {
+                    originalNode.presentation.locationString = it
+                }
             }
             originalNode
         }
