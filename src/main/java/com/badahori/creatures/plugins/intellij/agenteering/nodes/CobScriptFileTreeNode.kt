@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import bedalton.creatures.bytes.MemoryByteStreamReader
 import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
@@ -45,6 +46,7 @@ internal class CobFileTreeNode(
                 file.nameWithoutExtension
             )
         } catch (e: Exception) {
+            Log.e { "Failed to parse COB. ${e.message}" }
             CobFileData.InvalidCobData("Failed to parse COB. ${e.message}")
         }
     }
