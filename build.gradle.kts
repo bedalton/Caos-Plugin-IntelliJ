@@ -146,7 +146,7 @@ tasks.getByName<org.jetbrains.intellij.tasks.RunPluginVerifierTask>("runPluginVe
 }
 
 tasks.withType<org.jetbrains.intellij.tasks.RunIdeTask>().all {
-    maxHeapSize = "2g"
+    maxHeapSize = "4g"
     autoReloadPlugins.set(true)
 }
 
