@@ -30,8 +30,9 @@ object CobToDataObjectDecompiler {
                 MemoryByteStreamReader(decompressed.toByteArray())
             } catch (e: Exception) {
                 buffer.setPosition(0)
-                if (buffer.string(4) != "cob2")
+                if (buffer.string(4) != "cob2") {
                     return decompileC1Cob(buffer, fileName)
+                }
                 buffer
             }
             decompileC2Cob(decompressed)

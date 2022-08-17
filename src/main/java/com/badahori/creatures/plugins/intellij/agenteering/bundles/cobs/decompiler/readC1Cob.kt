@@ -2,12 +2,17 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import bedalton.creatures.bytes.*
 import bedalton.creatures.sprite.parsers.SprSpriteFile
+import bedalton.creatures.util.Log
+import bedalton.creatures.util.iIf
+import bedalton.creatures.util.ifLog
+import bedalton.creatures.util.like
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.soywiz.korim.awt.toAwt
 import java.util.*
 
+const val COB_LOG_KEY = "COB_LOG_VERBOSE"
 
 internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
     val quantityAvailable = uInt16
@@ -19,28 +24,42 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
         set(expiresYear, expiresMonth, expiresDay, 0, 0, 0)
     }
     val numObjectScripts = int16
-    if (numObjectScripts > 200)
+    if (numObjectScripts > 200) {
         throw Exception("Suspicious number of objects script. COB is expecting $numObjectScripts object scripts")
+    }
     val numInstallScripts = int16
-    if (numInstallScripts > 200)
+    if (numInstallScripts > 200) {
         throw Exception("Suspicious number of install script. COB is expecting $numInstallScripts object scripts")
+    }
     val quantityUsed = int32
     val objectScripts = (0 until numObjectScripts).map { index ->
-        val code = readC1Script()
-        AgentScript(code, "Script $index", AgentScriptType.OBJECT)
+        AgentScript(script, "Script $index", AgentScriptType.OBJECT)
     }
     val installScripts = (0 until numInstallScripts).mapNotNull { index ->
         val suffix = if(numInstallScripts > 1) " ($index)" else ""
-        AgentScript.InstallScript(readC1Script(), (fileName?.let { "$it "} ?: "") + "Install Script$suffix")
+        val script = sfcString
+        AgentScript.InstallScript(script, (fileName?.let { "$it "} ?: "") + "Install Script$suffix")
     }
     val pictureWidth = int32
     val pictureHeight = int32
-    skip(2)
-    val image = if (pictureWidth > 0 && pictureHeight > 0)
-        SprSpriteFile.parseFrame(this, position().toLong(), pictureWidth, pictureHeight, transparentBlack).flipY().toAwt()
-    else
+    if (pictureWidth > 1000 || pictureHeight > 1000) {
+        throw Exception("Invalid picture dimensions. Width: $pictureWidth; Height: $pictureHeight")
+    }
+    val actualWidth = int16
+    if (pictureWidth < actualWidth) {
+        throw Exception("Actual width is greater than buffered width; BufferedWidth: $pictureWidth; ActualWidth: $actualWidth")
+    }
+
+    val image = if (pictureWidth > 0 && pictureHeight > 0) {
+        SprSpriteFile
+            .parseFrame(this, position().toLong(), pictureWidth, pictureHeight, transparentBlack)
+            .flipY()
+            .toAwt()
+    }else {
         null
-    val agentName = string(uInt8)
+    }
+    val agentName = sfcString
+    
     return CobBlock.AgentBlock(
             format = CobFormat.C1,
             name = agentName,
@@ -56,14 +75,4 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
             removalScript = null,
             dependencies = emptyList()
     )
-}
-
-private fun ByteStreamReader.readC1Script(): String {
-    val scriptSize = uInt8.let {
-        if (it == 255)
-            int16
-        else
-            it
-    }
-    return string(scriptSize)
 }

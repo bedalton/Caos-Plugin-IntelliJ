@@ -1,15 +1,22 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
+import bedalton.creatures.bytes.MemoryByteStreamWriter
+import bedalton.creatures.bytes.writeNullByte
+import bedalton.creatures.bytes.writeSfcString
 import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.ensureEndsWith
 import bedalton.creatures.util.nullIfEmpty
 import bedalton.creatures.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprCompiler
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.soywiz.korim.bitmap.Bitmap32
 import kotlinx.serialization.Serializable
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
+import kotlin.ByteArray
+import kotlin.Int
+import kotlin.String
+import kotlin.getValue
+import kotlin.lazy
+import kotlin.let
 
 @Serializable
 data class Caos2CobC1(
@@ -48,22 +55,22 @@ data class Caos2CobC1(
         removerName = cobData[CobTag.REMOVER_NAME]
     )
 
-    private val thumbnail: BufferedImage? by lazy {
+    private val thumbnail: Bitmap32? by lazy {
         pictureUrl?.let { url ->
             loadThumbnail(url)
         }
     }
 
     override fun compile(): ByteArray {
-        val buffer = ByteArrayOutputStream()
+        val buffer = MemoryByteStreamWriter()
         buffer.writeUInt16(1) // Cob Version
         buffer.writeUInt16(quantityAvailable ?: -1)
-        buffer.writeUint32(expiresMonth)
-        buffer.writeUint32(expiresDay)
-        buffer.writeUint32(expiresYear)
+        buffer.writeUInt32(expiresMonth)
+        buffer.writeUInt32(expiresDay)
+        buffer.writeUInt32(expiresYear)
         buffer.writeUInt16(objectScripts.size)
         buffer.writeUInt16(installScripts.size)
-        buffer.writeUint32(quantityUsed ?: 0)
+        buffer.writeUInt32(quantityUsed ?: 0)
         objectScripts.forEach { script ->
             buffer.writeSfcString(script)
         }
@@ -71,15 +78,18 @@ data class Caos2CobC1(
             buffer.writeSfcString(script)
         }
         val image = thumbnail
-        buffer.writeUint32(image?.width ?: 0)
-        buffer.writeUint32(image?.height ?: 0)
+        if (image != null && (image.width > 1000 || image.height > 1000)) {
+            throw Exception("Cannot compile COB1. Thumbnail image is too large. Width: ${image.width}; Height: ${image.height}")
+        }
+        buffer.writeUInt32(image?.width ?: 0)
+        buffer.writeUInt32(image?.height ?: 0)
         buffer.writeUInt16(image?.width ?: 0)
-        image?.flipVertical()?.let { thumbnail ->
-            SprCompiler.writeCompiledSprite(thumbnail, buffer, false)
+        image?.flipY()?.let { thumbnail ->
+            bedalton.creatures.sprite.compilers.SprCompiler.writeCompiledImage(thumbnail.toBMP32IfRequired(), false, buffer)
         }
         buffer.writeSfcString(agentName)
         buffer.writeNullByte()
-        return buffer.toByteArray()
+        return buffer.bytes
     }
 
     val removerCob: Caos2CobC1? by lazy {
