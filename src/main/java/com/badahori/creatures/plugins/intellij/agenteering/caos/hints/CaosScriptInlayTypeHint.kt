@@ -23,9 +23,8 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 
 
-enum class CaosScriptInlayTypeHint(description: String, override val enabled: Boolean, override val priority: Int = 5) :
+enum class CaosScriptInlayTypeHint(description: String, defaultEnabled: Boolean, override val priority: Int = 5) :
     InlayHintGenerator {
-
 
     /**
      * Provides hint for return values of expression, mostly for comparisons
@@ -576,7 +575,10 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
         }
     };
 
-    override val option: Option = Option("SHOW_${this.name}", description, enabled)
+    override val enabled: Boolean
+        get() = option.isEnabled()
+
+    override val option: Option = Option("SHOW_${this.name}", description, defaultEnabled)
 }
 
 
