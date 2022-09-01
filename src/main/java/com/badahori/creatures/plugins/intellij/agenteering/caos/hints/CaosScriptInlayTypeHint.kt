@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
+import com.badahori.creatures.plugins.intellij.agenteering.common.InlayHintGenerator
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
@@ -23,7 +24,7 @@ import com.intellij.psi.PsiElement
 
 
 enum class CaosScriptInlayTypeHint(description: String, override val enabled: Boolean, override val priority: Int = 5) :
-    CaosScriptHintsProvider {
+    InlayHintGenerator {
 
 
     /**
@@ -137,7 +138,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     },
 
     /**
-     * Hint for showing an bit flags values for an argument
+     * Hint for showing a bit flags values for an argument
      * ie attr 3 (carryable, mousable)
      */
     ATTRIBUTE_BITFLAGS_ARGUMENT_HINT("Show bit flag for argument value", true, 100) {
@@ -184,7 +185,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
     },
 
     // Gets simple name for a family genus combination
-    // ie. scrp 2 8 (vendor) ...
+    // i.e. scrp 2 8 (vendor) ...
     ASSUMED_GENUS_NAME_HINT("Show genus simple name", true, 102) {
         override fun isApplicable(element: PsiElement): Boolean {
             if (element !is CaosScriptRvalue || !element.isInt)
@@ -243,7 +244,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
             variant: CaosVariant,
             element: PsiElement,
             family: Int,
-            genus: Int
+            genus: Int,
         ): List<InlayInfo> {
             val valuesList: CaosValuesList = CaosLibs.valuesLists[variant]
                 // Find list labeled Genus, There should be only one
@@ -261,7 +262,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
     /**
      * Gets assumed argument name for an equality expression rvalue
-     * ie. chem 4 (coldness)
+     * i.e. chem 4 (coldness)
      */
     ASSUMED_EQ_VALUE_NAME_HINT("Show assumed value name in Equality expression", true, 102) {
         override fun isApplicable(element: PsiElement): Boolean {
@@ -312,7 +313,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
     /**
      * Gets assumed argument name for a given value
-     * ie. chem 4 (coldness)
+     * i.e. chem 4 (coldness)
      */
     ASSUMED_VALUE_NAME_HINT("Show assumed value name", true) {
         override fun isApplicable(element: PsiElement): Boolean {
@@ -345,7 +346,7 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
                 return EMPTY_INLAY_LIST
 
             // Get corresponding value for argument value in list of values
-            val valuesListValue = valuesList.get(value)
+            val valuesListValue = valuesList[value]
                 ?: return EMPTY_INLAY_LIST
 
             // Format hint and return
@@ -580,11 +581,11 @@ enum class CaosScriptInlayTypeHint(description: String, override val enabled: Bo
 
 
 /**
- * Gets the command token from the opposing side of a equality comparison
+ * Gets the command token from the opposing side of an equality comparison
  */
 private fun getCommandTokenFromEquality(
     parent: CaosScriptComparesEqualityElement,
-    expression: CaosScriptRvalue
+    expression: CaosScriptRvalue,
 ): CaosScriptIsCommandToken? {
     val other: CaosScriptRvalue? = if (parent.first == expression) parent.second else parent.first
     return other?.rvaluePrime?.commandTokenElement //?: other?.varToken?.lastAssignment
@@ -613,7 +614,7 @@ internal fun getBitFlagText(typeList: CaosValuesList, bitFlagValue: Int, delimit
                 ?: continue
             if (bitFlagValue and typeListValueValue > 0)
                 values.add(typeListValue.name)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
     return values.joinToString(delimiter)
@@ -672,5 +673,5 @@ private val ARGUMENT_VALUES_LIST_KEY: Key<Pair<String, Int?>> = Key("com.badahor
 
 private val RETURN_VALUES_TYPE_KEY: Key<Pair<String, List<String>?>> = Key("com.badahori.creatures.ReturnValueType")
 
-private val EMPTY_INLAY_LIST: List<InlayInfo> = emptyList()
+internal val EMPTY_INLAY_LIST: List<InlayInfo> = emptyList()
 

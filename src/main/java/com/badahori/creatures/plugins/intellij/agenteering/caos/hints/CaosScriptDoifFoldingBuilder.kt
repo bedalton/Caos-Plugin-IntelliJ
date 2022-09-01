@@ -61,7 +61,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
         val variant = expression.variant
             ?: return null
 
-        val eqOp = EqOp.fromValue(expression.eqOp.text)
+        val eqOp = EqOp.fromValue(expression.eqOp?.text)
         if (eqOp == INVALID) {
             expression.putUserData(CACHE_KEY, Pair(expression.text, null))
             return null
@@ -279,7 +279,7 @@ class CaosScriptDoifFoldingBuilder : FoldingBuilderEx() {
             val extensionType = returnValuesList?.extensionType
             // Check whether value type is bool like
             val isBool = extensionType?.startsWith("bool") ?: false
-            // Whether or not to convert "<" to "is". This is based on the extension value
+            // Whether to convert "<" to "is". This is based on the extension value
             val boolOnLessThan = isBool && extensionType notLike "bool:gt"
             var doubleNegative = isBool && otherValueInt == 0 && (eqOp == GREATER_THAN || eqOp == NOT_EQUAL)
 
@@ -494,6 +494,8 @@ private val ATTRIBUTE_FORMATTER: Formatter = formatter@{ formatInfo: FormatInfo 
 
 /**
  * Formats a string using both left and right side values along with arguments and chemicals/drives
+ * && Means repeat the pattern before
+ * %% Means use default formatter
  */
 private fun createCompoundFormatter(formatIn: String): Formatter = func@{ formatInfo: FormatInfo ->
     // Get "is" or "is not" text
@@ -511,36 +513,44 @@ private fun createCompoundFormatter(formatIn: String): Formatter = func@{ format
             eqOpText == IS_NOT || eqOpText == "!=" || eqOpText == "<>" -> {
                 if (patterns.size > 1) {
                     patterns[1].let {
-                        if (it == "&&")
+                        if (it == "&&") {
                             patterns.first()
-                        else
+                        } else {
                             it
-                    }
-                } else
-                    patterns.first()
-            }
-            patterns.size > 2 -> patterns[1].let { eqPattern ->
-                if (eqPattern == "&&") {
-                    if (patterns.size > 1) {
-                        patterns[1].let {
-                            if (it == "&&")
-                                patterns.first()
-                            else
-                                it
                         }
-                    } else
-                        patterns.first()
+                    }
+                } else {
+                    patterns.first()
+                }
+            }
+
+            // This is not a straight true or false situation
+            patterns.size > 2 -> patterns[2].let { eqPattern ->
+                // If 3rd doif pattern is a repeat placeholder && use the one before
+                if (eqPattern == "&&") {
+                    patterns[1].let { second ->
+                        // If the second is a repeat of the one before it (first)
+                        // Use that
+                        if (second == "&&") {
+                            patterns.first()
+                        } else {
+                            // Use the second as it is the one needed
+                            second
+                        }
+                    }
                 } else {
                     eqPattern
                 }
-
             }
+
             else -> patterns.first()
         }.trim()
     }
 
-    if (out == "%%")
+    // %% Use default formatter, not an IS/IS NOT format
+    if (out == "%%") {
         return@func DEFAULT_FORMATTER(formatInfo)
+    }
 
     // Replace eq/is in format
     out = out.replace(EQ_IS_REGEX, eqOpText)
@@ -723,16 +733,19 @@ private fun formatEqOp(
         } else {
             null
         }
+
         NOT_EQUAL -> if (isBool) {
             if (equalSign) "!=" else IS_NOT
         } else {
             null
         }
+
         GREATER_THAN -> if (isBool && otherValueInt == 0) {
             if (equalSign) "!=" else IS_NOT
         } else {
             null
         }
+
         LESS_THAN -> if (isBool && otherValueInt != null && otherValueInt != 0 && boolOnLessThan) {
             if (equalSign) {
                 "!="
@@ -742,16 +755,19 @@ private fun formatEqOp(
         } else {
             null
         }
+
         BITWISE_AND -> if (equalSign) {
             "&"
         } else {
             IS
         }
+
         BITWISE_NAND -> if (equalSign) {
             "!&"
         } else {
             IS_NOT
         }
+
         else -> null
     } ?: eqOp.values.getOrNull(1) ?: eqOp.values.first()
 }
@@ -902,6 +918,7 @@ private fun baby(variant: CaosVariant, thisValue: CaosScriptRvalue, otherValue: 
                 else -> null
             }
         }
+
         1 -> {
             when (eqOp) {
                 EQUAL -> "Is Pregnant"
@@ -909,6 +926,7 @@ private fun baby(variant: CaosVariant, thisValue: CaosScriptRvalue, otherValue: 
                 else -> null
             }
         }
+
         else -> null
     }
 }
