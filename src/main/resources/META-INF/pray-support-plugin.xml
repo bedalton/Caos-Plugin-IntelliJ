@@ -13,6 +13,7 @@
         language="CreaturesPRAY"
     />
 
+    <!--suppress PluginXmlValidity -->
     <fileTypeOverrider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileOverrider"
         order="first"
@@ -25,6 +26,7 @@
 
     <lang.commenter language="CreaturesPRAY"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCommenter" />
+
     <!-- Highlighting -->
     <syntaxHighlighter
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PraySyntaxHighlighter"

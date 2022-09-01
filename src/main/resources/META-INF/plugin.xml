@@ -155,6 +155,12 @@
        on how to target different products -->
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
+  <depends config-file="att-support-plugin.xml">com.intellij.modules.lang</depends>
+  <depends config-file="cob-support-plugin.xml">com.intellij.modules.lang</depends>
+  <depends config-file="idea-project-plugin.xml">com.intellij.modules.lang</depends>
+  <depends config-file="pray-support-plugin.xml">com.intellij.modules.lang</depends>
+  <depends config-file="sprite-support-plugin.xml">com.intellij.modules.lang</depends>
+
 
   <extensions defaultExtensionNs="com.intellij">
 
@@ -163,6 +169,20 @@
     <!-- ===== CAOS Script ====== -->
     <!-- ======================== -->
     <!-- LANG -->
+
+    <fileType name="Caos Script"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType"
+              fieldName="INSTANCE"
+              language="CaosScript"
+              extensions="cos" />
+
+
+    <fileType name="Caos Definitions File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFileType"
+              fieldName="INSTANCE"
+              language="CaosDef"
+              extensions="caosdef" />
+
     <postStartupActivity
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectStartupActivity" />
 

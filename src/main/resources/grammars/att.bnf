@@ -16,9 +16,9 @@
 	tokens = [
 		INT_LITERAL = "regexp:[0-9]+"
 		ERROR_VALUE_LITERAL = "regexp:[^0-9 \r\n]+"
-		NEWLINE_LITERAL = "regexp:[\r]?[\n]"
-		SPACE_LITERAL = "regexp:[ ]+"
-		ERROR_SPACE_LITERAL = "regexp:[\t]"
+		NEWLINE_LITERAL = "regexp:\r?\n"
+		SPACE_LITERAL = " "
+		ERROR_SPACE_LITERAL = "regexp:\t"
 	]
 }
 
@@ -33,12 +33,10 @@ line
 	;
 
 private line_items
-	::= space? item (space item)*
-	|	space // Can be just a single space on a line
-	;
-
-private line_items_recover
-	::= !(NEWLINE_LITERAL)
+	::= item+
+	{
+		pin(".*") = 1
+	}
 	;
 
 item
@@ -52,11 +50,6 @@ item
 	}
 	;
 
-space
-	::= SPACE_LITERAL
-	|	ERROR_SPACE_LITERAL
-	;
-
 int
 	::= INT_LITERAL
 	;
@@ -65,9 +58,10 @@ error_value
 	::= ERROR_VALUE_LITERAL
 	;
 
-newline
+private newline
 	::= NEWLINE_LITERAL+
 	{
+		name="space"
 		methods = [
 			isValid
 		]
