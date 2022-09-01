@@ -13,7 +13,6 @@
         fieldName="INSTANCE"
         language="Att"
         extensions="att"
-        fileNamesCaseInsensitive="true"
     />
 
     <lang.parserDefinition

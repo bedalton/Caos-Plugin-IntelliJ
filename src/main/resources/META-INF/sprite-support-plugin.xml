@@ -13,7 +13,6 @@
     <fileType name="SPR file"
               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
               fieldName="INSTANCE"
-              fileNamesCaseInsensitive="true"
               extensions="spr" />
 
     <fileType name="S16 Sprite File"
