@@ -3,9 +3,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.google.gson.annotations.SerializedName
 import icons.CaosScriptIcons
+import kotlinx.serialization.Serializable
 import javax.swing.Icon
 
+@Serializable
 sealed class CaosVariant(open val code: String, open val fullName: String, open val index: Int, open val icon: Icon) {
     object C1 : CaosVariant("C1", "Creatures 1", 1, CaosScriptIcons.C1)
     object C2 : CaosVariant("C2", "Creatures 2", 2, CaosScriptIcons.C2)
