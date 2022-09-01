@@ -1,0 +1,20 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+<!-- =========================== -->
+<!-- ======== COB Files ======== -->
+<!-- =========================== -->
+<!--filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" /-->
+
+<fileType name="COBFile"
+          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType"
+          fieldName="INSTANCE"
+          language="CaosScript"
+          extensions="cob"
+/>
+
+    <!--fileType.fileViewProviderFactory
+        filetype="COBFile"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
+    /-->
+  </extensions>
+</idea-plugin>

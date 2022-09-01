@@ -166,13 +166,11 @@
     <postStartupActivity
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectStartupActivity" />
 
-    <fileTypeFactory
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileTypeFactory" />
-
     <lang.parserDefinition
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
         language="CaosScript"
     />
+
     <editorNotificationProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
 
@@ -805,49 +803,13 @@
     <!-- Formatting -->
     <lang.braceMatcher language="CaosDef"
                        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefBraceMatcher" />
+
     <enterBetweenBracesDelegate language="CaosDef"
                                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
 
     <colorSettingsPage
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefColorSettingsPage" />
 
-    <!-- =========================== -->
-    <!-- ====== Sprite Files ======= -->
-    <!-- =========================== -->
-    <fileEditorProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteFileEditorProvider" />
-
-    <fileEditorProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.BlkPreviewViewProvider" />
-
-    <fileType name="SPR file"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
-              fieldName="INSTANCE"
-              extensions="spr" />
-
-    <fileType name="S16 Sprite File"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType"
-              fieldName="INSTANCE"
-              extensions="s16" />
-
-    <fileType name="C16 Sprite File"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
-              fieldName="INSTANCE"
-              extensions="c16" />
-
-    <fileType name="BLK Sprite File"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType"
-              fieldName="INSTANCE"
-              extensions="blk" />
-
-    <fileType name="C1 Photo Album File"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.photoalbum.PhotoAlbumFileType"
-              fieldName="INSTANCE"
-              extensions="Photo Album" />
-
-    <fileBasedIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex"
-    />
 
     <!-- SFC File Handling -->
     <!--fileType name="SFCFile"
@@ -857,176 +819,6 @@
               extensions="sfc" />
    -->
 
-    <!-- =========================== -->
-    <!-- ======== COB Files ======== -->
-    <!-- =========================== -->
-    <!--filetype.decompiler filetype="COBFile" implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBinaryDecompiler" /-->
-
-    <fileType name="COBFile"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.lang.CobFileType"
-              fieldName="INSTANCE"
-              language="CaosScript"
-              extensions="cob"
-    />
-
-    <!--fileType.fileViewProviderFactory
-        filetype="COBFile"
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.editor.CobEditorProviderFactory"
-    /-->
-
-
-    <!-- =========================== -->
-    <!-- ====== ATT Files ======= -->
-    <!-- =========================== -->
-    <fileEditorProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider" />
-
-    <fileType name="ATTFile"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType"
-              fieldName="INSTANCE"
-              language="Att"
-              extensions="att"
-    />
-
-    <fileBasedIndex implementation="com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex"
-    />
-    <fileBasedIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex"
-    />
-
-    <lang.parserDefinition
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParserDefinition"
-        language="Att"
-    />
-
-
-    <!-- =========================== -->
-    <!-- ====== PRAY FILES ========= -->
-    <!-- =========================== -->
-
-    <!-- LANGUAGE -->
-
-    <lang.parserDefinition
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.parser.PrayParserDefinition"
-        language="CreaturesPRAY"
-    />
-
-    <fileTypeOverrider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileOverrider"
-        order="first"
-    />
-
-    <fileType name="PRAYFile"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType"
-              fieldName="INSTANCE"
-              language="CreaturesPRAY" />
-
-    <lang.commenter language="CreaturesPRAY"
-                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCommenter" />
-    <!-- Highlighting -->
-    <syntaxHighlighter
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PraySyntaxHighlighter"
-        key="CreaturesPRAY" />
-
-    <codeInsight.parameterNameHints language="CreaturesPRAY"
-                                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayInlayHintsProvider" />
-
-    <lang.syntaxHighlighterFactory
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PraySyntaxHighlighterFactory"
-        language="CreaturesPRAY" />
-
-    <colorSettingsPage
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PrayColorSettingsPage" />
-
-    <annotator language="CreaturesPRAY"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PRAYHighlighterAnnotator" />
-
-    <!-- =========================== -->
-    <!-- ====== AGENTS FILES ======= -->
-    <!-- =========================== -->
-
-    <fileType name="AGENTFile"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType"
-              fieldName="INSTANCE"
-              extensions="agents;agent;pray" />
-
-
-    <!-- EDITOR -->
-    <editorNotificationProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor.PrayEditorToolbar" />
-
-
-    <!-- Completion -->
-    <completion.contributor language="CreaturesPRAY"
-                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCompletionContributor" />
-
-
-    <!-- INSPECTIONS -->
-
-    <annotator language="CreaturesPRAY"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator.PrayErrorAnnotator" />
-
-    <localInspection language="CreaturesPRAY"
-                     level="ERROR"
-                     groupName="PRAY"
-                     enabledByDefault="true"
-                     displayName="PRAY source file does not exist"
-                     shortName="PRAYSourceFileDoesNotExist"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayRequiredFileExistsInspection"
-    />
-
-    <localInspection language="CreaturesPRAY"
-                     level="WARNING"
-                     groupName="PRAY"
-                     enabledByDefault="true"
-                     displayName="PRAY dependency category is valid for file type"
-                     shortName="PRAYDependencyCategoryMatchesFileType"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayDependencyCategoryMatchesFileType"
-    />
-
-    <localInspection language="CreaturesPRAY"
-                     level="INFO"
-                     groupName="PRAY"
-                     enabledByDefault="true"
-                     displayName="PRAY tag is similar to official"
-                     shortName="PRAYSimilarTag"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayTagFixSimilarInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="PRAY"
-                     enabledByDefault="true"
-                     displayName="Incorrect tag case"
-                     shortName="PRAYTagIncorrectCase"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayTagCaseInspection"
-    />
-    <lang.findUsagesProvider
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayFindUsagesProvider"
-        language="CreaturesPRAY" />
-    <!--localInspection language="CreaturesPRAY"
-                     level="ERROR"
-                     groupName="PRAY"
-                     enabledByDefault="true"
-                     displayName="PRAY block is not valid"
-                     shortName="PRAYBlockIsInvalid"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayBlockIsValidInspection"
-    />
-
-    <localInspection language="TEXT"
-                     level="ERROR"
-                     groupName="PRAY"
-                     enabledByDefault="true"
-                     displayName="PRAY(txt) block is not valid"
-                     shortName="PRAYTXTBlockIsInvalid"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayPlainTextBlockIsValidInspection"
-    /-->
 
     <!-- =========================== -->
     <!-- === Virtual File System  == -->
