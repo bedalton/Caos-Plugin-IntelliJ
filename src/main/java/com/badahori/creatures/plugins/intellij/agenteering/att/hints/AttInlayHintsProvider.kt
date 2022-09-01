@@ -13,10 +13,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.common.InlayHintGener
 import com.badahori.creatures.plugins.intellij.agenteering.common.AbstractInlayHintsProvider
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import kotlin.math.floor
 
@@ -28,40 +30,17 @@ internal class AttInlayHintsProvider : AbstractInlayHintsProvider() {
 
 }
 
-enum class AttInlayHints(description: String, override val enabled: Boolean, override val priority: Int = 0) : InlayHintGenerator {
+enum class AttInlayHints(description: String, defaultEnabled: Boolean, override val priority: Int = 0) : InlayHintGenerator, DumbAware {
 
     ATT_POSITION_INDICES("Identifies ATT x/y point sets by point index", true, 10) {
         override fun isApplicable(element: PsiElement): Boolean {
-            if (!element.isValid) {
-                return false
-            }
-
-            if (element !is AttInt) {
-                return false
-            }
-
-            // Trying to get int position in line
-            // it goes Int ^ Item ^ Line
-
-            // Int parent is AttItem
-            val item = element.parent as? AttItem
-                ?: return false
-
-            // Item parent as AttLine
-            val line = item.parent as? AttLine
-                ?: return false
-
-            // Get index of Line child -> Item (which contains our int)
-            val slot = line.children.indexOf(item)
-
-            // Check that int represents an X (start of a point for label)
-            return slot >= 0 && slot % 2 == 0
+            return isAttX(element)
         }
 
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val index = getPointIndex(element)
                 ?: EMPTY_INLAY_LIST
-            return InlayInfo("$index", element.startOffsetInParent)
+            return InlayInfo("$index", element.startOffset)
                 .toListOf()
         }
 
@@ -73,46 +52,40 @@ enum class AttInlayHints(description: String, override val enabled: Boolean, ove
         }
 
     },
-    ATT_POSITION_NAMES("ATT point x/y part names", false, 0) {
+    ATT_POSITION_NAMES("ATT point x/y part names", false, 20) {
         override fun isApplicable(element: PsiElement): Boolean {
 
             if (!element.isValid) {
                 return false
             }
 
-            // Cannot get part name if file has no real part char
-            BreedPartKey.fromFileName(element.containingFile.name)?.part
-                ?: return false
-
-            if (element !is AttInt) {
+            if (!isAttX(element)) {
                 return false
             }
 
-            // Trying to get int position in line
-            // it goes Int ^ Item ^ Line
-
-            // Int parent is AttItem
-            val item = element.parent as? AttItem
+            // Cannot get part name if file has no real part char
+            val part = BreedPartKey.fromFileName(element.containingFile.name)
+                ?.part
+                ?.lowercaseChar()
                 ?: return false
-
-            // Item parent as AttLine
-            val line = item.parent as? AttLine
-                ?: return false
-
-            // Get index of Line child -> Item (which contains our int)
-            val slot = line.children.indexOf(item)
-
-            // Check that int represents an X (start of a point for label)
-            return slot >= 0 && slot % 2 == 0
+            return part in 'a'..'q'
         }
 
+        /**
+         * Actually provide hint
+         */
         override fun provideHints(element: PsiElement): List<InlayInfo> {
             val index = getPointIndex(element)
-                ?: EMPTY_INLAY_LIST
-            return InlayInfo("$index", element.startOffsetInParent)
+                ?: return EMPTY_INLAY_LIST
+            val partName = getPointName(element, index)
+                ?: return EMPTY_INLAY_LIST
+            return InlayInfo(partName, element.startOffset)
                 .toListOf()
         }
 
+        /**
+         * Get the hint info used to blacklist values
+         */
         override fun getHintInfo(element: PsiElement): HintInfo? {
             val index = getPointIndex(element)
                 ?: return null
@@ -124,6 +97,9 @@ enum class AttInlayHints(description: String, override val enabled: Boolean, ove
         }
 
 
+        /**
+         * Gets the name of the part associated with this point
+         */
         private fun getPointName(element: PsiElement, index: Int): String? {
             if (!element.isValid) {
                 return null
@@ -142,6 +118,9 @@ enum class AttInlayHints(description: String, override val enabled: Boolean, ove
             return AttEditorModel.pointNames(part).getOrNull(index)
         }
 
+        /**
+         * Gets the name of this files part
+         */
         private fun getPartName(element: PsiElement): String? {
             if (!element.isValid) {
                 return null
@@ -160,7 +139,10 @@ enum class AttInlayHints(description: String, override val enabled: Boolean, ove
     };
 
 
-    override val option: Option = Option("SHOW_${this.name}", description, enabled)
+    override val enabled: Boolean
+        get() = option.isEnabled()
+
+    override val option: Option = Option("SHOW_ATT_${this.name}", description, defaultEnabled)
 
 
 }
@@ -189,4 +171,31 @@ private fun getPointIndex(element: PsiElement?): Int? {
         return null
     }
     return floor(slot / 2.0).toInt()
+}
+
+private fun isAttX(element: PsiElement): Boolean {
+    if (!element.isValid) {
+        return false
+    }
+
+    if (element !is AttInt) {
+        return false
+    }
+
+    // Trying to get int position in line
+    // it goes Int ^ Item ^ Line
+
+    // Int parent is AttItem
+    val item = element.parent as? AttItem
+        ?: return false
+
+    // Item parent as AttLine
+    val line = item.parent as? AttLine
+        ?: return false
+
+    // Get index of Line child -> Item (which contains our int)
+    val slot = line.children.indexOf(item)
+
+    // Check that int represents an X (start of a point for label)
+    return slot >= 0 && slot % 2 == 0
 }
