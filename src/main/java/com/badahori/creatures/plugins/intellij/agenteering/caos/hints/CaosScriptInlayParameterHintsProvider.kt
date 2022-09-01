@@ -6,18 +6,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDef
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.common.InlayHintGenerator
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.psi.PsiElement
 
-enum class CaosScriptInlayParameterHintsProvider(description: String, override val enabled: Boolean, override val priority: Int = 0) : CaosScriptHintsProvider {
+enum class CaosScriptInlayParameterHintsProvider(description: String, override val enabled: Boolean, override val priority: Int = 0) : InlayHintGenerator {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
         override fun isApplicable(element: PsiElement): Boolean {
             return element.parent !is CaosScriptEqualityExpressionPrime && (element is CaosScriptCommandElement || element is CaosScriptClassifier)
@@ -124,11 +120,12 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
 
         private fun skipLast(element: CaosScriptCommandElement): Boolean {
             return if (element.commandString?.uppercase() in setLike) {
-                val firstArg = element.argumentValues.firstOrNull()
+                val firstArg = element.arguments.firstOrNull()
                 val commandString = (firstArg as? CaosScriptRvalue)?.commandString ?: (firstArg as? CaosScriptLvalue)?.commandString
                 return commandString in SKIP_LAST
-            } else
+            } else {
                 false
+            }
         }
 
         private fun getParametersAsStrings(parameters: List<CaosParameter>, skipLast: Boolean): List<String> {
@@ -140,5 +137,3 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
         }
     }
 }
-
-private val EMPTY_INLAY_LIST: List<InlayInfo> = emptyList()

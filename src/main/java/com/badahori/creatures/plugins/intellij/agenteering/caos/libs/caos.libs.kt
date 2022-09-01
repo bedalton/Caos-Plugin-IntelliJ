@@ -287,8 +287,8 @@ enum class EqOp(val commonName: String, vararg val values: String) {
     INVALID("INVALID", "??");
 
     companion object {
-        fun fromValue(value: String): EqOp {
-            return when (value.uppercase()) {
+        fun fromValue(value: String?): EqOp {
+            return when (value?.uppercase()) {
                 "EQ", "=" -> EQUAL
                 "NE", "!=", "<>" -> NOT_EQUAL
                 "GT", ">" -> GREATER_THAN
