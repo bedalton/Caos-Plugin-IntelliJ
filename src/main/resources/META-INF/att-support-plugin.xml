@@ -3,17 +3,26 @@
 <!-- =========================== -->
 <idea-plugin>
   <extensions defaultExtensionNs="com.intellij">
+
     <fileEditorProvider
         implementation="com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider" />
 
-    <fileType name="ATTFile"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType"
-              fieldName="INSTANCE"
-              language="Att"
-              extensions="att"
+    <fileType
+        name="ATTFile"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType"
+        fieldName="INSTANCE"
+        language="Att"
+        extensions="att"
+        fileNamesCaseInsensitive="true"
+    />
+
+    <lang.parserDefinition
+        language="Att"
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParserDefinition"
     />
 
     <lang.syntaxHighlighterFactory
+        language="Att"
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.highlighting.AttSyntaxHighlighterFactory" />
 
     <colorSettingsPage
@@ -25,8 +34,8 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex"
     />
 
-    <lang.parserDefinition
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttParserDefinition"
+    <codeInsight.parameterNameHints
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.att.hints.AttInlayHintsProvider"
         language="Att"
     />
 

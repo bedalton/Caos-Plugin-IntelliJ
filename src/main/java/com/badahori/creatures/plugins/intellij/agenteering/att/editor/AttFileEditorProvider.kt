@@ -73,7 +73,7 @@ class AttFileEditorProvider : FileEditorProvider {
     }
 
     companion object {
-        private const val EDITOR_TYPE_ID = "creature.spr"
+        private const val EDITOR_TYPE_ID = "creature.ATT"
     }
 }
 

@@ -39,8 +39,9 @@ data class AttSpriteCellData(
     }
 
     fun onFocus() {
-        if (!isFocused)
+        if (!isFocused) {
             changeCellListener.setSelected(index)
+        }
     }
 
     fun shiftPoint(xDelta: Int, yDelta: Int) {

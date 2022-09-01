@@ -14,7 +14,7 @@ import javax.swing.Icon
 class AttColorSettingsPage : ColorSettingsPage {
 
     override fun getIcon(): Icon? {
-        return CaosScriptIcons.CAOS_FILE_ICON
+        return CaosScriptIcons.ATT_FILE_ICON
     }
 
     override fun getHighlighter(): SyntaxHighlighter {
@@ -34,7 +34,7 @@ class AttColorSettingsPage : ColorSettingsPage {
     }
 
     override fun getDisplayName(): String {
-        return "Caos Script"
+        return "ATT"
     }
 
     override fun getAdditionalHighlightingTagToDescriptorMap(): Map<String, TextAttributesKey> {
@@ -62,12 +62,14 @@ class AttColorSettingsPage : ColorSettingsPage {
                     }
 
                     builder
-                        .append("<x").append(point).append('>')
+                        .append("<x").append(point+1).append('>')
                         .append(x)
-                        .append("</x").append(point).append('>')
-                        .append("<y").append(point).append('>')
+                        .append("</x").append(point+1).append('>')
+                        .append(' ')
+                        .append("<y").append(point+1).append('>')
                         .append(y)
-                        .append("</y").append(point).append('>')
+                        .append("</y").append(point+1).append('>')
+                        .append(' ')
                 }
                 builder.appendLine()
             }
@@ -75,17 +77,17 @@ class AttColorSettingsPage : ColorSettingsPage {
             builder.toString()
         }
         private val DESCRIPTORS = arrayOf(
-            AttributesDescriptor("Point 1: X", AttSyntaxHighlighter.X1),
+            AttributesDescriptor("Point 1", AttSyntaxHighlighter.X1),
             AttributesDescriptor("Point 1: Y", AttSyntaxHighlighter.Y1),
-            AttributesDescriptor("Point 2: X", AttSyntaxHighlighter.X2),
+            AttributesDescriptor("Point 2", AttSyntaxHighlighter.X2),
             AttributesDescriptor("Point 2: Y", AttSyntaxHighlighter.Y2),
-            AttributesDescriptor("Point 3: X", AttSyntaxHighlighter.X3),
+            AttributesDescriptor("Point 3", AttSyntaxHighlighter.X3),
             AttributesDescriptor("Point 3: Y", AttSyntaxHighlighter.Y3),
-            AttributesDescriptor("Point 4: X", AttSyntaxHighlighter.X4),
+            AttributesDescriptor("Point 4", AttSyntaxHighlighter.X4),
             AttributesDescriptor("Point 4: Y", AttSyntaxHighlighter.Y4),
-            AttributesDescriptor("Point 5: X", AttSyntaxHighlighter.X5),
+            AttributesDescriptor("Point 5", AttSyntaxHighlighter.X5),
             AttributesDescriptor("Point 5: Y", AttSyntaxHighlighter.Y5),
-            AttributesDescriptor("Point 6: X", AttSyntaxHighlighter.X6),
+            AttributesDescriptor("Point 6", AttSyntaxHighlighter.X6),
             AttributesDescriptor("Point 6: Y", AttSyntaxHighlighter.Y6),
         )
 
