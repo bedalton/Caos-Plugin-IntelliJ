@@ -33,6 +33,7 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
     }
     val quantityUsed = int32
     val objectScripts = (0 until numObjectScripts).map { index ->
+        val script = sfcString
         AgentScript(script, "Script $index", AgentScriptType.OBJECT)
     }
     val installScripts = (0 until numInstallScripts).mapNotNull { index ->
@@ -59,7 +60,7 @@ internal fun ByteStreamReader.readC1Cob(fileName:String?): CobBlock.AgentBlock {
         null
     }
     val agentName = sfcString
-    
+
     return CobBlock.AgentBlock(
             format = CobFormat.C1,
             name = agentName,
