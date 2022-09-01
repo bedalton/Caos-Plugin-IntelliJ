@@ -13,7 +13,7 @@ import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option
 import com.intellij.psi.PsiElement
 
-enum class CaosScriptInlayParameterHintsProvider(description: String, override val enabled: Boolean, override val priority: Int = 0) : InlayHintGenerator {
+enum class CaosScriptInlayParameterHintsProvider(description: String, defaultEnabled: Boolean, override val priority: Int = 0) : InlayHintGenerator {
     PARAMETER_NAME_HINT("Show parameter names before expression", true) {
         override fun isApplicable(element: PsiElement): Boolean {
             return element.parent !is CaosScriptEqualityExpressionPrime && (element is CaosScriptCommandElement || element is CaosScriptClassifier)
@@ -110,7 +110,10 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, override v
     }
     ;
 
-    override val option: Option = Option("SHOW_${this.name}", description, enabled)
+    override val enabled: Boolean
+        get() = option.isEnabled()
+
+    override val option: Option = Option("SHOW_${this.name}", description, defaultEnabled)
 
     companion object {
 

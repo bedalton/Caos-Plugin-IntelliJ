@@ -20,6 +20,10 @@ abstract class AbstractInlayHintsProvider : InlayParameterHintsProvider {
      */
     protected abstract val inlayHintGenerators: List<InlayHintGenerator>
 
+    private val mInlayHintGenerators by lazy {
+        inlayHintGenerators.sortedByDescending { it.priority }
+    }
+
     /**
      * Gets the list of options for these inlay hints
      * These are used to activate/deactivate specific generators
@@ -65,7 +69,8 @@ abstract class AbstractInlayHintsProvider : InlayParameterHintsProvider {
     internal fun resolve(element: PsiElement): InlayHintGenerator? {
         ProgressIndicatorProvider.checkCanceled()
         return if (element.isNotFolded) {
-            inlayHintGenerators.firstOrNull { it.enabled && it.isApplicable(element) }
+            mInlayHintGenerators
+                .firstOrNull { it.enabled && it.isApplicable(element) }
         } else {
             null
         }
