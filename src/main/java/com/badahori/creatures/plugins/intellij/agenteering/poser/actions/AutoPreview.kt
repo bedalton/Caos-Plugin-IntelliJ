@@ -87,7 +87,7 @@ class AutoPreview : AnAction() {
         }
 
         val headFiles = (e.files.filter {
-            headSpriteRegex.matches(it.name)
+            !it.isDirectory && headSpriteRegex.matches(it.name)
         } + e.files.filter { it.isDirectory }.flatMap {
             VirtualFileUtil.childrenWithExtensions(it, true, "spr", "s16", "c16")
                 .filter { child -> headSpriteRegex.matches(child.name) }
