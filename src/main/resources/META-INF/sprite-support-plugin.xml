@@ -1,0 +1,42 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+
+    <!-- =========================== -->
+    <!-- ====== Sprite Files ======= -->
+    <!-- =========================== -->
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteFileEditorProvider" />
+
+    <fileEditorProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.BlkPreviewViewProvider" />
+
+    <fileType name="SPR file"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType"
+              fieldName="INSTANCE"
+              extensions="spr" />
+
+    <fileType name="S16 Sprite File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType"
+              fieldName="INSTANCE"
+              extensions="s16" />
+
+    <fileType name="C16 Sprite File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType"
+              fieldName="INSTANCE"
+              extensions="c16" />
+
+    <fileType name="BLK Sprite File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType"
+              fieldName="INSTANCE"
+              extensions="blk" />
+
+    <fileType name="C1 Photo Album File"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sprites.photoalbum.PhotoAlbumFileType"
+              fieldName="INSTANCE"
+              extensions="Photo Album" />
+
+    <fileBasedIndex
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex"
+    />
+  </extensions>
+</idea-plugin>

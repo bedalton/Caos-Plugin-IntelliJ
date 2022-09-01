@@ -1,0 +1,133 @@
+<!-- Pray extensions points -->
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+
+    <!-- =========================== -->
+    <!-- ====== PRAY FILES ========= -->
+    <!-- =========================== -->
+
+    <!-- LANGUAGE -->
+
+    <lang.parserDefinition
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.parser.PrayParserDefinition"
+        language="CreaturesPRAY"
+    />
+
+    <fileTypeOverrider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileOverrider"
+        order="first"
+    />
+
+    <fileType name="PRAYFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType"
+              fieldName="INSTANCE"
+              language="CreaturesPRAY" />
+
+    <lang.commenter language="CreaturesPRAY"
+                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCommenter" />
+    <!-- Highlighting -->
+    <syntaxHighlighter
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PraySyntaxHighlighter"
+        key="CreaturesPRAY" />
+
+    <codeInsight.parameterNameHints language="CreaturesPRAY"
+                                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayInlayHintsProvider" />
+
+    <lang.syntaxHighlighterFactory
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PraySyntaxHighlighterFactory"
+        language="CreaturesPRAY" />
+
+    <colorSettingsPage
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PrayColorSettingsPage" />
+
+    <annotator language="CreaturesPRAY"
+               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.highlighting.PRAYHighlighterAnnotator" />
+
+    <!-- =========================== -->
+    <!-- ====== AGENTS FILES ======= -->
+    <!-- =========================== -->
+
+    <fileType name="AGENTFile"
+              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType"
+              fieldName="INSTANCE"
+              extensions="agents;agent;pray" />
+
+
+    <!-- EDITOR -->
+    <editorNotificationProvider
+        implementation="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor.PrayEditorToolbar" />
+
+
+    <!-- Completion -->
+    <completion.contributor language="CreaturesPRAY"
+                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayCompletionContributor" />
+
+
+    <!-- INSPECTIONS -->
+
+    <annotator language="CreaturesPRAY"
+               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator.PrayErrorAnnotator" />
+
+    <localInspection language="CreaturesPRAY"
+                     level="ERROR"
+                     groupName="PRAY"
+                     enabledByDefault="true"
+                     displayName="PRAY source file does not exist"
+                     shortName="PRAYSourceFileDoesNotExist"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayRequiredFileExistsInspection"
+    />
+
+    <localInspection language="CreaturesPRAY"
+                     level="WARNING"
+                     groupName="PRAY"
+                     enabledByDefault="true"
+                     displayName="PRAY dependency category is valid for file type"
+                     shortName="PRAYDependencyCategoryMatchesFileType"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayDependencyCategoryMatchesFileType"
+    />
+
+    <localInspection language="CreaturesPRAY"
+                     level="INFO"
+                     groupName="PRAY"
+                     enabledByDefault="true"
+                     displayName="PRAY tag is similar to official"
+                     shortName="PRAYSimilarTag"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayTagFixSimilarInspection"
+    />
+
+    <localInspection language="CaosScript"
+                     level="ERROR"
+                     groupName="PRAY"
+                     enabledByDefault="true"
+                     displayName="Incorrect tag case"
+                     shortName="PRAYTagIncorrectCase"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayTagCaseInspection"
+    />
+    <lang.findUsagesProvider
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayFindUsagesProvider"
+        language="CreaturesPRAY" />
+    <!--localInspection language="CreaturesPRAY"
+                     level="ERROR"
+                     groupName="PRAY"
+                     enabledByDefault="true"
+                     displayName="PRAY block is not valid"
+                     shortName="PRAYBlockIsInvalid"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayBlockIsValidInspection"
+    />
+
+    <localInspection language="TEXT"
+                     level="ERROR"
+                     groupName="PRAY"
+                     enabledByDefault="true"
+                     displayName="PRAY(txt) block is not valid"
+                     shortName="PRAYTXTBlockIsInvalid"
+                     groupPath="CaosScript"
+                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayPlainTextBlockIsValidInspection"
+    /-->
+  </extensions>
+</idea-plugin>
