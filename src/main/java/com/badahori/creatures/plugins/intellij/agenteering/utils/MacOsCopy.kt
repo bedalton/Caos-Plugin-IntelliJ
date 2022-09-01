@@ -12,7 +12,6 @@ private var wasSuccessful: Boolean? = null
 
 internal fun ensureMacOsCopyLib(): Boolean {
     wasSuccessful?.let {
-        Log.i { "Ensure NSPasteboard, was successful? $it" }
         // Was successful was set, meaning an attempt was made to load the dylib
         return it
     }
