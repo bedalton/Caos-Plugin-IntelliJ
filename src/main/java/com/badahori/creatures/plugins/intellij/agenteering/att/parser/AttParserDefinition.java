@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.parser;
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFile;
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileElementType;
 import com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttLexerAdapter;
+import com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttTokenType;
 import com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttTypes;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
@@ -12,11 +13,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 
 public class AttParserDefinition implements ParserDefinition {
+
+    private static final TokenSet WHITESPACE = TokenSet.create(
+            TokenType.WHITE_SPACE,
+            AttTypes.ATT_ERROR_SPACE_LITERAL,
+            AttTypes.ATT_SPACE_LITERAL
+    );
 
     @NotNull
     @Override
@@ -36,7 +44,7 @@ public class AttParserDefinition implements ParserDefinition {
 
     @NotNull
     public TokenSet getWhitespaceTokens() {
-        return TokenSet.EMPTY;
+        return WHITESPACE;
     }
 
     @NotNull
@@ -60,10 +68,5 @@ public class AttParserDefinition implements ParserDefinition {
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
         return new AttFile(fileViewProvider);
-    }
-
-    @Override
-    public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
-        return SpaceRequirements.MUST_NOT;
     }
 }

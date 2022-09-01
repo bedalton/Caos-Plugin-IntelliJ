@@ -26,10 +26,11 @@ class AttFile(viewProvider: FileViewProvider)
                 ?: this.virtualFile?.cachedVariantExplicitOrImplicit
                 ?: (module ?: originalFile.module)?.variant
                 ?: (project.settings.defaultVariant)
-            return if (storedVariant == CaosVariant.UNKNOWN)
+            return if (storedVariant == CaosVariant.UNKNOWN) {
                 null
-            else
+            } else {
                 storedVariant
+            }
         }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {

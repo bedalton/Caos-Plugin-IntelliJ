@@ -20,7 +20,7 @@ class AttSyntaxHighlighter : SyntaxHighlighterBase() {
             return EMPTY_KEYS
         }
         val attrKey: TextAttributesKey? = when (tokenType) {
-            AttTypes.ATT_INT -> NUMBER
+            AttTypes.ATT_INT_LITERAL -> NUMBER
             AttTypes.ATT_ERROR_VALUE_LITERAL -> ERROR_COMMAND_TOKEN
             else -> null
         }
@@ -32,11 +32,11 @@ class AttSyntaxHighlighter : SyntaxHighlighterBase() {
 
         @JvmStatic
         val ERROR_COMMAND_TOKEN: TextAttributesKey =
-            createTextAttributesKey("ATT_ERROR_ELEMENT", DefaultLanguageHighlighterColors.IDENTIFIER)
+            createTextAttributesKey("Att Error Element", DefaultLanguageHighlighterColors.IDENTIFIER)
 
         @JvmStatic
         val NUMBER: TextAttributesKey =
-            createTextAttributesKey("ATT_NUMBER_LITERAL", DefaultLanguageHighlighterColors.NUMBER)
+            createTextAttributesKey("Att Number", DefaultLanguageHighlighterColors.IDENTIFIER)
 
         val X1: TextAttributesKey = createTextAttributesKey("ATT_X_1", NUMBER)
         val Y1: TextAttributesKey = createTextAttributesKey("ATT_Y_1", X1)

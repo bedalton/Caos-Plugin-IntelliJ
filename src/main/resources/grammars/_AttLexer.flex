@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.lexer;
 
 import com.intellij.lexer.FlexLexer;
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.TokenType;import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttTypes.*;
@@ -23,7 +23,7 @@ import static com.badahori.creatures.plugins.intellij.agenteering.att.lexer.AttT
 
 INT_LITERAL=[0-9]+
 ERROR_VALUE_LITERAL=[^0-9 \r\n]+
-NEWLINE_LITERAL=[\r]?[\n]
+NEWLINE_LITERAL=\r?\n
 SPACE_LITERAL=[ ]+
 ERROR_SPACE_LITERAL=[\t]
 
