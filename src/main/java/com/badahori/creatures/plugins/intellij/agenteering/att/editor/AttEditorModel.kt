@@ -549,6 +549,7 @@ internal class AttEditorModel(
                 )
                 'q' -> listOf("Head")
                 'z' -> listOf("Center")
+
                 else -> Arrays.asList(
                     "Start",
                     "End"
