@@ -3,8 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosSdkProjectRootsChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteAttPathPropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
@@ -25,7 +23,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.*
 import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
 
 
 class CaosProjectStartupActivity : StartupActivity {
@@ -64,7 +61,7 @@ class CaosProjectStartupActivity : StartupActivity {
             }
 
             invokeLater {
-                if (project.isDisposed) {
+                if (project.isDisposed || !project.isOpen) {
                     this@CaosProjectStartupActivity.project = null
                     return@invokeLater
                 }
