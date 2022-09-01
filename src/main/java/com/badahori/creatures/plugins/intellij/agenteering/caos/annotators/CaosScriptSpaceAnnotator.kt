@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -24,6 +25,9 @@ import com.intellij.refactoring.suggested.startOffset
 class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        if (element !is CaosScriptCompositeElement) {
+            return
+        }
        try {
            annotateElement(element, holder)
        } catch (e: Exception) {
