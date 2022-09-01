@@ -6,31 +6,50 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
+import kotlinx.serialization.Serializable
 
 
+enum class GameInterfaceType {
+    HTTP_POST,
+    HTTP_SOCKET,
+    NATIVE,
+    WINE,
+    DEPRECATED
+}
+
+@Serializable
 data class GameInterfaceName constructor(
-    val code: String?,
     internal val variant: CaosVariant?,
-    val url: String,
-    private val nickname: String?
+    internal val code: String?,
+    internal val path: String,
+    internal val interfaceName: String?,
+    internal val nickname: String?,
+    internal val type: GameInterfaceType,
 ) {
 
+    @Deprecated("Use #path to disambiguate between paths and game interface names")
+    val url: String get() = path
+
+    @Deprecated("Use constructor with deliberate path and interface names")
     constructor(code: String?, url: String, nickname: String?) : this(
-        code,
-        code?.let { CaosVariant.fromVal(it).nullIfUnknown() },
-        url,
-        nickname
+        variant = code?.let { CaosVariant.fromVal(it).nullIfUnknown() },
+        code = code,
+        path = url,
+        interfaceName = null,
+        nickname = nickname,
+        type = GameInterfaceType.DEPRECATED
     )
 
     constructor(variant: CaosVariant) : this(
-        variant.code,
-        variant,
-        variant.injectorInterfaceName ?: UNDEF,
-        variant.fullName
+        variant = variant,
+        code = variant.code,
+        path = variant.injectorInterfaceName ?: UNDEF,
+        interfaceName = null,
+        nickname = variant.fullName,
+        type = GameInterfaceType.NATIVE
     )
 
     val name: String = nickname ?: variant?.fullName ?: url
-
 
     fun isVariant(aVariant: CaosVariant?): Boolean {
         if (aVariant == null || variant == null)
@@ -66,6 +85,40 @@ data class GameInterfaceName constructor(
     companion object {
         private val BASIC_REGEX = "([^:]+\\s*:)?\\s*([^\\[]+)(?:\\[\\s*([^]]+)]\\s*)?".toRegex()
         private const val delimiter = "x;;|||;;x"
+
+        internal fun create(
+            code: String?,
+            variant: CaosVariant?,
+            url: String,
+            nickname: String?,
+        ) {
+            val isPost = url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://")
+            val type = if (isPost) {
+                GameInterfaceType.HTTP_POST
+            } else {
+                GameInterfaceType.NATIVE
+            }
+            val interfaceName = if (isPost) {
+                url.split("@").getOrNull(1)?.let {
+                    if (it.startsWith('/')) {
+                        it.substring(1).trim()
+                    } else {
+                        it.trim()
+                    }
+                }
+            } else {
+                variant?.injectorInterfaceName
+            }
+            val actualUrl = variant
+            GameInterfaceName(
+                code = code,
+                path = url,
+                interfaceName = null,
+                variant = variant,
+                nickname = nickname,
+                type = GameInterfaceType.DEPRECATED
+            )
+        }
 
         internal fun keyParts(key: String): Triple<String, String, String>? {
             val parts = key.split(delimiter, limit = 3)
@@ -120,7 +173,7 @@ internal fun List<GameInterfaceName>.forKey(variant: CaosVariant?, key: String):
                     return this
             }
             interfaces.firstOrNull { it.second.variant == variant }?.second
-                ?: interfaces.firstOrNull { it.second.variant?.isC3DS == true && variant.isC3DS}?.second
+                ?: interfaces.firstOrNull { it.second.variant?.isC3DS == true && variant.isC3DS }?.second
                 ?: interfaces.first().second
         }
 }

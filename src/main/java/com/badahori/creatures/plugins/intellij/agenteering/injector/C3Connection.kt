@@ -1,7 +1,8 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import bedalton.creatures.bytes.toBase64
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -9,21 +10,23 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil.isWindow
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import java.io.*
-import kotlin.io.use
 
 
 /**
  * Class for managing a connection to C3 for CAOS injection
  */
-internal class C3Connection(private val gameName: String) : CaosConnection {
+internal class C3Connection(gameName: String?, gameDirectory: String? = null) : CaosConnection {
 
-    constructor(gameInterfaceName: GameInterfaceName): this("@${gameInterfaceName.url}")
+    private val gameName = gameName?.let { "@${it}" }
+
+    private val creaturesDirectory = gameDirectory?.let { File(it) }
 
     override val supportsJect: Boolean
         get() = false
     private var tempFileIndex = 1
     private var ranOnce = false
     private val exeName = "C3CaosInjector.exe"
+
     private val file: File by lazy {
         val file = if (isWindows) {
             LOGGER.info("Is Windows ensure EXE")
@@ -37,7 +40,17 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
     }
 
     override fun injectWithJect(caos:CaosScriptFile, flags: Int) : InjectionStatus {
-        return inject(caos.text, CLIInjectFlag.JECT, flags)
+        if (gameName == null) {
+            return InjectionStatus.BadConnection("Cannot inject CAOS without game name")
+        }
+        return creaturesDirectory?.let { directory ->
+            injectWithJect(
+                connection = this,
+                creaturesDirectory = directory,
+                caos = caos.text,
+                flags = 7
+            )
+        } ?: inject(caos.text, CLIInjectFlag.CAOS_FILE, flags)
     }
 
     override fun inject(caos:String) : InjectionStatus {
@@ -47,9 +60,19 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
         val cliFlag: CLIInjectFlag = when {
             base64Length < MAX_CONSOLE_LENGTH -> CLIInjectFlag.CAOS_TEXT
             length < MAX_CAOS_FILE_LENGTH -> CLIInjectFlag.CAOS_FILE
-            else -> return InjectionStatus.BadConnection(
-                "Script is too long. Plugin max length for injection is $MAX_CAOS_FILE_LENGTH; Actual: $length"
-            )
+            creaturesDirectory != null -> {
+                return injectWithJect(
+                    connection = this,
+                    creaturesDirectory = creaturesDirectory,
+                    caos = caos,
+                    flags = 7
+                )
+            }
+            else -> {
+                return InjectionStatus.BadConnection(
+                    "Script is too long. Plugin max length for injection is $MAX_CAOS_FILE_LENGTH; Actual: $length"
+                )
+            }
         }
         return inject(caos, cliFlag, 7)
     }
@@ -59,6 +82,9 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
      * @param cliTypeFlag CLI Flag for injection type values: "-f" for file "-j" for ject style inject
      */
     private fun inject(caos:String, cliTypeFlag: CLIInjectFlag, flags: Int = 7) : InjectionStatus {
+        if (gameName == null) {
+            return InjectionStatus.BadConnection("Cannot inject without Game name")
+        }
         try {
             assertExeWasCopied()
         } catch (e: Exception) {
@@ -136,6 +162,9 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
      * Inject caos code into CV+ games
      */
     override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus {
+        if (gameName == null) {
+            return InjectionStatus.BadConnection("Cannot inject without Game name")
+        }
         // Ensure that the exe has been extracted and placed in accessible folder
         val length = caos.length
         val base64Length = length * 1.4
@@ -342,8 +371,9 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
         if (fileOut.exists()) {
             if (clear) {
                 fileOut.delete()
-            } else
+            } else {
                 return fileOut
+            }
         }
         inputStream.use {stream ->
             CaosFileUtil.copyStreamToFile(stream, fileOut, true)
@@ -555,7 +585,7 @@ internal class C3Connection(private val gameName: String) : CaosConnection {
 }
 
 
-private enum class CLIInjectFlag(val shortFlag: String) {
+internal enum class CLIInjectFlag(val shortFlag: String) {
     CAOS_TEXT("-c"),
     CAOS_FILE("-f"),
     EVENT_TEXT("-s"),

@@ -7,7 +7,9 @@ import com.intellij.openapi.project.Project
 /**
  * Service for fetching CAOS project settings
  */
-interface CaosProjectSettingsService: PersistentStateComponent<CaosProjectSettingsComponent.State> {
+interface CaosProjectSettingsService: PersistentStateComponent<CaosProjectSettingsComponent.State>,
+        HasGameInterfaces
+{
     override fun getState(): CaosProjectSettingsComponent.State
     override fun loadState(state: CaosProjectSettingsComponent.State)
 

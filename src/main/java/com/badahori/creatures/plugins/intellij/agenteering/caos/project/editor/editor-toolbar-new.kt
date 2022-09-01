@@ -10,10 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -280,7 +277,10 @@ private fun populate(
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
-    var injectorList: List<GameInterfaceName> = project.settings.gameInterfaceNames
+    var injectorList: List<GameInterfaceName> = CaosApplicationSettings
+        .gameInterfaceNames
+        .nullIfEmpty()
+        ?: project.settings.gameInterfaceNames
     val updateInjectors: (variant: CaosVariant?, GameInterfaceName?) -> Unit = update@{ variant, newGameInterface ->
 
         val newActions: List<AnAction> = InjectorActionGroup

@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -121,7 +123,11 @@ object Injector {
     /**
      * Ensures that variant is supported, and if C1e, that the correct game is running
      */
-    private suspend fun isValidVariant(project: Project, variant: CaosVariant, gameInterfaceName: GameInterfaceName): Boolean {
+    private suspend fun isValidVariant(
+        project: Project,
+        variant: CaosVariant,
+        gameInterfaceName: GameInterfaceName,
+    ): Boolean {
         if (!canConnectToVariant(variant)) {
             val error = "Injection to ${variant.fullName} is not yet implemented"
             invokeLater {
@@ -153,8 +159,9 @@ object Injector {
         gameInterfaceName: GameInterfaceName,
         run: suspend (connection: CaosConnection) -> InjectionStatus?,
     ): InjectionStatus? {
-        val variant = gameInterfaceName.variant?.nullIfUnknown() ?: fallbackVariant.nullIfUnknown()
-        ?: return InjectionStatus.BadConnection("Variant is undefined in injector")
+        val variant = gameInterfaceName.variant?.nullIfUnknown()
+            ?: fallbackVariant.nullIfUnknown()
+            ?: return InjectionStatus.BadConnection("Variant is undefined in injector")
         val connection = connection(variant, gameInterfaceName)
             ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
 
@@ -197,31 +204,75 @@ object Injector {
      * Gets the raw connection object without testing connection or actually connecting
      */
     private fun getConnectionObject(variantIn: CaosVariant, gameInterfaceName: GameInterfaceName): CaosConnection {
-        val theVariant = gameInterfaceName.variant ?: variantIn
-        val injectUrl = gameInterfaceName.url.let {
-            if (it.startsWith("http"))
-                it
-            else
-                null
+        val variant = gameInterfaceName.variant
+            ?: variantIn
+        return when (gameInterfaceName.type) {
+
+            // A simple POST connection which sends CAOS in the body
+            HTTP_POST -> PostConnection(gameInterfaceName.path, variant)
+
+            // LisDude's TCP Injection
+            HTTP_SOCKET -> TcpConnection(gameInterfaceName.interfaceName, gameInterfaceName.path)
+
+            // Windows native injection
+            NATIVE -> if (variant.isOld) {
+                DDEConnection(
+                    gameInterfaceName.path,
+                    variant,
+                    gameInterfaceName.name
+                )
+            } else {
+                C3Connection(
+                    gameInterfaceName.name,
+                    gameInterfaceName.path
+                )
+            }
+
+            // Sends CAOS through an EXE added to a wine prefix
+            WINE -> WineConnection(
+                variant,
+                gameInterfaceName.path
+            )
+
+            // Creates a connection from an old definition
+            DEPRECATED -> getConnectionFromOldDefinition(
+                variant,
+                gameInterfaceName
+            )
         }
+    }
+
+    private fun getConnectionFromOldDefinition(
+        variant: CaosVariant,
+        gameInterfaceName: GameInterfaceName,
+    ): CaosConnection {
+
+        val injectUrl = gameInterfaceName.path.let {
+            if (it.startsWith("http")) {
+                it
+            } else {
+                null
+            }
+        }
+
         if (injectUrl != null) {
-            return PostConnection(injectUrl, theVariant)
+            return PostConnection(injectUrl, variant)
         }
 
         var gameUrl = gameInterfaceName.url
 
-        if (theVariant.isOld) {
+        if (variant.isOld) {
             if (!gameUrl.startsWith("dde:")) {
                 gameUrl = "dde:$gameUrl"
             }
         }
         if (gameUrl.startsWith("dde:")) {
             gameUrl = gameUrl.substring(4).trim()
-            return DDEConnection(gameUrl, theVariant, gameInterfaceName.name)
+            return DDEConnection(gameUrl, variant, gameInterfaceName.name)
         }
 
         LOGGER.info("Creating C3 Injector connection")
-        return C3Connection(gameInterfaceName)
+        return C3Connection("@${gameInterfaceName.url}")
     }
 
     /**

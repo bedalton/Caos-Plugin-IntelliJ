@@ -3,11 +3,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.addGameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.removeGameInterfaceName
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.addChangeListener
@@ -72,7 +72,12 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
 
     companion object {
         fun getGameInterfaceNames(project: Project, variant: CaosVariant?): List<GameInterfaceName> {
-            val projectGameInterfaces = project.settings.gameInterfaceNames(variant)
+            val projectGameInterfaces = CaosApplicationSettings
+                .gameInterfaceNames(variant)
+                .nullIfEmpty()
+                ?: project
+                    .settings
+                    .gameInterfaceNames(variant)
             val variantInterfaces = variant?.let {
                 if (it.isC3DS)
                     listOf(
@@ -93,7 +98,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
         fun getActions(
             file: CaosScriptFile,
             variant: CaosVariant? = file.variant,
-            makeText: MakeName = GameInterfaceName::defaultDisplayName
+            makeText: MakeName = GameInterfaceName::defaultDisplayName,
         ): Array<AnAction> {
             val pointer = SmartPointerManager.createPointer(file)
             val gameInterfaces = getGameInterfaceNames(file.project, variant)
@@ -110,7 +115,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
         @Suppress("unused")
         fun getActions(
             pointer: SmartPsiElementPointer<CaosScriptFile>,
-            makeText: MakeName = GameInterfaceName::defaultDisplayName
+            makeText: MakeName = GameInterfaceName::defaultDisplayName,
         ): Array<AnAction> {
             val file = pointer.element
                 ?: return emptyArray()
@@ -137,7 +142,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
 internal class CaosInjectorAction(
     internal val gameInterfaceName: GameInterfaceName,
     private val pointer: SmartPsiElementPointer<CaosScriptFile>,
-    title: String = gameInterfaceName.defaultDisplayName()
+    title: String = gameInterfaceName.defaultDisplayName(),
 ) : AnAction(
     title,
     (gameInterfaceName.code.let { if (it == "*") "Any variant" else it } + " CAOS injector interface").trim(),
@@ -151,7 +156,7 @@ internal class CaosInjectorAction(
     val isValid: Boolean
         get() {
             val variant = pointer.element?.variant
-            return (OsUtil.isWindows || gameInterfaceName.url.startsWith("http")) &&
+            return (OsUtil.isWindows || gameInterfaceName.type != GameInterfaceType.DEPRECATED ) &&
                     pointer.element != null &&
                     variant != null &&
                     (gameInterfaceName.variant == null || variant == gameInterfaceName.variant || (variant.isC3DS && gameInterfaceName.variant.isC3DS))

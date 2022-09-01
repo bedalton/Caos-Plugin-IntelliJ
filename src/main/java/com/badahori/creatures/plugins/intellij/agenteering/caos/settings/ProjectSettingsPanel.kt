@@ -63,8 +63,11 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
             return
         val service = service
             ?: return
-        val updated = panel.apply(true)
+        val updated = panel.applyToProjectState(true)
             ?: return
+        val updateApplicationState = panel.applyToApplicationSettings(true)
+            ?: return
+        CaosApplicationSettings.state = updateApplicationState
         service.loadState(updated)
     }
 
@@ -78,14 +81,14 @@ private class ProjectSettingsPanel(private val settings: State) {
 
     private val originalCombineAttNodes = settings.combineAttNodes
     private val originalIgnoredFilesText = settings.ignoredFilenames.joinToString("\n")
-    private val originalGameInterfaceName: String = settings.gameInterfaceNames.joinToString("\n")
+    private val originalGameInterfaceName: String = (CaosApplicationSettingsService.getInstance().gameInterfaceNamesRaw + settings.gameInterfaceNames).toSet().joinToString("\n")
     private val originalDefaultVariant: String = settings.defaultVariant?.code ?: ""
-    private val originalIsAutoPoseEnabled: Boolean = settings.isAutoPoseEnabled
+    private val originalIsAutoPoseEnabled: Boolean = settings.isAutoPoseEnabled ?: CaosApplicationSettings.isAutoPoseEnabled
 
     private var mInterfaceNamesAreValid = true
     val interfaceNamesAreValid get() = mInterfaceNamesAreValid
 
-    private val defaultVariant by lazy {
+    private val defaultVariantComboBox by lazy {
         JComboBox(
             arrayOf(
                 "",
@@ -99,7 +102,7 @@ private class ProjectSettingsPanel(private val settings: State) {
         )
     }
 
-    private val ignoredFileNames by lazy {
+    private val ignoredFileNamesTextArea by lazy {
         JTextArea().apply {
             TextPrompt(CaosBundle.message("caos.settings.ignored-files.placeholder"), this)
                 .apply {
@@ -116,7 +119,7 @@ private class ProjectSettingsPanel(private val settings: State) {
 
     private val hintColor get() = JBColor(Color(150, 170, 170), Color(150, 160, 170))
 
-    private val gameInterfaceNames by lazy {
+    private val gameInterfaceNamesTextArea by lazy {
 
         JTextArea().apply {
             this.preferredSize = preferredTextBoxSize
@@ -146,7 +149,7 @@ private class ProjectSettingsPanel(private val settings: State) {
     }
 
 
-    val combineAttNodes by lazy {
+    val combineAttNodesCheckbox by lazy {
         JCheckBox().apply {
             this.isSelected = originalCombineAttNodes
         }
@@ -160,12 +163,12 @@ private class ProjectSettingsPanel(private val settings: State) {
 
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
-            .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
-            .addLabeledComponent(JLabel("Combine ATT file nodes"), combineAttNodes, 1, false)
+            .addLabeledComponent(JLabel("Default Variant"), defaultVariantComboBox, 1, false)
+            .addLabeledComponent(JLabel("Combine ATT file nodes"), combineAttNodesCheckbox, 1, false)
             .addComponent(JLabel("ATT files will be displayed under a single node. i.e. \"*04a\""))
-            .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
-            .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
-            .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
+            .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNamesTextArea, 1, true)
+            .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNamesTextArea, 1, true)
+            .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNamesTextArea, 1, true)
             .addLabeledComponent(JLabel("Enable AutoPose action"), autoPoseCheckbox, 1, false)
             .panel
             .apply {
@@ -174,38 +177,48 @@ private class ProjectSettingsPanel(private val settings: State) {
     }
 
     fun getPreferredFocusComponent(): JComponent {
-        return defaultVariant
+        return defaultVariantComboBox
     }
 
     fun modified(): Boolean {
-        if (defaultVariant.selectedItem != originalDefaultVariant)
+        if (defaultVariantComboBox.selectedItem != originalDefaultVariant)
             return true
-        if (combineAttNodes.isSelected == originalCombineAttNodes) {
+        if (combineAttNodesCheckbox.isSelected == originalCombineAttNodes) {
             return true
         }
-        if (ignoredFileNames.text != originalIgnoredFilesText)
+        if (ignoredFileNamesTextArea.text != originalIgnoredFilesText)
             return true
-        if (gameInterfaceNames.text != originalGameInterfaceName)
+        if (gameInterfaceNamesTextArea.text != originalGameInterfaceName)
             return true
         if (autoPoseCheckbox.isSelected != originalIsAutoPoseEnabled)
             return true
         return false
     }
 
-    fun apply(force: Boolean): State? {
+    fun applyToProjectState(force: Boolean): State? {
         val gameInterfaceNames = getGameInterfaceNames(force)
             ?: return null
         return settings.copy(
-            defaultVariant = CaosVariant.fromVal(defaultVariant.selectedItem as? String).nullIfUnknown(),
-            combineAttNodes = combineAttNodes.isSelected,
+            defaultVariant = CaosVariant.fromVal(defaultVariantComboBox.selectedItem as? String).nullIfUnknown(),
+            combineAttNodes = combineAttNodesCheckbox.isSelected,
             ignoredFilenames = getIgnoredFileNames(),
             gameInterfaceNames = gameInterfaceNames,
-            isAutoPoseEnabled = autoPoseCheckbox.isSelected
+        )
+    }
+
+    fun applyToApplicationSettings(force: Boolean): CaosApplicationSettingsComponent.State? {
+        val initialState = CaosApplicationSettingsService.getInstance()
+            .state
+        val gameInterfaceNames = getGameInterfaceNames(force)
+            ?: return null
+        return initialState.copy(
+            gameInterfaceNames = gameInterfaceNames,
+            autoPoseEnabled = autoPoseCheckbox.isSelected
         )
     }
 
     private fun getIgnoredFileNames(): List<String> {
-        return ignoredFileNames.text
+        return ignoredFileNamesTextArea.text
             .split("\n")
             .mapNotNull {
                 it.trim().nullIfEmpty()
@@ -213,12 +226,12 @@ private class ProjectSettingsPanel(private val settings: State) {
     }
 
     fun reset() {
-        defaultVariant.selectedItem = originalDefaultVariant
-        defaultVariant.updateUI()
-        ignoredFileNames.text = originalIgnoredFilesText
-        gameInterfaceNames.text = originalGameInterfaceName
+        defaultVariantComboBox.selectedItem = originalDefaultVariant
+        defaultVariantComboBox.updateUI()
+        ignoredFileNamesTextArea.text = originalIgnoredFilesText
+        gameInterfaceNamesTextArea.text = originalGameInterfaceName
         autoPoseCheckbox.isSelected = originalIsAutoPoseEnabled
-        combineAttNodes.isSelected = originalCombineAttNodes
+        combineAttNodesCheckbox.isSelected = originalCombineAttNodes
     }
 
     /**
@@ -228,7 +241,7 @@ private class ProjectSettingsPanel(private val settings: State) {
      * @param force <b>TRUE</b> force values to return filtering out bad values
      */
     private fun getGameInterfaceNames(force: Boolean): List<GameInterfaceName>? {
-        val lines = gameInterfaceNames.text
+        val lines = gameInterfaceNamesTextArea.text
             .split("\n")
             .mapNotNull {
                 it.trim().nullIfEmpty()

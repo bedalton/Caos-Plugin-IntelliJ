@@ -2,8 +2,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent.State.Companion.CURRENT_SCHEMA_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -12,7 +14,6 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Transient
 
-
 /**
  * State container responsible for getting/setting project state
  */
@@ -20,6 +21,7 @@ import com.intellij.util.xmlb.annotations.Transient
     name = "CaosProjectSettingsComponent"
 )
 class CaosProjectSettingsComponent : CaosProjectSettingsService,
+    HasGameInterfaces,
     PersistentStateComponent<CaosProjectSettingsComponent.State> {
 
     private var state: State = State()
@@ -29,9 +31,53 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     }
 
     override fun loadState(state: State) {
-        this.state = state
+        val newState = migrateIfNeeded(state)
+        if (this.state == newState) {
+            return
+        }
+        this.state = newState
         onUpdate()
     }
+
+    private fun migrateIfNeeded(stateIn: State): State {
+        var state = stateIn
+        if (state.schema == CURRENT_SCHEMA_VERSION) {
+            return state
+        }
+        var applicationState = CaosApplicationSettingsService.getInstance()
+            .state
+
+        var applicationStateChanged = false
+
+        if (state.gameInterfaceNames.isNotEmpty()) {
+            val newGameInterfaceNames = (applicationState.gameInterfaceNames + state.gameInterfaceNames)
+            applicationState = applicationState.copy(
+                gameInterfaceNames = newGameInterfaceNames.toSet().toList()
+            )
+            state = state.copy(
+                gameInterfaceNames = emptyList()
+            )
+            applicationStateChanged = true
+        }
+        if (applicationStateChanged) {
+            CaosApplicationSettingsService.getInstance()
+                .loadState(applicationState)
+        }
+        state.schema = CURRENT_SCHEMA_VERSION
+        return state
+    }
+
+
+    override var gameInterfaceNamesRaw: List<GameInterfaceName>
+        get() = state.gameInterfaceNames.nullIfEmpty()
+            ?: CaosApplicationSettings.gameInterfaceNamesRaw
+        set(value) {
+            loadState(
+                state.copy(
+                    gameInterfaceNames = value
+                )
+            )
+        }
 
     /**
      * Project state object used to store various properties at the project level
@@ -46,13 +92,14 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         var showPoseView: Boolean = true,
         @Attribute(converter = GameInterfaceListConverter::class)
         val gameInterfaceNames: List<GameInterfaceName> = listOf(),
+        val lastGameInterfaceNames: List<String> = listOf(),
         @Attribute(converter = StringListConverter::class)
         val ignoredFilenames: List<String> = listOf(),
         val combineAttNodes: Boolean = false,
         val defaultPoseString: String = "313122122111111",
-        val lastGameInterfaceNames: List<String> = listOf(),
         var useJectByDefault: Boolean = false,
-        var isAutoPoseEnabled: Boolean = false,
+        var isAutoPoseEnabled: Boolean? = CaosApplicationSettingsService.getInstance().state.autoPoseEnabled,
+        var schema: Int? = CURRENT_SCHEMA_VERSION,
     ) {
 
         @Transient
@@ -68,6 +115,10 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
          * Checks if this settings object is set to the given CAOS variant
          */
         fun isVariant(variant: CaosVariant): Boolean = variant == this.lastVariant
+
+        companion object {
+            internal const val CURRENT_SCHEMA_VERSION: Int = 2
+        }
     }
 
     private fun onUpdate() {
@@ -75,6 +126,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     }
 
     companion object {
+
         val TOPIC = Topic.create(
             "CAOSProjectSettingsChangedListener",
             CaosProjectSettingsChangeListener::class.java
@@ -103,7 +155,8 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
                         listener(settings)
                     }
                 })
-            } catch (ignored: Exception) {}
+            } catch (ignored: Exception) {
+            }
         }
 
         /**
