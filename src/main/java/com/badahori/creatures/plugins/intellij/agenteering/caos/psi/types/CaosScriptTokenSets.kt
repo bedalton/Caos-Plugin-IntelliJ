@@ -135,6 +135,9 @@ object CaosScriptTokenSets {
     @JvmStatic
     val KEYWORDS = create(
         CaosScript_K_INST,
+        CaosScript_K_SLOW,
+        CaosScript_K_LOCK,
+        CaosScript_K_UNLK,
         CaosScript_K_ISCR,
         CaosScript_K_RSCR,
         CaosScript_K_DOIF,

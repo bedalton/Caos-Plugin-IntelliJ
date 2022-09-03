@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtilKt;
@@ -126,6 +126,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private final PoseEditorModel model;
     private boolean variantChanged = false;
     private boolean didInitComboBoxes = false;
+    private final CaosProjectSettingsService settings;
 
     private final Map<Character, BodyPartFiles> last = new HashMap<>();
 
@@ -146,6 +147,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         this.baseBreed = breedKey.copyWithPart(null);
         this.eager = eager != null ? eager : false;
         this.onRedrawCallback = onRedraw;
+        this.settings = CaosProjectSettingsService.getInstance(project);
         String folder = CaosStringUtilsKt.randomString(6);
         int max = 10;
         while (--max > 0 && CaosVirtualFileSystem.getInstance().exists(folder)) {
@@ -426,7 +428,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             freeze(hairBreed, false, false);
         }
         didInitComboBoxes = true;
-        final String defaultPose = CaosScriptProjectSettings.getDefaultPoseString();
+        final String defaultPose = settings.getDefaultPoseString();
         defaultPoseAfterInit = setPoseFromString(defaultPose);
         initOpenRelatedComboBox();
     }
@@ -2135,7 +2137,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
     private void updateDefaultPose() {
         final String poseString = poseStringField.getText();
-        CaosScriptProjectSettings.setDefaultPoseString(poseString);
+        settings.setDefaultPoseString(poseString);
     }
 
     @Nullable

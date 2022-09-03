@@ -1,11 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
-import bedalton.creatures.bytes.ByteStreamReader
 import bedalton.creatures.bytes.MemoryByteStreamReader
 import bedalton.creatures.sprite.parsers.SprSpriteFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.ditherCopy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -24,7 +20,6 @@ object SprCompiler : SpriteCompiler {
     private val blackIntArray = intArrayOf(0, 0, 0, 1)
     var black:Int = 0
     private val blackColors = arrayOf(0,243,244)
-    private val defaultDither get() = CaosScriptProjectSettings.ditherSpr
     private val colors: List<IntArray> by lazy {
         val pathToPalette = CaosFileUtil.PLUGIN_HOME_DIRECTORY?.findFileByRelativePath("support/palette.dta")
         if (pathToPalette == null) {
@@ -74,10 +69,10 @@ object SprCompiler : SpriteCompiler {
     }
 
     override fun compileSprites(images: List<BufferedImage>): ByteArray {
-        return compileSprites(images, defaultDither)
+        return compileSprites(images, null)
     }
 
-    fun compileSprites(images:List<BufferedImage>, dither:Boolean) : ByteArray {
+    fun compileSprites(images:List<BufferedImage>, dither:Boolean?) : ByteArray {
         val imagesBytes = images.sumOf {
             it.width * it.height
         }
@@ -101,11 +96,11 @@ object SprCompiler : SpriteCompiler {
     }
 
     override fun writeCompiledSprite(image: BufferedImage, buffer: OutputStream) {
-        writeCompiledSprite(image, buffer, defaultDither)
+        writeCompiledSprite(image, buffer, null)
     }
 
-    fun writeCompiledSprite(imageIn: BufferedImage, buffer: OutputStream, dither: Boolean) {
-        val image = if (dither)
+    fun writeCompiledSprite(imageIn: BufferedImage, buffer: OutputStream, dither: Boolean?) {
+        val image = if (dither == true)
             imageIn.ditherCopy(ditherPalette)
         else
             imageIn
@@ -136,7 +131,7 @@ object SprCompiler : SpriteCompiler {
     @Suppress("unused")
     @JvmStatic
     @Throws
-    fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean = defaultDither) : BufferedImage {
+    fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean) : BufferedImage {
         val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
         return SprSpriteFile.parseFrame(
