@@ -33,6 +33,98 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         onUpdate()
     }
 
+    override var lastVariant: CaosVariant?
+        get() = state.lastVariant
+        set(value) {
+            loadState(state.copy(
+                lastVariant = value
+            ))
+        }
+
+    override var defaultVariant: CaosVariant?
+        get() = state.defaultVariant
+        set(value) {
+            loadState(state.copy(
+                defaultVariant = value
+            ))
+        }
+
+    override var indent: Boolean
+        get() = state.indent
+        set(value) {
+            loadState(state.copy(
+                indent = value
+            ))
+        }
+
+    override var showLabels: Boolean
+        get() = state.showLabels
+        set(value) {
+            loadState(state.copy(
+                showLabels = value
+            ))
+        }
+
+
+    override var ditherSPR: Boolean
+        get() = state.ditherSPR
+        set(value) {
+            loadState(state.copy(
+                ditherSPR = value
+            ))
+        }
+
+
+    override var attScale: Int
+        get() = state.attScale
+        set(value) {
+            loadState(state.copy(
+                attScale = value
+            ))
+        }
+
+
+    override var showPoseView: Boolean
+        get() = state.showPoseView
+        set(value) {
+            loadState(state.copy(
+                showPoseView = value
+            ))
+        }
+
+
+    override var combineAttNodes: Boolean
+        get() = state.combineAttNodes
+        set(value) {
+            loadState(state.copy(
+                combineAttNodes = value
+            ))
+        }
+
+    override var defaultPoseString: String
+        get() = state.defaultPoseString
+        set(value) {
+            loadState(state.copy(
+                defaultPoseString = value
+            ))
+        }
+
+    override var useJectByDefault: Boolean
+        get() = state.useJectByDefault
+        set(value) {
+            loadState(state.copy(
+                useJectByDefault = value
+            ))
+        }
+
+    override var isAutoPoseEnabled: Boolean
+        get() = state.isAutoPoseEnabled
+        set(value) {
+            loadState(state.copy(
+               isAutoPoseEnabled = value
+            ))
+        }
+
     /**
      * Project state object used to store various properties at the project level
      */
@@ -51,8 +143,8 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         val combineAttNodes: Boolean = false,
         val defaultPoseString: String = "313122122111111",
         val lastGameInterfaceNames: List<String> = listOf(),
-        var useJectByDefault: Boolean = false,
-        var isAutoPoseEnabled: Boolean = false,
+        val useJectByDefault: Boolean = false,
+        val isAutoPoseEnabled: Boolean = false,
     ) {
 
         @Transient

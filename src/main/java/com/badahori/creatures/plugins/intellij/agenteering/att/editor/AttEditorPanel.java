@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseE
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
@@ -55,11 +55,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private int cell = -1;
     private boolean didLoadOnce = false;
     private boolean doNotCommitPose = false;
-    private boolean showPoseView = CaosScriptProjectSettings.getShowPoseView();
+    private boolean showPoseView;
     private boolean didInit = false;
     private final AttEditorHandler controller;
 
     protected JButton refreshButton;
+    private final CaosProjectSettingsService settings;
 
     AttEditorPanel(
             @NotNull
@@ -68,6 +69,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     ) {
         this.project = project;
         this.controller = handler;
+        this.settings = CaosProjectSettingsService.getInstance(project);
+        showPoseView = settings.getShowPoseView();
         $$$setupUI$$$();
         init();
     }
@@ -105,7 +108,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initKeyListeners();
 
         // Add scale dropdown listener
-        scale.setSelectedIndex(CaosScriptProjectSettings.getAttScale());
+        scale.setSelectedIndex(CaosProjectSettingsService.getInstance(project).getState().getAttScale());
         scale.addItemListener((e) -> setScale(scale.getSelectedIndex()));
 
         // Add listener for PART dropdown
@@ -156,7 +159,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
         // Add LABELS checkbox listener
         labels.addChangeListener((e) -> {
-            CaosScriptProjectSettings.setShowLabels(labels.isSelected());
+            settings.setShowLabels(labels.isSelected());
             spriteCellList.setLabels(labels.isSelected());
             spriteCellList.reload();
         });
@@ -315,7 +318,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             @Override
             public void actionPerformed(ActionEvent e) {
                 final boolean show = !AttEditorPanel.this.labels.isSelected();
-                CaosScriptProjectSettings.setShowLabels(show);
+                settings.setShowLabels(show);
                 AttEditorPanel.this.labels.setSelected(show);
             }
         });
@@ -385,7 +388,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
         this.setSelectedVariant(variantIn);
         this.setPart(getPart());
-        labels.setSelected(CaosScriptProjectSettings.getShowLabels());
+        labels.setSelected(settings.getShowLabels());
         poseEditor.setRootPath(controller.getRootPath());
         pushAttToPoseEditor(controller.getAttData());
         final Pose pose = controller.getPose();
@@ -406,8 +409,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         updateUI();
 
         // Set sprite scale
-        setScale(CaosScriptProjectSettings.getAttScale());
-        labels.setSelected(CaosScriptProjectSettings.getShowLabels());
+        setScale(settings.getAttScale());
+        labels.setSelected(settings.getShowLabels());
         if (this.controller.getPart() == 'z') {
             showPoseView(false);
             return;
@@ -506,7 +509,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         this.showPoseView = show;
         this.posePanel.setVisible(show);
         if (this.controller.getPart() != 'z') {
-            CaosScriptProjectSettings.setShowPoseView(show);
+            settings.setShowPoseView(show);
         }
         if (show) {
             this.poseEditor.redraw();
@@ -516,7 +519,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private void setScale(final int index) {
         final String value = Objects.requireNonNull(scale.getItemAt(index));
         final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
-        CaosScriptProjectSettings.setAttScale(scale.getSelectedIndex());
+        CaosProjectSettingsService.getInstance(project).setAttScale(scale.getSelectedIndex());
         spriteCellList.setScale(newScale);
     }
 

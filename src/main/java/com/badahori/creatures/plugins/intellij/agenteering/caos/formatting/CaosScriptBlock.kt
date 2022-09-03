@@ -5,9 +5,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getNextNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
@@ -15,7 +12,6 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
-import com.intellij.psi.util.elementType
 
 
 class CaosScriptBlock internal constructor(

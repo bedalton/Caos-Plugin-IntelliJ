@@ -6,10 +6,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.injectionCheckDisabled
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.useJectByDefault
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
@@ -80,7 +78,6 @@ internal fun caosInject(
                 .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
                 .addAction(object : AnAction("Ignore for Session and Inject") {
                     override fun actionPerformed(e: AnActionEvent) {
-                        CaosScriptProjectSettings.injectionCheckDisabled = true
                         project.settings.injectionCheckDisabled = true
                         try {
                             injectActual(project, variant, gameInterfaceName, caosFile)
@@ -435,7 +432,7 @@ private fun isValidForInject(project: Project, virtualFile: VirtualFile): Boolea
     if (project.isDisposed) {
         return false
     }
-    if (CaosScriptProjectSettings.injectionCheckDisabled || project.settings.injectionCheckDisabled)
+    if (project.settings.injectionCheckDisabled)
         return true
     val detector = CodeSmellDetector.getInstance(project)
     val smells = detector.findCodeSmells(listOf(virtualFile))

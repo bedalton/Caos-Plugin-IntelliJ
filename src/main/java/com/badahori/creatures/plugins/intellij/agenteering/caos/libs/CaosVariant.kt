@@ -1,14 +1,26 @@
+@file:OptIn(ExperimentalSerializationApi::class, ExperimentalSerializationApi::class)
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
-import com.google.gson.annotations.SerializedName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.IconLoader
 import icons.CaosScriptIcons
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import javax.swing.Icon
 
-@Serializable
+
+
+@Serializable(with = CaosVariantSerializer::class)
 sealed class CaosVariant(open val code: String, open val fullName: String, open val index: Int, open val icon: Icon) {
     object C1 : CaosVariant("C1", "Creatures 1", 1, CaosScriptIcons.C1)
     object C2 : CaosVariant("C2", "Creatures 2", 2, CaosScriptIcons.C2)
@@ -20,12 +32,22 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 
 
     data class OTHER internal constructor(
-        val base: CaosVariant,
+        internal val baseCode: String,
         override val code: String,
         override val fullName: String,
-        override val icon: Icon = CaosScriptIcons.MODULE_ICON
-    ) : CaosVariant(code, fullName, -1, icon) {
+        val iconPath: String? = null,
+    ) : CaosVariant(code, fullName, -1, iconPath?.let { IconLoader.getIcon(iconPath) } ?: CaosScriptIcons.MODULE_ICON) {
+
+
+        val base: CaosVariant by lazy {
+            fromVal(baseCode).nullIfUnknown()
+                ?: throw Exception("Base variant not set to a known variant")
+        }
+
         init {
+            if (base is OTHER) {
+                throw Exception("Cannot create CaosVariant.OTHER based on another non-standard OTHER variant")
+            }
             others.add(this)
         }
     }
@@ -55,15 +77,15 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 
         @Suppress("unused")
         fun registerVariant(
-            base: CaosVariant,
+            base: String,
             code: String,
             fullName: String,
-            icon: Icon = CaosScriptIcons.MODULE_ICON
+            iconPath: String? = null,
         ): CaosVariant {
             val existing = fromVal(code)
             if (existing != UNKNOWN)
                 return existing
-            return OTHER(base, code, fullName, icon)
+            return OTHER(base, code, fullName, iconPath)
         }
     }
 
@@ -107,7 +129,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 }
 
 fun CaosVariant?.nullIfUnknown(): CaosVariant? {
-    return if (this == null || this == CaosVariant.UNKNOWN)
+    return if (this == null || this == UNKNOWN)
         null
     else
         this
@@ -121,10 +143,12 @@ fun <T> CaosVariant.ifNew(callback: CaosVariant.() -> T): T {
     return callback()
 }
 
-fun CaosVariant?.orDefault(): CaosVariant? {
+fun CaosVariant?.orDefault(project: Project): CaosVariant? {
     if (this != null)
         return this
-    return CaosScriptProjectSettings.variant
+    return project.settings.let {
+        it.lastVariant ?: it.defaultVariant
+    }
 }
 
 val VARIANT_OLD = listOf(C1, C2)
@@ -137,19 +161,19 @@ val CaosVariant.injectorInterfaceName: String?
         return when (this) {
             C1, C2 -> "Vivarium"
             CV -> "Creatures Village"
-            CaosVariant.C3 -> "Creatures 3"
-            CaosVariant.DS -> "Docking Station"
-            CaosVariant.SM -> "Sea-Monkeys"
+            C3 -> "Creatures 3"
+            DS -> "Docking Station"
+            SM -> "Sea-Monkeys"
             else -> null
         }
     }
 
 infix fun CaosVariant?.like(other: CaosVariant?): Boolean {
-    val variant = if (this is CaosVariant.OTHER)
+    val variant = if (this is OTHER)
         this.base
     else
         this
-    val otherVariant = if (other is CaosVariant.OTHER)
+    val otherVariant = if (other is OTHER)
         other.base
     else
         other
@@ -167,11 +191,11 @@ infix fun CaosVariant?.like(other: CaosVariant?): Boolean {
 }
 
 infix fun CaosVariant?.likeOrNull(other: CaosVariant?): Boolean {
-    val variant = if (this is CaosVariant.OTHER)
+    val variant = if (this is OTHER)
         this.base
     else
         this
-    val otherVariant = if (other is CaosVariant.OTHER)
+    val otherVariant = if (other is OTHER)
         other.base
     else
         other
@@ -185,11 +209,11 @@ infix fun CaosVariant?.likeOrNull(other: CaosVariant?): Boolean {
 
 
 infix fun CaosVariant?.notLike(other: CaosVariant?): Boolean {
-    val variant = if (this is CaosVariant.OTHER)
+    val variant = if (this is OTHER)
         this.base
     else
         this
-    val otherVariant = if (other is CaosVariant.OTHER)
+    val otherVariant = if (other is OTHER)
         other.base
     else
         other
@@ -207,11 +231,11 @@ infix fun CaosVariant?.notLike(other: CaosVariant?): Boolean {
 }
 
 infix fun CaosVariant?.notLikeOrNull(other: CaosVariant?): Boolean {
-    val variant = if (this is CaosVariant.OTHER)
+    val variant = if (this is OTHER)
         this.base
     else
         this
-    val otherVariant = if (other is CaosVariant.OTHER)
+    val otherVariant = if (other is OTHER)
         other.base
     else
         other
@@ -224,11 +248,114 @@ infix fun CaosVariant?.notLikeOrNull(other: CaosVariant?): Boolean {
 }
 
 
-val CaosVariant?.validSpriteExtensions: Set<String> get() {
-    return when(this) {
-        C1 -> setOf("spr")
-        C2 -> setOf("s16")
-        CV, C3, DS -> setOf("s16", "c16")
-        else -> setOf("spr", "s16", "c16")
+val CaosVariant?.validSpriteExtensions: Set<String>
+    get() {
+        return when (this) {
+            C1 -> setOf("spr")
+            C2 -> setOf("s16")
+            CV, C3, DS -> setOf("s16", "c16")
+            else -> setOf("spr", "s16", "c16")
+        }
     }
+
+
+
+/**
+ * CAOS Variant serializer
+ * Allows me to serialize back to the original objects
+ */
+internal object CaosVariantSerializer : KSerializer<CaosVariant> {
+    override val descriptor: SerialDescriptor by lazy {
+        buildClassSerialDescriptor("CaosVariant") {
+            element<String>("code")
+            element<Int>("index")
+            // These 3 only set on CaosVariant.OTHER
+            element<String?>("fullName")
+            element<String>("base")
+            element<String?>("icon")
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun deserialize(decoder: Decoder): CaosVariant {
+        return decoder.decodeStructure(descriptor) {
+
+            // Set for everything
+            var code: String? = null
+            var index: Int? = null
+
+            // These 3 only set on CaosVariant.OTHER
+            var fullName: String? = null
+            var baseCode: String? = null
+            var iconPath: String? = null
+            loop@ while (true) {
+                when (val nextId = decodeElementIndex(descriptor)) {
+                    CompositeDecoder.DECODE_DONE -> break@loop
+                    // Base information
+                    0 -> code = decodeStringElement(descriptor, nextId)
+                    1 -> index = decodeIntElement(descriptor, nextId)
+
+                    // baseCode and Icon Path are only set with CaosVariant.OTHER
+                    2 -> fullName = decodeStringElement(descriptor, nextId)
+                    3 -> baseCode = decodeStringElement(descriptor, nextId)
+                    4 -> iconPath = decodeNullableSerializableElement(descriptor, nextId, String.serializer().nullable)
+
+                    // Catch unknown indices
+                    // TODO see if we should just ignore this
+                    else -> throw SerializationException("Unexpected index $index when deserializing CAOS Variant in CAOS Plugin")
+                }
+            }
+
+            if (code == null) {
+                throw SerializationException("Could not deserialize CAOS variant reference without code")
+            }
+            if (index == null) {
+                throw SerializationException("Could not deserialize CAOS variant reference without variant index")
+            }
+            if (index !in -1..6) {
+                throw SerializationException("Could not deserialize CAOS variant. Invalid variant index $index")
+            }
+            val variant = when (index) {
+                1 -> C1
+                2 -> C2
+                3 -> CV
+                4 -> C3
+                5 -> DS
+                6 -> SM
+                else -> {
+                    if (baseCode == null) {
+                        throw SerializationException("Could not deserialize non-standard CAOS variant. Base VARIANT not set")
+                    }
+                    if (fullName == null) {
+                        throw SerializationException("Could not deserialize non-standard CAOS variant. Full name cannot be null")
+                    }
+                    OTHER(
+                        baseCode = baseCode,
+                        code = code,
+                        fullName = fullName,
+                        iconPath = iconPath
+                    )
+                }
+            }
+            if (variant !is OTHER && variant.code != code) {
+                throw SerializationException("Could not deserialize non-standard CAOS variant. "+
+                        "Code and Index do not match. Code for index: ${variant.code}; Deserialized code value: $code"
+                )
+            }
+            variant
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: CaosVariant) {
+        encoder.encodeStructure(descriptor) {
+            encodeStringElement(descriptor, 0, value.code)
+            encodeStringElement(descriptor, 1, value.fullName)
+            encodeIntElement(descriptor, 2, value.index)
+            if (value is OTHER) {
+                encodeNullableSerializableElement(descriptor, 3, String.serializer().nullable, value.iconPath)
+                encodeStringElement(descriptor, 4, value.baseCode)
+            }
+        }
+    }
+
 }

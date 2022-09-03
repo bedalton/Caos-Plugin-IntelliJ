@@ -282,3 +282,17 @@ var CaosProjectSettingsService.combineAttNodes: Boolean
             )
         )
     }
+
+
+
+var CaosProjectSettingsService.attScale: Int
+    get() = state.attScale
+    set(value) {
+        if (value == state.attScale)
+            return
+        loadState(
+            state.copy(
+                attScale = attScale
+            )
+        )
+    }

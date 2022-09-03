@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosScriptProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.errorNotification
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
@@ -110,7 +110,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
     override fun moduleCreated(module: Module) {
         ApplicationManager.getApplication().runWriteAction {
             val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
-            val variant = (variantComboBox.selectedItem as? CaosVariant) ?: CaosScriptProjectSettings.variant
+            val variant = (variantComboBox.selectedItem as? CaosVariant) ?: module.project.settings.let { it.lastVariant ?: it.defaultVariant }
             variant?.let {
                 module.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
                 module.variant = variant
