@@ -145,7 +145,7 @@ internal class PrayBlockTreeNode(
             Log.i { "Block: ${prayBlock.blockTag}: ${prayBlock.blockName} is not an agent. IntTags: [${prayBlock.intTags.joinToString { it.tag }}]; StringTags: [${prayBlock.stringTags.joinToString { it.tag }}]" }
             return@lazy emptyList()
         }
-        val scriptTagRegex = "Script\\s+(\\d+)".toRegex()
+        val scriptTagRegex = "Script\\s+(\\d+)|Remove script".toRegex(RegexOption.IGNORE_CASE)
         val variant = if (prayBlock.blockTag.text like "AGNT") {
             CaosVariant.C3
         } else {
