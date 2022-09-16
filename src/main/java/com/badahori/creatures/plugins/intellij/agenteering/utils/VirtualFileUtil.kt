@@ -82,8 +82,9 @@ object VirtualFileUtil {
         else
             path.flatMap { it.split("/") }).filter { it.isNotNullOrBlank() }
 
-        if (components.isEmpty())
+        if (components.isEmpty()) {
             return null
+        }
 
         var file = parent
             ?: return null
@@ -97,8 +98,9 @@ object VirtualFileUtil {
                 continue
             }
             file = file.children?.firstOrNull {
-                (scope == null || scope.accept(it)) && it.name.equals(component,
-                    true) && it.isDirectory
+                (scope == null || scope.accept(it)) &&
+                        it.name.equals(component, true) &&
+                        it.isDirectory
             }
                 ?: return null
         }
