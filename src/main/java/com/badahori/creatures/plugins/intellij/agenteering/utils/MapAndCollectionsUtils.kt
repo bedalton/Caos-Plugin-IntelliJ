@@ -60,6 +60,19 @@ fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean {
     return this != null && this.isNotEmpty()
 }
 
+fun <T> Collection<T>.insertFront(item: T): List<T> {
+    return listOf(item) + this
+}
+
+
+fun <T> MutableList<T>.insertFront(item: T) {
+    if (this.isEmpty()) {
+        this.add(item)
+    } else {
+        this.add(0, item)
+    }
+}
+
 inline fun <T, R> Collection<T>.minus(elements: Collection<T>, selector: (T) -> R?)
         = filter{ t -> elements.none{ selector(it) == selector(t) } }
 

@@ -4,11 +4,16 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isObjectVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isMVxxLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isOVxxLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isVAxxLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parentParameter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -16,58 +21,84 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.util.PsiTreeUtil
 
+
+val CaosScriptVarToken.isVAxxLike: Boolean get() =
+    varGroup == CaosScriptVarTokenGroup.VAxx || varGroup == CaosScriptVarTokenGroup.VARx
+val CaosScriptVarToken.isOVxxLike: Boolean get() =
+    varGroup == CaosScriptVarTokenGroup.OVxx || varGroup == CaosScriptVarTokenGroup.OBVx
+val CaosScriptVarToken.isMVxxLike: Boolean get() =
+    varGroup == CaosScriptVarTokenGroup.MVxx
+
+val CaosScriptNamedGameVar.isGameEngineVar: Boolean get() =
+    varType == CaosScriptNamedGameVarType.GAME || varType == CaosScriptNamedGameVarType.EAME
+val CaosScriptNamedGameVar.isObjectVar: Boolean get() =
+    varType == CaosScriptNamedGameVarType.NAME || varType == CaosScriptNamedGameVarType.MAME
+
+
 object CaosScriptInferenceUtil {
 
+    private val SET_OF_ONLY_VARIABLE_TYPE = setOf(VARIABLE)
     private const val RESOLVE_RVALUE_VARS_DEFAULT = true
 
     /**
-     * Infers the type of an rvalue used in a CAOS script
+     * Infers the type of rvalue used in a CAOS script
      */
-    fun getInferredType(element: CaosScriptRvalue, resolveVars: Boolean = true): List<CaosExpressionValueType> {
-        return getRvalueTypeWithoutInference(element, ANY, true)?.toListOf()
-            ?: emptyList() //getInferredType(element, null, resolveVars, mutableListOf())
+    fun getInferredType(element: CaosScriptRvalue, resolveVars: Boolean = true): Set<CaosExpressionValueType> {
+        return getRvalueTypeWithoutInference(element, ANY, true)?.toListOf()?.toSet()
+            ?: getInferredType(element, null, resolveVars, mutableListOf())?.toSet()
+            ?: emptySet()
     }
 
     /**
-     * Infers the type of an rvalue used in a CAOS script
+     * Infers the type an rvalue used in a CAOS script
      */
-    @Suppress("UNUSED_PARAMETER")
     fun getInferredType(
         element: CaosScriptRvalue,
         bias: CaosExpressionValueType? = null,
         resolveVars: Boolean? = null,
-        lastChecked: MutableList<CaosScriptIsVariable>
-    ): List<CaosExpressionValueType> {
-//
-//        // If rvalue has any of these values
-//        // It is an incomplete command call, and cannot be resolved
-//        if (anyNotNull(element.incomplete, element.errorRvalue, element.rvaluePrefixIncompletes))
-//            return emptyList()
-//
-//        // If element has var token set,
-//        // infer value of variable at last assignment if desired
-//        element.varToken?.let {
-//            return if (resolveVars ?: RESOLVE_RVALUE_VARS_DEFAULT) getInferredType(
-//                it,
-//                bias,
-//                true,
-//                lastChecked = lastChecked
-//            ) ?: listOf(VARIABLE) else listOf(VARIABLE)
-//        }
-//
-//        // If element has named var present,
-//        // infer value of variable at last assignment if desired
-//        element.namedGameVar?.let {
-//            return if (resolveVars ?: RESOLVE_RVALUE_VARS_DEFAULT) getInferredType(
-//                it,
-//                bias,
-//                true,
-//                lastChecked = lastChecked
-//            ) ?: listOf(VARIABLE) else listOf(VARIABLE)
-//        }
-        val type = getRvalueTypeWithoutInference(element, bias ?: ANY, false)?.let { listOf(it) }
+        lastChecked: MutableList<CaosScriptIsVariable>,
+    ): Set<CaosExpressionValueType>? {
+
+        // It is an incomplete command call, and cannot be resolved
+        if (element.isErrorElement) {
+            return null
+        }
+
+        val doNotResolveVars = (resolveVars != null && !resolveVars) || (resolveVars == null && !RESOLVE_RVALUE_VARS_DEFAULT)
+
+        // If element has var token set,
+        // infer value of variable at last assignment if desired
+        val varToken = element.varToken
+        if (varToken != null) {
+            // If we should not resolve vars, return list of generic variable type
+            if (doNotResolveVars) {
+                return SET_OF_ONLY_VARIABLE_TYPE
+            }
+            // Infer variable type
+            getInferredRValueVariableType(
+                varToken,
+                bias,
+                lastChecked = lastChecked
+            ) ?: SET_OF_ONLY_VARIABLE_TYPE
+        }
+
+        val namedGameVar = element.namedGameVar
+
+        if (namedGameVar != null) {
+            if (doNotResolveVars) {
+                return SET_OF_ONLY_VARIABLE_TYPE
+            }
+            // If element has named var present,
+            // infer value of variable at last assignment if desired
+            getInferredRValueVariableType(
+                namedGameVar,
+                bias,
+                lastChecked = lastChecked
+            ) ?: listOf(VARIABLE)
+        }
+        val type = getRvalueTypeWithoutInference(element, bias ?: ANY, false)?.let { setOf(it) }
             ?: getInferredType(element.rvaluePrime, bias)
-            ?: emptyList()
+            ?: emptySet()
         // Return inferred types for simple values
         return type
     }
@@ -77,37 +108,73 @@ object CaosScriptInferenceUtil {
      */
     fun getInferredType(
         prime: CaosScriptRvaluePrime?,
-        bias: CaosExpressionValueType? = null
-    ): List<CaosExpressionValueType>? {
-        return prime?.getCommandDefinition(bias)?.returnType?.let { listOf(it) }
+        bias: CaosExpressionValueType? = null,
+    ): Set<CaosExpressionValueType>? {
+        return prime?.getCommandDefinition(bias)?.returnType?.let { listOf(it) }?.toSet()
     }
 
     /**
      * Gets inferred type for a given variable
      * Checks for previous assignments for last assigned value
      */
-    fun getInferredType(
-        element: CaosScriptIsVariable?,
+    private fun getInferredRValueVariableType(
+        rvalueVariable: CaosScriptIsVariable?,
         bias: CaosExpressionValueType? = null,
-        resolveVars: Boolean = false,
-        lastChecked: MutableList<CaosScriptIsVariable> = mutableListOf()
+        lastChecked: MutableList<CaosScriptIsVariable> = mutableListOf(),
+    ): Set<CaosExpressionValueType>? {
+        if (rvalueVariable == null) {
+            return null
+        }
+        if (!rvalueVariable.isValid || rvalueVariable.project.isDisposed || DumbService.isDumb(rvalueVariable.project)) {
+            return null
+        }
+        // Check variables by specific type
+        return when (rvalueVariable) {
+            is CaosScriptVarToken -> getIndexedVarInferredType(rvalueVariable, bias, lastChecked = lastChecked)
+            is CaosScriptNamedGameVar -> getNamedGameVarInferredType(rvalueVariable, bias, lastChecked = lastChecked)
+            else -> SET_OF_ONLY_VARIABLE_TYPE
+        }
+    }
+
+    /**
+     * Gets inferred type for a given variable
+     * Checks for previous assignments for last assigned value
+     */
+    private fun getInferredRValueVariableType(
+        rvalueVariable: CaosScriptVarToken?,
+        bias: CaosExpressionValueType? = null,
+        lastChecked: MutableList<CaosScriptIsVariable> = mutableListOf(),
     ): List<CaosExpressionValueType>? {
-        if (element == null)
+        if (rvalueVariable == null) {
             return null
-        if (!resolveVars)
-            return listOf(VARIABLE)
-        if (!element.isValid || element.project.isDisposed || DumbService.isDumb(element.project))
+        }
+        if (!rvalueVariable.isValid || rvalueVariable.project.isDisposed || DumbService.isDumb(rvalueVariable.project)) {
             return null
-        return when (element) {
-            is CaosScriptVarToken -> {
-                getIndexedVarInferredType(element, bias, lastChecked = lastChecked)
+        }
+        val group = rvalueVariable.varGroup
+        val scoped = when {
+            group.isVAxxLike -> getVAxxAssignedValueTypes(rvalueVariable)
+        }
+    }
+
+
+    private fun getVAxxAssignedValueTypes(rvalueVariable: CaosScriptVarToken): Set<CaosExpressionValueType> {
+        val index = rvalueVariable.varIndex
+        val maxOffset = rvalueVariable.startOffset
+        val scope = rvalueVariable.scope
+        val otherVariables = rvalueVariable.getParentOfType(CaosScriptScriptElement::class.java)
+            ?.collectElementsOfType(CaosScriptVarToken::class.java)
+            ?.filter { aVar ->
+                aVar.isVAxxLike && aVar.varIndex == index && aVar.startOffset < maxOffset && scope.sharesScope(aVar.scope)
             }
-            is CaosScriptNamedGameVar -> {
-                getNamedGameVarInferredType(element, bias, lastChecked = lastChecked)
-            }
-            else -> {
-                listOf(VARIABLE)
-            }
+            ?.sortedByDescending { it.startOffset }
+            ?: return emptySet()
+        for (otherVariable in otherVariables) {
+            val parentLvalue = otherVariable.parent as? CaosScriptLvalue
+                ?: continue
+            val parentCommand = parentLvalue.parent as? CaosScriptCommandLike
+                ?: continue
+
         }
 
     }
@@ -115,46 +182,87 @@ object CaosScriptInferenceUtil {
     private fun getNamedGameVarInferredType(
         element: CaosScriptNamedGameVar,
         bias: CaosExpressionValueType? = null,
-        lastChecked: MutableList<CaosScriptIsVariable>
-    ): List<CaosExpressionValueType> {
+        lastChecked: MutableList<CaosScriptIsVariable>,
+    ): Set<CaosExpressionValueType> {
 
-        // Short out this check due to inability to accertain agent class
+        // Short out this check due to inability to ascertain agent class
         if (element.isObjectVar) {
-            // TODO filter by object class
-            return listOf(VARIABLE)
+            return SET_OF_ONLY_VARIABLE_TYPE
         }
 
+        // Get valid project or return
         val project = element.project
-        if (project.isDisposed)
-            return emptyList()
-        val varType = element.varType
-        val key = element.key
-            ?: return emptyList()
+        if (project.isDisposed) {
+            return SET_OF_ONLY_VARIABLE_TYPE
+        }
 
+        // Get named game var type. i.e. NAME, GAME, EAME, MAME
+        val varType = element.varType
+
+        // Get key
+        // Usually string, but could be any caos type
+        val key = element.key
+            ?: return emptySet()
+
+        val startIndex = element.startOffset
+        val scope = element.scope
+        val isObjectVar = element.isObjectVar
+        val scriptNamedVars = element.getParentOfType(CaosScriptScriptElement::class.java)
+            ?.collectElementsOfType(CaosScriptNamedGameVar::class.java)
+            ?.filter { lastChecked.contains(element) }
+            .orEmpty()
+        lastChecked.addAll(scriptNamedVars)
+
+
+        val immediate = scriptNamedVars
+            .filter { it.startOffset < startIndex && (it.varType == varType || it.isObjectVar && element.isObjectVar) && it.sharesScope(scope) }
+            .sortedByDescending { it.startOffset }
+            .mapNotNull map@{
+                val rValues = (it.parent as? CaosScriptLvalue)
+                    ?.rvalueList
+                    ?: return@map null
+                if (rValues.size != 1) {
+                    return@map null
+                }
+                getInferredType(rValues.first(), bias, true, lastChecked)
+            }
+
+        if (immediate.isNotEmpty()) {
+            immediate.filter { it.isNotEmpty() && (it.size != 1 || it[0] != VARIABLE)}.firstOrNull()?.let {
+                return it
+            }
+        }
+
+        //
         var vars: Collection<CaosScriptNamedGameVar>? = try {
-            if (!DumbService.isDumb(project))
-                CaosScriptNamedGameVarIndex.instance.get(element.varType, key, element.project)
-            else
+            if (DumbService.isDumb(project)) {
                 null
+            } else {
+                CaosScriptNamedGameVarIndex.instance.get(element.varType, key, element.project)
+            }
         } catch (e: Exception) {
             null
         }
+
+        // If index is null from thrown exception or not yet indexed
         if (vars == null) {
             vars = getAllNamedVarsFromRawFiles(project) {
                 it.varType == varType && it.key == key
             }
         }
+
+        // Make sure we are only checking new variables
         vars = vars.filter { thisVar ->
             lastChecked.none { it.isEquivalentTo(thisVar) }
         }
         lastChecked.addAll(vars)
 
-        return getInferredType(vars, bias)
+        return getInferredVariableTypeForVariablesList(vars, bias)
     }
 
     private inline fun getAllNamedVarsFromRawFiles(
         project: Project,
-        check: (element: CaosScriptNamedGameVar) -> Boolean
+        check: (element: CaosScriptNamedGameVar) -> Boolean,
     ): List<CaosScriptNamedGameVar> {
         return (FilenameIndex.getAllFilesByExt(project, "cos") + FilenameIndex.getAllFilesByExt(project, "COS"))
             .distinctBy { it.path.lowercase() }
@@ -169,68 +277,47 @@ object CaosScriptInferenceUtil {
     private fun getIndexedVarInferredType(
         element: CaosScriptVarToken,
         bias: CaosExpressionValueType? = null,
-        lastChecked: MutableList<CaosScriptIsVariable>
-    ): List<CaosExpressionValueType> {
-//        if (element.varGroup.isVAxxLike) {
-//            val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
-//                ?: return arrayListOf(VARIABLE)
-//            val varIndex = element.varIndex
-//            val otherAssignments: List<CaosScriptVarToken> = PsiTreeUtil
-//                .collectElementsOfType(parentScript, CaosScriptVarToken::class.java)
-//                .filter { otherVariable ->
-//                    varIndex == otherVariable.varIndex &&
-//                            otherVariable.isVAxxLike &&
-//                            lastChecked.none { it.isEquivalentTo(element) } &&
-//                            element.scope.sharesScope(otherVariable.scope)
-//                }
-//            lastChecked.addAll(otherAssignments)
-//            return getInferredType(otherAssignments, bias)
-//        }
-//
-//        if (element.varGroup.isOVxxLike) {
-//            //TODO implement after learning to resolve targ
-//            return arrayListOf(VARIABLE)
-//        }
-//
-//        if (element.varGroup.isMVxxLike) {
-//            //TODO implement after learning to resolve targ
-//            return arrayListOf(VARIABLE)
-//        }
-
-        return arrayListOf(VARIABLE)
-    }
-
-    private fun getInferredType(
-        elements: List<CaosScriptIsVariable>,
-        bias: CaosExpressionValueType? = null
-    ): List<CaosExpressionValueType> {
-        for (element in elements.filter { it.parent is CaosScriptLvalue }.sortedByDescending { it.endOffset }) {
-            val parentLvalue = element.parent as? CaosScriptLvalue
-                ?: continue
-            val parentCommandCall = element.parent as? CaosScriptCommandCall
-                ?: continue
-            val parameter = parentCommandCall.commandDefinition?.parameters?.getOrNull(parentLvalue.index)
-            when (val type = parameter?.variableSetToType) {
-                "1" -> return listOf(INT)
-                "4" -> return listOf(STRING)
-                "4|1" -> return if (bias == STRING)
-                    listOf(STRING)
-                else if (bias?.isNumberType ?: false)
-                    listOf(INT)
-                else
-                    listOf(STRING, INT)
-                "16" -> return listOf(DECIMAL)
-                "#" -> return listOf(DECIMAL)
-                else -> {
-                    if (type == null)
-                        LOGGER.severe("VARIABLE 'SetTo' value not set on variable parameter definition")
-                    else
-                        LOGGER.severe("VARIABLE 'SetToType' value '$type' was not handled by when clause")
-                    return listOf(VARIABLE)
-                }
+        lastChecked: MutableList<CaosScriptIsVariable>,
+    ): Set<CaosExpressionValueType> {
+        return when {
+            element.varGroup.isVAxxLike -> {
+                val maxOffset = element.endOffset
+                val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
+                    ?: return SET_OF_ONLY_VARIABLE_TYPE
+                val varIndex = element.varIndex
+                val scriptVariables = PsiTreeUtil
+                    .collectElementsOfType(parentScript, CaosScriptVarToken::class.java)
+                val result: Set<CaosExpressionValueType>? = scriptVariables
+                    .sortedByDescending {
+                        it.startOffset
+                    }
+                    .filter { otherVariable ->
+                        varIndex == otherVariable.varIndex &&
+                                otherVariable.isVAxxLike &&
+                                otherVariable.startOffset < maxOffset &&
+                                lastChecked.none { it.isEquivalentTo(element) } &&
+                                element.scope.sharesScope(otherVariable.scope)
+                    }
+                    .firstNotNullOfOrNull check@{ aVar ->
+                        lastChecked.add(aVar)
+                        getInferredVariableAssignedType(element, bias)
+                    }
+                    ?.toSet()
+                result ?: SET_OF_ONLY_VARIABLE_TYPE
             }
+
+            element.varGroup.isOVxxLike -> {
+                //TODO implement after learning to resolve targ
+                return SET_OF_ONLY_VARIABLE_TYPE
+            }
+
+            element.varGroup.isMVxxLike -> {
+                //TODO implement after learning to resolve targ
+                // We can only check previously set mv vars or vars directly after targ'ing
+                SET_OF_ONLY_VARIABLE_TYPE
+            }
+            else -> SET_OF_ONLY_VARIABLE_TYPE
         }
-        return listOf(VARIABLE)
     }
 
     /**
@@ -265,7 +352,7 @@ private fun anyNotNull(vararg elements: PsiElement?): Boolean {
 internal fun getRvalueTypeWithoutInference(
     rvalue: CaosScriptRvalueLike?,
     bias: CaosExpressionValueType,
-    fuzzy: Boolean = true
+    fuzzy: Boolean = true,
 ): CaosExpressionValueType? {
     if (rvalue == null)
         return null
@@ -296,6 +383,7 @@ internal fun getRvalueTypeWithoutInference(
                 }
             }
         }
+
         rvalue.isToken -> TOKEN
         rvalue.isString -> STRING
         else -> rvalue.variant?.let { variant ->
@@ -317,3 +405,12 @@ internal fun getRvalueTypeWithoutInference(
 
 
 val LIST_OF_VARIABLE_VALUE_TYPE = listOf(VARIABLE)
+
+val CaosScriptRvalue.isErrorElement: Boolean
+    get() {
+        return swiftEscapeLiteral != null ||
+                jsElement != null ||
+                rvaluePrefixIncompletes != null ||
+                incomplete != null ||
+                pictDimensionLiteral != null
+    }

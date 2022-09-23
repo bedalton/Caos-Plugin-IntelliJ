@@ -112,11 +112,13 @@ internal fun getFilenameSuggestions(
 
     if (ignoredFilename != null) {
         // Is case-insensitive file system
-        if (OsUtil.isWindows)
+        if (OsUtil.isWindows) {
             return null
+        }
 
-        if (removeExtension && FileNameUtil.getFileNameWithoutExtension(ignoredFilename) == fileNameWithoutExtension)
+        if (removeExtension && FileNameUtil.getFileNameWithoutExtension(ignoredFilename) == fileNameWithoutExtension) {
             return null
+        }
 
         // Create single fix array
         return CaosScriptReplaceElementFix(
@@ -132,6 +134,7 @@ internal fun getFilenameSuggestions(
 
     // Get target file matching baseFileName case-insensitive
     val targetFile: VirtualFile? = if (extensions.isNullOrEmpty()) {
+        // Find child with extension
         VirtualFileUtil.findChildIgnoreCase(trueDirectory, removeExtension, directory = false, fileName)
     } else if (removeExtension && fileNameWithoutExtension.equals(fileName, ignoreCase = true)) {
         // Filename should not have an extension, so attach all possible and check

@@ -2597,7 +2597,6 @@ subroutine_name
 			setName
 			getReference
 			getIndex
-			getInferredType
 			getUseScope
 			getNameIdentifier
 		]
@@ -2680,7 +2679,6 @@ named_game_var
 			getKeyType
 			getArguments
 			getArgumentValues
-			getInferredType
 			getCommandDefinition
 		]
 	}
@@ -3750,7 +3748,6 @@ rvalue_prime
 			getArguments
 			getArgumentValues
 			isVariant
-			getInferredType
 			getCommandDefinition
 		]
 //		recoverWhile=command_recover
@@ -3869,7 +3866,6 @@ lvalue
 			getArgumentValues
 			isVariant
 			getIndex
-			getInferredType
 			getCommandDefinition
 		]
 	}
