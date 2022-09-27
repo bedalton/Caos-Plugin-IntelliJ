@@ -7,7 +7,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.useJectByDefault
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse

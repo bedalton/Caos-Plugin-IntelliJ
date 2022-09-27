@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.HasVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.setVariantBase
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.defaultVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer

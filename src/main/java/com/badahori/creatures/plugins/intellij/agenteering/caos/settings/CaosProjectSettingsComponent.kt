@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -19,7 +20,8 @@ import com.intellij.util.xmlb.annotations.Transient
 @State(
     name = "CaosProjectSettingsComponent"
 )
-class CaosProjectSettingsComponent : CaosProjectSettingsService,
+class
+CaosProjectSettingsComponent : CaosProjectSettingsService,
     PersistentStateComponent<CaosProjectSettingsComponent.State> {
 
     private var state: State = State()
@@ -29,13 +31,17 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     }
 
     override fun loadState(state: State) {
+        val oldState = this.state
         this.state = state
-        onUpdate()
+        onUpdate(oldState, state)
     }
 
     override var lastVariant: CaosVariant?
         get() = state.lastVariant
         set(value) {
+            if (value == state.lastVariant) {
+                return
+            }
             loadState(state.copy(
                 lastVariant = value
             ))
@@ -44,6 +50,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var defaultVariant: CaosVariant?
         get() = state.defaultVariant
         set(value) {
+            if (value == state.defaultVariant) {
+                return
+            }
             loadState(state.copy(
                 defaultVariant = value
             ))
@@ -52,6 +61,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var indent: Boolean
         get() = state.indent
         set(value) {
+            if (value == state.indent) {
+                return
+            }
             loadState(state.copy(
                 indent = value
             ))
@@ -60,6 +72,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var showLabels: Boolean
         get() = state.showLabels
         set(value) {
+            if (value == state.showLabels) {
+                return
+            }
             loadState(state.copy(
                 showLabels = value
             ))
@@ -69,6 +84,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var ditherSPR: Boolean
         get() = state.ditherSPR
         set(value) {
+            if (value == state.ditherSPR) {
+                return
+            }
             loadState(state.copy(
                 ditherSPR = value
             ))
@@ -78,6 +96,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var attScale: Int
         get() = state.attScale
         set(value) {
+            if (value == state.attScale) {
+                return
+            }
             loadState(state.copy(
                 attScale = value
             ))
@@ -87,6 +108,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var showPoseView: Boolean
         get() = state.showPoseView
         set(value) {
+            if (value == state.showPoseView) {
+                return
+            }
             loadState(state.copy(
                 showPoseView = value
             ))
@@ -96,25 +120,51 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
     override var combineAttNodes: Boolean
         get() = state.combineAttNodes
         set(value) {
+            if (value == state.combineAttNodes) {
+                return
+            }
             loadState(state.copy(
                 combineAttNodes = value
+            ))
+        }
+    override var replicateAttsToDuplicateSprites: Boolean?
+        get() = state.replicateAttToDuplicateSprite
+        set(value) {
+            if (value == state.replicateAttToDuplicateSprite) {
+                return
+            }
+            loadState(state.copy(
+                replicateAttToDuplicateSprite = value != false
             ))
         }
 
     override var defaultPoseString: String
         get() = state.defaultPoseString
         set(value) {
+            if (value == state.defaultPoseString) {
+                return
+            }
             loadState(state.copy(
                 defaultPoseString = value
             ))
         }
 
     override var useJectByDefault: Boolean
-        get() = state.useJectByDefault
+        get() = state.useJectByDefault.apply {
+            if (this) {
+                LOGGER.severe("JECT should not be enabled as it is not implemented")
+                useJectByDefault = false
+                // TODO("Set up JECT file settings")
+            }
+        }
         set(value) {
-            loadState(state.copy(
-                useJectByDefault = value
-            ))
+            if (value == state.useJectByDefault)
+                return
+            loadState(
+                state.copy(
+                    useJectByDefault = value
+                )
+            )
         }
 
     override var isAutoPoseEnabled: Boolean
@@ -141,6 +191,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         @Attribute(converter = StringListConverter::class)
         val ignoredFilenames: List<String> = listOf(),
         val combineAttNodes: Boolean = false,
+        val replicateAttToDuplicateSprite: Boolean? = null,
         val defaultPoseString: String = "313122122111111",
         val lastGameInterfaceNames: List<String> = listOf(),
         val useJectByDefault: Boolean = false,
@@ -162,8 +213,8 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         fun isVariant(variant: CaosVariant): Boolean = variant == this.lastVariant
     }
 
-    private fun onUpdate() {
-        ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC).onChange(this.state)
+    private fun onUpdate(oldState: State, newState: State) {
+        ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC).onChange(oldState, newState)
     }
 
     companion object {
@@ -176,10 +227,10 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
          * Adds a listener to track and change to the settings component
          */
         @Suppress("unused")
-        fun addSettingsChangedListener(listener: (settings: State) -> Unit) {
+        fun addSettingsChangedListener(listener: (oldState: State, newState: State) -> Unit) {
             addSettingsChangedListener(object : CaosProjectSettingsChangeListener {
-                override fun onChange(settings: State) {
-                    listener(settings)
+                override fun onChange(oldState: State, newState: State) {
+                    listener(oldState, newState)
                 }
             })
         }
@@ -188,11 +239,11 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
          * Adds a listener to track and change to the settings component
          * Listener should be released automatically when parent is disposed
          */
-        fun addSettingsChangedListener(disposable: Disposable, listener: (settings: State) -> Unit) {
+        fun addSettingsChangedListener(disposable: Disposable, listener: (oldState: State, newState: State) -> Unit) {
             try {
                 addSettingsChangedListener(disposable, object : CaosProjectSettingsChangeListener {
-                    override fun onChange(settings: State) {
-                        listener(settings)
+                    override fun onChange(oldState: State, newState: State) {
+                        listener(oldState, newState)
                     }
                 })
             } catch (ignored: Exception) {}
@@ -201,6 +252,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         /**
          * Adds a project settings change listener called whenever the settings are changed
          */
+        @JvmStatic
         @Suppress("MemberVisibilityCanBePrivate")
         fun addSettingsChangedListener(listener: CaosProjectSettingsChangeListener) {
             ApplicationManager.getApplication().messageBus.connect().subscribe(TOPIC, listener)
@@ -210,6 +262,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
          * Adds a project settings change listener tied to a disposable component
          * Listener should be released automatically when parent is disposed
          */
+        @JvmStatic
         @Suppress("MemberVisibilityCanBePrivate")
         fun addSettingsChangedListener(disposable: Disposable, listener: CaosProjectSettingsChangeListener) {
             try {

@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import bedalton.creatures.util.FileNameUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.combineAttNodes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.isPartName

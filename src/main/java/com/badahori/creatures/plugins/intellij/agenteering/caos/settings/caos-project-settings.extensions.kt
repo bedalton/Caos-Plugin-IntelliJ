@@ -7,8 +7,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
+import com.badahori.creatures.plugins.intellij.agenteering.utils.count
+import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
@@ -22,6 +23,9 @@ val Project.settings: CaosProjectSettingsService get() = CaosProjectSettingsServ
 val CaosProjectSettingsService.ignoredFiles: List<String> get() = state.ignoredFilenames
 
 
+/**
+ * Sets the project wide default variant
+ */
 fun CaosProjectSettingsService.setDefaultVariant(variant: CaosVariant?) {
     val state = state
     if (state.defaultVariant == variant)
@@ -33,8 +37,8 @@ fun CaosProjectSettingsService.setDefaultVariant(variant: CaosVariant?) {
     )
 }
 
-val CaosProjectSettingsService.defaultVariant: CaosVariant? get() = state.defaultVariant
 
+// Sets the module variant in a persistant way
 fun Module.inferVariantHard(): CaosVariant? {
     // Get variant normally if possible
     variant?.let {
@@ -45,6 +49,9 @@ fun Module.inferVariantHard(): CaosVariant? {
     return variantInScope(project, scope)
 }
 
+/**
+ * Infers or returns this projects variant
+ */
 fun Project.inferVariantHard(): CaosVariant? {
     settings.defaultVariant?.let {
         return it
@@ -53,6 +60,10 @@ fun Project.inferVariantHard(): CaosVariant? {
     return variantInScope(this, scope)
 }
 
+/**
+ * Checks a project for its file types in a given scope,
+ * And tries to determine what variant it could be
+ */
 private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVariant? {
     val hasSpr = FilenameIndex.getAllFilesByExt(project, "spr", scope).isNotEmpty()
     val hasS16 = FilenameIndex.getAllFilesByExt(project, "s16", scope).isNotEmpty()
@@ -62,12 +73,12 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVari
         return CaosVariant.C1
     }
     if (hasC16 && !(hasSpr || hasS16)) {
-        return CaosVariant.C3 // Do not assume CV
+        return CaosVariant.DS // Do not assume CV
     }
     val agents = FilenameIndex.getAllFilesByExt(project, "agent", scope).isNotEmpty()
             || FilenameIndex.getAllFilesByExt(project, "agents", scope).isNotEmpty()
     if (agents) {
-        return CaosVariant.C3
+        return CaosVariant.DS
     }
     val cobs = FilenameIndex.getAllFilesByExt(project, "cob")
     if (!cobs.isEmpty()) {
@@ -86,7 +97,7 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVari
         }
     }
     val caosFiles = FilenameIndex.getAllFilesByExt(project, "cos", scope)
-    @Suppress("SpellCheckingInspection") val c3Items = listOf(
+    val c3Items = listOf(
         "mv\\d{2}",
         "absv",
         "hist",
@@ -98,6 +109,7 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVari
         "game",
         "name",
         "'",
+        "^\\s*attr",
         "text",
         "CAOS2Pray",
         "mame",
@@ -106,10 +118,10 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVari
         "avel",
         ">|<|="
     ).joinToString("|")
-    val c1 = "clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp".toRegex(RegexOption.IGNORE_CASE)
-    val c2 = "cls2|va\\d{2}|ov\\d+|esee|etch|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp".toRegex(RegexOption.IGNORE_CASE)
+    val c1 = "clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr".toRegex(RegexOption.IGNORE_CASE)
+    val c2 = "cls2|va\\d{2}|ov\\d+|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr".toRegex(RegexOption.IGNORE_CASE)
     val c3Regex = "($c3Items)".toRegex(RegexOption.IGNORE_CASE)
-    val string = "(\\[[^\\\\]*]|\"([^\"]|\\\\.)*\")".toRegex()
+    val stringsOrComments = "(\\[[^\\\\]*]|\"([^\"]|\\\\.)*\")|(^\\s*[*]([^#][^\\n]*|[^\\n]+)?)".toRegex()
     for (i in 0 until minOf(5, caosFiles.size)) {
         val file = try {
             caosFiles.random()?.contents
@@ -117,12 +129,12 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVari
         } catch (e: Exception) {
             return null
         }
-        val withoutQuotes = file.replace(string, " ")
+        val withoutQuotes = file.replace(stringsOrComments, " ")
         if (!hasSpr && c3Regex.matches(withoutQuotes)) {
-            return CaosVariant.C3
+            return CaosVariant.DS
         }
         if (withoutQuotes.count("scrp ") > 1 && !withoutQuotes.contains("*#")) {
-            return CaosVariant.C3
+            return CaosVariant.DS
         }
         if (!hasSpr && !hasC16 && c2.matches(withoutQuotes)) {
             return CaosVariant.C2
@@ -134,6 +146,10 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVari
     return null
 }
 
+
+/**
+ * Add a file to the ignored list that will no longer be checked for validity
+ */
 fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
     if (fileName.isBlank())
         return
@@ -147,6 +163,9 @@ fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
     )
 }
 
+/**
+ * Remove a file from the ignored list, so it will be checked for existence in project
+ */
 fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
     if (fileName.isBlank())
         return
@@ -158,6 +177,9 @@ fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
     ))
 }
 
+/**
+ * Adds a game interface name used to communicate with a running instance of Creatures on the OS
+ */
 fun CaosProjectSettingsService.addGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
     loadState(
@@ -167,6 +189,10 @@ fun CaosProjectSettingsService.addGameInterfaceName(interfaceName: GameInterface
     )
 }
 
+/**
+ * Removes a game interface name from the project
+ * GAME interface names are used to communicate with running Creatures instances
+ */
 fun CaosProjectSettingsService.removeGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
     loadState(state.copy(
@@ -174,6 +200,9 @@ fun CaosProjectSettingsService.removeGameInterfaceName(interfaceName: GameInterf
     ))
 }
 
+/**
+ * List all game interface names, formatted, with asterisks(*) expanded
+ */
 val CaosProjectSettingsService.gameInterfaceNames: List<GameInterfaceName>
     get() {
         return state.gameInterfaceNames
@@ -192,6 +221,9 @@ val CaosProjectSettingsService.gameInterfaceNames: List<GameInterfaceName>
             }
     }
 
+/**
+ * Gets game interface names for a variant after expanding asterisks(*)
+ */
 fun CaosProjectSettingsService.gameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
     val interfaces = gameInterfaceNames
     if (variant.nullIfUnknown() == null)
@@ -200,6 +232,9 @@ fun CaosProjectSettingsService.gameInterfaceNames(variant: CaosVariant?): List<G
 
 }
 
+/**
+ * A key for storing the last interface name used for a variant in the project
+ */
 private val CaosVariant.lastInterfacePrefix get() = "$code=="
 
 fun CaosProjectSettingsService.lastInterface(variant: CaosVariant, interfaceName: GameInterfaceName) {
@@ -237,9 +272,14 @@ fun CaosProjectSettingsService.lastInterface(variant: CaosVariant?): GameInterfa
 }
 
 interface CaosProjectSettingsChangeListener : EventListener {
-    fun onChange(settings: CaosProjectSettingsComponent.State)
+    fun onChange(oldState: CaosProjectSettingsComponent.State, newState: CaosProjectSettingsComponent.State)
 }
 
+/**
+ * Gets/Sets whether to check a file for valid CAOS before injecting
+ * This can be used when the plugin does not account for a command, or one is incorrectly
+ * described
+ */
 var CaosProjectSettingsService.injectionCheckDisabled: Boolean
     get() = state.injectionCheckDisabled
     set(value) {
@@ -252,47 +292,18 @@ var CaosProjectSettingsService.injectionCheckDisabled: Boolean
         )
     }
 
-
-var CaosProjectSettingsService.useJectByDefault: Boolean
-    get() = state.useJectByDefault.apply {
-        if (this) {
-            LOGGER.severe("JECT should not be enabled as it is not implemented")
-            useJectByDefault = false
-            // TODO("Set up JECT file settings")
-        }
-    }
+/**
+ * Flatten ATTs for duplicate images
+ * Used for things like the front facing ATTs with C1e -> C2e conversions
+ */
+var CaosProjectSettingsService.replicateAttToDuplicateSprites: Boolean?
+    get() = state.replicateAttToDuplicateSprite
     set(value) {
-        if (value == state.useJectByDefault)
+        if (value == state.replicateAttToDuplicateSprite)
             return
         loadState(
             state.copy(
-                useJectByDefault = value
-            )
-        )
-    }
-
-var CaosProjectSettingsService.combineAttNodes: Boolean
-    get() = state.combineAttNodes
-    set(value) {
-        if (value == state.combineAttNodes)
-            return
-        loadState(
-            state.copy(
-                combineAttNodes = value
-            )
-        )
-    }
-
-
-
-var CaosProjectSettingsService.attScale: Int
-    get() = state.attScale
-    set(value) {
-        if (value == state.attScale)
-            return
-        loadState(
-            state.copy(
-                attScale = attScale
+                replicateAttToDuplicateSprite = value != false
             )
         )
     }
