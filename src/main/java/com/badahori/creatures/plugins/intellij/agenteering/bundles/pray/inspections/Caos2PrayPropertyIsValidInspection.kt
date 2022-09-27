@@ -106,8 +106,10 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool() {
                 element.getParentOfType(CaosScriptCaos2Block::class.java)
                     ?.commands
                     .orEmpty()
-            var geneticFilePath = FileNameUtil.getLastPathComponent(filePath)
+
+            val geneticFilePath = FileNameUtil.getLastPathComponent(filePath)
                 .nullIfEmpty()
+
             if (geneticFilePath == null) {
                 holder.registerProblem(
                     element,
