@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseE
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
@@ -100,6 +101,10 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         (new RuntimeException()).printStackTrace();
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
+        CaosProjectSettingsComponent.addSettingsChangedListener((old, settings) -> {
+            LOGGER.info("Updated project settings");
+            updateCells();
+        });
     }
 
     private void initListeners() {
@@ -698,7 +703,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 maxHeight = image.getHeight();
             }
             // Adds this point and image to the list
-            out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller, this));
+            out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller.getFolded(), controller, this));
         }
         spriteCellList.setMaxWidth(maxWidth);
         spriteCellList.setMaxHeight(maxHeight);

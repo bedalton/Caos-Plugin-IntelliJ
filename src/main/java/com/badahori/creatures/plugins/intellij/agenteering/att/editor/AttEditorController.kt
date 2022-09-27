@@ -50,6 +50,10 @@ internal class AttEditorController(
         set(value) {
             model.lockY = value
         }
+    override val replications: Map<Int, List<Int>>
+        get() = model.getReplications()
+    override val notReplicatedLines: List<Int>
+        get() = model.notReplicatedAtts
 
     val isInitialized: Boolean
         get() = this::mView.isInitialized
@@ -96,6 +100,10 @@ internal class AttEditorController(
      */
     override fun getCurrentPoint(): Int {
         return model.currentPoint
+    }
+
+    override fun getFolded(): List<Int> {
+        return model.getFoldedLines()
     }
 
     /**
@@ -251,7 +259,10 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     val showFooterNotification:(message: String, messageType: MessageType)->Unit
     var lockX: Boolean
     var lockY: Boolean
+    val replications: Map<Int, List<Int>>
+    val notReplicatedLines: List<Int>
     fun getCurrentPoint(): Int
+    fun getFolded(): List<Int>
     fun setCurrentPoint(point: Int)
     fun setVariant(variant: CaosVariant)
     fun setPart(part: Char)
