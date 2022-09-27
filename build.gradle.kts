@@ -138,6 +138,7 @@ tasks.getByName("buildPlugin") {
 tasks.getByName<org.jetbrains.intellij.tasks.RunPluginVerifierTask>("runPluginVerifier") {
     this.ideVersions.set(
         listOf(
+            "IU-223.4884.69",
             "IU-201.8743.12",
             "IU-201.8743.12",
             "IC-212.5080.55"
