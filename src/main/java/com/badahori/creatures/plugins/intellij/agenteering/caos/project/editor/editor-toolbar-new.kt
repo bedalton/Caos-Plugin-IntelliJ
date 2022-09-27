@@ -111,56 +111,6 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
     }
 }
 
-//private class OpenDocsAction(var variant: CaosVariant?) : AnAction(
-//    "Open Docs",
-//    "Open CAOS Documentation file",
-//    null
-//) {
-//    override fun update(e: AnActionEvent) {
-//        super.update(e)
-//        e.presentation.isVisible = variant != null
-//    }
-//
-//    override fun actionPerformed(e: AnActionEvent) {
-//        val project = e.project
-//            ?: return
-//        val variant = variant
-//            ?: return
-//        openDocs(project, variant)
-//    }
-//
-//}
-
-//class CAOSEditorActionGroup(file: CaosScriptFile) : ActionGroup() {
-//    private var variant: CaosVariant? = file.variant
-//    private var docsAction = OpenDocsAction(variant)
-////    internal val injectorActionGroup: InjectorToolbarExecutorGroupAction = InjectorToolbarExecutorGroupAction(file)
-//
-//    fun setVariant(variant: CaosVariant?) {
-//        if (variant == this.variant) {
-//            return
-//        }
-//        this.variant = variant
-//        updateDocsAction(variant)
-//    }
-//
-//    private fun updateDocsAction(variant: CaosVariant?) {
-//        val oldDocsAction = docsAction
-//        val newDocsAction = OpenDocsAction(variant)
-//        docsAction = newDocsAction
-//        replace(oldDocsAction, newDocsAction)
-//    }
-//
-//    override fun getChildren(e: AnActionEvent?): Array<AnAction> {
-//        return arrayOf(
-//            docsAction,
-////            injectorActionGroup
-//        )
-//    }
-//
-//}
-
-
 internal fun createCaosScriptHeaderComponent(
     project: Project,
     fileEditor: FileEditor,
@@ -367,7 +317,7 @@ private fun populate(
         // Set selected variant in file
         file.setVariant(selected, explicit)
 
-        // Re-parse file with new variant
+        // Reparse file with new variant
         com.intellij.openapi.application.runWriteAction run@{
             file = pointer.element
                 ?: return@run
@@ -452,7 +402,7 @@ private fun populate(
         variantPanel.isVisible = false
     }
 
-    CaosProjectSettingsComponent.addSettingsChangedListener(fileEditor) { settings ->
+    CaosProjectSettingsComponent.addSettingsChangedListener(fileEditor) { _, settings ->
         if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
             return@addSettingsChangedListener
         injectorList = settings.gameInterfaceNames

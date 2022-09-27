@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosPro
 import com.badahori.creatures.plugins.intellij.agenteering.utils.TextPrompt
 import com.badahori.creatures.plugins.intellij.agenteering.utils.addChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
@@ -66,6 +67,7 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
         val updated = panel.apply(true)
             ?: return
         service.loadState(updated)
+        ProjectView.getInstance(project).refresh()
     }
 
     override fun getDisplayName(): String {
@@ -74,9 +76,10 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
 
 }
 
-private class ProjectSettingsPanel(private val settings: State) {
+private class ProjectSettingsPanel(private var settings: State) {
 
     private val originalCombineAttNodes = settings.combineAttNodes
+    private val originalReplicateAttToDuplicateSprite = settings.replicateAttToDuplicateSprite != false
     private val originalIgnoredFilesText = settings.ignoredFilenames.joinToString("\n")
     private val originalGameInterfaceName: String = settings.gameInterfaceNames.joinToString("\n")
     private val originalDefaultVariant: String = settings.defaultVariant?.code ?: ""
@@ -152,6 +155,12 @@ private class ProjectSettingsPanel(private val settings: State) {
         }
     }
 
+    val replicateAttToDuplicateSprites by lazy {
+        JCheckBox().apply {
+            this.isSelected = originalReplicateAttToDuplicateSprite != false
+        }
+    }
+
     val autoPoseCheckbox by lazy {
         JCheckBox().apply {
             this.isSelected = originalIsAutoPoseEnabled
@@ -161,6 +170,7 @@ private class ProjectSettingsPanel(private val settings: State) {
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
             .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
+            .addLabeledComponent(JLabel("Replicate ATTs to Duplicate Images"), replicateAttToDuplicateSprites, 1, false)
             .addLabeledComponent(JLabel("Combine ATT file nodes"), combineAttNodes, 1, false)
             .addComponent(JLabel("ATT files will be displayed under a single node. i.e. \"*04a\""))
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
@@ -178,30 +188,42 @@ private class ProjectSettingsPanel(private val settings: State) {
     }
 
     fun modified(): Boolean {
-        if (defaultVariant.selectedItem != originalDefaultVariant)
+        if (defaultVariant.selectedItem != settings.defaultVariant)
             return true
-        if (combineAttNodes.isSelected == originalCombineAttNodes) {
+        if (combineAttNodes.isSelected != settings.combineAttNodes) {
             return true
         }
-        if (ignoredFileNames.text != originalIgnoredFilesText)
+        if (ignoredFileNames.text != settings.ignoredFilenames.joinToString("\n")) {
             return true
-        if (gameInterfaceNames.text != originalGameInterfaceName)
+        }
+        if (gameInterfaceNames.text != settings.gameInterfaceNames.joinToString("\n")) {
             return true
-        if (autoPoseCheckbox.isSelected != originalIsAutoPoseEnabled)
+        }
+        if (autoPoseCheckbox.isSelected != settings.isAutoPoseEnabled) {
             return true
+        }
+        if (replicateAttToDuplicateSprites.isSelected != settings.replicateAttToDuplicateSprite) {
+            return true
+        }
         return false
     }
 
+    /**
+     * Apply the current panel's settings to the settings object
+     */
     fun apply(force: Boolean): State? {
         val gameInterfaceNames = getGameInterfaceNames(force)
             ?: return null
-        return settings.copy(
+        val newSettings = settings.copy(
             defaultVariant = CaosVariant.fromVal(defaultVariant.selectedItem as? String).nullIfUnknown(),
             combineAttNodes = combineAttNodes.isSelected,
             ignoredFilenames = getIgnoredFileNames(),
             gameInterfaceNames = gameInterfaceNames,
-            isAutoPoseEnabled = autoPoseCheckbox.isSelected
+            isAutoPoseEnabled = autoPoseCheckbox.isSelected,
+            replicateAttToDuplicateSprite = replicateAttToDuplicateSprites.isSelected
         )
+        settings = newSettings
+        return newSettings
     }
 
     private fun getIgnoredFileNames(): List<String> {
@@ -219,6 +241,7 @@ private class ProjectSettingsPanel(private val settings: State) {
         gameInterfaceNames.text = originalGameInterfaceName
         autoPoseCheckbox.isSelected = originalIsAutoPoseEnabled
         combineAttNodes.isSelected = originalCombineAttNodes
+        replicateAttToDuplicateSprites.isSelected = originalReplicateAttToDuplicateSprite
     }
 
     /**

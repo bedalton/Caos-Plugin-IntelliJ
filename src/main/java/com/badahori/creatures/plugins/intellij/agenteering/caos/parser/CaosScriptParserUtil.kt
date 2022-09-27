@@ -17,7 +17,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets.WHITE_SPACE_LIKE_WITH_COMMENT
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.defaultVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
