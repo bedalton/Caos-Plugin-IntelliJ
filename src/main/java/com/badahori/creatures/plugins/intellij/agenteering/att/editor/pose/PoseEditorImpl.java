@@ -128,6 +128,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private boolean didInitComboBoxes = false;
     private final CaosProjectSettingsService settings;
 
+    private boolean didRenderOnce = false;
+    private Pose nextPose = null;
+
     private final Map<Character, BodyPartFiles> last = new HashMap<>();
 
     public PoseEditorImpl(
@@ -762,7 +765,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
      *
      * @param parts parts that have been changed
      */
-    private void redrawActual(char... parts) {
+    private synchronized void redrawActual(char... parts) {
         if (!didInitOnce) {
             return;
         }
@@ -799,13 +802,23 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             return;
         }
 
-        ApplicationManager.getApplication().runReadAction(() -> model.requestRender(theParts));
+        ApplicationManager.getApplication().runReadAction(() -> {
+            model.requestRender(theParts);
+        });
     }
 
     @Override
     public void setRendered(@Nullable BufferedImage image) {
         final boolean rendered = image != null;
         if (rendered) {
+            if (!didRenderOnce) {
+                didRenderOnce = true;
+            }
+            if (nextPose != null) {
+                setPose(nextPose, true);
+                nextPose = null;
+                return;
+            }
             ((PoseRenderedImagePanel) imageHolder).updateImage(image);
         } else {
             ((PoseRenderedImagePanel) imageHolder).setInvalid(true);
@@ -942,7 +955,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
      * @param freeze whether to freeze or unfreeze this part
      */
     public void freezeBreedForPart(char part, Boolean freeze) {
-        final JComboBox<Triple<String,BreedPartKey, List<BodyPartFiles>>> poseComboBox = getComboBoxForBreed(part);
+        final JComboBox<Triple<String, BreedPartKey, List<BodyPartFiles>>> poseComboBox = getComboBoxForBreed(part);
         if (poseComboBox != null) {
             freeze(poseComboBox, freeze, null);
         }
@@ -1312,16 +1325,25 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         setPose(charPart, pose);
     }
 
+    public synchronized void setNextPose(Pose pose) {
+        if (didRenderOnce) {
+            setPose(pose, true);
+        } else {
+            nextPose = pose;
+        }
+    }
+
     /**
      * Sets the whole body's pose at once.
      *
      * @param pose the full body pose
      */
-    public void setPose(Pose pose, boolean setFacing) {
+    public synchronized void setPose(Pose pose, boolean setFacing) {
         drawImmediately = false;
         final int bodyPose = pose.getBody();
         final Integer facing = model.getTrueFacing(bodyPose);
         if (facing == null) {
+            drawImmediately = true;
             return;
         }
         if (setFacing) {
@@ -1338,9 +1360,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             }
             setPose(part, partPose);
         }
-        drawImmediately = true;
         this.pose = pose;
-        redraw();
+        this.poseStringField.setValue(pose.poseString(variant, facing));
+        drawImmediately = true;
+        redrawAll();
         if (variant.isOld() && pose.getBody() >= 8) {
             this.pose = null;
         }
@@ -1355,6 +1378,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             return;
         }
         headPose.setSelectedIndex(headPoseData.getDirection());
+        LOGGER.info("Setting <Head> pose to " + headPose.getSelectedIndex());
         if (headPoseData.getTilt() != null) {
             if (headPoseData.getTilt() >= 4) {
                 LOGGER.severe("Tilt invalid. Pose: " + pose + "; Data: " + headPoseData);
@@ -1423,6 +1447,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             } else {
                 bodyDirection.setSelectedIndex((int) Math.floor(pose / 4.0));
             }
+            LOGGER.info("Setting part <Body> to " + bodyDirection.getSelectedIndex());
         }
         JComboBox<String> comboBox = getComboBoxForPart(charPart);
         if (comboBox == null) {
@@ -1451,6 +1476,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (pose >= comboBox.getItemCount()) {
             LOGGER.severe("Part " + charPart + " pose '" + pose + "' is greater than options (" + comboBox.getItemCount() + ")");
             pose = 0;
+        }
+        if (pose != comboBox.getSelectedIndex()) {
+            LOGGER.info("Setting part <" + charPart + "> to " + pose);
         }
         comboBox.setSelectedIndex(pose);
         // Redraw the image

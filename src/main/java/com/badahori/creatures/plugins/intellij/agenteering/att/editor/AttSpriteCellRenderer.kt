@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.height
 import com.badahori.creatures.plugins.intellij.agenteering.utils.width
 import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.ui.JBColor
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -118,7 +119,7 @@ internal class AttSpriteCellComponent : JPanel() {
                 this.foldedLabel = foldLabel
                 add(foldLabel)
             }
-            foldLabel.foreground = Color(255,255,255,120)
+            foldLabel.foreground = REPLICATED_MESSAGE_FONT_COLOR
             foldLabel.text = "  Duplicate image. Points are being replicated from cell above"
             foldLabel.isVisible = true
             width = maxOf(foldLabel.width, 10)
@@ -293,6 +294,11 @@ internal class AttSpriteCellComponent : JPanel() {
     }
 
     companion object {
+
+        private val REPLICATED_MESSAGE_FONT_COLOR = JBColor(
+            Color(30, 30, 30, 120),
+            Color(220, 220, 220, 127)
+        )
         fun scalePoints(points: List<Pair<Int,Int>>, scale: Double): List<Pair<Int,Int>> {
             return points.subList(0, minOf(6, points.size)).map {
                 Pair(floor(it.first * scale).toInt(), floor(it.second * scale).toInt())
