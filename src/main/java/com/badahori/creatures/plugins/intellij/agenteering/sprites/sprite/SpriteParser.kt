@@ -10,14 +10,11 @@ import bedalton.creatures.sprite.util.SpriteType
 import bedalton.creatures.sprite.util.SpriteType.*
 import bedalton.creatures.util.Log
 import bedalton.creatures.util.iIf
-import bedalton.creatures.util.ifLog
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.SpriteSetUtil
+import bedalton.creatures.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.awt.toAwt

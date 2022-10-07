@@ -15,7 +15,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
 class CaosScriptHighlighterAnnotator : Annotator, DumbAware {
-    
+
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when {
             element is CaosScriptIsRvalueKeywordToken && element.firstChild?.tokenType != CaosScriptTypes.CaosScript_TOKEN -> colorize(
