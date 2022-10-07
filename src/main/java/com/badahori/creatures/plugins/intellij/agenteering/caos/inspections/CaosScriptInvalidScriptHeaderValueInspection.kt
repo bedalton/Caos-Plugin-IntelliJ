@@ -9,10 +9,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.utils.upperCaseFirstLetter
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptInvalidScriptHeaderValueInspection : LocalInspectionTool() {
+class CaosScriptInvalidScriptHeaderValueInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.invalid-script-header-value.display-name")
     override fun getGroupDisplayName(): String = CAOSScript

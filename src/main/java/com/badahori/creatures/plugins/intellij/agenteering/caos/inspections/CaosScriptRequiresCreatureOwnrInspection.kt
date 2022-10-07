@@ -10,9 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool() {
+class CaosScriptRequiresCreatureOwnrInspection : LocalInspectionTool(), DumbAware {
     override fun getDisplayName(): String = "Requires creature ownr object"
     override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = "RequiresCreatureOwnr"

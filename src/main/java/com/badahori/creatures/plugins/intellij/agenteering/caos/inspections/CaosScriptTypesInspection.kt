@@ -12,13 +12,14 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.elementType
 
 /**
  * Inspection for validating expected parameter types with actual argument types
  */
-class CaosScriptTypesInspection : LocalInspectionTool() {
+class CaosScriptTypesInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Expected parameter type"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")

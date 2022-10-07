@@ -10,12 +10,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
 /**
  * Detects the usage of a CAOS2Cob property that does not apply to this variant
  */
-class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool() {
+class Caos2CobOutOfVariantDirectiveInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Out of variant CAOS2Cob directive"
     override fun getGroupDisplayName(): String = CAOS2Cob
