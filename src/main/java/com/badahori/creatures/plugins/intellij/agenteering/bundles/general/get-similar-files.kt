@@ -26,7 +26,8 @@ internal fun getFilenameSuggestions(
     baseFileName: String,
     extensions: List<String>? = null,
     orb: Int = DEFAULT_ORB,
-    includedFiles: List<String>
+    includedFiles: List<String>,
+    pathless: Boolean = false
 ): List<CaosScriptReplaceElementFix>? {
     val fileNameExtension = extensions
         ?: getExtension(baseFileName)
@@ -41,7 +42,8 @@ internal fun getFilenameSuggestions(
         baseFileName,
         extensions = fileNameExtension,
         orb = orb,
-        includedFiles
+        includedFiles,
+        pathless
     )
 }
 
@@ -58,7 +60,8 @@ internal fun getFilenameSuggestions(
     filePath: String,
     extensions: List<String>? = null,
     orb: Int = DEFAULT_ORB,
-    includedFiles: List<String>
+    includedFiles: List<String>,
+    pathless: Boolean = false,
 ): List<CaosScriptReplaceElementFix>? {
 
     val fileName = filePath.split(PATH_SPLIT).last()
@@ -71,9 +74,16 @@ internal fun getFilenameSuggestions(
     val fileNameWithoutExtension = FileNameUtil.getFileNameWithoutExtension(fileName)
         ?: return null
 
-    val ignoredFiles = element.containingFile?.module?.settings?.ignoredFiles.orEmpty() +
+    val ignoredFilesRaw = element.containingFile?.module?.settings?.ignoredFiles.orEmpty() +
             element.project.settings.ignoredFiles +
             includedFiles
+
+
+    val ignoredFiles = if (pathless) {
+        (ignoredFilesRaw + includedFiles.mapNotNull { FileNameUtil.getLastPathComponent(it) }).distinct()
+    } else {
+        ignoredFilesRaw
+    }
 
     if (fileName in ignoredFiles) {
         return null
@@ -112,12 +122,13 @@ internal fun getFilenameSuggestions(
 
     if (ignoredFilename != null) {
         // Is case-insensitive file system
-        if (OsUtil.isWindows)
+        if (OsUtil.isWindows) {
             return null
+        }
 
-        if (removeExtension && FileNameUtil.getFileNameWithoutExtension(ignoredFilename) == fileNameWithoutExtension)
+        if (removeExtension && FileNameUtil.getFileNameWithoutExtension(ignoredFilename) == fileNameWithoutExtension) {
             return null
-
+        }
         // Create single fix array
         return CaosScriptReplaceElementFix(
             element,

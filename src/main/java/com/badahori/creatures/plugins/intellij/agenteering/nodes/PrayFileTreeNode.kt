@@ -1,8 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import bedalton.creatures.agents.pray.data.BlockWithTags
+import bedalton.creatures.agents.pray.data.DataBlock
 import bedalton.creatures.agents.pray.data.PrayBlock
 import bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
 import bedalton.creatures.util.Log
+import bedalton.creatures.util.MD5
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -50,14 +53,14 @@ internal class PrayFileTreeNode(
     }
 
     private val blockChildren by lazy {
-        val md5 = ""
+        val md5 = virtualFile.md5()
         virtualFile.getUserData(PRAY_TREE_CHILD_CACHE_KEY)?.let {
             if (it.first == md5) {
                 return@lazy it.second
             }
         }
         blocks.mapNotNull map@{ block ->
-            if (block is PrayBlock.DataBlock) {
+            if (block is DataBlock) {
                 val file = try {
                     directory.createChildWithContent(block.blockName.text, { block.data }, false).apply{
                         this.isWritable = false
@@ -79,11 +82,6 @@ internal class PrayFileTreeNode(
         }.apply {
             virtualFile.putUserData(PRAY_TREE_CHILD_CACHE_KEY, Pair(md5 ?: "", this))
         }
-    }
-
-    override fun shouldUpdateData(): Boolean {
-
-        return super.shouldUpdateData()
     }
 
     override fun update(presentation: PresentationData) {
@@ -117,7 +115,7 @@ internal class PrayBlockTreeNode(
         presentation.presentableText = prayBlock.blockName.text
         presentation.locationString = "(${prayBlock.blockTag.text})"
         val icon = when (prayBlock.blockTag.text) {
-            "AGNT", "DSAG", "MEDI", "SKIN", "EDAG", "EGGS" -> CaosScriptIcons.PRAY_AGENT_ICON
+            "AGNT", "DSAG", "EGGS", "DSGB" -> CaosScriptIcons.PRAY_AGENT_ICON
             else -> null
         }
         presentation.setIcon(icon)
@@ -125,7 +123,7 @@ internal class PrayBlockTreeNode(
 
 
     private val childNodes: List<AbstractTreeNode<*>> by lazy {
-        if (prayBlock !is PrayBlock.BlockWithTags) {
+        if (prayBlock !is BlockWithTags) {
             return@lazy emptyList()
         }
 
@@ -186,9 +184,6 @@ internal class PrayBlockTreeNode(
     }
 
 
-    override fun shouldUpdateData(): Boolean {
-        return super.shouldUpdateData()
-    }
     override fun getChildren(): List<AbstractTreeNode<*>> {
         return try {
             childNodes
@@ -201,13 +196,13 @@ internal class PrayBlockTreeNode(
 
     override fun getWeight(): Int {
         return when (prayBlock.blockTag.text.uppercase()) {
-            "AGNT", "DSAG", "MEDI", "SKIN", "EDAG", "EGGS" -> - 100
+            "AGNT", "DSAG", "EGGS", "DSGB" -> - 100
             else -> super.getWeight()
         }
     }
 
     override fun getLeafState(): LeafState {
-        return if (prayBlock !is PrayBlock.BlockWithTags) {
+        return if (prayBlock !is BlockWithTags) {
             LeafState.ALWAYS
         } else {
             LeafState.ASYNC
