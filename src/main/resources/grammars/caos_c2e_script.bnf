@@ -334,7 +334,7 @@ private token_stream_tokens
 	;
 
 private file_body_with_variant
-	::= <<enterMode "start">>((comment_block? caos_2_block| script_body_element) <<exitMode "start">> (!<<eof>> script_body_element)*
+	::= <<enterMode "start">>(comment_block? caos_2_block| script_body_element) <<exitMode "start">> (!<<eof>> script_body_element)*
 	;
 
 caos_2_block
