@@ -11,6 +11,8 @@ import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.vfs.VirtualFile
 
 private const val NOTIFICATION_ERROR_TAG = "CAOS Project: Error"
 private const val NOTIFICATION_WARN_TAG = "CAOS Project: Warning"
@@ -59,9 +61,11 @@ var Module.variant: CaosVariant?
 
 internal fun CaosModuleSettingsService.addIgnoredFile(fileName: String) {
     val state = getState()
-    this.loadState(state.copy(
-        ignoredFiles = state.ignoredFiles + fileName
-    ))
+    this.loadState(
+        state.copy(
+            ignoredFiles = state.ignoredFiles + fileName
+        )
+    )
 }
 
 internal fun CaosModuleSettingsService.removeIgnoredFile(fileName: String) {
@@ -120,3 +124,6 @@ internal fun CaosModuleSettingsService.lastGameInterface(gameInterfaceName: Game
             )
         )
 }
+
+internal val Module.myModuleFile: VirtualFile? get() = rootManager.contentRoots.firstOrNull()
+internal val Module.myModulePath: String? get() = rootManager.contentRoots.firstOrNull()?.path
