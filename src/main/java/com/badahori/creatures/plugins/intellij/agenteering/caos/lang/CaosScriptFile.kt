@@ -372,6 +372,20 @@ fun VirtualFile.setCachedVariant(variant: CaosVariant?, explicit: Boolean) {
     }
 }
 
+fun VirtualFile.setCachedIfNotCached(variant: CaosVariant?, explicit: Boolean) {
+    if (cachedVariantExplicitOrImplicit != null) {
+        return
+    }
+    (this as? CaosVirtualFile)?.setVariantBase(this, variant, explicit)
+    if (explicit) {
+        this.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
+        ExplicitVariantFilePropertyPusher.writeToStorage(this, variant ?: CaosVariant.UNKNOWN)
+    } else {
+        this.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
+        ImplicitVariantFilePropertyPusher.writeToStorage(this, variant ?: CaosVariant.UNKNOWN)
+    }
+}
+
 
 val dumpRegex =
     "\\*+\\s*(Scriptorium|Dump|Scriptorium\\s*Dump).*".toRegex(RegexOption.IGNORE_CASE)
