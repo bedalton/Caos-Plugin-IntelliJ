@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import bedalton.creatures.bytes.toBase64
 import org.apache.commons.imaging.palette.Dithering
 import org.apache.commons.imaging.palette.Palette
 import java.awt.*
@@ -74,10 +75,10 @@ fun RenderedImage.toByteArray(formatName:String) : ByteArray {
 }
 
 fun RenderedImage.toPngDataUri() : String {
-    return "data:image/png;base64," + DatatypeConverter.printBase64Binary(toPngByteArray())
+    return "data:image/png;base64," + toPngByteArray().toBase64()
 }
 fun RenderedImage.toJpgDataUri() : String {
-    return "data:image/jpg;base64," + DatatypeConverter.printBase64Binary(toJpgByteArray())
+    return "data:image/jpg;base64," + toJpgByteArray().toBase64()
 }
 
 
