@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.FileNameUtil.getExtension
 import bedalton.creatures.util.PathUtil
+import bedalton.creatures.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ignoredFiles

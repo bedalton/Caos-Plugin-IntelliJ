@@ -1,10 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl
 
+import bedalton.creatures.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptTokenRValueStub
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType

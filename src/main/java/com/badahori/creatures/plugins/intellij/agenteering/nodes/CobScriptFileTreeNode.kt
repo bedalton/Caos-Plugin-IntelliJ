@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 import bedalton.creatures.bytes.MemoryByteStreamReader
 import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.Log
+import bedalton.creatures.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
