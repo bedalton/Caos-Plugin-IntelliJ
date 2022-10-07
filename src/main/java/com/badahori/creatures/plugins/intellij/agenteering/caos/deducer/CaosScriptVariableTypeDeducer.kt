@@ -9,6 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNamedGameVarElements
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.varTypes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.psi.search.GlobalSearchScope
@@ -46,16 +48,13 @@ private object NamedVariableTypeDeducer {
 
 private object GameVariableTypeDeducer {
     fun infer(variable: CaosScriptNamedGameVar, skipNames:MutableList<CaosScriptIsVariable>) : Set<CaosExpressionValueType> {
-        val module = variable.containingCaosFile?.module
-
-        val scope = if (module != null)
-            GlobalSearchScope.moduleScope(module)
-        else
-            GlobalSearchScope.everythingScope(variable.project)
-        val variableName = variable.name
+        val project = variable.project
+        if (project.isDisposed) {
+            return emptySet()
+        }
         val thisScriptParent = variable.getParentOfType(CaosScriptScriptElement::class.java)
         val thisPosition = variable.startOffset
-        var variables = CaosScriptNamedGameVarIndex.instance[variableName, variable.project, scope]
+        var variables = getNamedGameVarElements(project, variable, true, variable.varTypes)
             .filter { other ->
                 isSimilar(variable, other) && isNotEquivalentToAny(other, skipNames)
                         && other.parent is CaosScriptLvalue
