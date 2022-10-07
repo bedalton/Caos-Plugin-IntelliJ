@@ -63,14 +63,17 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                         it.cachedVariantExplicitOrImplicit
                         .nullIfUnknown()
                             ?: it.inferVariantHard(project, true)
+                                ?.nullIfUnknown()
                     }
                 ?: (module ?: originalFile.module)?.let {
                     it.variant.nullIfUnknown()
                         ?: it.inferVariantHard()
+                            ?.nullIfUnknown()
                 }
                 ?: project.let {
                     it.settings.defaultVariant.nullIfUnknown()
                         ?: it.inferVariantHard()
+                            ?.nullIfUnknown()
                 }
         }
 
