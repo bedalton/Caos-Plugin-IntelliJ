@@ -16,11 +16,7 @@ class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
         return CaosScriptCodeStyleSettings(settings)
     }
 
-    override fun getConfigurableDisplayName(): String? = "Caos Script"
-
-    override fun createSettingsPage(settings: CodeStyleSettings?, modelSettings: CodeStyleSettings?): Configurable {
-        return createConfigurable(settings!!, modelSettings!!)
-    }
+    override fun getConfigurableDisplayName(): String = "Caos Script"
 
     override fun createConfigurable(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): CodeStyleConfigurable {
         return object : CodeStyleAbstractConfigurable(settings, modelSettings, this.configurableDisplayName) {
