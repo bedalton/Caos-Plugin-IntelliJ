@@ -36,7 +36,17 @@ internal fun getFilesWithExtension(
             emptyList()
         }
     }
-    return FilenameIndex.getAllFilesByExt(project, fileExtension, theSearchScope).toList()
+    return try {
+        FilenameIndex.getAllFilesByExt(project, fileExtension, theSearchScope).toList()
+    } catch (_: Exception) {
+        if (virtualFile != null) {
+            getFilesWithExtensionWithoutIndex(virtualFile, fileExtension).filter {
+                theSearchScope.accept(it)
+            }
+        } else {
+            emptyList()
+        }
+    }
 }
 
 /**
