@@ -29,6 +29,7 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
         return CaosScriptModuleBuilder()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun validateSettings(): ValidationInfo? {
         return null
     }
@@ -38,7 +39,7 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
     }
 
     override fun getName(): String {
-        return "CAOS Project"
+        return "CAOS project"
     }
 
     override fun getLogo(): Icon? {

@@ -11,9 +11,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosStringUtil
 class StripErrorSpacesAction : EditorAction(Handler())
 
 private class Handler : EditorWriteActionHandler() {
-    override fun executeWriteAction(editor: Editor?, caret: Caret?, dataContext: DataContext?) {
-        val document = editor?.document
-                ?: return
+    override fun executeWriteAction(editor: Editor, caret: Caret?, dataContext: DataContext?) {
+        val document = editor.document
         val text = document.text
         val trimmedText = CaosStringUtil.sanitizeCaosString(text)
         document.replaceString(0,text.length,trimmedText)
