@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseE
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
@@ -59,6 +60,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private boolean didInit = false;
     private final AttEditorHandler controller;
 
+    // Pose has recently changed, so re-render
+    private boolean poseChanged = false;
+
     protected JButton refreshButton;
     private final CaosProjectSettingsService settings;
 
@@ -95,11 +99,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initListeners();
         initPopupMenu();
         initDisplay(controller.getVariant());
-//        poseEditor.init();
-
-        (new RuntimeException()).printStackTrace();
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
+        CaosProjectSettingsComponent.addSettingsChangedListener((old, settings) -> {
+            updateCells();
+        });
     }
 
     private void initListeners() {
@@ -391,16 +395,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         labels.setSelected(settings.getShowLabels());
         poseEditor.setRootPath(controller.getRootPath());
         pushAttToPoseEditor(controller.getAttData());
-        final Pose pose = controller.getPose();
-        controller.setPose(null);
-        if (pose != null && (getVariant().isNotOld() || pose.getBody() < 8)) {
-            try {
-                poseEditor.setPose(pose, true);
-            } catch (Exception e) {
-                LOGGER.severe("Failed to set pose during init");
-                e.printStackTrace();
-            }
-        }
         didLoadOnce = true;
 
         // Select defaults
@@ -419,10 +413,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseViewCheckbox.setSelected(showPoseView);
         showPoseView(showPoseView);
 
+        poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
 
         loadRequestedPose();
-        poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
     }
+
 
     private void pushAttToPoseEditor(final AttFileData attFile) {
         if (this.controller.getPart() == 'z') {
@@ -698,7 +693,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 maxHeight = image.getHeight();
             }
             // Adds this point and image to the list
-            out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller, this));
+            out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller.getFolded(), controller, this));
         }
         spriteCellList.setMaxWidth(maxWidth);
         spriteCellList.setMaxHeight(maxHeight);
@@ -818,7 +813,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         if (didLoadOnce) {
             controller.setPose(null);
         }
-        poseEditor.setPose(requestedPose, true);
+        poseEditor.setNextPose(requestedPose);
         final Integer pose = requestedPose.get(getPart());
         if (pose != null) {
             setSelected(pose);

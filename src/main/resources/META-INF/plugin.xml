@@ -246,10 +246,13 @@
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider" />
 
 
-    <!--    <treeStructureProvider-->
-    <!--        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider" />-->
+    <treeStructureProvider
+            implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider"
+            order="after CaosTreeViewProvider"
+    />
 
     <treeStructureProvider
+        id="CaosTreeViewProvider"
         implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider" />
 
     <projectConfigurable parentId="language"
