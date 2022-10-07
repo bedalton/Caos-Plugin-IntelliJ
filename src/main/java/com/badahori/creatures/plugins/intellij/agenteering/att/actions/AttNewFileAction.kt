@@ -8,24 +8,22 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.inferVariantHard
+import com.badahori.creatures.plugins.intellij.agenteering.common.MyNewFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.SpriteLocator
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
-import com.intellij.ide.fileTemplates.FileTemplateManager
-import com.intellij.ide.fileTemplates.actions.AttributesDefaults
-import com.intellij.ide.fileTemplates.ui.CreateFromTemplateDialog
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidatorEx
-import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiDocumentManager
@@ -33,16 +31,19 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.search.FilenameIndex
 import icons.CaosScriptIcons
-import java.util.*
 
 /**
  * Creates a file
  * @todo implement multiple file types (ie. implementations or protocols)
  */
-class AttNewFileAction : CreateFileFromTemplateAction(
-    /* text = */ CaosBundle.message("att.actions.new-file.title"),
-    /* description = */ CaosBundle.message("att.actions.new-file.description"),
-    /* icon = */ CaosScriptIcons.ATT_FILE_ICON), DumbAware {
+class AttNewFileAction :  MyNewFileAction(
+    CaosBundle.message("att.actions.new-file.title"),
+    "ATT file",
+    CaosBundle.message("att.actions.new-file.description"),
+    "creatures-blank",
+    "att",
+    CaosScriptIcons.ATT_FILE_ICON
+), DumbAware {
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -55,16 +56,15 @@ class AttNewFileAction : CreateFileFromTemplateAction(
             return
         }
         val hasCaosModule = ModuleManager.getInstance(project).modules.any {
-            it.moduleTypeName == CaosScriptModuleType.INSTANCE.name
-        } || FilenameIndex.getAllFilesByExt(project, "cos").isNotEmpty()
-        e.presentation.isVisible = hasCaosModule
-    }
+            ModuleType.`is`(it, CaosScriptModuleType.INSTANCE)
+        }
 
-    /**
-     * Gets the menu name
-     */
-    override fun getActionName(p0: PsiDirectory?, p1: String, p2: String?): String =
-        CaosBundle.message("att.actions.new-file.title")
+        val showAction = hasCaosModule ||
+                FilenameIndex.getAllFilesByExt(project, "cos").isNotEmpty() ||
+                FilenameIndex.getAllFilesByExt(project, "att").isNotEmpty() ||
+                BreedSpriteIndex.allFiles(project).isNotEmpty()
+        e.presentation.isVisible = showAction
+    }
 
     /**
      * Builds the dialog object
@@ -91,31 +91,18 @@ class AttNewFileAction : CreateFileFromTemplateAction(
                     return extension == "att"
                 }
             })
-            .addKind("ATT File", CaosScriptIcons.ATT_FILE_ICON, "creatures-blank")
+            .addKind(kind, icon, templateName)
     }
 
     /**
      * Creates the file given a filename and template name
-     * @todo implement more than one file type
      */
     override fun createFileFromTemplate(fileName: String, template: FileTemplate, dir: PsiDirectory): PsiFile? {
-        val project = dir.project
-        if (project.isDisposed) {
-            return null
-        }
-        val className = FileUtilRt.getNameWithoutExtension(fileName)
-        val type = when (template.name) {
-            else -> "File"
-        }
-        val properties = createProperties(project, fileName, className, type)
-        val attributes = AttributesDefaults(className).withFixedName(true)
-        val file = try {
-            CreateFromTemplateDialog(project, dir, template, attributes, properties)
-                .create()
-                .containingFile
+        val file =  try {
+            super.createFileFromTemplate(fileName, template, dir)
+                ?: return null
         } catch (e: Exception) {
             LOG.error("Error while creating new ATT file", e)
-            e.printStackTrace()
             return null
         }
         fill(file)
@@ -126,14 +113,6 @@ class AttNewFileAction : CreateFileFromTemplateAction(
      * Creates a properties object containing properties passed to the template.
      */
     companion object {
-        fun createProperties(project: Project, fileName: String, className: String, type: String): Properties {
-            val properties = FileTemplateManager.getInstance(project).defaultProperties
-            properties += "NAME" to className
-            properties += "FILE_NAME" to fileName
-            properties += "TYPE" to type
-            return properties
-        }
-
         fun fill(file: PsiFile): Boolean {
             val project = file.project
             if (project.isDisposed) {
@@ -178,7 +157,7 @@ class AttNewFileAction : CreateFileFromTemplateAction(
             }
         }
 
-        fun getAutoFill(variant: CaosVariant, fileName: String, directory: VirtualFile): String? {
+        private fun getAutoFill(variant: CaosVariant, fileName: String, directory: VirtualFile): String? {
             val fileNameWithoutExtension = FileNameUtil
                 .getFileNameWithoutExtension(fileName)
                 ?: fileName
