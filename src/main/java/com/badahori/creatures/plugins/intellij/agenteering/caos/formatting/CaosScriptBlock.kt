@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
@@ -9,7 +7,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
-import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
 
@@ -18,19 +15,19 @@ class CaosScriptBlock internal constructor(
     node: ASTNode,
     wrap: Wrap?,
     alignment: Alignment?,
-    val settings: CommonCodeStyleSettings
+    val settings: CommonCodeStyleSettings,
+    val caosSettings: CaosScriptCodeStyleSettings?
 ) : AbstractBlock(node, wrap, alignment) {
-
-    private val caosSettings by lazy {
-        CodeStyleSettingsManager.getSettings(node.psi.project)
-            .getCustomSettings(CaosScriptCodeStyleSettings::class.java)
-    }
 
     private val spacingProcessor: CaosScriptSpacingProcessor by lazy {
         CaosScriptSpacingProcessor(node, settings)
     }
     private val indentProcessor: CaosScriptIndentProcessor by lazy {
-        CaosScriptIndentProcessor(caosSettings)
+        if (caosSettings == null) {
+            CaosScriptNullIndentProcessor
+        } else {
+            CaosScriptIndentProcessorImpl(caosSettings)
+        }
     }
 
     override fun buildChildren(): List<Block> {
@@ -42,7 +39,8 @@ class CaosScriptBlock internal constructor(
                     child,
                     NONE_WRAP,
                     Alignment.createAlignment(),
-                    settings
+                    settings,
+                    caosSettings
                 )
                 blocks.add(block)
             }
@@ -52,6 +50,9 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
+        if (caosSettings == null) {
+            return nullIndent
+        }
         if (caosSettings.indentNone()) {
             return noneIndent
         }
@@ -105,8 +106,9 @@ class CaosScriptBlock internal constructor(
             val parent = psi.parent as CaosScriptScriptElement
             if (parent.scriptTerminator == null || parent is CaosScriptMacro)
                 return noneIndent
-            if (!caosSettings.INDENT_SCRP)
+            if (caosSettings.INDENT_SCRP) {
                 return absoluteNoneIndent
+            }
             return normalIndent
         }
 
@@ -139,6 +141,9 @@ class CaosScriptBlock internal constructor(
     }
 
     override fun getIndent(): Indent? {
+        if (caosSettings == null) {
+            return null
+        }
         if (caosSettings.indentNone()) {
             return Indent.getNoneIndent()
         }
@@ -157,6 +162,7 @@ class CaosScriptBlock internal constructor(
         private val normalIndent = ChildAttributes(Indent.getNormalIndent(), null)
         private val noneIndent = ChildAttributes(Indent.getNoneIndent(), null)
         private val absoluteNoneIndent = ChildAttributes(Indent.getAbsoluteNoneIndent(), null)
+        private val nullIndent = ChildAttributes(null, null)
     }
 
 }

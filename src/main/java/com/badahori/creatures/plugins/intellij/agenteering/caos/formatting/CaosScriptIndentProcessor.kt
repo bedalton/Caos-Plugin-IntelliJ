@@ -10,8 +10,12 @@ import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
 
-class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSettings) {
-    fun getChildIndent(node: ASTNode): Indent? {
+interface CaosScriptIndentProcessor {
+    fun getChildIndent(node: ASTNode): Indent?
+}
+
+class CaosScriptIndentProcessorImpl(private val caosSettings: CaosScriptCodeStyleSettings): CaosScriptIndentProcessor {
+    override fun getChildIndent(node: ASTNode): Indent? {
         if (caosSettings.indentNone()) {
             return Indent.getNoneIndent()
         }
@@ -73,6 +77,13 @@ class CaosScriptIndentProcessor(private val caosSettings: CaosScriptCodeStyleSet
             else -> Indent.getNoneIndent()
         }
 
+    }
+
+}
+
+object CaosScriptNullIndentProcessor: CaosScriptIndentProcessor {
+    override fun getChildIndent(node: ASTNode): Indent? {
+        return null
     }
 
 }
