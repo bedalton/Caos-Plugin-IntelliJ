@@ -25,6 +25,7 @@ version = "2022.03.00"
 
 
 val ideaVersionStart: String by project
+val psiViewerVersion: String by project
 
 val korImagesVersion: String by project
 val creaturesAgentUtilVersion: String by project
@@ -109,6 +110,7 @@ kotlin {
             languageSettings.optIn("kotlin.js.ExperimentalJsExport")
             languageSettings.optIn("kotlin.ExperimentalJsExport")
             languageSettings.optIn("org.jetbrains.annotations.ApiStatus.Experimental")
+            languageSettings.optIn("kotlin.ExperimentalStdlibApi")
             //languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
         }
     }
@@ -122,7 +124,7 @@ intellij {
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
-    plugins.set(listOf("PsiViewer:201-SNAPSHOT"))//, "com.mallowigi.idea:10.0"))
+    plugins.set(listOf("PsiViewer:$psiViewerVersion"))//, "com.mallowigi.idea:10.0"))
 
 }
 
