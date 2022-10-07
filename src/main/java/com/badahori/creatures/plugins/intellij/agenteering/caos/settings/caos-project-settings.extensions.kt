@@ -44,7 +44,7 @@ fun CaosProjectSettingsService.setDefaultVariant(variant: CaosVariant?) {
 // Sets the module variant in a persistent way
 fun Module.inferVariantHard(): CaosVariant? {
     // Get variant normally if possible
-    variant?.let {
+    variant?.nullIfUnknown()?.let {
         return it
     }
     val getFilesWithExtension = { extension: String ->
@@ -58,7 +58,7 @@ fun Module.inferVariantHard(): CaosVariant? {
  * Infers or returns this projects variant
  */
 fun Project.inferVariantHard(): CaosVariant? {
-    settings.defaultVariant?.let {
+    settings.defaultVariant?.nullIfUnknown()?.let {
         return it
     }
     val getFilesWithExtension = { extension: String ->
@@ -74,22 +74,26 @@ fun Project.inferVariantHard(): CaosVariant? {
 }
 
 fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true): CaosVariant? {
-    cachedVariantExplicitOrImplicit?.let {
+    cachedVariantExplicitOrImplicit?.nullIfUnknown()?.let {
         return it
     }
     val getFilesWithExtension = { extension: String ->
         getFilesWithExtension(project, null, this, extension)
     }
     val isDirectory = isDirectory
-    val directory = if (isDirectory) this else parent
+    val directory = if (isDirectory) {
+        this
+    } else {
+        parent
+    }
     val variant: CaosVariant? = if (!isDirectory) {
         inferVariantSimple()
-            ?: parent.inferVariantHard(project)
+            ?: parent?.inferVariantHard(project)
     } else {
         // Get without searching subdirectories
         variantInScope(project, directoryScope(project, this, false), getFilesWithExtension)
             // Get while searching subdirectories as fallback
-            ?: variantInScope(project, directoryScope(project, directory, true), getFilesWithExtension)
+            ?: variantInScope(project, directoryScope(project, this, true), getFilesWithExtension)
     }
     if (variant == null) {
         // If we are allowed to search parent, do so
@@ -103,7 +107,7 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
         }
     }
     setCachedVariant(variant, false)
-    directory.setCachedVariant(variant, false)
+    directory?.setCachedVariant(variant, false)
     return variant
 }
 
