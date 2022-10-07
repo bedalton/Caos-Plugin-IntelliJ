@@ -10,7 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.DefaultGameFiles
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
@@ -193,8 +196,10 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     if (tagName.isEmpty())
         return
 
+    val command = tagName[0] == '@'
+
     // Make sure tag needs file
-    if (!requiresFile(tagName) && tagName[0] != '@' && !force)
+    if (!requiresFile(tagName) && !command && !force)
         return
 
     if (fileName.isNullOrBlank()) {
@@ -210,15 +215,17 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     val includedFiles = if (file is CaosScriptFile) {
         file.collectElementsOfType(CaosScriptCaos2Command::class.java)
             .flatMap map@{
-                if (PsiTreeUtil.findCommonContext(it,element)?.hasParentOfType(CaosScriptCaos2BlockComment::class.java) == true) {
-                    return@map emptyList()
-                }
+//                if (PsiTreeUtil.findCommonContext(it,element)
+//                        ?.isOrHasParentOfType(CaosScriptCaos2BlockComment::class.java) != true) {
+//                    return@map emptyList()
+//                }
                 if (it.commandName like "Inline")
                     listOfNotNull(it.commandArgs.firstOrNull())
                 else if (it.commandName like "Attach") {
                     it.commandArgs
-                } else
+                } else {
                     emptyList()
+                }
             }
     } else {
         // Is pray file
@@ -233,13 +240,16 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
             }
     }
 
+//    val includedFiles = (includedFilesRaw.map { FileNameUtil.getLastPathComponent(it) ?: it } + includedFilesRaw)
+//        .distinct()
     // If replacement files is null, then the file matches, so return
     val fixes: MutableList<LocalQuickFix> = (getFilenameSuggestions(
         element,
         stripExtension,
         fileName,
         requiredExtensions,
-        includedFiles = includedFiles
+        includedFiles = includedFiles,
+        pathless = !command
     ) ?: return).toMutableList()
 
     fixes += listOfNotNull(

@@ -24,7 +24,12 @@ group = "com.badahori.creatures.plugins.intellij.agenteering"
 version = "2022.03.00"
 
 
+
 val korImagesVersion: String by project
+val creaturesAgentUtilVersion: String by project
+val creaturesSpriteUtilVersion: String by project
+val creaturesCommonCliVersion: String by project
+val creaturesCommonCoreVersion: String by project
 
 repositories {
     mavenLocal()
@@ -35,11 +40,11 @@ repositories {
 
 dependencies {
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0") {
         excludeKotlin()
     }
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
@@ -51,11 +56,11 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:AgentUtil:0.04") {
+    implementation("bedalton.creatures:AgentUtil:$creaturesAgentUtilVersion") {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:SpriteUtil:0.03") {
+    implementation("bedalton.creatures:SpriteUtil:$creaturesSpriteUtilVersion") {
         excludeKotlin()
     }
 
@@ -63,11 +68,11 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:CommonCore:0.03") {
+    implementation("bedalton.creatures:CommonCore:$creaturesCommonCoreVersion") {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:CommonCLI:0.03") {
+    implementation("bedalton.creatures:CommonCLI:$creaturesCommonCliVersion") {
         excludeKotlin()
     }
 
