@@ -1378,7 +1378,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             return;
         }
         headPose.setSelectedIndex(headPoseData.getDirection());
-        LOGGER.info("Setting <Head> pose to " + headPose.getSelectedIndex());
         if (headPoseData.getTilt() != null) {
             if (headPoseData.getTilt() >= 4) {
                 LOGGER.severe("Tilt invalid. Pose: " + pose + "; Data: " + headPoseData);
@@ -1476,9 +1475,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (pose >= comboBox.getItemCount()) {
             LOGGER.severe("Part " + charPart + " pose '" + pose + "' is greater than options (" + comboBox.getItemCount() + ")");
             pose = 0;
-        }
-        if (pose != comboBox.getSelectedIndex()) {
-            LOGGER.info("Setting part <" + charPart + "> to " + pose);
         }
         comboBox.setSelectedIndex(pose);
         // Redraw the image

@@ -102,7 +102,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
         CaosProjectSettingsComponent.addSettingsChangedListener((old, settings) -> {
-            LOGGER.info("Updated project settings");
             updateCells();
         });
     }
