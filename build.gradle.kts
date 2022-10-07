@@ -24,6 +24,7 @@ group = "com.badahori.creatures.plugins.intellij.agenteering"
 version = "2022.03.00"
 
 
+val ideaVersionStart: String by project
 
 val korImagesVersion: String by project
 val creaturesAgentUtilVersion: String by project
@@ -117,7 +118,7 @@ kotlin {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set("2020.1")
+    version.set(ideaVersionStart)
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
