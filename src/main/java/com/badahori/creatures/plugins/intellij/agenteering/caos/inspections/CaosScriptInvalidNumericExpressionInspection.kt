@@ -14,10 +14,11 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptInvalidNumericExpressionInspection : LocalInspectionTool() {
+class CaosScriptInvalidNumericExpressionInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.invalid-numeric-expression.display-name")
     override fun getGroupDisplayName(): String = CAOSScript

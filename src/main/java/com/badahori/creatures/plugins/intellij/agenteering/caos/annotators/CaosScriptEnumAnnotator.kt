@@ -8,12 +8,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 
 /**
  * Annotate ENUM statements including ESCN, ESEE, ETCH, ECON, etc
  */
-class CaosScriptEnumAnnotator : Annotator {
+class CaosScriptEnumAnnotator : Annotator, DumbAware {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         val variant = (element.containingFile as? CaosScriptFile)?.variant
                 ?: return

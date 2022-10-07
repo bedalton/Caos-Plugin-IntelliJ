@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 
 
@@ -16,7 +17,7 @@ import com.intellij.psi.PsiElement
  * Annotates command case errors
  * In C1 and C2 all command and var names must be lowercase
  */
-class CaosScriptCommandCaseAnnotator : Annotator {
+class CaosScriptCommandCaseAnnotator : Annotator, DumbAware {
 
     /**
      * Process each element in file

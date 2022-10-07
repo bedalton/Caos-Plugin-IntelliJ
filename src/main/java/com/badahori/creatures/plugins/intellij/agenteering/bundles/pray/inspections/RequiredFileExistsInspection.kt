@@ -22,12 +22,13 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.min
 
-class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
+class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupDisplayName(): String = CAOS2Cob
     override fun getGroupPath(): Array<String> = CAOS2Path
@@ -65,7 +66,7 @@ class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
     }
 }
 
-class PrayRequiredFileExistsInspection : LocalInspectionTool() {
+class PrayRequiredFileExistsInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupDisplayName(): String = PRAY
     override fun getGroupPath(): Array<String> = CAOS2Path

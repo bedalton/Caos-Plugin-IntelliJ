@@ -11,11 +11,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptSubroutineInspection : LocalInspectionTool()  {
+class CaosScriptSubroutineInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Subroutine is defined"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")

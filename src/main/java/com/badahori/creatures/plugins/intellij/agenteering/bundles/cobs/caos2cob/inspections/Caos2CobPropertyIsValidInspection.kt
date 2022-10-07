@@ -20,10 +20,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
-class Caos2CobPropertyIsValidInspection : LocalInspectionTool() {
+class Caos2CobPropertyIsValidInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Invalid CAOS2Cob property"
     override fun getGroupDisplayName(): String = CAOS2Cob

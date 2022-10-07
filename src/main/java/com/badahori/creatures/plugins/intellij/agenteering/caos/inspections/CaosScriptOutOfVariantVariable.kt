@@ -16,6 +16,7 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElementVisitor
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Detects out of variant variables such as VAxx in C1 and VARx in CV+
  */
-class CaosScriptOutOfVariantVariable : LocalInspectionTool() {
+class CaosScriptOutOfVariantVariable : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.invalid-var-type-for-variant.display-name")
     override fun getGroupDisplayName(): String = CAOSScript

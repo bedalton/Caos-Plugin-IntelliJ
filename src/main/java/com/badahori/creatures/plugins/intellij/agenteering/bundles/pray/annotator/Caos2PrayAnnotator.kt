@@ -18,8 +18,9 @@ import com.intellij.psi.PsiElement
 import bedalton.creatures.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newInfoAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.LinkFilesInsertHandler
+import com.intellij.openapi.project.DumbAware
 
-class Caos2PrayAnnotator: Annotator {
+class Caos2PrayAnnotator: Annotator, DumbAware {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when (element) {
             is CaosScriptCaos2CommandName -> validateCommandName(element, holder)
