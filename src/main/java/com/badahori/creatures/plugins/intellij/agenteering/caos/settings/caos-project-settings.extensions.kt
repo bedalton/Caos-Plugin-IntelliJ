@@ -4,6 +4,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.forKey
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
@@ -11,8 +13,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes.directoryScope
 import java.util.*
 
 
@@ -37,7 +41,7 @@ fun CaosProjectSettingsService.setDefaultVariant(variant: CaosVariant?) {
 }
 
 
-// Sets the module variant in a persistant way
+// Sets the module variant in a persistent way
 fun Module.inferVariantHard(): CaosVariant? {
     // Get variant normally if possible
     variant?.let {
@@ -208,37 +212,14 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope, filesByEx
             'B'.code.toByte(),
             '2'.code.toByte()
         )
-        val cob2 = cobs.any { it.inputStream?.readNBytes(4).contentEquals(cobHeader) }
+        val cob2 = cobs.any { it.inputStream.readNBytes(4).contentEquals(cobHeader) }
         if (cob2) {
             return CaosVariant.C2
         }
     }
     val caosFiles = FilenameIndex.getAllFilesByExt(project, "cos", scope)
-    val c3Items = listOf(
-        "mv\\d{2}",
-        "absv",
-        "hist",
-        "pray",
-        "pat:",
-        "dull",
-        "monk",
-        "gtos",
-        "game",
-        "name",
-        "'",
-        "^\\s*attr",
-        "text",
-        "CAOS2Pray",
-        "mame",
-        "eame",
-        "avar",
-        "avel",
-        ">|<|="
-    ).joinToString("|")
-    val c1 = "clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr".toRegex(RegexOption.IGNORE_CASE)
-    val c2 = "cls2|va\\d{2}|ov\\d+|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr".toRegex(RegexOption.IGNORE_CASE)
-    val c3Regex = "($c3Items)".toRegex(RegexOption.IGNORE_CASE)
-    val stringsOrComments = "(\\[[^\\\\]*]|\"([^\"]|\\\\.)*\")|(^\\s*[*]([^#][^\\n]*|[^\\n]+)?)".toRegex()
+
+
     for (i in 0 until minOf(5, caosFiles.size)) {
         val file = try {
             caosFiles.random()?.contents
@@ -246,17 +227,17 @@ private fun variantInScope(project: Project, scope: GlobalSearchScope, filesByEx
         } catch (e: Exception) {
             return null
         }
-        val withoutQuotes = file.replace(stringsOrComments, " ")
-        if (!hasSpr && c3Regex.matches(withoutQuotes)) {
+        val withoutQuotes = file.replace(STRING_OR_COMMENTS, " ")
+        if (!hasSpr && C3_ITEMS.matches(withoutQuotes)) {
             return CaosVariant.DS
         }
         if (withoutQuotes.count("scrp ") > 1 && !withoutQuotes.contains("*#")) {
             return CaosVariant.DS
         }
-        if (!hasSpr && !hasC16 && c2.matches(withoutQuotes)) {
+        if (!hasSpr && !hasC16 && C2_ITEMS.matches(withoutQuotes)) {
             return CaosVariant.C2
         }
-        if (!hasS16 && !hasC16 && c1.matches(withoutQuotes)) {
+        if (!hasS16 && !hasC16 && C1_ITEMS.matches(withoutQuotes)) {
             return CaosVariant.C1
         }
     }
