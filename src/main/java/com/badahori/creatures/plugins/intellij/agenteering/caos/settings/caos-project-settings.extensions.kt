@@ -7,9 +7,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
-import com.badahori.creatures.plugins.intellij.agenteering.utils.count
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FilenameIndex
@@ -44,9 +43,11 @@ fun Module.inferVariantHard(): CaosVariant? {
     variant?.let {
         return it
     }
-
+    val getFilesWithExtension = { extension: String ->
+        getFilesWithExtension(project, this, this.myModuleFile, extension)
+    }
     val scope = getModuleScope(false)
-    return variantInScope(project, scope)
+    return variantInScope(project, scope, getFilesWithExtension)
 }
 
 /**
@@ -56,16 +57,132 @@ fun Project.inferVariantHard(): CaosVariant? {
     settings.defaultVariant?.let {
         return it
     }
+    val getFilesWithExtension = { extension: String ->
+        getFilesWithExtension(this, null, this.projectFile, extension)
+    }
     val scope = GlobalSearchScope.everythingScope(this)
-    return variantInScope(this, scope)
+    val variant = variantInScope(this, scope, getFilesWithExtension)
+    if (variant != null) {
+        this.settings.defaultVariant = variant
+    }
+    this.projectFile?.setCachedVariant(variant, false)
+    return variant
 }
+
+fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true): CaosVariant? {
+    cachedVariantExplicitOrImplicit?.let {
+        return it
+    }
+    val getFilesWithExtension = { extension: String ->
+        getFilesWithExtension(project, null, this, extension)
+    }
+    val isDirectory = isDirectory
+    val directory = if (isDirectory) this else parent
+    val variant: CaosVariant? = if (!isDirectory) {
+        inferVariantSimple()
+            ?: parent.inferVariantHard(project)
+    } else {
+        // Get without searching subdirectories
+        variantInScope(project, directoryScope(project, this, false), getFilesWithExtension)
+            // Get while searching subdirectories as fallback
+            ?: variantInScope(project, directoryScope(project, directory, true), getFilesWithExtension)
+    }
+    if (variant == null) {
+        // If we are allowed to search parent, do so
+        // This should only look one folder up
+        return if (searchParent) {
+            val parent = parent
+                ?: return null
+            parent.inferVariantHard(project, false)
+        } else {
+            null
+        }
+    }
+    setCachedVariant(variant, false)
+    directory.setCachedVariant(variant, false)
+    return variant
+}
+
+private fun VirtualFile.inferVariantSimple(): CaosVariant? {
+    val text = try {
+        contents.replace(STRING_OR_COMMENTS, " ")
+    } catch (e: Exception) {
+        return null
+    }
+    val matchC1 = C1_ITEMS.containsMatchIn(text)
+    val matchC2 = C2_ITEMS.containsMatchIn(text)
+    val matchDS = DS_ITEMS.containsMatchIn(text)
+    return if (matchC1 && !matchC2 && !matchDS) {
+        CaosVariant.C1
+    } else if (matchC2 && !matchC1 && !matchDS) {
+        CaosVariant.C2
+    } else if (matchDS && !matchC1 && !matchC2) {
+        CaosVariant.DS
+    } else {
+        null
+    }
+}
+
+private val STRING_OR_COMMENTS = "(\\[[^\\\\]*]|\"([^\"]|\\\\.)*\")|(^\\s*[*]([^#][^\\n]*|[^\\n]+)?)".toRegex()
+
+private val C1_ITEMS by lazy {
+    "clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr".toRegex(RegexOption.IGNORE_CASE)
+}
+private val C2_ITEMS by lazy {
+    "cls2|va\\d{2}|ov\\d+|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr".toRegex(RegexOption.IGNORE_CASE)
+}
+private val C3_ITEMS_ARRAY by lazy {
+    listOf(
+        "mv\\d{2}",
+        "absv",
+        "hist",
+        "pray",
+        "pat:",
+        "dull",
+        "monk",
+        "gtos",
+        "game",
+        "name",
+        "'",
+        "^\\s*attr",
+        "text",
+        "CAOS2Pray",
+        "mame",
+        "eame",
+        "avar",
+        "avel",
+        ">|<|="
+    )
+}
+
+private val C3_ITEMS by lazy {
+    C3_ITEMS_ARRAY.joinToString("|")
+        .let {
+            "($it)".toRegex(RegexOption.IGNORE_CASE)
+        }
+}
+
+private val DS_ITEMS by lazy {
+    (C3_ITEMS_ARRAY + arrayOf("net:", "soul")).joinToString("|")
+        .let {
+            "($it)".toRegex(RegexOption.IGNORE_CASE)
+        }
+}
+
 
 /**
  * Checks a project for its file types in a given scope,
  * And tries to determine what variant it could be
  */
-private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVariant? {
-    val hasSpr = FilenameIndex.getAllFilesByExt(project, "spr", scope).isNotEmpty()
+private fun variantInScope(project: Project, scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
+
+    val getFilesByExtension = { extension: String ->
+        filesByExtension(extension).filter {
+            scope.accept(it)
+        }
+    }
+
+    val hasSpr = getFilesByExtension("spr").isNotEmpty()
     val hasS16 = FilenameIndex.getAllFilesByExt(project, "s16", scope).isNotEmpty()
     val hasC16 = FilenameIndex.getAllFilesByExt(project, "c16", scope).isNotEmpty()
 
