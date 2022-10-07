@@ -59,10 +59,19 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 ?: myFile.cachedVariantExplicitOrImplicit.nullIfUnknown()
                 ?: (this.originalFile as? CaosScriptFile)
                     ?.myFile
-                    ?.cachedVariantExplicitOrImplicit
-                    .nullIfUnknown()
-                ?: (module ?: originalFile.module)?.variant.nullIfUnknown()
-                ?: project.settings.defaultVariant.nullIfUnknown()
+                    ?.let {
+                        it.cachedVariantExplicitOrImplicit
+                        .nullIfUnknown()
+                            ?: it.inferVariantHard(project, true)
+                    }
+                ?: (module ?: originalFile.module)?.let {
+                    it.variant.nullIfUnknown()
+                        ?: it.inferVariantHard()
+                }
+                ?: project.let {
+                    it.settings.defaultVariant.nullIfUnknown()
+                        ?: it.inferVariantHard()
+                }
         }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
@@ -232,24 +241,24 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 DumbService.isDumb(project) -> {
                     if (!application.isDispatchThread) {
                         invokeLater {
-                            DumbService.getInstance(project).runWhenSmart {
-                                if (project.isDisposed) {
-                                    return@runWhenSmart
-                                }
+//                            DumbService.getInstance(project).runWhenSmart {
+//                                if (project.isDisposed) {
+//                                    return@runWhenSmart
+//                                }
                                 application.runWriteAction {
                                     runQuickFormatInWriteAction(caosFile)
                                 }
-                            }
+//                            }
                         }
                     } else {
-                        DumbService.getInstance(project).runWhenSmart {
-                            if (project.isDisposed) {
-                                return@runWhenSmart
-                            }
+//                        DumbService.getInstance(project).runWhenSmart {
+//                            if (project.isDisposed) {
+//                                return@runWhenSmart
+//                            }
                             application.runWriteAction {
                                 runQuickFormatInWriteAction(caosFile)
                             }
-                        }
+//                        }
                     }
                 }
                 application.isDispatchThread -> {
