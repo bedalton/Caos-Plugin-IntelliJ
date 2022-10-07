@@ -8,9 +8,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptRequiresOwnrWithWarningInspection : LocalInspectionTool() {
+class CaosScriptRequiresOwnrWithWarningInspection : LocalInspectionTool(), DumbAware {
     override fun getDisplayName(): String = "Non-error generating use of OWNR object command without OWNR object"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")
     override fun getShortName(): String = "NoOwnrObjectWarning"

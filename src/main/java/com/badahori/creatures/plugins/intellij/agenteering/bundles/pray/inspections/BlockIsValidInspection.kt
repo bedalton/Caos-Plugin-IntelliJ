@@ -17,6 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PlainTextTokenTypes
 import com.intellij.psi.PsiElement
@@ -26,7 +27,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.max
 import kotlin.math.min
 
-open class PrayBlockIsValidInspection : LocalInspectionTool() {
+open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = AgentMessages.message("inspections.pray.block-is-valid.display-name")
     override fun getGroupDisplayName(): String = PRAY
@@ -88,7 +89,7 @@ open class PrayBlockIsValidInspection : LocalInspectionTool() {
     }
 }
 
-class PrayPlainTextBlockIsValidInspection: PrayBlockIsValidInspection() {
+class PrayPlainTextBlockIsValidInspection: PrayBlockIsValidInspection(), DumbAware {
     override fun getShortName(): String = "PRAYTXTBlockIsInvalid"
     override fun getGroupDisplayName(): String = PRAY
 
@@ -109,7 +110,7 @@ class PrayPlainTextBlockIsValidInspection: PrayBlockIsValidInspection() {
     }
 }
 
-class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection() {
+class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware {
     override fun getShortName(): String = "CAOS2PrayBlockIsInvalid"
     override fun getGroupDisplayName(): String = CAOS2Pray
 

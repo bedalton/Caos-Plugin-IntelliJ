@@ -13,9 +13,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class Caos2CobIsExpectedTagValueType : LocalInspectionTool() {
+class Caos2CobIsExpectedTagValueType : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Invalid property value"
     override fun getGroupDisplayName(): String = CAOS2Cob

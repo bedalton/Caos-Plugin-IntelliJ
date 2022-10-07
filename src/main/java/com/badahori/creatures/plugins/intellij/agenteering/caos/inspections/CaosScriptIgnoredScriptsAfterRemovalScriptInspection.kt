@@ -14,11 +14,12 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptIgnoredScriptsAfterRemovalScriptInspection : LocalInspectionTool() {
+class CaosScriptIgnoredScriptsAfterRemovalScriptInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspections.scripts-after-removal-script.display-name")
     override fun getGroupDisplayName(): String = CAOSScript

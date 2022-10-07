@@ -15,11 +15,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElementVisitor
 import kotlin.math.min
 
-class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool() {
+class Caos2CobHasRequiredFieldsInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String =
         AgentMessages.message("inspections.caos-to-compiler.required-fields.display-name")

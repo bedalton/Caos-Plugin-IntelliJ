@@ -16,10 +16,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
-class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
+class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String =
         AgentMessages.message("inspections.caos-to-compiler.file-type-check.display-name")

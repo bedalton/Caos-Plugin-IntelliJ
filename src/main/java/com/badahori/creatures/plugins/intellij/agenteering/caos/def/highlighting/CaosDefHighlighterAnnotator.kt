@@ -11,9 +11,10 @@ import com.intellij.psi.PsiElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosDefHighlighterAnnotator : Annotator {
+class CaosDefHighlighterAnnotator : Annotator, DumbAware {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         if (element !is CaosDefCompositeElement)
             return

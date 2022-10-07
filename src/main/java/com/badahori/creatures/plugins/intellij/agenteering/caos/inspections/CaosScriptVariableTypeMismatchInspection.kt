@@ -6,9 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVarToken
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptVariableTypeMismatchInspection : LocalInspectionTool() {
+class CaosScriptVariableTypeMismatchInspection : LocalInspectionTool(), DumbAware {
 
 
     override fun getDisplayName(): String = "Script variable type mismatch"

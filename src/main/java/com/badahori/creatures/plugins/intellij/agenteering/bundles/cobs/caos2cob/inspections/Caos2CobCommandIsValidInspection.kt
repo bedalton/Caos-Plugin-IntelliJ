@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 
+import bedalton.creatures.util.toArrayOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
@@ -14,10 +15,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
-class Caos2CobCommandIsValidInspection : LocalInspectionTool() {
+class Caos2CobCommandIsValidInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Invalid CAOS2Cob command"
     override fun getGroupDisplayName(): String = CAOS2Cob

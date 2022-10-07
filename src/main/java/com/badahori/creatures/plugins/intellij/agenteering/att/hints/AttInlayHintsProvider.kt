@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.hints
 
+import bedalton.creatures.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorModel
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttLanguage
@@ -14,7 +15,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.common.AbstractInlayH
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.Option

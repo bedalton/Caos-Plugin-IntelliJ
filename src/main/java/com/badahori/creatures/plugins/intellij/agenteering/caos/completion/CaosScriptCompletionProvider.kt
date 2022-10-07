@@ -1,17 +1,17 @@
 @file:Suppress("UnstableApiUsage")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import bedalton.creatures.util.*
+import bedalton.creatures.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.psiDirectory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.tagRequiresFileOfType
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
@@ -23,10 +23,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayCommand.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.case
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -43,12 +41,15 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.TokenType
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -57,7 +58,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
 import icons.CaosScriptIcons
-import com.intellij.psi.PsiWhiteSpace
 import java.nio.file.Path
 import kotlin.math.max
 import kotlin.math.min
@@ -66,11 +66,11 @@ import kotlin.math.min
  * Provides completions for CAOS script
  * Adds completions for commands, variables, subroutine names, and known values.
  */
-object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>() {
+@ExperimentalStdlibApi
+object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>(), DumbAware {
     private val IS_NUMBER = "^\\d+".toRegex()
     private val WHITESPACE_ONLY = "^\\s+$".toRegex()
 
-    @Suppress("SpellCheckingInspection")
     private val SKIP_VAR_NAMES = listOf("VARX", "OBVX", "MVXX", "OVXX", "VAXX")
 
     override fun addCompletions(
@@ -426,13 +426,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
      * Adds completion for subroutine names in a given SCRP element
      */
     private fun addSubroutineNames(element: PsiElement, resultSet: CompletionResultSet) {
-        val project = element.project
-        val file = element.containingFile
-        val scope = GlobalSearchScope.everythingScope(project)
-        val subroutines = CaosScriptSubroutineIndex.instance.getAllInScope(project, scope)
-            .filter {
-                file.name == (it.originalElement?.containingFile ?: it.containingFile)?.name
-            }
+        val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
+            ?: return
+        val subroutines = PsiTreeUtil.collectElementsOfType(parentScript, CaosScriptSubroutineName::class.java)
             .mapNotNull { it.name.nullIfEmpty() }
             .toSet()
         for (subr in subroutines) {
@@ -1012,6 +1008,7 @@ private val PrayChildElement.tagText: String?
     }
 
 
+@ExperimentalStdlibApi
 private fun addStringCompletions(
     project: Project,
     resultSet: CompletionResultSet,
@@ -1042,9 +1039,14 @@ private fun addStringCompletions(
             virtualFile
         )
     }
-    val indexedStrings = CaosScriptStringLiteralIndex
-        .instance
-        .getAllInScope(project, lock)
+    val indexedStrings = if (!DumbService.isDumb(project)) {
+        CaosScriptStringLiteralIndex
+            .instance
+            .getAllInScope(project, lock)
+    } else {
+        emptyList()
+    }
+
     val inFileStrings = PsiTreeUtil.collectElementsOfType(
         element.containingFile,
         CaosScriptQuoteStringLiteral::class.java
@@ -1071,7 +1073,7 @@ private fun addStringCompletions(
             .withLookupStrings(
                 listOf(
                     completionText,
-                    completionText.toLowerCase(),
+                    completionText.lowercase(),
                     completionText.matchCase(Case.CAPITAL_FIRST),
                     completionText.matchCase(case)
                 )
@@ -1157,8 +1159,13 @@ private fun addFileNameCompletionsForFileTypes(
 ) {
 
     // Requires file index, so stop completing if index is not yet built
-    if (project.isDisposed || DumbService.isDumb(project))
+    if (project.isDisposed || DumbService.isDumb(project) || !element.isValid) {
         return
+    }
+
+    val containingFile = element.containingFile?.virtualFile
+        ?: element.originalElement?.containingFile?.virtualFile
+        ?: return
 
     // Get module of containing file
     val module = element.module
@@ -1170,9 +1177,10 @@ private fun addFileNameCompletionsForFileTypes(
         parentDirectory?.let {
             GlobalSearchScopes.directoryScope(it, true)
         }
-    } else
+    } else {
         module?.moduleContentScope
             ?: GlobalSearchScope.projectScope(project)
+    }
 
     // Util function to search for files with an extension and scope if non-null
     val search: (extension: String) -> Collection<VirtualFile> = if (searchScope != null) {
@@ -1185,26 +1193,19 @@ private fun addFileNameCompletionsForFileTypes(
         })
     }
 
-    // Get project path for location context
-    val projectPath = project.basePath
-    val projectPathLength = projectPath?.length?.let { it + 1 } ?: 0
-
-    // Get module path for location context
-    val modulePath = module?.moduleFilePath
-    val modulePathLength = modulePath?.length?.let { it + 1 } ?: 0
-
+    val roots = module?.rootManager?.contentRoots?.toList()
+        ?: module?.myModuleFile?.toListOf()
+        ?: project.projectFile?.toListOf()
     // Util method to get the relative path between a file and its parent module or directory
-    val relativePath: (path: String?) -> String? = path@{ path: String? ->
+    val relativePath: (path: VirtualFile?) -> String? = path@{ path: VirtualFile? ->
         if (path == null) {
             return@path null
         }
-        if (modulePath != null && path != modulePath && path.startsWith(modulePath)) {
-            path.substring(modulePathLength)
-        } else if (projectPath != null && path != projectPath && path.startsWith(projectPath)) {
-            path.substring(projectPathLength)
-        } else {
-            null
+        val inModule = roots == null || roots.any { parent -> VfsUtil.isAncestor(parent, path, true) }
+        if (!inModule) {
+            return@path null
         }
+        VfsUtil.getRelativePath(path, containingFile)
     }
 
     // Get files as completion elements
@@ -1218,12 +1219,13 @@ private fun addFileNameCompletionsForFileTypes(
         .toSet()
         .map { file ->
             // Get the file name, dropping extension if necessary
-            val completionText = if (dropExtension)
+            val completionText = if (dropExtension) {
                 file.nameWithoutExtension
-            else
+            } else {
                 file.name
+            }
             // Get location string for autocomplete tail-text
-            val location = relativePath(file.parent?.path)?.let { " in $it" } ?: "..."
+            val location = relativePath(file.parent)?.let { " in $it" } ?: "..."
             LookupElementBuilder
                 .createWithSmartPointer(quoter(completionText), element)
                 .withLookupString(completionText)
@@ -1304,44 +1306,23 @@ private fun addUserDefinedNamedVarsOfType(
     project: Project,
     types: List<CaosScriptNamedGameVarType>,
     expandedSearch: Boolean,
-    element: PsiElement,
+    containerElement: PsiElement,
     quoter: (String) -> String,
 ) {
 
     if (project.isDisposed || DumbService.isDumb(project))
         return
-    // If index is built, get user defined named variables
-    // Get module of containing file
-    val module = element.module
 
-    // Get search scope
-    // If expanded search is false, only get files in the parent directory
-    val searchScope = if (!expandedSearch) {
-        val parentDirectory = element.psiDirectory
-        parentDirectory?.let {
-            GlobalSearchScopes.directoryScope(it, true)
-        }
-            ?: module?.moduleContentScope
-            ?: GlobalSearchScope.projectScope(project)
-    } else {
-        module?.moduleContentScope
-            ?: GlobalSearchScope.projectScope(project)
-    }
-    val vars = CaosScriptNamedGameVarIndex.instance.getAllInScope(project, searchScope)
-        .filter { gameVar: CaosScriptNamedGameVar ->
-            gameVar.parent is CaosScriptLvalue &&
-                    gameVar.varType in types &&
-                    gameVar.rvalue?.text?.trim()?.startsWith('"') == true &&
-                    !PsiTreeUtil.isAncestor(gameVar, element, false)
-        }
-        .map { gameVar ->
-            gameVar.name
-        }
-        .distinct()
+    val vars = getNamedGameVarNames(
+        project,
+        containerElement,
+        expandedSearch,
+        types,
+    )
         .map {
             LookupElementBuilder
                 .create(quoter(it))
-                .withPsiElement(element)
+                .withPsiElement(containerElement)
                 .withLookupStrings(
                     listOf(
                         quoter(it),
@@ -1356,6 +1337,7 @@ private fun addUserDefinedNamedVarsOfType(
         }
     resultSet.addAllElements(vars)
 }
+
 
 internal fun quoter(text: String, defaultQuote: Char = '"'): (text: String) -> String {
     val actualOpenQuote = text.firstOrNull()?.let {

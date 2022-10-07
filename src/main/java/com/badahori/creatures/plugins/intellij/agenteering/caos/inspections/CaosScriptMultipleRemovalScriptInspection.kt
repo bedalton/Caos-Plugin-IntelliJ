@@ -12,11 +12,12 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptMultipleRemovalScriptInspection : LocalInspectionTool() {
+class CaosScriptMultipleRemovalScriptInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspections.multiple-removal-scripts.display-name")
     override fun getGroupDisplayName(): String = CAOSScript

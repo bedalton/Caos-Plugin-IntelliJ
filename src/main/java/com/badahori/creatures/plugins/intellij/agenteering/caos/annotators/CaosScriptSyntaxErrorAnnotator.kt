@@ -21,6 +21,7 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -29,7 +30,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.abs
 import kotlin.math.floor
 
-class CaosScriptSyntaxErrorAnnotator : Annotator {
+class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element.isOrHasParentOfType(CaosDefCompositeElement::class.java))

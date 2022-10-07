@@ -12,10 +12,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 
-class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool() {
+class Caos2CobOnlyOneAgentNameInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Only one agent name"
     override fun getGroupDisplayName(): String = CAOS2Cob

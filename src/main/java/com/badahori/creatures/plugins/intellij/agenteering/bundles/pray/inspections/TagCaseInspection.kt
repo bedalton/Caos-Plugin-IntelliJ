@@ -17,8 +17,9 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import bedalton.creatures.util.stripSurroundingQuotes
+import com.intellij.openapi.project.DumbAware
 
-class Caos2PrayTagCaseInspection : LocalInspectionTool() {
+class Caos2PrayTagCaseInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupPath(): Array<String> = CAOS2Path
     override fun getGroupDisplayName(): String = CAOS2Pray
@@ -38,7 +39,7 @@ class Caos2PrayTagCaseInspection : LocalInspectionTool() {
 }
 
 
-class PrayTagCaseInspection : LocalInspectionTool() {
+class PrayTagCaseInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupPath(): Array<String> = CAOS2Path
     override fun getGroupDisplayName(): String = PRAY
