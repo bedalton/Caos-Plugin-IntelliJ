@@ -473,6 +473,9 @@ internal class AttEditorModel(
     }
 
     fun getFoldedLines(): List<Int> {
+        if (replicateAttsToDuplicateSprites == false) {
+            return emptyList()
+        }
         mFoldedLines?.let {
             return it
         }
@@ -486,6 +489,9 @@ internal class AttEditorModel(
     }
 
     internal fun getReplications(): Map<Int, List<Int>> {
+        if (replicateAttsToDuplicateSprites == false) {
+            return emptyMap()
+        }
         mReplications?.let {
             return it
         }
