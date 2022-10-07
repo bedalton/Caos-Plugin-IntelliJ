@@ -86,7 +86,7 @@ object AttAutoFill {
         }
         val (expectedLines, expectedPoints) = getExpected(nameWithoutExtension, variant)
             ?: return null
-        val line = "0 ".repeat(expectedPoints * 2).trim() + "\r\n"
+        val line = "0 ".repeat(expectedPoints * 2).trim() + "\n"
         return line.repeat(expectedLines)
     }
 
