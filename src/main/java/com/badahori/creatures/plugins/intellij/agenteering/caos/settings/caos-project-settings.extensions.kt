@@ -9,9 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
-import com.badahori.creatures.plugins.intellij.agenteering.utils.count
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -48,9 +47,11 @@ fun Module.inferVariantHard(): CaosVariant? {
     variant?.let {
         return it
     }
-
+    val getFilesWithExtension = { extension: String ->
+        getFilesWithExtension(project, this, this.myModuleFile, extension)
+    }
     val scope = getModuleScope(false)
-    return variantInScope(project, scope)
+    return variantInScope(project, scope, getFilesWithExtension)
 }
 
 /**
@@ -60,8 +61,11 @@ fun Project.inferVariantHard(): CaosVariant? {
     settings.defaultVariant?.let {
         return it
     }
+    val getFilesWithExtension = { extension: String ->
+        getFilesWithExtension(this, null, this.projectFile, extension)
+    }
     val scope = GlobalSearchScope.everythingScope(this)
-    val variant = variantInScope(this, scope)
+    val variant = variantInScope(this, scope, getFilesWithExtension)
     if (variant != null) {
         this.settings.defaultVariant = variant
     }
@@ -73,6 +77,9 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
     cachedVariantExplicitOrImplicit?.let {
         return it
     }
+    val getFilesWithExtension = { extension: String ->
+        getFilesWithExtension(project, null, this, extension)
+    }
     val isDirectory = isDirectory
     val directory = if (isDirectory) this else parent
     val variant: CaosVariant? = if (!isDirectory) {
@@ -80,9 +87,9 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
             ?: parent.inferVariantHard(project)
     } else {
         // Get without searching subdirectories
-        variantInScope(project, directoryScope(project, this, false))
+        variantInScope(project, directoryScope(project, this, false), getFilesWithExtension)
             // Get while searching subdirectories as fallback
-            ?: variantInScope(project, directoryScope(project, directory, true))
+            ?: variantInScope(project, directoryScope(project, directory, true), getFilesWithExtension)
     }
     if (variant == null) {
         // If we are allowed to search parent, do so
@@ -171,8 +178,15 @@ private val DS_ITEMS by lazy {
  * Checks a project for its file types in a given scope,
  * And tries to determine what variant it could be
  */
-private fun variantInScope(project: Project, scope: GlobalSearchScope): CaosVariant? {
-    val hasSpr = FilenameIndex.getAllFilesByExt(project, "spr", scope).isNotEmpty()
+private fun variantInScope(project: Project, scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
+
+    val getFilesByExtension = { extension: String ->
+        filesByExtension(extension).filter {
+            scope.accept(it)
+        }
+    }
+
+    val hasSpr = getFilesByExtension("spr").isNotEmpty()
     val hasS16 = FilenameIndex.getAllFilesByExt(project, "s16", scope).isNotEmpty()
     val hasC16 = FilenameIndex.getAllFilesByExt(project, "c16", scope).isNotEmpty()
 

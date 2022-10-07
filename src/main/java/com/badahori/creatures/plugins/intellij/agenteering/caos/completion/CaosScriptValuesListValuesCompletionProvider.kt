@@ -16,7 +16,9 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import icons.CaosScriptIcons
@@ -35,7 +37,7 @@ object CaosScriptValuesListValuesCompletionProvider {
         resultSet: CompletionResultSet,
         variant: CaosVariant,
         argument: CaosScriptArgument,
-        isExtendedCompletion:Boolean
+        isExtendedCompletion: Boolean,
     ) {
         val containingCommand = (argument.parent as? CaosScriptCommandElement)
             ?: return
@@ -133,6 +135,7 @@ object CaosScriptValuesListValuesCompletionProvider {
                 resultSet,
                 argument.project,
                 argument.containingFile?.module,
+                argument.containingFile?.virtualFile,
                 variant.isOld,
                 parameterStruct.type,
                 valuesList.name
@@ -152,7 +155,7 @@ object CaosScriptValuesListValuesCompletionProvider {
         variant: CaosVariant,
         case: Case,
         family: Int?,
-        addSpace: Boolean
+        addSpace: Boolean,
     ) {
 
         // Locate genus list for variant
@@ -187,7 +190,13 @@ object CaosScriptValuesListValuesCompletionProvider {
                 lookupElement = lookupElement
                     .withInsertHandler(AddSpaceInsertHandler(true))
             }
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 900.0))
+            resultSet.addElement(
+                PrioritizedLookupElement.withPriority(
+                    lookupElement.withAutoCompletionPolicy(
+                        AutoCompletionPolicy.NEVER_AUTOCOMPLETE
+                    ), 900.0
+                )
+            )
         }
     }
 
@@ -200,12 +209,17 @@ object CaosScriptValuesListValuesCompletionProvider {
         case: Case,
         equalityExpression: CaosScriptEqualityExpressionPrime,
         expression: CaosScriptRvalue,
-        isExtendedCompletion: Boolean
+        isExtendedCompletion: Boolean,
     ) {
         val valuesList = equalityExpression.getValuesList(variant, expression)
         if (valuesList == null) {
             if (isExtendedCompletion) {
-                addAllListValues(resultSet, variant, case, addSpace = expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp)
+                addAllListValues(
+                    resultSet,
+                    variant,
+                    case,
+                    addSpace = expression.getPreviousNonEmptyNode(false) !is CaosScriptEqOp
+                )
             }
             return
         }
@@ -215,7 +229,13 @@ object CaosScriptValuesListValuesCompletionProvider {
     /**
      * Actually add list values from previously determined lists
      */
-    private fun addListValues(resultSet: CompletionResultSet, list: CaosValuesList, case: Case, addSpace: Boolean, prefixValueWithSpace: Boolean) {
+    private fun addListValues(
+        resultSet: CompletionResultSet,
+        list: CaosValuesList,
+        case: Case,
+        addSpace: Boolean,
+        prefixValueWithSpace: Boolean,
+    ) {
         val values = list.values.let { values ->
             if (values.all { it.intValue != null })
                 values.sortedBy { it.intValue }
@@ -258,14 +278,20 @@ object CaosScriptValuesListValuesCompletionProvider {
                 lookupElement = lookupElement
                     .withInsertHandler(SpaceAfterInsertHandler)
             }
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), 900.0))
+            resultSet.addElement(
+                PrioritizedLookupElement.withPriority(
+                    lookupElement.withAutoCompletionPolicy(
+                        AutoCompletionPolicy.NEVER_AUTOCOMPLETE
+                    ), 900.0
+                )
+            )
         }
     }
 
     /**
      * Actually add list values from previously determined lists
      */
-    private fun addAllListValues(resultSet: CompletionResultSet, variant:CaosVariant, case: Case, addSpace: Boolean) {
+    private fun addAllListValues(resultSet: CompletionResultSet, variant: CaosVariant, case: Case, addSpace: Boolean) {
         for (list in CaosLibs[variant].valuesLists) {
             val listName = list.name
             val values = list.values.let { values ->
@@ -295,7 +321,13 @@ object CaosScriptValuesListValuesCompletionProvider {
                     lookupElement = lookupElement
                         .withInsertHandler(SpaceAfterInsertHandler)
                 }
-                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE), -100.0))
+                resultSet.addElement(
+                    PrioritizedLookupElement.withPriority(
+                        lookupElement.withAutoCompletionPolicy(
+                            AutoCompletionPolicy.NEVER_AUTOCOMPLETE
+                        ), -100.0
+                    )
+                )
             }
         }
     }
@@ -308,9 +340,10 @@ private fun addFileNameCompletions(
     resultSet: CompletionResultSet,
     project: Project,
     module: Module?,
+    virtualFile: VirtualFile?,
     isOldVariant: Boolean,
     parameterType: CaosExpressionValueType,
-    valuesListName: String
+    valuesListName: String,
 ) {
     // RValue requires a file type, so fill in filenames with matching types
     // ValuesList name is in format 'File.{extension}' or 'File.{extension/extension}'
@@ -319,13 +352,9 @@ private fun addFileNameCompletions(
     // Flat map is necessary for CV-SM, as they can take C16 or S16
     val allFiles = types
         .flatMap { fileExtensionTemp ->
-            val fileExtension = fileExtensionTemp.lowercase()
-            val searchScope =
-                module?.let { GlobalSearchScope.moduleScope(it) }
-                    ?: GlobalSearchScope.projectScope(project)
-            FilenameIndex.getAllFilesByExt(project, fileExtension, searchScope).toListOf()
+            getFilesWithExtension(project, module, virtualFile, fileExtensionTemp)
         }
-        .flatMap { files -> files.map { it.nameWithoutExtension } }
+        .map { it.nameWithoutExtension }
     // Loop through all files and format them as needed.
     for (file in allFiles) {
         val isToken = parameterType == CaosExpressionValueType.TOKEN
@@ -356,7 +385,7 @@ private fun addFileNameCompletions(
         }
         resultSet.addElement(
             lookupElement
-            .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
+                .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
         )
     }
 }

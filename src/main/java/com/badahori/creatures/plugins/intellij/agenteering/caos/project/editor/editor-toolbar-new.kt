@@ -31,6 +31,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -61,7 +62,8 @@ import javax.swing.*
  * An editor notification provider
  * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
-class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
+class CaosScriptEditorToolbar(val project: Project)
+    : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
@@ -140,22 +142,22 @@ internal fun createCaosScriptHeaderComponent(
         return null
     }
 
-    if (DumbService.isDumb(project)) {
-        DumbService.getInstance(project).runWhenSmart {
-            if (project.isDisposed) {
-                return@runWhenSmart
-            }
-            runReadAction {
-                populate(project, fileEditor, virtualFile, pointer, toolbar)
-            }
-        }
-    } else {
+//    if (DumbService.isDumb(project)) {
+//        DumbService.getInstance(project).runWhenSmart {
+//            if (project.isDisposed) {
+//                return@runWhenSmart
+//            }
+//            runReadAction {
+//                populate(project, fileEditor, virtualFile, pointer, toolbar)
+//            }
+//        }
+//    } else {
         invokeLater {
             runReadAction {
                 populate(project, fileEditor, virtualFile, pointer, toolbar)
             }
         }
-    }
+//    }
     return toolbar
 }
 
@@ -614,17 +616,17 @@ fun setWhenReady(
         return
     }
 
-    if (DumbService.isDumb(project)) {
-        DumbService.getInstance(project).runWhenSmart {
-            if (project.isDisposed) {
-                return@runWhenSmart
-            }
-            runWriteAction {
-                setWhenReady(project, pointer, setVariant, setInitialInjector)
-            }
-        }
-        return
-    }
+//    if (DumbService.isDumb(project)) {
+//        DumbService.getInstance(project).runWhenSmart {
+//            if (project.isDisposed) {
+//                return@runWhenSmart
+//            }
+//            runWriteAction {
+//                setWhenReady(project, pointer, setVariant, setInitialInjector)
+//            }
+//        }
+//        return
+//    }
 
     val file = pointer.element
         ?: return
