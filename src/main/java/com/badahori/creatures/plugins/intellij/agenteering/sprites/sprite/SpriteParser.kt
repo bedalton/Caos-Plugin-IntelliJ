@@ -24,6 +24,9 @@ import java.awt.image.BufferedImage
 
 object SpriteParser {
 
+    private const val BLK_ASYNC_DEFAULT = true
+
+
     @JvmStatic
     fun parse(virtualFile: VirtualFile): SpriteFileHolder {
         return parse(virtualFile, null, null)
@@ -106,7 +109,7 @@ object SpriteParser {
                 .toListOf()
             C16 -> C16SpriteFile(stream, false, progressEvery, callback)
                 .toListOf()
-            BLK -> BlkSpriteFile(stream, progressEvery, callback)
+            BLK -> BlkSpriteFile(stream, BLK_ASYNC_DEFAULT, progressEvery, callback)
                 .toListOf()
             else -> throw SpriteParserException("Invalid image file extension found")
         }.let { spriteSets ->
@@ -136,7 +139,7 @@ object SpriteParser {
         }
         val extension = spriteFile.extension?.lowercase()
             ?: defaultVariant
-        if (extension !in SpriteParser.VALID_SPRITE_EXTENSIONS) {
+        if (extension !in VALID_SPRITE_EXTENSIONS) {
             return defaultVariant
         }
         if (extension == "spr") {

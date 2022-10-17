@@ -793,18 +793,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 DumbService.getInstance(project).runWhenSmart(() -> redrawActual(theParts));
                 wasHidden = true;
             }
-//            final VirtualFile path = rootPath;
-//            if (path != null) {
-//                ApplicationManager.getApplication().executeOnPooledThread(() -> model.setImmediate(path, baseBreed));
-//            } else {
-//                LOGGER.info("Cannot fetch files before path is set"); //ApplicationManager.getApplication().executeOnPooledThread(model::updateFiles);
-//            }
             return;
         }
 
-        ApplicationManager.getApplication().runReadAction(() -> {
-            model.requestRender(theParts);
-        });
+        ApplicationManager.getApplication().runReadAction(() -> model.requestRender(theParts));
     }
 
     @Override
@@ -1446,7 +1438,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             } else {
                 bodyDirection.setSelectedIndex((int) Math.floor(pose / 4.0));
             }
-            LOGGER.info("Setting part <Body> to " + bodyDirection.getSelectedIndex());
         }
         JComboBox<String> comboBox = getComboBoxForPart(charPart);
         if (comboBox == null) {
@@ -1484,7 +1475,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     private void createUIComponents() {
-        imageHolder = new PoseRenderedImagePanel(project.getProjectFilePath());
+        imageHolder = new PoseRenderedImagePanel(project, project.getProjectFilePath());
     }
 
     public void addPoseChangeListener(final boolean updateImmediately, final PoseChangeListener listener) {
@@ -2226,10 +2217,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         updateBreedsList();
         initOpenRelatedComboBox();
         model.requestRender(ALL_PARTS);
-    }
-
-    public boolean isRendering() {
-        return model.getRendering();
     }
 
     public interface PoseChangeListener {

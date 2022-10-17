@@ -267,6 +267,12 @@
         serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent"
     />
 
+
+    <applicationService
+        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService"
+        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsComponent"
+    />
+
     <filePropertyPusher
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher" />
     <filePropertyPusher
