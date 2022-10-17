@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -14,7 +15,7 @@ import com.pretty_tools.dde.client.DDEClientEventListener
 /**
  * Class for managing a C1/C2 DDE CAOS connection
  */
-internal class DDEConnection(private val url: String, private val variant: CaosVariant, private val displayName: String) : CaosConnection {
+internal class DDEConnection(private val variant: CaosVariant, private val data: GameInterfaceName) : CaosConnection {
 
     override val supportsJect: Boolean
         get() = false
@@ -23,7 +24,18 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
         throw Exception("JECT not supported by DDE connection")
     }
 
+    private val serveName: String get() = data.gameName?.let {
+        if (it.lowercase().startsWith("dde:")) {
+            it.substring(4)
+        } else {
+            it
+        }
+    } ?: VIVARIUM
+
     override fun inject(caos: String): InjectionStatus {
+        if (!OsUtil.isWindows) {
+            return NOT_WINDOWS_STATUS
+        }
         val processedCaos = CaosScriptsQuickCollapseToLine.collapse(variant, caos)
         // Remove bad prefix for CAOS2Cob injection
         if (processedCaos.startsWith("iscr") || processedCaos.startsWith("rscr"))
@@ -106,12 +118,12 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
             }
         }
         return try {
-            conn.connect(url, topic)
+            conn.connect(serveName, topic)
             connection = conn
             conn
         } catch (e: Exception) {
             e.printStackTrace()
-            LOGGER.severe("Connection to the vivarium failed. Ensure $displayName is running. Error: " + e.message)
+            LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running. Error: " + e.message)
             null
         }
     }
@@ -119,6 +131,7 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
     companion object {
         private const val topic: String = "IntelliJCaosInjector"
         private var connection: DDEClientConversation? = null
+        private const val VIVARIUM = "Vivarium"
     }
 
 }

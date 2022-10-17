@@ -29,6 +29,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.notification.*
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowId
 import javax.swing.Icon
@@ -190,6 +191,22 @@ data class CaosNotification internal constructor(
         return this.copy(
             actions = actions + action
         )
+    }
+
+    fun addAction(text: String, action: (e: AnActionEvent) -> Unit) {
+        addAction(object: AnAction(text) {
+            override fun actionPerformed(e: AnActionEvent) {
+                action(e)
+            }
+        })
+    }
+
+    fun addAction(text: String, description: String, icon: Icon? = null, action: (e: AnActionEvent) -> Unit) {
+        addAction(object: AnAction(text, description, icon) {
+            override fun actionPerformed(e: AnActionEvent) {
+                action(e)
+            }
+        })
     }
 
     fun addActions(vararg actions: AnAction): CaosNotification {

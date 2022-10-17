@@ -48,8 +48,6 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
-
     implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
         excludeKotlin()
     }
@@ -78,8 +76,14 @@ dependencies {
         excludeKotlin()
     }
 
+    testImplementation("junit:junit:4.13.2")
+
 
 }
+tasks.test {
+    useJUnit()
+}
+
 sourceSets.main {
     java.srcDirs("src/main/java", "gen", "src/main/gen")
 }

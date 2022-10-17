@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -197,30 +197,22 @@ object Injector {
      */
     private fun getConnectionObject(variantIn: CaosVariant, gameInterfaceName: GameInterfaceName): CaosConnection {
         val theVariant = gameInterfaceName.variant ?: variantIn
-        val injectUrl = gameInterfaceName.url.let {
-            if (it.startsWith("http"))
-                it
-            else
-                null
-        }
-        if (injectUrl != null) {
-            return PostConnection(injectUrl, theVariant)
-        }
 
-        var gameUrl = gameInterfaceName.url
-
-        if (theVariant.isOld) {
-            if (!gameUrl.startsWith("dde:")) {
-                gameUrl = "dde:$gameUrl"
-            }
+        return when(gameInterfaceName) {
+            is NativeInjectorInterface -> getNativeConnection(theVariant, gameInterfaceName)
+            is WineInjectorInterface -> WineConnection(theVariant, gameInterfaceName)
+            is PostInjectorInterface -> PostConnection(theVariant, gameInterfaceName)
+            is TCPInjectorInterface -> TCPConnection(theVariant, gameInterfaceName)
+            is CorruptInjectorInterface -> throw CaosConnectionException("Injector interface is invalid")
         }
-        if (gameUrl.startsWith("dde:")) {
-            gameUrl = gameUrl.substring(4).trim()
-            return DDEConnection(gameUrl, theVariant, gameInterfaceName.name)
-        }
+    }
 
-        LOGGER.info("Creating C3 Injector connection")
-        return C3Connection(gameInterfaceName)
+    private fun getNativeConnection(variant: CaosVariant, gameInterfaceName: GameInterfaceName): CaosConnection {
+        return if (variant.isOld) {
+            DDEConnection(variant, gameInterfaceName)
+        } else {
+            C3Connection(variant, gameInterfaceName)
+        }
     }
 
     /**
@@ -276,4 +268,13 @@ internal sealed class InjectionStatus {
     data class Ok(val response: String) : InjectionStatus()
     data class Bad(val error: String) : InjectionStatus()
     data class BadConnection(val error: String) : InjectionStatus()
+
+    data class ActionNotSupported(val error: String): InjectionStatus()
 }
+
+
+internal val NOT_WINDOWS_STATUS = InjectionStatus.ActionNotSupported(
+    CaosBundle.message("caos.injector.errors.only-windows")
+)
+
+internal const val DEBUG_INJECTOR = "bedalton.creatures.intellij.log.DEBUG_INJECTOR"

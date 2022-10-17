@@ -4,19 +4,14 @@ import bedalton.creatures.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectorActionGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
+import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.ProjectTopics
@@ -32,7 +27,6 @@ import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
@@ -231,13 +225,13 @@ private fun populate(
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
-    var injectorList: List<GameInterfaceName> = project.settings.gameInterfaceNames
+    var injectorList: List<GameInterfaceName> = CaosApplicationSettingsService.getInstance().gameInterfaceNames
     val updateInjectors: (variant: CaosVariant?, GameInterfaceName?) -> Unit = update@{ variant, newGameInterface ->
 
         val newActions: List<AnAction> = InjectorActionGroup
             .getActions(pointer)
             .filter {
-                it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName.url.startsWith("http"))
+                it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface)
             }
         val injectorActions = newActions.filterIsInstance<CaosInjectorAction>()
         val injectorNames = injectorActions.map { it.gameInterfaceName }
@@ -404,7 +398,7 @@ private fun populate(
         variantPanel.isVisible = false
     }
 
-    CaosProjectSettingsComponent.addSettingsChangedListener(fileEditor) { _, settings ->
+    CaosApplicationSettingsComponent.addSettingsChangedListener(fileEditor) { _, settings ->
         if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
             return@addSettingsChangedListener
         injectorList = settings.gameInterfaceNames
@@ -418,7 +412,7 @@ private fun populate(
             val newActions: Array<AnAction> = InjectorActionGroup
                 .getActions(pointer)
                 .filter {
-                    it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName.url.startsWith("http"))
+                    it !is CaosInjectorAction || OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface
                 }
                 .toTypedArray()
             injectorModel.removeAllElements()

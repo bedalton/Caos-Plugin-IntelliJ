@@ -1,20 +1,21 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import java.io.File
 
 internal object FileInjectorUtil {
 
-    internal suspend fun inject(
+    internal fun inject(
         project: Project,
         connection: CaosConnection,
         caosFile: CaosScriptFile,
@@ -63,7 +64,7 @@ internal object FileInjectorUtil {
         return injectScriptBlocks(project, connection, scriptBlocks)
     }
 
-    internal suspend fun inject(
+    internal fun inject(
         project: Project,
         connection: CaosConnection,
         scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
@@ -81,7 +82,7 @@ internal object FileInjectorUtil {
         return injectScriptBlocks(project, connection, scriptBlocks)
     }
 
-    private suspend fun injectScriptBlocks(
+    private fun injectScriptBlocks(
         project: Project,
         connection: CaosConnection,
         scriptBlocks: Map<JectScriptType, List<CaosScriptScriptElement>>,
@@ -114,19 +115,27 @@ internal object FileInjectorUtil {
                             responses.add(injectionStatus.response)
                         }
                     }
+
                     is InjectionStatus.Bad -> {
                         error = injectionStatus.copy(
                             error = "Inject ${script.getDescriptor()} failed with error:\n${injectionStatus.error}"
                         )
                     }
+
                     is InjectionStatus.BadConnection -> {
                         error = injectionStatus.copy(
                             error = "Inject ${script.getDescriptor()} failed with bad connection error:\n${injectionStatus.error}"
                         )
                     }
+
+                    is InjectionStatus.ActionNotSupported ->
+                        error = injectionStatus.copy(
+                            error = "Cannot inject ${script.getDescriptor()}. Injector action is not supported;\n\t${injectionStatus.error}"
+                        )
                 }
-                if (error != null)
+                if (error != null) {
                     throw CaosInjectorExceptionWithStatus(error)
+                }
             }
         }
         return InjectionStatus.Ok(
@@ -251,10 +260,12 @@ private fun CaosScriptScriptElement.getDescriptor(): String {
 
 internal val c1eElementsRegex =
     "tele|vrsn|xvec|yvec|say#|say\$|aim:|setv\\s+(?:clas|cls2|actv|attr|norn)|\\[[a-zA-Z0-9]*[a-zA-Z_\$\\-+#@!][^]]*]|var[0-9]|obv[0-9]|objp|doif\\s+(targ|norn|objp)\\s+(eq|ne)\\s+0|\\s+(?:bt|bf)|bbd:|dde:".toRegex(
-        setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
+        setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE)
+    )
 internal val c2eElementsRegex =
     "(\"(?:[^\"]|\\.)*\"|'(?:[^\'\\\\]|\\\\.)'|\\d+\\.\\d+|\\s\\.\\d+|mv[0-9]{2}|(?:do|el)if.+?(?:<>|<|>|<=|>=|=)|(?:eq|ne|<>|=)\\s+null|\\s+(?:seta|sets|adds))|net:|prt:".toRegex(
-        setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
+        setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE)
+    )
 
 /**
  * Format the contents of a code block element
@@ -318,5 +329,104 @@ private fun isC1e(variant: CaosVariant?, codeBlock: String?): Boolean? {
     } else {
         // Neither check returned a positive result, return null so caller can deal with it
         null
+    }
+}
+
+/**
+ * COPY caos to a given interfaces Bootstrap directory
+ */
+internal fun copyForJect(variant: CaosVariant?, gameInterfaceName: GameInterfaceName, caos: String): File? {
+
+    if (variant?.isNotOld != true) {
+        return null
+    }
+
+    if (gameInterfaceName is IsNet) {
+        return null
+    }
+
+    val tempFile = try {
+        getJectTempFile(gameInterfaceName)
+    } catch (_: Exception) {
+        null
+    } ?: return null
+
+    return try {
+        tempFile.writeText(caos)
+        tempFile
+    } catch (_: Exception) {
+        try {
+            tempFile.delete()
+        } catch (_: Exception) {
+        }
+        null
+    }
+}
+
+
+private fun getJectTempFile(gameInterfaceName: GameInterfaceName): File? {
+    val bootstrap = getBootstrapDirectory(gameInterfaceName)
+        ?: return null
+    val tempDirectory = File(bootstrap, "temp")
+    if (!tempDirectory.exists()) {
+        tempDirectory.mkdir()
+    }
+    var kicks = 0
+    while (kicks++ < 30) {
+        val temp = File(tempDirectory, randomString(4) + "cosx")
+        if (!temp.exists()) {
+            temp.createNewFile()
+            return temp
+        }
+    }
+    return null
+}
+
+private fun getBootstrapDirectory(gameInterfaceName: GameInterfaceName): File? {
+    val gameDirectory = gameInterfaceName.path
+        ?: return null
+    var root = File(gameDirectory)
+    if (!root.exists()) {
+        if (gameInterfaceName is WineInjectorInterface) {
+            root = getWineFallbackPath(root, gameInterfaceName, gameDirectory)
+                ?: return null
+        } else {
+            return null
+        }
+    }
+
+    val bootstrap = if (root.name like "Bootstrap") {
+        root
+    } else {
+        File(root, "Bootstrap")
+    }
+    if (!bootstrap.exists()) {
+        return null
+    }
+    return bootstrap
+}
+
+private fun getWineFallbackPath(root: File, gameInterfaceName: WineInjectorInterface, gameDirectory: String): File? {
+    try {
+        val prefix = File(gameInterfaceName.prefix)
+        if (!prefix.exists()) {
+            return null
+        }
+        val parts = "([a-zA-Z]):[\\\\/](.+)".toRegex()
+            .matchEntire(gameDirectory)
+            ?.groupValues
+            ?.drop(1)
+            ?: return null
+        val drive = File(root, "drive_${parts[0].lowercase()}")
+        if (!drive.exists()) {
+            return null
+        }
+        val temp = File(drive, parts[1])
+        if (!temp.exists()) {
+            return null
+        }
+        return temp
+    } catch (_: Exception) {
+        return null
     }
 }

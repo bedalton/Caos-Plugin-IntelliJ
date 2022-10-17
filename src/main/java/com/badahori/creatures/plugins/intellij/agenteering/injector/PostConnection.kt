@@ -15,26 +15,18 @@ import java.net.URL
  * Connection class for managing POST based CAOS injection
  * Requires CAOS server executable to be running to handle caos injection post requests
  */
-internal class PostConnection(urlString: String, variant: CaosVariant?) : CaosConnection {
+internal class PostConnection(private val variant: CaosVariant?, private val gameInterfaceName: PostInjectorInterface) : CaosConnection {
 
     override val supportsJect: Boolean
         get() = false
 
-    private val url: URL by lazy {
-        val path = if (urlString.contains("*")) {
-            if (variant == null)
-                throw Exception("Cannot use dynamic POST route. Variant is null")
-            urlString.replace("*", variant.code)
-        } else
-            urlString
-
-        if (path.startsWith("http"))
-            URL(path)
-        else
-            URL("http://$path")
+    private val url: URL? by lazy {
+        gameInterfaceName.getURL(variant)
     }
 
     override fun inject(caos: String): InjectionStatus {
+        val url = url
+            ?: return InjectionStatus.BadConnection("Invalid URL for POST http connection")
         val connection: HttpURLConnection = try {
             url.openConnection() as HttpURLConnection
         } catch (e: IOException) {

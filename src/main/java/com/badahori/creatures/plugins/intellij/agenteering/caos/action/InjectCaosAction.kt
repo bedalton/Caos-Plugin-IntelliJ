@@ -8,12 +8,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.injectionCheckDisabled
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
-import com.badahori.creatures.plugins.intellij.agenteering.injector.postInfo
+import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.icons.AllIcons
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -33,30 +29,31 @@ import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-@Suppress("ComponentNotRegistered", "unused")
-internal class InjectCaosAction : AnAction(
-    "Inject CAOS",
-    "Inject CAOS into game",
-    AllIcons.Toolwindows.ToolWindowRun
-) {
-
-    override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-            ?: return
-        val files = e.files
-        if (files.isEmpty())
-            return
-        if (files.size > 1) {
-            throw Exception("Only one file can be injected at a time")
-        }
-        val caosFile = files[0].getPsiFile(project) as? CaosScriptFile
-            ?: return
-        val variant = caosFile.variant
-            ?: return
-
-        caosInject(project, variant, GameInterfaceName(variant), caosFile)
-    }
-}
+//
+//@Suppress("ComponentNotRegistered", "unused")
+//internal class InjectCaosAction : AnAction(
+//    "Inject CAOS",
+//    "Inject CAOS into game",
+//    AllIcons.Toolwindows.ToolWindowRun
+//) {
+//
+//    override fun actionPerformed(e: AnActionEvent) {
+//        val project = e.project
+//            ?: return
+//        val files = e.files
+//        if (files.isEmpty())
+//            return
+//        if (files.size > 1) {
+//            throw Exception("Only one file can be injected at a time")
+//        }
+//        val caosFile = files[0].getPsiFile(project) as? CaosScriptFile
+//            ?: return
+//        val variant = caosFile.variant
+//            ?: return
+//
+//        caosInject(project, variant, GameInterfaceName(variant), caosFile)
+//    }
+//}
 
 
 internal fun caosInject(

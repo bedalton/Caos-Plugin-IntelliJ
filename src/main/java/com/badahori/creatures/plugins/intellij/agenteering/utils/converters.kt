@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.intellij.util.xmlb.Converter
@@ -32,30 +32,40 @@ internal class StringListConverter : Converter<List<String>>() {
 
 internal class GameInterfaceConverter : Converter<GameInterfaceName?>() {
     override fun toString(values: GameInterfaceName): String {
-        return values.toString()
+        return values.serialize()
     }
 
     override fun fromString(value: String): GameInterfaceName? {
         return GameInterfaceName.fromString(value)
     }
-    companion object {
-        private const val DELIMITER = ":;;::;;:"
-    }
 }
 
 internal class GameInterfaceListConverter : Converter<List<GameInterfaceName>>() {
     override fun toString(values: List<GameInterfaceName>): String {
-        return values.joinToString(DELIMITER)
+        var delimiter = DELIMITER
+        val serialized = values.map { it.serialize() }
+        while (serialized.any { it.contains(delimiter) }) {
+            delimiter = "#_" + delimiter + "_#"
+        }
+        return delimiter + DELIMITER_VALUES_DELIMITER + values.joinToString(delimiter) { it.serialize() }
     }
 
-    override fun fromString(value: String): List<GameInterfaceName> {
-        return value
-            .split(DELIMITER)
+    override fun fromString(rawSerialized: String): List<GameInterfaceName> {
+        val delimiterValuesSplit = rawSerialized.split(DELIMITER_VALUES_DELIMITER, limit = 2)
+        if (delimiterValuesSplit.size < 2) {
+            return emptyList()
+        }
+        if (delimiterValuesSplit[0].isBlank()) {
+            return emptyList()
+        }
+        return delimiterValuesSplit[1]
+            .split(delimiterValuesSplit[0])
             .mapNotNull {
                 GameInterfaceName.fromString(it)
             }
     }
     companion object {
-        private const val DELIMITER = ":;;::;;:"
+        private const val DELIMITER_VALUES_DELIMITER = "|||"
+        private const val DELIMITER = ":++__;;:!!:;;__++:"
     }
 }
