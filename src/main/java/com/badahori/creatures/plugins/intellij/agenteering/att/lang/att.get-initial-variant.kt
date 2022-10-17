@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.inferVariantHard
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -12,15 +14,28 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 
 
+internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVariant {
+    // Get cached variant if any
+    file.cachedVariantExplicitOrImplicit.nullIfUnknown()?.let {
+        return it
+    }
+    val variant = getInitialVariantImpl(project, file)
+    if (variant == null) {
+        file.setCachedVariant(null, false)
+        return CaosVariant.UNKNOWN
+    }
+    file.setCachedVariant(variant, false)
+    for (sibling in file.parent?.children.orEmpty()) {
+        if (!sibling.isDirectory) {
+            sibling.setCachedVariant(variant, false)
+        }
+    }
+    return variant
+}
 /**
  * Tries to determine the initial variant of an att file or a sprite file using itself and its corresponding other
  */
-internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVariant {
-
-    // Get cached variant if any
-    file.cachedVariantExplicitOrImplicit.nullIfUnknown()?.let {
-        //return it
-    }
+private fun getInitialVariantImpl(project: Project?, file: VirtualFile): CaosVariant? {
 
     // May not actually be a breed file
     if (file.nameWithoutExtension.length != 4) {
@@ -33,12 +48,12 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
         val variant = when (file.extension?.lowercase()) {
             "spr" -> CaosVariant.C1
             "c16" -> CaosVariant.C3
-            "s16" -> CaosVariant.UNKNOWN
+            "s16" -> null
             "att" -> getVariantByAttLengths(project, file, null)
-            else -> CaosVariant.UNKNOWN
+            else -> null
         }
         // Cache whatever is returned
-        file.setCachedVariant(variant.nullIfUnknown(), false)
+        file.setCachedVariant(variant, false)
 
         // Return result
         return variant
@@ -70,6 +85,7 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
         }
     }
 
+
     // Try to figure out type if file is sprite
     val variant = when (file.extension?.lowercase()) {
         "spr" -> CaosVariant.C1
@@ -93,15 +109,15 @@ internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVarian
                     else -> CaosVariant.C3
                 }
                 // 'o', 'p', 'q' -> CaosVariant.CV already checked for
-                else -> if (numImages == 10)
+                else -> if (numImages == 10) {
                     CaosVariant.C2
-                else
+                } else {
                     CaosVariant.C3
+                }
             }
         }
         else -> getVariantByAttLengths(project, file, part)
     }
-    file.setCachedVariant(variant, false)
     return variant
 }
 
@@ -125,21 +141,24 @@ private fun getVariantByAttLengths(
         if (searchSprite) {
             val sprite =
                 file.parent.findChildInSelfOrParent(file.nameWithoutExtension, listOf(".spr", "s16"), true, scope)
-                    ?: return CaosVariant.UNKNOWN
-
-            return if (sprite.extension == "spr")
+                    ?: file.parent.parent?.findChildInSelfOrParent(file.nameWithoutExtension, listOf(".spr", "s16"), true, scope)
+                    ?: return (project?.inferVariantHard() ?: CaosVariant.UNKNOWN)
+            return if (sprite.extension == "spr") {
                 CaosVariant.C1
-            else
+            } else {
                 CaosVariant.C2
+            }
         }
         return CaosVariant.UNKNOWN
     }
     if (part == 'a') {
         val longestLine = lines.maxByOrNull { it.length }
             ?: return CaosVariant.C3
-        val points = longestLine.split("\\s+".toRegex()).filter { it.isNotBlank() }
-        if (points.lastOrNull()?.toIntSafe().orElse(0) > 0)
-            return CaosVariant.CV
+        // USING last point led to false CV positives. Decided to just make it CV if asked
+//        val points = longestLine.split("\\s+".toRegex()).filter { it.isNotBlank() }
+//        if (points.lastOrNull()?.toIntSafe().orElse(0) > 0) {
+//            return CaosVariant.CV
+//        }
         return CaosVariant.C3
     }
     val partLowerCase = part?.lowercase()

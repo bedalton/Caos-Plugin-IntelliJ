@@ -8,9 +8,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileDat
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser.parse
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
@@ -124,8 +124,8 @@ internal class AttEditorModel(
             mLockX = false; mLockY = value
         }
 
-    var replicateAttsToDuplicateSprites: Boolean? = CaosProjectSettingsService
-        .getInstance(project)
+    var replicateAttsToDuplicateSprites: Boolean? = CaosApplicationSettingsService
+        .getInstance()
         .replicateAttsToDuplicateSprites
 
     val actionId = AtomicInteger(0)
@@ -137,7 +137,7 @@ internal class AttEditorModel(
     init {
         val psiFile = attFile.getPsiFile(project)
         initDocumentListeners(project, psiFile)
-        CaosProjectSettingsComponent.addSettingsChangedListener(this) { _, it ->
+        CaosApplicationSettingsComponent.addSettingsChangedListener(this) { _, it ->
             replicateAttsToDuplicateSprites = it.replicateAttToDuplicateSprite
             mFoldedLines = null
             ApplicationManager.getApplication().invokeLater {
@@ -527,7 +527,7 @@ internal class AttEditorModel(
         mCurrentReplication = replications
         val project = project
         if (project != null && replicateAttsToDuplicateSprites == null && replications.isNotEmpty()) {
-            CaosProjectSettingsService.getInstance(project).replicateAttsToDuplicateSprites = true
+            CaosApplicationSettingsService.getInstance().replicateAttsToDuplicateSprites = true
             showReplicationNotice(project)
         }
         return replications
@@ -556,7 +556,7 @@ internal class AttEditorModel(
                         "Setting can be changed later in the CAOS and Agenteering settings panel"
             }
             override fun actionPerformed(e: AnActionEvent) {
-                CaosProjectSettingsService.getInstance(project).replicateAttsToDuplicateSprites = false
+                CaosApplicationSettingsService.getInstance().replicateAttsToDuplicateSprites = false
             }
         })
             .show()
@@ -650,6 +650,11 @@ internal class AttEditorModel(
             ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
             virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
             virtualFile.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
+            for (sibling in virtualFile.parent?.children.orEmpty()) {
+                if (!sibling.isDirectory) {
+                    sibling.setCachedIfNotCached(variant, false)
+                }
+            }
         }
 
 
@@ -693,7 +698,7 @@ internal class AttEditorModel(
                 'q' -> listOf("Head")
                 'z' -> listOf("Center")
 
-                else -> Arrays.asList(
+                else -> listOf(
                     "Start",
                     "End"
                 )
@@ -720,7 +725,7 @@ internal class AttEditorModel(
     }
 
     /**
-     * Get the cell that is not currently folded, or itself if cannot find a not folded cell
+     * Get the cell that is not currently folded, or itself if it cannot find a not folded cell
      */
     private fun getNotFoldedLine(newIndex: Int): Int {
         if (newIndex == mSelectedCell) {

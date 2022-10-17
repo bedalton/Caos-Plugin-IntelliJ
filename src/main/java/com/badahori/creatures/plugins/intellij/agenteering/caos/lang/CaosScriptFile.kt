@@ -13,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PRAY_COMPILER_SETTINGS_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PraySettingsPropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -62,17 +62,23 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                     ?.let {
                         it.cachedVariantExplicitOrImplicit
                         .nullIfUnknown()
-                            ?: it.inferVariantHard(project, true)
+                            ?: it.inferVariantHard(project, true)?.apply {
+                                putUserData(ImplicitVariantUserDataKey, this)
+                            }
                                 ?.nullIfUnknown()
                     }
                 ?: (module ?: originalFile.module)?.let {
                     it.variant.nullIfUnknown()
-                        ?: it.inferVariantHard()
+                        ?: it.inferVariantHard()?.apply {
+                            putUserData(ImplicitVariantUserDataKey, this)
+                        }
                             ?.nullIfUnknown()
                 }
                 ?: project.let {
                     it.settings.defaultVariant.nullIfUnknown()
-                        ?: it.inferVariantHard()
+                        ?: it.inferVariantHard()?.apply {
+                            putUserData(ImplicitVariantUserDataKey, this)
+                        }
                             ?.nullIfUnknown()
                 }
         }
@@ -82,17 +88,22 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
         setVariantBase(myFile, variant, explicit)
         if (explicit) {
             explicitVariant = variant
+            implicitVariant = null
+            setVariantBase(virtualFile, newVariant = null, false)
+            setVariantBase(myFile, newVariant = null, false)
             if (variant != this.variant)
                 LOGGER.severe("Failed to set variant on PSI file. Expected: ${variant?.code}; Found: ${this.variant?.code}")
             ExplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
-                if (it != variant)
+                if (it != variant) {
                     LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
+                }
             }
         } else {
             implicitVariant = variant
             ImplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
-                if (it != variant)
+                if (it != variant) {
                     LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
+                }
             }
         }
 
@@ -120,10 +131,10 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             val variant = variant
             return getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)
                 ?: InjectorInterfacePropertyPusher
-                    .readFromStorage(project, myFile, variant)
+                    .readFromStorage(myFile, variant)
                 ?: InjectorInterfacePropertyPusher
-                    .readFromStorage(project, virtualFile ?: myFile, variant)
-                ?: module?.settings?.lastGameInterface(project)
+                    .readFromStorage(virtualFile ?: myFile, variant)
+                ?: module?.settings?.lastGameInterface()
                 ?: project.settings.lastInterface(variant)
         }
         set(gameInterface) {

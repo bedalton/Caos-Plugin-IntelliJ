@@ -19,8 +19,9 @@ internal object AttCopyMirroredUtil {
 
         val mirrorResult = mirrorAtt(project, copyFrom, copyTo)
 
-        if (mirrorResult !is AttCopyResult.OK)
+        if (mirrorResult !is AttCopyResult.OK) {
             throw Exception("Failed to mirror att. " + (mirrorResult as AttCopyResult.Error).error)
+        }
 
         // Figure out the variant of this file
         val variant: CaosVariant = getInitialVariant(project, copyTo)

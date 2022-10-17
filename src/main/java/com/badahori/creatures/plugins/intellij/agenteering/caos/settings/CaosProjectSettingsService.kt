@@ -17,15 +17,10 @@ interface CaosProjectSettingsService: PersistentStateComponent<CaosProjectSettin
     var ditherSPR: Boolean
     var attScale: Int
     var showPoseView: Boolean
-//    var gameInterfaceNames: List<GameInterfaceName>
-//    var ignoredFilenames: List<String>
-    var combineAttNodes: Boolean
-    var replicateAttsToDuplicateSprites: Boolean?
     var defaultPoseString: String
-//    var lastGameInterfaceNames: List<String>
     var useJectByDefault: Boolean
-    var isAutoPoseEnabled: Boolean
-
+//    val lastGameInterfaceNames: List<String>
+    var trimBLKs: Boolean?
 
     override fun getState(): CaosProjectSettingsComponent.State
     override fun loadState(state: CaosProjectSettingsComponent.State)

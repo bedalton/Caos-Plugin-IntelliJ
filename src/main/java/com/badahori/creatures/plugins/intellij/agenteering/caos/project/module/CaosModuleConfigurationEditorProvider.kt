@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.module.ModuleConfigurationEditor
 import com.intellij.openapi.module.ModuleType

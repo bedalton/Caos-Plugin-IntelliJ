@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -34,7 +34,7 @@ class AutoPreview : AnAction() {
     override fun update(e: AnActionEvent) {
         super.update(e)
         val project = e.project
-        if (project == null || !project.settings.state.isAutoPoseEnabled) {
+        if (project == null || !CaosApplicationSettingsService.getInstance().isAutoPoseEnabled) {
             e.presentation.isVisible = false
             return
         }

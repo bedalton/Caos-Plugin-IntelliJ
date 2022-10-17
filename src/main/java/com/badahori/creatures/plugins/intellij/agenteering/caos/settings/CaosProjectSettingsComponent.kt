@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
@@ -20,8 +18,7 @@ import com.intellij.util.xmlb.annotations.Transient
 @State(
     name = "CaosProjectSettingsComponent"
 )
-class
-CaosProjectSettingsComponent : CaosProjectSettingsService,
+class CaosProjectSettingsComponent : CaosProjectSettingsService,
     PersistentStateComponent<CaosProjectSettingsComponent.State> {
 
     private var state: State = State()
@@ -32,7 +29,6 @@ CaosProjectSettingsComponent : CaosProjectSettingsService,
 
     override fun loadState(state: State) {
         val oldState = this.state
-        this.state = state
         onUpdate(oldState, state)
     }
 
@@ -117,27 +113,6 @@ CaosProjectSettingsComponent : CaosProjectSettingsService,
         }
 
 
-    override var combineAttNodes: Boolean
-        get() = state.combineAttNodes
-        set(value) {
-            if (value == state.combineAttNodes) {
-                return
-            }
-            loadState(state.copy(
-                combineAttNodes = value
-            ))
-        }
-    override var replicateAttsToDuplicateSprites: Boolean?
-        get() = state.replicateAttToDuplicateSprite
-        set(value) {
-            if (value == state.replicateAttToDuplicateSprite) {
-                return
-            }
-            loadState(state.copy(
-                replicateAttToDuplicateSprite = value != false
-            ))
-        }
-
     override var defaultPoseString: String
         get() = state.defaultPoseString
         set(value) {
@@ -167,11 +142,11 @@ CaosProjectSettingsComponent : CaosProjectSettingsService,
             )
         }
 
-    override var isAutoPoseEnabled: Boolean
-        get() = state.isAutoPoseEnabled
+    override var trimBLKs: Boolean?
+        get() = state.trimBLKs
         set(value) {
             loadState(state.copy(
-               isAutoPoseEnabled = value
+                trimBLKs = value
             ))
         }
 
@@ -186,16 +161,12 @@ CaosProjectSettingsComponent : CaosProjectSettingsService,
         val ditherSPR: Boolean = false,
         val attScale: Int = 6,
         var showPoseView: Boolean = true,
-        @Attribute(converter = GameInterfaceListConverter::class)
-        val gameInterfaceNames: List<GameInterfaceName> = listOf(),
         @Attribute(converter = StringListConverter::class)
         val ignoredFilenames: List<String> = listOf(),
-        val combineAttNodes: Boolean = false,
-        val replicateAttToDuplicateSprite: Boolean? = null,
-        val defaultPoseString: String = "313122122111111",
         val lastGameInterfaceNames: List<String> = listOf(),
+        val defaultPoseString: String = "313122122111111",
         val useJectByDefault: Boolean = false,
-        val isAutoPoseEnabled: Boolean = false,
+        val trimBLKs: Boolean? = null
     ) {
 
         @Transient

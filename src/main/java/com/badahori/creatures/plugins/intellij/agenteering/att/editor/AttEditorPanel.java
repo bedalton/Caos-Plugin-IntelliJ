@@ -25,10 +25,9 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class AttEditorPanel implements HasSelectedCell, AttEditorController.View {
-    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
+//    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     public static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
     public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
     private static final boolean EAGER_LOAD_POSE_EDITOR = true;
@@ -59,9 +58,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private boolean showPoseView;
     private boolean didInit = false;
     private final AttEditorHandler controller;
-
-    // Pose has recently changed, so re-render
-    private boolean poseChanged = false;
 
     protected JButton refreshButton;
     private final CaosProjectSettingsService settings;
@@ -101,9 +97,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initDisplay(controller.getVariant());
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
-        CaosProjectSettingsComponent.addSettingsChangedListener((old, settings) -> {
-            updateCells();
-        });
+        CaosProjectSettingsComponent.addSettingsChangedListener(this::onChange);
     }
 
     private void initListeners() {
@@ -217,12 +211,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         menu.add(lockX);
         menu.add(lockY);
         menu.addSeparator();
-//        scrollPane.addMouseListener(new MouseListenerBase() {
-//            @Override
-//            public void mouseClicked(@NotNull MouseEvent e) {
-//                menu.show(scrollPane, e.getX(), e.getY());
-//            }
-//        });
+
         for (int i = 0; i < 6; i++) {
             final JMenuItem pointMenuItem = new JMenuItem("Point " + i);
             JRadioButton button;
@@ -1001,5 +990,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     @Override
     public Object getToolbar() {
         return attToolbar;
+    }
+
+    private void onChange(CaosProjectSettingsComponent.State old, CaosProjectSettingsComponent.State settings) {
+        updateCells();
     }
 }

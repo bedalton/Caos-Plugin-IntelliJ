@@ -128,11 +128,7 @@ internal class PrayBlockTreeNode(
         }
 
         val isAgent = try {
-            prayBlock.intTags.any { it.tag like "Agent Type" } || prayBlock.stringTags.any { it.tag like "Agent Type"}.apply {
-                if (this) {
-                    Log.i { "Agent type tag is a string" }
-                }
-            }
+            prayBlock.intTags.any { it.tag like "Agent Type" } || prayBlock.stringTags.any { it.tag like "Agent Type"}
         } catch (e: Exception) {
             LOGGER.severe("Failed to parse block [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
@@ -140,7 +136,6 @@ internal class PrayBlockTreeNode(
         }
 
         if (!isAgent) {
-            Log.i { "Block: ${prayBlock.blockTag}: ${prayBlock.blockName} is not an agent. IntTags: [${prayBlock.intTags.joinToString { it.tag }}]; StringTags: [${prayBlock.stringTags.joinToString { it.tag }}]" }
             return@lazy emptyList()
         }
         val scriptTagRegex = "Script\\s+(\\d+)|Remove script".toRegex(RegexOption.IGNORE_CASE)
@@ -176,10 +171,6 @@ internal class PrayBlockTreeNode(
                 it.tag,
                 viewSettings
             )
-        }.apply {
-            if (isEmpty()) {
-                Log.i { "Agent ${prayBlock.blockTag} ${prayBlock.blockName} has no scripts. Has <${stringTags.size}> string tags" }
-            }
         }
     }
 
