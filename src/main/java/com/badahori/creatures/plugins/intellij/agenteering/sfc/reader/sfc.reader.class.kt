@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcBiochemistryPtr
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import bedalton.creatures.util.className
 
 private const val SFC_BINARY_CONST = 0x8000
 

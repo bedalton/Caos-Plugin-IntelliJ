@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import bedalton.creatures.sprite.parsers.SpriteParser
 import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications

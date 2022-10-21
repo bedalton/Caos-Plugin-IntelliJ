@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInject
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import bedalton.creatures.util.className
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction

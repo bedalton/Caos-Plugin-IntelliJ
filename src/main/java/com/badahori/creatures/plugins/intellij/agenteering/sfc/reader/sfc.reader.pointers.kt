@@ -4,7 +4,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import bedalton.creatures.util.className
 import com.google.gson.Gson
 
 sealed class Ptr<DClassT>(

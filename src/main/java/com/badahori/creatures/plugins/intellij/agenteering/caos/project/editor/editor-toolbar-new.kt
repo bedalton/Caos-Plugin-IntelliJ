@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
 import bedalton.creatures.structs.Pointer
+import bedalton.creatures.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
@@ -653,13 +654,15 @@ private class RunInjectorAction(
         mAction = action
     }
 
-    fun setAction(action: AnAction?, presentation: Presentation = this.templatePresentation) {
+    fun setAction(action: AnAction?, presentation: Presentation? = null) {
         if (action !is CaosInjectorAction) {
             LOGGER.severe("RunInjector action is not CAOS injector")
             return
         }
         this.mAction = action
-        updatePresentation(presentation, action)
+        if (presentation != null) {
+            updatePresentation(presentation, action)
+        }
     }
 
     override fun update(e: AnActionEvent) {

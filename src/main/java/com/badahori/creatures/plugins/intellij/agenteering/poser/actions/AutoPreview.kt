@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.poser.actions
 
 import bedalton.creatures.sprite.util.SpriteType
+import bedalton.creatures.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant

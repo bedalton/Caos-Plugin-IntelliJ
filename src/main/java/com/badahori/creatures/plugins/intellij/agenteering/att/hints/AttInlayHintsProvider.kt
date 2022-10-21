@@ -13,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.hints.EMPTY_INLA
 import com.badahori.creatures.plugins.intellij.agenteering.common.InlayHintGenerator
 import com.badahori.creatures.plugins.intellij.agenteering.common.AbstractInlayHintsProvider
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import bedalton.creatures.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInsight.hints.HintInfo
 import com.intellij.codeInsight.hints.InlayInfo
@@ -48,7 +48,7 @@ enum class AttInlayHints(description: String, defaultEnabled: Boolean, override 
             val index = getPointIndex(element)
                 ?: return null
             val text = "point:$index"
-            return HintInfo.MethodInfo(this.className, text.toListOf(), AttLanguage)
+            return HintInfo.MethodInfo(this.className!!, text.toListOf(), AttLanguage)
         }
 
     },
@@ -93,7 +93,7 @@ enum class AttInlayHints(description: String, defaultEnabled: Boolean, override 
                 ?: return null
             val part = getPartName(element)
                 ?: return null
-            return HintInfo.MethodInfo(this.className, listOf(part, pointName), AttLanguage)
+            return HintInfo.MethodInfo(this.className!!, listOf(part, pointName), AttLanguage)
         }
 
 
