@@ -11,6 +11,14 @@ internal fun token(token: String): Int {
     return token(chars[0].code, chars[1].code, chars[2].code, chars[3].code)
 }
 
+internal fun token(token: Int): String? {
+    return try {
+        "${(token shr 24 and 0xFF).toChar() }${(token shr 16 and 0xFF).toChar() }${(token shr 8 and 0xFF).toChar() }${(token and 0xFF).toChar() }"
+    } catch (_: Exception) {
+        null
+    }
+}
+
 internal fun token(c1: Char, c2: Char, c3: Char, c4: Char): Int = token(c1.code, c2.code, c3.code, c4.code)
 internal fun token(a: Int, b: Int, c: Int, d: Int) = a shl 24 or (b shl 16) or (c shl 8) or d
 
