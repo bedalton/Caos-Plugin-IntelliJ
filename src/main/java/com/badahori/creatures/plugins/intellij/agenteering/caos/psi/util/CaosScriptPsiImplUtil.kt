@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
+import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
@@ -1792,57 +1793,6 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
-    fun getStubKind(element: CaosScriptQuoteStringLiteral): StringStubKind? {
-
-        // No string completion in C1e
-        if (element.variant?.isOld != false) {
-            return null
-        }
-
-        element.stub?.kind?.let {
-            return it
-        }
-
-        val argument: CaosScriptArgument = element.parent as? CaosScriptRvalue
-            ?: element.parent as? CaosScriptLvalue
-            ?: return null
-        val command = argument.parent as? CaosScriptCommandElement
-            ?: return null
-        val commandDefinition = command.commandDefinition
-            ?: return null
-        val index = argument.index
-        val parameter = commandDefinition.parameters.getOrNull(index)
-            ?: return null
-        if (parameter.type != CaosExpressionValueType.STRING
-            && parameter.type != CaosExpressionValueType.ANY
-            && parameter.type != CaosExpressionValueType.UNKNOWN
-        ) {
-            return null
-        }
-        val commandName = commandDefinition.command;
-        val first = try {
-            commandName.substring(0, 4)
-        } catch (e: Exception) {
-            return null
-        }
-        return when (first) {
-            //GAME
-            "GAME" -> StringStubKind.GAME
-            "DELG" -> StringStubKind.GAME
-            // EAME
-            "EAME" -> StringStubKind.EAME
-            "DELE" -> StringStubKind.EAME
-            // NAME
-            "NAME" -> StringStubKind.NAME
-            "MAME" -> StringStubKind.NAME
-            "DELN" -> StringStubKind.NAME
-            // JOURNAL
-            "FILE" -> StringStubKind.JOURNAL
-            else -> null
-        }
-    }
-
-    @JvmStatic
     fun getMeta(element: CaosScriptQuoteStringLiteral): Int {
 
         if (element.variant?.isOld != false) {
@@ -1851,7 +1801,7 @@ object CaosScriptPsiImplUtil {
         element.stub?.meta?.let {
             return it
         }
-        val kind = getStubKind(element)
+        val kind = getStringStubKind(element)
             ?: return 0
         return when (kind) {
             StringStubKind.JOURNAL -> {
@@ -1871,6 +1821,11 @@ object CaosScriptPsiImplUtil {
             }
             else -> 0
         }
+    }
+
+    @JvmStatic
+    fun getStringStubKind(element: PsiElement): StringStubKind? {
+        return StringStubKind.fromPsiElement(element)
     }
 
     /**
@@ -2738,10 +2693,11 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getValueAsString(value: CaosScriptCaos2Value): String? {
-        return if (value.int != null)
+        return if (value.int != null) {
             null
-        else
+        } else {
             value.quoteStringLiteral?.stringValue ?: value.text.stripSurroundingQuotes()
+        }
     }
 
     /**
