@@ -1,10 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.intellij.openapi.editor.ex.FoldingModelEx
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.util.PsiTreeUtil
 
 
 val EMPTY_PSI_ARRAY = emptyArray<PsiElement>()
@@ -14,7 +17,7 @@ val EMPTY_PSI_LIST = emptyList<PsiElement>()
 /**
  * Tests whether this element's parent is of a given type
  */
-fun <PsiT : PsiElement> PsiElement.hasParentOfType(parentClass:Class<PsiT>) : Boolean {
+fun <PsiT : PsiElement> PsiElement.hasParentOfType(parentClass: Class<PsiT>): Boolean {
     return PsiTreeUtil.getParentOfType(this, parentClass) != null;
 }
 
@@ -102,7 +105,7 @@ val PsiElement.isFolded: Boolean
                 .any {
                     !it.isExpanded && startOffset in it.startOffset..it.endOffset
                 }
-        } catch(e:Exception) {
+        } catch (e: Exception) {
             return false
         }
     }
@@ -122,12 +125,44 @@ val PsiElement.isNotFolded: Boolean
                 .none {
                     /*!it.isExpanded &&*/ (startOffset in it.startOffset..it.endOffset || endOffset in it.startOffset..it.endOffset)
                 }
-        } catch(e:Exception) {
+        } catch (e: Exception) {
             return false
         }
     }
 
-val PsiElement.textUppercase:String get() = text.uppercase()
+val PsiElement.virtualFile: VirtualFile?
+    get() = containingFile?.virtualFile
+        ?: containingFile.originalFile.virtualFile
+        ?: originalElement.containingFile?.virtualFile
+        ?: originalElement.containingFile?.originalFile?.virtualFile
+
+fun <T: PsiElement> PsiElement.collectElementsOfTypeInParentChildren(clazz: Class<T>, recursive: Boolean): List<T> {
+    return containingFile.parent
+        ?.collectElementsOfTypeInChildren(clazz, recursive)
+        ?: emptyList()
+}
+
+fun <T: PsiElement> PsiDirectory.collectElementsOfTypeInChildren(clazz: Class<T>, recursive: Boolean): List<T> {
+    return if (recursive) {
+        children.flatMap {
+            if (it is PsiDirectory) {
+                it.collectElementsOfTypeInChildren(clazz, true)
+            } else {
+                PsiTreeUtil.collectElementsOfType(it, clazz)
+            }
+        }
+    } else {
+        children.flatMap {
+            if (it is PsiDirectory) {
+                emptyList()
+            } else {
+                PsiTreeUtil.collectElementsOfType(it, clazz)
+            }
+        }
+    }
+}
+
+val PsiElement.textUppercase: String get() = text.uppercase()
 
 val PsiElement.projectDisposed: Boolean get() = project.isDisposed
 
