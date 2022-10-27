@@ -747,6 +747,10 @@
     <stubIndex
         implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex" />
 
+    <editorTypedHandler
+        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"
+    />
+
     <!-- INTENTION ACTIONS -->
     <intentionAction>
       <className>com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
