@@ -151,6 +151,9 @@ object PrayTags {
     internal fun normalize(tag: String): String? {
         if (tag in tagLiterals || strictNumberedTagRegex.matches(tag) || tag in eggTagLiterals)
             return tag
+        Caos2PrayShortTags.SHORT_TAGS[tag]?.let {
+            return it
+        }
         val shortened = tag.lowercase().replace(WHITESPACE, "").trim()
         return Caos2PrayShortTags.SHORT_TAGS[shortened]
     }

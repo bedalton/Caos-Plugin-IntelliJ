@@ -523,14 +523,12 @@ private fun getLinksInDirectory(
     return out
 }
 
-private val creaturesFileExtensions = listOf(
+internal val attachableFileExtensions = listOf(
     "att",
     "s16",
     "c16",
     "blk",
     "catalogue",
-    "cos",
-    "caos",
     "gen",
     "gno",
     "wav",
@@ -538,6 +536,25 @@ private val creaturesFileExtensions = listOf(
     "mng",
     "pray",
     "creature",
+    "journal"
+)
+internal val creaturesFileExtensions = listOf(
+    "cos",
+    "caos",
+    *attachableFileExtensions.toTypedArray()
+)
+
+internal val caos2PrayFileExtensions = listOf(
+    "att",
+    "s16",
+    "c16",
+    "blk",
+    "catalogue",
+    "gen",
+    "gno",
+    "wav",
+    "ming",
+    "mng",
     "journal"
 )
 
