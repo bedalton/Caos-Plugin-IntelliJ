@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import bedalton.creatures.sprite.parsers.BlkParser
 import bedalton.creatures.sprite.parsers.SpriteParser
 import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.className
@@ -146,7 +147,7 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         val project = myProject
 
         val settings = CaosProjectSettingsService
-                .getInstance(project)
+            .getInstance(project)
         val trim = settings.trimBLKs
         if (trim != null) {
             return trim
@@ -155,15 +156,14 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
             project,
             "BLK Parser",
             "Black edges on the right and bottom sides were trimmed by default.\nIs this okay?",
-        ).apply {
-            addAction("Do not trim BLKs (requires reparse)") {
+        )
+            .addAction("Do not trim BLKs (requires reparse)") {
                 settings.trimBLKs = false
                 stitchActual()
             }
-            addAction("Keep trimming BLKs") {
+            .addAction("Keep trimming BLKs") {
                 settings.trimBLKs = true
             }
-        }
             .show()
         return true
     }
@@ -171,20 +171,23 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
     private fun stitchActual() {
         try {
             val reader = VirtualFileStreamReader(file)
-            val stitched = SpriteParser.parseBLK(
+            var percent = 0
+            val stitched = BlkParser.parse(
                 reader,
                 trim = shouldTrim(),
-                flattened = true,
-                1
+                10
             ) { i: Int, total: Int ->
-                val progress = ceil((i * 100.0) / total)
-                invokeLater {
-                    loadingLabel.text = "Parsing BLK... " + progress.toInt() + "%      $i/$total"
+                val progress = ceil((i * 100.0) / total).toInt()
+                if (percent < progress) {
+                    percent = progress
+                    invokeLater {
+                        loadingLabel.text = "Parsing BLK... $progress%      $i/$total"
+                    }
                 }
                 null
-            }.imageData
-            cache(file, listOf(stitched))
-            setImage(stitched[0].toAwt())
+            }
+            cache(file, listOf(listOf(stitched)))
+            setImage(stitched.toAwt())
         } catch (e: Exception) {
             val error = if (e.message?.length.orElse(0) > 0) {
                 "${e::className}: ${e.message}"
@@ -220,7 +223,12 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
 }
 
 
-private class ImagePanel(private val project: Project, val mImage: BufferedImage, defaultDirectory: String?, val fileName: String) : JLabel(ImageIcon(mImage)) {
+private class ImagePanel(
+    private val project: Project,
+    val mImage: BufferedImage,
+    defaultDirectory: String?,
+    val fileName: String,
+) : JLabel(ImageIcon(mImage)) {
     private val defaultDirectory: String? = (defaultDirectory ?: System.getProperty("user.home")).nullIfEmpty()?.let {
         if (File(it).exists())
             it

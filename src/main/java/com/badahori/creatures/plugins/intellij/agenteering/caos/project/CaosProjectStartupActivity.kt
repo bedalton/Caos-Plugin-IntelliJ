@@ -180,8 +180,9 @@ class CaosProjectStartupActivity : StartupActivity {
             this.project = null
             return
         }
-        if (hasAnyCaosFiles(project))
+        if (hasAnyCaosFiles(project)) {
             CaosBundleSourcesRegistrationUtil.register(null, project)
+        }
         DumbService.getInstance(project).runWhenSmart {
             if (project.isDisposed) {
                 this.project = null

@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.intellij.openapi.project.Project
@@ -12,7 +13,8 @@ import java.net.URL
  * Connection class for managing POST based CAOS injection
  * Requires CAOS server executable to be running to handle caos injection post requests
  */
-internal class TCPConnection(private val variant: CaosVariant?, private val gameInterfaceName: TCPInjectorInterface) : CaosConnection {
+internal class TCPConnection(override val variant: CaosVariant, private val gameInterfaceName: TCPInjectorInterface) :
+    CaosConnection {
 
     override val supportsJect: Boolean
         get() = false
@@ -21,26 +23,40 @@ internal class TCPConnection(private val variant: CaosVariant?, private val game
         gameInterfaceName.getURL(variant)
     }
 
-    override fun inject(caos: String): InjectionStatus {
+    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
 //        val url = url
 //            ?: return InjectionStatus.BadConnection("Invalid URL for POST http connection")
-        return InjectionStatus.ActionNotSupported("20kdc's TCP connection protocol is not yet supported")
+        return InjectionStatus.ActionNotSupported(
+            fileName,
+            descriptor,
+            CaosBundle.message("caos.injector.errors.tcp.not-implemented")
+        )
     }
 
     override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
-        return InjectionStatus.ActionNotSupported("JECT not supported by TCP connections")
+        return InjectionStatus.ActionNotSupported(
+            caos.name,
+            null,
+            CaosBundle.message("caos.injector.ject-not-supported")
+        )
     }
 
     override fun injectEventScript(
+        fileName: String,
         family: Int,
         genus: Int,
         species: Int,
         eventNumber: Int,
-        caos: String
+        caos: String,
     ): InjectionStatus {
 
+        val descriptor = "scrp $family $genus $species $eventNumber"
         if (!isImplemented()) {
-            return InjectionStatus.ActionNotSupported("20kdc's TCP connection protocol is not yet supported")
+            return InjectionStatus.ActionNotSupported(
+                fileName,
+                descriptor,
+                CaosBundle.message("caos.injector.errors.tcp.not-implemented")
+            )
         }
 
         val expectedHeader = "scrp $family $genus $species $eventNumber"
@@ -56,9 +72,10 @@ internal class TCPConnection(private val variant: CaosVariant?, private val game
             }
             // Combine the expected header with the script body
             "$expectedHeader $stripped"
-        } else
+        } else {
             caos
-        return inject(caosFormatted)
+        }
+        return inject(fileName, descriptor, caosFormatted)
     }
 
     override fun disconnect(): Boolean = true

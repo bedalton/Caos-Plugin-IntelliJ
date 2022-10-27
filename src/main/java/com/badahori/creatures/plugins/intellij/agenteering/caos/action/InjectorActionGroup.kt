@@ -12,6 +12,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfac
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
 import bedalton.creatures.util.className
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
@@ -155,7 +157,7 @@ internal class CaosInjectorAction(
             return (OsUtil.isWindows || gameInterfaceName !is NativeInjectorInterface) &&
                     pointer.element != null &&
                     variant != null &&
-                    (gameInterfaceName.variant == null || variant == gameInterfaceName.variant || (variant.isC3DS && gameInterfaceName.variant.let { it == null || it is CaosVariant.ANY || it.isC3DS }))
+                    (gameInterfaceName.variant == null || variant like gameInterfaceName.variant || (variant.isC3DS && gameInterfaceName.variant.let { it == null || it is CaosVariant.ANY || it.isC3DS }))
         }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -163,8 +165,8 @@ internal class CaosInjectorAction(
             ?: return
         val caosFile = pointer.element
             ?: return
-        val variant = gameInterfaceName.variant?.nullIfUnknown() ?: caosFile.variant?.nullIfUnknown()
-        ?: return
+        val variant = caosFile.variant?.nullIfNotConcrete()
+            ?: return
         caosInject(project, variant, gameInterfaceName, caosFile)
     }
 

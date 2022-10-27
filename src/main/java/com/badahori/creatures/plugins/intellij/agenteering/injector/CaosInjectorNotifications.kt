@@ -31,7 +31,6 @@ import com.intellij.notification.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindowId
 import javax.swing.Icon
 
 /**
@@ -193,16 +192,21 @@ data class CaosNotification internal constructor(
         )
     }
 
-    fun addAction(text: String, action: (e: AnActionEvent) -> Unit) {
-        addAction(object: AnAction(text) {
+    fun addAction(text: String, action: (e: AnActionEvent) -> Unit): CaosNotification {
+        return addAction(object: AnAction(text) {
             override fun actionPerformed(e: AnActionEvent) {
                 action(e)
             }
         })
     }
 
-    fun addAction(text: String, description: String, icon: Icon? = null, action: (e: AnActionEvent) -> Unit) {
-        addAction(object: AnAction(text, description, icon) {
+    fun addAction(
+        text: String,
+        description: String,
+        icon: Icon? = null,
+        action: (e: AnActionEvent) -> Unit,
+    ): CaosNotification {
+        return addAction(object: AnAction(text, description, icon) {
             override fun actionPerformed(e: AnActionEvent) {
                 action(e)
             }

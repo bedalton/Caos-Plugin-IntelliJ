@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messageOrNoneText
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
@@ -15,7 +17,8 @@ import java.net.URL
  * Connection class for managing POST based CAOS injection
  * Requires CAOS server executable to be running to handle caos injection post requests
  */
-internal class PostConnection(private val variant: CaosVariant?, private val gameInterfaceName: PostInjectorInterface) : CaosConnection {
+internal class PostConnection(override val variant: CaosVariant, private val gameInterfaceName: PostInjectorInterface) :
+    CaosConnection {
 
     override val supportsJect: Boolean
         get() = false
@@ -24,13 +27,23 @@ internal class PostConnection(private val variant: CaosVariant?, private val gam
         gameInterfaceName.getURL(variant)
     }
 
-    override fun inject(caos: String): InjectionStatus {
+    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
         val url = url
-            ?: return InjectionStatus.BadConnection("Invalid URL for POST http connection")
+            ?: return InjectionStatus.BadConnection(
+                fileName,
+                descriptor,
+                message("caos.injector.errors.post.invalid-url"),
+                variant
+            )
         val connection: HttpURLConnection = try {
             url.openConnection() as HttpURLConnection
         } catch (e: IOException) {
-            return InjectionStatus.BadConnection("Failed to open caos connection. Error: ${e.message}")
+            return InjectionStatus.BadConnection(
+                fileName,
+                descriptor,
+                message("caos.injector.errors.failed-to-open-connection", e.messageOrNoneText()),
+                variant
+            )
         }
         connection.doOutput = true
         connection.doInput = true
@@ -43,7 +56,12 @@ internal class PostConnection(private val variant: CaosVariant?, private val gam
                 close()
             }
         } catch (e: Exception) {
-            return InjectionStatus.BadConnection("Failed to write caos code to stream. Error: ${e.message}")
+            return InjectionStatus.BadConnection(
+                fileName,
+                descriptor,
+                message("caos.injector.errors.post.failed-to-write-to-stream", e.messageOrNoneText()),
+                variant
+            )
         }
         val response = try {
             val inputStream = BufferedReader(
@@ -57,7 +75,11 @@ internal class PostConnection(private val variant: CaosVariant?, private val gam
             inputStream.close()
             content.toString()
         } catch (e: Exception) {
-            return InjectionStatus.Bad("Failed to read response from caos server. Error: ${e.message}")
+            return InjectionStatus.Bad(
+                fileName,
+                descriptor,
+                message("caos.injector.errors.post.read-response-failed", e.messageOrNoneText())
+            )
         }
         val json = com.google.gson.JsonParser.parseString(response)
         return json.asJsonObject.let {
@@ -66,7 +88,7 @@ internal class PostConnection(private val variant: CaosVariant?, private val gam
             } catch (e: Exception) {
                 LOGGER.severe("Invalid injection response. Response: <$response> not valid JSON; Error: " + e.message)
                 e.printStackTrace()
-                return InjectionStatus.Bad("Invalid injection response. Response: <$response> not valid JSON")
+                return InjectionStatus.Bad(fileName, descriptor, message("caos.injector.errors.json-invalid", response))
             }
             val message = try {
                 it.get("response").asString ?: ""
@@ -74,26 +96,35 @@ internal class PostConnection(private val variant: CaosVariant?, private val gam
                 ""
             }
             if (message.contains("{@}"))
-                return InjectionStatus.Bad(message)
+                return InjectionStatus.Bad(fileName, descriptor, message)
             when (status) {
-                "!ERR" -> InjectionStatus.Bad(message)
-                "!CON", "!CONN" -> InjectionStatus.BadConnection(message)
-                "OK" -> InjectionStatus.Ok(message)
-                else -> InjectionStatus.Bad("Invalid status: '$status'  returned")
+                "!ERR" -> InjectionStatus.Bad(fileName, descriptor, message)
+                "!CON", "!CONN" -> InjectionStatus.BadConnection(fileName, descriptor, message, variant)
+                "OK" -> InjectionStatus.Ok(fileName, descriptor, message)
+                else -> InjectionStatus.Bad(
+                    fileName,
+                    descriptor,
+                    message("caos.injector.errors.invalid-status", status),
+                )
             }
         }
     }
 
     override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
-        throw Exception("JECT not supported by POST connection")
+        return InjectionStatus.ActionNotSupported(
+            caos.name,
+            null,
+            message("caos.injector.errors.ject-not-supported-by-injector", "POST")
+        )
     }
 
     override fun injectEventScript(
+        fileName: String,
         family: Int,
         genus: Int,
         species: Int,
         eventNumber: Int,
-        caos: String
+        caos: String,
     ): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
@@ -110,7 +141,7 @@ internal class PostConnection(private val variant: CaosVariant?, private val gam
             "$expectedHeader $stripped"
         } else
             caos
-        return inject(caosFormatted)
+        return inject(fileName, "scrp $family $genus $species $eventNumber", caosFormatted)
     }
 
     override fun disconnect(): Boolean = true

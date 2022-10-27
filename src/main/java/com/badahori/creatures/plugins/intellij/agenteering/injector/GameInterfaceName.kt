@@ -296,6 +296,10 @@ data class WineInjectorInterface constructor(
                 nickname = nickname
             )
         }
+
+        fun ensureWineExec() {
+
+        }
     }
 }
 
