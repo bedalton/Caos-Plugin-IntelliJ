@@ -120,7 +120,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 
 
     val isBase: Boolean get() {
-        return this !is OTHER && this != UNKNOWN;
+        return this !is ANY && this !is OTHER && this != UNKNOWN;
     }
 
     override fun toString(): String {
@@ -152,6 +152,14 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 
 fun CaosVariant?.nullIfUnknown(): CaosVariant? {
     return if (this == null || this == UNKNOWN)
+        null
+    else
+        this
+}
+
+
+fun CaosVariant?.nullIfNotConcrete(): CaosVariant? {
+    return if (this == null || this == UNKNOWN || this == ANY)
         null
     else
         this
@@ -192,23 +200,32 @@ val CaosVariant.injectorInterfaceName: String?
     }
 
 infix fun CaosVariant?.like(other: CaosVariant?): Boolean {
-    val variant = if (this is OTHER)
+
+    if (this == ANY || other == ANY) {
+        return true
+    }
+
+    val variant = if (this is OTHER) {
         this.base
-    else
+    } else {
         this
-    val otherVariant = if (other is OTHER)
+    }
+    val otherVariant = if (other is OTHER) {
         other.base
-    else
+    } else {
         other
+    }
 
     if (variant == null && otherVariant == null) {
         return true
     }
-    if (variant == null || otherVariant == null)
+    if (variant == null || otherVariant == null) {
         return false
+    }
 
-    if (variant == otherVariant)
+    if (variant == otherVariant) {
         return true
+    }
 
     return variant.isC3DS && otherVariant.isC3DS
 }
