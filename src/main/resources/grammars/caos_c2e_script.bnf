@@ -284,6 +284,7 @@
 		SINGLE_QUOTE = "'"
 		CHAR_CHAR = "'char'"
 		ERROR_WORD = "command"
+		INCOMPLETE_INT = "negative int"
 
 	]
 }
@@ -2158,6 +2159,7 @@ rvalue
 //	|	error_rvalue <<popParameter>>
 	|	swift_escape_literal
 	|	js_element
+	|	incomplete_negative_integer
 	{
    		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub"
 		extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
@@ -2195,6 +2197,7 @@ rvalue
 			getParameterValuesListValue
 			getToken
 			getCommandDefinition
+			getStringStubKind
 		]
 	}
 	;
@@ -2551,7 +2554,7 @@ quote_string_literal
 			setName
 			getReference
 			getPresentation
-			getStubKind
+			getStringStubKind
 			getMeta
 			getGhostQuote="/GHOST_QUOTE"
 		]
@@ -2617,6 +2620,7 @@ token_rvalue
 		methods = [
 			getIndex
 			getInferredType
+			getStringStubKind
 		]
 	}
 	;
@@ -2758,6 +2762,10 @@ incomplete
 	{
 
 	}
+
+incomplete_negative_integer
+	::= INCOMPLETE_INT
+	;
 
 command_call
 	::= command_call_by_args // I think private values all have equal priority

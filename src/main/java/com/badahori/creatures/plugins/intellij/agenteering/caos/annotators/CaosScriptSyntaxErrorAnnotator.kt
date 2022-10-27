@@ -166,6 +166,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             is CaosScriptFamily -> annotateClassifierArgument(element.rvalue, "Family", holder)
             is CaosScriptGenus -> annotateClassifierArgument(element.rvalue, "Genus", holder)
             is CaosScriptSpecies -> annotateClassifierArgument(element.rvalue, "Species", holder)
+            is CaosScriptIncompleteNegativeInteger -> simpleError(
+                element,
+                "Minus sign must be followed by a number or decimal",
+                holder
+            )
         }
     }
 
