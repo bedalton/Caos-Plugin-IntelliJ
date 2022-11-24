@@ -54,7 +54,16 @@ class CaosScriptQuoteStringLiteralStubType(debugName: String)
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         val psi = (node?.psi as? CaosScriptQuoteStringLiteral)
             ?: return false
-        return (psi.stringStubKind != null)
+
+        if (psi.stringStubKind == null) {
+            return false
+        }
+        val text = try {
+            node.text
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        return text.length > 2 && text[0] == '"' && text.last() == '"'
     }
 
     override fun indexStub(stub: CaosScriptQuoteStringLiteralStub, indexSink: IndexSink) {
