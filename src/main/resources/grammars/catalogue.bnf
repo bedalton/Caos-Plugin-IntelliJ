@@ -1,0 +1,64 @@
+{
+	parserClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.parser.CatalogueParser"
+	parserUtilClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.parser.CatalogueParserUtil"
+	implements="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueCompositeElement"
+	extends="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueCompositeElementImpl"
+	elementTypeHolderClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer.CatalogueTypes"
+	elementTypePrefix="CATALOGUE_"
+	elementTypeClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.types.CatalogueElementType"
+	tokenTypeClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer.CatalogueTokenType"
+	psiClassPrefix="Catalogue"
+	psiImplClassSuffix="Impl"
+	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api"
+	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl"
+	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.util.CataloguePsiImplUtil"
+	generateTokenAccessors=true
+	tokens = [
+		STRING_LITERAL = "regexp:\"([^\"]|\\\\.)*\""
+		INVALID_STRING_LITERAL = "regexp:\"([^\"]|\\\\.)|'([^']|\\\\.)'?"
+		NEWLINE_LITERAL = "regexp:\r?\n"
+		COMMENT = "regexp:^\s*#[^\n]*"
+		TAG = "regexp:[Tt][Aa][Gg]"
+		ARRAY = "regexp:[Aa][Rr]{2}[Aa][Yy]"
+		OVERRIDE = "regexp:[Oo][Vv][Rr][Rr][Ii][Dd][Ee]"
+		INT = "regexp:\d+"
+		space=' +'
+		ERROR_TOKEN = "regexp:."
+	]
+}
+
+file::= (!<<eof>>) element*
+
+element
+    ::= tag
+    |   array
+    |   comment
+    |   newline
+    |   INT
+    ;
+
+tag ::= TAG name items? {
+    pin(".*")=1
+};
+
+array ::= ARRAY override? name count items? {
+    pin(".*")=1
+};
+
+items
+    ::= (newline item)+
+    ;
+
+item
+    ::= STRING_LITERAL
+    ;
+
+override ::= OVERRIDE;
+
+name ::= STRING_LITERAL;
+
+count::= INT;
+
+newline::= NEWLINE_LITERAL;
+
+comment ::= COMMENT
