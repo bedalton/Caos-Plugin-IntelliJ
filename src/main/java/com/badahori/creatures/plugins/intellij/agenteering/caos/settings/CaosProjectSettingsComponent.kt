@@ -29,6 +29,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
 
     override fun loadState(state: State) {
         val oldState = this.state
+        this.state = state
         onUpdate(oldState, state)
     }
 
