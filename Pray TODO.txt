@@ -1,0 +1,7 @@
+- first string for inline FILE should not be qualified. Should be simply the file name
+
+- SUGGEST start blocks suck as GROUP, INLINE, "en-GB"
+
+- Warn if missing @ sign in script
+
+- FIX ERROR "FIX DEPENDENCY ORDERING" You cannot pass file text as dependency. Line(s) 2390, 2424, 2466, 2490, 2516, 2557, 2593, 2623, 2661, 2694, 2735, 2769, 2803, 2840, 2872, 2899, 2937, 2973, 3004
