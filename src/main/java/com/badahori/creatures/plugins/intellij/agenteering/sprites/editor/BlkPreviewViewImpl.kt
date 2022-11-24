@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import bedalton.creatures.sprite.parsers.BlkParser
-import bedalton.creatures.sprite.parsers.SpriteParser
+import bedalton.creatures.structs.Pointer
 import bedalton.creatures.util.FileNameUtil
 import bedalton.creatures.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
@@ -11,6 +11,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.notification.Notification
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -149,22 +152,55 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         val settings = CaosProjectSettingsService
             .getInstance(project)
         val trim = settings.trimBLKs
+
         if (trim != null) {
             return trim
         }
-        CaosNotifications.createInfoNotification(
-            project,
-            "BLK Parser",
-            "Black edges on the right and bottom sides were trimmed by default.\nIs this okay?",
-        )
-            .addAction("Do not trim BLKs (requires reparse)") {
+
+        val actionTaken = Pointer(false)
+        val notificationPointer: Pointer<Notification?> = Pointer(null)
+        val doNotTrim = object: AnAction(
+            "Do Not Trim BLKs"
+        ) {
+            override fun update(e: AnActionEvent) {
+                super.update(e)
+                if (actionTaken.value) {
+                    e.presentation.isEnabled = false
+                }
+            }
+            override fun actionPerformed(e: AnActionEvent) {
+                actionTaken.value = true
                 settings.trimBLKs = false
                 stitchActual()
+                notificationPointer.value?.expire()
             }
-            .addAction("Keep trimming BLKs") {
+        }
+
+        val keepTrimming = object: AnAction(
+            "Keep Trimming BLKs"
+        ) {
+            override fun update(e: AnActionEvent) {
+                super.update(e)
+                if (actionTaken.value) {
+                    e.presentation.isEnabled = false
+                }
+            }
+            override fun actionPerformed(e: AnActionEvent) {
+                actionTaken.value = true
                 settings.trimBLKs = true
+                notificationPointer.value?.expire()
             }
+        }
+
+        notificationPointer.value = CaosNotifications.createInfoNotification(
+            project,
+            "BLK Parse: ${file.name}",
+            "Black edges on the right and bottom sides were trimmed by default.\nIs this okay?",
+        )
+            .addAction(doNotTrim)
+            .addAction(keepTrimming)
             .show()
+
         return true
     }
 
@@ -313,4 +349,5 @@ private class ImagePanel(
     init {
         initHandlers()
     }
+
 }
