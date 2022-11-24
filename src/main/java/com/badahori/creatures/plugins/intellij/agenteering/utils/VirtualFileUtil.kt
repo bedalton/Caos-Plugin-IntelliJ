@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import bedalton.creatures.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
@@ -184,28 +185,27 @@ object VirtualFileUtil {
         if (otherFiles.isEmpty()) {
             return null
         }
+        val breedKey = BreedPartKey.fromFileName(virtualFile.path)
         return otherFiles
-            .mapNotNull map@{ other ->
+            .minByOrNull map@{ other ->
                 if (!filter(other)) {
-                    return@map null
+                    return@map Int.MAX_VALUE
                 }
                 val relativePath = VfsUtil.findRelativePath(virtualFile, other, '/')
-                    ?: return@map null
+                    ?: return@map Int.MAX_VALUE
                 val countPrevious = relativePath.count("../", false)
                 val after = relativePath.replace("../", "")
                 val countAfter = after.count('/')
-                return@map Triple(countPrevious, countAfter, other)
+                var distance = (countPrevious shl 24)
+                distance += (countAfter shl 16)
+                val thisBreedKey = BreedPartKey.fromFileName(other.name)
+                val breedDistance = if (breedKey != null && thisBreedKey != null) {
+                    breedKey.distance(thisBreedKey)
+                } else {
+                    null
+                } ?: Short.MAX_VALUE.toInt()
+                distance + breedDistance
             }
-            .nullIfEmpty()
-            ?.sortedWith sorted@{ a, b ->
-                val difference = b.first - a.first
-                if (difference != 0) {
-                    return@sorted difference
-                }
-                b.second - a.second
-            }
-            ?.firstOrNull()
-            ?.third
 
     }
 
