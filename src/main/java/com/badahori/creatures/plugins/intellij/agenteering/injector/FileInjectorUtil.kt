@@ -773,7 +773,7 @@ private fun findPossiblePsiElementOffsets(
         ?: return listOf(scriptPointer)
     val prefix = if (matchParts[0].first() == '[') "^" else ".*?"
     val suffix = if (matchParts[3].last() == ']') "$" else ".*?"
-    var regex = ("$prefix(${matchParts[1]})\\s+(${matchParts[2]})$suffix")
+    var regex = ("$prefix(${Regex.escape(matchParts[1])})\\s+(${Regex.escape(matchParts[2])})$suffix")
         .toRegex()
     var out = findPossiblePsiElementOffsets(script, text, regex)
 
