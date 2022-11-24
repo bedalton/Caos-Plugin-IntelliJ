@@ -505,7 +505,7 @@ internal object Caos2CompletionProvider {
             trueDirectory = temp
         }
 
-        LOGGER.info("Getting children in directory: ${trueDirectory.path}")
+//        LOGGER.info("Getting children in directory: ${trueDirectory.path}")
         // Get files of appropriate type
         val childFiles = if (requiredExtensions != null) {
             VirtualFileUtil.childrenWithExtensions(trueDirectory, extendedSearch, *requiredExtensions.toTypedArray())
