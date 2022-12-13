@@ -39,7 +39,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.String
 import javax.swing.Icon
 
 
-const val UNDEF = "{UNDEF}"
+const val UNDEF = "<<UNDEF>>"
 
 /**
  * Object for assigning additional commands to PSI Elements during code generation
