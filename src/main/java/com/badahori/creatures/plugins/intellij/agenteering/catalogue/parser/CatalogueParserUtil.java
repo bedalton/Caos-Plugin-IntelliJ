@@ -1,10 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.parser;
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lexer.CaosDefTypes;
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer.CatalogueTypes;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.TokenType;
+import com.intellij.psi.tree.IElementType;
 import gnu.trove.TObjectLongHashMap;
 
 public class CatalogueParserUtil extends GeneratedParserUtilBase {
@@ -66,8 +67,9 @@ public class CatalogueParserUtil extends GeneratedParserUtilBase {
         int index = 1;
         while (builder_.lookAhead(index) == TokenType.WHITE_SPACE)
             index++;
-        return builder_.lookAhead(index) == CaosDefTypes.CaosDef_DOC_COMMENT_OPEN ||
-                builder_.lookAhead(index) == CaosDefTypes.CaosDef_SEMI ||
-                eof(builder_, level);
+        IElementType next = builder_.lookAhead(index);
+        return next == CatalogueTypes.CATALOGUE_ARRAY ||
+                next == CatalogueTypes.CATALOGUE_TAG ||
+                next == CatalogueTypes.CATALOGUE_NEWLINE;
     }
 }

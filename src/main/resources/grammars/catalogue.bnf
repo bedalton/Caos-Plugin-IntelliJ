@@ -13,52 +13,109 @@
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.util.CataloguePsiImplUtil"
 	generateTokenAccessors=true
+	elementTypeFactory("tag|array")="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.types.CatalogueElementTypeFactory.factory"
+	name("ARRAY_KW") = "ARRAY"
+	name("OVERRIDE_KW") = "OVERRIDE"
+	name("TAG_KW") = "TAG"
+	name("error_item|item|INVALID_STRING_LITERAL|INT|ERROR_CHAR|NEWLINE_LITERAL|WORD") = "quoted value"
 	tokens = [
-		STRING_LITERAL = "regexp:\"([^\"]|\\\\.)*\""
-		INVALID_STRING_LITERAL = "regexp:\"([^\"]|\\\\.)|'([^']|\\\\.)'?"
-		NEWLINE_LITERAL = "regexp:\r?\n"
-		COMMENT = "regexp:^\s*#[^\n]*"
-		TAG = "regexp:[Tt][Aa][Gg]"
-		ARRAY = "regexp:[Aa][Rr]{2}[Aa][Yy]"
-		OVERRIDE = "regexp:[Oo][Vv][Rr][Rr][Ii][Dd][Ee]"
-		INT = "regexp:\d+"
-		space=' +'
-		ERROR_TOKEN = "regexp:."
+		INT_STRING_LITERAL = "regexp:\"\d+\"";
+		STRING_LITERAL = "regexp:\"([^\"]|\\\\.)*\"";
+		INVALID_STRING_LITERAL = "regexp:\"([^\"]|\\\\.)|'([^']|\\\\.)'?";
+		NEWLINE_LITERAL = "regexp:\r?\n";
+		COMMENT_LITERAL = "regexp:^#[^\n]*";
+		TAG_KW = "regexp:[Tt][Aa][Gg]";
+		ARRAY_KW = "regexp:[Aa][Rr]{2}[Aa][Yy]";
+		OVERRIDE_KW = "regexp:[Oo][Vv][Rr][Rr][Ii][Dd][Ee]";
+		INT = "regexp:\d+";
+		ERROR_CHAR = "regexp:[^ \t\r\n]"
+		WORD="regexp:\S+"
+		space='regexp:[ \t]'
 	]
 }
 
 file::= (!<<eof>>) element*
 
-element
+private element
     ::= tag
     |   array
-    |   comment
     |   newline
-    |   INT
     ;
 
-tag ::= TAG name items? {
+tag ::= TAG_KW override? item_name count? items {
     pin(".*")=1
+    stubClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueTagStub"
+    extends="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueStubBasedElementImpl<?>"
+    implements = [
+        "com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueEntryElement<com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueTagImpl, com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueTagStub>"
+    ]
+
+    methods = [
+        getName
+        setName
+        getType
+        getItemCount
+        getNameIdentifier
+    ]
 };
 
-array ::= ARRAY override? name count items? {
+array ::= ARRAY_KW override? item_name count? items {
     pin(".*")=1
+    stubClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueArrayStub"
+    extends="com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueStubBasedElementImpl<?>"
+    implements = [
+        "com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueEntryElement<com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueArrayImpl, com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueArrayStub>"
+    ]
+
+    methods = [
+        getName
+        setName
+        getType
+        getItemCount
+        isOverride
+        getExpectedValueCount
+        getNameIdentifier
+    ]
 };
 
-items
-    ::= (newline item)+
+private items
+    ::= (newline item?)*
+    {
+        recoverWhile=items_recover
+    }
+    ;
+
+private items_recover
+    ::= !(TAG_KW|ARRAY_KW|OVERRIDE_KW|INT|NEWLINE_LITERAL)
     ;
 
 item
     ::= STRING_LITERAL
+    |   INT_STRING_LITERAL
+    |   error_item
     ;
 
-override ::= OVERRIDE;
+error_item
+    ::= ( INT | INVALID_STRING_LITERAL | ERROR_CHAR | WORD )+
+    ;
 
-name ::= STRING_LITERAL;
+
+override ::= OVERRIDE_KW;
+
+item_name
+    ::= STRING_LITERAL
+    |   error_item
+   {
+    implements = [
+        "com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueCompositeElement"
+        "com.intellij.psi.PsiNamedElement"
+    ]
+    methods = [
+        getName
+        setName
+    ]
+}
 
 count::= INT;
 
 newline::= NEWLINE_LITERAL;
-
-comment ::= COMMENT

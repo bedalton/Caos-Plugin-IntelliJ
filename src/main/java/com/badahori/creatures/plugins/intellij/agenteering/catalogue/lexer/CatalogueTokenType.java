@@ -1,13 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer;
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttLanguage;
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueLanguage;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
 public class CatalogueTokenType extends IElementType {
 
     public CatalogueTokenType(@NotNull String debug) {
-        super(debug, AttLanguage.INSTANCE);
+        super(debug, CatalogueLanguage.INSTANCE);
     }
 
     @Override

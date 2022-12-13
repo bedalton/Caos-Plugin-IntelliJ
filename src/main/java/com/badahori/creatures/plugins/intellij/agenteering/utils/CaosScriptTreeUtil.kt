@@ -320,3 +320,42 @@ fun <PsiT:PsiElement> List<PsiFile>.collectElementsOfType(type:Class<PsiT>) : Li
         PsiTreeUtil.collectElementsOfType(file, type)
     }
 }
+
+
+/**
+ * Goes through all whitespace elements directly preceding an element,
+ * returning the one just before the most directly preceding non-whitespace element
+ */
+internal fun getEarliestPrecedingWhitespace(element: PsiElement?): PsiElement? {
+    if (element == null) {
+        return null
+    }
+    var previous: PsiElement? = null
+    var prevTemp: PsiElement? = element.previous
+        ?: return null
+    while (prevTemp != null && prevTemp.tokenType == TokenType.WHITE_SPACE && !prevTemp.text.contains('\n')) {
+        previous = prevTemp
+        prevTemp = prevTemp.previous
+            ?: break
+    }
+    return previous
+}
+
+/**
+ * Goes through all whitespace elements directly following an element,
+ * returning the one just before the next non-whitespace element
+ */
+internal fun getFurthestFollowingWhitespace(element: PsiElement?): PsiElement? {
+    if (element == null) {
+        return null
+    }
+    var next: PsiElement? = null
+    var nextTemp: PsiElement? = element.next
+        ?: return null
+    while (nextTemp != null && nextTemp.tokenType == TokenType.WHITE_SPACE && !nextTemp.text.contains('\n')) {
+        next = nextTemp
+        nextTemp = nextTemp.next
+            ?: break
+    }
+    return next
+}

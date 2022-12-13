@@ -1,5 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.parser;
 
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFile;
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer.CatalogueLexerAdapter;
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer.CatalogueTypes;
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.types.CatalogueTokenSets;
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubTypes;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
@@ -8,18 +13,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 
 public class CatalogueParserDefinition implements ParserDefinition {
 
-    private static final TokenSet WHITESPACE = TokenSet.create(
-            TokenType.WHITE_SPACE,
-            CatalogueType.CATALOGUE_ERROR_SPACE_LITERAL,
-            CatalogueType.CATALOGUE_SPACE_LITERAL
-    );
+    private static final TokenSet WHITESPACE = CatalogueTokenSets.getWHITE_SPACE();
 
     @NotNull
     @Override
@@ -34,7 +34,7 @@ public class CatalogueParserDefinition implements ParserDefinition {
 
     @Override
     public IFileElementType getFileNodeType() {
-        return CatalogueFileElementType.INSTANCE;
+        return CatalogueStubTypes.getFILE();
     }
 
     @NotNull
@@ -45,7 +45,7 @@ public class CatalogueParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public TokenSet getCommentTokens() {
-        return TokenSet.EMPTY;
+        return CatalogueTokenSets.getCOMMENTS();
     }
 
     @NotNull
