@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.direc
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayElement
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayGroupKw
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.Caos2CompletionProvider
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionProvider
@@ -70,6 +71,37 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
             return
         }
         var previous = element.getPreviousNonEmptySibling(false)
+        if (!element.text.startsWith('"')) {
+            if (previous?.lineNumber?.let { it != element.lineNumber } == true) {
+                for (tag in listOf("group", "inline")) {
+                    resultSet.addElement(
+                        LookupElementBuilder.create(tag)
+                            .withLookupStrings(
+                                listOf(
+                                    tag, tag.upperCaseFirstLetter(), tag.uppercase()
+                                )
+                            )
+                    )
+                }
+            } else if (previous is PrayGroupKw) {
+                val tags = if (parameters.isExtendedCompletion) {
+                    listOf("AGNT", "DSAG", "EGGS", "DSGB")
+                } else {
+                    listOf("AGNT", "DSAG", "EGGS")
+                }
+                for (tag in tags) {
+                    resultSet.addElement(
+                        LookupElementBuilder.create(tag)
+                            .withLookupStrings(
+                                listOf(
+                                    tag, tag.upperCaseFirstLetter(), tag.lowercase()
+                                )
+                            )
+                            .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
+                    )
+                }
+            }
+        }
         if (previous is PrayElement) {
             previous = PsiTreeUtil.findElementOfClassAtOffset(
                 element.containingFile,
