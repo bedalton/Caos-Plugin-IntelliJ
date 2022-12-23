@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, private val viewSettings: ViewSettings?) :
@@ -36,20 +37,22 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, pri
         if (!isValid()) {
             return@lazy null
         }
-        try {
-            // Caching is handled by read file method in SfcReader
-            SfcReader.readFile(myVirtualFile, cache = true, safe = true).data
-        } catch (e: Exception) {
-            val error = "Failed to parse SFC file: '${myVirtualFile.path}' with error:\n\t${e.message}"
-            SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
-            LOGGER.severe(error)
-            e.printStackTrace()
-            CaosNotifications.showError(
-                project,
-                "SFC Error",
-                "Failed to parse SFC file '${myVirtualFile.name}. *Note: Non-vanilla Eden.sfc files are un-parsable."
-            )
-            null
+        runBlocking {
+            try {
+                // Caching is handled by read file method in SfcReader
+                SfcReader.readFile(myVirtualFile, cache = true, safe = true).data
+            } catch (e: Exception) {
+                val error = "Failed to parse SFC file: '${myVirtualFile.path}' with error:\n\t${e.message}"
+                SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
+                LOGGER.severe(error)
+                e.printStackTrace()
+                CaosNotifications.showError(
+                    project,
+                    "SFC Error",
+                    "Failed to parse SFC file '${myVirtualFile.name}. *Note: Non-vanilla Eden.sfc files are un-parsable."
+                )
+                null
+            }
         }
     }
 

@@ -2,8 +2,8 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import bedalton.creatures.bytes.decodeToCreaturesEncoding
-import bedalton.creatures.util.*
+import bedalton.creatures.common.bytes.decodeToCreaturesEncoding
+import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messageOrNoneText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile

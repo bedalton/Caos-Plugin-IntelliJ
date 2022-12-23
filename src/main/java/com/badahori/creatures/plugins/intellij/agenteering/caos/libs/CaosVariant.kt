@@ -3,7 +3,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
-import bedalton.creatures.structs.like
+import bedalton.creatures.common.structs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.intellij.openapi.project.Project

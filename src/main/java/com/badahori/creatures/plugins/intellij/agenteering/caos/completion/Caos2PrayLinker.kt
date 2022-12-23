@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.ensureEndsWith
+import bedalton.creatures.common.structs.Pointer
+import bedalton.creatures.common.util.ensureEndsWith
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayBlockElement
@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.IntentionAction
@@ -493,10 +494,7 @@ private fun getLinksInDirectory(
     } else {
         "$path/"
     }
-    for (child in directory.children.filter(::skip)) {
-        if (child.isDirectory) {
-            out.addAll(getLinksInDirectory(child, pathPrefix + child.name, thisFile, caos))
-        }
+    for (child in directory.collectChildren(::skip)) {
         if (child.path == thisFile.path) {
             continue
         }

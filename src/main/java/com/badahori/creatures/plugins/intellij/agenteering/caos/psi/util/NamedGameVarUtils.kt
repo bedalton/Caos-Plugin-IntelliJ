@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import bedalton.creatures.util.toArrayOf
+import bedalton.creatures.common.util.toArrayOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.psiDirectory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module

@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -12,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
+import kotlinx.coroutines.runBlocking
 
 
 internal fun getInitialVariant(project: Project?, file: VirtualFile): CaosVariant {
@@ -90,9 +90,9 @@ private fun getInitialVariantImpl(project: Project?, file: VirtualFile): CaosVar
     val variant = when (file.extension?.lowercase()) {
         "spr" -> CaosVariant.C1
         "c16" -> {
-            val numImages = SpriteParser.imageCount(file)
+            val imageCount = runBlocking { SpriteParser.imageCount(file) }
             when (part) {
-                'a' -> when (numImages) {
+                'a' -> when (imageCount) {
                     576 -> CaosVariant.CV
                     else -> CaosVariant.C3
                 }
@@ -101,15 +101,15 @@ private fun getInitialVariantImpl(project: Project?, file: VirtualFile): CaosVar
             }
         }
         "s16" -> {
-            val numImages = SpriteParser.imageCount(file)
+            val imageCount = runBlocking { SpriteParser.imageCount(file) }
             when (part) {
-                'a' -> when (numImages) {
+                'a' -> when (imageCount) {
                     120 -> CaosVariant.C2
                     576 -> CaosVariant.CV
                     else -> CaosVariant.C3
                 }
                 // 'o', 'p', 'q' -> CaosVariant.CV already checked for
-                else -> if (numImages == 10) {
+                else -> if (imageCount == 10) {
                     CaosVariant.C2
                 } else {
                     CaosVariant.C3

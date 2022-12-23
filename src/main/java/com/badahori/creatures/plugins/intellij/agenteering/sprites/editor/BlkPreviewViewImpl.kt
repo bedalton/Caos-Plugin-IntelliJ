@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import bedalton.creatures.sprite.parsers.BlkParser
-import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.className
+import bedalton.creatures.common.structs.Pointer
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -24,6 +24,7 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
 import com.soywiz.korim.awt.toAwt
+import kotlinx.coroutines.runBlocking
 import java.awt.Dimension
 import java.awt.FileDialog
 import java.awt.Frame
@@ -142,7 +143,9 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         }
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            stitchActual()
+            runBlocking {
+                stitchActual()
+            }
         }
     }
 
@@ -169,10 +172,12 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
                 }
             }
             override fun actionPerformed(e: AnActionEvent) {
-                actionTaken.value = true
-                settings.trimBLKs = false
-                stitchActual()
-                notificationPointer.value?.expire()
+                runBlocking {
+                    actionTaken.value = true
+                    settings.trimBLKs = false
+                    stitchActual()
+                    notificationPointer.value?.expire()
+                }
             }
         }
 
@@ -204,7 +209,7 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         return true
     }
 
-    private fun stitchActual() {
+    private suspend fun stitchActual() {
         try {
             val reader = VirtualFileStreamReader(file)
             var percent = 0

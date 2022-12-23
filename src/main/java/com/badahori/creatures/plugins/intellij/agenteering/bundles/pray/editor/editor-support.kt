@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
-import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -24,6 +24,7 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
+import kotlinx.coroutines.runBlocking
 import java.awt.FlowLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -124,7 +125,7 @@ internal object PrayCompilerToolbarActions {
             }
 
             runBackgroundableTask("Compile PRAY Agent") task@{
-                val output = CompilePrayFileAction.compile(project, file.virtualFile.path, opts)
+                val output = runBlocking { CompilePrayFileAction.compile(project, file.virtualFile.path, opts) }
                     ?: return@task
                 invokeLater {
                     CaosNotifications.showInfo(
@@ -138,7 +139,7 @@ internal object PrayCompilerToolbarActions {
         }
     }
 
-    private fun getOpts(file: PsiFile, onOpts: (PrayCompilerCliOptions?) -> Unit) {
+    private fun getOpts(file: PsiFile, onOpts: (PrayCompileOptions?) -> Unit) {
         val cached = when (file) {
             is CaosScriptFile -> file.compilerSettings
             is PrayFile -> file.compilerSettings

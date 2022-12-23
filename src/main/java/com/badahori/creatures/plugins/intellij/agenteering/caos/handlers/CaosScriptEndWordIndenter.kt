@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.handlers
 
-import bedalton.creatures.util.className
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
@@ -22,17 +22,25 @@ class CaosScriptEndWordIndenter(private val originalHandler: TypedActionHandler?
     : TypedActionHandlerBase(originalHandler) {
 
     override fun execute(editor: Editor, c: Char, dataContext: DataContext) {
-        originalHandler?.execute(editor, c, dataContext)
+        if (!handle(editor, c, dataContext)) {
+            try {
+                originalHandler?.execute(editor, c, dataContext)
+            } catch (e: Exception) {
+                LOGGER.severe("Failed to delegate TypedActionHandler to parent call. ${e.className}: ${e.message}\n${e.stackTraceToString()}")
+            }
+        }
+    }
 
+    private fun handle(editor: Editor, c: Char, dataContext: DataContext): Boolean {
         val project = CommonDataKeys.PROJECT.getData(dataContext)
-            ?: return
+            ?: return false
         if (PsiUtilBase.getLanguageInEditor(editor, project) != CaosScriptLanguage) {
-            return
+            return false
         }
         val file = CommonDataKeys.PSI_FILE.getData(dataContext)
-            ?: return
+            ?: return false
         if (file !is CaosScriptFile) {
-            return
+            return false
         }
 
         val blockToReformat = when (c) {
@@ -48,7 +56,7 @@ class CaosScriptEndWordIndenter(private val originalHandler: TypedActionHandler?
                 getElementIfPrefixed(file, editor, RETN, NSCN)?.let {
                     if (it.elementType == CaosScriptTypes.CaosScript_C_KW_RETN) {
                         it.parent.parent
-                            ?: return
+                            ?: return false
                     } else {
                         it.parent
                     }
@@ -80,12 +88,14 @@ class CaosScriptEndWordIndenter(private val originalHandler: TypedActionHandler?
             }
             else -> null
 
-        } ?: return
+        } ?: return false
 
-        try {
+        return try {
             CodeStyleManager.getInstance(project).reformatText(file, blockToReformat.startOffset, editor.caretModel.offset)
+            true
         } catch (e: Exception) {
             LOGGER.severe("Failed to format code block after ending word. ${e.className}: ${e.message ?: ""}")
+            false
         }
     }
 

@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
-import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.className
+import bedalton.creatures.common.structs.Pointer
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectorA
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
@@ -43,6 +42,7 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil
+import java.awt.Color
 import java.awt.Component
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
@@ -83,15 +83,17 @@ class CaosScriptEditorToolbar(val project: Project)
             return null
         }
         ProgressIndicatorProvider.checkCanceled()
-        val panel = EditorNotificationPanel(UIUtil.TRANSPARENT_COLOR)
+        val backgroundColor: Color = UIUtil.getPanelBackground()
+        val panel = EditorNotificationPanel(backgroundColor)
         try {
             val headerComponent = createCaosScriptHeaderComponent(
                 project = project,
                 fileEditor = fileEditor,
                 virtualFile = virtualFile,
-                caosFile = caosFile
+                caosFile = caosFile,
             )
                 ?: return panel
+            headerComponent.background = backgroundColor
             panel.add(headerComponent)
         } catch (e: ProcessCanceledException) {
             LOGGER.severe("Process was canceled during notification panel creation")
@@ -223,7 +225,7 @@ private fun populate(
     // Actual injection button
     val runInjectorButton = ActionButton(
         runInjectorAction,
-        runInjectorAction.templatePresentation,
+        null,
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
@@ -497,6 +499,13 @@ private fun populate(
     toolbar.add(Box.createHorizontalGlue())
     toolbar.add(docsButton)
 
+    pointer.element?.apply {
+        this.addListener { newVariant ->
+            if (newVariant != null) {
+                assignVariant(newVariant, false)
+            }
+        }
+    }
     invokeLater {
         interruptedInitializer(
             project,
@@ -586,8 +595,9 @@ private fun interruptedInitializer(
             if (eventFile.virtualFile.path != file.virtualFile?.path && eventFile.virtualFile != file.virtualFile) {
                 return
             }
-            if (event.propertyName != "propUnloadedPsi")
+            if (event.propertyName != "propUnloadedPsi") {
                 return
+            }
             reschedule()
         }
 

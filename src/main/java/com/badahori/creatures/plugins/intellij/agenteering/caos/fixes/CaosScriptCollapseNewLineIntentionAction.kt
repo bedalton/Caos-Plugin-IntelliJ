@@ -17,6 +17,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
@@ -55,7 +57,7 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
                 return false
         }
         val hasNewlines = file.text.orEmpty().contains("\n")
-        val isMultiline = file.text.length > 5 && file.lastChild.lineNumber != 0
+        val isMultiline = file.text.length > 3 && file.lastChild.lineNumber != 0
         return hasNewlines || isMultiline
     }
 
@@ -73,6 +75,14 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
     }
 
     private fun invoke(project: Project, file: PsiFile) {
+        if (!ApplicationManager.getApplication().isDispatchThread) {
+            try {
+                collapseLines(file, collapseChar)
+            } catch (_: Exception) {
+
+            }
+            return
+        }
         val document = PsiDocumentManager.getInstance(project).getCachedDocument(file) ?: file.document
         if (document != null) {
             PsiDocumentManager.getInstance(project).commitDocument(document)
@@ -86,7 +96,11 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             e.message
         }
         if (message != null) {
-            CaosNotifications.showError(project, "Collapse Script Error", message)
+            try {
+                CaosNotifications.showError(project, "Collapse Script Error", message)
+            } catch (_: Exception) {
+
+            }
         }
     }
 

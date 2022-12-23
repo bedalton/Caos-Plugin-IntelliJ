@@ -2,9 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.common.structs.Pointer
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getVariant

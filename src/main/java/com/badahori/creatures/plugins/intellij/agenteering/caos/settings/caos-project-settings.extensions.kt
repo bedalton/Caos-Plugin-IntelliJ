@@ -2,9 +2,11 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -14,7 +16,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes.directoryScope
@@ -55,7 +61,7 @@ fun Module.inferVariantHard(): CaosVariant? {
         getFilesWithExtension(project, this, this.myModuleFile, extension)
     }
     val scope = getModuleScope(false)
-    return variantInScope(scope, getFilesWithExtension)
+    return variantInScope(this, scope, getFilesWithExtension)
 }
 
 /**
@@ -72,7 +78,7 @@ fun Project.inferVariantHard(): CaosVariant? {
         getFilesWithExtension(this, null, this.projectFile, extension)
     }
     val scope = GlobalSearchScope.everythingScope(this)
-    val variant = variantInScope(scope, getFilesWithExtension)
+    val variant = variantInScope(this, scope, getFilesWithExtension)
     if (variant != null) {
         this.settings.defaultVariant = variant
     }
@@ -84,9 +90,7 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
     cachedVariantExplicitOrImplicit?.nullIfUnknown()?.let {
         return it
     }
-    val getFilesWithExtension = { extension: String ->
-        getFilesWithExtension(project, null, this, extension)
-    }
+
     val isDirectory = isDirectory
     val directory = if (isDirectory) {
         this
@@ -94,7 +98,9 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
         parent
     }
     val simple = if (!isDirectory) {
-        inferVariantSimple()
+        inferVariantSimple().apply {
+            LOGGER.info("Inferred virtual file variant hard: $this; File: $path")
+        }
     } else {
         null
     }
@@ -106,22 +112,22 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
         ?: if (!isDirectory) {
             parent?.inferVariantHard(project)
         } else {
+            val getFilesWithExtension = { extension: String ->
+                getFilesWithExtension(project, null, this, extension)
+            }
             // Get without searching subdirectories
-            variantInScope(directoryScope(project, this, false), getFilesWithExtension)
+            variantInScope(this, directoryScope(project, this, false), getFilesWithExtension)
             // Get while searching subdirectories as fallback
-                ?: variantInScope(directoryScope(project, this, true), getFilesWithExtension)
+                ?: variantInScope(this, directoryScope(project, this, true), getFilesWithExtension)
         }
-    if (variant == null) {
-        // If we are allowed to search parent, do so
+        ?: // If we are allowed to search parent, do so
         // This should only look one folder up
-        return if (searchParent) {
-            val parent = parent
-                ?: return null
-            parent.inferVariantHard(project, false)
+        if (searchParent) {
+            parent?.inferVariantHard(project, false)
         } else {
             null
         }
-    }
+
     setCachedVariant(variant, false)
 
     // DO not set directory for a single file in what could be a mixed up set-of files
@@ -146,11 +152,21 @@ private fun VirtualFile.inferVariantSimple(): CaosVariant? {
     } else if (matchC1 && !matchC2) {
         CaosVariant.C1
     } else if (matchC2 && !matchC1) {
-        CaosVariant.CV
+        CaosVariant.C2
     } else if (matchC1) {
         CaosVariant.C1
     } else {
         null
+    }
+}
+
+internal fun inferVariantInParent(project: Project, file: VirtualFile?): CaosVariant? {
+    return if (file == null) {
+        return null
+    } else if (file.isDirectory) {
+        file.inferVariantHard(project, true)
+    } else {
+        file.parent.inferVariantHard(project, true)
     }
 }
 
@@ -161,7 +177,7 @@ private val C1_ITEMS by lazy {
     "(clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|(simp|comp)\\s+[a-zA-Z0-9]{4}|$C1_STRING)".toRegex(RegexOption.IGNORE_CASE)
 }
 private val C2_ITEMS by lazy {
-    "(cls2|va\\d{2}|ov\\d+|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|grav|escn|radn|obsv|size|rest|(simp|comp)\\s+[a-zA-Z0-9]{4})|$C1_STRING".toRegex(RegexOption.IGNORE_CASE)
+    "(cls2|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|grav|escn|radn|obsv|size|rest|(simp|comp)\\s+[a-zA-Z0-9]{4})|$C1_STRING".toRegex(RegexOption.IGNORE_CASE)
 }
 private val C3_ITEMS_ARRAY by lazy {
     listOf(
@@ -228,12 +244,32 @@ private val DS_ITEMS by lazy {
         }
 }
 
+private fun variantInScope(key: UserDataHolder, scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
 
-/**
+    key.getUserData(VARIANT_WITH_EXPIRY)?.let { variantWithExpiry ->
+        variantWithExpiry.second?.let {
+            return it
+        }
+        if (variantWithExpiry.first < now) {
+            return null
+        }
+    }
+
+    // Quickly set variant to null to prevent multiple calls all fighting to set the value
+    key.putUserData(VARIANT_WITH_EXPIRY, Pair(now + 10_000, null))
+
+    // Gets the variant
+    val variant = null //variantInScopeFinal(scope, filesByExtension)
+    key.putUserData(VARIANT_WITH_EXPIRY, Pair(now + VARIANT_VALID_FOR, variant))
+    return variant
+}
+
+
+    /**
  * Checks a project for its file types in a given scope,
  * And tries to determine what variant it could be
  */
-private fun variantInScope(scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
+private fun variantInScopeFinal(scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
 
     val getFilesByExtension = { extension: String ->
         filesByExtension(extension).filter {
@@ -307,8 +343,9 @@ fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
     if (fileName.isBlank())
         return
     val state = state
-    if (state.ignoredFilenames.contains(fileName))
+    if (state.ignoredFilenames.contains(fileName)) {
         return
+    }
     loadState(
         state.copy(
             ignoredFilenames = (state.ignoredFilenames + fileName).distinct()
@@ -323,8 +360,9 @@ fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
     if (fileName.isBlank())
         return
     val state = state
-    if (!state.ignoredFilenames.contains(fileName))
+    if (!state.ignoredFilenames.contains(fileName)) {
         return
+    }
     loadState(state.copy(
         ignoredFilenames = state.ignoredFilenames.filter { it != fileName }
     ))
@@ -382,8 +420,9 @@ val CaosApplicationSettingsService.gameInterfaceNames: List<GameInterfaceName>
  */
 fun CaosApplicationSettingsService.gameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
     val interfaces = gameInterfaceNames
-    if (variant.nullIfUnknown() == null)
+    if (variant.nullIfUnknown() == null) {
         return interfaces
+    }
     return interfaces.filter { it.isVariant(variant) }
 
 }
@@ -463,3 +502,8 @@ var CaosApplicationSettingsService.replicateAttToDuplicateSprites: Boolean?
             )
         )
     }
+
+
+
+private val VARIANT_VALID_FOR = 40_000
+private val VARIANT_WITH_EXPIRY = Key<Pair<Long, CaosVariant?>>("bedalton.creatures.VARIANT_WITH_EXPIRY")

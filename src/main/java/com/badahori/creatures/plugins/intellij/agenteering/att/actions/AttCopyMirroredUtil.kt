@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
-import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
+import bedalton.creatures.common.bytes.CREATURES_CHARACTER_ENCODING
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
@@ -10,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTransparentWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 
 internal object AttCopyMirroredUtil {
@@ -153,7 +154,7 @@ internal object AttCopyMirroredUtil {
     private fun getSprite(project: Project, attFile: VirtualFile): List<BufferedImage>? {
         val spriteFile = getAnyPossibleSprite(project, attFile)
             ?: return null
-        return SpriteParser.parse(spriteFile).images
+        return runBlocking { SpriteParser.parse(spriteFile).images  }
     }
 
     sealed class AttCopyResult {

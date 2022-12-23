@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import bedalton.creatures.util.OS
+import bedalton.creatures.common.util.OS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInject
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
-import bedalton.creatures.util.className
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.intellij.icons.AllIcons
@@ -182,8 +182,10 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
     fun create(file: VirtualFile?): GameInterfaceName? {
         val newInterface = getGameInterface(project, variant)
             ?: return null
+
         if (file == null) {
             LOGGER.severe("VirtualFile is null in create undoable add game interface in class: ${this.className}")
+            return null
         }
 
         val undoableAction = object : BasicUndoableAction(file) {

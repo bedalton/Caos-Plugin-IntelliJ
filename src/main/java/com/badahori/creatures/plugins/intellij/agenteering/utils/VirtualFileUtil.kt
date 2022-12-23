@@ -2,9 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.util.*
+import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -44,13 +45,8 @@ object VirtualFileUtil {
                 it.extension likeAny extensions
             }
         }
-        return virtualFile.children.flatMap {
-            if (it.isDirectory) {
-                childrenWithExtensions(it, true, *extensionsIn)
-            } else if (it.extension likeAny extensions) {
-                listOf(it)
-            } else
-                emptyList()
+        return virtualFile.collectChildren {
+            !it.isDirectory && it.extension likeAny extensions
         }
     }
 
@@ -61,12 +57,10 @@ object VirtualFileUtil {
         if (!recursive) {
             return virtualFile.children.filterNot { it.isDirectory }
         }
-        return virtualFile.children.flatMap {
-            if (it.isDirectory) {
-                collectChildFiles(it, true)
-            } else {
-                listOf(it)
-            }
+        return if (virtualFile.isDirectory) {
+            virtualFile.collectChildren()
+        } else {
+            emptyList()
         }
     }
 

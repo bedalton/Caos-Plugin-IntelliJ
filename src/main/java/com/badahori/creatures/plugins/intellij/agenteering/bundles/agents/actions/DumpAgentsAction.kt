@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions
 
-import bedalton.creatures.bytes.RelativeFileWriter
-import bedalton.creatures.io.FileWriter
+import bedalton.creatures.common.bytes.RelativeFileWriter
 import bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
-import bedalton.creatures.structs.Pointer
+import bedalton.creatures.agents.util.RelativeFileSystem
+import bedalton.creatures.common.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.CommandProcessor
@@ -22,7 +23,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileTooBigException
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korio.async.launch
 import icons.CaosScriptIcons
+import kotlinx.coroutines.GlobalScope
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
@@ -96,18 +99,21 @@ class DumpAgentAction : AnAction(
         VirtualFileUtil.ensureParentDirectory(path, createdFiles)
         val dumped = Pointer(0)
         val failed = Pointer(0)
+
         for (file in files) {
             CommandProcessor.getInstance().runUndoTransparentAction {
-                dumpFile(
-                    project,
-                    files,
-                    file,
-                    path,
-                    useChildDirectories,
-                    dumped,
-                    failed,
-                    createdFiles
-                )
+                GlobalScope.launch {
+                    dumpFile(
+                        project,
+                        files,
+                        file,
+                        path,
+                        useChildDirectories,
+                        dumped,
+                        failed,
+                        createdFiles
+                    )
+                }
             }
         }
         when {
@@ -131,7 +137,7 @@ class DumpAgentAction : AnAction(
         }
     }
 
-    private fun dumpFile(
+    private suspend fun dumpFile(
         project: Project,
         files: List<VirtualFile>,
         file: VirtualFile,
@@ -175,7 +181,7 @@ class DumpAgentAction : AnAction(
     /**
      * Dumps an agent file to a given parent directory
      */
-    private fun dump(
+    private suspend fun dump(
         parentVirtualFile: VirtualFile,
         file: VirtualFile,
         useChildDirectories: Boolean,
@@ -184,7 +190,8 @@ class DumpAgentAction : AnAction(
         // Parse Agent and write files
         val stream = VirtualFileStreamReader(file)
         val prefix = if (useChildDirectories) "" else file.nameWithoutExtension
-        val relativeWriter = RelativeFileWriter(parentVirtualFile.path, FileWriter)
+        val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)
+
 //        val result = try {
              val result = parsePrayAgentToFiles(file.name, prefix = prefix, stream, relativeWriter, "*")
 //        } catch (e: Exception) {
@@ -192,7 +199,7 @@ class DumpAgentAction : AnAction(
 //            return false
 //        }
         createdFiles.add(Pair(file, parentVirtualFile))
-        return result.files.isNotEmpty()
+        return result.files().isNotEmpty()
     }
 
 

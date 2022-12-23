@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator
 
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.stripSurroundingQuotes
-import bedalton.creatures.util.toArrayOf
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.stripSurroundingQuotes
+import bedalton.creatures.common.util.toArrayOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayDependencyCategories
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayDependencyCategories.dependencyCategoryName

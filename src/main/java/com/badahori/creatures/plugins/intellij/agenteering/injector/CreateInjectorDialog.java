@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector;
 
-import bedalton.creatures.util.OS;
+import bedalton.creatures.common.util.OS;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService;
@@ -12,8 +12,8 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

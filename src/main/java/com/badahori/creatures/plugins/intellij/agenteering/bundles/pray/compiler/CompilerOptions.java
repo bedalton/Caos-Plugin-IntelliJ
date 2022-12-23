@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler;
 
-import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions;
+import bedalton.creatures.agents.pray.compiler.PrayCompileOptions;
+import bedalton.creatures.agents.pray.compiler.PrayCompileOptionsImpl;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +11,6 @@ import javax.swing.plaf.FontUIResource;
 import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -28,14 +28,14 @@ public class CompilerOptions {
 
     CompilerOptions(
             @Nullable
-            final PrayCompilerCliOptions options) {
+            final PrayCompileOptions options) {
         $$$setupUI$$$();
         setCompilerOptions(options);
     }
 
     void setCompilerOptions(
             @Nullable
-            final PrayCompilerCliOptions options) {
+            final PrayCompileOptions options) {
         if (options == null) {
             return;
         }
@@ -46,18 +46,13 @@ public class CompilerOptions {
         validatePRAYFileCheckBox.setSelected(options.getValidate());
     }
 
-    public PrayCompilerCliOptions getOptions() {
-        return new PrayCompilerCliOptions(
+    public PrayCompileOptionsImpl getOptions() {
+        return new PrayCompileOptionsImpl(
                 mergeScriptsCheckBox.isSelected(),
-                validatePRAYFileCheckBox.isSelected(),
-                "",
-                null,
-                false,
                 mergeRSCRCheckBox.isSelected(),
                 autogenerateEventScriptRemoversCheckBox.isSelected(),
                 autogenerateAgentRemoversCheckBox.isSelected(),
-                false,
-                false,
+                validatePRAYFileCheckBox.isSelected(),
                 new String[0],
                 false
         );

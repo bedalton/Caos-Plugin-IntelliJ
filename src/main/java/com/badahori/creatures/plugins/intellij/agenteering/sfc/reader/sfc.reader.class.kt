@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcBiochemistryPtr
-import bedalton.creatures.util.className
+import bedalton.creatures.common.util.className
 
 private const val SFC_BINARY_CONST = 0x8000
 
-internal fun SfcReader.readClass(requiredType: SfcType): Ptr<*>? {
-    val pid = uInt16
+internal suspend fun SfcReader.readClass(requiredType: SfcType): Ptr<*>? {
+    val pid = uInt16()
     return when {
         pid == 0 -> null
         pid == 0xFFFF -> readNewMfc()
@@ -15,9 +15,9 @@ internal fun SfcReader.readClass(requiredType: SfcType): Ptr<*>? {
     }
 }
 
-private fun SfcReader.readNewMfc() : Ptr<*>? {
+private suspend fun SfcReader.readNewMfc() : Ptr<*> {
     skip(2) // Schema ID -> Seems to be ignored in C2e
-    val className = string(uInt16).trim()
+    val className = string(uInt16()).trim()
     val pid = storage.size
     val pidType = when(className) {
         "MapData" -> SfcType.MAP_DATA
@@ -58,7 +58,7 @@ private fun SfcReader.returnExistingObject(requiredType:SfcType, pidIn:Int) : Pt
     return storage[pid]!!
 }
 
-private fun SfcReader.createNewFromExisting(requiredType: SfcType, pidIn:Int) : Ptr<*> {
+private suspend fun SfcReader.createNewFromExisting(requiredType: SfcType, pidIn:Int) : Ptr<*> {
     val pid = (pidIn xor SFC_BINARY_CONST) - 1
     assert(pid < storage.size) { "Pid should be less than size"}
     assert(storage[pid] == null) { "Storage for pid '$pid' should be null" }
@@ -68,7 +68,7 @@ private fun SfcReader.createNewFromExisting(requiredType: SfcType, pidIn:Int) : 
     return read(pidType, pid)
 }
 
-private fun SfcReader.read(pidType:SfcType, pid:Int) : Ptr<*> {
+private suspend fun SfcReader.read(pidType:SfcType, pid:Int) : Ptr<*> {
     types[storage.size] = pidType
     if (validSfcType(pidType, SfcType.COMPOUNDOBJECT))
         readingCompoundObject = true

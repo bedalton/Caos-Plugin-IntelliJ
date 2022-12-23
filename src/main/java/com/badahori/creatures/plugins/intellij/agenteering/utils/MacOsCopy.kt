@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.util.Log
-import bedalton.creatures.util.className
+import bedalton.creatures.common.util.Log
+import bedalton.creatures.common.util.className
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.IOException

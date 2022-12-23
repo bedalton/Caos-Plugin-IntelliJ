@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.actions
 
-import bedalton.creatures.structs.Pointer
+import bedalton.creatures.common.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -23,6 +23,7 @@ import com.soywiz.korim.awt.toAwt
 import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Path
@@ -114,15 +115,17 @@ class DumpSpriteAction : AnAction(
                 .withName(name)
                 .withGroupId(groupId)
                 .run<Throwable> {
-                    dumpFile(
-                        files,
-                        file,
-                        path,
-                        useChildDirectories,
-                        dumped,
-                        failed,
-                        createdFiles
-                    )
+                    runBlocking {
+                        dumpFile(
+                            files,
+                            file,
+                            path,
+                            useChildDirectories,
+                            dumped,
+                            failed,
+                            createdFiles
+                        )
+                    }
                 }
         }
 
@@ -147,7 +150,7 @@ class DumpSpriteAction : AnAction(
         }
     }
 
-    private fun dumpFile(
+    private suspend fun dumpFile(
         files: Array<VirtualFile>,
         file: VirtualFile,
         parentPath: String,
@@ -183,7 +186,7 @@ class DumpSpriteAction : AnAction(
     /**
      * Dumps a sprite file to a given parent directory
      */
-    private fun dump(
+    private suspend fun dump(
         parentVirtualFile: VirtualFile,
         file: VirtualFile,
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.util
 
-import bedalton.creatures.util.stripSurroundingQuotes
+import bedalton.creatures.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueArray
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueItemName

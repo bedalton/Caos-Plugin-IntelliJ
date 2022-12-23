@@ -1,12 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.bytes.MemoryByteStreamWriter
-import bedalton.creatures.bytes.writeNullByte
-import bedalton.creatures.bytes.writeSfcString
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.ensureEndsWith
-import bedalton.creatures.util.nullIfEmpty
-import bedalton.creatures.util.pathSeparatorChar
+import bedalton.creatures.common.bytes.MemoryByteStreamWriter
+import bedalton.creatures.common.bytes.writeNullByte
+import bedalton.creatures.common.bytes.writeSfcString
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.ensureEndsWith
+import bedalton.creatures.common.util.nullIfEmpty
+import bedalton.creatures.common.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.soywiz.korim.bitmap.Bitmap32
@@ -61,7 +61,7 @@ data class Caos2CobC1(
         }
     }
 
-    override fun compile(): ByteArray {
+    override suspend fun compile(): ByteArray {
         val buffer = MemoryByteStreamWriter()
         buffer.writeUInt16(1) // Cob Version
         buffer.writeUInt16(quantityAvailable ?: -1)

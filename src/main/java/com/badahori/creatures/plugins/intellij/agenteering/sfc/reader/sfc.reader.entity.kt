@@ -4,19 +4,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 
 
-internal fun SfcReader.readEntity(): PointerSfcEntity {
+internal suspend fun SfcReader.readEntity(): PointerSfcEntity {
 
     val sprite = readClass(SfcType.GALLERY) as SfcGalleryPtr
-    val currentFrame = uInt8
-    val imageOffset = uInt8
-    val zOrder = uInt32
-    val position = vector2
-    val animationByte = uInt8
+    val currentFrame = uInt8()
+    val imageOffset = uInt8()
+    val zOrder = uInt32()
+    val position = vector2()
+    val animationByte = uInt8()
     var frame: Int? = null
     var animationString: String? = null
     if (animationByte > 0) {
         assert(animationByte == 1) { "Animation byte has value other than 0 or 1" }
-        frame = uInt8
+        frame = uInt8()
         animationString = if (variant == C1)
             string(32)
         else
@@ -44,13 +44,13 @@ internal fun SfcReader.readEntity(): PointerSfcEntity {
                 position = position,
                 animationFrame = frame,
                 animationString = animationString,
-                relativePosition = vector2
+                relativePosition = vector2()
         )
     }
 
-    val partZOrder = uInt32
-    val behaviorClicks = (0 until 3).map { uInt8 }
-    val behaviorTouch = uInt8
+    val partZOrder = uInt32()
+    val behaviorClicks = (0 until 3).map { uInt8() }
+    val behaviorTouch = uInt8()
     if (variant == C1) {
         return PointerSfcEntity(
                 gallery = sprite,
@@ -66,11 +66,11 @@ internal fun SfcReader.readEntity(): PointerSfcEntity {
         )
     }
 
-    val pickupHandles = (0 until uInt16).map {
-        vector2
+    val pickupHandles = (0 until uInt16()).map {
+        vector2()
     }
-    val pickupPoints = (0 until uInt16).map {
-        vector2
+    val pickupPoints = (0 until uInt16()).map {
+        vector2()
     }
 
 

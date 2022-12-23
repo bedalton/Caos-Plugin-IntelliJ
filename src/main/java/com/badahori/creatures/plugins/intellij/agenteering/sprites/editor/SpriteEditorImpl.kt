@@ -5,7 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 import bedalton.creatures.sprite.parsers.PhotoAlbum
 import bedalton.creatures.sprite.parsers.SPR_SHORT_DEBUG_LOGGING
 import bedalton.creatures.sprite.parsers.image
-import bedalton.creatures.util.Log
+import bedalton.creatures.common.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ensureMacOsCopyLib
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty

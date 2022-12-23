@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.poser.actions
 
 import bedalton.creatures.sprite.util.SpriteType
-import bedalton.creatures.util.className
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
@@ -310,7 +310,7 @@ class AutoPreview : AnAction() {
         val variant = variantIn
             ?: if (mappedParts['a']!!.bodyData.lines.size > 10)
                 CaosVariant.C3
-            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.type == SpriteType.S16})
+            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.fileType == SpriteType.S16})
                 CaosVariant.C2
             else
                 CaosVariant.C1

@@ -3,7 +3,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import bedalton.creatures.util.*
+import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.psiDirectory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile

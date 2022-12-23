@@ -3,28 +3,32 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 
-import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions
+import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PRAY_COMPILER_SETTINGS_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PraySettingsPropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
-import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileTreeChangedListener
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
@@ -44,24 +48,30 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
 class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myFile: VirtualFile) :
-    PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant, DumbAware {
+    PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant, DumbAware, Disposable {
 
 
     private val didFormatInitial = AtomicBoolean(false)
     override val variant: CaosVariant?
         get() {
             return explicitVariant.nullIfUnknown()
-                ?: getUserData(ExplicitVariantUserDataKey).nullIfUnknown()
-                ?: ExplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown()
+                ?: (getUserData(ExplicitVariantUserDataKey).nullIfUnknown()
+                    ?: ExplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown())?.apply {
+                    explicitVariant = this
+                }
                 ?: implicitVariant.nullIfUnknown()
-                ?: getUserData(ImplicitVariantUserDataKey).nullIfUnknown()
-                ?: ImplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown()
-                ?: myFile.cachedVariantExplicitOrImplicit.nullIfUnknown()
+                ?: (getUserData(ImplicitVariantUserDataKey).nullIfUnknown()
+                    ?: ImplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown())?.apply {
+                    implicitVariant = this
+                }
+                ?: (myFile.cachedVariantExplicitOrImplicit.nullIfUnknown() ?: myFile.inferVariantHard(project, true)?.apply {
+                    putUserData(ImplicitVariantUserDataKey, this)
+                })
                 ?: (this.originalFile as? CaosScriptFile)
                     ?.myFile
                     ?.let {
                         it.cachedVariantExplicitOrImplicit
-                        .nullIfUnknown()
+                            .nullIfUnknown()
                             ?: it.inferVariantHard(project, true)?.apply {
                                 putUserData(ImplicitVariantUserDataKey, this)
                             }
@@ -81,6 +91,7 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                         }
                             ?.nullIfUnknown()
                 }
+                ?: this.directory?.cachedVariantExplicitOrImplicit
         }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
@@ -91,8 +102,9 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             implicitVariant = null
             setVariantBase(virtualFile, newVariant = null, false)
             setVariantBase(myFile, newVariant = null, false)
-            if (variant != this.variant)
+            if (variant != this.variant) {
                 LOGGER.severe("Failed to set variant on PSI file. Expected: ${variant?.code}; Found: ${this.variant?.code}")
+            }
             ExplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
                 if (it != variant) {
                     LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
@@ -107,6 +119,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             }
         }
 
+        directory?.setCachedVariant(variant, false)
+
         if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
             runWriteAction {
                 if (virtualFile is CaosVirtualFile) {
@@ -117,14 +131,19 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                     }
                 }
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
+                onVariantChange(variant)
             }
         }
     }
 
-
     private var explicitVariant: CaosVariant? = null
 
     private var implicitVariant: CaosVariant? = null
+
+    private var listeners: MutableList<CaosVariantChangeListener> = mutableListOf()
+
+    private var mListener: CaosFileTreeChangedListener? = null
+
 
     internal var lastInjector: GameInterfaceName?
         get() {
@@ -149,8 +168,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             }
         }
 
-    private var mCliOptions: PrayCompilerCliOptions? = null
-    var compilerSettings: PrayCompilerCliOptions?
+    private var mCliOptions: PrayCompileOptions? = null
+    var compilerSettings: PrayCompileOptions?
         get() = mCliOptions ?: getUserData(PRAY_COMPILER_SETTINGS_KEY)
         set(value) {
             mCliOptions = value
@@ -161,16 +180,16 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
 
     val hasCaos2Tags: Boolean
         get() {
-        val time = now
-        this.getUserData(HAS_CAOS2_KEY)?.let { (expiry, hasCaos2) ->
-            if (expiry > time) {
-                return hasCaos2
+            val time = now
+            this.getUserData(HAS_CAOS2_KEY)?.let { (expiry, hasCaos2) ->
+                if (expiry > time) {
+                    return hasCaos2
+                }
             }
-        }
-        val hasCaos2 = calculateHasCaos2Tags()
-        val expiry = time + rand(cacheMin, cacheMax) // cache for seconds
-        this.putUserData(HAS_CAOS2_KEY, Pair(expiry, hasCaos2))
-        return hasCaos2
+            val hasCaos2 = calculateHasCaos2Tags()
+            val expiry = time + rand(cacheMin, cacheMax) // cache for seconds
+            this.putUserData(HAS_CAOS2_KEY, Pair(expiry, hasCaos2))
+            return hasCaos2
 //            return calculateHasCaos2Tags()
         }
 
@@ -220,6 +239,32 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
         return "Caos Script"
     }
 
+    override fun dispose() {
+        listeners.clear()
+        mListener?.dispose()
+        mListener = null
+    }
+
+    fun addListener(listener: CaosVariantChangeListener) {
+        if (mListener == null) {
+            mListener = CaosFileTreeChangedListener(this, true, this::onVariantChange)
+        }
+        listeners.add(listener)
+        listener(variant)
+    }
+
+    fun removeListener(listener: CaosVariantChangeListener) {
+        listeners.remove(listener)
+        if (listeners.isEmpty()) {
+            mListener?.dispose()
+            mListener = null
+        }
+    }
+
+    private fun onVariantChange(variant: CaosVariant?) {
+        listeners.forEach { it(variant) }
+    }
+
     override fun getName(): String {
         return myFile.name
     }
@@ -252,6 +297,7 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 application.isWriteAccessAllowed -> {
                     runQuickFormatInWriteAction(caosFile)
                 }
+
                 DumbService.isDumb(project) -> {
                     if (!application.isDispatchThread) {
                         invokeLater {
@@ -259,9 +305,9 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
 //                                if (project.isDisposed) {
 //                                    return@runWhenSmart
 //                                }
-                                application.runWriteAction {
-                                    runQuickFormatInWriteAction(caosFile)
-                                }
+                            application.runWriteAction {
+                                runQuickFormatInWriteAction(caosFile)
+                            }
 //                            }
                         }
                     } else {
@@ -269,17 +315,19 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
 //                            if (project.isDisposed) {
 //                                return@runWhenSmart
 //                            }
-                            application.runWriteAction {
-                                runQuickFormatInWriteAction(caosFile)
-                            }
+                        application.runWriteAction {
+                            runQuickFormatInWriteAction(caosFile)
+                        }
 //                        }
                     }
                 }
+
                 application.isDispatchThread -> {
                     application.runWriteAction(Computable {
                         runQuickFormatInWriteAction(caosFile)
                     })
                 }
+
                 else -> {
                     application.invokeLater {
                         application.runWriteAction {
@@ -320,21 +368,29 @@ var PsiFile.runInspections: Boolean
 
 val VirtualFile.cachedVariantExplicitOrImplicit: CaosVariant?
     get() = (this as? CaosVirtualFile)?.variant
+        ?.nullIfNotConcrete()
+        ?: this.getUserData(CaosScriptFile.ExplicitVariantUserDataKey)
+            ?.nullIfNotConcrete()
         ?: ExplicitVariantFilePropertyPusher.readFromStorage(this)
+            ?.nullIfNotConcrete()
+        ?: this.getUserData(CaosScriptFile.ImplicitVariantUserDataKey)
+            ?.nullIfNotConcrete()
         ?: ImplicitVariantFilePropertyPusher.readFromStorage(this)
+            ?.nullIfNotConcrete()
 
 fun VirtualFile.getVariant(project: Project, walk: Boolean): CaosVariant? {
     cachedVariantExplicitOrImplicit?.let {
         return it
     }
     val implicit = deduceVariant(project, this, walk)
-    if (implicit != null && implicit != CaosVariant.UNKNOWN) {
+        .nullIfNotConcrete()
+    if (implicit != null) {
         setCachedVariant(implicit, false)
     }
     return implicit
 }
 
-private fun deduceVariant( project: Project, virtualFile: VirtualFile, walk: Boolean): CaosVariant? {
+private fun deduceVariant(project: Project, virtualFile: VirtualFile, walk: Boolean): CaosVariant? {
 
     val psi = virtualFile.getPsiFile(project)
     if (psi is CaosScriptFile) {
@@ -575,12 +631,16 @@ internal val IS_MULTI_SCRIPT =
 private val CAOS2_HEADER_REGEX =
     "^[*]{2}\\s*CAOS2(PRAY|COB)".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 private val CAOS2COB_REGEX =
-    "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex(setOf(
-        RegexOption.IGNORE_CASE,
-        RegexOption.MULTILINE))
+    "^([*]#\\s*[Cc][12]\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n]+|[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb])".toRegex(
+        setOf(
+            RegexOption.IGNORE_CASE,
+            RegexOption.MULTILINE
+        )
+    )
 private val CAOS2PRAY_REGEX =
     "^([*]#\\s*([a-zA-Z\\d_!@#\$%&]{4}|[Dd][Ss]|[Cc]3)\\s*-\\s*[Nn][Aa][Mm][Ee]\\s+[^\\n \\t]+|[*]{2}[Cc][Aa][Oo][Ss]2[Pp][Rr][Aa][Yy])".toRegex(
-        setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+        setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
+    )
 private val IS_SUPPLEMENT_REGEX =
     "^[*]{2}\\s*(is\\s*)?(Supplement|link(ed))".toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
@@ -688,3 +748,6 @@ private fun CaosScriptFile.calculateIsSupplement(): Boolean {
     } ?: ""
     return IS_SUPPLEMENT_REGEX.containsMatchIn(text)
 }
+
+
+typealias CaosVariantChangeListener = (variant: CaosVariant?) -> Unit
