@@ -101,4 +101,15 @@ object CataloguePsiImplUtil {
             ?: return element
         return element.replace(newName)
     }
+
+    @JvmStatic
+    fun getItemsAsStrings(tag: CatalogueTag): List<String> {
+        return tag.stub?.items ?: tag.itemList.map { it.text.stripSurroundingQuotes(true) }
+    }
+
+
+    @JvmStatic
+    fun getItemsAsStrings(tag: CatalogueArray): List<String> {
+        return tag.stub?.items ?: tag.itemList.map { it.text.stripSurroundingQuotes(true) }
+    }
 }

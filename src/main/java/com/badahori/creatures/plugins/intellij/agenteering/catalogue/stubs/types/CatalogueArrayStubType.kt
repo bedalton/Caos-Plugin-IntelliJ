@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readStringList
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.writeStringList
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexService
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueArray
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueArrayImpl
@@ -27,6 +29,7 @@ class CatalogueArrayStubType(debugName:String) : CatalogueStubElementType<Catalo
         stream.writeInt(stub.itemCount)
         stream.writeBoolean(stub.override)
         stream.writeInt(stub.expectedValuesCount)
+        stream.writeStringList(stub.items)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CatalogueArrayStub {
@@ -37,7 +40,8 @@ class CatalogueArrayStubType(debugName:String) : CatalogueStubElementType<Catalo
             type = CatalogueItemType.fromValue(stream.readInt()),
             itemCount = stream.readInt(),
             override = stream.readBoolean(),
-            expectedValuesCount = stream.readInt()
+            expectedValuesCount = stream.readInt(),
+            items = stream.readStringList()
         )
     }
 
@@ -48,7 +52,8 @@ class CatalogueArrayStubType(debugName:String) : CatalogueStubElementType<Catalo
             type = element.type,
             override = element.override != null,
             itemCount = element.itemCount,
-            expectedValuesCount = element.expectedValueCount
+            expectedValuesCount = element.expectedValueCount,
+            items = element.itemsAsStrings
         )
     }
 

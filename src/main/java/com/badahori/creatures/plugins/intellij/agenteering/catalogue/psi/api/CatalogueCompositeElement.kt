@@ -10,6 +10,7 @@ interface CatalogueCompositeElement : PsiElement
 interface CatalogueEntryElement<PsiT: CatalogueCompositeElement, StubT: StubElement<PsiT>>: CatalogueStubBasedElement<StubT>, PsiNameIdentifierOwner, CatalogueCompositeElement {
     val itemCount: Int
     val type: CatalogueItemType
+    val itemsAsString: List<String>
 
     val isArray get() = type == CatalogueItemType.ARRAY
     val isTag get() = type == CatalogueItemType.TAG

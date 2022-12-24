@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readStringList
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.writeStringList
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexService
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueTag
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.impl.CatalogueTagImpl
@@ -8,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.C
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueTagStub
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.impl.CatalogueTagStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
+import com.badahori.creatures.plugins.intellij.agenteering.utils.readString
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
@@ -25,6 +28,7 @@ class CatalogueTagStubType(debugName:String) : CatalogueStubElementType<Catalogu
         stream.writeName(stub.name)
         stream.writeInt(stub.type.value)
         stream.writeInt(stub.itemCount)
+        stream.writeStringList(stub.items)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): CatalogueTagStub {
@@ -33,7 +37,8 @@ class CatalogueTagStubType(debugName:String) : CatalogueStubElementType<Catalogu
             parent,
             name = stream.readNameString() ?: "<<UNDEF>>",
             type = CatalogueItemType.fromValue(stream.readInt()),
-            itemCount = stream.readInt()
+            itemCount = stream.readInt(),
+            items = stream.readStringList()
         )
     }
 
@@ -42,7 +47,8 @@ class CatalogueTagStubType(debugName:String) : CatalogueStubElementType<Catalogu
             parent,
             name = element.name ?: UNDEF,
             type = element.type,
-            itemCount = element.itemCount
+            itemCount = element.itemCount,
+            items = element.itemsAsStrings
         )
     }
 

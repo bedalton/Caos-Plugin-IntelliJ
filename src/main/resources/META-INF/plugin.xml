@@ -726,6 +726,10 @@
                          id="caosRvalueFolder"
                          order="before caosInlayHints" />
 
+    <lang.foldingBuilder language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosClassifierFolder"
+                         />
+
     <codeInsight.parameterNameHints language="CaosScript"
                                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider"
                                     id="caosInlayHints"

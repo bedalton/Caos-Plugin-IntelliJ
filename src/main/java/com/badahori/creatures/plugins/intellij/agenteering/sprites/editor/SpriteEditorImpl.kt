@@ -130,14 +130,14 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
             if (!virtualFile.isValid) {
                 return
             }
-            virtualFile.putUserData(CACHE_MD5_KEY, null)
-            virtualFile.putUserData(CACHE_KEY, null)
-            if (images.isEmpty())
-                return
-            val md5 = virtualFile.md5()
-                ?: return
-            virtualFile.putUserData(CACHE_KEY, images)
-            virtualFile.putUserData(CACHE_MD5_KEY, md5)
+//            virtualFile.putUserData(CACHE_MD5_KEY, null)
+//            virtualFile.putUserData(CACHE_KEY, null)
+//            if (images.isEmpty())
+//                return
+//            val md5 = virtualFile.md5()
+//                ?: return
+//            virtualFile.putUserData(CACHE_KEY, images)
+//            virtualFile.putUserData(CACHE_MD5_KEY, md5)
         }
 
         @JvmStatic

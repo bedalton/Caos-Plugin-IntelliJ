@@ -14,7 +14,8 @@ class CatalogueTagStubImpl(
     parent: StubElement<*>,
     override val name: String,
     override val type: CatalogueItemType,
-    override val itemCount: Int
+    override val itemCount: Int,
+    override val items: List<String>
 ) : StubBase<CatalogueTagImpl>(parent, CatalogueStubTypes.TAG_ELEMENT), CatalogueTagStub
 
 class CatalogueArrayStubImpl(
@@ -23,5 +24,6 @@ class CatalogueArrayStubImpl(
     override val type: CatalogueItemType,
     override val itemCount: Int,
     override val override: Boolean,
-    override val expectedValuesCount: Int
+    override val expectedValuesCount: Int,
+    override val items: List<String>
 ) : StubBase<CatalogueArrayImpl>(parent, CatalogueStubTypes.ARRAY_ELEMENT), CatalogueArrayStub

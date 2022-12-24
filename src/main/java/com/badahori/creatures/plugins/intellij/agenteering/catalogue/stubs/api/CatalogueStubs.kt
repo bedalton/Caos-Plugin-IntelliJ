@@ -9,6 +9,7 @@ interface CatalogueElementStub<T: PsiElement>: StubElement<T> {
     val name: String
     val type: CatalogueItemType
     val itemCount: Int
+    val items: List<String>
 }
 
 interface CatalogueTagStub : CatalogueElementStub<CatalogueTagImpl> {

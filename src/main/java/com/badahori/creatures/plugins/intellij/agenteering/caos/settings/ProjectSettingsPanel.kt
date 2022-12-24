@@ -104,6 +104,7 @@ private class ProjectSettingsPanel(
     private val originalGameInterfaceNamesSerialized = originalGameInterfaceNames.serialized()
     private val originalDefaultVariant: String = projectSettings.defaultVariant?.code ?: ""
     private val originalIsAutoPoseEnabled: Boolean = applicationSettings.isAutoPoseEnabled
+    private val originalTrimBlk: Boolean? = projectSettings.trimBLKs
 
     private var mInterfaceNamesAreValid = true
     val interfaceNamesAreValid get() = mInterfaceNamesAreValid
@@ -129,7 +130,7 @@ private class ProjectSettingsPanel(
                     this.foreground = hintColor
                 }
             this.preferredSize = preferredTextBoxSize
-            this.border = BorderFactory.createLineBorder(Color.WHITE)
+            this.border = BorderFactory.createLineBorder(JBColor.WHITE)
         }
     }
 
@@ -185,12 +186,18 @@ private class ProjectSettingsPanel(
         }
     }
 
+    val trimBlkCheckbox by lazy {
+        JCheckBox().apply {
+            originalTrimBlk != false
+        }
+    }
+
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
             .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
             .addLabeledComponent(JLabel("Replicate ATTs to Duplicate Images"), replicateAttToDuplicateSprites, 1, false)
-            .addLabeledComponent(JLabel("Combine ATT file nodes"), combineAttNodes, 1, false)
-            .addComponent(JLabel("ATT files will be displayed under a single node. i.e. \"*04a\""))
+            .addLabeledComponent(JLabel("Combine related ATT file nodes under a single node. i.e. \"*04a\""), combineAttNodes, 1, false)
+            .addLabeledComponent(JLabel("Trim BLK right and bottom"), trimBlkCheckbox, 1, false)
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
             .addLabeledComponent(JLabel("Enable AutoPose action"), autoPoseCheckbox, 1, false)
@@ -222,6 +229,9 @@ private class ProjectSettingsPanel(
         if (replicateAttToDuplicateSprites.isSelected != applicationSettings.replicateAttToDuplicateSprite) {
             return true
         }
+        if (trimBlkCheckbox.isSelected != projectSettings.trimBLKs) {
+            return true
+        }
         return false
     }
 
@@ -233,6 +243,7 @@ private class ProjectSettingsPanel(
         val newSettings = projectSettings.copy(
             defaultVariant = CaosVariant.fromVal(defaultVariant.selectedItem as? String).nullIfUnknown(),
             ignoredFilenames = getIgnoredFileNames(),
+            trimBLKs = trimBlkCheckbox.isSelected
         )
         projectSettings = newSettings
         return newSettings
@@ -270,6 +281,7 @@ private class ProjectSettingsPanel(
         autoPoseCheckbox.isSelected = originalIsAutoPoseEnabled
         combineAttNodes.isSelected = originalCombineAttNodes
         replicateAttToDuplicateSprites.isSelected = originalReplicateAttToDuplicateSprite
+        trimBlkCheckbox.isSelected = originalTrimBlk != false
     }
 
     /**

@@ -56,6 +56,7 @@ tag ::= TAG_KW override? item_name count? items {
         getType
         getItemCount
         getNameIdentifier
+        getItemsAsStrings
     ]
 };
 
@@ -75,6 +76,7 @@ array ::= ARRAY_KW override? item_name count? items {
         isOverride
         getExpectedValueCount
         getNameIdentifier
+        getItemsAsStrings
     ]
 };
 
