@@ -92,7 +92,7 @@ class DumpSpriteAction : AnAction(
         }.apply {
             setCancelOperation {
                 CaosNotifications.createInfoNotification(project, "Sprite Dump", "No sprites dumped")
-                this.dialogWrapper.close(1)
+                this.closeWithCancelExitCode()
             }
             this.showAndGet()
         }

@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions
 
-import bedalton.creatures.common.bytes.RelativeFileWriter
 import bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
 import bedalton.creatures.agents.util.RelativeFileSystem
 import bedalton.creatures.common.structs.Pointer
@@ -11,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
@@ -23,9 +23,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileTooBigException
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korio.async.launch
 import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
@@ -100,6 +100,31 @@ class DumpAgentAction : AnAction(
         val dumped = Pointer(0)
         val failed = Pointer(0)
 
+        val onDone = {
+            when {
+                failed.value > 0 -> {
+                    CaosNotifications.showError(
+                        project,
+                        "Agent Dump",
+                        "Failed to dump all agents. Failed (${failed.value}); Succeeded (${dumped.value})"
+                    )
+                }
+
+                dumped.value > 0 -> {
+                    CaosNotifications.showInfo(
+                        project,
+                        "Agent Dump",
+                        if (dumped.value > 1) "Successfully dumped (${dumped.value}) agents" else "Successfully dumped agent"
+                    )
+                }
+
+                else -> {
+                    CaosNotifications.showInfo(project, "Agent Dump", "No files were dumped out of ${files.size}")
+                }
+            }
+        }
+        var done = 0
+        val count = files.size
         for (file in files) {
             CommandProcessor.getInstance().runUndoTransparentAction {
                 GlobalScope.launch {
@@ -113,28 +138,15 @@ class DumpAgentAction : AnAction(
                         failed,
                         createdFiles
                     )
+                    if (++done >= count) {
+                        invokeLater {
+                            onDone()
+                        }
+                    }
                 }
             }
         }
-        when {
-            failed.value > 0 -> {
-                CaosNotifications.showError(
-                    project,
-                    "Agent Dump",
-                    "Failed to dump all agents. Failed (${failed.value}); Succeeded (${dumped.value})"
-                )
-            }
-            dumped.value > 0 -> {
-                CaosNotifications.showInfo(
-                    project,
-                    "Agent Dump",
-                    if (dumped.value > 1) "Successfully dumped (${dumped.value}) agents" else "Successfully dumped agent"
-                )
-            }
-            else -> {
-                CaosNotifications.showInfo(project, "Agent Dump", "No files were dumped out of ${files.size}")
-            }
-        }
+
     }
 
     private suspend fun dumpFile(

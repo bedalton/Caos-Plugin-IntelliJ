@@ -6,15 +6,16 @@ import bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
 import bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
 import bedalton.creatures.cli.logProgress
 import bedalton.creatures.common.util.className
+import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.closeWithOkExitCode
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -22,12 +23,12 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korio.async.launch
 import icons.CaosScriptIcons
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 
 class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("Compile PRAY Agent") {
@@ -37,19 +38,19 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
         super.update(e)
         val project = e.project
         e.presentation.icon = CaosScriptIcons.BUILD
-        e.presentation.isVisible =
-            !transient || (project != null && e.files.any { file -> isPrayOrCaos2Pray(project, file) })
+        val visible = !transient || (project != null && e.files.any { file -> isPrayOrCaos2Pray(project, file) })
+        e.presentation.isVisible = visible
+
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project: Project = e.project
             ?: return
-        val files = e.files.ifEmpty { null }
+        val files = e.files.nullIfEmpty()
             ?: return
         compile(project, files)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     companion object {
         private var lastCLIOptions: PrayCompileOptions? = null
         private fun isPrayOrCaos2Pray(project: Project, virtualFile: VirtualFile): Boolean {
@@ -67,41 +68,43 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
         }
 
         internal fun getOpts(
-            defaultOpts: PrayCompileOptions? = lastCLIOptions,
-            apply: (PrayCompileOptions?) -> Unit
-        ) {
+            defaultOpts: PrayCompileOptions? = lastCLIOptions
+        ): PrayCompileOptions? {
             val panel = CompilerOptions(defaultOpts)
             val builder = DialogBuilder()
             builder.setCenterPanel(panel.component)
             builder.addCancelAction()
+            var options: PrayCompileOptions? = null
             builder.setCancelOperation {
-                builder.window.isVisible = false
-                builder.window.dispose()
-                apply(null)
+                builder.closeWithCancelExitCode()
             }
             val okay = builder.addOkAction()
             okay.setText("Compile")
             builder.setOkOperation {
-                val options = panel.options
+                options = panel.options
                 lastCLIOptions = options
-                builder.window.isVisible = false
-                builder.window.dispose()
-                apply(options)
+                builder.closeWithOkExitCode()
             }
-            builder.showAndGet()
+            return if (builder.showAndGet()) {
+                LOGGER.info("Got Compiler options")
+                options
+            } else {
+                LOGGER.info("Failed to get compiler options")
+                null
+            }
         }
 
         internal fun compile(project: Project, files: Array<VirtualFile>) {
-            getOpts { opts ->
-                if (opts == null) {
-                    return@getOpts
-                }
-                runBackgroundableTask(
-                    "Compile Pray ${if (files.isNotEmpty()) "Files" else "File"}",
-                    project
-                ) { indicator ->
-                    compile(project, files, opts, indicator)
-                }
+            val opts = getOpts()
+            if (opts == null) {
+                LOGGER.severe("Failed to get opts for compile PRAY file")
+                return
+            }
+            runBackgroundableTask(
+                "Compile Pray ${if (files.isNotEmpty()) "Files" else "File"}",
+                project
+            ) { indicator ->
+                compile(project, files, opts, indicator)
             }
         }
 
@@ -167,27 +170,8 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
 
             val size = files.size
             var i = 0
-            for (file in files) {
-                if (size > 1) {
-                    indicator.text2 = " (${i++}/$size): ${file.name}"
-                } else {
-                    indicator.text2 = ": ${file.name}"
-                }
-                GlobalScope.launch {
-                    val outputFile = compile(project, file.path, opts)
-
-                    if (outputFile != null) {
-                        success.add("${file.name} -> ${File(outputFile).name}")
-                        invokeLater {
-                            VfsUtil.markDirtyAndRefresh(true, true, true, file.parent)
-                        }
-                    } else {
-                        errors++
-                    }
-                }
-
-            }
-            invokeLater {
+            var done = 0
+            val onDone = {
                 if (errors == files.size) {
                     CaosNotifications.showError(project, "Pray Compile Error", "Failed to compile any PRAY files")
                 } else if (errors > 0) {
@@ -203,6 +187,29 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
                         "Compiled ${success.size} PRAY files successfully\n${success.joinToString("\n\t-")}"
                     )
                 }
+            }
+            for (file in files) {
+                if (size > 1) {
+                    indicator.text2 = " (${i++}/$size): ${file.name}"
+                } else {
+                    indicator.text2 = ": ${file.name}"
+                }
+                GlobalScope.launch {
+                    val outputFile = compile(project, file.path, opts)
+                    done++
+                    if (outputFile != null) {
+                        success.add("${file.name} -> ${File(outputFile).name}")
+                        invokeLater {
+                            VfsUtil.markDirtyAndRefresh(true, true, true, file.parent)
+                        }
+                    } else {
+                        errors++
+                    }
+                    if (done == size) {
+                        invokeLater { onDone() }
+                    }
+                }
+
             }
         }
 

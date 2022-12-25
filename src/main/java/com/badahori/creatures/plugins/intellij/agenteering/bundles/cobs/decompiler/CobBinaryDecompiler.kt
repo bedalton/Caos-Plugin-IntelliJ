@@ -52,7 +52,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
-            GlobalScope.launch {
+            runBlocking {
                 CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
             }
             return psiFile
