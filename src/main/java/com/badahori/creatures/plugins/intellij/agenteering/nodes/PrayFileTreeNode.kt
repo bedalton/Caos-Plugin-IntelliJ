@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStream
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -72,6 +73,9 @@ internal class PrayFileTreeNode(
                 try {
                     PrayBlockTreeNode(project, directory, block, viewSettings)
                 } catch (e: Exception) {
+                    if (e is ProcessCanceledException) {
+                        throw e
+                    }
                     LOGGER.severe("Failed to get block tree node for [${block.blockTag}]->${block.blockName}")
                     e.printStackTrace()
                     return@lazy emptyList()
