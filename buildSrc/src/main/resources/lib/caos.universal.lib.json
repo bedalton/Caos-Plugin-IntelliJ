@@ -1,5 +1,5 @@
 {
-  "modDate": 1666137957,
+  "modDate": 1671980094,
   "commands": {
     "722": {
       "id": 722,
@@ -63058,9 +63058,9 @@
       "pattern": null,
       "values": [
         {
-          "id": 9333,
+          "id": 9373,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "0",
           "name": "self",
           "description": null,
           "beforeRegion": null,
@@ -63069,218 +63069,9 @@
           "require_prev": null
         },
         {
-          "id": 9363,
+          "id": 9374,
           "valuesListId": 291,
-          "value": "$1",
-          "name": "norn home",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9356,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "dispenser",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9357,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "tool",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9358,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "potion",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9359,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "elevator",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9360,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "teleporter",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9361,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "machinery",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9362,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "creature egg",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9364,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "grendel home",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9354,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "toy",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9365,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "ettin home",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9366,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "gadget",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9367,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "portal",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9368,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "vehicle",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9369,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "norn",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9370,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "grendel",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9371,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "ettin",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9355,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "incubator",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9353,
-          "valuesListId": 291,
-          "value": "$1",
-          "name": "bad",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9334,
-          "valuesListId": 291,
-          "value": "$1",
+          "value": "1",
           "name": "hand",
           "description": null,
           "beforeRegion": null,
@@ -63289,20 +63080,9 @@
           "require_prev": null
         },
         {
-          "id": 9342,
+          "id": 9375,
           "valuesListId": 291,
-          "value": "$1",
-          "name": "manky",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9335,
-          "valuesListId": 291,
-          "value": "$1",
+          "value": "2",
           "name": "door",
           "description": null,
           "beforeRegion": null,
@@ -63311,9 +63091,9 @@
           "require_prev": null
         },
         {
-          "id": 9336,
+          "id": 9376,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "3",
           "name": "seed",
           "description": null,
           "beforeRegion": null,
@@ -63322,9 +63102,9 @@
           "require_prev": null
         },
         {
-          "id": 9337,
+          "id": 9377,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "4",
           "name": "plant",
           "description": null,
           "beforeRegion": null,
@@ -63333,9 +63113,9 @@
           "require_prev": null
         },
         {
-          "id": 9338,
+          "id": 9378,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "5",
           "name": "weed",
           "description": null,
           "beforeRegion": null,
@@ -63344,9 +63124,9 @@
           "require_prev": null
         },
         {
-          "id": 9339,
+          "id": 9379,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "6",
           "name": "leaf",
           "description": null,
           "beforeRegion": null,
@@ -63355,9 +63135,9 @@
           "require_prev": null
         },
         {
-          "id": 9340,
+          "id": 9380,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "7",
           "name": "flower",
           "description": null,
           "beforeRegion": null,
@@ -63366,9 +63146,9 @@
           "require_prev": null
         },
         {
-          "id": 9341,
+          "id": 9381,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "8",
           "name": "fruit",
           "description": null,
           "beforeRegion": null,
@@ -63377,9 +63157,20 @@
           "require_prev": null
         },
         {
-          "id": 9343,
+          "id": 9382,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "9",
+          "name": "manky",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9383,
+          "valuesListId": 291,
+          "value": "10",
           "name": "detritus",
           "description": null,
           "beforeRegion": null,
@@ -63388,20 +63179,9 @@
           "require_prev": null
         },
         {
-          "id": 9352,
+          "id": 9384,
           "valuesListId": 291,
-          "value": "$1",
-          "name": "weather",
-          "description": null,
-          "beforeRegion": null,
-          "sub_values": "",
-          "ignore_non_specific": false,
-          "require_prev": null
-        },
-        {
-          "id": 9344,
-          "valuesListId": 291,
-          "value": "$1",
+          "value": "11",
           "name": "food",
           "description": null,
           "beforeRegion": null,
@@ -63410,9 +63190,9 @@
           "require_prev": null
         },
         {
-          "id": 9345,
+          "id": 9385,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "12",
           "name": "button",
           "description": null,
           "beforeRegion": null,
@@ -63421,9 +63201,9 @@
           "require_prev": null
         },
         {
-          "id": 9346,
+          "id": 9386,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "13",
           "name": "bug",
           "description": null,
           "beforeRegion": null,
@@ -63432,9 +63212,9 @@
           "require_prev": null
         },
         {
-          "id": 9347,
+          "id": 9387,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "14",
           "name": "pest",
           "description": null,
           "beforeRegion": null,
@@ -63443,9 +63223,9 @@
           "require_prev": null
         },
         {
-          "id": 9348,
+          "id": 9388,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "15",
           "name": "critter",
           "description": null,
           "beforeRegion": null,
@@ -63454,9 +63234,9 @@
           "require_prev": null
         },
         {
-          "id": 9349,
+          "id": 9389,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "16",
           "name": "beast",
           "description": null,
           "beforeRegion": null,
@@ -63465,9 +63245,9 @@
           "require_prev": null
         },
         {
-          "id": 9350,
+          "id": 9390,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "17",
           "name": "nest",
           "description": null,
           "beforeRegion": null,
@@ -63476,9 +63256,9 @@
           "require_prev": null
         },
         {
-          "id": 9351,
+          "id": 9391,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "18",
           "name": "animal egg",
           "description": null,
           "beforeRegion": null,
@@ -63487,9 +63267,229 @@
           "require_prev": null
         },
         {
-          "id": 9372,
+          "id": 9392,
           "valuesListId": 291,
-          "value": "$1",
+          "value": "19",
+          "name": "weather",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9393,
+          "valuesListId": 291,
+          "value": "20",
+          "name": "bad",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9394,
+          "valuesListId": 291,
+          "value": "21",
+          "name": "toy",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9395,
+          "valuesListId": 291,
+          "value": "22",
+          "name": "incubator",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9396,
+          "valuesListId": 291,
+          "value": "23",
+          "name": "dispenser",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9397,
+          "valuesListId": 291,
+          "value": "24",
+          "name": "tool",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9398,
+          "valuesListId": 291,
+          "value": "25",
+          "name": "potion",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9399,
+          "valuesListId": 291,
+          "value": "26",
+          "name": "elevator",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9400,
+          "valuesListId": 291,
+          "value": "27",
+          "name": "teleporter",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9401,
+          "valuesListId": 291,
+          "value": "28",
+          "name": "machinery",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9402,
+          "valuesListId": 291,
+          "value": "29",
+          "name": "creature egg",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9403,
+          "valuesListId": 291,
+          "value": "30",
+          "name": "norn home",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9404,
+          "valuesListId": 291,
+          "value": "31",
+          "name": "grendel home",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9405,
+          "valuesListId": 291,
+          "value": "32",
+          "name": "ettin home",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9406,
+          "valuesListId": 291,
+          "value": "33",
+          "name": "gadget",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9407,
+          "valuesListId": 291,
+          "value": "34",
+          "name": "portal",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9408,
+          "valuesListId": 291,
+          "value": "35",
+          "name": "vehicle",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9409,
+          "valuesListId": 291,
+          "value": "36",
+          "name": "norn",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9410,
+          "valuesListId": 291,
+          "value": "37",
+          "name": "grendel",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9411,
+          "valuesListId": 291,
+          "value": "38",
+          "name": "ettin",
+          "description": null,
+          "beforeRegion": null,
+          "sub_values": "",
+          "ignore_non_specific": false,
+          "require_prev": null
+        },
+        {
+          "id": 9412,
+          "valuesListId": 291,
+          "value": "39",
           "name": "something",
           "description": null,
           "beforeRegion": null,
