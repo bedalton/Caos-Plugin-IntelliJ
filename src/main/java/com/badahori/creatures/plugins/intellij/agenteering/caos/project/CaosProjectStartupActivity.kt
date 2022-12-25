@@ -15,6 +15,9 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
@@ -34,7 +37,11 @@ class CaosProjectStartupActivity : StartupActivity {
             if (!file.isValid) {
                 return
             }
-            registerOnAny()
+            try {
+                registerOnAny()
+            } catch (_: Exception) {
+
+            }
         }
     }
 
@@ -114,10 +121,18 @@ class CaosProjectStartupActivity : StartupActivity {
                 if (project.isDisposed) {
                     return@runWhenSmart
                 }
-                registerOnAny()
+                try {
+                    registerOnAny()
+                } catch (_: Exception) {
+
+                }
             }
         } else {
-            registerOnAny()
+            try {
+                registerOnAny()
+            } catch (_: Exception) {
+
+            }
         }
     }
 
@@ -174,28 +189,38 @@ class CaosProjectStartupActivity : StartupActivity {
 
 
     private fun registerOnAny() {
+
         val project = project
             ?: return
+
         if (project.isDisposed) {
             this.project = null
+            return
+        }
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).runWhenSmart {
+                try {
+                    registerOnAny()
+                } catch (_: Exception) {
+
+                }
+            }
             return
         }
         if (hasAnyCaosFiles(project)) {
             CaosBundleSourcesRegistrationUtil.register(null, project)
         }
-        DumbService.getInstance(project).runWhenSmart {
-            if (project.isDisposed) {
-                this.project = null
-                return@runWhenSmart
-            }
-            val modules = ATTACH_SOURCES_IF_FILE_TYPE_LIST.flatMap { extension ->
-                FilenameIndex.getAllFilesByExt(project, extension)
-            }.mapNotNull {
-                it.getModule(project)
-            }.toSet()
-            for (module in modules) {
-                CaosBundleSourcesRegistrationUtil.register(module, project)
-            }
+        if (project.isDisposed) {
+            this.project = null
+            return
+        }
+        val modules = ATTACH_SOURCES_IF_FILE_TYPE_LIST.flatMap { extension ->
+            FilenameIndex.getAllFilesByExt(project, extension)
+        }.mapNotNull {
+            it.getModule(project)
+        }.toSet()
+        for (module in modules) {
+            CaosBundleSourcesRegistrationUtil.register(module, project)
         }
     }
 
