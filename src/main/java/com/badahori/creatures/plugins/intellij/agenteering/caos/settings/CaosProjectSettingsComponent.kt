@@ -19,7 +19,7 @@ import com.intellij.util.xmlb.annotations.Transient
     name = "CaosProjectSettingsComponent"
 )
 class CaosProjectSettingsComponent : CaosProjectSettingsService,
-    PersistentStateComponent<CaosProjectSettingsComponent.State> {
+    PersistentStateComponent<CaosProjectSettingsComponent.State>, HasIgnoredCatalogueTags {
 
     private var state: State = State()
 
@@ -151,6 +151,14 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
             ))
         }
 
+    override var ignoredCatalogueTags: List<String>
+        get() = state.ignoredCatalogueTags
+        set(value) {
+            loadState(state.copy(
+                ignoredCatalogueTags = value.distinct()
+            ))
+        }
+
     /**
      * Project state object used to store various properties at the project level
      */
@@ -167,7 +175,9 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         val lastGameInterfaceNames: List<String> = listOf(),
         val defaultPoseString: String = "313122122111111",
         val useJectByDefault: Boolean = false,
-        val trimBLKs: Boolean? = null
+        val trimBLKs: Boolean? = null,
+        @Attribute(converter = StringListConverter::class)
+        val ignoredCatalogueTags: List<String> = emptyList()
     ) {
 
         @Transient

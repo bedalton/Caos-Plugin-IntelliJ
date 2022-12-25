@@ -98,9 +98,7 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
         parent
     }
     val simple = if (!isDirectory) {
-        inferVariantSimple().apply {
-            LOGGER.info("Inferred virtual file variant hard: $this; File: $path")
-        }
+        inferVariantSimple()
     } else {
         null
     }

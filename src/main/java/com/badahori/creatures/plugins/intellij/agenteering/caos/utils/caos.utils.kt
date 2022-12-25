@@ -1,6 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosInvalidTokenLengthException
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.intellij.psi.PsiElement
 import kotlin.math.pow
 
 @Throws(CaosInvalidTokenLengthException::class)
@@ -30,4 +33,17 @@ internal fun binaryToInteger(binary: String): Long {
         result += next
     }
     return result
+}
+
+internal fun PsiElement.toTokenOrNull(lowercase: Boolean = true): Int? {
+    return if (textLength == 4) {
+        try {
+            token(if (lowercase) text.lowercase() else text)
+        } catch (e: Exception) {
+            LOGGER.severe("Element to token failed: ${e.className}: ${e.message}")
+            null
+        }
+    } else {
+        null
+    }
 }

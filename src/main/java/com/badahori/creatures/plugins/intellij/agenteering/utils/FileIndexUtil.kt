@@ -1,25 +1,42 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.util.indexing.ID
-import org.jetbrains.annotations.NotNull
 
 object FileIndexUtil {
 
-    fun <K,V> getKeysAndValues(indexId: ID<K, V>, project: Project, scope: GlobalSearchScope): List<Pair<K, V>> {
+    fun <K,V> getKeysAndValues(indexId: ID<K, V>, scope: GlobalSearchScope): List<Pair<K, V>> {
+        val out = mutableListOf<Pair<K,V>>()
         val index = FileBasedIndex.getInstance()
-        return index
-            .getAllKeys(indexId, project)
-            .flatMap {
+        index.processAllKeys(indexId,  { key ->
+            out.addAll(mapKeyToValues(index, indexId, scope, key))
+        }, scope, null)
+        return out
+    }
 
-            }
+    fun <K,V> getKeysAndValuesAsMap(indexId: ID<K, V>, scope: GlobalSearchScope): Map<K, List<V>> {
+        val out = mutableListOf<Pair<K,V>>()
+        val index = FileBasedIndex.getInstance()
+        index.processAllKeys(indexId,  { key ->
+            out.addAll(mapKeyToValues(index, indexId, scope, key))
+        }, scope, null)
+        val keys = out.map { it.first }.distinct()
+        return keys.associate {
+            it to out.filter { it.first == it }.map { it.second }
+        }
     }
 
 
-    private fun <K, V> mapKeyToValues(index: ID<K,V>, project: Project, scope: GlobalSearchScope, key: K): Pair<K, V> {
-        return
+    private fun <K, V> mapKeyToValues(index: FileBasedIndex, indexId: ID<K, V>, scope: GlobalSearchScope, key: K): List<Pair<K, V>> {
+        if (key == null) {
+            return emptyList()
+        }
+        index.getValues(indexId, key, scope)
+        return index.getValues(indexId, key, scope)
+            .map { value ->
+                Pair(key, value)
+            }
     }
 
 }

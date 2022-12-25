@@ -34,8 +34,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import icons.CaosScriptIcons
 import bedalton.creatures.common.util.stripSurroundingQuotes
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
+import com.intellij.psi.search.GlobalSearchScopes
 import javax.swing.Icon
 
 
@@ -2308,6 +2311,41 @@ object CaosScriptPsiImplUtil {
         })
     }
 
+    @JvmStatic
+    fun getPresentation(element: CaosScriptEventNumberElement): ItemPresentation {
+        return object : ItemPresentation {
+
+            override fun getPresentableText(): String? {
+                val classifier = element.getPreviousNonEmptySibling(false) as? CaosScriptClassifier
+                    ?: return element.text
+                return classifier.text + ' ' + element.text
+            }
+
+            override fun getLocationString(): String? {
+                val classifier = element.getPreviousNonEmptySibling(false) as? CaosScriptClassifier
+                    ?: return element.text
+                val fallback = classifier.text + ' ' + element.text
+                val family = classifier.family.text.toIntOrNull()
+                    ?: return fallback
+                val genus = classifier.genus?.text?.toIntOrNull()
+                    ?: return fallback
+                val species = classifier.species?.text?.toIntOrNull()
+                    ?: return fallback
+                val scope = element.directory?.let { GlobalSearchScopes.directoriesScope(element.project, true, it) }
+                val name = ClassifierToAgentNameIndex.getAgentNames(element.project, family, genus, species, scope)
+                    .nullIfEmpty()
+                    ?: ClassifierToAgentNameIndex.getAgentNames(element.project, family, genus, species, scope)
+                        .nullIfEmpty()
+                    ?: return fallback
+                return name.firstOrNull()
+            }
+
+            override fun getIcon(unused: Boolean): Icon? {
+                return CaosScriptIcons.EVENT_SCRIPT
+            }
+        }
+    }
+
     /**
      * Gets descriptive text for a family parameter
      */
@@ -2327,9 +2365,6 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getDescriptiveText(genus: CaosScriptGenus): String {
-        (genus.parent?.parent as? CaosScriptEventScript)?.let { parent ->
-            return getDescriptiveText(parent)
-        }
         (genus.parent?.parent as? CaosScriptEventScript)?.let { parent ->
             return getDescriptiveText(parent)
         }

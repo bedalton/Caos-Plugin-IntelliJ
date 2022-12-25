@@ -86,7 +86,6 @@ internal var CaosModuleSettingsService.ignoredFiles
         )
     }
 
-
 /*
 get() {
     val virtualFile = moduleFile

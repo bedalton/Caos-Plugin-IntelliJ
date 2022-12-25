@@ -5,6 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -14,13 +15,12 @@ import java.util.*
 import com.intellij.openapi.components.Storage
 
 
-
 /**
  * State container responsible for getting/setting project state
  */
 @com.intellij.openapi.components.State(
     name = "CaosApplicationSettingsComponent",
-    storages = [ Storage(value = "CAOS.xml") ]
+    storages = [Storage(value = "CAOS.xml")]
 )
 class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
     PersistentStateComponent<CaosApplicationSettingsComponent.State> {
@@ -48,9 +48,11 @@ class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
             if (value == state.combineAttNodes) {
                 return
             }
-            loadState(state.copy(
-                combineAttNodes = value
-            ))
+            loadState(
+                state.copy(
+                    combineAttNodes = value
+                )
+            )
         }
 
     override var replicateAttsToDuplicateSprites: Boolean?
@@ -59,27 +61,43 @@ class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
             if (value == state.replicateAttToDuplicateSprite) {
                 return
             }
-            loadState(state.copy(
-                replicateAttToDuplicateSprite = value != false
-            ))
+            loadState(
+                state.copy(
+                    replicateAttToDuplicateSprite = value != false
+                )
+            )
         }
 
 
     override var isAutoPoseEnabled: Boolean
         get() = state.isAutoPoseEnabled
         set(value) {
-            loadState(state.copy(
-               isAutoPoseEnabled = value
-            ))
+            loadState(
+                state.copy(
+                    isAutoPoseEnabled = value
+                )
+            )
+        }
+
+    override var ignoredCatalogueTags: List<String>
+        get() = state.ignoredCatalogueTags
+        set(ignoredTags) {
+            loadState(
+                state.copy(
+                    ignoredCatalogueTags = ignoredTags.distinct()
+                )
+            )
         }
 
     override var lastWineDirectory: String?
         get() = state.lastWineDirectory
         set(value) {
             if (value != state.lastWineDirectory) {
-                loadState(state.copy(
-                    lastWineDirectory = value
-                ))
+                loadState(
+                    state.copy(
+                        lastWineDirectory = value
+                    )
+                )
             }
         }
 
@@ -92,7 +110,9 @@ class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
         val isAutoPoseEnabled: Boolean = false,
         val lastWineDirectory: String? = null,
         val combineAttNodes: Boolean = false,
-        val replicateAttToDuplicateSprite: Boolean? = null
+        val replicateAttToDuplicateSprite: Boolean? = null,
+        @Attribute(converter = StringListConverter::class)
+        val ignoredCatalogueTags: List<String> = emptyList()
     )
 
     private fun onUpdate(oldState: State, newState: State) {
@@ -128,7 +148,8 @@ class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
                         listener(oldState, newState)
                     }
                 })
-            } catch (ignored: Exception) {}
+            } catch (ignored: Exception) {
+            }
         }
 
         /**

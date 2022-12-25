@@ -16,7 +16,7 @@ object CataloguePsiImplUtil {
     @JvmStatic
     fun getName(tag: CatalogueTag): String? {
         return tag.stub?.name
-            ?: tag.text.stripSurroundingQuotes(1)
+            ?: tag.itemName?.text?.stripSurroundingQuotes(1)
                 .nullIfEmpty()
     }
 
@@ -48,7 +48,7 @@ object CataloguePsiImplUtil {
     @JvmStatic
     fun getName(array: CatalogueArray): String? {
         return array.stub?.name
-            ?: array.text.stripSurroundingQuotes(1)
+            ?: array.itemName?.text?.stripSurroundingQuotes(1)
                 .nullIfEmpty()
     }
 

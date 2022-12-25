@@ -20,7 +20,7 @@ abstract class CaosScriptCaseInsensitiveStringIndexBase<PsiT : PsiElement>
 internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubIndexExtension<PsiT>() {
 
     override fun getVersion(): Int {
-        return super.getVersion() + CAOS_SCRIPT_STUB_VERSION
+        return super.getVersion()
     }
 
     protected fun getVersion(version:Int): Int {

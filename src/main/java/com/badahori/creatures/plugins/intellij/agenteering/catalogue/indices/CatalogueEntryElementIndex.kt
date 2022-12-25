@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueEntryElement
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubVersions
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.StubIndexKey
 
@@ -12,7 +13,7 @@ class CatalogueEntryElementIndex :
     override fun getKey(): StubIndexKey<String, CatalogueEntryElement<*,*>> = KEY
 
     override fun getVersion(): Int {
-        return super.getVersion() + VERSION
+        return super.getVersion() + CatalogueStubVersions.STUB_VERSION + VERSION
     }
 
     override fun getAllKeys(project: Project?): MutableCollection<String> {

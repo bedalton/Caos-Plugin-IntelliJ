@@ -225,7 +225,7 @@ private fun populate(
     // Actual injection button
     val runInjectorButton = ActionButton(
         runInjectorAction,
-        null,
+        runInjectorAction.templatePresentation,
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )

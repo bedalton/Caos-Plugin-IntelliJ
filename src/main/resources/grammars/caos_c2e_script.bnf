@@ -2764,7 +2764,7 @@ event_number_element
 			getReference
 			getName
 			setName
-			getDescriptiveText
+			getPresentation
 		]
 	}
 	;

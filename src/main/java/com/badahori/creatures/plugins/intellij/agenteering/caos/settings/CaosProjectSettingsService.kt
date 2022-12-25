@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 /**
  * Service for fetching CAOS project settings
  */
-interface CaosProjectSettingsService: PersistentStateComponent<CaosProjectSettingsComponent.State> {
+interface CaosProjectSettingsService: PersistentStateComponent<CaosProjectSettingsComponent.State>, HasIgnoredCatalogueTags {
 
     var lastVariant: CaosVariant?
     var defaultVariant: CaosVariant?
@@ -21,6 +21,7 @@ interface CaosProjectSettingsService: PersistentStateComponent<CaosProjectSettin
     var useJectByDefault: Boolean
 //    val lastGameInterfaceNames: List<String>
     var trimBLKs: Boolean?
+    override var ignoredCatalogueTags: List<String>
 
     override fun getState(): CaosProjectSettingsComponent.State
     override fun loadState(state: CaosProjectSettingsComponent.State)

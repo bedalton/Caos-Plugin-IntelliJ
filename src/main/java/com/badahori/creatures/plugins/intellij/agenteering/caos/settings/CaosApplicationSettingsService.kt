@@ -6,11 +6,12 @@ import com.intellij.openapi.components.PersistentStateComponent
 /**
  * Service for fetching CAOS project settings
  */
-interface CaosApplicationSettingsService: PersistentStateComponent<CaosApplicationSettingsComponent.State> {
+interface CaosApplicationSettingsService: PersistentStateComponent<CaosApplicationSettingsComponent.State>, HasIgnoredCatalogueTags {
     var isAutoPoseEnabled: Boolean
     var lastWineDirectory: String?
     var combineAttNodes: Boolean
     var replicateAttsToDuplicateSprites: Boolean?
+    override var ignoredCatalogueTags: List<String>
 
     override fun getState(): CaosApplicationSettingsComponent.State
     override fun loadState(state: CaosApplicationSettingsComponent.State)

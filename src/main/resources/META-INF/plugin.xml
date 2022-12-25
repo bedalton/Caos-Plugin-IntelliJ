@@ -1,10 +1,10 @@
 <idea-plugin>
-  <id>com.badahori.creatures.plugins.intellij.agenteering</id>
-  <name>Creatures CAOS and Agenteering</name>
-  <version><!-- *** SET VERSION IN GRADLE *** -->2022.03.00</version>
-  <vendor>Bedalton</vendor>
+    <id>com.badahori.creatures.plugins.intellij.agenteering</id>
+    <name>Creatures CAOS and Agenteering</name>
+    <version><!-- *** SET VERSION IN GRADLE *** -->2022.03.00</version>
+    <vendor>Bedalton</vendor>
 
-  <description><![CDATA[
+    <description><![CDATA[
     This plugin aims to provide simple CAOS and agent editing for a variety of Creatures variants<br/>
     <b>Supports:</b><br/>
     <ul>
@@ -34,919 +34,966 @@
     </ul>
     ]]></description>
 
-  <change-notes><![CDATA[
-    <ul>
-      <li>
-        <b>Version: 2022.03.00</b>
-        <b>Improvements</b>
+    <change-notes><![CDATA[
         <ul>
-          <li>Added Catalogue file editing</li>
-          <li>Improved editing files in non-CAOS-module based projects</li>
+            <li>
+                <b>Version: 2022.03.00</b>
+                <b>Improvements</b>
+                <ul>
+                    <li>Added Catalogue file editing</li>
+                    <li>Improved editing files in non-CAOS-module based projects</li>
+                </ul>
+                <b>#Fixes</b>
+                <ul>
+                    <li></li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2022.02.02</b>
+                <b>#Fixes</b>
+                <ul>
+                    <li>Fix ATT editor not rendering poses with missing tail files</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2022.02.01</b>
+                <b>#Fixes</b>
+                <ul>
+                    <li>Fix broken PRAY compiler</li>
+                    <li>Fix ATT editor selecting incorrect sprite</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2022.02.00</b>
+                <b>#Fixes</b>
+                <ul>
+                    <li>Broken CAOS injector</li>
+                    <li>Ignored indent options in code formatting</li>
+                    <li>Project or folder failing to load on bad .agents file parse</li>
+                    <li>Sprite dump not working on windows</li>
+                </ul>
+                <b>#Improvements</b>
+                <ul>
+                    <li>
+                        General ATT editor improvements<br/>
+                        <ul>
+                            <li>Allow visual ATT editor on empty or incomplete ATT files</li>
+                            <li>Add menu shortcut to create ATT from sprite file</liL>
+                            <li>Remove CAOS2Pray compiler icon when file is not CAOS2Pray</li>
+                        </ul>
+                    </li>
+                    <li>Streamline BLK image dump</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2021.11.01</b>
+                <b>#Fixes</b>
+                <ul>
+                    <li>Fix body part z-order in Att/Pose editor</li>
+                    <li>ATT/Sprite indexing lock-up</li>
+                    <li>Fix PRAY/CAOS2Pray inspection reporting invalid file when file existed</li>
+                    <li>Fix named variable renaming</li>
+                </ul>
+                <b>#Improvements</b>
+                <ul>
+                    <li>Speed up Att/Sprite pair indexing</li>
+                </ul>
+            </li>
+            <li>
+                <b>Versions: 2021.12.20</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>C1 and C2 injection failure</li>
+                    <li>Error in sprite viewer</li>
+                    <li>Fix subroutine not renaming all usages</li>
+                    <li>Show error on bad subroutine instead of failing silently</li>
+                </ul>
+                <b>Improvements</b>
+                <ul>
+                    <li>Prevent blocking UI thread with lots of breed files</li>
+                    <li>Improve unterminated string handling</li>
+                    <li>Improve bad command handling</li>
+                    <li>Highlight usages of indexed variables under caret</li>
+                </ul>
+            </li>
+            <li>
+                <b>Versions: 2021.09.19</b>
+                <b>Improvements</b>
+                <ul>
+                    <li>Added PRAY and CAOS2Pray compiling</li>
+                    <li>Added code navigation from script number in `MESG WRIT`, `MESG WRT+` and `CALL` commands</li>
+                    <li>Added support for arbitrary game names in injector</li>
+                    <li>Added file name completion in file parameter contexts</li>
+                </ul>
+                <b>Fixed</b>
+                <ul>
+                    <li>Fixed false trailing whitespace error</li>
+                    <li>Fixed commas showing as invalid on C1/C2</li>
+                    <li>Fixed random sprites in ATT editor</li>
+                    <li>Fixed erroneous comma errors in C1/C2</li>
+                    <li>Fixed Bit-flag type hints</li>
+                    <li>Fix subroutine name to gsub navigation</li>
+                </ul>
+            </li>
+            <li>
+                <b>Versions: 2021.07.25</b>
+                <ul>
+                    <li>Fixed CAOS2Cob compilation errors</li>
+                    <li>Fix CAOS2Pray markup errors</li>
+                    <li>Remove default CAOS colorization preventing natural overrides</li>
+                    <li>Fix name/game/mame variable errors</li>
+                </ul>
+            </li>
+            <li>
+                <b>Versions: 2021.06.22</b>
+                <ul>
+                    <li>Added ability to use non-matching genus in ATT editor</li>
+                </ul>
+            </li>
+            <li>
+                <b>Versions: 2021.05.29</b>
+                <ul>
+                    <li>Add all named values to autocomplete on double ctrl+space</li>
+                </ul>
+            </li>
         </ul>
-        <b>#Fixes</b>
-        <ul>
-          <li></li>
-        </ul>
-      </li>
-      <li>
-        <b>Version: 2022.02.02</b>
-        <b>#Fixes</b>
-        <ul>
-          <li>Fix ATT editor not rendering poses with missing tail files</li>
-        </ul>
-      </li>
-      <li>
-        <b>Version: 2022.02.01</b>
-        <b>#Fixes</b>
-        <ul>
-          <li>Fix broken PRAY compiler</li>
-          <li>Fix ATT editor selecting incorrect sprite</li>
-        </ul>
-      </li>
-      <li>
-        <b>Version: 2022.02.00</b>
-        <b>#Fixes</b>
-        <ul>
-          <li>Broken CAOS injector</li>
-          <li>Ignored indent options in code formatting</li>
-          <li>Project or folder failing to load on bad .agents file parse</li>
-          <li>Sprite dump not working on windows</li>
-        </ul>
-        <b>#Improvements</b>
-        <ul>
-          <li>
-            General ATT editor improvements<br/>
-            <ul>
-              <li>Allow visual ATT editor on empty or incomplete ATT files</li>
-              <li>Add menu shortcut to create ATT from sprite file</liL>
-              <li>Remove CAOS2Pray compiler icon when file is not CAOS2Pray</li>
-            </ul>
-          </li>
-          <li>Streamline BLK image dump</li>
-        </ul>
-      </li>
-      <li>
-        <b>Version: 2021.11.01</b>
-        <b>#Fixes</b>
-        <ul>
-          <li>Fix body part z-order in Att/Pose editor</li>
-          <li>ATT/Sprite indexing lock-up</li>
-          <li>Fix PRAY/CAOS2Pray inspection reporting invalid file when file existed</li>
-          <li>Fix named variable renaming</li>
-        </ul>
-        <b>#Improvements</b>
-        <ul>
-          <li>Speed up Att/Sprite pair indexing</li>
-        </ul>
-      </li>
-      <li>
-        <b>Versions: 2021.12.20</b>
-        <b>Fixes</b>
-        <ul>
-          <li>C1 and C2 injection failure</li>
-          <li>Error in sprite viewer</li>
-          <li>Fix subroutine not renaming all usages</li>
-          <li>Show error on bad subroutine instead of failing silently</li>
-        </ul>
-        <b>Improvements</b>
-        <ul>
-          <li>Prevent blocking UI thread with lots of breed files</li>
-          <li>Improve unterminated string handling</li>
-          <li>Improve bad command handling</li>
-          <li>Highlight usages of indexed variables under caret</li>
-        </ul>
-      </li>
-      <li>
-        <b>Versions: 2021.09.19</b>
-        <b>Improvements</b>
-        <ul>
-          <li>Added PRAY and CAOS2Pray compiling</li>
-          <li>Added code navigation from script number in `MESG WRIT`, `MESG WRT+` and `CALL` commands</li>
-          <li>Added support for arbitrary game names in injector</li>
-          <li>Added file name completion in file parameter contexts</li>
-        </ul>
-        <b>Fixed</b>
-        <ul>
-          <li>Fixed false trailing whitespace error</li>
-          <li>Fixed commas showing as invalid on C1/C2</li>
-          <li>Fixed random sprites in ATT editor</li>
-          <li>Fixed erroneous comma errors in C1/C2</li>
-          <li>Fixed Bit-flag type hints</li>
-          <li>Fix subroutine name to gsub navigation</li>
-        </ul>
-      </li>
-      <li>
-        <b>Versions: 2021.07.25</b>
-        <ul>
-          <li>Fixed CAOS2Cob compilation errors</li>
-          <li>Fix CAOS2Pray markup errors</li>
-          <li>Remove default CAOS colorization preventing natural overrides</li>
-          <li>Fix name/game/mame variable errors</li>
-        </ul>
-      </li>
-      <li>
-        <b>Versions: 2021.06.22</b>
-        <ul>
-          <li>Added ability to use non-matching genus in ATT editor</li>
-        </ul>
-      </li>
-      <li>
-        <b>Versions: 2021.05.29</b>
-        <ul>
-          <li>Add all named values to autocomplete on double ctrl+space</li>
-        </ul>
-      </li>
-    </ul>
-    ]]>
+        ]]>
   </change-notes>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="201" />
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="201"/>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-       on how to target different products -->
-  <depends>com.intellij.modules.platform</depends>
-  <depends>com.intellij.modules.lang</depends>
-  <depends config-file="att-support-plugin.xml">com.intellij.modules.lang</depends>
-  <depends config-file="catalogue-support-plugin.xml">com.intellij.modules.lang</depends>
-  <depends config-file="cob-support-plugin.xml">com.intellij.modules.lang</depends>
-  <depends config-file="idea-project-plugin.xml">com.intellij.modules.lang</depends>
-  <depends config-file="pray-support-plugin.xml">com.intellij.modules.lang</depends>
-  <depends config-file="sprite-support-plugin.xml">com.intellij.modules.lang</depends>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends config-file="att-support-plugin.xml">com.intellij.modules.lang</depends>
+    <depends config-file="catalogue-support-plugin.xml">com.intellij.modules.lang</depends>
+    <depends config-file="cob-support-plugin.xml">com.intellij.modules.lang</depends>
+    <depends config-file="idea-project-plugin.xml">com.intellij.modules.lang</depends>
+    <depends config-file="pray-support-plugin.xml">com.intellij.modules.lang</depends>
+    <depends config-file="sprite-support-plugin.xml">com.intellij.modules.lang</depends>
 
 
-  <extensions defaultExtensionNs="com.intellij">
+    <extensions defaultExtensionNs="com.intellij">
 
 
-    <!-- ======================== -->
-    <!-- ===== CAOS Script ====== -->
-    <!-- ======================== -->
-    <!-- LANG -->
+        <!-- ======================== -->
+        <!-- ===== CAOS Script ====== -->
+        <!-- ======================== -->
+        <!-- LANG -->
 
-    <fileType name="Caos Script"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType"
-              fieldName="INSTANCE"
-              language="CaosScript"
-              extensions="cos" />
+        <fileType name="Caos Script"
+                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType"
+                  fieldName="INSTANCE"
+                  language="CaosScript"
+                  extensions="cos"/>
 
 
-    <fileType name="Caos Definitions File"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFileType"
-              fieldName="INSTANCE"
-              language="CaosDef"
-              extensions="caosdef" />
+        <fileType name="Caos Definitions File"
+                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefFileType"
+                  fieldName="INSTANCE"
+                  language="CaosDef"
+                  extensions="caosdef"/>
 
-    <postStartupActivity
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectStartupActivity" />
+        <postStartupActivity
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.CaosProjectStartupActivity"/>
 
-    <lang.parserDefinition
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
-        language="CaosScript"
-    />
+        <lang.parserDefinition
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.parser.CaosScriptParserDefinition"
+                language="CaosScript"
+        />
 
-    <editorNotificationProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar" />
+        <editorNotificationProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar"/>
 
-    <lang.findUsagesProvider language="CaosScript"
-                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider" />
+        <lang.findUsagesProvider language="CaosScript"
+                                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider"/>
 
-    <moduleType id="CAOS_MODULE"
-                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
-                classpathProvider="false" />
-
-    <moduleService
-        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService"
-        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent" />
-
-    <additionalLibraryRootsProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosScriptAdditionalLibraryRootsProvider" />
-
-    <fileBasedIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex" />
-
-
-    <!-- Completion -->
-    <completion.contributor language="CaosScript"
-                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor" />
-
-    <!-- Renaming -->
-    <renamePsiElementProcessor
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameElementProcessor" />
-
-    <vetoRenameCondition
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptVetoRenameCondition" />
-
-    <renameInputValidator
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameInputValidator"
-    />
-    <lang.refactoringSupport language="CaosScript"
-                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameRefactoringSupportProvider" />
-
-    <lang.namesValidator language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptNameValidator" />
-
-    <enterHandlerDelegate
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler" />
-
-    <!-- Project -->
-    <iconProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
-    />
-    <projectTemplatesFactory
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory" />
-
-    <moduleConfigurationEditorProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider" />
-
-
-    <treeStructureProvider
-            implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider"
-            order="after CaosTreeViewProvider"
-    />
-
-    <treeStructureProvider
-        id="CaosTreeViewProvider"
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider" />
-
-    <projectConfigurable parentId="language"
-                         instance="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
-                         id="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
-                         displayName="CAOS &amp; Agenteering"
-                         nonDefaultProject="true"
-    />
-
-    <projectService
-        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService"
-        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent"
-    />
-
-
-    <applicationService
-        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService"
-        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsComponent"
-    />
-
-    <filePropertyPusher
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher" />
-    <filePropertyPusher
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher" />
-    <filePropertyPusher
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.InjectorInterfacePropertyPusher" />
-
-
-    <!-- Formatting -->
-    <lang.formatter language="CaosScript"
-                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptFormattingModelBuilder" />
-
-    <lang.commenter
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCommenter"
-        language="CaosScript"
-    />
-
-    <!-- Code Style Settings -->
-    <codeStyleSettingsProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptCodeStyleSettingsProvider" />
-    <langCodeStyleSettingsProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider" />
-
-    <!-- Highlighting -->
-    <lang.syntaxHighlighterFactory
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
-        language="CaosScript"
-    />
-    <lang.syntaxHighlighter
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter"
-        language="CaosScript"
-    />
-
-    <colorSettingsPage
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage" />
-
-    <!-- Annotators -->
-    <annotator language="CaosScript"
-               id="errorAnnotator"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSyntaxErrorAnnotator" />
-    <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSpaceAnnotator" />
-    <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptEnumAnnotator"
-               order="first"
-    />
-    <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptCommandCaseAnnotator" />
-
-    <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptGhostElementAnnotator" />
-
-    <!--annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" / -->
-
-    <annotator language="CaosScript"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator.Caos2PrayAnnotator" />
-
-    <annotator language="CaosScript"
-               order="after errorAnnotator"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator" />
-
-    <!-- Inspections -->
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTypesInspection"
-                     level="WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Expected parameter type"
-                     shortName="ExpectedParameterType"
-                     order="last"
-    />
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCAssignmentInspection"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Assigned value is of expected type"
-                     shortName="ExpectedAssigmentType"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSubroutineInspection"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Subroutine is defined"
-                     shortName="SubroutineIsDefined"
-    />
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomVarOutOfOrderInspection"
-                     level="WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="RNDV values out of order"
-                     shortName="RNDVOutOfOrder"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInterleavingBodyStatements"
-                     level="WEAK WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Interleaving body script elements"
-                     shortName="InterleavingBodyScripts"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptIgnoredScriptsAfterRemovalScriptInspection"
-                     level="WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Scripts after removal scripts are ignored"
-                     shortName="ScriptsAfterRemovalScripts"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
-                     level="WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Multiple removal scripts"
-                     shortName="MultipleRemovalScripts"
-    />
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomValueIsTheSameInspection"
-                     level="WEAK WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Rndv value is always the same"
-                     shortName="RndvIsTheSame"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrInspection"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Command used without OWNR object"
-                     shortName="NoOwnrObject"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrWithWarningInspection"
-                     level="WEAK WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Non-error generating use of OWNR object command without OWNR object"
-                     shortName="NoOwnrObjectWarning"
-    />
-
-    <localInspection language="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTrailingWhitespaceInspection"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Trailing whitespace characters"
-                     shortName="C1eTrailingWhitespace"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Scripts defined after event script in C1/C2"
-                     shortName="ScriptAfterEventScriptC1"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Invalid script header value"
-                     shortName="InvalidScriptHeaderValue"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidScriptHeaderValueInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Duplicate event script in file"
-                     shortName="DuplicateEventScriptInFile"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInFileInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WEAK WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Duplicate event script in module"
-                     shortName="DuplicateEventScriptInModule"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInModuleInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="SSFC number of arguments"
-                     shortName="SSFCArgumentsCheck"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSsfcPointsCheck"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Invalid numeric expression in variant"
-                     shortName="InvalidNumericExpression"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidNumericExpressionInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WEAK WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Agent to int coercion"
-                     shortName="AgentToIntCoercion"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptAgentToIntCoercionInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WEAK WARNING"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Requires creature ownr object"
-                     shortName="RequiresCreatureOwnr"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresCreatureOwnrInspection"
-    />
-
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Out of variant variable use"
-                     shortName="OutOfVariantVariable"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptOutOfVariantVariable"
-    />
-
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Empty loop causes exception"
-                     shortName="EmptyLoopCausesException"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptEmptyLoopInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WARNING"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Invalid property value"
-                     shortName="Caos2CobInvalidTagValue"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobIsExpectedTagValueType"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Source file does not exist"
-                     shortName="Caos2CobSourceFileDoesNotExist"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobRequiredFileExistsInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WARNING"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Out of variant CAOS2Cob directive"
-                     shortName="Caos2CobOutOfVariantDirective"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOutOfVariantDirectiveInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WARNING"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Invalid CAOS2Cob property"
-                     shortName="Caos2CobInvalidProperty"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobPropertyIsValidInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="WARNING"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Invalid CAOS2Cob command"
-                     shortName="Caos2CobInvalidCommand"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobCommandIsValidInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Missing required CAOS2Cob properties"
-                     shortName="Caos2CobMissingRequiredProperties"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobHasRequiredFieldsInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Included file is valid type"
-                     shortName="Caos2CobIncludedFileIsValidType"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobIncludedFileIsCorrectTypeInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Only one agent name"
-                     shortName="Caos2CobTooManyAgentNames"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneAgentNameInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Cob"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Only one cob name"
-                     shortName="Caos2CobTooManyCobNames"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneCobNameInspection"
-    />
-
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Pray"
-                     enabledByDefault="true"
-                     displayName="CAOS2Pray block is not valid"
-                     shortName="CAOS2PrayBlockIsInvalid"
-                     groupPath="CaosScript"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayBlockIsValidInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Pray"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Incorrect tag case"
-                     shortName="CAOS2PrayTagIncorrectCase"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayTagCaseInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="INFO"
-                     groupName="CAOS2Pray"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="PRAY tag is similar to official tag"
-                     shortName="CAOS2PraySimilarTags"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PraySimilarTagInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupName="CAOS2Pray"
-                     groupPath="CaosScript"
-                     enabledByDefault="true"
-                     displayName="Use of reserved auto-generated tag"
-                     shortName="CAOS2PrayReservedTagUse"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayReservedTagUseInspection"
-    />
-
-    <localInspection language="CaosScript"
-                     level="ERROR"
-                     groupPath="CaosScript"
-                     groupName="CAOS2Pray"
-                     enabledByDefault="true"
-                     displayName="Required file does not exist"
-                     shortName="Caos2PraySourceFileDoesNotExist"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayRequiredFileExistsInspection"
-    />
-
-
-    <localInspection language="CaosScript"
-                     level="INFO"
-                     groupPath="CaosScript"
-                     groupName="CAOS2Pray"
-                     enabledByDefault="true"
-                     displayName="Invalid CAOS2Pray property"
-                     shortName="Caos2PrayInvalidProperty"
-                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayPropertyIsValidInspection"
-    />
-
-    <!-- Documentation & Hints -->
-    <documentationProvider
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider" />
-
-    <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder" />
-    <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder" />
-    <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBlockFoldingBuilder" />
-    <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptRvalueFoldingBuilder"
-                         id="caosRvalueFolder"
-                         order="before caosInlayHints" />
-
-    <lang.foldingBuilder language="CaosScript"
-                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosClassifierFolder"
-                         />
-
-    <codeInsight.parameterNameHints language="CaosScript"
-                                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider"
-                                    id="caosInlayHints"
-                                    order="after caosRvalueFolder"
-    />
-
-    <lang.braceMatcher language="CaosScript"
-                       implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBraceMatcher" />
-    <lang.quoteHandler
-        language="CaosScript"
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler" />
-
-    <!--    <referencesSearch-->
-    <!--        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />-->
-
-    <!-- Indices -->
-    <applicationService
-        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
-        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl" />
-    <stubElementTypeHolder
-        class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptExpressionIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex" />
-
-    <editorTypedHandler
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"
-    />
-
-    <!-- INTENTION ACTIONS -->
-    <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
-      </className>
-      <category>CAOS</category>
-    </intentionAction>
-
-    <intentionAction>
-      <className>
-        com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithCommasIntentionAction
-      </className>
-      <category>CAOS</category>
-    </intentionAction>
-
-    <intentionAction>
-      <className>
-        com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithSpacesIntentionAction
-      </className>
-      <category>CAOS</category>
-    </intentionAction>
-
-    <intentionAction>
-      <className>
-        com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
-      </className>
-      <category>CAOS</category>
-    </intentionAction>
-
-    <intentionAction>
-      <className>com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateClasIntegerAction
-      </className>
-      <category>CAOS</category>
-    </intentionAction>
-
-    <!-- ======================== -->
-    <!-- ======= CAOS DEF ======= -->
-    <!-- ======================== -->
-    <!-- LANG -->
-    <lang.parserDefinition
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser.CaosDefParserDefinition"
-        language="CaosDef" />
-    <completion.contributor language="CaosDef"
-                            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.contributor.CaosDefCompletionContributor" />
-
-    <!--    <lang.findUsagesProvider-->
-    <!--        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefUsagesProvider"-->
-    <!--        language="CaosDef" />-->
-
-    <!-- Bundled Definitions -->
-    <library.type
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosLibraryType"
-        id="CaosLibrary" />
-
-    <!-- Highlighting -->
-    <syntaxHighlighter
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighter"
-        key="CaosDef" />
-    <lang.syntaxHighlighterFactory
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
-        language="CaosDef" />
-    <annotator language="CaosDef"
-               implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefHighlighterAnnotator" />
-
-    <lang.elementManipulator
-        forClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCodeBlockImpl"
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockManipulator" />
-    <languageInjector
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockInjector"
-    />
-    <!-- Indices -->
-    <stubElementTypeHolder
-        class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes" />
-    <applicationService
-        serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
-        serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex" />
-    <stubIndex
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex" />
-
-    <!-- Formatting -->
-    <lang.braceMatcher language="CaosDef"
-                       implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefBraceMatcher" />
-
-    <enterBetweenBracesDelegate language="CaosDef"
-                                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefEnterBetweenBracesDelegate" />
-
-    <colorSettingsPage
-        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefColorSettingsPage" />
-
-
-    <!-- SFC File Handling -->
-    <!--fileType name="SFCFile"
-              implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
-              fieldName="INSTANCE"
-              language="PlainText"
-              extensions="sfc" />
-   -->
-
-
-    <!-- =========================== -->
-    <!-- === Virtual File System  == -->
-    <!-- =========================== -->
-    <virtualFileSystem
-        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
-        key="caosvfs"
-    />
-  </extensions>
-
-  <actions>
-    <!-- Add your actions here -->
-    <action
-        id="CaosScript.NewFile"
-        icon="CaosScriptIcons.CAOS_FILE_ICON"
-        class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptNewFileAction">
-      <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile" />
-    </action>
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"
-            icon="CaosScriptIcons.ATT_FILE_ICON"
-            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction">
-      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="CaosScript.NewFile" />
-    </action>
-
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
-            text="Copy for BoBCob" description="Copy script for BoBCob file editor formatting as necessary">
-      <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths" />
-    </action>
-
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
-            text="Expand CAOS Commands" description="Places each CAOS command onto its own line">">
-      <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths" />
-    </action>
-
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
-            text="Expand CAOS Commands" description="Places each CAOS command onto its own line">">
-      <add-to-group group-id="CutCopyPasteGroup" anchor="after" relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction" />
-    </action>
-
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
-            text="Compile CAOS2Cob Files" description="Compile CAOS2Cob CAOS files into C1/C2 COBs">
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ExternalToolsGroup" />
-    </action>
-
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
-            text="Dump Creatures Sprite" description="Dumps a creatures sprite file into a project directory"
-    >
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
-    </action>
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
-            text="Dump Agent Files" description="Dumps all agent files and scripts into a directory"
-    >
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
-    </action>
-
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
-            class="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
-            text="Generate Breed Previews" description="Generates breed preview images"
-    >
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
-    </action>
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
-            text="Compile PRAY Agent"
-            description="Compiles a PRAY or CAOS2Pray file into a C3/DS agent"
-    >
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup" anchor="before" />
-    </action>
-    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction">
-      <add-to-group group-id="NewGroup" anchor="after"
-                    relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction" />
-    </action>
-  </actions>
+        <moduleType id="CAOS_MODULE"
+                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
+                    classpathProvider="false"/>
+
+        <moduleService
+                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsComponent"/>
+
+        <additionalLibraryRootsProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosScriptAdditionalLibraryRootsProvider"/>
+
+        <fileBasedIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex"/>
+
+
+        <!-- Completion -->
+        <completion.contributor language="CaosScript"
+                                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionContributor"/>
+
+        <!-- Renaming -->
+        <renamePsiElementProcessor
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameElementProcessor"/>
+
+        <vetoRenameCondition
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptVetoRenameCondition"/>
+
+        <renameInputValidator
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameInputValidator"
+        />
+        <lang.refactoringSupport language="CaosScript"
+                                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameRefactoringSupportProvider"/>
+
+        <lang.namesValidator language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptNameValidator"/>
+
+        <enterHandlerDelegate
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler"/>
+
+        <!-- Project -->
+        <iconProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
+        />
+        <projectTemplatesFactory
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory"/>
+
+        <moduleConfigurationEditorProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider"/>
+
+
+        <treeStructureProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider"
+                order="after CaosTreeViewProvider"
+        />
+
+        <treeStructureProvider
+                id="CaosTreeViewProvider"
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider"/>
+
+        <projectConfigurable parentId="language"
+                             instance="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
+                             id="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
+                             displayName="CAOS &amp; Agenteering"
+                             nonDefaultProject="true"
+        />
+
+        <projectService
+                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent"
+        />
+
+
+        <applicationService
+                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsComponent"
+        />
+
+        <filePropertyPusher
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher"/>
+        <filePropertyPusher
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher"/>
+        <filePropertyPusher
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.InjectorInterfacePropertyPusher"/>
+
+
+        <!-- Formatting -->
+        <lang.formatter language="CaosScript"
+                        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptFormattingModelBuilder"/>
+
+        <lang.commenter
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCommenter"
+                language="CaosScript"
+        />
+
+        <!-- Code Style Settings -->
+        <codeStyleSettingsProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptCodeStyleSettingsProvider"/>
+        <langCodeStyleSettingsProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider"/>
+
+        <!-- Highlighting -->
+        <lang.syntaxHighlighterFactory
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighterFactory"
+                language="CaosScript"
+        />
+        <lang.syntaxHighlighter
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptSyntaxHighlighter"
+                language="CaosScript"
+        />
+
+        <colorSettingsPage
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptColorSettingsPage"/>
+
+        <!-- Annotators -->
+        <annotator language="CaosScript"
+                   id="errorAnnotator"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSyntaxErrorAnnotator"/>
+        <annotator language="CaosScript"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptSpaceAnnotator"/>
+        <annotator language="CaosScript"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptEnumAnnotator"
+                   order="first"
+        />
+        <annotator language="CaosScript"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptCommandCaseAnnotator"/>
+
+        <annotator language="CaosScript"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptGhostElementAnnotator"/>
+
+        <!--annotator language="CaosScript"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.CaosScriptHelperActionAnnotator" / -->
+
+        <annotator language="CaosScript"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator.Caos2PrayAnnotator"/>
+
+        <annotator language="CaosScript"
+                   order="after errorAnnotator"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.highlighting.CaosScriptHighlighterAnnotator"/>
+
+        <!-- Inspections -->
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTypesInspection"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Expected parameter type"
+                         shortName="ExpectedParameterType"
+                         order="last"
+        />
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptCAssignmentInspection"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Assigned value is of expected type"
+                         shortName="ExpectedAssigmentType"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSubroutineInspection"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Subroutine is defined"
+                         shortName="SubroutineIsDefined"
+        />
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomVarOutOfOrderInspection"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="RNDV values out of order"
+                         shortName="RNDVOutOfOrder"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInterleavingBodyStatements"
+                         level="WEAK WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Interleaving body script elements"
+                         shortName="InterleavingBodyScripts"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptIgnoredScriptsAfterRemovalScriptInspection"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Scripts after removal scripts are ignored"
+                         shortName="ScriptsAfterRemovalScripts"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleRemovalScriptInspection"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Multiple removal scripts"
+                         shortName="MultipleRemovalScripts"
+        />
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRandomValueIsTheSameInspection"
+                         level="WEAK WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Rndv value is always the same"
+                         shortName="RndvIsTheSame"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrInspection"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Command used without OWNR object"
+                         shortName="NoOwnrObject"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresOwnrWithWarningInspection"
+                         level="WEAK WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Non-error generating use of OWNR object command without OWNR object"
+                         shortName="NoOwnrObjectWarning"
+        />
+
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptTrailingWhitespaceInspection"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Trailing whitespace characters"
+                         shortName="C1eTrailingWhitespace"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Scripts defined after event script in C1/C2"
+                         shortName="ScriptAfterEventScriptC1"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptMultipleScriptsInC1File"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Invalid script header value"
+                         shortName="InvalidScriptHeaderValue"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidScriptHeaderValueInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Duplicate event script in file"
+                         shortName="DuplicateEventScriptInFile"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInFileInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WEAK WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Duplicate event script in module"
+                         shortName="DuplicateEventScriptInModule"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptDuplicateEventScriptInModuleInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="SSFC number of arguments"
+                         shortName="SSFCArgumentsCheck"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptSsfcPointsCheck"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Invalid numeric expression in variant"
+                         shortName="InvalidNumericExpression"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptInvalidNumericExpressionInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WEAK WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Agent to int coercion"
+                         shortName="AgentToIntCoercion"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptAgentToIntCoercionInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WEAK WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Requires creature ownr object"
+                         shortName="RequiresCreatureOwnr"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptRequiresCreatureOwnrInspection"
+        />
+
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Out of variant variable use"
+                         shortName="OutOfVariantVariable"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptOutOfVariantVariable"
+        />
+
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Empty loop causes exception"
+                         shortName="EmptyLoopCausesException"
+                         groupPath="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptEmptyLoopInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Invalid property value"
+                         shortName="Caos2CobInvalidTagValue"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobIsExpectedTagValueType"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Source file does not exist"
+                         shortName="Caos2CobSourceFileDoesNotExist"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobRequiredFileExistsInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Out of variant CAOS2Cob directive"
+                         shortName="Caos2CobOutOfVariantDirective"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOutOfVariantDirectiveInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Invalid CAOS2Cob property"
+                         shortName="Caos2CobInvalidProperty"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobPropertyIsValidInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Invalid CAOS2Cob command"
+                         shortName="Caos2CobInvalidCommand"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobCommandIsValidInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Missing required CAOS2Cob properties"
+                         shortName="Caos2CobMissingRequiredProperties"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobHasRequiredFieldsInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Included file is valid type"
+                         shortName="Caos2CobIncludedFileIsValidType"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobIncludedFileIsCorrectTypeInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Only one agent name"
+                         shortName="Caos2CobTooManyAgentNames"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneAgentNameInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Cob"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Only one cob name"
+                         shortName="Caos2CobTooManyCobNames"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections.Caos2CobOnlyOneCobNameInspection"
+        />
+
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Pray"
+                         enabledByDefault="true"
+                         displayName="CAOS2Pray block is not valid"
+                         shortName="CAOS2PrayBlockIsInvalid"
+                         groupPath="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayBlockIsValidInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Pray"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Incorrect tag case"
+                         shortName="CAOS2PrayTagIncorrectCase"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayTagCaseInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="INFO"
+                         groupName="CAOS2Pray"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="PRAY tag is similar to official tag"
+                         shortName="CAOS2PraySimilarTags"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PraySimilarTagInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupName="CAOS2Pray"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Use of reserved auto-generated tag"
+                         shortName="CAOS2PrayReservedTagUse"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayReservedTagUseInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="ERROR"
+                         groupPath="CaosScript"
+                         groupName="CAOS2Pray"
+                         enabledByDefault="true"
+                         displayName="Required file does not exist"
+                         shortName="Caos2PraySourceFileDoesNotExist"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayRequiredFileExistsInspection"
+        />
+
+
+        <localInspection language="CaosScript"
+                         level="INFO"
+                         groupPath="CaosScript"
+                         groupName="CAOS2Pray"
+                         enabledByDefault="true"
+                         displayName="Invalid CAOS2Pray property"
+                         shortName="Caos2PrayInvalidProperty"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.Caos2PrayPropertyIsValidInspection"
+        />
+
+
+        <localInspection language="CaosScript"
+                         level="WEAK WARNING"
+                         groupPath="CaosScript"
+                         groupName="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Catalogue tag does not exist"
+                         shortName="CaosCatalogueTagIsValid"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CatalogueTagExistsInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupPath="CaosScript"
+                         groupName="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Catalogue tag index invalid"
+                         shortName="CaosCatalogueTagIndexIsValid"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CatalogueTagIndexInvalidInspection"
+        />
+
+        <localInspection language="CaosScript"
+                         level="WEAK WARNING"
+                         groupPath="CaosScript"
+                         groupName="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Referencing non-unique catalogue tag"
+                         shortName="CaosCatalogueTagIsUnique"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosCatalogueTagIsUniqueInspection"
+        />
+
+        <!-- Documentation & Hints -->
+        <documentationProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider"/>
+
+        <lang.foldingBuilder language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptDoifFoldingBuilder"/>
+        <lang.foldingBuilder language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptStimFoldingBuilder"/>
+        <lang.foldingBuilder language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBlockFoldingBuilder"/>
+        <lang.foldingBuilder language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptRvalueFoldingBuilder"
+                             id="caosRvalueFolder"
+                             order="before caosInlayHints"/>
+
+        <lang.foldingBuilder language="CaosScript"
+                             implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosClassifierFolder"
+        />
+
+        <codeInsight.parameterNameHints language="CaosScript"
+                                        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.hints.CaosScriptInlayHintsProvider"
+                                        id="caosInlayHints"
+                                        order="after caosRvalueFolder"
+        />
+
+        <lang.braceMatcher language="CaosScript"
+                           implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptBraceMatcher"/>
+        <lang.quoteHandler
+                language="CaosScript"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptQuoteHandler"/>
+
+        <!--    <referencesSearch-->
+        <!--        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />-->
+
+        <!-- Indices -->
+        <applicationService
+                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl"/>
+
+        <stubElementTypeHolder
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes"/>
+
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptSubroutineIndex"/>
+
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptVarAssignmentIndex"/>
+
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptEventScriptIndex"/>
+
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptExpressionIndex"/>
+
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex"/>
+
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex"/>
+
+        <fileBasedIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex"/>
+
+        <editorTypedHandler
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"
+        />
+
+        <!-- INTENTION ACTIONS -->
+        <intentionAction>
+            <className>
+                com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+            </className>
+            <category>CAOS</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
+                com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithCommasIntentionAction
+            </className>
+            <category>CAOS</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
+                com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithSpacesIntentionAction
+            </className>
+            <category>CAOS</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
+                com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
+            </className>
+            <category>CAOS</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateClasIntegerAction
+            </className>
+            <category>CAOS</category>
+        </intentionAction>
+
+        <!-- ======================== -->
+        <!-- ======= CAOS DEF ======= -->
+        <!-- ======================== -->
+        <!-- LANG -->
+        <lang.parserDefinition
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.parser.CaosDefParserDefinition"
+                language="CaosDef"/>
+        <completion.contributor language="CaosDef"
+                                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.contributor.CaosDefCompletionContributor"/>
+
+        <!--    <lang.findUsagesProvider-->
+        <!--        implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.references.CaosDefUsagesProvider"-->
+        <!--        language="CaosDef" />-->
+
+        <!-- Bundled Definitions -->
+        <library.type
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosLibraryType"
+                id="CaosLibrary"/>
+
+        <!-- Highlighting -->
+        <syntaxHighlighter
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighter"
+                key="CaosDef"/>
+        <lang.syntaxHighlighterFactory
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefSyntaxHighlighterFactory"
+                language="CaosDef"/>
+        <annotator language="CaosDef"
+                   implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefHighlighterAnnotator"/>
+
+        <lang.elementManipulator
+                forClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCodeBlockImpl"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockManipulator"/>
+        <languageInjector
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockInjector"
+        />
+        <!-- Indices -->
+        <stubElementTypeHolder
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes"/>
+        <applicationService
+                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl"/>
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex"/>
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefHashTagsIndex"/>
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefValuesListElementsByNameIndex"/>
+
+        <!-- Formatting -->
+        <lang.braceMatcher language="CaosDef"
+                           implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefBraceMatcher"/>
+
+        <enterBetweenBracesDelegate language="CaosDef"
+                                    implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.def.format.CaosDefEnterBetweenBracesDelegate"/>
+
+        <colorSettingsPage
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefColorSettingsPage"/>
+
+
+        <!-- SFC File Handling -->
+        <!--fileType name="SFCFile"
+                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcFileType"
+                  fieldName="INSTANCE"
+                  language="PlainText"
+                  extensions="sfc" />
+       -->
+
+
+        <!-- =========================== -->
+        <!-- === Virtual File System  == -->
+        <!-- =========================== -->
+        <virtualFileSystem
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
+                key="caosvfs"
+        />
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action
+                id="CaosScript.NewFile"
+                icon="CaosScriptIcons.CAOS_FILE_ICON"
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptNewFileAction">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        </action>
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"
+                icon="CaosScriptIcons.ATT_FILE_ICON"
+                class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="CaosScript.NewFile"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
+                text="Copy for BoBCob" description="Copy script for BoBCob file editor formatting as necessary">
+            <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
+                text="Expand CAOS Commands" description="Places each CAOS command onto its own line">">
+            <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
+                text="Expand CAOS Commands" description="Places each CAOS command onto its own line">">
+            <add-to-group group-id="CutCopyPasteGroup" anchor="after"
+                          relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
+                text="Compile CAOS2Cob Files" description="Compile CAOS2Cob CAOS files into C1/C2 COBs">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ExternalToolsGroup"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
+                text="Dump Creatures Sprite" description="Dumps a creatures sprite file into a project directory"
+        >
+            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
+                          anchor="before"/>
+        </action>
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
+                text="Dump Agent Files" description="Dumps all agent files and scripts into a directory"
+        >
+            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
+                          anchor="before"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
+                class="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
+                text="Generate Breed Previews" description="Generates breed preview images"
+        >
+            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
+                          anchor="before"/>
+        </action>
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
+                text="Compile PRAY Agent"
+                description="Compiles a PRAY or CAOS2Pray file into a C3/DS agent"
+        >
+            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
+                          anchor="before"/>
+        </action>
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction">
+            <add-to-group group-id="NewGroup" anchor="after"
+                          relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"/>
+        </action>
+    </actions>
 </idea-plugin>
