@@ -35,7 +35,7 @@ class CaosScriptMultipleScriptsInC1File : LocalInspectionTool(), DumbAware {
     override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = CaosBundle.message("caos.inspections.scripts-after-event-script.short-name")
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
-        return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
+        return object : CaosScriptVisitor() {
             override fun visitMacro(o: CaosScriptMacro) {
                 super.visitMacro(o)
                 annotate(o, holder)

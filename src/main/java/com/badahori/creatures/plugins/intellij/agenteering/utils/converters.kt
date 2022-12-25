@@ -1,10 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.intellij.util.xmlb.Converter
-import com.soywiz.korio.dynamic.KDynamic.Companion.map
 
 
 internal class CaosVariantConverter : Converter<CaosVariant?>() {
