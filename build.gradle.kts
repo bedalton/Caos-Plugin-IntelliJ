@@ -123,9 +123,6 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalMultiplatform")
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
             languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
-            languageSettings.optIn("kotlin.js.ExperimentalJsExport")
-            languageSettings.optIn("kotlin.ExperimentalJsExport")
-            languageSettings.optIn("org.jetbrains.annotations.ApiStatus.Experimental")
             languageSettings.optIn("kotlin.ExperimentalStdlibApi")
             languageSettings.optIn("kotlinx.coroutines.DelicateCoroutinesApi")
 
