@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubVersions
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
 import com.intellij.openapi.project.Project
@@ -11,7 +12,7 @@ class CaosDefCommandElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBa
     override fun getKey(): StubIndexKey<String, CaosDefCommandDefElement> = KEY
 
     override fun getVersion(): Int {
-        return super.getVersion() + VERSION
+        return super.getVersion() + CaosDefStubVersions.STUB_VERSION + VERSION
     }
 
     override fun getAllKeys(project: Project?): MutableCollection<String> {
