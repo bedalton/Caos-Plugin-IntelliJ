@@ -6,7 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.Classifi
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.now
+import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -55,15 +57,15 @@ class CaosClassifierFolder: FoldingBuilderEx() {
     /**
      * Finding agent name, and store it (and its text range) in userData for fast access later
      */
-    private fun getAndCache(root: PsiElement): Pair<TextRange, String>? {
+    private fun getAndCache(element: PsiElement): Pair<TextRange, String>? {
         val now = now
-        root.getUserData(KEY)?.let {
+        element.getUserData(KEY)?.let {
             if (it.first < now) {
                 return it.second
             }
         }
-        val folded = getFoldedEx(root)
-        root.putUserData(KEY, Pair(now, folded))
+        val folded = getFoldedEx(element)
+        element.putUserData(KEY, Pair(now + CACHE_FOR_IN_SECONDS, folded))
         return folded
     }
 
@@ -71,41 +73,43 @@ class CaosClassifierFolder: FoldingBuilderEx() {
     /**
      * Gets the agent name and its text range
      */
-    private fun getFoldedEx(root: PsiElement): Pair<TextRange, String>? {
-        if (!shouldRun(root)) {
+    private fun getFoldedEx(element: PsiElement): Pair<TextRange, String>? {
+        if (!shouldRun(element)) {
             return null
         }
-        if (root !is CaosScriptClassifier) {
+        if (element !is CaosScriptClassifier) {
             return null
         }
-        if (root.parent !is CaosScriptEventScript) {
+        if (element.parent !is CaosScriptEventScript) {
             return null
         }
 
         // Get family ensuring it is an int
-        val family = root.family
+        val family = element.family
             .rvalue
             .intValue
             ?: return null
 
         // Get genus ensuring it is an int
-        val genus = root.genus
+        val genus = element.genus
             ?.rvalue
             ?.intValue
             ?: return null
 
+
         // Get species ensuring it is an int
-        val species = root.species
+        val species = element.species
             ?.rvalue
             ?.intValue
             ?: return null
+
 
         // Format the expected catalogue TAG
         val text = "Agent Help $family $genus $species"
 
         // Find agent name matches in the index
-        var matches = CatalogueEntryElementIndex.Instance[text, root.project]
-            .mapNotNull { it.itemsAsString.getOrNull(0) }
+        var matches = CatalogueEntryElementIndex.Instance[text, element.project]
+            .mapNotNull { it.itemsAsStrings.getOrNull(0) }
             .filter { it.isNotNullOrBlank() }
             .distinct()
 
@@ -113,19 +117,23 @@ class CaosClassifierFolder: FoldingBuilderEx() {
         if (matches.isEmpty()) {
             // Get matches from the agent name index built from both CAOS comments,
             // and catalogue tags (including those with bad case or bad spacing)
-            matches = ClassifierToAgentNameIndex.getAgentNames(root.project, family, genus, species)
+            matches = ClassifierToAgentNameIndex.getAgentNames(element.project, family, genus, species)
+                .distinct()
                 .nullIfEmpty()
                 ?: return null
+
         }
 
         return if (matches.size == 1) {
-            Pair(root.textRange, matches[0])
+            Pair(element.textRange, matches[0])
         } else {
-            Pair(root.textRange, matches.joinToString("|"))
+            Pair(element.textRange, matches.joinToString(" or "))
         }
     }
 
     companion object {
+
+        private const val CACHE_FOR_IN_SECONDS = 20_000
         private val KEY  = Key<Pair<Long, Pair<TextRange, String>?>?>("bedalton.creatures.ClassifierFolder.RANGE_AND_TEXT")
 
         fun shouldRun(element: PsiElement?): Boolean {
@@ -134,15 +142,7 @@ class CaosClassifierFolder: FoldingBuilderEx() {
 
         @Suppress("MemberVisibilityCanBePrivate")
         fun shouldRun(project: Project?, element: PsiElement?): Boolean {
-            // Ensure elements are still valid
-            if (project?.isDisposed != true || element?.isValid != true) {
-                return false
-            }
-            // Ensure that indices is loaded
-            if (DumbService.isDumb(project)) {
-                return false
-            }
-            return true
+            return project?.isDisposed == false && element?.isValid == true && !DumbService.isDumb(project)
         }
     }
 }

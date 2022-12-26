@@ -8,6 +8,7 @@ import bedalton.creatures.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.MyDataIndexer.Companion.DELIMITER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFileType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.FileIndexUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
@@ -97,26 +98,17 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
         /**
          * Get all classifiers in project
          */
-        fun getAllClassifiers(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<Pair<String, String>> {
-            return ReadAction.compute<List<String>, Exception> {
+        fun getAllClassifiers(project: Project, scope: GlobalSearchScope? = null): List<Pair<String, String>> {
+            return ReadAction.compute<List<Pair<String,String>>, Exception> {
                 try {
                     var projectScope = GlobalSearchScope.projectScope(project)
                     if (scope != null) {
                         projectScope = projectScope.intersectWith(scope)
                     }
-                    FileBasedIndex.getInstance()
-                        .processValues(
-                            NAME,
-                            "",
-                            {
-
-                            },
-                            project,
-                            projectScope
-                        )
+                    FileIndexUtil.getKeysAndValues(NAME, projectScope)
                 } catch (e: Exception) {
                     LOGGER.severe("Failed to get all classifiers; ${e.className}: ${e.message}")
-                    return@compute null
+                    emptyList()
                 }
             }
         }
@@ -182,9 +174,9 @@ private class MyDataIndexer : DataIndexer<String, String, FileContent> {
         val agentHelpTag =
             "^\\s*TAG\\s+\"Agent\\s+Help\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s*\"\\s*".toRegex(RegexOption.IGNORE_CASE)
         val classifierBeforeNameRegex =
-            "^\\s*\\*\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(?:[-=:]?\\s*)([a-zA-Z0-9 ]+).*".toRegex()
+            "^\\s*\\*\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(?:[-=:]?\\s*)([a-zA-Z0-9 _]+).*".toRegex()
         val nameBeforeClassifierRegex =
-            "^\\s*\\*\\s*([0-9][a-zA-Z][a-zA-Z0-9 ]*|[a-zA-Z][a-zA-Z0-9 ]*)(?:[-=:]?\\s*)(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
+            "^\\s*\\*\\s*([0-9][a-zA-Z_][a-zA-Z0-9 _]*|[a-zA-Z_][a-zA-Z0-9 _]*)(?:[-=:]?\\s*)(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
         const val DELIMITER = ' '
 
         fun makeKey(family: Int, genus: Int, species: Int): String {

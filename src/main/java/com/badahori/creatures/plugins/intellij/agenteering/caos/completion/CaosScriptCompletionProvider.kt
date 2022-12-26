@@ -76,10 +76,14 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         val project = element.project
 
         val text = element.textWithoutCompletionIdString
+        ClassifierCompletion.completeClassifier(resultSet, parameters.isExtendedCompletion, element)
         if (text.isNotEmpty() && IS_NUMBER.matches(text) && !parameters.isExtendedCompletion) {
             resultSet.stopHere()
             return
         }
+
+        CatalogueCompletionContributor.getCatalogueCompletions(resultSet, element)
+
         val caos2Block = nonEmpty.getParentOfType(CaosScriptCaos2Block::class.java)
 
         if (caos2Block != null) {
