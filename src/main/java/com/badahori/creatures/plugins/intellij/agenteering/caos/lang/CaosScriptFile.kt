@@ -38,6 +38,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
@@ -376,6 +377,14 @@ val VirtualFile.cachedVariantExplicitOrImplicit: CaosVariant?
         ?: this.getUserData(CaosScriptFile.ImplicitVariantUserDataKey)
             ?.nullIfNotConcrete()
         ?: ImplicitVariantFilePropertyPusher.readFromStorage(this)
+            ?.nullIfNotConcrete()
+
+val UserDataHolder.cachedVariantExplicitOrImplicit: CaosVariant?
+    get() = (this as? CaosVirtualFile)?.variant
+        ?.nullIfNotConcrete()
+        ?: this.getUserData(CaosScriptFile.ExplicitVariantUserDataKey)
+            ?.nullIfNotConcrete()
+        ?: this.getUserData(CaosScriptFile.ImplicitVariantUserDataKey)
             ?.nullIfNotConcrete()
 
 fun VirtualFile.getVariant(project: Project, walk: Boolean): CaosVariant? {
