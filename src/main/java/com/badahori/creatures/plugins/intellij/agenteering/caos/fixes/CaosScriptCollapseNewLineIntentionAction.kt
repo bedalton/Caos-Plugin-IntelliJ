@@ -7,13 +7,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
-import com.badahori.creatures.plugins.intellij.agenteering.utils.next
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -119,6 +115,18 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
         private val WHITESPACE_OR_COMMA = "(\\s|,)+".toRegex(RegexOption.MULTILINE)
 
         fun collapseLinesInCopy(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement? {
+            return if (ApplicationManager.getApplication().isDispatchThread) {
+                runWriteAction {
+                    collapseLinesEx(elementIn, collapseChar)
+                }
+            } else {
+                runWriteAction {
+                    collapseLinesEx(elementIn, collapseChar)
+                }
+            }
+        }
+
+        internal fun collapseLinesInCopyEx(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement? {
             val project = elementIn.project
             val document = PsiDocumentManager.getInstance(project).getCachedDocument(elementIn.containingFile)
                 ?: elementIn.document
@@ -135,8 +143,20 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             }
         }
 
-
         fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
+            return if (ApplicationManager.getApplication().isDispatchThread) {
+                runWriteAction {
+                    collapseLinesEx(elementIn, collapseChar, variant)
+                }
+            } else {
+                runWriteAction {
+                    collapseLinesEx(elementIn, collapseChar, variant)
+                }
+            }
+        }
+
+
+        fun collapseLinesEx(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
             val before = elementIn.text.replace(COLLAPSE_TEST_REGEX, "").replace(WHITESPACE_OR_COMMA, "")
             val project = elementIn.project
             val document = elementIn.document
