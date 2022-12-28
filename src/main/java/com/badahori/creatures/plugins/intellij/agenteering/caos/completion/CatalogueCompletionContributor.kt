@@ -10,6 +10,8 @@ import com.intellij.codeInsight.completion.CompletionResult
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.GlobalSearchScopes
+import com.intellij.psi.search.ProjectScope
 
 object CatalogueCompletionContributor {
 
@@ -29,7 +31,9 @@ object CatalogueCompletionContributor {
         if (previous !in needsCatalogueTag && (elementText.length != 4 || token(elementText) !in needsCatalogueTag)) {
             return
         }
-        val tags = CatalogueEntryElementIndex.Instance.getAllKeys(element.project)
+        val project = element.project
+        val scope = ProjectScope.getProjectScope(project)
+        val tags = CatalogueEntryElementIndex.Instance.getAllKeys(project, scope)
             .distinct()
 
         val enclosingString = (enclosingStringElement?.text ?: element.text)

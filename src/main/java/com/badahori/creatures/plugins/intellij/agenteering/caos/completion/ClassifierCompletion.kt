@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -9,10 +10,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes
+import com.intellij.psi.util.elementType
 
 object ClassifierCompletion {
 
@@ -67,13 +71,16 @@ object ClassifierCompletion {
                 (if (elementText.length == 4) token(elementText) else null) in commandsWithClassifiers
 
         var previous: PsiElement = element
+
         val numbers = Array<Int?>(4) { null }
+
         while (!quickComplete && i < maxBack) {
-            val previousTemp = previous.getPreviousNonEmptySibling(false)
+            val previousTemp = previous
+                .getPreviousNonEmptySibling(false)
                 ?: return false
+
             previous = previousTemp
             val token = getTokenSafe(previous)
-
             // Token is a token with classifier
             if (token in commandsWithClassifiers) {
 
@@ -105,11 +112,10 @@ object ClassifierCompletion {
             i++
         }
 
-        if (i < 0) {
-            return false
-        }
-        val classifierSoFar = numbers.copyOfRange(0, i).reversed().joinToString(" ")
-        val valuesToDrop = i
+        val typingName = quickComplete && elementText.toIntOrNull() == null
+
+        val classifierSoFar = if (typingName) "" else numbers.copyOfRange(0, i).reversed().joinToString(" ")
+        val valuesToDrop = if (typingName) 0 else i
 
         val variantScope: GlobalSearchScope? = element.variant?.let {
             CaosVariantGlobalSearchScope(project, it, strict = false, searchLibraries = false)
@@ -129,22 +135,64 @@ object ClassifierCompletion {
             }
         }
 
-        val classifiers = ClassifierToAgentNameIndex.getAllClassifiers(element.project, scope)
-            .filter { quickComplete || it.first.startsWith(classifierSoFar) }
-            .nullIfEmpty()
-            ?: ClassifierToAgentNameIndex.getAllClassifiers(element.project, variantScope)
-                .filter { quickComplete || it.first.startsWith(classifierSoFar) }
+        // Ensure there is at least
+        if (!typingName && classifierSoFar.isBlank()) {
+            return false
+        }
 
+        // Get classifiers or return false as no autocomplete items added
+        val classifiers = getClassifiers(project, scope, typingName, classifierSoFar)
+            ?: getClassifiers(project, variantScope, typingName, classifierSoFar)
+            ?: return false
 
+        // Get case for matching
         val case = elementText.case
+
+
         for ((classifier, name) in classifiers) {
             val value = classifier.split(' ').drop(valuesToDrop).joinToString(" ")
             val lookupElement = LookupElementBuilder.create(value)
-                .withLookupStrings(listOf(name, classifier, name.matchCase(case)))
-                .withPresentableText("$classifier - $name")
+
+                // Add primary lookup string
+                .withLookupString(
+                    if (typingName) {
+                        // Match case is required as Intellij will not autocomplete with different starting case
+                        name.matchCase(case)
+                    } else {
+                        classifier
+                    }
+                )
+
+                // Add alternate lookup strings
+                // TODO find out why these do not seem to be used
+                .withLookupStrings(listOf(name, classifier, name.matchCase(case)).distinct())
+
+                // Set presentable text with currently typed value first.
+                // i.e. if typing text, show name first; if typing numbers, show classifier first
+                .withPresentableText(
+                    if (typingName) {
+                        "$name - $classifier"
+                    } else {
+                        "$classifier - $name"
+                    }
+                )
+                .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
             resultSet.addElement(lookupElement)
         }
         return true
+    }
+
+    private fun getClassifiers(
+        project: Project,
+        scope: GlobalSearchScope?,
+        typingName: Boolean,
+        classifierSoFar: String
+    ): List<Pair<String, String>>? {
+        return ClassifierToAgentNameIndex.getAllClassifiers(project, scope)
+            .filter {
+                typingName || it.first.startsWith(classifierSoFar)
+            }
+            .nullIfEmpty()
     }
 
     private fun getTokenSafe(element: PsiElement?): Int? {
