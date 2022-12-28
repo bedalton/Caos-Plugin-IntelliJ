@@ -189,15 +189,12 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
                 false
             ))
         }
-        if (possibleIntention != null) {
-            annotation.create()
-            return true
-        }
+        annotation.create()
         return false
     }
 
     private fun getSimilar(text: String): String? {
-        var textUpperCase = text.uppercase()
+        val textUpperCase = text.uppercase()
         return keywords.associateWith { textUpperCase.levenshteinDistance(it) }
             .entries
             .minByOrNull {

@@ -54,7 +54,7 @@ fun Module.inferVariantHard(): CaosVariant? {
     variant?.nullIfUnknown()?.let {
         return it
     }
-    moduleFile?.cachedVariantExplicitOrImplicit?.let {
+    cachedVariantExplicitOrImplicit?.let {
         return it
     }
     val getFilesWithExtension = { extension: String ->
@@ -172,10 +172,14 @@ private val COMMENTS = "^[ \t]*[*][^\n]*".toRegex()
 private const val C1_STRING = "\\[\\s*([^]0-9 ]|[0-9 ]+[^]0-9 ])[^]]*\\s*]"
 
 private val C1_ITEMS by lazy {
-    "(clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|(simp|comp)\\s+[a-zA-Z0-9]{4}|$C1_STRING)".toRegex(RegexOption.IGNORE_CASE)
+    "(clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|(simp|comp)\\s+[a-zA-Z0-9]{4}|$C1_STRING)".toRegex(
+        RegexOption.IGNORE_CASE
+    )
 }
 private val C2_ITEMS by lazy {
-    "(cls2|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|grav|escn|radn|obsv|size|rest|(simp|comp)\\s+[a-zA-Z0-9]{4})|$C1_STRING".toRegex(RegexOption.IGNORE_CASE)
+    "(cls2|esee|etch|var\\d|obv\\d|edit|bbd:|bbd2|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|grav|escn|radn|obsv|size|rest|(simp|comp)\\s+[a-zA-Z0-9]{4})|$C1_STRING".toRegex(
+        RegexOption.IGNORE_CASE
+    )
 }
 private val C3_ITEMS_ARRAY by lazy {
     listOf(
@@ -242,7 +246,11 @@ private val DS_ITEMS by lazy {
         }
 }
 
-private fun variantInScope(key: UserDataHolder, scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
+private fun variantInScope(
+    key: UserDataHolder,
+    scope: GlobalSearchScope,
+    filesByExtension: (extension: String) -> List<VirtualFile>
+): CaosVariant? {
 
     key.getUserData(VARIANT_WITH_EXPIRY)?.let { variantWithExpiry ->
         variantWithExpiry.second?.let {
@@ -263,11 +271,14 @@ private fun variantInScope(key: UserDataHolder, scope: GlobalSearchScope, filesB
 }
 
 
-    /**
+/**
  * Checks a project for its file types in a given scope,
  * And tries to determine what variant it could be
  */
-private fun variantInScopeFinal(scope: GlobalSearchScope, filesByExtension: (extension: String) -> List<VirtualFile>): CaosVariant? {
+private fun variantInScopeFinal(
+    scope: GlobalSearchScope,
+    filesByExtension: (extension: String) -> List<VirtualFile>
+): CaosVariant? {
 
     val getFilesByExtension = { extension: String ->
         filesByExtension(extension).filter {
@@ -500,7 +511,6 @@ var CaosApplicationSettingsService.replicateAttToDuplicateSprites: Boolean?
             )
         )
     }
-
 
 
 private val VARIANT_VALID_FOR = 40_000
