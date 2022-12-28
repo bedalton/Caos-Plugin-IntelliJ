@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsInde
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -30,7 +31,11 @@ import kotlin.random.Random
 class AutoPreview : AnAction() {
 
     val strict: Boolean = true
-    private val defaultZoom = 2
+    private var defaultZoom: Int = 2
+
+    fun setDefaultZoom(newDefault: Int) {
+        this.defaultZoom = newDefault
+    }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -222,11 +227,11 @@ class AutoPreview : AnAction() {
 //                    } else if (seed < 300) {
 //                        Pose.fromString(variant, 2, null, "142233022022333000").second
                     } else {
-                        return Pose.fromString(variant, 1, null, "242010222032211000").second
+                        return Pose.fromString(variant, 1, null, "242010222032211").second
                     }
                 } else {
                     if (seed > 300) {
-                        return Pose.fromString(variant, 1, null, "142230322333333000").second
+                        return Pose.fromString(variant, 1, null, "142230322333333").second
                     }
                     return Pose.fromString(variant, 1, null, straight).second
                 }
@@ -234,7 +239,7 @@ class AutoPreview : AnAction() {
             1 -> {
                 if (key.ageGroup?.let { it < youth } == true) {
                     if (seed < 100) {
-                        Pose.fromString(variant, 3, null, "343322100210311000").second
+                        Pose.fromString(variant, 3, null, "343322100210311").second
                     } else if (seed < 200) {
                         Pose.fromString(variant, 3, null, "312010222220011").second
 //                    } else if (seed < 300) {
@@ -344,7 +349,7 @@ class AutoPreview : AnAction() {
             zoom
         )
 
-        val hasSprites = directory.children.any {
+        val hasSprites = directory.collectChildren().any {
             it.extension likeAny listOf(
                 "spr",
                 "s16",
