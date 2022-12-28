@@ -108,7 +108,7 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
 
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.previous ?: return null
-    while (isWhitespace(out, ignoreLineTerminator)) {
+    while (isWhitespace(out, ignoreLineTerminator) || (out.elementType == TokenType.ERROR_ELEMENT && out.textLength == 0)) {
         out = out.previous
             ?: return null
     }
@@ -190,7 +190,7 @@ fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode?
 
 fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.node?.next ?: return null
-    while (isWhitespace(out, ignoreLineTerminator)) {
+    while (isWhitespace(out, ignoreLineTerminator) || (out.elementType == TokenType.ERROR_ELEMENT && out.textLength == 0)) {
         out = out.next ?: return null
     }
     return out
