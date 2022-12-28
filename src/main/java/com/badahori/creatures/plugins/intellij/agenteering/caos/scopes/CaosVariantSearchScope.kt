@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.scopes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
@@ -79,28 +80,30 @@ class CaosVariantGlobalSearchScope constructor(
         myVariant?.isC3DS == true
     }
 
-    override fun intersectWith(otherScope: SearchScope): GlobalSearchScope {
-        return MyGlobalSearchScope { file ->
-            this.contains(file) && otherScope.contains(file)
-        }
-    }
-
-    override fun union(otherScope: SearchScope): GlobalSearchScope {
-        return MyGlobalSearchScope { file ->
-            this.contains(file) || otherScope.contains(file)
-        }
-    }
+//    override fun intersectWith(otherScope: SearchScope): GlobalSearchScope {
+//        return MyGlobalSearchScope { file ->
+//            this.contains(file) && otherScope.contains(file)
+//        }
+//    }
 
     override fun contains(file: VirtualFile): Boolean {
         val variant = (file as? CaosVirtualFile)?.variant
             ?: file.getPsiFile(myProject)?.variant
             ?: file.getModule(myProject)?.variant
-        if (variant == myVariant)
-            return true
-        if (strict)
+
+        if (strict) {
+            // False because we already checked if variants were equal
             return variant == myVariant
-        if (isC3DS && variant?.isC3DS != false)
+        }
+
+        if (variant == myVariant || variant like myVariant) {
             return true
+        }
+
+        if (isC3DS && variant?.isC3DS != false) {
+            return true
+        }
+
         return variant == null || myVariant == null || variant == UNKNOWN || myVariant == UNKNOWN
     }
 
