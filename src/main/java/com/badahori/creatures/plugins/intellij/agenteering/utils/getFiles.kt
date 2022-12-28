@@ -1,11 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes
 
 
 /**
@@ -21,8 +23,8 @@ internal fun getFilesWithExtension(
     // Lowercase the extension
     val fileExtension = fileExtensionTemp.lowercase()
 
-
     val theSearchScope: GlobalSearchScope = searchScope
+        ?: (if (virtualFile != null && virtualFile.isDirectory) GlobalSearchScopes.directoryScope(project, virtualFile, true) else if (virtualFile != null) GlobalSearchScopes.directoryScope(project, virtualFile.parent, true) else null)
         ?: module?.let { GlobalSearchScope.moduleScope(it) }
         ?: GlobalSearchScope.projectScope(project)
 
@@ -56,13 +58,7 @@ private fun getFilesWithExtensionWithoutIndex(virtualFile: VirtualFile, extensio
     if (!virtualFile.isDirectory) {
         return getFilesWithExtensionWithoutIndex(virtualFile.parent, extension)
     }
-    return virtualFile.children.flatMap {
-        if (it.isDirectory) {
-            getFilesWithExtensionWithoutIndex(it, extension)
-        } else if (it.extension?.equals(extension, true) == true) {
-            listOf(it)
-        } else {
-            emptyList()
-        }
-    }
+    return virtualFile.collectChildren {
+        it.extension?.equals(extension, true) == true
+    } ?: emptyList()
 }

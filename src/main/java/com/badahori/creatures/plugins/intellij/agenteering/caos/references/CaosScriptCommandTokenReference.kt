@@ -34,7 +34,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
     }
 
     private val variants: List<CaosVariant> by lazy {
-        when (myElement) {
+        when (val myElement = myElement) {
             is CaosDefCompositeElement -> myElement.variants
             is CaosScriptCompositeElement -> myElement.containingCaosFile?.variant?.let { listOf(it) } ?: emptyList()
             else -> emptyList()
@@ -51,6 +51,7 @@ class CaosScriptCommandTokenReference(element: CaosScriptIsCommandToken) : PsiPo
         val command: CaosDefCommand = element as? CaosDefCommand
             ?: element.parent as? CaosDefCommand
             ?: return false
+        val myElement = myElement
         val commandString = command.text.replace(EXTRA_SPACE_REGEX, " ")
         if (myElement is CaosScriptVarToken && myElement.varGroup.value.equals(commandString, ignoreCase = true)) {
             return true

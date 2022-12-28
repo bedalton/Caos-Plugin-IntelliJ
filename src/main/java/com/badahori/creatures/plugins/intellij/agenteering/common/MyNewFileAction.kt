@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.common
 
 
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.className
-import bedalton.creatures.util.ensureEndsWith
-import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.className
+import bedalton.creatures.common.util.ensureEndsWith
+import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.intellij.ide.actions.CreateFileFromTemplateAction

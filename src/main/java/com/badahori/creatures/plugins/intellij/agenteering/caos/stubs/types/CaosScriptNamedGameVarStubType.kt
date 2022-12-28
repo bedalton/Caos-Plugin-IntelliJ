@@ -10,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptNamedGameVarStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptNamedGameVarStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
@@ -61,7 +62,12 @@ class CaosScriptNamedGameVarStubType(debugName:String) : CaosScriptStubElementTy
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return true
+        val text = try {
+            node?.text
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        return text.length > 2 && text[0] == '"' && text.last() == '"'
     }
 
     override fun indexStub(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink) {

@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.myModulePath
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 
 
 internal class SpriteFileTreeNode(
@@ -41,7 +42,7 @@ internal class SpriteFileTreeNode(
     }
 
     private val sprite by lazy {
-        SpriteParser.parse(value)
+        runBlocking { SpriteParser.parse(value) }
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {

@@ -15,7 +15,7 @@ internal enum class CaosScriptVarTokenGroup(val value:String) {
         fun fromText(text:String) : CaosScriptVarTokenGroup {
             val variablePrefix = text
                     .replace("[0-9]".toRegex(), "")
-                    .toUpperCase()
+                    .uppercase()
                     .trim()
             return when(variablePrefix) {
                 "VAR" -> VARx

@@ -23,8 +23,6 @@ fun Boolean?.orTrue(): Boolean {
     return this ?: true
 }
 
-val Any?.className: String get() = if (this == null) "NULL" else this::class.java.simpleName
-
 val Any?.canonicalName: String get() = if (this == null) "NULL" else this::class.java.canonicalName
 
 operator fun CaosScriptFile.plus(list: List<CaosScriptFile>): List<CaosScriptFile> {

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang;
 
-import bedalton.creatures.bytes.Bytes_util_jvmKt;
+import bedalton.creatures.common.bytes.Bytes_util_jvmKt;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.CaosScriptIcons;

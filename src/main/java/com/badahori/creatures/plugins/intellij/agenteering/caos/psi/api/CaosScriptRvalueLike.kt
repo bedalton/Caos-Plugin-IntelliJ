@@ -2,9 +2,10 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.intellij.psi.tree.IElementType
 
-interface CaosScriptRvalueLike : CaosScriptCompositeElement {
+interface CaosScriptRvalueLike : CaosScriptCompositeElement, CaosScriptArgument {
 
     val namedGameVar: CaosScriptNamedGameVar?
 
@@ -40,11 +41,9 @@ interface CaosScriptRvalueLike : CaosScriptCompositeElement {
 
     val argumentValues: List<CaosExpressionValueType>
 
-    val inferredType: List<CaosExpressionValueType>
-
-    val index:Int
-
     val commandDefinition:CaosCommand?
 
     val parameterValuesListValue:CaosValuesListValue?
+
+    val stringStubKind: StringStubKind?
 }

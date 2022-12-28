@@ -1,11 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.icons.AllIcons
@@ -29,6 +31,7 @@ class CompileCAOS2Action: AnAction(
     }
     override fun actionPerformed(e: AnActionEvent) {
 
+        LOGGER.info("Compiling CAOS2Pray")
         val project = e.project
             ?: return
 
@@ -44,10 +47,11 @@ class CompileCAOS2Action: AnAction(
             .filter { it.isCaos2Cob }
 
         try {
-            if (caos2Cob.isNotEmpty())
+            if (caos2Cob.isNotEmpty()) {
                 CompileCaos2CobAction.compile(project, caos2Cob)
+            }
         } catch (e: Exception) {
-
+            LOGGER.info("Failed to compile CAOS2Cob; ${e.className}(${e.message}); Files: ${caos2Cob.joinToString { it.name }}")
         }
 
         val caos2Pray = caosFiles
@@ -63,15 +67,19 @@ class CompileCAOS2Action: AnAction(
                 CompilePrayFileAction.compile(project, allPrayFiles.toTypedArray())
             }
         } catch (e: Exception) {
-
+            LOGGER.info("Failed to compile CAOS2Pray; ${e.className}(${e.message}) files: ${caos2Pray.joinToString { it.name }}")
         }
+
+        LOGGER.info("Compiled CAOS2Pray files")
     }
 
     private fun isCompilable(file: VirtualFile): Boolean {
-        if (file.fileType == CaosScriptFileType.INSTANCE)
+        if (file.fileType == CaosScriptFileType.INSTANCE) {
             return file.contents.contains("*#")
-        if (file.fileType == PrayFileType)
+        }
+        if (file.fileType == PrayFileType) {
             return true
+        }
         return PrayFileDetector.isPrayFile(file.contents)
     }
 }

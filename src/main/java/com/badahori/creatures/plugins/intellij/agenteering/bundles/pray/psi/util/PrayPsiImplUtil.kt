@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagV
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.PrayQuoteStringReference
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.psi.PsiElement
-import bedalton.creatures.util.stripSurroundingQuotes
+import bedalton.creatures.common.util.stripSurroundingQuotes
 
 object PrayPsiImplUtil {
 

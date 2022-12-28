@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices
 
 import com.intellij.psi.stubs.StubIndexKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubVersions
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
 
@@ -10,7 +11,7 @@ class CaosDefValuesListElementsByNameIndex : CaosScriptCaseInsensitiveStringInde
     override fun getKey(): StubIndexKey<String, CaosDefValuesListElement> = KEY
 
     override fun getVersion(): Int {
-        return super.getVersion() + VERSION
+        return super.getVersion() + CaosDefStubVersions.STUB_VERSION + VERSION
     }
 
     companion object {

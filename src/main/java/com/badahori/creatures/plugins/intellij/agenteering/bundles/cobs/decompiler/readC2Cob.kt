@@ -1,24 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.bytes.*
-import bedalton.creatures.sprite.parsers.S16SpriteFile
+import bedalton.creatures.common.bytes.*
+import bedalton.creatures.sprite.parsers.parseS16Frame
 import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.soywiz.korim.awt.toAwt
 import java.util.*
 
 
-internal fun ByteStreamReader.readC2CobBlock() : CobBlock? {
+internal suspend fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     val type = try {
         string(4)
     } catch (e: Exception) {
         return null
     }
-    val size = uInt32
+    val size = uInt32()
     return when (type) {
         "agnt" -> readC2AgentBlock()
         "auth" -> readC2AuthorBlock()
@@ -27,35 +26,35 @@ internal fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     }
 }
 
-private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
-    val quantityAvailable = uInt16.let { if (it == 0xffff) -1 else it }
-    val lastUsageDate = uInt32
-    val reuseInterval = uInt32
-    val expiryDay = uInt8
-    val expiryMonth = uInt8
-    val expiryYear = uInt16
+private suspend fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
+    val quantityAvailable = uInt16().let { if (it == 0xffff) -1 else it }
+    val lastUsageDate = uInt32()
+    val reuseInterval = uInt32()
+    val expiryDay = uInt8()
+    val expiryMonth = uInt8()
+    val expiryYear = uInt16()
     val expiry = Calendar.getInstance().apply {
         set (expiryYear, expiryMonth, expiryDay, 0, 0, 0)
     }
     skip(12) // Reserved?
-    val agentName = cString
-    val description = cString
-    val installScript = AgentScript.InstallScript(cString)
-    val removalScript = cString.nullIfEmpty()?.let { AgentScript.RemovalScript(it) }
-    val eventScripts = (0 until uInt16).map {index ->
-        val script = cString
+    val agentName = cString()
+    val description = cString()
+    val installScript = AgentScript.InstallScript(cString())
+    val removalScript = cString().nullIfEmpty()?.let { AgentScript.RemovalScript(it) }
+    val eventScripts = (0 until uInt16()).map {index ->
+        val script = cString()
         AgentScript(script, "Script $index", AgentScriptType.EVENT)
     }
-    val dependencies = (0 until uInt16).map {
-        val type = if (uInt16 == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
-        val name = cString
+    val dependencies = (0 until uInt16()).map {
+        val type = if (uInt16() == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
+        val name = cString()
         CobDependency(type, name)
     }
 
-    val thumbWidth = uInt16
-    val thumbHeight = uInt16
+    val thumbWidth = uInt16()
+    val thumbHeight = uInt16()
     val image = if (thumbWidth > 0 && thumbHeight > 0)
-        S16SpriteFile.parseFrame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
+        parseS16Frame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
     else
         null
     skip(thumbWidth * thumbHeight * 2)
@@ -76,19 +75,19 @@ private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     )
 }
 
-private fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock {
-    val creationDay = uInt8
-    val creationMonth = uInt8
-    val creationYear = uInt16
+private suspend fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock {
+    val creationDay = uInt8()
+    val creationMonth = uInt8()
+    val creationYear = uInt16()
     val creationDate = Calendar.getInstance(TimeZone.getDefault()).apply {
         set(creationYear, creationMonth, creationDay, 0, 0, 0)
     }
-    val version = uInt8
-    val revision = uInt8
-    val authorName = cString
-    val authorEmail = cString
-    val authorUrl = cString
-    val authorComment = cString
+    val version = uInt8()
+    val revision = uInt8()
+    val authorName = cString()
+    val authorEmail = cString()
+    val authorUrl = cString()
+    val authorComment = cString()
     return CobBlock.AuthorBlock(
             creationDate = creationDate,
             version = version,
@@ -100,15 +99,15 @@ private fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock {
     )
 }
 
-private fun ByteStreamReader.readC2FileBlock() : CobBlock.FileBlock {
-    val type = when (val typeInt = uInt16) {
+private suspend fun ByteStreamReader.readC2FileBlock() : CobBlock.FileBlock {
+    val type = when (val typeInt = uInt16()) {
         0 -> CobFileBlockType.SPRITE
         1 -> CobFileBlockType.SOUND
         else -> throw Exception("Invalid file block type '$typeInt'")
     }
-    val reserved = uInt32.toInt()
-    val size = uInt32
-    val fileName = cString
+    val reserved = uInt32().toInt()
+    val size = uInt32()
+    val fileName = cString()
     val contents = bytes(size)
     return if (type == CobFileBlockType.SPRITE)
         CobBlock.FileBlock.SpriteBlock(

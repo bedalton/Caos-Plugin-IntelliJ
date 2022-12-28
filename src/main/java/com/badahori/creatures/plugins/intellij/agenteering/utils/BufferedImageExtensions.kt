@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.bytes.toBase64
+import bedalton.creatures.common.bytes.toBase64
 import org.apache.commons.imaging.palette.Dithering
 import org.apache.commons.imaging.palette.Palette
 import java.awt.*

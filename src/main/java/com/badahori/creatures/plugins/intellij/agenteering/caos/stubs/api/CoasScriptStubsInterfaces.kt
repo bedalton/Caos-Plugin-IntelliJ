@@ -40,10 +40,12 @@ interface CaosScriptRValueStub : StubElement<CaosScriptRvalueImpl> {
     val type: List<CaosExpressionValueType>
     val argumentValues: List<CaosExpressionValueType>
     val commandString:String?
+    val stringStubKind: StringStubKind?
 }
 
 interface CaosScriptTokenRValueStub : StubElement<CaosScriptTokenRvalueImpl> {
     val tokenText:String?
+    val stringStubKind: StringStubKind?
 }
 
 interface CaosScriptSubroutineNameStub : StubElement<CaosScriptSubroutineNameImpl> {

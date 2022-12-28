@@ -1,8 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CorruptInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.fileTypes.LanguageFileType
@@ -16,7 +17,7 @@ import com.intellij.openapi.vfs.newvfs.FileAttribute
 
 internal class InjectorInterfacePropertyPusher private constructor() : FilePropertyPusher<GameInterfaceName?> {
 
-    override fun getDefaultValue(): GameInterfaceName = GameInterfaceName(CaosVariant.UNKNOWN)
+    override fun getDefaultValue(): GameInterfaceName = CorruptInjectorInterface("")
 
     override fun getFileDataKey(): Key<GameInterfaceName?> {
         return INJECTOR_INTERFACE_USER_DATA_KEY
@@ -30,7 +31,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
         if (file == null)
             return null
         return file.getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)
-            ?: readFromStorage(project, file, null)
+            ?: readFromStorage(file, null)
     }
 
     override fun getImmediateValue(module: Module): GameInterfaceName? {
@@ -52,7 +53,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
     companion object {
         private val INJECTOR_ATTRIBUTE = FileAttribute("caos.CAOS_FILE_INJECTOR", 0, true)
 
-        internal fun readFromStorage(project: Project, file: VirtualFile, variant: CaosVariant?): GameInterfaceName? {
+        internal fun readFromStorage(file: VirtualFile, variant: CaosVariant?): GameInterfaceName? {
             file.getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)?.let {
                 return it
             }
@@ -77,7 +78,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
             stream.close()
             val key = out.toString().nullIfEmpty()
                 ?: return null
-            return project.settings.gameInterfaceForKey(variant, key)
+            return CaosApplicationSettingsService.getInstance().gameInterfaceForKey(variant, key)
         }
 
         internal fun writeToStorage(file: VirtualFile, gameInterfaceName: GameInterfaceName?) {
@@ -85,7 +86,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
                 return
             file.putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterfaceName)
             val stream = INJECTOR_ATTRIBUTE.writeAttribute(file)
-            val name = gameInterfaceName?.storageKey ?: ""
+            val name = gameInterfaceName?.serialize() ?: ""
             stream.writeInt(name.length)
             stream.writeChars(name)
             stream.close()

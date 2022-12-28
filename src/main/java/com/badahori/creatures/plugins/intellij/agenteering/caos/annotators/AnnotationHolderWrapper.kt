@@ -313,7 +313,7 @@ class FixUnion(val quickFix: LocalQuickFix, val intentionAction: IntentionAction
 
     override fun getFamilyName(): String = quickFix.familyName
 
-    override fun startInWriteAction(): Boolean = intentionAction.startInWriteAction()
+    override fun startInWriteAction(): Boolean = intentionAction.startInWriteAction() || quickFix.startInWriteAction()
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean =
         intentionAction.isAvailable(project, editor, file)

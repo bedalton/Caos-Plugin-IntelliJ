@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
@@ -31,6 +31,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.search.FilenameIndex
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 
 /**
  * Creates a file

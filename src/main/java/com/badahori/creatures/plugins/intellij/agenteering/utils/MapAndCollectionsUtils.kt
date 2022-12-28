@@ -46,13 +46,6 @@ fun <K,V> Map<K,V>?.isNotNullOrEmpty() : Boolean {
     return this != null && this.isNotEmpty()
 }
 
-fun <T> Collection<T>?.isNullOrEmpty() : Boolean {
-    contract {
-        returns(true) implies (this@isNullOrEmpty != null)
-    }
-    return this == null || this.isEmpty()
-}
-
 fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean {
     contract {
         returns(true) implies (this@isNotNullOrEmpty != null)

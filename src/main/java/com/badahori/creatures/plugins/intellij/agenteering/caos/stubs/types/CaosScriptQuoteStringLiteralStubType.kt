@@ -1,20 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptQuoteStringLiteral
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCAssignmentImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptQuoteStringLiteralImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptAssignmentStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptQuoteStringLiteralStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptAssignmentStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptQuoteStringLiteralStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.components.ServiceManager
@@ -53,7 +45,7 @@ class CaosScriptQuoteStringLiteralStubType(debugName: String)
     override fun createStub(element: CaosScriptQuoteStringLiteralImpl, parent: StubElement<*>): CaosScriptQuoteStringLiteralStub {
         return CaosScriptQuoteStringLiteralStubImpl(
             parent = parent,
-            kind = element.stubKind,
+            kind = element.stringStubKind,
             value = try { element.stringValue } catch (e: Exception) { "" },
             meta = element.meta
         )
@@ -62,7 +54,16 @@ class CaosScriptQuoteStringLiteralStubType(debugName: String)
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         val psi = (node?.psi as? CaosScriptQuoteStringLiteral)
             ?: return false
-        return (psi.stubKind != null)
+
+        if (psi.stringStubKind == null) {
+            return false
+        }
+        val text = try {
+            node.text
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        return text.length > 2 && text[0] == '"' && text.last() == '"'
     }
 
     override fun indexStub(stub: CaosScriptQuoteStringLiteralStub, indexSink: IndexSink) {

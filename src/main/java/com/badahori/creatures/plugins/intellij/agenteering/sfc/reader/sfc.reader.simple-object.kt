@@ -1,20 +1,20 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import bedalton.creatures.bytes.skip
-import bedalton.creatures.bytes.uInt8
+import bedalton.creatures.common.bytes.skip
+import bedalton.creatures.common.bytes.uInt8
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 
 /**
  * Reads a simple object from a byte buffer of an SFC File
  */
-internal fun SfcReader.readSimpleObject() : PointerSfcSimpleObjectImpl {
+internal suspend fun SfcReader.readSimpleObject() : PointerSfcSimpleObjectImpl {
     val baseObject = readObject()
     val entity = readClass(SfcType.ENTITY) as SfcEntityPtr
     return PointerSfcSimpleObjectImpl(baseObject, entity)
 }
 
-internal fun SfcReader.readPointerTool(): PointerSfcPointerTool {
+internal suspend fun SfcReader.readPointerTool(): PointerSfcPointerTool {
     val simpleObject = readSimpleObject()
     // Discard Uknown bytes
     if (variant == CaosVariant.C1)
@@ -25,10 +25,10 @@ internal fun SfcReader.readPointerTool(): PointerSfcPointerTool {
 }
 
 
-internal fun SfcReader.readCallButton(): PointerSfcCallButton {
+internal suspend fun SfcReader.readCallButton(): PointerSfcCallButton {
     val simpleObject = readSimpleObject()
     val ourLift = readClass(SfcType.LIFT) as SfcLiftPtr
-    val liftId = byteBuffer.uInt8
+    val liftId = byteBuffer.uInt8()
     return PointerSfcCallButton(
             simpleObject,
             ourLift,
@@ -36,6 +36,6 @@ internal fun SfcReader.readCallButton(): PointerSfcCallButton {
     )
 }
 
-internal fun SfcReader.readScenery() : PointerSfcScenery {
+internal suspend fun SfcReader.readScenery() : PointerSfcScenery {
     return PointerSfcScenery(readSimpleObject())
 }

@@ -25,6 +25,7 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.psi.PsiFile
@@ -32,10 +33,9 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.impl.source.resolve.FileContextUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import com.intellij.util.indexing.IndexingDataKeys
 import gnu.trove.TObjectLongHashMap
 
-@Suppress("UNUSED_PARAMETER", "unused")
+@Suppress("UNUSED_PARAMETER", "unused", "LocalVariableName", "SameParameterValue")
 object CaosScriptParserUtil : GeneratedParserUtilBase() {
     private val MODES_KEY = Key.create<TObjectLongHashMap<String>>("MODES_KEY")
     private val EXPECTATIONS_KEY = Key.create<MutableList<Int>>("creatures.caos.parser.EXPECTATIONS_KEY")
@@ -231,24 +231,19 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
 
         psiFile.putUserData(ImplicitVariantUserDataKey, variant)
 
-        psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
-            setVirtualFileVariant(virtualFile, variant, explicit)
-        }
+        setVirtualFileVariant(builder_, variant, explicit)
 
-        psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
-            setVirtualFileVariant(virtualFile, variant, explicit)
-        }
         return true
     }
 
-    private fun setVirtualFileVariant(virtualFile: VirtualFile, variant: CaosVariant, explicit: Boolean) {
+    private fun setVirtualFileVariant(virtualFile: UserDataHolder, variant: CaosVariant, explicit: Boolean) {
         if (explicit)
             virtualFile.putUserData(ExplicitVariantUserDataKey, variant)
         else
             virtualFile.putUserData(ImplicitVariantUserDataKey, variant)
         if (virtualFile is CaosVirtualFile)
             virtualFile.setVariant(variant, explicit)
-        else if (virtualFile is VirtualFileWithId) {
+        else if (virtualFile is VirtualFile && virtualFile is VirtualFileWithId) {
             if (explicit)
                 ExplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
             else
@@ -273,7 +268,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         }
         return (psiFile.virtualFile?.cachedVariantExplicitOrImplicit
             ?: psiFile.originalFile.virtualFile?.cachedVariantExplicitOrImplicit
-            ?: psiFile.getUserData(IndexingDataKeys.VIRTUAL_FILE)?.cachedVariantExplicitOrImplicit
+            ?: builder_.cachedVariantExplicitOrImplicit
             ?: psiFile.module?.variant
             ?: psiFile.project.settings.defaultVariant)
             .nullIfUnknown()

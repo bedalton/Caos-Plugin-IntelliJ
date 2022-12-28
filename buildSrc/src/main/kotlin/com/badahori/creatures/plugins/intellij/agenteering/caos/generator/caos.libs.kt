@@ -258,7 +258,7 @@ internal interface HasLib {
 private fun normalize(commandString: String?): String? {
     return commandString
             .nullIfUndefOrBlank()
-            ?.toUpperCase()
+            ?.uppercase()
             ?.replace("\\s\\s+".toRegex(), " ")
 }
 
@@ -275,7 +275,7 @@ internal enum class EqOp(val commonName: String, vararg values: String) {
 
     companion object {
         fun fromValue(value: String): EqOp {
-            return when (value.toUpperCase()) {
+            return when (value.uppercase()) {
                 "EQ", "=" -> EQUAL
                 "NE", "!=", "<>" -> NOT_EQUAL
                 "GT", ">" -> GREATER_THAN

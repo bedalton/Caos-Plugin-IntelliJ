@@ -150,12 +150,13 @@ private val requiresSpriteRegex = requiresSprite.joinToString("|") { "(" + it.re
     .toRegex(RegexOption.IGNORE_CASE)
 
 internal fun getPrayTagRequiredExtension(tagName: String): List<String>? {
-    return if (requiresSpriteRegex.matches(tagName))
+    return if (requiresSpriteRegex.matches(tagName)) {
         listOf("c16", "s16")
-    else if (requiresScript.matches(tagName))
+    } else if (requiresScript.matches(tagName)) {
         listOf("cos", "caos")
-    else
+    } else {
         null
+    }
 }
 
 private fun annotateCaos2PrayCommand(command: PrayCommand, values: List<CaosScriptCaos2Value>, holder: ProblemsHolder) {

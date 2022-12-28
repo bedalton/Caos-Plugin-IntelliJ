@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey

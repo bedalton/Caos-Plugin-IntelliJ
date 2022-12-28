@@ -11,10 +11,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.bedalton.vfs.LocalFileSystem
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbAware
@@ -24,6 +24,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiPlainTextFile
 import com.intellij.psi.util.PsiTreeUtil
+import kotlinx.coroutines.runBlocking
 import kotlin.math.max
 import kotlin.math.min
 
@@ -40,19 +41,21 @@ open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
             override fun visitElement(element: PsiElement) {
                 super.visitElement(element)
                 if (element.tokenType == PlainTextTokenTypes.PLAIN_TEXT_FILE) {
-                    validateBlock(element, holder)
+                    runBlocking {
+                        validateBlock(element, holder)
+                    }
                 }
             }
         }
     }
 
-    protected open fun validateBlock(block: PsiElement, holder: ProblemsHolder) {
+    protected open suspend fun validateBlock(block: PsiElement, holder: ProblemsHolder) {
         val containingFile = block.containingFile
         val blockText = block.text
         if (blockText.isNullOrBlank())
             return
         val errors = try {
-            PrayDataValidator.validate(containingFile.virtualFile.path, blockText, false)
+            PrayDataValidator.validate(LocalFileSystem!!, containingFile.virtualFile.path, blockText, false)
                 .ifEmpty { null }
         } catch (e: Exception) {
             holder.registerProblem(
@@ -98,15 +101,18 @@ class PrayPlainTextBlockIsValidInspection: PrayBlockIsValidInspection(), DumbAwa
             override fun visitPlainTextFile(file: PsiPlainTextFile) {
                 super.visitPlainTextFile(file)
                 if (PrayFileDetector.isPrayFile(file.text)) {
-                    validateBlock(file, holder)
+                    runBlocking {
+                        validateBlock(file, holder)
+                    }
                 }
             }
         }
     }
 
-    override fun validateBlock(block: PsiElement, holder: ProblemsHolder) {
-        if (PrayFileDetector.isPrayFile(block.text))
+    override suspend fun validateBlock(block: PsiElement, holder: ProblemsHolder) {
+        if (PrayFileDetector.isPrayFile(block.text)) {
             super.validateBlock(block, holder)
+        }
     }
 }
 

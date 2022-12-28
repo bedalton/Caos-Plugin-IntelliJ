@@ -7,24 +7,34 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.FileContentUtilCore
 
 internal fun rerunAnalyzer(element: PsiElement) {
-    if (!element.isValid)
+    if (!element.isValid) {
         return
-    if (!ApplicationManager.getApplication().isDispatchThread)
+    }
+    if (!ApplicationManager.getApplication().isDispatchThread) {
+        LOGGER.info("Is not Dispatch thread")
         return
+    }
     val file = element.containingFile
         ?: return
-    if (!file.isValid)
+    if (!file.isValid) {
         return
+    }
 
-    FileContentUtilCore.reparseFiles(file.virtualFile)
-    DaemonCodeAnalyzer.getInstance(file.project).restart(file)
+    runWriteAction {
+        FileContentUtilCore.reparseFiles(file.virtualFile)
+        DaemonCodeAnalyzer.getInstance(file.project).restart(file)
+    }
 }
 
 internal fun rerunAnalyzer(file: PsiFile) {
-    if (!file.isValid)
+    if (!file.isValid) {
         return
-    if (!ApplicationManager.getApplication().isDispatchThread)
+    }
+    if (!ApplicationManager.getApplication().isDispatchThread) {
         return
-    FileContentUtilCore.reparseFiles(file.virtualFile)
-    DaemonCodeAnalyzer.getInstance(file.project).restart(file)
+    }
+    runWriteAction {
+        FileContentUtilCore.reparseFiles(file.virtualFile)
+        DaemonCodeAnalyzer.getInstance(file.project).restart(file)
+    }
 }

@@ -5,8 +5,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcRoo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 
-internal fun SfcReader.readMapData(): PointerSfcMapData {
-    variant = when (val version = uInt32) {
+internal suspend fun SfcReader.readMapData(): PointerSfcMapData {
+    variant = when (val version = uInt32()) {
         0 -> C1
         1 -> CaosVariant.C2
         else -> throw OutOfVariantException(CaosVariant.UNKNOWN, "MapData variant value $version is invalid. Value must be 0 or 1")
@@ -14,7 +14,7 @@ internal fun SfcReader.readMapData(): PointerSfcMapData {
 
     skip(if (variant == C1) 4 else 12)
     val background = readClass(SfcType.GALLERY) as SfcGalleryPtr
-    val numberOfRooms = uInt32
+    val numberOfRooms = uInt32()
     val rooms = readRooms(numberOfRooms)
     val groundLevels = readGroundLevels()
     if (variant == C1)
@@ -25,7 +25,7 @@ internal fun SfcReader.readMapData(): PointerSfcMapData {
             groundLevels = groundLevels
     )
 }
-private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoomPtr> {
+private suspend fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoomPtr> {
     var numberOfRooms = numberOfRoomsIn
 
     // Read C1 rooms in
