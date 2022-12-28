@@ -1,12 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalue
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRvalueLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptTokenRvalue
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptRvalueImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValueStub
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptRValueStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
+import com.intellij.lang.ASTNode
 
 class CaosScriptRValueStubType(debugName:String) : CaosScriptStubElementType<CaosScriptRValueStub, CaosScriptRvalueImpl>(debugName) {
     override fun createPsi(parent: CaosScriptRValueStub): CaosScriptRvalueImpl {
@@ -22,6 +27,7 @@ class CaosScriptRValueStubType(debugName:String) : CaosScriptStubElementType<Cao
         stream.writeList(stub.argumentValues) {
             writeExpressionValueType(it)
         }
+        stream.writeName(stub.stringStubKind?.name)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>?): CaosScriptRValueStub {
@@ -32,11 +38,25 @@ class CaosScriptRValueStubType(debugName:String) : CaosScriptStubElementType<Cao
         val arguments = stream.readList {
             readExpressionValueType()
         }
-        return CaosScriptRValueStubImpl(parent, commandString, returnType, arguments)
+        val stringStubKind = StringStubKind.fromString(stream.readNameAsString())
+        return CaosScriptRValueStubImpl(parent, commandString, returnType, arguments, stringStubKind)
     }
 
     override fun createStub(element: CaosScriptRvalueImpl, parent: StubElement<*>?): CaosScriptRValueStub {
-        return CaosScriptRValueStubImpl(parent, element.commandString, element.inferredType, element.argumentValues)
+        return CaosScriptRValueStubImpl(
+            parent = parent,
+            commandString = element.commandString,
+            type = element.inferredType,
+            argumentValues = element.argumentValues,
+            stringStubKind = element.stringStubKind
+        )
+    }
+
+    override fun shouldCreateStub(node: ASTNode?): Boolean {
+        val psi = node?.psi as? CaosScriptRvalue
+            ?: return false
+        return psi.quoteStringLiteral != null &&
+                psi.token != null
     }
 
 }

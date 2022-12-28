@@ -43,12 +43,14 @@ data class CaosScriptRValueStubImpl(
         val parent: StubElement<*>?,
         override val commandString: String?,
         override val type: List<CaosExpressionValueType>,
-        override val argumentValues: List<CaosExpressionValueType>
+        override val argumentValues: List<CaosExpressionValueType>,
+        override val stringStubKind: StringStubKind?
 ) : StubBase<CaosScriptRvalueImpl>(parent, CaosScriptStubTypes.RVALUE),  CaosScriptRValueStub
 
 data class CaosScriptTokenRValueStubImpl(
         val parent: StubElement<*>?,
-        override val tokenText: String?
+        override val tokenText: String?,
+        override val stringStubKind: StringStubKind?
 ) : StubBase<CaosScriptTokenRvalueImpl>(parent, CaosScriptStubTypes.TOKEN_RVALUE),  CaosScriptTokenRValueStub
 
 data class CaosScriptSubroutineNameStubImpl(

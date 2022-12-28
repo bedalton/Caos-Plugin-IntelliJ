@@ -1138,6 +1138,7 @@ DDE_PICT=[^\s]{3}
   	{ERROR_WORD}			{ return CaosScript_ERROR_WORD; }
 	{WORD}                 	{ return CaosScript_WORD; }
 	{INCOMPLETE_WORD}      	{ return CaosScript_ERROR_WORD; }
+    '-'						{ return CaosScript_INCOMPLETE_INT; }
     [^]						{ return BAD_CHARACTER; }
 }
 

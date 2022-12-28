@@ -166,6 +166,11 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             is CaosScriptFamily -> annotateClassifierArgument(element.rvalue, "Family", holder)
             is CaosScriptGenus -> annotateClassifierArgument(element.rvalue, "Genus", holder)
             is CaosScriptSpecies -> annotateClassifierArgument(element.rvalue, "Species", holder)
+            is CaosScriptIncompleteNegativeInteger -> simpleError(
+                element,
+                "Minus sign must be followed by a number or decimal",
+                holder
+            )
         }
     }
 
@@ -410,7 +415,8 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 else
                     listOf(tokens[0])
             }
-            .mapNotNull { commandToken ->
+            .last()
+            .let { commandToken ->
                 getErrorCommandAnnotation(variant, errorCommand, commandToken, holder)
             }
 /*
@@ -421,7 +427,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
         if (errorAnnotation.size < rawTokens.size) {
             throw Exception("Command found in definitions for element: ${errorCommand.text}, but BNF grammar does not reflect this.")
         }*/
-        errorAnnotation.last().create()
+        errorAnnotation?.create()//.last().create()
     }
 
 

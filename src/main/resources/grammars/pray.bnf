@@ -112,7 +112,7 @@ inline_text
 	;
 
 block_header
-	::= GROUP block_tag block_name
+	::= group_kw block_tag block_name
 	{
 		pin=1
 		methods = [
@@ -122,8 +122,12 @@ block_header
 	}
 	;
 
+group_kw
+    ::= GROUP
+    ;
+
 inline_file
-	::= INLINE block_tag output_file_name input_file_name //<<eos>>
+	::= inline_kw block_tag output_file_name input_file_name //<<eos>>
 	{
 		pin=1
 		methods = [
@@ -132,6 +136,8 @@ inline_file
 		]
 	}
 	;
+
+inline_kw ::= INLINE;
 
 
 

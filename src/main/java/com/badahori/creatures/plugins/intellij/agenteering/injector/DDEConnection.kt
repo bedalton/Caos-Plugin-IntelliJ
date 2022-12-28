@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -14,55 +16,92 @@ import com.pretty_tools.dde.client.DDEClientEventListener
 /**
  * Class for managing a C1/C2 DDE CAOS connection
  */
-internal class DDEConnection(private val url: String, private val variant: CaosVariant, private val displayName: String) : CaosConnection {
+internal class DDEConnection(override val variant: CaosVariant, private val data: GameInterfaceName) : CaosConnection {
 
     override val supportsJect: Boolean
         get() = false
 
     override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
-        throw Exception("JECT not supported by DDE connection")
+        return InjectionStatus.ActionNotSupported(
+            caos.name,
+            null,
+            CaosBundle.message("caos.injector.errors.ject-not-supported-by-injector", "DDE")
+        )
     }
 
-    override fun inject(caos: String): InjectionStatus {
+    private val serveName: String
+        get() = data.gameName?.let {
+            if (it.lowercase().startsWith("dde:")) {
+                it.substring(4)
+            } else {
+                it
+            }
+        } ?: VIVARIUM
+
+    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
+        if (!OsUtil.isWindows) {
+            return NOT_WINDOWS_STATUS
+        }
         val processedCaos = CaosScriptsQuickCollapseToLine.collapse(variant, caos)
         // Remove bad prefix for CAOS2Cob injection
         if (processedCaos.startsWith("iscr") || processedCaos.startsWith("rscr"))
             processedCaos.substring(5)
         val conn = getConnection()
-                ?: return InjectionStatus.BadConnection("Failed to fetch connection to Vivarium")
+            ?: return InjectionStatus.BadConnection(
+                fileName,
+                descriptor,
+                CaosBundle.message("caos.injector.errors.failed-to-connect-to", variant.code + "'s DDE interface"),
+                variant
+            )
         try {
-            conn.poke("Macro", processedCaos+0.toChar())
-        } catch(e:Exception) {
-            return InjectionStatus.Bad("Poke macro failed with error: ${e.message}")
+            conn.poke("Macro", processedCaos + 0.toChar())
+        } catch (e: Exception) {
+            return InjectionStatus.Bad(
+                fileName,
+                descriptor,
+                CaosBundle.message("caos.injector.errors.dde.action-failed", "Poke macro", e.message ?: "<none>")
+            )
         }
         return try {
             var response = conn.request("Macro")
             if (response == "0000") {
-                InjectionStatus.Bad("Silent exception raised during injected script execution")
+                InjectionStatus.Bad(fileName, descriptor, CaosBundle.message("caos.injector.errors.silent-failure"))
             } else if (response.length > 1) {
                 if (response.last() == 0.toChar()) {
                     response = response.substringFromEnd(0, 1)
                 }
             }
-            InjectionStatus.Ok(response)
-        } catch(e:Exception) {
+            InjectionStatus.Ok(fileName, descriptor, response)
+        } catch (e: Exception) {
             LOGGER.severe("Request failed after poke with dde error: ${e.message}")
-            InjectionStatus.Bad("Do request failed with error: ${e.message}")
+            InjectionStatus.Bad(
+                fileName,
+                descriptor,
+                CaosBundle.message("caos.injector.errors.dde.action-failed", "Run request", e.message ?: "<none>")
+            )
         }
     }
 
-    override fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber:Int, caos: String): InjectionStatus {
+    override fun injectEventScript(
+        fileName: String,
+        family: Int,
+        genus: Int,
+        species: Int,
+        eventNumber: Int,
+        caos: String,
+    ): InjectionStatus {
         val expectedHeader = "scrp $family $genus $species $eventNumber"
         // removes possibly badly formatted script header
         val removalRegex = "^scrp\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*".toRegex()
         val caosFormatted = if (!caos.trim().lowercase().startsWith(expectedHeader)) {
-             if (removalRegex.matches(caos)) {
-                 caos.replace(removalRegex, "")
-             } else
-                 "$expectedHeader $caos"
-        } else
+            if (removalRegex.matches(caos)) {
+                caos.replace(removalRegex, "")
+            } else
+                "$expectedHeader $caos"
+        } else {
             caos
-        return inject(caosFormatted)
+        }
+        return inject(fileName, "scrp $family $genus $species $eventNumber", caosFormatted)
     }
 
     override fun disconnect(): Boolean {
@@ -87,7 +126,12 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
     }
 
     override fun showAttribution(project: Project, variant: CaosVariant) {
-        CaosInjectorNotifications.show(project, "Attribution", "${variant.code} caos injector is based off of information found @ http://sheeslostknowledge.blogspot.com/2014/02/connecting-to-creatures-dde-interface.html by LoneShee", NotificationType.INFORMATION)
+        CaosInjectorNotifications.show(
+            project,
+            "Attribution",
+            CaosBundle.message("caos.injector.attribution.dde"),
+            NotificationType.INFORMATION
+        )
     }
 
     private fun getConnection(): DDEClientConversation? {
@@ -106,12 +150,12 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
             }
         }
         return try {
-            conn.connect(url, topic)
+            conn.connect(serveName, topic)
             connection = conn
             conn
         } catch (e: Exception) {
             e.printStackTrace()
-            LOGGER.severe("Connection to the vivarium failed. Ensure $displayName is running. Error: " + e.message)
+            LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running. Error: " + e.message)
             null
         }
     }
@@ -119,6 +163,7 @@ internal class DDEConnection(private val url: String, private val variant: CaosV
     companion object {
         private const val topic: String = "IntelliJCaosInjector"
         private var connection: DDEClientConversation? = null
+        private const val VIVARIUM = "Vivarium"
     }
 
 }

@@ -14,11 +14,12 @@ configurations {
 }
 
 plugins {
-//    id("java")
-    id("org.jetbrains.intellij") version "1.3.0"
-    kotlin("plugin.serialization") version "1.6.21"
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
+    id("org.jetbrains.intellij") version "1.10.2"
+    kotlin("plugin.serialization") version "1.7.20"
 }
+
+
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
 version = "2022.03.00"
@@ -26,12 +27,14 @@ version = "2022.03.00"
 
 val ideaVersionStart: String by project
 val psiViewerVersion: String by project
+val javaVersion: String by project
 
 val korImagesVersion: String by project
 val creaturesAgentUtilVersion: String by project
 val creaturesSpriteUtilVersion: String by project
 val creaturesCommonCliVersion: String by project
 val creaturesCommonCoreVersion: String by project
+val localFilesVersion: String by project
 
 repositories {
     mavenLocal()
@@ -42,13 +45,11 @@ repositories {
 
 dependencies {
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0") {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1") {
         excludeKotlin()
     }
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
         excludeKotlin()
@@ -78,25 +79,39 @@ dependencies {
         excludeKotlin()
     }
 
+    implementation("com.bedalton:LocalFiles:$localFilesVersion") {
+        excludeKotlin()
+    }
+
+    testImplementation("junit:junit:4.13.2")
+
 
 }
+tasks.test {
+    useJUnit()
+}
+
 sourceSets.main {
     java.srcDirs("src/main/java", "gen", "src/main/gen")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
+    val javaSdkString = "VERSION_" + javaVersion.replace('.', '_')
+    val javaSdkVersion = JavaVersion.valueOf(javaSdkString)
+    sourceCompatibility = javaSdkVersion
+    targetCompatibility = javaSdkVersion
+
 }
 
 kotlin {
 
     tasks.withType<KotlinCompile>().all {
         kotlinOptions {
-            this.jvmTarget = "11"
-            this.apiVersion = "1.5"
-            this.languageVersion = "1.5"
+            this.jvmTarget = javaVersion
+            this.apiVersion = "1.7"
+            this.languageVersion = "1.7"
             this.freeCompilerArgs += listOf(
-                "-Xjvm-default=all-compatibility"
+                "-Xjvm-default=all-compatibility",
             )
         }
     }
@@ -107,10 +122,9 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalMultiplatform")
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
             languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
-            languageSettings.optIn("kotlin.js.ExperimentalJsExport")
-            languageSettings.optIn("kotlin.ExperimentalJsExport")
-            languageSettings.optIn("org.jetbrains.annotations.ApiStatus.Experimental")
             languageSettings.optIn("kotlin.ExperimentalStdlibApi")
+            languageSettings.optIn("kotlinx.coroutines.DelicateCoroutinesApi")
+
             //languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
         }
     }
@@ -120,9 +134,9 @@ kotlin {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
+//    version.set(ideaVersionStart)
     version.set(ideaVersionStart)
     updateSinceUntilBuild.set(false)
-    sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
     plugins.set(listOf("PsiViewer:$psiViewerVersion"))//, "com.mallowigi.idea:10.0"))
 
@@ -135,6 +149,10 @@ tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.RunIdeTask>("runIde") {
+    dependsOn("generateCaosDef")
+}
+
+tasks.getByName("jar") {
     dependsOn("generateCaosDef")
 }
 

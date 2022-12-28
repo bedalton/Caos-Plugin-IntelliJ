@@ -1,13 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.poser.actions
 
 import bedalton.creatures.sprite.util.SpriteType
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -39,7 +40,7 @@ class AutoPreview : AnAction() {
     override fun update(e: AnActionEvent) {
         super.update(e)
         val project = e.project
-        if (project == null || !project.settings.state.isAutoPoseEnabled) {
+        if (project == null || !CaosApplicationSettingsService.getInstance().isAutoPoseEnabled) {
             e.presentation.isVisible = false
             return
         }
@@ -314,7 +315,7 @@ class AutoPreview : AnAction() {
         val variant = variantIn
             ?: if (mappedParts['a']!!.bodyData.lines.size > 10)
                 CaosVariant.C3
-            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.type == SpriteType.S16})
+            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.fileType == SpriteType.S16})
                 CaosVariant.C2
             else
                 CaosVariant.C1

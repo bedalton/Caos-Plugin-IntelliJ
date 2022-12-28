@@ -9,6 +9,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
+import com.intellij.psi.util.elementType
 
 
 class CaosScriptBlock internal constructor(
@@ -16,7 +17,7 @@ class CaosScriptBlock internal constructor(
     wrap: Wrap?,
     alignment: Alignment?,
     val settings: CommonCodeStyleSettings,
-    val caosSettings: CaosScriptCodeStyleSettings?
+    private val caosSettings: CaosScriptCodeStyleSettings?
 ) : AbstractBlock(node, wrap, alignment) {
 
     private val spacingProcessor: CaosScriptSpacingProcessor by lazy {
@@ -24,6 +25,7 @@ class CaosScriptBlock internal constructor(
     }
     private val indentProcessor: CaosScriptIndentProcessor by lazy {
         if (caosSettings == null) {
+//            LOGGER.info("CAOS settings are null, Using null indent processor")
             CaosScriptNullIndentProcessor
         } else {
             CaosScriptIndentProcessorImpl(caosSettings)
@@ -62,81 +64,117 @@ class CaosScriptBlock internal constructor(
         if (psi is CaosScriptCommentBlock || psi.hasParentOfType(CaosScriptCommentBlock::class.java) || psi.getPreviousNonEmptySibling(
                 true
             ) is CaosScriptCommentBlock
-        )
+        ) {
             return ChildAttributes(Indent.getAbsoluteNoneIndent(), null)
+        }
 
         val cursorElement = psi.editor?.let { it.cursorElementInside(psi.textRange) ?: it.primaryCursorElement }
             ?: return noneIndent
+        if (psi is CaosScriptScriptElement) {
+            return if (psi.scriptTerminator == null) {
+                noneIndent
+            } else {
+                normalIndent
+            }
+        }
         if (psi is CaosScriptHasCodeBlock) {
             if (cursorElement.tokenType == TokenType.WHITE_SPACE) {
                 val previous = cursorElement.getPreviousNonEmptySibling(true)
-                if (previous is CaosScriptCodeBlockLine || previous is CaosScriptCodeBlock || previous?.parent is CaosScriptCodeBlock)
-                    return normalIndent
-                val next = cursorElement.getNextNonEmptySibling(true)
-                if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock)
-                    return normalIndent
-                if (cursorElement.parent is CaosScriptScriptElement) {
-                    return if ((cursorElement.parent as CaosScriptScriptElement).scriptTerminator != null)
-                        normalIndent
-                    else
+                if (previous is CaosScriptCIscr || previous is CaosScriptCRscr || previous is CaosScriptCScrp) {
+                    if (previous.getParentOfType(CaosScriptScriptElement::class.java)?.scriptTerminator != null) {
+                        return normalIndent
+                    } else {
+//                        LOGGER.info("Previous is token: iscr|rscr|scrp and parent has null script terminator: (${psi.elementType})${psi.text}")
                         noneIndent
+                    }
+                }
+                if (previous is CaosScriptCodeBlockLine || previous is CaosScriptCodeBlock || previous?.parent is CaosScriptCodeBlock) {
+//                    LOGGER.info("HasScriptBlockPreviously: (${psi.elementType})${psi.text}")
+                    return normalIndent
+                }
+                val next = cursorElement.getNextNonEmptySibling(true)
+                if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock) {
+//                    LOGGER.info("Next is code block: ${psi.elementType}${psi.text}")
+                    return normalIndent
+                }
+                if (cursorElement.parent is CaosScriptScriptElement) {
+                    return if ((cursorElement.parent as CaosScriptScriptElement).scriptTerminator != null) {
+//                        LOGGER.info("Parent is script with terminator: (${psi.elementType})${psi.text}")
+                        normalIndent
+                    } else {
+                        noneIndent
+                    }
                 }
             }
             return if (psi is CaosScriptScriptElement) {
-                if (cursorElement.parent == psi)
+                if (cursorElement.parent == psi || psi.scriptTerminator == null) {
                     noneIndent
-                else
+                } else {
+//                    LOGGER.info("PSI is script with script terminator: (${psi.elementType})${psi.text}")
                     normalIndent
+                }
             } else {
-                if (cursorElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java))
+                if (cursorElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java)) {
                     absoluteNoneIndent
-                else {
+                }else {
                     val previousElement = cursorElement.getPreviousNonEmptySibling(true)
                     if (previousElement == null || previousElement.isOrHasParentOfType(CaosScriptCommentBlock::class.java)
                             .orFalse()
-                    )
+                    ) {
                         absoluteNoneIndent
-                    else
+                    } else {
+//                        LOGGER.info("Previous is comment  with comment block parent: (${psi.elementType})${psi.text}")
                         normalIndent
+                    }
                 }
             }
         }
 
         if (psi.parent is CaosScriptScriptElement) {
             val parent = psi.parent as CaosScriptScriptElement
-            if (parent.scriptTerminator == null || parent is CaosScriptMacro)
+            if (parent.scriptTerminator == null || parent is CaosScriptMacro) {
                 return noneIndent
-            if (caosSettings.INDENT_SCRP) {
+            }
+            if (!caosSettings.INDENT_SCRP) {
                 return absoluteNoneIndent
             }
+//            LOGGER.info("PSI.parent is Script element: (${psi.elementType})${psi.text}")
             return normalIndent
         }
 
         // Needs to check if my node is a DoifStatement parent
         // Because the end of any child (internal doif block, elif, else) are considered the end,
         // meaning the last line would never be indented
-        if (psi is CaosScriptDoifStatement)
+        if (psi is CaosScriptDoifStatement) {
+//            LOGGER.info("PSI element is doif statement: (${psi.elementType})${psi.text}")
             return normalIndent
+        }
         if (psi.parent?.tokenType in listOf(
                 CaosScriptTypes.CaosScript_DOIF_STATEMENT_STATEMENT,
                 CaosScriptTypes.CaosScript_ELSE_IF_STATEMENT,
                 CaosScriptTypes.CaosScript_ELSE_STATEMENT
             )
-        )
+        ) {
             return normalIndent
-        if (psi is CaosScriptCodeBlockLine)
+        }
+        if (psi is CaosScriptCodeBlockLine) {
             return normalIndent
-        if (psi.tokenType in CaosScriptTokenSets.WHITESPACES)
+        }
+        if (psi.tokenType in CaosScriptTokenSets.WHITESPACES) {
             return normalIndent
+        }
 
         if (cursorElement.tokenType == TokenType.WHITE_SPACE) {
             val previous = cursorElement.getPreviousNonEmptySibling(true)
-            if (previous is CaosScriptCodeBlockLine || previous is CaosScriptCodeBlock || previous?.parent is CaosScriptCodeBlock)
+            if (previous is CaosScriptCodeBlockLine || previous is CaosScriptCodeBlock || previous?.parent is CaosScriptCodeBlock) {
                 return normalIndent
+            }
             val next = cursorElement.getNextNonEmptySibling(true)
-            if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock)
+            if (next is CaosScriptCodeBlockLine || next is CaosScriptCodeBlock || next?.parent is CaosScriptCodeBlock) {
                 return normalIndent
+            }
         }
+//        LOGGER.info("PSI element matches nothing, so none indent: (${psi.elementType})${psi.text}")
         return noneIndent
     }
 

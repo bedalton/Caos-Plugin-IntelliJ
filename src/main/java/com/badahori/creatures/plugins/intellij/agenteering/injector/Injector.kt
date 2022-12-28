@@ -1,17 +1,23 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import bedalton.creatures.common.util.className
+import bedalton.creatures.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messageOrNoneText
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
+import com.intellij.psi.SmartPsiElementPointer
 
 /**
  * Class responsible for Injecting CAOS into the various Creatures games.
@@ -37,11 +43,15 @@ object Injector {
         }
 
         val rawCode = "dde: putv vrsn"
-        val response = injectPrivate(project, fallbackVariant, gameInterfaceName) { connection ->
-            connection.inject(rawCode)
-        }
-        if (response !is InjectionStatus.Ok)
+
+        val response =
+            injectPrivateSafe(project, fallbackVariant, gameInterfaceName, "$$\$private$$$", false) { connection ->
+                connection.inject("$$\$private$$$", null, rawCode)
+            } ?: return fallbackVariant
+
+        if (response !is InjectionStatus.Ok) {
             return fallbackVariant
+        }
         return try {
             if (response.response.toInt() < 6) {
                 CaosVariant.C1
@@ -58,33 +68,50 @@ object Injector {
      */
     internal suspend fun inject(
         project: Project,
-        fallbackVariant: CaosVariant,
+        variant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
         caosFile: CaosScriptFile,
+        totalFiles: Int,
         jectFlags: Int,
         tryJect: Boolean = project.settings.useJectByDefault,
-    ): Boolean {
-        val variant = gameInterfaceName.variant ?: fallbackVariant
+    ) {
         if (!isValidVariant(project, variant, gameInterfaceName))
-            return false
-        val response = injectPrivate(project, fallbackVariant, gameInterfaceName) { connection ->
+            return
+        val onResult = { response: InjectionStatus, _: String? ->
+            invokeLater {
+                onCaosResponse(project, response)
+            }
+        }
+        val result = injectPrivate(project, variant, gameInterfaceName, caosFile.name) { connection ->
             try {
                 FileInjectorUtil.inject(
-                    project,
-                    connection,
-                    caosFile,
-                    jectFlags,
+                    project = project,
+                    connection = connection,
+                    caosFile = caosFile,
+                    totalFiles = totalFiles,
+                    flags = jectFlags,
                     useJect = connection.supportsJect && tryJect
                 )
             } catch (e: CaosInjectorExceptionWithStatus) {
-                e.injectionStatus
+                e.injectionStatus ?: InjectionStatus.Bad(
+                    caosFile.name,
+                    null,
+                    e.message ?: message("caos.errors.unknown-plugin-error")
+                )
             } catch (e: Exception) {
-                InjectionStatus.Bad("Injection failed with plugin based error: ${e.message}")
-                null
+                InjectionStatus.Bad(
+                    caosFile.name,
+                    null,
+                    message(
+                        "caos.injector.errors.internal-plugin-error",
+                        e.className + (e.message?.let { ": $it" } ?: "")))
             }
         }
-        onCaosResponse(project, response)
-        return response is InjectionStatus.Ok
+        if (result is InjectionStatus.Pending) {
+            result.setCallback(onResult)
+        } else {
+            onResult(result, null)
+        }
     }
 
     /**
@@ -92,37 +119,59 @@ object Injector {
      */
     internal suspend fun inject(
         project: Project,
-        fallbackVariant: CaosVariant,
+        variant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
+        fileName: String,
         scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
-    ): Boolean {
-        val variant = gameInterfaceName.variant ?: fallbackVariant
+    ) {
         if (!isValidVariant(project, variant, gameInterfaceName))
-            return false
-        val response = injectPrivate(project, fallbackVariant, gameInterfaceName) { connection ->
+            return
+        val onResult = { response: InjectionStatus, _: String? ->
+            invokeLater {
+                onCaosResponse(project, response)
+            }
+        }
+        val response = injectPrivate(project, variant, gameInterfaceName, fileName) { connection ->
             try {
                 FileInjectorUtil.inject(
                     project,
                     connection,
-                    scripts
+                    "editor",
+                    1,
+                    scripts,
                 )
             } catch (e: CaosInjectorExceptionWithStatus) {
-                e.injectionStatus
+                e.injectionStatus ?: InjectionStatus.Bad(
+                    fileName,
+                    null,
+                    message("caos.injector.errors.internal-plugin-error", e.messageOrNoneText())
+                )
             } catch (e: Exception) {
-                InjectionStatus.Bad("Injection failed with plugin based error: ${e.message}")
-                null
+                InjectionStatus.Bad(
+                    fileName,
+                    null,
+                    message(
+                        "caos.injector.errors.internal-plugin-error",
+                        e.className + (e.message?.let { ": $it" } ?: "")))
             }
         }
-        onCaosResponse(project, response)
-        return response is InjectionStatus.Ok
+        if (response is InjectionStatus.Pending) {
+            response.setCallback(onResult)
+        } else {
+            onCaosResponse(project, response)
+        }
     }
 
     /**
      * Ensures that variant is supported, and if C1e, that the correct game is running
      */
-    private suspend fun isValidVariant(project: Project, variant: CaosVariant, gameInterfaceName: GameInterfaceName): Boolean {
+    private suspend fun isValidVariant(
+        project: Project,
+        variant: CaosVariant,
+        gameInterfaceName: GameInterfaceName,
+    ): Boolean {
         if (!canConnectToVariant(variant)) {
-            val error = "Injection to ${variant.fullName} is not yet implemented"
+            val error = message("caos.injector.errors.game-not-supported", variant.fullName)
             invokeLater {
                 CaosInjectorNotifications.show(project, "ConnectionException", error, NotificationType.ERROR)
             }
@@ -134,7 +183,12 @@ object Injector {
                 postError(
                     project,
                     "Connection Error",
-                    "Grammar set to variant [${variant}], but ide is connected to ${actualVersion.fullName}"
+                    message(
+                        "caos.injector.errors.grammar-connection-variant-mismatch",
+                        variant.code,
+                        actualVersion.fullName
+                    ),
+                    emptyList()
                 )
                 return false
             }
@@ -143,19 +197,42 @@ object Injector {
     }
 
 
+    private suspend fun injectPrivateSafe(
+        project: Project,
+        fallbackVariant: CaosVariant,
+        gameInterfaceName: GameInterfaceName,
+        fileName: String,
+        returnExceptionAsInjectionStatusAndNotAsNullValue: Boolean,
+        run: suspend (connection: CaosConnection) -> InjectionStatus,
+    ): InjectionStatus? {
+        return try {
+            injectPrivate(project, fallbackVariant, gameInterfaceName, fileName, run)
+        } catch (e: Exception) {
+            if (returnExceptionAsInjectionStatusAndNotAsNullValue) {
+                InjectionStatus.Bad(fileName, null, (e.message ?: "Plugin threw unhandled exception"))
+            } else {
+                null
+            }
+        }
+    }
+
     /**
      * Responsible for actually injecting the CAOS code.
      */
     private suspend fun injectPrivate(
         project: Project,
-        fallbackVariant: CaosVariant,
+        variant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
-        run: suspend (connection: CaosConnection) -> InjectionStatus?,
-    ): InjectionStatus? {
-        val variant = gameInterfaceName.variant?.nullIfUnknown() ?: fallbackVariant.nullIfUnknown()
-        ?: return InjectionStatus.BadConnection("Variant is undefined in injector")
+        fileName: String,
+        run: suspend (connection: CaosConnection) -> InjectionStatus,
+    ): InjectionStatus {
         val connection = connection(variant, gameInterfaceName)
-            ?: return InjectionStatus.BadConnection("Failed to initiate CAOS connection. Ensure ${variant.fullName} is running and try again")
+            ?: return InjectionStatus.BadConnection(
+                fileName,
+                null,
+                message("caos.injector.errors.connect-failed-ensure-running", variant.fullName),
+                variant
+            )
 
         if (!creditsCalled[variant].orFalse()) {
             creditsCalled[variant] = true
@@ -163,7 +240,12 @@ object Injector {
         }
 
         if (!connection.isConnected() && !connection.connect(false)) {
-            return InjectionStatus.BadConnection("Failed to connect to ${gameInterfaceName.name}")
+            return InjectionStatus.BadConnection(
+                fileName,
+                null,
+                message("caos.injector.errors.failed-to-connect", gameInterfaceName.name),
+                variant
+            )
         }
         return run(connection)
     }
@@ -195,32 +277,37 @@ object Injector {
     /**
      * Gets the raw connection object without testing connection or actually connecting
      */
-    private fun getConnectionObject(variantIn: CaosVariant, gameInterfaceName: GameInterfaceName): CaosConnection {
-        val theVariant = gameInterfaceName.variant ?: variantIn
-        val injectUrl = gameInterfaceName.url.let {
-            if (it.startsWith("http"))
-                it
-            else
-                null
-        }
-        if (injectUrl != null) {
-            return PostConnection(injectUrl, theVariant)
-        }
+    private fun getConnectionObject(theVariant: CaosVariant, gameInterfaceName: GameInterfaceName): CaosConnection {
 
-        var gameUrl = gameInterfaceName.url
+        return when (gameInterfaceName) {
+            is NativeInjectorInterface -> {
+                getNativeConnection(theVariant, gameInterfaceName)
+            }
 
-        if (theVariant.isOld) {
-            if (!gameUrl.startsWith("dde:")) {
-                gameUrl = "dde:$gameUrl"
+            is WineInjectorInterface -> {
+                WineConnection(theVariant, gameInterfaceName)
+            }
+
+            is PostInjectorInterface -> {
+                PostConnection(theVariant, gameInterfaceName)
+            }
+
+            is TCPInjectorInterface -> {
+                TCPConnection(theVariant, gameInterfaceName)
+            }
+
+            is CorruptInjectorInterface -> {
+                throw CaosConnectionException(message("caos.injector.interface-data-invalid"))
             }
         }
-        if (gameUrl.startsWith("dde:")) {
-            gameUrl = gameUrl.substring(4).trim()
-            return DDEConnection(gameUrl, theVariant, gameInterfaceName.name)
-        }
+    }
 
-        LOGGER.info("Creating C3 Injector connection")
-        return C3Connection(gameInterfaceName)
+    private fun getNativeConnection(variant: CaosVariant, gameInterfaceName: GameInterfaceName): CaosConnection {
+        return if (variant.isOld) {
+            DDEConnection(variant, gameInterfaceName)
+        } else {
+            C3Connection(variant, gameInterfaceName)
+        }
     }
 
     /**
@@ -259,10 +346,20 @@ object Injector {
  * Plugin supports multiple game connections such as DDE (C1e), MemoryMapped(C2e), HTTP(Any)
  */
 internal interface CaosConnection {
+    val variant: CaosVariant
+
     val supportsJect: Boolean
-    fun inject(caos: String): InjectionStatus
+    fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus
     fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus
-    fun injectEventScript(family: Int, genus: Int, species: Int, eventNumber: Int, caos: String): InjectionStatus
+    fun injectEventScript(
+        fileName: String,
+        family: Int,
+        genus: Int,
+        species: Int,
+        eventNumber: Int,
+        caos: String,
+    ): InjectionStatus
+
     fun disconnect(): Boolean
     fun isConnected(): Boolean
     fun connect(silent: Boolean = false): Boolean
@@ -272,8 +369,116 @@ internal interface CaosConnection {
 /**
  * The status for an injection request
  */
-internal sealed class InjectionStatus {
-    data class Ok(val response: String) : InjectionStatus()
-    data class Bad(val error: String) : InjectionStatus()
-    data class BadConnection(val error: String) : InjectionStatus()
+@Suppress("MemberVisibilityCanBePrivate")
+internal sealed class InjectionStatus(open val fileName: String?, open val descriptor: String?) {
+    data class Ok(override val fileName: String, override val descriptor: String?, val response: String) :
+        InjectionStatus(fileName, descriptor)
+
+    data class MultiResponse(
+        private val results: List<InjectionStatus>,
+    ) : InjectionStatus(null, null) {
+
+        val allOK: Boolean by lazy {
+            results.all { response -> response is Ok || (response as? MultiResponse)?.allOK == true }
+        }
+
+        val all: List<InjectionStatus> by lazy {
+            results.flatMap { response ->
+                when (response) {
+                    is MultiResponse -> response.all
+                    else -> response.toListOf()
+                }
+            }
+        }
+        val okResults: List<Ok> by lazy {
+            results.flatMap { response ->
+                when (response) {
+                    is Ok -> response.toListOf()
+                    is MultiResponse -> response.okResults
+                    else -> emptyList()
+                }
+            }
+        }
+
+        val errors: List<Bad> by lazy {
+            results.flatMap { response ->
+                when (response) {
+                    is Bad -> response.toListOf()
+                    is MultiResponse -> response.errors
+                    else -> emptyList()
+                }
+            }
+        }
+
+        val connectionErrors: List<BadConnection> by lazy {
+            results.flatMap { response ->
+                when (response) {
+                    is BadConnection -> response.toListOf()
+                    is MultiResponse -> response.connectionErrors
+                    else -> emptyList()
+                }
+            }
+        }
+    }
+
+    data class Bad(
+        override val fileName: String,
+        override val descriptor: String?,
+        val error: String,
+        internal val positions: List<SmartPsiElementPointer<out PsiElement>>? = null,
+    ) :
+        InjectionStatus(fileName, descriptor)
+
+    data class BadConnection(
+        override val fileName: String,
+        override val descriptor: String?,
+        val error: String,
+        private val variant: CaosVariant,
+    ) :
+        InjectionStatus(fileName, descriptor) {
+        fun formattedError(game: String = "game"): String {
+            return if (error.trim().lowercase().endsWith("connect timed out")) {
+                message("caos.injector.errors.connect-failed-ensure-running", game)
+            } else {
+                error
+            }
+        }
+    }
+
+    data class ActionNotSupported(override val fileName: String?, override val descriptor: String?, val error: String) :
+        InjectionStatus(fileName, descriptor)
+
+    data class Pending(override val fileName: String?, override val descriptor: String?, val serial: String) :
+        InjectionStatus(fileName, descriptor) {
+        private var result: InjectionStatus? = null
+        var onResult: ((result: InjectionStatus, serial: String) -> Unit)? = null
+        val pending: Boolean get() = result != null
+
+        fun setResult(result: InjectionStatus) {
+            this.result = result
+            onResult?.invoke(result, serial)
+            onResult = null
+        }
+
+        fun setCallback(callback: (result: InjectionStatus, serial: String) -> Unit) {
+            result?.let {
+                callback(it, serial)
+                return
+            }
+            onResult = callback
+        }
+
+        fun resultOrNull(): InjectionStatus? {
+            return result
+        }
+    }
 }
+
+
+internal val NOT_WINDOWS_STATUS = InjectionStatus.ActionNotSupported(
+    null,
+    null,
+    message("caos.injector.errors.only-windows")
+)
+
+internal const val DEBUG_INJECTOR = "bedalton.creatures.intellij.log.DEBUG_INJECTOR"

@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
-import bedalton.creatures.agents.pray.cli.PrayCompilerCliOptions
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -24,6 +24,7 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil.TRANSPARENT_COLOR
+import kotlinx.coroutines.runBlocking
 import java.awt.FlowLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -68,7 +69,7 @@ class PrayEditorToolbar(val project: Project) : EditorNotifications.Provider<Edi
 }
 
 
-private class EditorActionGroup(psiFile: PsiFile): ActionGroup() {
+private class EditorActionGroup(psiFile: PsiFile) : ActionGroup() {
 
     val pointer = SmartPointerManager.createPointer(psiFile)
 
@@ -90,7 +91,9 @@ internal fun createPrayScriptHeaderComponent(psiFile: PsiFile): JComponent {
     val toolbar = JPanel()
     toolbar.layout = FlowLayout()
     toolbar.add(JLabel("Compile: "))
-    toolbar.add(ActionManager.getInstance().createActionToolbar("PRAY Commands", EditorActionGroup(psiFile), true).component)
+    toolbar.add(
+        ActionManager.getInstance().createActionToolbar("PRAY Commands", EditorActionGroup(psiFile), true).component
+    )
 //    val compileButton = JButton("Compile")
 //    compileButton.addClickListener { e ->
 //        if (e.button == MouseEvent.BUTTON1) {
@@ -113,50 +116,47 @@ internal fun createPrayScriptHeaderComponent(psiFile: PsiFile): JComponent {
 internal object PrayCompilerToolbarActions {
 
     internal fun compile(project: Project, file: PsiFile) {
-        getOpts(file) { opts ->
-            if (opts == null) {
-                CaosNotifications.showError(
+        val opts = getOpts(file)
+
+        if (opts == null) {
+            CaosNotifications.showError(
+                project,
+                "PRAY Compile Error",
+                "Failed to compile PRAY file. Compiler options not set"
+            )
+            return
+        }
+
+        runBackgroundableTask("Compile PRAY Agent") task@{
+            val output = runBlocking { CompilePrayFileAction.compile(project, file.virtualFile.path, opts) }
+                ?: return@task
+            invokeLater {
+                CaosNotifications.showInfo(
                     project,
-                    "PRAY Compile Error",
-                    "Failed to compile PRAY file. Compiler options not set"
+                    "PRAY Compiler",
+                    "Compiled PRAY file '${file.name}' to '${FileNameUtil.getFileNameWithoutExtension(output)}'"
                 )
-                return@getOpts
             }
-
-            runBackgroundableTask("Compile PRAY Agent") task@{
-                val output = CompilePrayFileAction.compile(project, file.virtualFile.path, opts)
-                    ?: return@task
-                invokeLater {
-                    CaosNotifications.showInfo(
-                        project,
-                        "PRAY Compiler",
-                        "Compiled PRAY file '${file.name}' to '${FileNameUtil.getFileNameWithoutExtension(output)}'"
-                    )
-                }
-            }
-
         }
     }
 
-    private fun getOpts(file: PsiFile, onOpts: (PrayCompilerCliOptions?) -> Unit) {
+    private fun getOpts(file: PsiFile): PrayCompileOptions? {
         val cached = when (file) {
             is CaosScriptFile -> file.compilerSettings
             is PrayFile -> file.compilerSettings
             else -> null
         }
-        if (cached != null)
-            return onOpts(cached)
-        CompilePrayFileAction.getOpts opts@{ opts ->
-            if (opts == null) {
-                onOpts(null)
-                return@opts
-            }
-            if (file is CaosScriptFile)
-                file.compilerSettings = opts
-            else if (file is PrayFile)
-                file.compilerSettings = opts
-            onOpts(opts)
+        if (cached != null) {
+            return cached
         }
+        val opts = CompilePrayFileAction.getOpts()
+            ?: return null
+        if (file is CaosScriptFile) {
+            file.compilerSettings = opts
+        } else if (file is PrayFile) {
+            file.compilerSettings = opts
+        }
+        return opts
     }
 
 
@@ -166,14 +166,12 @@ internal object PrayCompilerToolbarActions {
             is PrayFile -> file.compilerSettings
             else -> null
         }
-        CompilePrayFileAction.getOpts(cached) { opts ->
-            if (opts == null)
-                return@getOpts
-            if (file is CaosScriptFile)
-                file.compilerSettings = opts
-            else if (file is PrayFile)
-                file.compilerSettings = opts
-            return@getOpts
-        }
+        val opts = CompilePrayFileAction.getOpts(cached)
+            ?: return
+        if (file is CaosScriptFile)
+            file.compilerSettings = opts
+        else if (file is PrayFile)
+            file.compilerSettings = opts
+        return
     }
 }

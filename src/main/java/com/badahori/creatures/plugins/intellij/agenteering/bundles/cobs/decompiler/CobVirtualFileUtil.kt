@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType

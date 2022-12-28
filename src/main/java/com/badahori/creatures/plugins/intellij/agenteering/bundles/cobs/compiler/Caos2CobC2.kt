@@ -1,17 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.bytes.ByteStreamWriter
-import bedalton.creatures.bytes.CREATURES_CHARACTER_ENCODING
-import bedalton.creatures.bytes.MemoryByteStreamWriter
-import bedalton.creatures.bytes.writeNullTerminatedString
+import bedalton.creatures.common.bytes.ByteStreamWriter
+import bedalton.creatures.common.bytes.CREATURES_CHARACTER_ENCODING
+import bedalton.creatures.common.bytes.MemoryByteStreamWriter
+import bedalton.creatures.common.bytes.writeNullTerminatedString
+import bedalton.creatures.common.util.FileNameUtil
 import bedalton.creatures.sprite.compilers.S16Compiler
 import bedalton.creatures.sprite.util.ColorEncoding
-import bedalton.creatures.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeNullTerminatedString
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
+import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt8
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.bitmap.Bitmap32
-import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
@@ -82,7 +84,7 @@ data class Caos2CobC2(
         }
     }
 
-    override fun compile(): ByteArray {
+    override suspend fun compile(): ByteArray {
         // Initialize Output
         val outputStream = MemoryByteStreamWriter()
         outputStream.write(COB2_HEADER)
@@ -95,7 +97,7 @@ data class Caos2CobC2(
         return outputStream.bytes
     }
 
-    private fun writeAgent(outputStream: ByteStreamWriter) {
+    private suspend fun writeAgent(outputStream: ByteStreamWriter) {
         val buffer = MemoryByteStreamWriter()
         buffer.writeUInt16(quantityAvailable ?: -1)
         buffer.writeUInt32(0)
@@ -136,7 +138,7 @@ data class Caos2CobC2(
 
     }
 
-    private fun writeAuthor(outputStream: MemoryByteStreamWriter) {
+    private suspend fun writeAuthor(outputStream: MemoryByteStreamWriter) {
         if (!hasAuthProperties)
             return
         val buffer = ByteArrayOutputStream()
@@ -158,7 +160,7 @@ data class Caos2CobC2(
         writeChunk(outputStream, AUTH_HEADER, buffer.toByteArray())
     }
 
-    private fun writeFiles(outputStream: ByteStreamWriter) {
+    private suspend fun writeFiles(outputStream: ByteStreamWriter) {
         if (filesToInline.isEmpty())
             return
         var buffer: MemoryByteStreamWriter
@@ -179,13 +181,13 @@ data class Caos2CobC2(
             writeChunk(outputStream, FILE_HEADER, buffer)
         }
     }
-    private fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteStreamWriter) {
+    private suspend fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteStreamWriter) {
         outputStream.write(blockType)
         outputStream.writeUInt32(data.size)
         outputStream.write(data.bytes)
     }
 
-    private fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteArray) {
+    private suspend fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteArray) {
         outputStream.write(blockType)
         outputStream.writeUInt32(data.size)
         outputStream.write(data)

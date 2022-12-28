@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcScript
 
 
-internal fun SfcReader.readScript(): SfcScript {
+internal suspend fun SfcReader.readScript(): SfcScript {
     if (!variant.isOld) {
         throw OutOfVariantException(variant)
     }
@@ -15,18 +15,18 @@ internal fun SfcReader.readScript(): SfcScript {
     val species:Int
     val eventNumber:Int
     if (variant == C1) {
-        eventNumber = uInt8
-        species = uInt8
-        genus = uInt8
-        family = uInt8
+        eventNumber = uInt8()
+        species = uInt8()
+        genus = uInt8()
+        family = uInt8()
     } else {
-        genus = uInt8
-        family = uInt8
-        eventNumber = uInt16
-        species = uInt16
+        genus = uInt8()
+        family = uInt8()
+        eventNumber = uInt16()
+        species = uInt16()
     }
     val classifier = AgentClass(family, genus, species)
-    val script = sfcString
+    val script = sfcString()
     return SfcScript(
             classifier = classifier,
             eventNumber = eventNumber,
@@ -34,9 +34,9 @@ internal fun SfcReader.readScript(): SfcScript {
     )
 }
 
-internal fun SfcReader.readMacro() : PointerSfcMacro {
+internal suspend fun SfcReader.readMacro() : PointerSfcMacro {
     skip(12)
-    val script = sfcString
+    val script = sfcString()
     if (variant == C1) {
         skip  (128)
     } else

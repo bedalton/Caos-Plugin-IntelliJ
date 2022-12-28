@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
 
-import bedalton.creatures.util.toArrayOf
+import bedalton.creatures.common.util.toArrayOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix

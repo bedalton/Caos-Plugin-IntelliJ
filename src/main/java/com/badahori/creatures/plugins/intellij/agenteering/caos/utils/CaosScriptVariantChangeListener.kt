@@ -4,10 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
@@ -17,10 +14,6 @@ typealias OnVariantChangeListener = (variant: CaosVariant?) -> Unit
 
 internal interface DisposablePsiTreChangeListener: PsiTreeChangeListener, Disposable
 
-internal fun CaosScriptFile.addVariantChangeListener(runInWriteAction: Boolean = true, callback: OnVariantChangeListener): DisposablePsiTreChangeListener {
-    return CaosFileTreeChangedListener(this, runInWriteAction, callback)
-}
-
 internal class CaosFileTreeChangedListener(
     file: CaosScriptFile,
     var runInWriteAction: Boolean = true,
@@ -28,6 +21,7 @@ internal class CaosFileTreeChangedListener(
 ) : DisposablePsiTreChangeListener {
 
 
+    private var nextCheck = -1L
     private var project: Project? = file.project
     private var currentVariant: CaosVariant? = file.variant ?: file.module?.variant
     private var pointer: SmartPsiElementPointer<CaosScriptFile>? = SmartPointerManager.createPointer(file)
@@ -83,6 +77,11 @@ internal class CaosFileTreeChangedListener(
     }
 
     private fun onChange(child: PsiElement?) {
+        val now = now()
+        if (now < nextCheck) {
+            return
+        }
+        nextCheck = now + DELAY
         try {
             val associatedFile = pointer?.element
                 ?: return dispose()
@@ -109,3 +108,5 @@ internal class CaosFileTreeChangedListener(
         }
     }
 }
+
+private const val DELAY = 8_000

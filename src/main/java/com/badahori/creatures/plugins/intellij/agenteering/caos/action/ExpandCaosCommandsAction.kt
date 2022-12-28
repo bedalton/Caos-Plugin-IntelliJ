@@ -1,17 +1,21 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
+import bedalton.creatures.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.asWritable
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildrenAs
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.psi.SmartPointerManager
 
 /**
@@ -55,19 +59,39 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
 
     private fun getCaosFiles(project:Project, file:VirtualFile) : List<CaosScriptFile> {
         if (file.isDirectory) {
-            return file.children.flatMap { child -> getCaosFiles(project, child) }
+            return file.collectChildrenAs {
+                asCaosScript(project, file)
+            }
         }
-        return (file.getPsiFile(project) as? CaosScriptFile)?.let { script ->
-            listOf(script)
-        } ?: emptyList()
+        return asCaosScript(project, file)?.toListOf() ?: emptyList()
     }
 
+    private fun asCaosScript(project: Project, file: VirtualFile): CaosScriptFile? {
+        val isCaosFile = file.fileType == CaosScriptFileType.INSTANCE
+        return if (isCaosFile) {
+            file.getPsiFile(project) as? CaosScriptFile
+        } else {
+            null
+        }
+    }
 
     private fun hasCaos(file:VirtualFile) : Boolean {
         return if (file.isDirectory) {
-            file.children.any { child ->
-                hasCaos(child)
-            }
+            var isCaos = false
+            VfsUtilCore.visitChildrenRecursively(file, object: VirtualFileVisitor<Boolean>(NO_FOLLOW_SYMLINKS) {
+
+                override fun visitFile(file: VirtualFile): Boolean {
+                    if (!isCaos && file.fileType == CaosScriptFileType.INSTANCE) {
+                        isCaos = true
+                    }
+                    return !isCaos
+                }
+
+                override fun visitFileEx(file: VirtualFile): Result {
+                    return if (isCaos) SKIP_CHILDREN else CONTINUE
+                }
+            })
+            isCaos
         } else {
             file.fileType == CaosScriptFileType.INSTANCE
         }
@@ -85,3 +109,6 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
         presentation.description = CaosBundle.message("caos.actions.expand-caos-commands-in-file.description")
     }
 }
+
+
+

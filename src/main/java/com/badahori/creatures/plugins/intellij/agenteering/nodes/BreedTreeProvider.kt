@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.util.FileNameUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import bedalton.creatures.common.util.FileNameUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.isPartName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
@@ -9,7 +9,6 @@ import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.actionSystem.ToggleOptionAction
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 
@@ -36,7 +35,7 @@ class BreedTreeProvider : TreeStructureProvider {
             return childNodes
         }
 
-        if (!project.settings.combineAttNodes) {
+        if (!CaosApplicationSettingsService.getInstance().combineAttNodes) {
             return childNodes
         }
 
@@ -101,11 +100,11 @@ class BreedTreeProvider : TreeStructureProvider {
     companion object {
         @Suppress("ComponentNotRegistered")
         class UseBreedNodeOptionAction : ToggleOptionAction({ event ->
-            event.project?.let { it.settings.combineAttNodes = !it.settings.combineAttNodes }
-            UseBreedNodeOption(event.project)
+            event.project?.let { CaosApplicationSettingsService.getInstance().combineAttNodes = !CaosApplicationSettingsService.getInstance().combineAttNodes }
+            UseBreedNodeOption()
         })
 
-        private class UseBreedNodeOption(private val project: Project?) : ToggleOptionAction.Option {
+        private class UseBreedNodeOption : ToggleOptionAction.Option {
 
             override fun getName(): String {
                 return "Combine Breed Nodes"
@@ -116,11 +115,11 @@ class BreedTreeProvider : TreeStructureProvider {
             }
 
             override fun isSelected(): Boolean {
-                return project?.settings?.combineAttNodes == true
+                return CaosApplicationSettingsService.getInstance().combineAttNodes
             }
 
             override fun setSelected(selected: Boolean) {
-                project?.settings?.combineAttNodes = selected
+                CaosApplicationSettingsService.getInstance().combineAttNodes = selected
             }
 
         }

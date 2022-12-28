@@ -16,7 +16,7 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
-import bedalton.creatures.util.stripSurroundingQuotes
+import bedalton.creatures.common.util.stripSurroundingQuotes
 import com.intellij.openapi.project.DumbAware
 
 class Caos2PrayTagCaseInspection : LocalInspectionTool(), DumbAware {

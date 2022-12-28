@@ -26,6 +26,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicInteger
 
 class AttNewFileFromSpritesAction : AnAction(

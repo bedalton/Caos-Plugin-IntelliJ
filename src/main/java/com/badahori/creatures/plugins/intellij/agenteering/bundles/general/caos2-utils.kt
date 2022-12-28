@@ -31,10 +31,12 @@ internal val PsiElement.directory: VirtualFile?
 
 
 internal fun getFileNameWithArrayAccess(path: String): String? {
-    if (path.isEmpty())
+    if (path.isEmpty()) {
         return null
-    if (!path.contains('['))
+    }
+    if (!path.contains('[')) {
         return path
+    }
     Caos2CobUtil.ARRAY_ACCESS_REGEX.matchEntire(path)?.groupValues?.let { groupValues ->
         return "${groupValues[1]}.${groupValues[2]}"
     }

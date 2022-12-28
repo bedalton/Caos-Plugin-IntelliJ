@@ -1,9 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl
 
-import bedalton.creatures.util.toListOf
+import bedalton.creatures.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommand
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesListValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
@@ -54,4 +55,7 @@ abstract class CaosScriptRvalueLikeMixin<StubT : StubElement<out PsiElement>> : 
     override val commandDefinition:CaosCommand? get() = null
 
     override val parameterValuesListValue: CaosValuesListValue? = null
+
+    override val stringStubKind: StringStubKind?
+        get() = null
 }
