@@ -15,7 +15,6 @@ configurations {
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.7.20"
-//    id("java")
     id("org.jetbrains.intellij") version "1.10.2"
     kotlin("plugin.serialization") version "1.7.20"
 }
@@ -46,7 +45,7 @@ repositories {
 
 dependencies {
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0") {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1") {
         excludeKotlin()
     }
 

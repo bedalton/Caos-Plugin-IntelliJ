@@ -26,6 +26,7 @@
       <li>ATT file editor</li>
       <li>Pray File editing</li>
       <li>COB compiler(CAOS2Cob)/decompiler</li>
+      <li>Catalogue Editing</li>
     </ul>
     <b>Todo:</b>
     <ul>
@@ -40,12 +41,9 @@
                 <b>Version: 2022.03.00</b>
                 <b>Improvements</b>
                 <ul>
-                    <li>Added Catalogue file editing</li>
                     <li>Improved editing files in non-CAOS-module based projects</li>
-                </ul>
-                <b>#Fixes</b>
-                <ul>
-                    <li></li>
+                    <li>Added Catalogue file editing</li>
+                    <li>Classifier auto-complete for named classifiers</li>
                 </ul>
             </li>
             <li>
