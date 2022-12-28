@@ -43,6 +43,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger
+import kotlin.math.abs
 
 internal class AttEditorModel(
     project: Project,
@@ -719,20 +720,25 @@ internal class AttEditorModel(
 
     }
 
-    override fun setSelected(index: Int) {
-        if (index < 0) {
-            return
-        }
-        if (index >= attData.lines.size) {
-            return
-        }
-        val progressedIndex = if (replicateAttsToDuplicateSprites != false) {
-            getNotFoldedLine(index)
+    override fun setSelected(index: Int): Int {
+        var targetIndex = index
+        val lastIndex = (if (variant.isOld) 10 else 16) - 1
+        targetIndex = if (index < 0) {
+            0
+        } else if (index > lastIndex) {
+            lastIndex
         } else {
             index
         }
+
+        targetIndex = if (replicateAttsToDuplicateSprites == false) {
+            index
+        } else {
+            getNotFoldedLine(targetIndex)
+        }
         mCurrentReplication = null
-        mSelectedCell = progressedIndex
+        mSelectedCell = targetIndex
+        return targetIndex
     }
 
     /**
@@ -742,21 +748,58 @@ internal class AttEditorModel(
         if (newIndex == mSelectedCell) {
             return newIndex
         }
-        val replications = runBlocking { getReplications() }
-        var keys = replications
-            .keys
-            .toList()
-        keys = if (mSelectedCell < newIndex) {
-            keys.sorted()
-        } else {
-            keys.sortedDescending()
-        }
-        return keys
-            .firstOrNull { i ->
-                replications[i]?.contains(newIndex) == true
-            }
-            ?: newIndex
+        val lastIndex = (if (variant.isOld) 10 else 16) - 1
 
+        if (newIndex < 0) {
+            return 0
+        }
+        if (newIndex > lastIndex) {
+            return lastIndex
+        }
+
+        val replications = runBlocking { getReplications() }
+        val mod = newIndex - mSelectedCell
+
+        // If previous image and this are not consecutive, just jump
+        if (abs(mod) > 1) {
+            return newIndex
+        }
+
+        if (replications[newIndex - mod]?.contains(newIndex) != true) {
+            if (mod > 0) {
+                return newIndex
+            }
+        }
+
+        val isNew = replications[newIndex - mod]?.contains(newIndex) != true
+        // Check if this image is completely different from the one before
+        if (mod > 0 && isNew) {
+            return newIndex
+        }
+
+        val indices = if (newIndex > mSelectedCell) {
+            (newIndex + 1) .. lastIndex
+        } else {
+            (newIndex- 1) downTo 0
+        }
+        var outIndex = newIndex
+        val shouldChange = isNew || indices.any { !replications.containsKey(it) || newIndex !in replications[it]!! }
+        if (!shouldChange) {
+            return mSelectedCell
+        }
+        for (cell in indices) {
+            if (replications[cell]?.contains(newIndex) == true) {
+                outIndex = cell + mod
+            } else {
+                break
+            }
+        }
+        // If having shifted up, the outIndex would point to the first non-duplicate,
+        // but it should be the last duplicate, so add one to index
+        if (mod < 0 && outIndex != newIndex) {
+            outIndex += 1
+        }
+        return outIndex
     }
 
     override fun dispose() {

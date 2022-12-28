@@ -183,8 +183,8 @@ internal class AttEditorController(
     /**
      * Sets the selected Cell/Line for editing
      */
-    override fun setSelected(index: Int) {
-        model.setSelected(index)
+    override fun setSelected(index: Int): Int {
+        return model.setSelected(index)
     }
 
     /**

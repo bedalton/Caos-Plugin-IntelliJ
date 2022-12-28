@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtilKt;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosStringUtilsKt;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.MouseListenerBase;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.Disposable;
@@ -24,6 +25,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.JBColor;
 import kotlin.Pair;
 import kotlin.Triple;
+import kotlin.Unit;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,8 +38,6 @@ import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ItemEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -56,10 +56,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private final Project project;
     private final BreedPartKey baseBreed;
     private final String[] directions = new String[]{
-            "Up",
-            "Straight",
             "Down",
-            "Far Down"
+            "Straight",
+            "Up",
+            "Far Up"
     };
 
     private static final List<BodyPartFiles> EMPTY_BODY_PARTS_LIST = Collections.emptyList();
@@ -432,7 +432,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         }
         didInitComboBoxes = true;
         final String defaultPose = settings.getDefaultPoseString();
-        defaultPoseAfterInit = setPoseFromString(defaultPose);
+        defaultPoseAfterInit = defaultPoseAfterInit != null ? defaultPoseAfterInit : setPoseFromString(defaultPose, false);
         initOpenRelatedComboBox();
     }
 
@@ -512,15 +512,16 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 }
             }
         });
-        poseStringField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                super.keyTyped(e);
-                highlighter.removeAllHighlights();
-                final String newPoseRaw = poseStringField.getText();
-                setPoseFromString(newPoseRaw);
+
+        poseStringField.getDocument().addDocumentListener(new DocumentChangeListener((final Integer type, final String newPoseRaw) -> {
+            if (type == DocumentChangeListener.REMOVE) {
+                return Unit.INSTANCE;
             }
-        });
+            highlighter.removeAllHighlights();
+            setPoseFromString(newPoseRaw, false);
+            return Unit.INSTANCE;
+        }));
+
         focusMode.addItemListener((e) -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 redraw();
@@ -807,7 +808,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 didRenderOnce = true;
             }
             if (nextPose != null) {
-                setPose(nextPose, true);
+                setPose(nextPose, true, false);
                 nextPose = null;
                 return;
             }
@@ -860,7 +861,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     @NotNull
-    public Pose updatePoseAndGet(ProgressIndicator progressIndicator, char @NotNull ... parts) {
+    public Pose updatePoseAndGet(final ProgressIndicator progressIndicator, final char @NotNull ... parts) {
         final int lastPoseHash = pose != null ? pose.hashCode() : -1;
         final Pose poseTemp = PoseCalculator.getUpdatedPose(
                 progressIndicator,
@@ -877,10 +878,13 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (poseTemp.hashCode() != lastPoseHash) {
             ApplicationManager.getApplication().invokeLater(() -> {
                 poseChangeListeners.forEach((it) -> it.onPoseChange(poseTemp));
-                final String newPoseString = poseTemp.poseString(variant, facing.getSelectedIndex());
+                Integer trueFacing = model.getTrueFacing(pose.getBody());
+                final String newPoseString = trueFacing != null ? poseTemp.poseString(variant, trueFacing) : null;
                 if (newPoseString != null) {
                     lastPoseString = newPoseString;
-                    poseStringField.setText(newPoseString);
+                    if (!newPoseString.equals(poseStringField.getText().trim())) {
+                        poseStringField.setText(newPoseString);
+                    }
                 }
             });
         }
@@ -1319,7 +1323,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
     public synchronized void setNextPose(Pose pose) {
         if (didRenderOnce) {
-            setPose(pose, true);
+            setPose(pose, true, false);
         } else {
             nextPose = pose;
         }
@@ -1330,7 +1334,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
      *
      * @param pose the full body pose
      */
-    public synchronized void setPose(Pose pose, boolean setFacing) {
+    public synchronized void setPose(Pose pose, boolean setFacing, final boolean updateField) {
         drawImmediately = false;
         final int bodyPose = pose.getBody();
         final Integer facing = model.getTrueFacing(bodyPose);
@@ -1353,7 +1357,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             setPose(part, partPose);
         }
         this.pose = pose;
-        this.poseStringField.setValue(pose.poseString(variant, facing));
+        if (updateField) {
+            this.poseStringField.setValue(pose.poseString(variant, facing));
+        }
         drawImmediately = true;
         redrawAll();
         if (variant.isOld() && pose.getBody() >= 8) {
@@ -2156,7 +2162,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     @Nullable
-    private Pose setPoseFromString(final String newPoseRaw) {
+    private Pose setPoseFromString(final String newPoseRaw, final boolean updateField) {
         final Triple<Pose, Boolean, int[]> response = model.validateNewPose(
                 pose,
                 newPoseRaw,
@@ -2178,7 +2184,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
         for (final int i : response.getThird()) {
             try {
-                highlighter.addHighlight(i + 1, i + 2, painter);
+                highlighter.addHighlight(i, i + 1, painter);
             } catch (Exception exc) {
                 LOGGER.severe("Invalid highlight position " + i);
             }
@@ -2190,7 +2196,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         } else {
             poseStringField.setBorder(okayBorder);
         }
-        setPose(newPose, true);
+        setPose(newPose, /* SetFacing = */ true, updateField);
         return newPose;
     }
 

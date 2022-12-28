@@ -28,10 +28,10 @@ object PoseEditorSupport {
     @Suppress("unused")
     @JvmStatic
     val directions = arrayOf(
-        "Up",
-        "Straight",
         "Down",
-        "Far Down"
+        "Straight",
+        "Up",
+        "Far Up"
     )
 
     private val moodsC1 = arrayOf(
@@ -365,7 +365,13 @@ data class Pose(
             return null
         }
         val out = StringBuilder()
-        val direction = 3 - facing
+        val direction = when (facing) {
+            0 -> 2
+            1 -> 3
+            2 -> 1
+            3 -> 0
+            else -> return null
+        }
         out.append(direction)
         if (variant.isOld) {
             getPoseStringC1e(this, out)
@@ -390,10 +396,10 @@ data class Pose(
                 if (it !in 0..3) currentDirection else it
             }
             val directionOffset = when (directionInt) {
-                3 -> 0 // Right
-                2 -> 4 // Left
-                1 -> if (variant.isOld) 0 else 8 // FRONT
                 0 -> if (variant.isOld) 0 else 12 // BACK
+                1 -> if (variant.isOld) 0 else 8 // FRONT
+                2 -> 0 // Right
+                3 -> 4 // Left
                 else -> currentDirection
             }
             val pose = Pose(
@@ -417,10 +423,10 @@ data class Pose(
                 ears = currentPose?.ears ?: DO_NOT_SET_POSE
             )
             val poseEditorDirection = when (directionInt) {
-                3 -> 0 // Right
-                2 -> 1 // Left
-                1 -> 2 // Front
                 0 -> 3 // back
+                1 -> 2 // Front
+                2 -> 0 // Right
+                3 -> 1 // Left
                 else -> currentDirection
             }
             return Pair(poseEditorDirection, pose)
@@ -442,9 +448,10 @@ data class Pose(
                     }
                 }
             }
-            val i = (part.lowercase() - 'a')
-            if (i < 0)
+            val i = (part.lowercaseChar() - 'a')
+            if (i < 0) {
                 return -1
+            }
             return when (val pose = poseString[i + 1]) {
                 in '0'..'3' -> directionOffset + ("$pose".toInt())
                 'x', '?', '!' -> currentPose ?: -1
@@ -492,7 +499,7 @@ private fun getPoseStringC2e(pose: Pose, out: StringBuilder): StringBuilder {
         else -> pose.head % 4
     }
     out.append(head)
-    for (part in 'b'..'q') {
+    for (part in 'b'..'n') {
         out.append(pose[part].orElse(0) % 4)
     }
     return out

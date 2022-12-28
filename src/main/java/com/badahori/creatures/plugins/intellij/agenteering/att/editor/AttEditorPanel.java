@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.*;
 
 public class AttEditorPanel implements HasSelectedCell, AttEditorController.View {
-//    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
+    //    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     public static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
     public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
     private static final boolean EAGER_LOAD_POSE_EDITOR = true;
@@ -63,8 +63,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private final CaosProjectSettingsService settings;
 
     AttEditorPanel(
-            @NotNull
-            final Project project,
+            @NotNull final Project project,
             final AttEditorHandler handler
     ) {
         this.project = project;
@@ -524,8 +523,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private void onPartChange(
-            @NotNull
-            final Character part) {
+            @NotNull final Character part) {
         final char oldChar = controller.getPart();
         if (oldChar >= 'a' && oldChar <= 'q') {
             poseEditor.freeze(oldChar, false);
@@ -833,33 +831,31 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     @Override
-    public void setSelected(final int index) {
+    public int setSelected(final int index) {
+        // Set controller first as it may progress index to next/prev non-duplicated ATT line
+        final int actualIndex = controller.setSelected(index);
         int direction;
         if (getVariant().isOld()) {
-            if (index < 4) {
+            if (actualIndex < 4) {
                 direction = 0;
-            } else if (index < 8) {
+            } else if (actualIndex < 8) {
                 direction = 1;
-            } else if (index == 8) {
+            } else if (actualIndex == 8) {
                 direction = 2;
-            } else if (index == 9) {
+            } else if (actualIndex == 9) {
                 direction = 3;
             } else {
-                throw new IndexOutOfBoundsException("Failed to parse direction for part " + getPart() + "; Index: " + index);
+                throw new IndexOutOfBoundsException("Failed to parse direction for part " + getPart() + "; TargetIndex: " + index +"; ActualSelectedIndex: " + actualIndex);
             }
         } else {
             direction = (int) Math.floor((index % 16) / 4.0);
         }
-        poseEditor.setPose(direction, getPart(), index);
-        if (getVariant().isNotOld()) {
-            cell = index % 16;
-        } else {
-            cell = index % 10;
-        }
+        cell = actualIndex;
+        poseEditor.setPose(direction, getPart(), actualIndex);
         spriteCellList.reload();
         redrawPose();
-        spriteCellList.scrollTo(cell);
-        controller.setSelected(cell);
+        spriteCellList.scrollTo(actualIndex);
+        return actualIndex;
     }
 
     private Character getPart() {
