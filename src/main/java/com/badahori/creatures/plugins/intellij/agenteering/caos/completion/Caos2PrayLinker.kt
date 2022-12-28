@@ -194,7 +194,7 @@ internal class LinkFilesInsertHandler(
 
         // Update filtered as regex changes
         var timer: Timer? = null
-        regexField.document.addDocumentListener(DocumentChangeListener {
+        regexField.document.addDocumentListener(DocumentChangeListener { _, _ ->
             timer?.cancel()
             timer = Timer().apply {
                 schedule(object : TimerTask() {
