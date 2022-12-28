@@ -15,15 +15,6 @@ class CaosDefCommandElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBa
         return super.getVersion() + CaosDefStubVersions.STUB_VERSION + VERSION
     }
 
-    override fun getAllKeys(project: Project?): MutableCollection<String> {
-        return (super.getAllKeys(project)) /*+ project?.let {CaosDefElementsSearchExecutor
-                .getCaosDefFiles(project)
-                .collectElementsOfType(CaosDefCommandDefElement::class.java)
-                .map {
-                    it.commandName
-                }}.orEmpty()).toMutableList()*/
-    }
-
     companion object {
         private const val VERSION = 2
         @JvmStatic

@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startsAndEndsWith
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
@@ -20,7 +19,7 @@ abstract class CaosScriptCaseInsensitiveStringIndexBase<PsiT : PsiElement>
 internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubIndexExtension<PsiT>() {
 
     override fun getVersion(): Int {
-        return super.getVersion()
+        return super.getVersion() + VERSION
     }
 
     protected fun getVersion(version:Int): Int {
@@ -39,6 +38,36 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
             ProgressIndicatorProvider.checkCanceled()
             StubIndex.getElements(this.key, it, project, scope, indexedElementClass).toList()
         }
+    }
+
+
+    override fun getAllKeys(project: Project): MutableCollection<String> {
+        return getAllKeys(project, null)
+    }
+
+    fun getAllKeysEverythingScope(project: Project): MutableCollection<String> {
+        return super.getAllKeys(project)
+    }
+
+    override fun traceKeyHashToVirtualFileMapping(): Boolean {
+        return true
+    }
+    fun getAllKeys(project: Project, scope: GlobalSearchScope?): MutableCollection<String> {
+        var actualScope = GlobalSearchScope.projectScope(project)
+        if (scope != null) {
+            actualScope = scope.intersectWith(scope)
+        }
+        val out = mutableListOf<String>()
+        StubIndex.getInstance().processAllKeys(
+            key,
+            process@{ key ->
+                out.add(key)
+                return@process true
+            },
+            actualScope,
+            null
+        )
+        return out
     }
 
     open fun getByPattern(start: String?, tail: String?, project: Project): Map<String, List<PsiT>> {
@@ -124,7 +153,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     @JvmOverloads
-    open fun getKeysByPattern(patternString: String?, project: Project, @Suppress("UNUSED_PARAMETER") globalSearchScope: GlobalSearchScope? = null): List<String> {
+    open fun getKeysByPattern(patternString: String?, project: Project, globalSearchScope: GlobalSearchScope? = null): List<String> {
         if (patternString == null) {
             return emptyList()
         }
@@ -135,7 +164,6 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         } catch (e: Exception) {
             Pattern.compile(Pattern.quote(patternString.lowercase()))
         }
-
         for (key in getAllKeys(project)) {
             val keyToTest = key.lowercase()
             if (notMatchingKeys.contains(key) || matchingKeys.contains(key)) {

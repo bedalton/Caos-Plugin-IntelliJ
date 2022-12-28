@@ -122,6 +122,22 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
             return getAgentNamesEx(project, classifierFormatted, scope)
         }
 
+//        internal fun getAgentNamesInEverythingScope(project: Project, classifier: String): List<String> {
+//            return ReadAction.compute<List<String>, Exception> {
+//                try {
+//                    val scope = GlobalSearchScope.everythingScope(project)
+//                    FileBasedIndex.getInstance()
+//                        .getValues(
+//                            NAME,
+//                            classifier,
+//                            scope
+//                        )
+//                } catch (_: Exception) {
+//                    emptyList()
+//                }
+//            } as List<String>
+//        }
+
         /**
          * Get agent names by Classifier values
          */
@@ -143,6 +159,24 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
                 }
             } as List<String>
         }
+
+//        /**
+//         * Get agent names by Classifier values
+//         */
+//        internal fun getAllKeysEx(project: Project): List<String> {
+//            return ReadAction.compute<List<String>, Exception> {
+//                try {
+//                    FileBasedIndex.getInstance()
+//                        .getAllKeys(
+//                            NAME,
+//                            project
+//                        )
+//                        .toList()
+//                } catch (_: Exception) {
+//                    emptyList()
+//                }
+//            } as List<String>
+//        }
     }
 
 }
