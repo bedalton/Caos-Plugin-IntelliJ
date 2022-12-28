@@ -36,6 +36,10 @@ class PoseEditorModel(
     val poseEditor: BreedPoseHolder,
 ) {
 
+
+    private val allValidPoseChars = "012345xX?!".toCharArray()
+    private val validPartPoseChars = "0123xX?!".toCharArray()
+
     var progressIndicator: ProgressIndicator? = null
     private var spriteSet: CreatureSpriteSet? = null
     private var mLocked: Map<Char, BodyPartFiles> = emptyMap()
@@ -269,20 +273,25 @@ class PoseEditorModel(
         while (newPoseStringBuilder.length < 15) {
             newPoseStringBuilder.append(" ")
         }
-        val newPoseString = newPoseStringBuilder.toString()
+        val poseStringPadded = newPoseStringBuilder.toString()
         var hasError = false
-        if (newPoseRaw.length < 15) {
+        if (newPoseRaw.length.let { it != 15 && it != 16 } || newPoseRaw.any { it !in allValidPoseChars }) {
             hasError = true
-        } else if (lastPoseString == newPoseString) {
+        } else if (lastPoseString.trim() == newPoseRaw.trim()) {
             return null
         }
-        val lastPose: Pose? = currentPose
-        val (_, newPose) = fromString(variant, facing, lastPose, newPoseString)
+
+        val (_, newPose) = fromString(variant, facing, currentPose, poseStringPadded)
 
         val errorChars = (0..14).filter { i ->
-            val part = ('a'.code + i).toChar()
-            val thisPose = newPose[part]
-            thisPose == null || thisPose < -1
+            val invalidValue = poseStringPadded[i] !in (if (i < 3) { allValidPoseChars } else { validPartPoseChars })
+            if (i > 0) {
+                val part = ('a'.code + i).toChar()
+                val thisPose = newPose[part]
+                thisPose == null || invalidValue
+            } else {
+                invalidValue
+            }
         }
         return Triple(newPose, hasError || errorChars.isNotEmpty(), errorChars.toIntArray())
     }

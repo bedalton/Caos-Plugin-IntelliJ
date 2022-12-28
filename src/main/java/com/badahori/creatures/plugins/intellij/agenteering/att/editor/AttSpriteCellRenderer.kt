@@ -36,10 +36,11 @@ data class AttSpriteCellData(
 
     val isFocused: Boolean get() = changeCellListener.selectedCell == index
     fun onPlace(point: Pair<Int, Int>) {
-        if (changeCellListener.selectedCell == index)
+        if (changeCellListener.selectedCell == index) {
             changePointListener.onChangePoint(index, point)
-        else
+        } else {
             onFocus()
+        }
     }
 
     fun onFocus() {
@@ -399,7 +400,13 @@ interface OnChangePoint {
 
 interface HasSelectedCell {
     val selectedCell: Int
-    fun setSelected(index: Int)
+
+    /**
+     * Attempts to set selected to index, but returns actually set index
+     * If point replication is set, index may be different if skipping duplicates
+     * @return actually selected index
+     */
+    fun setSelected(index: Int): Int
 }
 
 
