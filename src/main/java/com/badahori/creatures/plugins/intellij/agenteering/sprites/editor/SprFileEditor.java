@@ -112,10 +112,13 @@ public class SprFileEditor {
             moniker = null;
         }
         final List<Bitmap32> bitmaps = SpriteEditorImpl.toBitmapList(album);
-        final List<List<Bitmap32>> images = List.of(bitmaps);
+        final List<List<Bitmap32>> images = new ArrayList<>();
+        images.add(bitmaps);
         SpriteEditorImpl.cache(file, images);
         final List<BufferedImage> bufferedImages = SpriteEditorImpl.toBufferedImages(album);
-        return List.of(bufferedImages);
+        final List<List<BufferedImage>> out = new ArrayList<>();
+        out.add(bufferedImages);
+        return out;
     }
 
     private List<List<BufferedImage>> readFileAsRegularSprite() {

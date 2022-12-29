@@ -86,7 +86,10 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         return null
     }
 
-    override fun dispose() {}
+    override fun dispose() {
+        myFile.putUserData(CACHE_MD5_KEY, null)
+        myProject = null
+    }
 
     override fun <T> getUserData(key: Key<T>): T? {
         if (!isValid) {
@@ -107,8 +110,9 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
             return
         }
         myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
-            if (cachedMD5 == myFile.md5())
+            if (cachedMD5 == myFile.md5()) {
                 return
+            }
             clearCache(myFile)
         }
         if (this::editor.isInitialized) {
@@ -127,17 +131,17 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
 
         @JvmStatic
         fun cache(virtualFile: VirtualFile, images:List<List<Bitmap32>>) {
-            if (!virtualFile.isValid) {
+            if (!virtualFile.isValid || virtualFile.extension?.lowercase() == "blk") {
                 return
             }
-//            virtualFile.putUserData(CACHE_MD5_KEY, null)
-//            virtualFile.putUserData(CACHE_KEY, null)
-//            if (images.isEmpty())
-//                return
-//            val md5 = virtualFile.md5()
-//                ?: return
-//            virtualFile.putUserData(CACHE_KEY, images)
-//            virtualFile.putUserData(CACHE_MD5_KEY, md5)
+            virtualFile.putUserData(CACHE_MD5_KEY, null)
+            virtualFile.putUserData(CACHE_KEY, null)
+            if (images.isEmpty())
+                return
+            val md5 = virtualFile.md5()
+                ?: return
+            virtualFile.putUserData(CACHE_KEY, images)
+            virtualFile.putUserData(CACHE_MD5_KEY, md5)
         }
 
         @JvmStatic
