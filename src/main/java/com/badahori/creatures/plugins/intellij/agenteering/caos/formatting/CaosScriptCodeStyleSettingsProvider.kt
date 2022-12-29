@@ -12,13 +12,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 
 
 class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
-    override fun createCustomSettings(settings: CodeStyleSettings?): CustomCodeStyleSettings? {
+    override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings? {
         return CaosScriptCodeStyleSettings(settings)
     }
 
     override fun getConfigurableDisplayName(): String? = "Caos Script"
 
-    override fun createSettingsPage(settings: CodeStyleSettings?, modelSettings: CodeStyleSettings?): Configurable {
+    override fun createSettingsPage(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): Configurable {
         return createConfigurable(settings!!, modelSettings!!)
     }
 
@@ -31,5 +31,5 @@ class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
     }
 
 
-    private class CaosScriptCodeStyleMainPanel(currentSettings: CodeStyleSettings?, settings: CodeStyleSettings?) : TabbedLanguageCodeStylePanel(CaosScriptLanguage, currentSettings, settings)
+    private class CaosScriptCodeStyleMainPanel(currentSettings: CodeStyleSettings, settings: CodeStyleSettings) : TabbedLanguageCodeStylePanel(CaosScriptLanguage, currentSettings, settings)
 }

@@ -1,12 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.FileType
@@ -37,7 +38,7 @@ object VariantIndexer : DataIndexer<CaosVariant, Void, FileContent> {
 
 object BreedKeyIndexer : DataIndexer<BreedPartKey, Void, FileContent> {
 
-    const val VERSION = 3
+    const val VERSION = 4
 
     override fun map(file: FileContent): MutableMap<BreedPartKey, Void> {
         var variant = getInitialVariant(file.project, file.file)
@@ -276,7 +277,7 @@ data class BreedPartKey(
 
 object BreedPartDescriptor : KeyDescriptor<BreedPartKey> {
 
-    const val VERSION = 2
+    const val VERSION = 3
 
     override fun getHashCode(value: BreedPartKey): Int {
         return value.hashCode()

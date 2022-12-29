@@ -5,9 +5,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptRandomValueIsTheSameInspection : LocalInspectionTool() {
+class CaosScriptRandomValueIsTheSameInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Rndv value is always the same"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")

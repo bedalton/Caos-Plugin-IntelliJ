@@ -1,17 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.poser.actions
 
 import bedalton.creatures.sprite.util.SpriteType
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -29,12 +31,16 @@ import kotlin.random.Random
 class AutoPreview : AnAction() {
 
     val strict: Boolean = true
-    private val defaultZoom = 2
+    private var defaultZoom: Int = 2
+
+    fun setDefaultZoom(newDefault: Int) {
+        this.defaultZoom = newDefault
+    }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
         val project = e.project
-        if (project == null || !project.settings.state.isAutoPoseEnabled) {
+        if (project == null || !CaosApplicationSettingsService.getInstance().isAutoPoseEnabled) {
             e.presentation.isVisible = false
             return
         }
@@ -221,11 +227,11 @@ class AutoPreview : AnAction() {
 //                    } else if (seed < 300) {
 //                        Pose.fromString(variant, 2, null, "142233022022333000").second
                     } else {
-                        return Pose.fromString(variant, 1, null, "242010222032211000").second
+                        return Pose.fromString(variant, 1, null, "242010222032211").second
                     }
                 } else {
                     if (seed > 300) {
-                        return Pose.fromString(variant, 1, null, "142230322333333000").second
+                        return Pose.fromString(variant, 1, null, "142230322333333").second
                     }
                     return Pose.fromString(variant, 1, null, straight).second
                 }
@@ -233,7 +239,7 @@ class AutoPreview : AnAction() {
             1 -> {
                 if (key.ageGroup?.let { it < youth } == true) {
                     if (seed < 100) {
-                        Pose.fromString(variant, 3, null, "343322100210311000").second
+                        Pose.fromString(variant, 3, null, "343322100210311").second
                     } else if (seed < 200) {
                         Pose.fromString(variant, 3, null, "312010222220011").second
 //                    } else if (seed < 300) {
@@ -309,7 +315,7 @@ class AutoPreview : AnAction() {
         val variant = variantIn
             ?: if (mappedParts['a']!!.bodyData.lines.size > 10)
                 CaosVariant.C3
-            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.type == SpriteType.S16})
+            else if (mappedParts['n'] != null || mappedParts.values.any { it?.sprite?.fileType == SpriteType.S16})
                 CaosVariant.C2
             else
                 CaosVariant.C1
@@ -343,7 +349,7 @@ class AutoPreview : AnAction() {
             zoom
         )
 
-        val hasSprites = directory.children.any {
+        val hasSprites = directory.collectChildren().any {
             it.extension likeAny listOf(
                 "spr",
                 "s16",

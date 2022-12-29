@@ -7,9 +7,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptRequiresOwnrInspection : LocalInspectionTool() {
+class CaosScriptRequiresOwnrInspection : LocalInspectionTool(), DumbAware {
     override fun getDisplayName(): String = "Command used without OWNR object"
     override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = "NoOwnrObject"

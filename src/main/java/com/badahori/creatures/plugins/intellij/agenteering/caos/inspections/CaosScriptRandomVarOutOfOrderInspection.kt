@@ -8,9 +8,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool() {
+class CaosScriptRandomVarOutOfOrderInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "RNDV values out of order"
     override fun getGroupDisplayName(): String = CAOSScript

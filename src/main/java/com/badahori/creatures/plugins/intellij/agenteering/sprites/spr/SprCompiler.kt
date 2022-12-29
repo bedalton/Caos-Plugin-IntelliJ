@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
-import bedalton.creatures.bytes.MemoryByteStreamReader
+import bedalton.creatures.common.bytes.MemoryByteStreamReader
 import bedalton.creatures.sprite.parsers.SprSpriteFile
+import bedalton.creatures.sprite.parsers.readSprFrame
+import bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -131,15 +133,15 @@ object SprCompiler : SpriteCompiler {
     @Suppress("unused")
     @JvmStatic
     @Throws
-    fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean) : BufferedImage {
+    suspend fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean) : BufferedImage {
         val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
-        return SprSpriteFile.parseFrame(
+        return readSprFrame(
             bytesBuffer = MemoryByteStreamReader(bytes.toByteArray()),
             offset = 0L,
             width = imageIn.width,
             height = imageIn.height,
-            transparentBlack
+            ColorPalette.C1TransparentBlack
         ).toAwt()
     }
 }

@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import bedalton.creatures.sprite.parsers.BlkSpriteFile
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider

@@ -13,13 +13,14 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 
-class CaosScriptEmptyLoopInspection : LocalInspectionTool() {
+class CaosScriptEmptyLoopInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.empty-loop.display-name")
     override fun getGroupDisplayName(): String = CAOSScript

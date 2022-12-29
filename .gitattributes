@@ -109,3 +109,4 @@
 *.[Mm][Pp]4 binary
 *.[Oo][Gg][Vv] binary
 *.[Dd][Ll][Ll] binary
+gradle.properties merge=ours

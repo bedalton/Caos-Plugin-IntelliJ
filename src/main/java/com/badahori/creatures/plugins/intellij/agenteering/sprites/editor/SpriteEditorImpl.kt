@@ -5,7 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 import bedalton.creatures.sprite.parsers.PhotoAlbum
 import bedalton.creatures.sprite.parsers.SPR_SHORT_DEBUG_LOGGING
 import bedalton.creatures.sprite.parsers.image
-import bedalton.creatures.util.Log
+import bedalton.creatures.common.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ensureMacOsCopyLib
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -86,7 +86,10 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         return null
     }
 
-    override fun dispose() {}
+    override fun dispose() {
+        myFile.putUserData(CACHE_MD5_KEY, null)
+        myProject = null
+    }
 
     override fun <T> getUserData(key: Key<T>): T? {
         if (!isValid) {
@@ -107,8 +110,9 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
             return
         }
         myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
-            if (cachedMD5 == myFile.md5())
+            if (cachedMD5 == myFile.md5()) {
                 return
+            }
             clearCache(myFile)
         }
         if (this::editor.isInitialized) {
@@ -127,7 +131,7 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
 
         @JvmStatic
         fun cache(virtualFile: VirtualFile, images:List<List<Bitmap32>>) {
-            if (!virtualFile.isValid) {
+            if (!virtualFile.isValid || virtualFile.extension?.lowercase() == "blk") {
                 return
             }
             virtualFile.putUserData(CACHE_MD5_KEY, null)

@@ -131,10 +131,12 @@ object EditorUtil {
         editor.caretModel.moveToOffset(editor.caretModel.offset + offset)
     }
 
-    fun document(element: PsiElement) : Document? {
-        val containingFile = element.containingFile ?: return null
+    fun document(element: PsiElement, retry: Boolean = true) : Document? {
+        val containingFile = (element.containingFile ?: element.originalElement.containingFile)
+            ?: return null
         val psiDocumentManager = PsiDocumentManager.getInstance(element.project)
         return psiDocumentManager.getDocument(containingFile)
+            ?: (if (retry) { document(element.originalElement, false) } else { null })
     }
 
     fun editor(element:PsiElement) : Editor?  {

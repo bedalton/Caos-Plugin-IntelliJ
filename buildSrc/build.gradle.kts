@@ -1,7 +1,9 @@
 plugins {
-    kotlin("plugin.serialization") version "1.5.20"
-    kotlin("jvm") version "1.5.20"
+    kotlin("plugin.serialization") version "1.7.20"
+    kotlin("jvm") version "1.7.20"
 }
+
+val javaVersion: String = "1.8"
 
 repositories {
     mavenCentral()
@@ -17,11 +19,15 @@ sourceSets.main {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    val javaSdkString = "VERSION_" + javaVersion.replace('.', '_')
+    val javaSdkVersion = JavaVersion.valueOf(javaSdkString)
+    sourceCompatibility = javaSdkVersion
+    targetCompatibility = javaSdkVersion
 }
 kotlin {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.languageVersion = "1.7"
+        kotlinOptions.apiVersion = "1.7"
+        kotlinOptions.jvmTarget = javaVersion
     }
 }

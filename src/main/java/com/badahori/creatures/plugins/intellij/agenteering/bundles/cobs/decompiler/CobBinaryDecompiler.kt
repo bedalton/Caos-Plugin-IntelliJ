@@ -2,9 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.bytes.MemoryByteStreamReader
-import bedalton.creatures.bytes.string
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.bytes.MemoryByteStreamReader
+import bedalton.creatures.common.bytes.string
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
@@ -18,19 +18,22 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import kotlin.math.floor
 
 class CobBinaryDecompiler : BinaryFileDecompiler {
     override fun decompile(virtualFile: VirtualFile): CharSequence {
-        return decompileToString(virtualFile.name, virtualFile.contentsToByteArray())
+        return runBlocking {
+            decompileToString(virtualFile.name, virtualFile.contentsToByteArray())
+        }
     }
 
     companion object {
 
         private val DATE_FORMAT = SimpleDateFormat("MM/dd/YYYY")
 
-        internal fun decompileToString(fileName: String, byteArray: ByteArray): String {
+        internal suspend fun decompileToString(fileName: String, byteArray: ByteArray): String {
             val byteBuffer = MemoryByteStreamReader(byteArray)
             if (byteBuffer.string(4) == "****") {
                 return byteArray.contentToString()
@@ -40,14 +43,16 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
-            val cobData = CobToDataObjectDecompiler.decompile(MemoryByteStreamReader(byteArray), FileNameUtil.getFileNameWithoutExtension(fileName))
+            val cobData = runBlocking {
+                CobToDataObjectDecompiler.decompile(MemoryByteStreamReader(byteArray), FileNameUtil.getFileNameWithoutExtension(fileName))
+            }
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
-            GlobalScope.launch {
+            runBlocking {
                 CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
             }
             return psiFile

@@ -14,10 +14,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 
-class Caos2PrayReservedTagUseInspection : LocalInspectionTool() {
+class Caos2PrayReservedTagUseInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupPath(): Array<String> = CAOS2Path
     override fun getGroupDisplayName(): String = CAOS2Pray

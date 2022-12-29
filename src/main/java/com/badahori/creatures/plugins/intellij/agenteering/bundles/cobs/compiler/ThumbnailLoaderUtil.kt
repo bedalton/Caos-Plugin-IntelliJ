@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.bytes.MemoryByteStreamReader
+import bedalton.creatures.common.bytes.MemoryByteStreamReader
 import bedalton.creatures.sprite.parsers.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
@@ -11,6 +11,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.format.BMP
 import com.soywiz.korim.format.GIF
 import com.soywiz.korim.format.PNG
+import kotlinx.coroutines.runBlocking
 
 internal val loadThumbnail: (pictureUrl: String) -> Bitmap32? = { pictureUrl: String ->
     try {
@@ -20,9 +21,10 @@ internal val loadThumbnail: (pictureUrl: String) -> Bitmap32? = { pictureUrl: St
         LocalFileSystem.getInstance().findFileByPath(url)?.let { virtualFile ->
             val bytes = virtualFile.getAllBytes()
             if (virtualFile.extension likeAny VALID_SPRITE_EXTENSIONS) {
-                SpriteParser.parse(virtualFile.name, MemoryByteStreamReader(bytes), keepBlack = false)
-                    .getOrNull(frameNumber)
-                    ?: throw Caos2CobException("Failed to load Sprite frame after sprite de-compilation")
+                runBlocking {
+                    SpriteParser.parse(virtualFile.name, MemoryByteStreamReader(bytes), keepBlack = false)
+                        .getOrNull(frameNumber)
+                } ?: throw Caos2CobException("Failed to load Sprite frame after sprite de-compilation")
             } else {
                 when (virtualFile.extension?.lowercase()) {
                     "png" -> PNG.decode(bytes).toBMP32IfRequired()

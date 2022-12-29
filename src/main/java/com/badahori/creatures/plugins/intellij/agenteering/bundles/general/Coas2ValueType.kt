@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.stripSurroundingQuotes
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.POS_NEG_NUMBER_REGEX
 import java.time.format.DateTimeFormatter

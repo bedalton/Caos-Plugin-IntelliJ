@@ -16,12 +16,13 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInspection.*
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 
-class CaosScriptInterleavingBodyStatements : LocalInspectionTool() {
+class CaosScriptInterleavingBodyStatements : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String =
         CaosBundle.message("caos.inspections.interleaving-body-scripts.display-name")

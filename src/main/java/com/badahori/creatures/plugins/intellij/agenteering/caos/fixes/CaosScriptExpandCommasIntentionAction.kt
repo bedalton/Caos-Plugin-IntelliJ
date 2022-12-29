@@ -13,6 +13,7 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -57,6 +58,7 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
      * Expands all commas and new-line-like spaces into newline
      */
     fun invoke(project: Project, fileIn: PsiFile?) {
+        val isEDT = ApplicationManager.getApplication().isDispatchThread
         if (fileIn == null)
             return
         if (CommandProcessor.getInstance().isUndoTransparentActionInProgress) {
@@ -68,7 +70,7 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
                 LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in existing transparent action with error: ${e.message}")
                 e.printStackTrace()
             }
-        } else {
+        } else if (isEDT) {
             CommandProcessor.getInstance().runUndoTransparentAction {
                 try {
                     runWriteAction {
@@ -79,6 +81,8 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
                     e.printStackTrace()
                 }
             }
+        } else {
+            runnable(project, fileIn)
         }
     }
 
@@ -86,6 +90,8 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
      * Method to expand commas and spaces into newlines
      */
     private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
+        val isEDT = ApplicationManager.getApplication().isDispatchThread
+
         val file = fileIn as? CaosScriptFile
             ?: return false
         val variant = fileIn.variant
@@ -102,10 +108,12 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
         }
 
         // Commit it so we can alter it
-        fileIn.document?.let { document ->
-            val manager = PsiDocumentManager.getInstance(project)
-            manager.doPostponedOperationsAndUnblockDocument(document)
-            manager.commitDocument(document)
+        if (isEDT) {
+            fileIn.document?.let { document ->
+                val manager = PsiDocumentManager.getInstance(project)
+                manager.doPostponedOperationsAndUnblockDocument(document)
+                manager.commitDocument(document)
+            }
         }
 
         // Get all possible newline elements
@@ -133,11 +141,12 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
             }
             .forEach { it.element?.replace(CaosScriptPsiElementFactory.newLine(project)) }
 
-
-        val manager = PsiDocumentManager.getInstance(project)
-        fileIn.document?.let { document ->
-            manager.doPostponedOperationsAndUnblockDocument(document)
-            manager.commitDocument(document)
+        if (isEDT) {
+            val manager = PsiDocumentManager.getInstance(project)
+            fileIn.document?.let { document ->
+                manager.doPostponedOperationsAndUnblockDocument(document)
+                manager.commitDocument(document)
+            }
         }
 
         PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
@@ -147,10 +156,14 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
 
         val readonly = (file.document?.isWritable == false)
         // Get the document again, and this time commit it
-        file.document?.let { document ->
-            document.setReadOnly(false)
-            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
-            manager.commitDocument(document)
+
+        if (isEDT) {
+            val manager = PsiDocumentManager.getInstance(project)
+            file.document?.let { document ->
+                document.setReadOnly(false)
+                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+                manager.commitDocument(document)
+            }
         }
         if (!file.isValid || file.isInvalid || file.firstChild?.isValid != true) {
             return false
@@ -177,8 +190,9 @@ object CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), 
             (Exception()).printStackTrace()
             return false
         }
-        if (PsiTreeUtil.collectElementsOfType(file, CaosScriptCommandCall::class.java).size > 1)
+        if (PsiTreeUtil.collectElementsOfType(file, CaosScriptCommandCall::class.java).size > 1) {
             return false
+        }
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptHasCodeBlock::class.java)
             .nullIfEmpty()
             ?.none { it !is CaosScriptMacro }

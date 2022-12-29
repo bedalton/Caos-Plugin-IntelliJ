@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.WhitespacePsiUt
 import com.badahori.creatures.plugins.intellij.agenteering.utils.WhitespacePsiUtil.isNotWhitespace
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
@@ -23,7 +24,7 @@ import com.intellij.psi.util.elementType
 /**
  * Detects whitespace trailing after the end of line
  */
-class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool() {
+class CaosScriptTrailingWhitespaceInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspection.trailing-white-space.display-name")
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")

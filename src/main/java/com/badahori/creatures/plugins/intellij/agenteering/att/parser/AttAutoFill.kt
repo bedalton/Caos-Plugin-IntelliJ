@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.parser
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
@@ -86,7 +86,7 @@ object AttAutoFill {
         }
         val (expectedLines, expectedPoints) = getExpected(nameWithoutExtension, variant)
             ?: return null
-        val line = "0 ".repeat(expectedPoints * 2).trim() + "\r\n"
+        val line = "0 ".repeat(expectedPoints * 2).trim() + "\n"
         return line.repeat(expectedLines)
     }
 

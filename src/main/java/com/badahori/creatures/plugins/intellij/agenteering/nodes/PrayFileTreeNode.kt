@@ -1,27 +1,27 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
+import bedalton.creatures.agents.pray.data.BlockWithTags
+import bedalton.creatures.agents.pray.data.DataBlock
 import bedalton.creatures.agents.pray.data.PrayBlock
 import bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
-import bedalton.creatures.util.Log
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getFileIcon
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 
-private val PRAY_TREE_CHILD_CACHE_KEY = Key<Pair<String,List<AbstractTreeNode<*>>>>("bedalton.node.pray.PRAY_CHILDREN")
+private val PRAY_TREE_CHILD_CACHE_KEY = Key<Pair<String, List<AbstractTreeNode<*>>>>("bedalton.node.pray.PRAY_CHILDREN")
 
 internal class PrayFileTreeNode(
     project: Project,
@@ -42,24 +42,26 @@ internal class PrayFileTreeNode(
      */
     private val blocks: List<PrayBlock> by lazy {
         val stream = VirtualFileStreamReader(file)
-        try {
-            parsePrayAgentBlocks(stream, "*", true)
-        } catch (e: Exception) {
-            return@lazy emptyList()
+        runBlocking {
+            try {
+                parsePrayAgentBlocks(stream, "*", true)
+            } catch (e: Exception) {
+                return@runBlocking emptyList()
+            }
         }
     }
 
     private val blockChildren by lazy {
-        val md5 = ""
+        val md5 = virtualFile.md5()
         virtualFile.getUserData(PRAY_TREE_CHILD_CACHE_KEY)?.let {
             if (it.first == md5) {
                 return@lazy it.second
             }
         }
         blocks.mapNotNull map@{ block ->
-            if (block is PrayBlock.DataBlock) {
+            if (block is DataBlock) {
                 val file = try {
-                    directory.createChildWithContent(block.blockName.text, { block.data }, false).apply{
+                    directory.createChildWithContent(block.blockName.text, { block.data() }, false).apply {
                         this.isWritable = false
                     }
                 } catch (e: Exception) {
@@ -71,6 +73,9 @@ internal class PrayFileTreeNode(
                 try {
                     PrayBlockTreeNode(project, directory, block, viewSettings)
                 } catch (e: Exception) {
+                    if (e is ProcessCanceledException) {
+                        throw e
+                    }
                     LOGGER.severe("Failed to get block tree node for [${block.blockTag}]->${block.blockName}")
                     e.printStackTrace()
                     return@lazy emptyList()
@@ -79,11 +84,6 @@ internal class PrayFileTreeNode(
         }.apply {
             virtualFile.putUserData(PRAY_TREE_CHILD_CACHE_KEY, Pair(md5 ?: "", this))
         }
-    }
-
-    override fun shouldUpdateData(): Boolean {
-
-        return super.shouldUpdateData()
     }
 
     override fun update(presentation: PresentationData) {
@@ -117,7 +117,7 @@ internal class PrayBlockTreeNode(
         presentation.presentableText = prayBlock.blockName.text
         presentation.locationString = "(${prayBlock.blockTag.text})"
         val icon = when (prayBlock.blockTag.text) {
-            "AGNT", "DSAG", "MEDI", "SKIN", "EDAG", "EGGS" -> CaosScriptIcons.PRAY_AGENT_ICON
+            "AGNT", "DSAG", "EGGS", "DSGB" -> CaosScriptIcons.PRAY_AGENT_ICON
             else -> null
         }
         presentation.setIcon(icon)
@@ -125,16 +125,12 @@ internal class PrayBlockTreeNode(
 
 
     private val childNodes: List<AbstractTreeNode<*>> by lazy {
-        if (prayBlock !is PrayBlock.BlockWithTags) {
+        if (prayBlock !is BlockWithTags) {
             return@lazy emptyList()
         }
 
         val isAgent = try {
-            prayBlock.intTags.any { it.tag like "Agent Type" } || prayBlock.stringTags.any { it.tag like "Agent Type"}.apply {
-                if (this) {
-                    Log.i { "Agent type tag is a string" }
-                }
-            }
+            runBlocking { prayBlock.intTags().any { it.tag like "Agent Type" } || prayBlock.stringTags().any { it.tag like "Agent Type" } }
         } catch (e: Exception) {
             LOGGER.severe("Failed to parse block [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
@@ -142,7 +138,6 @@ internal class PrayBlockTreeNode(
         }
 
         if (!isAgent) {
-            Log.i { "Block: ${prayBlock.blockTag}: ${prayBlock.blockName} is not an agent. IntTags: [${prayBlock.intTags.joinToString { it.tag }}]; StringTags: [${prayBlock.stringTags.joinToString { it.tag }}]" }
             return@lazy emptyList()
         }
         val scriptTagRegex = "Script\\s+(\\d+)|Remove script".toRegex(RegexOption.IGNORE_CASE)
@@ -151,10 +146,12 @@ internal class PrayBlockTreeNode(
         } else {
             CaosVariant.DS
         }
-        val stringTags = try {
-            prayBlock.stringTags
-        } catch (e: Exception) {
-            emptyArray()
+        val stringTags = runBlocking {
+            try {
+                prayBlock.stringTags()
+            } catch (e: Exception) {
+                emptyArray()
+            }
         }
         stringTags.filter {
             scriptTagRegex.matches(it.tag)
@@ -178,17 +175,10 @@ internal class PrayBlockTreeNode(
                 it.tag,
                 viewSettings
             )
-        }.apply {
-            if (isEmpty()) {
-                Log.i { "Agent ${prayBlock.blockTag} ${prayBlock.blockName} has no scripts. Has <${stringTags.size}> string tags" }
-            }
         }
     }
 
 
-    override fun shouldUpdateData(): Boolean {
-        return super.shouldUpdateData()
-    }
     override fun getChildren(): List<AbstractTreeNode<*>> {
         return try {
             childNodes
@@ -201,13 +191,13 @@ internal class PrayBlockTreeNode(
 
     override fun getWeight(): Int {
         return when (prayBlock.blockTag.text.uppercase()) {
-            "AGNT", "DSAG", "MEDI", "SKIN", "EDAG", "EGGS" -> - 100
+            "AGNT", "DSAG", "EGGS", "DSGB" -> -100
             else -> super.getWeight()
         }
     }
 
     override fun getLeafState(): LeafState {
-        return if (prayBlock !is PrayBlock.BlockWithTags) {
+        return if (prayBlock !is BlockWithTags) {
             LeafState.ALWAYS
         } else {
             LeafState.ASYNC

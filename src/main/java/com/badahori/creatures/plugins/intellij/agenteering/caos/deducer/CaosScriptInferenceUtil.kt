@@ -2,19 +2,19 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptNamedGameVarIndex
+import bedalton.creatures.common.util.className
+import bedalton.creatures.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptTokenRvalueImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNamedGameVarElements
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isObjectVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.varTypes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.util.PsiTreeUtil
 
 object CaosScriptInferenceUtil {
 
@@ -65,11 +65,10 @@ object CaosScriptInferenceUtil {
 //                lastChecked = lastChecked
 //            ) ?: listOf(VARIABLE) else listOf(VARIABLE)
 //        }
-        val type = getRvalueTypeWithoutInference(element, bias ?: ANY, false)?.let { listOf(it) }
+        // Return inferred types for simple values
+        return getRvalueTypeWithoutInference(element, bias ?: ANY, false)?.let { listOf(it) }
             ?: getInferredType(element.rvaluePrime, bias)
             ?: emptyList()
-        // Return inferred types for simple values
-        return type
     }
 
     /**
@@ -118,7 +117,7 @@ object CaosScriptInferenceUtil {
         lastChecked: MutableList<CaosScriptIsVariable>
     ): List<CaosExpressionValueType> {
 
-        // Short out this check due to inability to accertain agent class
+        // Short out this check due to inability to ascertain agent class
         if (element.isObjectVar) {
             // TODO filter by object class
             return listOf(VARIABLE)
@@ -127,22 +126,10 @@ object CaosScriptInferenceUtil {
         val project = element.project
         if (project.isDisposed)
             return emptyList()
-        val varType = element.varType
-        val key = element.key
-            ?: return emptyList()
-
-        var vars: Collection<CaosScriptNamedGameVar>? = try {
-            if (!DumbService.isDumb(project))
-                CaosScriptNamedGameVarIndex.instance.get(element.varType, key, element.project)
-            else
-                null
+        var vars: List<CaosScriptNamedGameVar> = try {
+            getNamedGameVarElements(project, element, false, element.varTypes)
         } catch (e: Exception) {
-            null
-        }
-        if (vars == null) {
-            vars = getAllNamedVarsFromRawFiles(project) {
-                it.varType == varType && it.key == key
-            }
+            return emptyList()
         }
         vars = vars.filter { thisVar ->
             lastChecked.none { it.isEquivalentTo(thisVar) }
@@ -150,20 +137,6 @@ object CaosScriptInferenceUtil {
         lastChecked.addAll(vars)
 
         return getInferredType(vars, bias)
-    }
-
-    private inline fun getAllNamedVarsFromRawFiles(
-        project: Project,
-        check: (element: CaosScriptNamedGameVar) -> Boolean
-    ): List<CaosScriptNamedGameVar> {
-        return (FilenameIndex.getAllFilesByExt(project, "cos") + FilenameIndex.getAllFilesByExt(project, "COS"))
-            .distinctBy { it.path.lowercase() }
-            .flatMap map@{
-                val psiFile = it.getPsiFile(project)
-                    ?: return@map emptyList()
-                PsiTreeUtil.collectElementsOfType(psiFile, CaosScriptNamedGameVar::class.java)
-                    .filter(check)
-            }
     }
 
     private fun getIndexedVarInferredType(
@@ -215,7 +188,7 @@ object CaosScriptInferenceUtil {
                 "4" -> return listOf(STRING)
                 "4|1" -> return if (bias == STRING)
                     listOf(STRING)
-                else if (bias?.isNumberType ?: false)
+                else if (bias?.isNumberType == true)
                     listOf(INT)
                 else
                     listOf(STRING, INT)

@@ -2,9 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import bedalton.creatures.structs.Pointer
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.common.structs.Pointer
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getVariant
@@ -40,7 +40,7 @@ object BodyPartsIndex {
 
     internal val BODY_DATA_ATT_KEY = Key<Pointer<Pair<Int, VirtualFile>?>?>("creatures.body-part.att-with-index")
 
-    private const val THIS_INDEX_VERSION = 9
+    private const val THIS_INDEX_VERSION = 10
 
     // Compound version to force a reindex if any of the sourced indices change
     const val VERSION = THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
@@ -96,10 +96,15 @@ object BodyPartsIndex {
                 return@matchSpritesToAtts initialFiles
             }
 
+            val isC3DS = variant.isC3DS
+
             // Create filter if needed
             val filter = filter@{ virtualFile: VirtualFile ->
                 return@filter BreedPartKey.isPartName(virtualFile.nameWithoutExtension)
-                        && virtualFile.getVariant(project, true) == gameVariant
+                        && virtualFile.getVariant(project, true).let {
+                            it == variant || (isC3DS && variant.isC3DS)
+                }
+
             }
 
             // Get extension for source files based
@@ -382,10 +387,11 @@ object BodyPartsIndex {
 
 
 //            val scope = generalScope
-        val scope = if (searchScope != null)
+        val scope = if (searchScope != null) {
             generalScope.intersectWith(searchScope)
-        else
+        } else {
             generalScope
+        }
 
         val validExtensions = if (ATT_TO_SPRITE) {
             variant.validSpriteExtensions
@@ -422,6 +428,8 @@ object BodyPartsIndex {
 
             val keys = listOf(
                 key,
+                key.copyWithAgeGroup(null),
+                key.copyWithAgeGroup(null).copyWithGender(null),
                 key.copyWithBreed(null).copyWithAgeGroup(null).copyWithGender(null)
             )
             for (theKey in keys) {

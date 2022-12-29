@@ -1,13 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
+import com.badahori.creatures.plugins.intellij.agenteering.utils.height
+import com.badahori.creatures.plugins.intellij.agenteering.utils.width
 import com.intellij.openapi.editor.colors.EditorColorsManager
-import com.soywiz.korma.math.min
+import com.intellij.ui.JBColor
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
+import java.awt.image.ImageObserver
 import javax.swing.*
 import kotlin.math.floor
 
@@ -27,20 +28,36 @@ data class AttSpriteCellData(
     val image: BufferedImage,
     val points: List<Pair<Int, Int>>,
     val pointNames: List<String>,
+    val folded: List<Int>,
     private val changePointListener: OnChangePoint,
     private val changeCellListener: HasSelectedCell,
 ) {
+    val isFolded: Boolean get() = index in folded
+
     val isFocused: Boolean get() = changeCellListener.selectedCell == index
     fun onPlace(point: Pair<Int, Int>) {
-        if (changeCellListener.selectedCell == index)
+        if (changeCellListener.selectedCell == index) {
             changePointListener.onChangePoint(index, point)
-        else
+        } else {
             onFocus()
+        }
     }
 
     fun onFocus() {
         if (!isFocused) {
             changeCellListener.setSelected(index)
+        }
+    }
+
+    fun focusPreviousCell() {
+        if (index > 0) {
+            changeCellListener.setSelected(index - 1)
+        }
+    }
+
+    fun focusNextCell() {
+        if (index < 16) {
+            changeCellListener.setSelected(index + 1)
         }
     }
 
@@ -52,88 +69,142 @@ data class AttSpriteCellData(
 
 
 internal class AttSpriteCellComponent : JPanel() {
+
+    private var data: AttSpriteCellData? = null
+    private var indexLabel: JLabel = JLabel("")
+        .apply { inheritsPopupMenu = true }
+    private var canvas: AttCellCanvas? = null
+    private var foldedLabel: JLabel? = null
+    private var padding: Component? = null
+    private val isFolded: Boolean get() = data?.isFolded == true
+
     init {
         this.layout = BoxLayout(this, BoxLayout.X_AXIS)
         this.border = BorderFactory.createEmptyBorder(5, 16, 10, 5)
         inheritsPopupMenu = true
         this.isFocusable = true
+        this.add(indexLabel)
+        bindKeyboardShortcuts()
     }
 
     internal fun update(labels: Boolean, scale: Double, value: AttSpriteCellData, selected: Boolean) {
-        removeAll()
-        this.add(JLabel("${value.index + 1}.").apply { inheritsPopupMenu = true })
+        // Set index label to this index
+        indexLabel.text = "${value.index + 1}."
+
+        // Set the current data for use by handlers
+        this.data = value
+        this.removeAll()
+        this.add(indexLabel)
+
+        // Scale image if needed
         val imageValue = value.image
-        val width = imageValue.width * scale
-        val height = imageValue.height * scale
-        val image = if (width > 0 && height > 0) {
+        val folded = isFolded
+        var width = if (folded) -1 else (imageValue.width * scale).toInt()
+        var height = if (folded) -1 else (imageValue.height * scale).toInt()
+        val image: Image = if (width > 0 && height > 0) {
             imageValue.getScaledInstance(
-                width.toInt(),
-                height.toInt(),
+                width,
+                height,
                 Image.SCALE_AREA_AVERAGING
             ) // scale it the smooth way
         } else {
             imageValue
         }
 
-        val scaledPoints: List<Pair<Int, Int>> = value.points.subList(0, minOf(6, value.points.size)).map {
-            Pair(floor(it.first * scale).toInt(), floor(it.second * scale).toInt())
+
+        // If folded, show folded label only
+        if (folded) {
+            var foldLabel: JLabel? = this.foldedLabel
+            if (foldLabel == null) {
+                foldLabel = JLabel()
+                this.foldedLabel = foldLabel
+                add(foldLabel)
+            }
+            foldLabel.foreground = REPLICATED_MESSAGE_FONT_COLOR
+            foldLabel.text = "  Duplicate image. Points are being replicated from cell above"
+            foldLabel.isVisible = true
+            width = maxOf(foldLabel.width, 10)
+            height = maxOf(foldLabel.height, 160)
+            this.add(foldLabel)
+            foldLabel.alignmentX = Component.LEFT_ALIGNMENT
+            this.add(Box.createHorizontalGlue())
+            foldLabel.minimumSize = Dimension(100, 20)
+        } else {
+            // If not folded, update canvas
+            val canvas = getCanvas(image)
+            canvas.selected = selected
+            canvas.image
+            canvas.labels = labels
+            canvas.pointNames = value.pointNames
+            canvas.scaledPoints = scalePoints(value.points, scale)
+            canvas.scale = scale
+            canvas.pointNames = value.pointNames
+            canvas.isVisible = true
+            canvas.revalidate()
+            this.add(canvas)
+            canvas.alignmentX = Component.LEFT_ALIGNMENT
         }
 
-        val canvas = object : JPanel() {
-            var scaledFont: Font? = null
-            override fun paintComponent(g: Graphics) {
-                super.paintComponent(g)
-                g.drawImage(image, 0, 0, this)
-                if (!selected) {
-                    g.color = Color(0, 0, 0, 60)
-                    g.fillRect(0, 0, width.toInt(), height.toInt())
-                    g.color = Color(255, 255, 255, 255)
-                    g.drawCenteredString("Click to Edit", Rectangle(0, 0, width.toInt(), height.toInt()))
-                }
-                val g2 = g as Graphics2D
-                if (selected) {
-                    scaledPoints.forEachIndexed { index, point ->
-                        val label: String = if (labels)
-                            value.pointNames.getOrNull(index)?.let { name -> "${index + 1}: $name" } ?: "Point $index"
-                        else
-                            "${index + 1}"
-                        g2.color = colors[index]
-                        if (scaledFont == null)
-                            scaledFont = g2.font.deriveFont(8)
-                        g2.font = scaledFont!!
-                        g2.drawString(label, point.first + 4, point.second + 4)
-                    }
-                    g2.stroke = BasicStroke(maxOf(0.8f * scale.toFloat(), 2.0f))
-                    scaledPoints.forEachIndexed { index, point ->
-                        g2.color = colors[index]
-                        g2.drawLine(point.first, point.second, point.first, point.second)
-                    }
-                }
-            }
-        }.apply {
-            val imageDimension = Dimension(width.toInt() + 50, height.toInt() + 40)
-            size = imageDimension
-            preferredSize = imageDimension
-            minimumSize = imageDimension
-            background = Color.BLACK
-        }
-        val dimension = Dimension(width.toInt() + 120, height.toInt() + 40)
-        this.size = dimension
-        this.preferredSize = dimension
+        // Set sizing information
+        val padWidth = if (folded) 0 else 120
+        val padHeight = if (folded) 0 else 40
+        val dimension = Dimension(width + padWidth, height + padHeight)
+//        this.size = dimension
+//        this.preferredSize = dimension
         this.minimumSize = dimension
 
-        isFocusable = true
+        // Redraw
+        revalidate()
+        repaint()
+        if (selected) {
+            requestFocus()
+        }
+    }
+
+
+    private fun getCanvas(image: Image): AttCellCanvas {
+        canvas?.let {
+            return it
+        }
+        val canvas = AttCellCanvas(
+            false,
+            image,
+            emptyList(),
+            false,
+            emptyList(),
+            1.0
+        )
+        add(canvas)
+        canvas.alignmentX = Component.LEFT_ALIGNMENT
+        initMouseListeners(canvas)
+        this.canvas = canvas
+        canvas.isFocusable = true
+        canvas.inheritsPopupMenu = true
+        this.canvas = canvas
+        return canvas
+    }
+
+    private fun initMouseListeners(canvas: AttCellCanvas) {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
+                if (isFolded) {
+                    return
+                }
                 super.mouseClicked(e)
                 if (e.button == MouseEvent.BUTTON1) {
-                    value.onFocus()
+                    data?.onFocus()
                 }
             }
         })
+
         canvas.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
+                if (isFolded) {
+                    return
+                }
                 super.mouseClicked(e)
+                val data = data
+                    ?: return
                 if (e.source !== canvas) {
                     return
                 }
@@ -142,58 +213,76 @@ internal class AttSpriteCellComponent : JPanel() {
                     return
                 }
                 if (e.button == MouseEvent.BUTTON1) {
-                    val x = (e.x / scale).toInt()
-                    val y = (e.y / scale).toInt()
-
-                    if (imageValue.width < x || imageValue.height < y) {
-                        value.onFocus()
+                    val x = (e.x / canvas.scale).toInt()
+                    val y = (e.y / canvas.scale).toInt()
+                    val image = data.image
+                    if (image.width < x || image.height < y) {
+                        data.onFocus()
                         return
                     }
                     if (x < 0 || y < 0)
                         return
-                    value.onPlace(Pair(x, y))
+                    data.onPlace(Pair(x, y))
                 }
             }
         })
+    }
+
+    private fun bindKeyboardShortcuts() {
 
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)) {
-            value.shiftPoint(0, -1)
+            data?.shiftPoint(0, -1)
         }
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0)) {
-            value.shiftPoint(0, -1)
+            data?.shiftPoint(0, -1)
         }
+
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0)) {
+            data?.shiftPoint(0, -1)
+        }
+
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.down", KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)) {
-            value.shiftPoint(0, 1)
+            data?.shiftPoint(0, 1)
         }
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.down", KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0)) {
-            value.shiftPoint(0, 1)
+            data?.shiftPoint(0, 1)
         }
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.right", KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0)) {
-            value.shiftPoint(1, 0)
+            data?.shiftPoint(1, 0)
         }
         bindKeyStroke(
             WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
             "move.right",
             KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0)
         ) {
-            value.shiftPoint(1, 0)
+            data?.shiftPoint(1, 0)
         }
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.left", KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0)) {
-            value.shiftPoint(-1, 0)
+            data?.shiftPoint(-1, 0)
         }
         bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.left", KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0)) {
-            value.shiftPoint(-1, 0)
+            data?.shiftPoint(-1, 0)
         }
-        canvas.isFocusable = true
-        canvas.inheritsPopupMenu = true
-        add(canvas)
-        revalidate()
-        repaint()
-        if (selected) {
-            requestFocus()
+
+
+        // Shift Focus up or down
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.previous", KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK)) {
+            data?.focusPreviousCell()
+        }
+        // Shift Focus up or down
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.previous", KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, InputEvent.SHIFT_DOWN_MASK)) {
+            data?.focusPreviousCell()
+        }
+
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.next", KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK)) {
+            data?.focusNextCell()
+        }
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.next", KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, InputEvent.SHIFT_DOWN_MASK)) {
+            data?.focusNextCell()
         }
     }
 
+    @Suppress("SameParameterValue")
     private fun bindKeyStroke(condition: Int, name: String?, keyStroke: KeyStroke?, action: () -> Unit) {
         val im = getInputMap(condition)
         val am = actionMap
@@ -203,6 +292,19 @@ internal class AttSpriteCellComponent : JPanel() {
                 action()
             }
         })
+    }
+
+    companion object {
+
+        private val REPLICATED_MESSAGE_FONT_COLOR = JBColor(
+            Color(30, 30, 30, 120),
+            Color(220, 220, 220, 127)
+        )
+        fun scalePoints(points: List<Pair<Int,Int>>, scale: Double): List<Pair<Int,Int>> {
+            return points.subList(0, minOf(6, points.size)).map {
+                Pair(floor(it.first * scale).toInt(), floor(it.second * scale).toInt())
+            }
+        }
     }
 }
 
@@ -214,7 +316,7 @@ internal class AttSpriteCellList(
     private var scale: Double = 1.0,
     var maxWidth: Int = 300,
     var maxHeight: Int = 300,
-    var labels: Boolean = true
+    var labels: Boolean = true,
 ) : JPanel() {
 
     private val pool: MutableList<AttSpriteCellComponent> = mutableListOf()
@@ -247,8 +349,9 @@ internal class AttSpriteCellList(
         val size = newItems.size
         if (pool.size > size) {
             pool.forEachIndexed { i, component ->
-                if (i < size)
+                if (i < size) {
                     return
+                }
                 component.isVisible = false
             }
         }
@@ -256,7 +359,7 @@ internal class AttSpriteCellList(
     }
 
     init {
-        layout = GridLayout(0, 1)
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
         reload()
     }
 
@@ -273,18 +376,20 @@ internal class AttSpriteCellList(
         panel.update(labels, scale, value, value.isFocused)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun scrollTo(pose: Int) {
-        val item = get(pose)
-        invokeLater later@{
-            (parent as? JPanel)?.doLayout()
-            val bounds = item.bounds
-            val visibleRect = visibleRect
-            if (visibleRect.contains(bounds).orTrue())
-                return@later
-            val offset = visibleRect.intersection(bounds)
-//            (parent?.parent as? JScrollPane)?.verticalScrollBar?.value = offset
-
-        }
+//        TODO: Implement properly without it being frustrating to the end user
+//        val item = get(pose)
+//        invokeLater later@{
+//            (parent as? JPanel)?.doLayout()
+//            val bounds = item.bounds
+//            val visibleRect = visibleRect
+//            if (visibleRect.contains(bounds).orTrue())
+//                return@later
+//            val offset = visibleRect.intersection(bounds)
+////            (parent?.parent as? JScrollPane)?.verticalScrollBar?.value = offset
+//
+//        }
     }
 }
 
@@ -295,7 +400,13 @@ interface OnChangePoint {
 
 interface HasSelectedCell {
     val selectedCell: Int
-    fun setSelected(index: Int)
+
+    /**
+     * Attempts to set selected to index, but returns actually set index
+     * If point replication is set, index may be different if skipping duplicates
+     * @return actually selected index
+     */
+    fun setSelected(index: Int): Int
 }
 
 
@@ -319,4 +430,56 @@ fun Graphics.drawCenteredString(text: String, rect: Rectangle, font: Font? = nul
 
     // Draw the String
     drawString(text, x, y)
+}
+
+
+private class AttCellCanvas(
+    var selected: Boolean,
+    var image: Image,
+    var scaledPoints: List<Pair<Int, Int>>,
+    var labels: Boolean,
+    var pointNames: List<String>,
+    var scale: Double,
+): JPanel() {
+
+    var scaledFont: Font? = null
+
+
+    init {
+        val imageDimension = Dimension(image.width + 50, image.height + 40)
+        size = imageDimension
+        preferredSize = imageDimension
+        minimumSize = imageDimension
+        background = Color.BLACK
+    }
+
+    override fun paintComponent(g: Graphics) {
+        super.paintComponent(g)
+        g.drawImage(image, 0, 0, this)
+        if (!selected) {
+            g.color = Color(0, 0, 0, 60)
+            g.fillRect(0, 0, width, height)
+            g.color = Color(255, 255, 255, 255)
+            g.drawCenteredString("Click to Edit", Rectangle(0, 0, width, height))
+        }
+        val g2 = g as Graphics2D
+        if (selected) {
+            scaledPoints.forEachIndexed { index, point ->
+                val label: String = if (labels)
+                    pointNames.getOrNull(index)?.let { name -> "${index + 1}: $name" } ?: "Point $index"
+                else
+                    "${index + 1}"
+                g2.color = colors[index]
+                if (scaledFont == null)
+                    scaledFont = g2.font.deriveFont(8)
+                g2.font = scaledFont!!
+                g2.drawString(label, point.first + 4, point.second + 4)
+            }
+            g2.stroke = BasicStroke(maxOf(0.8f * scale.toFloat(), 2.0f))
+            scaledPoints.forEachIndexed { index, point ->
+                g2.color = colors[index]
+                g2.drawLine(point.first, point.second, point.first, point.second)
+            }
+        }
+    }
 }

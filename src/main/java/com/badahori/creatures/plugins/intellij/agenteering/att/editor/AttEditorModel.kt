@@ -8,15 +8,20 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileDat
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser.parse
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.fromFileName
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
@@ -32,11 +37,13 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.SmartPointerManager
+import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger
+import kotlin.math.abs
 
 internal class AttEditorModel(
     project: Project,
@@ -48,12 +55,17 @@ internal class AttEditorModel(
 ) : OnChangePoint, HasSelectedCell, Disposable, VirtualFileListener, DocumentListener {
 
     private var mImages: List<BufferedImage>? = null
+    private var mReplications: Map<Int, List<Int>>? = null
     private var mVariant: CaosVariant = variant
     internal val variant: CaosVariant get() = mVariant
     private var changedSelf: Boolean = false
     private var disposed: AtomicBoolean = AtomicBoolean(false)
+    private val mNotReplicatedAtts = mutableListOf<Int>()
+    private var mCurrentReplication: List<Int>? = null
 
     private var project: Project? = project
+
+    val notReplicatedAtts: List<Int> get() = mNotReplicatedAtts
 
     var mPart: Char = attFile.name[0].lowercase()
     val part: Char get() = mPart
@@ -114,14 +126,26 @@ internal class AttEditorModel(
             mLockX = false; mLockY = value
         }
 
+    var replicateAttsToDuplicateSprites: Boolean? = CaosApplicationSettingsService
+        .getInstance()
+        .replicateAttsToDuplicateSprites
 
     val actionId = AtomicInteger(0)
 
     val readonly = attFile is CaosVirtualFile
 
+    private var mFoldedLines: List<Int>? = null
+
     init {
         val psiFile = attFile.getPsiFile(project)
         initDocumentListeners(project, psiFile)
+        CaosApplicationSettingsComponent.addSettingsChangedListener(this) { _, it ->
+            replicateAttsToDuplicateSprites = it.replicateAttToDuplicateSprite
+            mFoldedLines = null
+            ApplicationManager.getApplication().invokeLater {
+                attChangeListener?.onAttUpdate()
+            }
+        }
         update(variant, part)
     }
 
@@ -189,7 +213,7 @@ internal class AttEditorModel(
         if (!spriteFile.isValid) {
             return emptyList()
         }
-        var images: List<BufferedImage> = SpriteParser.parse(spriteFile).images
+        var images: List<BufferedImage> = runBlocking { SpriteParser.parse(spriteFile).images }
         images = images.mapIndexed { i, image ->
             var out: BufferedImage = image
             if (i % 16 in 4..7) {
@@ -302,8 +326,34 @@ internal class AttEditorModel(
         if (attData.toFileText(variant) == text) {
 //            return
         }
+        val oldLines = attData.lines
+        val newData = parse(text, mLinesCount, mPointsCount, fileName = fileName)
+        val newLines = newData.lines.toMutableList()
+        val maxCheck = minOf(newLines.size, oldLines.size)
+        val changed = (0 until maxCheck).filter { i ->
+            oldLines[i] != newLines[i]
+        }
+        val changedLineNumber = if (changed.size == 1) {
+            changed[0]
+        } else {
+            null
+        }
+//        if (changedLineNumber != null && replicateAttsToDuplicateSprites != false) {
+//            val changedLine = newLines[changedLineNumber]
+//            val replications = getReplications(changedLineNumber)
+//                .filter { it !in independent }
+//            for (replicant in replications) {
+//                newLines[replicant] = changedLine
+//            }
+//        }
+
         // Parse the file data and set it to the ATT instance data
-        mAttData = parse(text, mLinesCount, mPointsCount, fileName = fileName)
+        mAttData = AttFileData(newLines, fileName = fileName)
+
+        if (changedLineNumber != null && mSelectedCell != changedLineNumber) {
+            val changedLine = changed[0]
+            setSelected(changedLine)
+        }
 
         ApplicationManager.getApplication().invokeLater {
             attChangeListener?.onAttUpdate()
@@ -358,23 +408,27 @@ internal class AttEditorModel(
         val data = getEnsuringLines(lineNumber)
         val oldPoints = data.lines[lineNumber].points
         val newPoints: MutableList<Pair<Int, Int>> = ArrayList()
-        var changedPoint = newPoint
-        for (i in oldPoints.indices) {
-            if (currentPoint == i) {
-                if (lockY) {
-                    changedPoint = Pair(newPoint.first, oldPoints[i].second)
-                }
-                if (lockX) {
-                    changedPoint = Pair(oldPoints[i].first, newPoint.second)
-                }
+        val changedPoint = oldPoints.getOrNull(currentPoint)?.let { oldPoint ->
+            if (lockX && lockY) {
+                oldPoint
+            } else if (lockX) {
+                Pair(oldPoint.first, newPoint.second)
+            } else if (lockY) {
+                Pair(newPoint.first, oldPoint.second)
+            } else {
+                newPoint
             }
+        } ?: newPoint
+
+        val currentReplication = currentReplication
+        for (i in oldPoints.indices) {
             newPoints.add(if (i == currentPoint) changedPoint else oldPoints[i])
         }
         val newLine = AttFileLine(newPoints.subList(0, pointsCount))
         val oldLines: List<AttFileLine> = data.lines
         val newLines: MutableList<AttFileLine> = ArrayList()
         for (i in oldLines.indices) {
-            newLines.add(if (i == lineNumber) newLine else oldLines[i])
+            newLines.add(if (i == lineNumber || i in currentReplication) newLine else oldLines[i])
         }
         setAttData(AttFileData(newLines, attFile.name))
     }
@@ -415,9 +469,102 @@ internal class AttEditorModel(
     internal fun reloadFiles() {
         mImages = null
         getImages()
+        mReplications = null
+        getReplications()
         showNotification("Reloaded ATT data", MessageType.INFO)
     }
 
+    fun getFoldedLines(): List<Int> {
+        if (replicateAttsToDuplicateSprites == false) {
+            return emptyList()
+        }
+        mFoldedLines?.let {
+            return it
+        }
+        val replications = getReplications()
+        val folded = (0 until linesCount)
+            .filter { i ->
+                i != 0 && replications[i - 1]?.contains(i) == true
+            }
+        mFoldedLines = folded
+        return folded
+    }
+
+    internal fun getReplications(): Map<Int, List<Int>> {
+        if (replicateAttsToDuplicateSprites == false) {
+            return emptyMap()
+        }
+        mReplications?.let {
+            return it
+        }
+        val images = getImages()
+        val map = mutableMapOf<Int, List<Int>>()
+        for (i in images.indices) {
+            val image = images[i]
+                ?: continue
+            val matches = mutableListOf<Int>()
+            for (j in images.indices) {
+                if (i in mNotReplicatedAtts) {
+                    map[i] = emptyList()
+                    continue
+                }
+                val anImage = images[j]
+                    ?: continue
+                if (j !in mNotReplicatedAtts && i != j && image.contentsEqual(anImage)) {
+                    matches.add(j)
+                }
+            }
+            map[i] = matches
+        }
+        mReplications = map
+        return map
+    }
+
+    private val currentReplication: List<Int>
+        get() {
+            mCurrentReplication?.let {
+                return it
+            }
+
+            val replications = runBlocking { getReplications(mSelectedCell) }
+            mCurrentReplication = replications
+            val project = project
+            if (project != null && replicateAttsToDuplicateSprites == null && replications.isNotEmpty()) {
+                CaosApplicationSettingsService.getInstance().replicateAttsToDuplicateSprites = true
+                showReplicationNotice(project)
+            }
+            return replications
+        }
+
+    private suspend fun getReplications(line: Int): List<Int> {
+        return if (replicateAttsToDuplicateSprites == false || mNotReplicatedAtts.contains(line)) {
+            emptyList()
+        } else {
+            getReplications()[line] ?: emptyList()
+        }
+    }
+
+
+    private fun showReplicationNotice(project: Project) {
+        CaosNotifications.createInfoNotification(
+            project,
+            "ATT Point Replication",
+            "<b>Sprite contains duplicate frames</b>. Att changes in the visual editor will be replicated<br />" +
+                    "NOTE: Manual text changes will not be replicated<br/>" +
+                    "You can change this setting in the CAOS settings panel"
+        ).addAction(object : AnAction("Disable Replication?") {
+            override fun update(e: AnActionEvent) {
+                super.update(e)
+                e.presentation.description = "Disabled ATT point replication in this and future ATT files.\n" +
+                        "Setting can be changed later in the CAOS and Agenteering settings panel"
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                CaosApplicationSettingsService.getInstance().replicateAttsToDuplicateSprites = false
+            }
+        })
+            .show()
+    }
 
     fun commit() {
         ApplicationManager.getApplication().invokeLater {
@@ -490,6 +637,7 @@ internal class AttEditorModel(
                     variant.isOld -> 2
                     else -> 5
                 }
+
                 'b' -> 6
                 'q' -> 1
                 'z' -> 1
@@ -507,6 +655,11 @@ internal class AttEditorModel(
             ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
             virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
             virtualFile.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
+            for (sibling in virtualFile.parent?.children.orEmpty()) {
+                if (!sibling.isDirectory) {
+                    sibling.setCachedIfNotCached(variant, false)
+                }
+            }
         }
 
 
@@ -519,6 +672,7 @@ internal class AttEditorModel(
                     "(R)Ear",
                     "Hair"
                 )
+
                 'b' -> listOf(
                     "Neck",
                     "(L)Thigh",
@@ -527,30 +681,36 @@ internal class AttEditorModel(
                     "(R)Arm",
                     "Tail"
                 )
+
                 'c', 'f' -> listOf(
                     "Hip",
                     "Knee"
                 )
+
                 'd', 'g' -> listOf(
                     "Knee",
                     "Ankle"
                 )
+
                 'e', 'h' -> listOf(
                     "Ankle",
                     "Toe"
                 )
+
                 'i', 'k' -> listOf(
                     "Shoulder",
                     "Elbow"
                 )
+
                 'j', 'l' -> listOf(
                     "Elbow",
                     "Hand"
                 )
+
                 'q' -> listOf("Head")
                 'z' -> listOf("Center")
 
-                else -> Arrays.asList(
+                else -> listOf(
                     "Start",
                     "End"
                 )
@@ -560,14 +720,86 @@ internal class AttEditorModel(
 
     }
 
-    override fun setSelected(index: Int) {
-        if (index < 0) {
-            return
+    override fun setSelected(index: Int): Int {
+        var targetIndex = index
+        val lastIndex = (if (variant.isOld) 10 else 16) - 1
+        targetIndex = if (index < 0) {
+            0
+        } else if (index > lastIndex) {
+            lastIndex
+        } else {
+            index
         }
-        if (index >= attData.lines.size) {
-            return
+
+        targetIndex = if (replicateAttsToDuplicateSprites == false) {
+            index
+        } else {
+            getNotFoldedLine(targetIndex)
         }
-        mSelectedCell = index
+        mCurrentReplication = null
+        mSelectedCell = targetIndex
+        return targetIndex
+    }
+
+    /**
+     * Get the cell that is not currently folded, or itself if it cannot find a not folded cell
+     */
+    private fun getNotFoldedLine(newIndex: Int): Int {
+        if (newIndex == mSelectedCell) {
+            return newIndex
+        }
+        val lastIndex = (if (variant.isOld) 10 else 16) - 1
+
+        if (newIndex < 0) {
+            return 0
+        }
+        if (newIndex > lastIndex) {
+            return lastIndex
+        }
+
+        val replications = runBlocking { getReplications() }
+        val mod = newIndex - mSelectedCell
+
+        // If previous image and this are not consecutive, just jump
+        if (abs(mod) > 1) {
+            return newIndex
+        }
+
+        if (replications[newIndex - mod]?.contains(newIndex) != true) {
+            if (mod > 0) {
+                return newIndex
+            }
+        }
+
+        val isNew = replications[newIndex - mod]?.contains(newIndex) != true
+        // Check if this image is completely different from the one before
+        if (mod > 0 && isNew) {
+            return newIndex
+        }
+
+        val indices = if (newIndex > mSelectedCell) {
+            (newIndex + 1) .. lastIndex
+        } else {
+            (newIndex- 1) downTo 0
+        }
+        var outIndex = newIndex
+        val shouldChange = isNew || indices.any { !replications.containsKey(it) || newIndex !in replications[it]!! }
+        if (!shouldChange) {
+            return mSelectedCell
+        }
+        for (cell in indices) {
+            if (replications[cell]?.contains(newIndex) == true) {
+                outIndex = cell + mod
+            } else {
+                break
+            }
+        }
+        // If having shifted up, the outIndex would point to the first non-duplicate,
+        // but it should be the last duplicate, so add one to index
+        if (mod < 0 && outIndex != newIndex) {
+            outIndex += 1
+        }
+        return outIndex
     }
 
     override fun dispose() {

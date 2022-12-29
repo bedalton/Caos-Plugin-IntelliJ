@@ -5,9 +5,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptSsfcPointsCheck : LocalInspectionTool() {
+class CaosScriptSsfcPointsCheck : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "SSFC number of arguments"
     override fun getGroupDisplayName(): String = CaosBundle.message("caos.intentions.family")

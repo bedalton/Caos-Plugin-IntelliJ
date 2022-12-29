@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
@@ -21,7 +22,7 @@ import com.intellij.psi.util.elementType
  * Grammar allows incomplete control statements to keep from breaking AST tree
  * In grammar, ENUM...NEXT can be parsed without NEXT and DOIF...ENDI without ENDI
  */
-class CaosScriptGhostElementAnnotator : Annotator {
+class CaosScriptGhostElementAnnotator : Annotator, DumbAware {
     /**
      * Look through all elements in file and annotate as necessary
      */

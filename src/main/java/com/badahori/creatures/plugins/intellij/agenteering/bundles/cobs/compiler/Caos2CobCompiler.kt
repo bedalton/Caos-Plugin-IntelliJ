@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
@@ -22,7 +23,7 @@ import java.nio.file.Paths
 
 object Caos2CobCompiler {
 
-    fun compile(
+    suspend fun compile(
         project: Project,
         compilationResult: CompilationResults,
         file: CaosScriptFile,
@@ -84,7 +85,7 @@ object Caos2CobCompiler {
         return true
     }
 
-    private fun writeRemoverCob(
+    private suspend fun writeRemoverCob(
         project: Project,
         compilationResult: CompilationResults,
         parent: VirtualFile,
@@ -128,7 +129,7 @@ object Caos2CobCompiler {
             return true
     }
 
-    private fun compile(project: Project, file: CaosScriptFile, cob: Caos2Cob): ByteArray? {
+    private suspend fun compile(project: Project, file: CaosScriptFile, cob: Caos2Cob): ByteArray? {
         return try {
             cob.compile()
         } catch (e: Caos2CobException) {
@@ -573,7 +574,7 @@ object Caos2CobCompiler {
         WriteCommandAction.writeCommandAction(fileIn.project)
             .shouldRecordActionForActiveDocument(false)
             .withGroupId("CAOS2Cob")
-            .withName("Collapse CAOS2Cob script with commas")
+            .withName("Collapse CAOS2Cob Script With Commas")
             .withUndoConfirmationPolicy(UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION)
             .run<Exception> {
                 val file = pointer.element

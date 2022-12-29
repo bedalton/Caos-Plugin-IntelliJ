@@ -16,9 +16,10 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
-import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.common.util.nullIfEmpty
+import com.intellij.openapi.project.DumbAware
 
-class PrayDependencyCategoryMatchesFileType: LocalInspectionTool() {
+class PrayDependencyCategoryMatchesFileType: LocalInspectionTool(), DumbAware {
 
     override fun getGroupDisplayName(): String = PRAY
     override fun getGroupPath(): Array<String> = CAOS2Path

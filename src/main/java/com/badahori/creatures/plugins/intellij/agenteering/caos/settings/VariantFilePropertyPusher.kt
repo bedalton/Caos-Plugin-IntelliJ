@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import bedalton.creatures.common.structs.GameVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -78,7 +79,13 @@ internal class ImplicitVariantFilePropertyPusher : AbstractVariantFilePropertyPu
             writeToStorage(file, VARIANT_IMPLICIT_FILE_ATTRIBUTE, CaosScriptFile.ImplicitVariantUserDataKey, variantIn)
         }
         fun readFromStorage(file: VirtualFile): CaosVariant? {
-            return readFromStorage(file, VARIANT_IMPLICIT_FILE_ATTRIBUTE, CaosScriptFile.ImplicitVariantUserDataKey)
+            return readFromStorage(file, VARIANT_IMPLICIT_FILE_ATTRIBUTE, CaosScriptFile.ImplicitVariantUserDataKey).let {
+                if (file.extension.orEmpty().lowercase() == "att"  && it == CaosVariant.CV) {
+                    null
+                } else {
+                    it
+                }
+            }
         }
     }
 }

@@ -19,11 +19,12 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
-import bedalton.creatures.util.stripSurroundingQuotes
+import bedalton.creatures.common.util.stripSurroundingQuotes
+import com.intellij.openapi.project.DumbAware
 import kotlin.math.floor
 import kotlin.math.min
 
-class Caos2PraySimilarTagInspection : LocalInspectionTool() {
+class Caos2PraySimilarTagInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupPath(): Array<String> = CAOS2Path
     override fun getGroupDisplayName(): String = PRAY
@@ -41,7 +42,7 @@ class Caos2PraySimilarTagInspection : LocalInspectionTool() {
     }
 }
 
-class PrayTagFixSimilarInspection : LocalInspectionTool() {
+class PrayTagFixSimilarInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupPath(): Array<String> = arrayOf(CaosBundle.message("caos.intentions.family"))
     override fun getGroupDisplayName(): String = AgentMessages.message("pray.group")

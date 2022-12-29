@@ -2,8 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
+import com.badahori.creatures.plugins.intellij.agenteering.utils.myModulePath
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
@@ -18,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 
 
 internal class SpriteFileTreeNode(
@@ -29,7 +31,7 @@ internal class SpriteFileTreeNode(
     override fun getVirtualFile(): VirtualFile = spriteVirtualFile
 
     private val spritesVirtualFileContainer: CaosVirtualFile by lazy {
-        val modulePath = ModuleUtil.findModuleForFile(spriteVirtualFile, project)?.moduleFile?.path
+        val modulePath = ModuleUtil.findModuleForFile(spriteVirtualFile, project)?.myModulePath
         val originalPath = value.path.let { path ->
             if (modulePath != null && path.startsWith(modulePath))
                 path.substring(modulePath.length)
@@ -40,7 +42,7 @@ internal class SpriteFileTreeNode(
     }
 
     private val sprite by lazy {
-        SpriteParser.parse(value)
+        runBlocking { SpriteParser.parse(value) }
     }
 
     private val myChildren: List<SpriteImageTreeNode> by lazy {
@@ -75,6 +77,7 @@ internal class SpriteFileTreeNode(
         isValid() && PsiManager.getInstance(project!!).findFile(virtualFile)?.canNavigate().orFalse()
 
     override fun canNavigateToSource(): Boolean = false
+
     override fun update(presentationData: PresentationData) {
         if (!isValid()) {
             return

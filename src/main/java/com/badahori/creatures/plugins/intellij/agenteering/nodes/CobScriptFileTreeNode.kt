@@ -1,8 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.bytes.MemoryByteStreamReader
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.Log
+import bedalton.creatures.common.bytes.MemoryByteStreamReader
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.Log
+import bedalton.creatures.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.FileBlock.SoundBlock
@@ -26,6 +27,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 import java.awt.Color
 
 
@@ -40,14 +42,16 @@ internal class CobFileTreeNode(
         if (!isValid()) {
             return@lazy CobFileData.InvalidCobData("Cob file state invalid")
         }
-        try {
-            CobToDataObjectDecompiler.decompile(
-                MemoryByteStreamReader(file.contentsToByteArray()),
-                file.nameWithoutExtension
-            )
-        } catch (e: Exception) {
-            Log.e { "Failed to parse COB. ${e.message}" }
-            CobFileData.InvalidCobData("Failed to parse COB. ${e.message}")
+        runBlocking {
+            try {
+                CobToDataObjectDecompiler.decompile(
+                    MemoryByteStreamReader(file.contentsToByteArray()),
+                    file.nameWithoutExtension
+                )
+            } catch (e: Exception) {
+                Log.e { "Failed to parse COB. ${e.message}" }
+                CobFileData.InvalidCobData("Failed to parse COB. ${e.message}")
+            }
         }
     }
 

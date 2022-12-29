@@ -1,0 +1,81 @@
+<!-- =========================== -->
+<!-- ====== ATT Files ======= -->
+<!-- =========================== -->
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+
+        <fileType
+                name="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFileType"
+                fieldName="INSTANCE"
+                language="Catalogue"
+                extensions="catalogue"
+        />
+
+        <lang.parserDefinition
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.parser.CatalogueParserDefinition"
+        />
+
+        <completion.contributor
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.support.CatalogueCompletionContributor"
+        />
+
+        <lang.syntaxHighlighterFactory
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.highlighting.CatalogueSyntaxHighlighterFactory"/>
+
+        <colorSettingsPage
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.highlighting.CatalogueColorSettingsPage"/>
+
+
+        <applicationService
+                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexService"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexServiceImpl"/>
+
+        <stubElementTypeHolder
+                class="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubTypes"/>
+        <stubIndex
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex"/>
+
+        <lang.commenter
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.support.CatalogueCommenter"
+        />
+
+        <annotator
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.highlighting.CatalogueSemanticHighlighter"
+        />
+
+        <annotator
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.support.CatalogueErrorAnnotator"
+        />
+
+        <localInspection
+                language="Catalogue"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.support.AgentHelpTagIsValidInspection"
+                level="WEAK WARNING"
+                displayName="Agent help formatting inspection"
+                groupName="Catalogue"
+                groupPath="CaosScript"
+                shortName="AgentHelpTagIsValidInspection"
+                enabledByDefault="true"
+        />
+
+        <localInspection
+                language="Catalogue"
+                level="WARNING"
+                groupPath="CaosScript"
+                groupName="Catalogue"
+                enabledByDefault="true"
+                displayName="Duplicate catalogue tag"
+                shortName="CatalogueTagIsUnique"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CatalogueTagIsUniqueInspection"
+        />
+
+
+    </extensions>
+</idea-plugin>
